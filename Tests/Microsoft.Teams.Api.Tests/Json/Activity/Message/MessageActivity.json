@@ -1,0 +1,20 @@
+{
+    "id": "1",
+    "type": "message",
+    "channelId": "msteams",
+    "text": "testing123",
+    "from": {
+        "id": "1",
+        "role": "user",
+        "name": "test"
+    },
+    "recipient": {
+        "id": "2",
+        "role": "bot",
+        "name": "test-bot"
+    },
+    "conversation": {
+        "id": "1",
+        "conversationType": "personal"
+    }
+}

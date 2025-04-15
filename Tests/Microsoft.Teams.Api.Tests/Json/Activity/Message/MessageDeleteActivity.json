@@ -1,0 +1,19 @@
+{
+    "id": "1",
+    "type": "messageDelete",
+    "channelId": "msteams",
+    "from": {
+        "id": "1",
+        "role": "user",
+        "name": "test"
+    },
+    "recipient": {
+        "id": "2",
+        "role": "bot",
+        "name": "test-bot"
+    },
+    "conversation": {
+        "id": "1",
+        "conversationType": "personal"
+    }
+}
