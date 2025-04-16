@@ -15,6 +15,7 @@ jobs:
     permissions: read-all
   publish:
     name: Publish
+    needs: build-test-lint
     runs-on: ubuntu-latest
     permissions:
       contents: read
