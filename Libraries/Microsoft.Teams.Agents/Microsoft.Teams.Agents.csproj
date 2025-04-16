@@ -1,24 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\Directory.Build.props" Condition="'$(Version)' == ''" />
+
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Agents</PackageId>
-    <Product>Microsoft Teams SDK</Product>
-    <Version>0.0.0</Version>
-    <Authors>Microsoft</Authors>
-    <Company>Microsoft</Company>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageDescription>Agents</PackageDescription>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/microsoft/teams.net</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageProjectUrl>https://microsoft.github.io/teams.ts/2.getting-started/1.create-application.html</PackageProjectUrl>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>microsoft;teams;msteams;copilot;ai;agents</PackageTags>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -30,11 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\" />
-    <None Include="..\..\Assets\icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

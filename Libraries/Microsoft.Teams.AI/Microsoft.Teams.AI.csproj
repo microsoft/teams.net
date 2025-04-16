@@ -1,24 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
+  <Import Project="..\Directory.Build.props" Condition="'$(Version)' == ''" />
+
   <PropertyGroup>
     <PackageId>Microsoft.Teams.AI</PackageId>
-    <Product>Microsoft Teams SDK</Product>
-    <Version>0.0.0</Version>
-    <Authors>Microsoft</Authors>
-    <Company>Microsoft</Company>
-    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
     <PackageDescription>AI tools/utilities.</PackageDescription>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-    <RepositoryUrl>https://github.com/microsoft/teams.net</RepositoryUrl>
-    <RepositoryType>git</RepositoryType>
-    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageProjectUrl>https://microsoft.github.io/teams.ts/2.getting-started/1.create-application.html</PackageProjectUrl>
-    <PackageIcon>icon.png</PackageIcon>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>microsoft;teams;msteams;copilot;ai</PackageTags>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -35,11 +23,6 @@
   <ItemGroup>
     <PackageReference Include="JsonSchema.Net" Version="7.3.4" />
     <PackageReference Include="JsonSchema.Net.Generation" Version="5.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="README.md" Pack="true" PackagePath="\" />
-    <None Include="..\..\Assets\icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>
