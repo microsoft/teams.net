@@ -8,7 +8,7 @@ public class TokenResponse : ITokenResponse
 {
     [JsonPropertyName("token_type")]
     [JsonPropertyOrder(0)]
-    public required string TokenType { get; init; }
+    public required string TokenType { get; set; }
 
     [JsonPropertyName("expires_in")]
     [JsonPropertyOrder(1)]
@@ -16,5 +16,5 @@ public class TokenResponse : ITokenResponse
 
     [JsonPropertyName("access_token")]
     [JsonPropertyOrder(2)]
-    public required string AccessToken { get; init; }
+    public required string AccessToken { get; set; }
 }

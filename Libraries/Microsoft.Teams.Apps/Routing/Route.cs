@@ -1,6 +1,7 @@
 using System.Reflection;
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Common.Extensions;
 
 namespace Microsoft.Teams.Apps.Routing;
 
@@ -87,7 +88,7 @@ public class AttributeRoute : IRoute
         /// combine all the errors into
         /// one message string
         /// </summary>
-        public override string ToString() => string.Join('\n', Errors.Select(err => $"{err.Name} => {err.Message}"));
+        public override string ToString() => string.Join(Environment.NewLine, Errors.Select(err => $"{err.Name} => {err.Message}"));
 
         /// <summary>
         /// add a parameter error to the result

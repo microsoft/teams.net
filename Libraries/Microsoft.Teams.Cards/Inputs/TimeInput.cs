@@ -49,7 +49,7 @@ public class TimeInput(string? value) : InputElement(CardType.TimeInput)
         return this;
     }
 
-    public TimeInput WithMax(TimeOnly value)
+    public TimeInput WithMax(DateTime value)
     {
         Max = value.ToShortTimeString();
         return this;
@@ -61,7 +61,7 @@ public class TimeInput(string? value) : InputElement(CardType.TimeInput)
         return this;
     }
 
-    public TimeInput WithMin(TimeOnly value)
+    public TimeInput WithMin(DateTime value)
     {
         Min = value.ToShortTimeString();
         return this;

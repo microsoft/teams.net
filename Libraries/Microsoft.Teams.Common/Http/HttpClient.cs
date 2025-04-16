@@ -73,15 +73,15 @@ public class HttpClient : IHttpClient
 
         Options.Apply(httpRequest);
 
-        foreach (var (key, value) in request.Headers)
+        foreach (var kv in request.Headers)
         {
-            if (key.StartsWith("Content-"))
+            if (kv.Key.StartsWith("Content-"))
             {
-                httpRequest.Content?.Headers.TryAddWithoutValidation(key, value);
+                httpRequest.Content?.Headers.TryAddWithoutValidation(kv.Key, kv.Value);
                 continue;
             }
 
-            httpRequest.Headers.TryAddWithoutValidation(key, value);
+            httpRequest.Headers.TryAddWithoutValidation(kv.Key, kv.Value);
         }
 
         if (request.Body != null)
@@ -121,8 +121,7 @@ public class HttpClient : IHttpClient
             };
         }
 
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        ArgumentNullException.ThrowIfNull(body);
+        var body = await response.Content.ReadAsStringAsync() ?? throw new ArgumentNullException();
 
         return new HttpResponse<string>()
         {
@@ -136,7 +135,7 @@ public class HttpClient : IHttpClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            var content = await response.Content.ReadAsStringAsync(cancellationToken);
+            var content = await response.Content.ReadAsStringAsync() ?? throw new ArgumentNullException();
             object errorBody = content;
 
             if (content != string.Empty)
@@ -156,8 +155,7 @@ public class HttpClient : IHttpClient
             };
         }
 
-        var body = await response.Content.ReadFromJsonAsync<TResponseBody>(cancellationToken);
-        ArgumentNullException.ThrowIfNull(body);
+        var body = await response.Content.ReadFromJsonAsync<TResponseBody>(cancellationToken) ?? throw new ArgumentNullException();
 
         return new HttpResponse<TResponseBody>()
         {

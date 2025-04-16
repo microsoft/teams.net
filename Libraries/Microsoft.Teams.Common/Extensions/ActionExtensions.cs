@@ -14,7 +14,7 @@ public static class ActionExtensions
             Task.Delay(milliseconds, cancelTokenSource.Token)
                 .ContinueWith(t =>
                 {
-                    if (t.IsCompletedSuccessfully)
+                    if (t.IsCompleted && !t.IsFaulted)
                     {
                         func(arg);
                     }
@@ -34,7 +34,7 @@ public static class ActionExtensions
             Task.Delay(milliseconds, cancelTokenSource.Token)
                 .ContinueWith(async t =>
                 {
-                    if (t.IsCompletedSuccessfully)
+                    if (t.IsCompleted && !t.IsFaulted)
                     {
                         await func();
                     }

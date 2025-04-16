@@ -24,6 +24,6 @@ public static class QueryString
             parts.Add(builder.ToString());
         }
 
-        return string.Join('&', parts);
+        return string.Join("&", parts);
     }
 }

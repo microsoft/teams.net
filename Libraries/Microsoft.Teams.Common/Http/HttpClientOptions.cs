@@ -92,9 +92,9 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
         if (Token != null)
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {Token}");
 
-        foreach (var (key, value) in Headers)
+        foreach (var kv in Headers)
         {
-            client.DefaultRequestHeaders.TryAddWithoutValidation(key, value);
+            client.DefaultRequestHeaders.TryAddWithoutValidation(kv.Key, kv.Value);
         }
     }
 
@@ -114,15 +114,15 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
             }
         }
 
-        foreach (var (key, value) in Headers)
+        foreach (var kv in Headers)
         {
-            if (key.StartsWith("Content-"))
+            if (kv.Key.StartsWith("Content-"))
             {
-                request.Content?.Headers.TryAddWithoutValidation(key, value);
+                request.Content?.Headers.TryAddWithoutValidation(kv.Key, kv.Value);
                 continue;
             }
 
-            request.Headers.TryAddWithoutValidation(key, value);
+            request.Headers.TryAddWithoutValidation(kv.Key, kv.Value);
         }
     }
 }

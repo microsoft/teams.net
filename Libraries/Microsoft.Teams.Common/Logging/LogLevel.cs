@@ -40,7 +40,7 @@ public static class LogLevelExtensions
             LogLevel.Warn => "warn",
             LogLevel.Info => "info",
             LogLevel.Debug => "debug",
-            _ => Enum.GetName(level)
+            _ => Enum.GetName(typeof(LogLevel), level)
         };
     }
 }

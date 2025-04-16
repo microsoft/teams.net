@@ -42,7 +42,7 @@ public partial class InvokeActivity(Invokes.Name name) : Activity(ActivityType.I
 
     public override string GetPath()
     {
-        return string.Join('.', ["Activity", Type.ToPrettyString(), Name.ToPrettyString()]);
+        return string.Join(".", ["Activity", Type.ToPrettyString(), Name.ToPrettyString()]);
     }
 
     public Invokes.ExecuteActionActivity ToExecuteAction() => (Invokes.ExecuteActionActivity)this;

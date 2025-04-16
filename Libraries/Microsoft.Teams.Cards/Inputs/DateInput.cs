@@ -53,7 +53,7 @@ public class DateInput : InputElement
         Value = value;
     }
 
-    public DateInput(DateOnly value) : base(CardType.DateInput)
+    public DateInput(DateTime value) : base(CardType.DateInput)
     {
         Value = value.ToShortDateString();
     }
@@ -64,7 +64,7 @@ public class DateInput : InputElement
         return this;
     }
 
-    public DateInput WithMax(DateOnly value)
+    public DateInput WithMax(DateTime value)
     {
         Max = value.ToShortDateString();
         return this;
@@ -76,7 +76,7 @@ public class DateInput : InputElement
         return this;
     }
 
-    public DateInput WithMin(DateOnly value)
+    public DateInput WithMin(DateTime value)
     {
         Min = value.ToShortDateString();
         return this;
@@ -94,7 +94,7 @@ public class DateInput : InputElement
         return this;
     }
 
-    public DateInput WithValue(DateOnly value)
+    public DateInput WithValue(DateTime value)
     {
         Value = value.ToShortDateString();
         return this;

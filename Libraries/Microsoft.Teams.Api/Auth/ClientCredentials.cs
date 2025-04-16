@@ -34,7 +34,7 @@ public class ClientCredentials : IHttpCredentials
             { "grant_type", "client_credentials" },
             { "client_id", ClientId },
             { "client_secret", ClientSecret },
-            { "scope", string.Join(',', scopes) }
+            { "scope", string.Join(",", scopes) }
         };
 
         var res = await client.SendAsync<TokenResponse>(request, cancellationToken);

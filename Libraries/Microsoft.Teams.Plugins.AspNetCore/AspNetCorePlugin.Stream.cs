@@ -63,11 +63,12 @@ public partial class AspNetCorePlugin
             }
 
             var activity = new MessageActivity(_text)
-                .WithId(_id)
-                .WithData(_channelData)
                 .AddAttachment(_attachments.ToArray())
-                .AddEntity(_entities.ToArray())
                 .AddStreamFinal();
+
+            activity.WithId(_id);
+            activity.WithData(_channelData);
+            activity.AddEntity(_entities.ToArray());
 
             var res = await Send(activity).Retry();
             OnChunk(res);

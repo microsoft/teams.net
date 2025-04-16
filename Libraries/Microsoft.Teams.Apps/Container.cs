@@ -82,14 +82,14 @@ internal class Container : IContainer
 
     public T? Resolve<T>(string key)
     {
-        var value = _values.GetValueOrDefault(key);
+        var value = _values.TryGetValue(key, out var v) ? v : null;
 
         if (value != null)
         {
             return (T)value;
         }
 
-        var provider = _providers.GetValueOrDefault(key);
+        var provider = _providers.TryGetValue(key, out var p) ? p : null;
 
         if (provider == null)
         {

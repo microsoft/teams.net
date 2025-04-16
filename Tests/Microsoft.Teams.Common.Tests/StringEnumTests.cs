@@ -12,7 +12,7 @@ public class StringEnumTests
 
         Assert.Equal("\"test\"", json);
 
-        var obj = new Dictionary<string, dynamic>()
+        var obj = new Dictionary<string, object>()
         {
             { "hello", new StringEnum("world") }
         };

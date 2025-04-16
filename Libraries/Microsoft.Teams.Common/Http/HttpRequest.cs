@@ -38,7 +38,7 @@ public class HttpRequest : HttpRequestOptions, IHttpRequest
     {
         return new HttpRequest()
         {
-            Method = HttpMethod.Patch,
+            Method = new HttpMethod("PATCH"),
             Url = url,
             Body = body,
             Headers = options?.Headers ?? new Dictionary<string, IList<string>>(),

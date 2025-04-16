@@ -12,7 +12,7 @@ public interface IHttpResponse<TBody>
 
 public class HttpResponse<TBody> : IHttpResponse<TBody>
 {
-    public required HttpResponseHeaders Headers { get; init; }
-    public required HttpStatusCode StatusCode { get; init; }
-    public required TBody Body { get; init; }
+    public required HttpResponseHeaders Headers { get; set; }
+    public required HttpStatusCode StatusCode { get; set; }
+    public required TBody Body { get; set; }
 }

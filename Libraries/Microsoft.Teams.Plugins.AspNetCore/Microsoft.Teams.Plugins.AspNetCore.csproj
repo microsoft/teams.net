@@ -1,14 +1,37 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
+    <PackageId>Microsoft.Teams.Plugins.AspNetCore</PackageId>
+    <Product>Microsoft Teams SDK</Product>
+    <Version>0.0.0</Version>
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft</Company>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <PackageDescription>Teams AspNetCore Plugin</PackageDescription>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/microsoft/teams.net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageProjectUrl>https://microsoft.github.io/teams.ts/2.getting-started/1.create-application.html</PackageProjectUrl>
+    <PackageIconUrl>https://github.com/microsoft/teams.ts/blob/main/assets/icons/teams.png?raw=true</PackageIconUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore</PackageTags>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>CS8618,CS8601</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <FrameworkReference Include="Microsoft.AspNetCore.App" />
-  </ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
@@ -17,6 +40,10 @@
     <ProjectReference Include="..\Microsoft.Teams.Extensions.Configuration\Microsoft.Teams.Extensions.Configuration.csproj" />
     <ProjectReference Include="..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
     <ProjectReference Include="..\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

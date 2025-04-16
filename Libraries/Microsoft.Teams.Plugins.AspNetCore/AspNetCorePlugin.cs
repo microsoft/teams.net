@@ -1,5 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Api;
@@ -17,11 +15,9 @@ namespace Microsoft.Teams.Plugins.AspNetCore;
 [Plugin(name: "Microsoft.Teams.Plugins.AspNetCore", version: "0.0.0")]
 public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 {
-    [AllowNull]
     [Dependency]
     public ILogger Logger { get; set; }
 
-    [AllowNull]
     [Dependency]
     public IHttpClient Client { get; set; }
 

@@ -2,6 +2,6 @@ namespace Microsoft.Teams.Common.Logging;
 
 public class LoggingSettings
 {
-    public string Enable { get; init; } = "*";
-    public LogLevel Level { get; init; } = LogLevel.Info;
+    public string Enable { get; set; } = "*";
+    public LogLevel Level { get; set; } = LogLevel.Info;
 }

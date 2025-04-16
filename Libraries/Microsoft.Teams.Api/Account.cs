@@ -24,7 +24,7 @@ public class Account
 
     [JsonPropertyName("properties")]
     [JsonPropertyOrder(4)]
-    public Dictionary<string, dynamic>? Properties { get; set; }
+    public Dictionary<string, object>? Properties { get; set; }
 }
 
 [JsonConverter(typeof(JsonConverter<Role>))]

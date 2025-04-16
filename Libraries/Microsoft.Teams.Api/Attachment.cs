@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common;
@@ -27,7 +26,6 @@ public class Attachment
     /// <summary>
     /// mimetype/Contenttype for the file
     /// </summary>
-    [AllowNull]
     [JsonPropertyName("contentType")]
     [JsonPropertyOrder(2)]
     public ContentType ContentType { get; set; }

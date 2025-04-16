@@ -18,7 +18,7 @@ public class InstallUpdateActivity() : Activity(ActivityType.InstallUpdate)
 
     public override string GetPath()
     {
-        return string.Join('.', ["Activity", Type.ToPrettyString(), Action.ToPrettyString()]);
+        return string.Join(".", ["Activity", Type.ToPrettyString(), Action.ToPrettyString()]);
     }
 }
 

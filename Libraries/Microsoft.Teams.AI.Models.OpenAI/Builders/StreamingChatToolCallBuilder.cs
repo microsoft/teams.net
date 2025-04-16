@@ -45,13 +45,13 @@ public class StreamingChatToolCallsBuilder
     {
         List<ChatToolCall> toolCalls = [];
 
-        foreach ((int index, string toolCallId) in _indexToToolCallId)
+        foreach (var kv in _indexToToolCallId)
         {
-            ReadOnlySequence<byte> sequence = _indexToFunctionArguments[index].Build();
+            ReadOnlySequence<byte> sequence = _indexToFunctionArguments[kv.Key].Build();
 
             ChatToolCall toolCall = ChatToolCall.CreateFunctionToolCall(
-                id: toolCallId,
-                functionName: _indexToFunctionName[index],
+                id: kv.Value,
+                functionName: _indexToFunctionName[kv.Key],
                 functionArguments: BinaryData.FromBytes(sequence.ToArray()));
 
             toolCalls.Add(toolCall);

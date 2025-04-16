@@ -4,9 +4,9 @@ namespace Microsoft.Teams.Apps.Extensions;
 
 public class TeamsSettings
 {
-    public string? ClientId { get; init; }
-    public string? ClientSecret { get; init; }
-    public string? TenantId { get; init; }
+    public string? ClientId { get; set; }
+    public string? ClientSecret { get; set; }
+    public string? TenantId { get; set; }
 
     public IAppOptions Apply(IAppOptions? options = null)
     {

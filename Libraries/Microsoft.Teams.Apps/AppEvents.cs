@@ -72,7 +72,7 @@ public partial class App
 
             if (ex.Request?.Content != null)
             {
-                var content = await ex.Request.Content.ReadAsStringAsync(cancellationToken);
+                var content = await ex.Request.Content.ReadAsStringAsync();
                 Logger.Error(content);
             }
         }

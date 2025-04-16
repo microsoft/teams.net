@@ -59,7 +59,7 @@ public class MessageActivity : Activity
 
     [JsonPropertyName("value")]
     [JsonPropertyOrder(43)]
-    public dynamic? Value { get; set; }
+    public object? Value { get; set; }
 
     public MessageActivity() : base(ActivityType.Message)
     {
@@ -70,26 +70,6 @@ public class MessageActivity : Activity
     {
         Text = text;
     }
-
-    public override MessageActivity WithId(string value) => (MessageActivity)base.WithId(value);
-    public override MessageActivity WithReplyToId(string value) => (MessageActivity)base.WithReplyToId(value);
-    public override MessageActivity WithChannelId(ChannelId value) => (MessageActivity)base.WithChannelId(value);
-    public override MessageActivity WithFrom(Account value) => (MessageActivity)base.WithFrom(value);
-    public override MessageActivity WithConversation(Conversation value) => (MessageActivity)base.WithConversation(value);
-    public override MessageActivity WithRelatesTo(ConversationReference value) => (MessageActivity)base.WithRelatesTo(value);
-    public override MessageActivity WithRecipient(Account value) => (MessageActivity)base.WithRecipient(value);
-    public override MessageActivity WithServiceUrl(string value) => (MessageActivity)base.WithServiceUrl(value);
-    public override MessageActivity WithTimestamp(DateTime value) => (MessageActivity)base.WithTimestamp(value);
-    public override MessageActivity WithLocale(string value) => (MessageActivity)base.WithLocale(value);
-    public override MessageActivity WithLocalTimestamp(DateTime value) => (MessageActivity)base.WithLocalTimestamp(value);
-    public override MessageActivity WithData(ChannelData value) => (MessageActivity)base.WithData(value);
-    public override MessageActivity WithData(string key, object? value) => (MessageActivity)base.WithData(key, value);
-    public override MessageActivity WithAppId(string value) => (MessageActivity)base.WithAppId(value);
-    public override MessageActivity AddEntity(params IEntity[] entities) => (MessageActivity)base.AddEntity(entities);
-    public override MessageActivity AddAIGenerated() => (MessageActivity)base.AddAIGenerated();
-    public override MessageActivity AddSensitivityLabel(string name, string? description = null, DefinedTerm? pattern = null) => (MessageActivity)base.AddSensitivityLabel(name, description, pattern);
-    public override MessageActivity AddFeedback(bool value = true) => (MessageActivity)base.AddFeedback(value);
-    public override MessageActivity AddCitation(int position, CitationAppearance appearance) => (MessageActivity)base.AddCitation(position, appearance);
 
     public MessageActivity AddAttachment(params Attachment[] value)
     {
@@ -120,11 +100,13 @@ public class MessageActivity : Activity
 
     public MessageActivity AddMention(Account account)
     {
-        return AddEntity(new MentionEntity()
+        AddEntity(new MentionEntity()
         {
             Mentioned = account,
             Text = $"<at>{account.Name}</at>"
         });
+
+        return this;
     }
 
     public MessageActivity AddStreamFinal()

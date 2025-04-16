@@ -30,7 +30,7 @@ public partial class EventActivity(Events.Name name) : Activity(ActivityType.Eve
 
     public override string GetPath()
     {
-        return string.Join('.', ["Activity", Type.ToPrettyString(), Name.ToPrettyString()]);
+        return string.Join(".", ["Activity", Type.ToPrettyString(), Name.ToPrettyString()]);
     }
 
     public Events.MeetingStartActivity ToMeetingStart() => (Events.MeetingStartActivity)this;

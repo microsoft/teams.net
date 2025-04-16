@@ -7,7 +7,7 @@ public class UnionTests
     [Fact]
     public void JsonSerialize()
     {
-        var value = new Union<string, int, Dictionary<string, dynamic>>("test");
+        var value = new Union<string, int, Dictionary<string, object>>("test");
         var json = JsonSerializer.Serialize(value);
         Assert.Equal("\"test\"", json);
 
@@ -15,7 +15,7 @@ public class UnionTests
         json = JsonSerializer.Serialize(value);
         Assert.Equal("200", json);
 
-        value = new Dictionary<string, dynamic>()
+        value = new Dictionary<string, object>()
         {
             { "hello", "world" },
             { "test", 123 }

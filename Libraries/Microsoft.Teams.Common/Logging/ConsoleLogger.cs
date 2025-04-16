@@ -79,7 +79,7 @@ public partial class ConsoleLogger : ILogger
     {
         var parts = Name.Split('.').ToList();
         parts.RemoveAt(parts.Count - 1);
-        var logger = new ConsoleLogger($"{string.Join('.', parts)}.{name}", Level);
+        var logger = new ConsoleLogger($"{string.Join(".", parts)}.{name}", Level);
         logger._pattern = _pattern;
         return logger;
     }

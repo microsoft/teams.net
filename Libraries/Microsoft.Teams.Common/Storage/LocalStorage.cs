@@ -27,7 +27,7 @@ public class LocalStorage<TValue> : IStorage<string, TValue>
 
     public LocalStorage(IDictionary<string, TValue> data, int? max)
     {
-        _store = data.ToDictionary();
+        _store = new Dictionary<string, TValue>(data);
         _keys = data.Keys.ToList();
         _max = max;
     }
@@ -38,7 +38,7 @@ public class LocalStorage<TValue> : IStorage<string, TValue>
     public TValue? Get(string key)
     {
         Hit(key);
-        return _store.GetValueOrDefault(key);
+        return _store.TryGetValue(key, out var value) ? value : default;
     }
 
     public T? Get<T>(string key) where T : TValue

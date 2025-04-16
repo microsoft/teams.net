@@ -4,5 +4,5 @@ namespace Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 
 public class TeamsDevToolsSettings
 {
-    public IList<Page> Pages { get; init; } = [];
+    public IList<Page> Pages { get; set; } = [];
 }

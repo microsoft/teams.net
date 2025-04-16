@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -37,22 +36,18 @@ public partial class ActivityType(string value) : StringEnum(value)
 [JsonConverter(typeof(JsonConverter))]
 public partial interface IActivity : IConvertible, ICloneable
 {
-    [AllowNull]
     public string Id { get; set; }
 
-    public ActivityType Type { get; init; }
+    public ActivityType Type { get; set; }
 
     public string? ReplyToId { get; set; }
 
     public ChannelId ChannelId { get; set; }
 
-    [AllowNull]
     public Account From { get; set; }
 
-    [AllowNull]
     public Account Recipient { get; set; }
 
-    [AllowNull]
     public Conversation Conversation { get; set; }
 
     public ConversationReference? RelatesTo { get; set; }
@@ -83,14 +78,13 @@ public partial interface IActivity : IConvertible, ICloneable
 [JsonConverter(typeof(JsonConverter))]
 public partial class Activity : IActivity
 {
-    [AllowNull]
     [JsonPropertyName("id")]
     [JsonPropertyOrder(0)]
     public string Id { get; set; }
 
     [JsonPropertyName("type")]
     [JsonPropertyOrder(10)]
-    public ActivityType Type { get; init; }
+    public ActivityType Type { get; set; }
 
     [JsonPropertyName("replyToId")]
     [JsonPropertyOrder(20)]
@@ -100,17 +94,14 @@ public partial class Activity : IActivity
     [JsonPropertyOrder(30)]
     public ChannelId ChannelId { get; set; } = ChannelId.MsTeams;
 
-    [AllowNull]
     [JsonPropertyName("from")]
     [JsonPropertyOrder(40)]
     public Account From { get; set; }
 
-    [AllowNull]
     [JsonPropertyName("recipient")]
     [JsonPropertyOrder(50)]
     public Account Recipient { get; set; }
 
-    [AllowNull]
     [JsonPropertyName("conversation")]
     [JsonPropertyOrder(60)]
     public Conversation Conversation { get; set; }
@@ -184,7 +175,7 @@ public partial class Activity : IActivity
 
     public object Clone() => MemberwiseClone();
     public virtual Activity Copy() => (Activity)Clone();
-    public virtual string GetPath() => string.Join('.', ["Activity", Type.ToPrettyString()]);
+    public virtual string GetPath() => string.Join(".", ["Activity", Type.ToPrettyString()]);
 
     public virtual Activity WithId(string value)
     {

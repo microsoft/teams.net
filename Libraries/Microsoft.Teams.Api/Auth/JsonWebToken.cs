@@ -6,36 +6,32 @@ namespace Microsoft.Teams.Api.Auth;
 public class JsonWebToken : IToken
 {
     [JsonPropertyName("appid")]
-    public string? AppId
-    {
-        get => (string?)Token.Payload.GetValueOrDefault("appid");
-    }
+    public string? AppId => Token.Payload.TryGetValue("appid", out var value) ? (string?)value : null;
 
     [JsonPropertyName("app_displayname")]
-    public string? AppDisplayName
-    {
-        get => (string?)Token.Payload.GetValueOrDefault("app_displayname");
-    }
+    public string? AppDisplayName => Token.Payload.TryGetValue("app_displayname", out var value) ? (string?)value : null;
 
     [JsonPropertyName("tid")]
-    public string? TenantId
-    {
-        get => (string?)Token.Payload.GetValueOrDefault("tid");
-    }
+    public string? TenantId => Token.Payload.TryGetValue("tid", out var value) ? (string?)value : null;
 
     [JsonPropertyName("serviceurl")]
     public string ServiceUrl
     {
         get
         {
-            var value = ((string?)Token.Payload.GetValueOrDefault("serviceurl")) ?? "https://smba.trafficmanager.net/teams";
+            var serviceUrl = Token.Payload.TryGetValue("serviceurl", out var value) ? (string?)value : null;
 
-            if (!value.EndsWith('/'))
+            if (serviceUrl == null)
             {
-                value += '/';
+                serviceUrl = "https://smba.trafficmanager.net/teams";
             }
 
-            return value;
+            if (!serviceUrl.EndsWith("/"))
+            {
+                serviceUrl += '/';
+            }
+
+            return serviceUrl;
         }
     }
 
