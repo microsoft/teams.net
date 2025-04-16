@@ -16,9 +16,6 @@ jobs:
   publish:
     name: Publish
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: ['8.0', '9.0']
     permissions:
       contents: read
       packages: write
@@ -28,7 +25,7 @@ jobs:
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          dotnet-version: '8.0'
       - name: Pack
         run: dotnet pack
       - name: Publish

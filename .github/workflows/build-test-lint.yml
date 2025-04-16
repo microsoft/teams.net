@@ -14,9 +14,6 @@ jobs:
   build-test-lint:
     name: Build & Test & Lint
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        dotnet-version: ['8.0', '9.0']
     permissions:
       contents: read
     steps:
@@ -25,7 +22,7 @@ jobs:
       - name: Setup .NET ${{ matrix.dotnet-version }}
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          dotnet-version: '8.0'
       - name: Restore
         run: dotnet restore
       - name: Build
