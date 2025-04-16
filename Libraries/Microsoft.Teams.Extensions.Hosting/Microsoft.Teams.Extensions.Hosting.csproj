@@ -13,7 +13,7 @@
     <RepositoryType>git</RepositoryType>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <PackageProjectUrl>https://microsoft.github.io/teams.ts/2.getting-started/1.create-application.html</PackageProjectUrl>
-    <PackageIconUrl>https://github.com/microsoft/teams.ts/blob/main/assets/icons/teams.png?raw=true</PackageIconUrl>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageTags>microsoft;teams;msteams;copilot;ai;extensions;hosting</PackageTags>
@@ -44,6 +44,7 @@
 
   <ItemGroup>
     <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\Assets\icon.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

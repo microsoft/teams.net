@@ -29,4 +29,4 @@ jobs:
       - name: Pack
         run: dotnet pack
       - name: Publish
-        run: dotnet nuget push Libraries/**/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/microsoft/index.json --skip-duplicate --no-symbols
+        run: dotnet nuget push Libraries/**/*.nupkg --api-key ${{ secrets.GITHUB_TOKEN }} --source https://nuget.pkg.github.com/microsoft/index.json --skip-duplicate
