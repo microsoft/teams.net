@@ -91,12 +91,12 @@ public class ChannelData
     {
         foreach (var property in GetType().GetProperties().Where(p => p.CanRead && p.CanWrite))
         {
-            var value = property.GetValue(from, null);
+            var fromValue = property.GetValue(this);
+            var toValue = property.GetValue(from);
 
-            if (value != null)
-            {
-                property.SetValue(this, value, null);
-            }
+            if (fromValue is not null || toValue is null) continue;
+
+            property.SetValue(this, toValue);
         }
 
         return this;

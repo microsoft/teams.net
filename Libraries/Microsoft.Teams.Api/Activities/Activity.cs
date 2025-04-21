@@ -245,20 +245,21 @@ public partial class Activity : IActivity
 
     public virtual Activity WithData(ChannelData value)
     {
-        ChannelData = value;
+        ChannelData ??= new();
+        ChannelData.Merge(value);
         return this;
     }
 
     public virtual Activity WithData(string key, object? value)
     {
-        ChannelData ??= new ChannelData();
+        ChannelData ??= new();
         ChannelData.Properties[key] = value;
         return this;
     }
 
     public virtual Activity WithAppId(string value)
     {
-        ChannelData ??= new ChannelData();
+        ChannelData ??= new();
         ChannelData.App ??= new App() { Id = value };
         return this;
     }
