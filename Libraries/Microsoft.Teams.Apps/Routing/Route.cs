@@ -1,6 +1,7 @@
 using System.Reflection;
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Common.Extensions;
 
 namespace Microsoft.Teams.Apps.Routing;
@@ -33,12 +34,14 @@ public class AttributeRoute : IRoute
 
         foreach (var param in Method.GetParameters())
         {
-            var attribute = param.GetCustomAttribute<IContext.PropertyAttribute>();
+            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>();
             var generic = param.ParameterType.GenericTypeArguments.FirstOrDefault();
             var isContext = generic?.IsAssignableTo(Attr.Type) ?? false;
 
             if (attribute == null && !isContext)
-                result.AddError(param.Name ?? "??", "type must be `IContext<TActivity>` or an `IContext` property attribute");
+            {
+                result.AddError(param.Name ?? "??", "type must be `IContext<TActivity>` or an `IContext` accessor attribute");
+            }
         }
 
         return result;
@@ -50,26 +53,18 @@ public class AttributeRoute : IRoute
         var contextClient = new IContext.Client(context);
         var args = Method.GetParameters().Select(param =>
         {
-            var attribute = param.GetCustomAttribute<IContext.PropertyAttribute>();
-            return attribute == null ? Attr.Coerce(context) : attribute.Resolve(context, param);
+            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>();
+            return attribute == null ? Attr.Coerce(context) : attribute.GetValue(context, param);
         });
 
-        if (Attr.Log.HasFlag(IContext.Property.Context))
-        {
-            log.Debug(context);
-        }
-        else
-        {
-            if (Attr.Log.HasFlag(IContext.Property.AppId))
-                log.Debug(context.AppId);
-
-            if (Attr.Log.HasFlag(IContext.Property.Activity))
-                log.Debug(context.Activity);
-        }
-
         var res = Method.Invoke(null, args?.ToArray());
-        var task = res as Task<object?>;
-        return task != null ? await task : null;
+
+        if (res is Task<object?> task)
+        {
+            res = await task;
+        }
+
+        return res;
     }
 
     public class ValidationResult

@@ -29,13 +29,13 @@ public class ActivityController : ControllerBase
     public IResult Create(string conversationId, [FromBody] JsonNode body, CancellationToken cancellationToken)
     {
         var isClient = HttpContext.Request.Headers.TryGetValue("x-teams-devtools", out var strings) && strings.Any(h => h == "true");
+        body["id"] ??= Guid.NewGuid().ToString();
 
         if (!isClient)
         {
             return Results.Json(new { id = body["id"] }, statusCode: 201);
         }
 
-        body["id"] ??= Guid.NewGuid().ToString();
         body["from"] ??= JsonSerializer.SerializeToNode(new Account()
         {
             Id = "devtools",

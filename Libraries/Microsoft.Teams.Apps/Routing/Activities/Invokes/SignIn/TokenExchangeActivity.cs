@@ -4,7 +4,7 @@ using Microsoft.Teams.Api.Activities.Invokes;
 namespace Microsoft.Teams.Apps.Routing;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class TokenExchangeAttribute(IContext.Property log = IContext.Property.None) : InvokeAttribute(Api.Activities.Invokes.Name.SignIn.TokenExchange, typeof(SignIn.TokenExchangeActivity), log)
+public class TokenExchangeAttribute() : InvokeAttribute(Api.Activities.Invokes.Name.SignIn.TokenExchange, typeof(SignIn.TokenExchangeActivity))
 {
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<SignIn.TokenExchangeActivity>();
 }

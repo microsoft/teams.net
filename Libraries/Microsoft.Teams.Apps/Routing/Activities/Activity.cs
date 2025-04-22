@@ -5,13 +5,11 @@ namespace Microsoft.Teams.Apps.Routing;
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public partial class ActivityAttribute(
     string? name = null,
-    Type? type = null,
-    IContext.Property log = IContext.Property.None
+    Type? type = null
 ) : Attribute
 {
     public readonly ActivityType? Name = name != null ? new(name) : null;
     public readonly Type Type = type ?? typeof(Activity);
-    public readonly IContext.Property Log = log;
 
     public virtual bool Select(IActivity activity) => Name == null || Name.Equals(activity.Type);
     public virtual object Coerce(IContext<IActivity> context) => context.ToActivityType<Activity>();

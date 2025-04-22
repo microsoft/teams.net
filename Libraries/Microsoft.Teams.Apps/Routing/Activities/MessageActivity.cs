@@ -9,11 +9,11 @@ public class MessageAttribute : ActivityAttribute
 {
     public Regex? Pattern { get; }
 
-    public MessageAttribute(IContext.Property log = IContext.Property.None) : base(ActivityType.Message, typeof(MessageActivity), log)
+    public MessageAttribute() : base(ActivityType.Message, typeof(MessageActivity))
     {
     }
 
-    public MessageAttribute(string pattern, IContext.Property log = IContext.Property.None) : base(ActivityType.Message, typeof(MessageActivity), log)
+    public MessageAttribute(string pattern) : base(ActivityType.Message, typeof(MessageActivity))
     {
         Pattern = new Regex(pattern);
     }

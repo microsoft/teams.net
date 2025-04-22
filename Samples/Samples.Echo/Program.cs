@@ -1,5 +1,6 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Extensions;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
@@ -28,14 +29,14 @@ public static partial class Program
     }
 
     [Activity]
-    public static async Task OnActivity(IContext<Activity> context, [IContext.Next] IContext.Next next)
+    public static async Task OnActivity(IContext<Activity> context, [Context] IContext.Next next)
     {
         context.Log.Info(context.AppId);
         await next();
     }
 
-    [Message(log: IContext.Property.Activity)]
-    public static async Task OnMessage([IContext.Activity] MessageActivity activity, [IContext.Client] IContext.Client client)
+    [Message]
+    public static async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client)
     {
         await client.Typing();
         await client.Send($"you said '{activity.Text}'");

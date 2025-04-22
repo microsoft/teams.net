@@ -4,7 +4,7 @@ using Microsoft.Teams.Api.Activities.Invokes;
 namespace Microsoft.Teams.Apps.Routing;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class InvokeAttribute(string? name = null, Type? type = null, IContext.Property log = IContext.Property.None) : ActivityAttribute(ActivityType.Invoke, type ?? typeof(InvokeActivity), log)
+public class InvokeAttribute(string? name = null, Type? type = null) : ActivityAttribute(ActivityType.Invoke, type ?? typeof(InvokeActivity))
 {
     public readonly Name? InvokeName = name != null ? new(name) : null;
 

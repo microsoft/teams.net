@@ -4,7 +4,7 @@ using Microsoft.Teams.Api.Activities.Invokes;
 namespace Microsoft.Teams.Apps.Routing;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class VerifyStateAttribute(IContext.Property log = IContext.Property.None) : InvokeAttribute(Api.Activities.Invokes.Name.SignIn.VerifyState, typeof(SignIn.VerifyStateActivity), log)
+public class VerifyStateAttribute() : InvokeAttribute(Api.Activities.Invokes.Name.SignIn.VerifyState, typeof(SignIn.VerifyStateActivity))
 {
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<SignIn.VerifyStateActivity>();
 }
