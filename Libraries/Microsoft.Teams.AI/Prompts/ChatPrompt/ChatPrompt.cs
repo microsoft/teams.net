@@ -18,6 +18,16 @@ namespace Microsoft.Teams.AI.Prompts;
 public interface IChatPrompt<TOptions> : IPrompt<TOptions>
 {
     /// <summary>
+    /// the message history
+    /// </summary>
+    public IList<IMessage> Messages { get; }
+
+    /// <summary>
+    /// the collection of registered functions
+    /// </summary>
+    public FunctionCollection Functions { get; }
+
+    /// <summary>
     /// register an error handler
     /// </summary>
     public IChatPrompt<TOptions> OnError(Action<Exception> onError);
