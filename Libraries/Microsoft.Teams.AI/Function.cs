@@ -81,6 +81,6 @@ public class Function<T> : IFunction
         Handler = handler;
     }
 
-    internal Task<object?> Invoke(T args) => Handler(args);
-    internal Task<object?> Invoke(object? args) => Handler((T?)args ?? throw new InvalidDataException());
+    public Task<object?> Invoke(T args) => Handler(args);
+    public Task<object?> Invoke(object? args) => Handler((T?)args ?? throw new InvalidDataException());
 }

@@ -68,6 +68,7 @@ public static class ServiceCollectionExtensions
             return OpenAIChatPrompt.From(model, value, (options ?? new()).WithLogger(logger));
         });
 
+        collection.AddSingleton(provider => (IChatPrompt)provider.GetRequiredService<OpenAIChatPrompt>());        
         return collection.AddSingleton<IChatPrompt<ChatCompletionOptions>, OpenAIChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
     }
 }

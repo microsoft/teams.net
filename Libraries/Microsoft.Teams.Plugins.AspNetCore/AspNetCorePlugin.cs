@@ -12,7 +12,7 @@ using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.Plugins.AspNetCore;
 
-[Plugin(name: "Microsoft.Teams.Plugins.AspNetCore", version: "0.0.0")]
+[Plugin]
 public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 {
     [Dependency]

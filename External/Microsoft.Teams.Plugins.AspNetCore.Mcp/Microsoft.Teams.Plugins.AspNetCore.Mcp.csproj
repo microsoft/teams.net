@@ -1,0 +1,38 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\Libraries\Directory.Build.props" Condition="'$(Version)' == ''" />
+
+  <PropertyGroup>
+    <PackageId>Microsoft.Teams.Plugins.AspNetCore.Mcp</PackageId>
+    <PackageDescription>Teams AspNetCore Plugin</PackageDescription>
+    <PackageProjectUrl>https://microsoft.github.io/teams.ts/2.getting-started/1.create-application.html</PackageProjectUrl>
+    <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore;mcp;modelcontextprotocol</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ModelContextProtocol" Version="0.1.0-preview.10" />
+    <PackageReference Include="ModelContextProtocol.AspNetCore" Version="0.1.0-preview.10" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.AI\Microsoft.Teams.AI.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
+  </ItemGroup>
+
+</Project>

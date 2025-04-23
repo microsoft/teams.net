@@ -19,7 +19,7 @@ using Microsoft.Teams.Plugins.AspNetCore.DevTools.Models;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.DevTools;
 
-[Plugin(name: "Microsoft.Teams.Plugins.AspNetCore.DevTools", version: "0.0.0")]
+[Plugin]
 public class DevToolsPlugin : IAspNetCorePlugin
 {
     [AllowNull]
@@ -81,6 +81,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
     public DevToolsPlugin AddPage(Page page)
     {
         _pages.Add(page);
+        Logger.Debug($"page '{page.Name}' added at '{page.Url}'");
         return this;
     }
 

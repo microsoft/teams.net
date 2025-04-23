@@ -15,6 +15,13 @@ namespace Microsoft.Teams.AI.Prompts;
 /// messages and expose chat model specific
 /// features like streaming/functions
 /// </summary>
+public interface IChatPrompt : IChatPrompt<object>;
+
+/// <summary>
+/// a prompt that can send/receive text
+/// messages and expose chat model specific
+/// features like streaming/functions
+/// </summary>
 public interface IChatPrompt<TOptions> : IPrompt<TOptions>
 {
     /// <summary>

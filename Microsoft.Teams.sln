@@ -45,6 +45,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Extensions.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Agents.A2A", "Libraries\Microsoft.Teams.Agents.A2A\Microsoft.Teams.Agents.A2A.csproj", "{982F2C7D-2993-4C0E-8527-AF55CC90D47D}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{A288BEE0-695A-BEEA-455C-649571D89326}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.AspNetCore.Mcp", "External\Microsoft.Teams.Plugins.AspNetCore.Mcp\Microsoft.Teams.Plugins.AspNetCore.Mcp.csproj", "{690AAB87-F0AF-4C22-9612-608F3DEA2C31}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -271,6 +275,18 @@ Global
 		{982F2C7D-2993-4C0E-8527-AF55CC90D47D}.Release|x64.Build.0 = Release|Any CPU
 		{982F2C7D-2993-4C0E-8527-AF55CC90D47D}.Release|x86.ActiveCfg = Release|Any CPU
 		{982F2C7D-2993-4C0E-8527-AF55CC90D47D}.Release|x86.Build.0 = Release|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|x64.Build.0 = Debug|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|x86.Build.0 = Debug|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|x64.ActiveCfg = Release|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|x64.Build.0 = Release|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|x86.ActiveCfg = Release|Any CPU
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -294,5 +310,6 @@ Global
 		{606E13CC-9F41-4739-8659-948D0D5A6DAC} = {809F86A1-1C4C-B159-0CD4-DF9D33D876CE}
 		{D05F88E8-34B8-4649-BCE6-1F6CB2938BB7} = {809F86A1-1C4C-B159-0CD4-DF9D33D876CE}
 		{982F2C7D-2993-4C0E-8527-AF55CC90D47D} = {809F86A1-1C4C-B159-0CD4-DF9D33D876CE}
+		{690AAB87-F0AF-4C22-9612-608F3DEA2C31} = {A288BEE0-695A-BEEA-455C-649571D89326}
 	EndGlobalSection
 EndGlobal
