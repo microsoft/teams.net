@@ -14,9 +14,9 @@ public static class HostApplicationBuilderExtensions
     {
         var provider = builder.Services.BuildServiceProvider();
         builder.AddTeamsPlugin<McpPlugin>();
-        
+
         var mcp = builder.Services.AddMcpServer();
-        
+
         foreach (var prompt in provider.GetServices<IChatPrompt>())
         {
             foreach (var (name, func) in prompt.Functions)
@@ -24,7 +24,7 @@ public static class HostApplicationBuilderExtensions
                 if (func is Function function)
                 {
                     mcp = mcp.WithTools([
-                        McpServerTool.Create(function.Invoke, new()
+                        McpServerTool.Create(function.Handler, new()
                         {
                             Name = func.Name,
                             Description = func.Description,

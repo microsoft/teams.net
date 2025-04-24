@@ -57,9 +57,9 @@ public class ChatModelOptions<TOptions>
     /// <summary>
     /// the handler used to invoke functions
     /// </summary>
-    internal Func<string, object?, CancellationToken, Task<object?>>? OnInvoke;
+    internal Func<FunctionCall, CancellationToken, Task<object?>>? OnInvoke;
 
-    public ChatModelOptions(Func<string, object?, CancellationToken, Task<object?>>? onInvoke = null)
+    public ChatModelOptions(Func<FunctionCall, CancellationToken, Task<object?>>? onInvoke = null)
     {
         OnInvoke = onInvoke;
     }
@@ -67,11 +67,10 @@ public class ChatModelOptions<TOptions>
     /// <summary>
     /// invoke a function
     /// </summary>
-    /// <param name="name">the function name</param>
-    /// <param name="args">the function args</param>
+    /// <param name="call">the function call</param>
     /// <returns>the function response</returns>
-    public Task<object?> Invoke(string name, object? args = null, CancellationToken cancellationToken = default)
+    public Task<object?> Invoke(FunctionCall call, CancellationToken cancellationToken = default)
     {
-        return OnInvoke == null ? Task.FromResult<object?>(null) : OnInvoke(name, args, cancellationToken);
+        return OnInvoke == null ? Task.FromResult<object?>(null) : OnInvoke(call, cancellationToken);
     }
 }

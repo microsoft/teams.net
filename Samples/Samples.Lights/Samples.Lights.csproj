@@ -9,6 +9,7 @@
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.AI.Models.OpenAI\Microsoft.Teams.AI.Models.OpenAI.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

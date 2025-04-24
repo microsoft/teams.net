@@ -15,6 +15,7 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Common.Text;
+using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Models;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.DevTools;
@@ -41,11 +42,18 @@ public class DevToolsPlugin : IAspNetCorePlugin
     private readonly ISenderPlugin _sender;
     private readonly IServiceProvider _services;
     private readonly IList<Page> _pages = [];
+    private readonly TeamsDevToolsSettings _settings;
 
     public DevToolsPlugin(AspNetCorePlugin sender, IServiceProvider provider)
     {
         _sender = sender;
         _services = provider;
+        _settings = provider.GetRequiredService<TeamsDevToolsSettings>();
+
+        foreach (var page in _settings.Pages)
+        {
+            AddPage(page);
+        }
     }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)

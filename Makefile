@@ -18,3 +18,6 @@ samples_auth_run:
 
 samples_lights_run:
 	dotnet run --project Samples/Samples.Lights
+
+samples_mcp_run:
+	dotnet run --project Samples/Samples.Mcp

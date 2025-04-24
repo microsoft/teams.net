@@ -11,19 +11,7 @@ public static class HostApplicationBuilderExtensions
     public static IHostApplicationBuilder AddTeamsDevTools(this IHostApplicationBuilder builder)
     {
         builder.Services.AddSingleton(builder.Configuration.GetTeamsDevTools());
-        builder.Services.AddTeamsPlugin(provider =>
-        {
-            var plugin = provider.GetRequiredService<DevToolsPlugin>();
-            var settings = provider.GetRequiredService<TeamsDevToolsSettings>();
-
-            foreach (var page in settings.Pages)
-            {
-                plugin.AddPage(page);
-            }
-
-            return plugin;
-        });
-
+        builder.Services.AddTeamsPlugin<DevToolsPlugin>();
         builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
         return builder;
     }

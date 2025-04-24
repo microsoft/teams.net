@@ -16,7 +16,7 @@ public static partial class MessageExtensions
             tool.FunctionName,
             tool.FunctionDescription,
             JsonSchema.FromText(parameters == string.Empty ? "{}" : parameters),
-            (_) => Task.FromResult<object?>(null)
+            () => Task.FromResult<object?>(null)
         );
     }
 

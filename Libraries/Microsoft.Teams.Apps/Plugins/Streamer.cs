@@ -54,7 +54,7 @@ public interface IStreamer
     /// <summary>
     /// close the stream
     /// </summary>
-    public Task<MessageActivity> Close();
+    public Task<MessageActivity?> Close();
 
     /// <summary>
     /// handler called on each chunk send

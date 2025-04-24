@@ -161,8 +161,8 @@ public partial class App
         var i = -1;
         async Task<object?> Next(IContext<IActivity> context)
         {
-            if (i == routes.Count - 1) return data;
             i++;
+            if (i == routes.Count) return data;
             var res = await routes[i].Invoke(context);
 
             if (res != null)
@@ -201,14 +201,9 @@ public partial class App
             var res = await Next(context);
             await stream.Close();
 
-            if (res != null)
-            {
-                var response = res is Response value ? value : new Response(System.Net.HttpStatusCode.OK, res);
-                await ActivityResponseEvent(this, response, context);
-                return response;
-            }
-
-            return new Response(System.Net.HttpStatusCode.OK);
+            var response = res is Response value ? value : new Response(System.Net.HttpStatusCode.OK, res);
+            await ActivityResponseEvent(this, response, context);
+            return response;
         }
         catch (Exception err)
         {

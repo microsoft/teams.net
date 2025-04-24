@@ -53,8 +53,9 @@ public partial class AspNetCorePlugin
             Emit(new MessageActivity(text));
         }
 
-        public async Task<MessageActivity> Close()
+        public async Task<MessageActivity?> Close()
         {
+            if (_index == 0) return null;
             if (_result != null) return _result;
             while (_id == null || _queue.Count > 0)
             {

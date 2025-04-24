@@ -148,8 +148,8 @@ public partial class OpenAIChatModel
 
                 try
                 {
-                    var args = call.Parse();
-                    var res = await options.Invoke(call.Name, args, cancellationToken);
+                    var args = call.Parse() ?? new Dictionary<string, object?>();
+                    var res = await options.Invoke(call, cancellationToken);
 
                     content = res is string asString ? asString : JsonSerializer.Serialize(res);
                     logger.Debug(content);

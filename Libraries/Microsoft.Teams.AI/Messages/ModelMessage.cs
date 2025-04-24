@@ -67,11 +67,6 @@ public class FunctionCall
         return JsonSerializer.Deserialize<Dictionary<string, object?>>(Arguments ?? "{}");
     }
 
-    public T? Parse<T>()
-    {
-        return JsonSerializer.Deserialize<T>(Arguments ?? "{}");
-    }
-
     public override string ToString()
     {
         return JsonSerializer.Serialize(this, new JsonSerializerOptions()

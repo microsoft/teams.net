@@ -1,7 +1,10 @@
+using System.Reflection;
 using System.Text.Json.Serialization;
 
 using Json.Schema;
 
+using Microsoft.Teams.AI.Annotations;
+using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.Common.Json;
 
 namespace Microsoft.Teams.AI;
@@ -35,22 +38,7 @@ public interface IFunction
 /// defines a block of code that
 /// can be called by a model
 /// </summary>
-public class Function : Function<object>
-{
-    public Function(string name, string? description, Func<object?, Task<object?>> handler) : base(name, description, handler)
-    {
-    }
-
-    public Function(string name, string? description, JsonSchema parameters, Func<object?, Task<object?>> handler) : base(name, description, parameters, handler)
-    {
-    }
-}
-
-/// <summary>
-/// defines a block of code that
-/// can be called by a model
-/// </summary>
-public class Function<T> : IFunction
+public class Function : IFunction
 {
     [JsonPropertyName("name")]
     [JsonPropertyOrder(0)]
@@ -64,16 +52,17 @@ public class Function<T> : IFunction
     [JsonPropertyOrder(2)]
     public JsonSchema? Parameters { get; set; }
 
-    internal Func<T, Task<object?>> Handler { get; set; }
+    [JsonIgnore]
+    public Delegate Handler { get; set; }
 
-    public Function(string name, string? description, Func<T, Task<object?>> handler)
+    public Function(string name, string? description, Delegate handler)
     {
         Name = name;
         Description = description;
         Handler = handler;
     }
 
-    public Function(string name, string? description, JsonSchema parameters, Func<T, Task<object?>> handler)
+    public Function(string name, string? description, JsonSchema? parameters, Delegate handler)
     {
         Name = name;
         Description = description;
@@ -81,6 +70,35 @@ public class Function<T> : IFunction
         Handler = handler;
     }
 
-    public Task<object?> Invoke(T args) => Handler(args);
-    public Task<object?> Invoke(object? args) => Handler((T?)args ?? throw new InvalidDataException());
+    internal async Task<object?> Invoke(FunctionCall call)
+    {
+        if (call.Arguments is not null && Parameters is not null)
+        {
+            var valid = Parameters.Evaluate(call.Arguments);
+
+            if (!valid.IsValid)
+            {
+                throw new ArgumentException(
+                    string.Join("\n", valid.Errors?.Select(e => $"{e.Key} => {e.Value}") ?? [])
+                );
+            }
+        }
+
+        var args = call.Parse() ?? new Dictionary<string, object?>();
+        var parameters = Handler.Method.GetParameters().Select(param =>
+        {
+            var name = param.GetCustomAttribute<ParamAttribute>()?.Name ?? param.Name ?? param.Position.ToString();
+            args.TryGetValue(name, out var value);
+            return value;
+        }).ToArray();
+
+        var res = Handler.DynamicInvoke(parameters);
+
+        if (res is Task<object?> task)
+        {
+            res = await task;
+        }
+
+        return res;
+    }
 }

@@ -208,30 +208,31 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
 
             if (functionAttribute == null) continue;
 
-            var parameters = method.GetParameters();
-
-            if (parameters.Length > 1)
+            var parameters = method.GetParameters().Select(p =>
             {
-                throw new Exception("invalid ChatPrompt Function signature, at most 1 parameter is allowed");
-            }
+                var name = p.GetCustomAttribute<ParamAttribute>()?.Name ?? p.Name ?? p.Position.ToString();
+                var schema = new JsonSchemaBuilder().FromType(p.ParameterType).Build();
+                return (name, schema);
+            });
 
+            var schema = new JsonSchemaBuilder().Properties(parameters.ToArray());
             var function = new Function(
                 functionAttribute.Name ?? method.Name,
                 functionAttribute.Description ?? functionDescriptionAttribute?.Description,
-                async (args) =>
+                parameters.Count() > 0 ? schema.Build() : null,
+                async (params object?[] args) =>
                 {
-                    var count = parameters.Count();
-                    var res = method.Invoke(value, count == 0 ? [] : [args]);
+                    var res = method.Invoke(value, args);
 
                     if (res is Task<object?> task)
-                        return await task;
+                    {
+                        res = await task;
+                    }
 
                     return res;
                 }
             );
 
-            var param = parameters.FirstOrDefault();
-            function.Parameters = param == null ? null : new JsonSchemaBuilder().FromType(param.ParameterType).Build();
             prompt.Function(function);
         }
 

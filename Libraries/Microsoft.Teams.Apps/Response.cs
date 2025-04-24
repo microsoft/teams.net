@@ -23,12 +23,7 @@ public class Response
     [JsonPropertyOrder(1)]
     public object? Body { get; set; }
 
-    public Response(HttpStatusCode status)
-    {
-        Status = status;
-    }
-
-    public Response(HttpStatusCode status, object body)
+    public Response(HttpStatusCode status, object? body = null)
     {
         Status = status;
         Body = body;
