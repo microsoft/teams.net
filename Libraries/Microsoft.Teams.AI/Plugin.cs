@@ -14,7 +14,7 @@ public interface IPlugin
     /// <param name="message">the message</param>
     /// <param name="options">the model options</param>
     /// <returns>the transformed message</returns>
-    public Task<IMessage> OnBeforeSend<TOptions>(IPrompt<TOptions> prompt, IMessage message, TOptions? options = default, CancellationToken cancellationToken = default);
+    public Task<IMessage> OnBeforeSend(IPrompt prompt, IMessage message, object? options = default, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// called after a prompt sends
@@ -24,5 +24,5 @@ public interface IPlugin
     /// <param name="message">the message</param>
     /// <param name="options">the model options</param>
     /// <returns>the transformed message</returns>
-    public Task<IMessage> OnAfterSend<TOptions>(IPrompt<TOptions> prompt, IMessage message, TOptions? options = default, CancellationToken cancellationToken = default);
+    public Task<IMessage> OnAfterSend(IPrompt prompt, IMessage message, object? options = default, CancellationToken cancellationToken = default);
 }

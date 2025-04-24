@@ -22,7 +22,7 @@ public class Page
     /// </summary>
     [JsonPropertyName("name")]
     [JsonPropertyOrder(1)]
-    public string Name { get; set; }
+    public required string Name { get; set; }
 
     /// <summary>
     /// the display name of the view
@@ -30,26 +30,12 @@ public class Page
     /// </summary>
     [JsonPropertyName("displayName")]
     [JsonPropertyOrder(2)]
-    public string DisplayName { get; set; }
+    public required string DisplayName { get; set; }
 
     /// <summary>
     /// the url of the view
     /// </summary>
     [JsonPropertyName("url")]
     [JsonPropertyOrder(3)]
-    public string Url { get; set; }
-
-    public Page(string name, string url)
-    {
-        Name = name;
-        DisplayName = name;
-        Url = url;
-    }
-
-    public Page(string name, string displayName, string url)
-    {
-        Name = name;
-        DisplayName = displayName;
-        Url = url;
-    }
+    public required string Url { get; set; }
 }

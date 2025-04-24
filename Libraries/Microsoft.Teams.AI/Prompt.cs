@@ -6,7 +6,7 @@ namespace Microsoft.Teams.AI;
 /// abstractions that differ with the prompts supported
 /// media types
 /// </summary>
-public interface IPrompt<TOptions>
+public interface IPrompt
 {
     /// <summary>
     /// the prompt name
@@ -23,5 +23,5 @@ public interface IPrompt<TOptions>
     /// </summary>
     /// <param name="message">the message to send to the model</param>
     /// <returns>the models response</returns>
-    public Task<IMessage> Send(IMessage message, TOptions? options = default, CancellationToken cancellationToken = default);
+    public Task<IMessage> Send(IMessage message, CancellationToken cancellationToken = default);
 }

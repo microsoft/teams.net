@@ -5,7 +5,7 @@ namespace Microsoft.Teams.AI.Prompts;
 
 public partial class ChatPrompt<TOptions>
 {
-    public async Task<IMessage> Send(IMessage message, TOptions? options = default, CancellationToken cancellationToken = default)
+    public async Task<IMessage> Send(IMessage message, CancellationToken cancellationToken = default)
     {
         var buffer = string.Empty;
         var prompt = Template != null ? await Template.Render() : null;
@@ -14,7 +14,6 @@ public partial class ChatPrompt<TOptions>
             Functions = Functions.List,
             Messages = Messages,
             Prompt = prompt == null ? null : new DeveloperMessage(prompt),
-            Options = options,
         }, cancellationToken);
 
         return res;

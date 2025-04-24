@@ -49,11 +49,6 @@ public class DevToolsPlugin : IAspNetCorePlugin
         _sender = sender;
         _services = provider;
         _settings = provider.GetRequiredService<TeamsDevToolsSettings>();
-
-        foreach (var page in _settings.Pages)
-        {
-            AddPage(page);
-        }
     }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
@@ -95,6 +90,11 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
     public Task OnInit(IApp app, CancellationToken cancellationToken = default)
     {
+        foreach (var page in _settings.Pages)
+        {
+            AddPage(page);
+        }
+
         return Task.Run(() =>
         {
             Logger.Warn(

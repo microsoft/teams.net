@@ -1,4 +1,6 @@
 using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 using Json.Schema;
@@ -74,10 +76,11 @@ public class Function : IFunction
     {
         if (call.Arguments is not null && Parameters is not null)
         {
-            var valid = Parameters.Evaluate(call.Arguments);
+            var valid = Parameters.Evaluate(JsonNode.Parse(call.Arguments), new() { EvaluateAs = SpecVersion.DraftNext });
 
             if (!valid.IsValid)
             {
+                Console.WriteLine(JsonSerializer.Serialize(valid));
                 throw new ArgumentException(
                     string.Join("\n", valid.Errors?.Select(e => $"{e.Key} => {e.Value}") ?? [])
                 );
@@ -85,14 +88,18 @@ public class Function : IFunction
         }
 
         var args = call.Parse() ?? new Dictionary<string, object?>();
-        var parameters = Handler.Method.GetParameters().Select(param =>
+        Console.WriteLine(JsonSerializer.Serialize(args));
+        var method = Handler.GetMethodInfo();
+        var parameters = method.GetParameters().Select(param =>
         {
             var name = param.GetCustomAttribute<ParamAttribute>()?.Name ?? param.Name ?? param.Position.ToString();
+            Console.WriteLine($"param: {name}");
             args.TryGetValue(name, out var value);
             return value;
         }).ToArray();
 
-        var res = Handler.DynamicInvoke(parameters);
+        Console.WriteLine(JsonSerializer.Serialize(parameters));
+        var res = method.Invoke(Handler.Target, [parameters]);
 
         if (res is Task<object?> task)
         {
@@ -100,5 +107,13 @@ public class Function : IFunction
         }
 
         return res;
+    }
+
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(this, new JsonSerializerOptions()
+        {
+            WriteIndented = true
+        });
     }
 }

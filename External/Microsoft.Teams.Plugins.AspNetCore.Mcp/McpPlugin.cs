@@ -10,8 +10,6 @@ using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools;
 
-using ModelContextProtocol.Server;
-
 namespace Microsoft.Teams.Plugins.AspNetCore.Mcp;
 
 [Plugin(
@@ -30,18 +28,17 @@ public class McpPlugin : IAspNetCorePlugin
 
     private readonly IServiceProvider _services;
     private readonly DevToolsPlugin? _devtools;
-    private readonly IMcpServer _server;
 
     public McpPlugin(IServiceProvider provider)
     {
         _services = provider;
         _devtools = provider.GetService<DevToolsPlugin>();
-        _server = provider.GetRequiredService<IMcpServer>();
     }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {
-        return builder;
+        builder.UseRouting();
+        return builder.UseEndpoints(endpoints => endpoints.MapMcp("mcp"));
     }
 
     public Task OnInit(IApp app, CancellationToken cancellationToken = default)

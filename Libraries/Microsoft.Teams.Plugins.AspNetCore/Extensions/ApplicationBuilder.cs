@@ -25,10 +25,7 @@ public static class ApplicationBuilderExtensions
         if (routing)
         {
             builder.UseRouting();
-            builder.UseEndpoints(endpoints =>
-            {
-                endpoints.MapControllers();
-            });
+            builder.UseEndpoints(endpoints => endpoints.MapControllers());
         }
 
         return app;

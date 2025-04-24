@@ -15,14 +15,7 @@ namespace Microsoft.Teams.AI.Prompts;
 /// messages and expose chat model specific
 /// features like streaming/functions
 /// </summary>
-public interface IChatPrompt : IChatPrompt<object>;
-
-/// <summary>
-/// a prompt that can send/receive text
-/// messages and expose chat model specific
-/// features like streaming/functions
-/// </summary>
-public interface IChatPrompt<TOptions> : IPrompt<TOptions>
+public interface IChatPrompt : IPrompt
 {
     /// <summary>
     /// the message history
@@ -33,7 +26,15 @@ public interface IChatPrompt<TOptions> : IPrompt<TOptions>
     /// the collection of registered functions
     /// </summary>
     public FunctionCollection Functions { get; }
+}
 
+/// <summary>
+/// a prompt that can send/receive text
+/// messages and expose chat model specific
+/// features like streaming/functions
+/// </summary>
+public interface IChatPrompt<TOptions> : IChatPrompt
+{
     /// <summary>
     /// register an error handler
     /// </summary>
@@ -212,10 +213,15 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
             {
                 var name = p.GetCustomAttribute<ParamAttribute>()?.Name ?? p.Name ?? p.Position.ToString();
                 var schema = new JsonSchemaBuilder().FromType(p.ParameterType).Build();
-                return (name, schema);
+                var required = !p.IsOptional;
+                return (name, schema, required);
             });
 
-            var schema = new JsonSchemaBuilder().Properties(parameters.ToArray());
+            var schema = new JsonSchemaBuilder()
+                .Type(SchemaValueType.Object)
+                .Properties(parameters.Select(item => (item.name, item.schema)).ToArray())
+                .Required(parameters.Where(item => item.required).Select(item => item.name));
+
             var function = new Function(
                 functionAttribute.Name ?? method.Name,
                 functionAttribute.Description ?? functionDescriptionAttribute?.Description,

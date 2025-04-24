@@ -11,18 +11,23 @@ public partial class ChatPrompt<TOptions>
     public ChatPrompt<TOptions> Function(IFunction function)
     {
         Functions.Add(function);
+        Logger.Debug($"registered function '{function.Name}'", function.ToString());
         return this;
     }
 
     public ChatPrompt<TOptions> Function(string name, string? description, Delegate handler)
     {
-        Functions.Add(new Function(name, description, handler));
+        var func = new Function(name, description, handler);
+        Functions.Add(func);
+        Logger.Debug($"registered function '{func.Name}'", func.ToString());
         return this;
     }
 
     public ChatPrompt<TOptions> Function(string name, string? description, JsonSchema parameters, Delegate handler)
     {
-        Functions.Add(new Function(name, description, parameters, handler));
+        var func = new Function(name, description, parameters, handler);
+        Functions.Add(func);
+        Logger.Debug($"registered function '{func.Name}'", func.ToString());
         return this;
     }
 
