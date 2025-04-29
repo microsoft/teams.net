@@ -1,5 +1,5 @@
 using System.Text.Json;
-namespace Microsoft.Teams.Cards;
+namespace Microsoft.Teams.Cards.Tests.Inputs;
 
 
 public class TimeInputTests
@@ -25,6 +25,7 @@ public class TimeInputTests
 
         Assert.Equal(exectedObjectJson, json);
     }
+
     [Theory]
     [InlineData("true")]
     [InlineData("false")]
