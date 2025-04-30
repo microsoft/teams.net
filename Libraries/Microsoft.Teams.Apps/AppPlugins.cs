@@ -38,7 +38,12 @@ public partial class App
 
         // broadcast plugin events
         plugin.ErrorEvent += (sender, exception) => ErrorEvent(this, sender, exception, null);
-        plugin.ActivityEvent += OnActivityEvent;
+
+        if (plugin is ISenderPlugin sender)
+        {
+            sender.ActivityEvent += OnActivityEvent;
+        }
+
         Plugins.Add(plugin);
         Container.Register(attr.Name, new ValueProvider(plugin));
         Container.Register(plugin.GetType().Name, new ValueProvider(plugin));

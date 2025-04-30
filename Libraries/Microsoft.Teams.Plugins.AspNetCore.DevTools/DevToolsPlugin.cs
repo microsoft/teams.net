@@ -32,7 +32,6 @@ public class DevToolsPlugin : IAspNetCorePlugin
     public string? AppName { get; set; }
 
     public event IPlugin.ErrorEventHandler ErrorEvent = (_, _) => Task.Run(() => { });
-    public event IPlugin.ActivityEventHandler ActivityEvent = (_, _, _, _) => Task.FromResult(new Response(System.Net.HttpStatusCode.OK));
 
     internal MetaData MetaData => new() { Id = AppId, Name = AppName, Pages = _pages };
     internal readonly WebSocketCollection Sockets = [];

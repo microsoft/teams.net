@@ -4,7 +4,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
@@ -24,7 +23,6 @@ public class McpPlugin : IAspNetCorePlugin
     public ILogger Logger { get; set; }
 
     public event IPlugin.ErrorEventHandler ErrorEvent = (_, _) => Task.Run(() => { });
-    public event IPlugin.ActivityEventHandler ActivityEvent = (_, _, _, _) => Task.FromResult(new Response(System.Net.HttpStatusCode.OK));
 
     private readonly IServiceProvider _services;
     private readonly DevToolsPlugin? _devtools;
@@ -74,10 +72,5 @@ public class McpPlugin : IAspNetCorePlugin
     public Task OnActivitySent(IApp app, ISenderPlugin sender, IActivity activity, ConversationReference reference, CancellationToken cancellationToken = default)
     {
         return Task.Run(() => Logger.Debug("OnActivitySent"));
-    }
-
-    public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)
-    {
-        throw new NotImplementedException();
     }
 }

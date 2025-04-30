@@ -33,7 +33,7 @@ public partial class AspNetCorePlugin
         public Stream()
         {
             Func<Task> flush = Flush;
-            _flush = flush.Debounce(1);
+            _flush = flush.Debounce(100);
         }
 
         public void Emit(MessageActivity activity)

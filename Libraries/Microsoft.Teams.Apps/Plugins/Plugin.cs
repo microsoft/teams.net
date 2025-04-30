@@ -1,6 +1,5 @@
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
 
 namespace Microsoft.Teams.Apps.Plugins;
 
@@ -14,11 +13,6 @@ public interface IPlugin
     /// emitted when the plugin encounters an error
     /// </summary>
     public event ErrorEventHandler ErrorEvent;
-
-    /// <summary>
-    /// emitted when the plugin receives an activity
-    /// </summary>
-    public event ActivityEventHandler ActivityEvent;
 
     /// <summary>
     /// lifecycle method called by the `App` once during initialization
@@ -55,11 +49,5 @@ public interface IPlugin
     /// </summary>
     public Task OnActivityResponse(IApp app, Response? response, IContext<IActivity> context);
 
-    /// <summary>
-    /// process an activity
-    /// </summary>
-    public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default);
-
     public delegate Task ErrorEventHandler(IPlugin sender, Exception exception);
-    public delegate Task<Response> ActivityEventHandler(ISenderPlugin sender, IToken token, IActivity activity, CancellationToken cancellationToken = default);
 }

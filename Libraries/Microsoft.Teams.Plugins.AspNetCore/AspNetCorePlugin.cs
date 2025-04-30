@@ -25,7 +25,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
     public IToken? BotToken { get; set; }
 
     public event IPlugin.ErrorEventHandler ErrorEvent = (_, _) => Task.Run(() => { });
-    public event IPlugin.ActivityEventHandler ActivityEvent = (_, _, _, _) => Task.FromResult(new Response(System.Net.HttpStatusCode.OK));
+    public event ISenderPlugin.ActivityEventHandler ActivityEvent = (_, _, _, _) => Task.FromResult(new Response(System.Net.HttpStatusCode.OK));
 
     private TeamsContext Context => _services.GetRequiredService<TeamsContext>();
     private readonly IServiceProvider _services;
