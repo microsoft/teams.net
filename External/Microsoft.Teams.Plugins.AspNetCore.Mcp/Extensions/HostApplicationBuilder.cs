@@ -56,7 +56,7 @@ public static class HostApplicationBuilderExtensions
             try
             {
                 if (context.Params is null) throw new InvalidDataException();
-            
+
                 var parts = context.Params.Name.Split(".", 2);
                 var prompt = prompts.Where(p => p.Name == parts[0]).FirstOrDefault() ?? throw new InvalidOperationException();
                 var method = prompt.GetType().GetMethod("Invoke") ?? throw new Exception("invoke method not found");

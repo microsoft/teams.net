@@ -1,21 +1,40 @@
+using System.Reflection;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Events;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.DevTools.Controllers;
 
 [ApiController]
-public class SocketController : ControllerBase
+public class DevToolsController : ControllerBase
 {
     private readonly DevToolsPlugin _plugin;
+    private readonly IFileProvider _files;
 
-    public SocketController(DevToolsPlugin plugin)
+    public DevToolsController(DevToolsPlugin plugin)
     {
         _plugin = plugin;
+        _files = new PhysicalFileProvider(Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "web"));
+    }
+
+    [HttpGet("/devtools")]
+    [HttpGet("/devtools/{path}")]
+    public IResult Get(string? path)
+    {
+        var file = _files.GetFileInfo(path ?? "index.html");
+
+        if (!file.Exists)
+        {
+            return Get("index.html");
+        }
+
+        return Results.File(file.CreateReadStream(), contentType: "text/html");
     }
 
     [HttpGet("/devtools/sockets")]
-    public async Task OnSocket(CancellationToken cancellationToken)
+    public async Task GetSocket(CancellationToken cancellationToken)
     {
         if (!HttpContext.WebSockets.IsWebSocketRequest)
         {

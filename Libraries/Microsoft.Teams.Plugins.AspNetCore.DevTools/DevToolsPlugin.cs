@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
 using System.Text;
 
 using Microsoft.AspNetCore.Builder;
@@ -7,7 +6,6 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -56,13 +54,6 @@ public class DevToolsPlugin : IAspNetCorePlugin
         builder.UseWebSockets(new WebSocketOptions()
         {
             AllowedOrigins = { "*" }
-        });
-
-        builder.UseStaticFiles(new StaticFileOptions()
-        {
-            FileProvider = new PhysicalFileProvider(Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "web")),
-            ServeUnknownFileTypes = true,
-            RequestPath = "/devtools"
         });
 
         builder.Use(async (context, next) =>
@@ -115,7 +106,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
         foreach (var address in addresses)
         {
-            Logger.Info($"Available at {address}/devtools/index.html");
+            Logger.Info($"Available at {address}/devtools");
         }
 
         return Task.Run(() => Logger.Debug("OnStart"));
