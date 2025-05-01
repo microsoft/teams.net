@@ -5,7 +5,8 @@ namespace Microsoft.Teams.Common.Extensions;
 
 public static class MethodInfoExtensions
 {
-    public static Delegate CreateDelegate(this MethodInfo methodInfo, object target) {
+    public static Delegate CreateDelegate(this MethodInfo methodInfo, object target)
+    {
         Func<Type[], Type> getType;
         var isAction = methodInfo.ReturnType.Equals(typeof(void));
         var types = methodInfo.GetParameters().Select(p => p.ParameterType);

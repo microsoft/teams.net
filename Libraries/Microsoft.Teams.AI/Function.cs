@@ -93,7 +93,7 @@ public class Function : IFunction
         {
             var name = param.GetCustomAttribute<ParamAttribute>()?.Name ?? param.Name ?? param.Position.ToString();
             args.TryGetValue(name, out var value);
-            
+
             if (value is JsonElement element)
             {
                 return element.Deserialize(param.ParameterType);

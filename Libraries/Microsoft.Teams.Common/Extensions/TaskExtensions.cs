@@ -9,7 +9,7 @@ public static class TaskExtensions
             return await task.ConfigureAwait(false);
         }
         catch (Exception ex)
-        {                
+        {
             if (max > 0)
             {
                 await Task.Delay(delay);

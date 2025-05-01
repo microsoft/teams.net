@@ -83,7 +83,7 @@ public partial class AspNetCorePlugin
         {
             if (_queue.Count == 0) return Task.CompletedTask;
 
-            lock(_lock)
+            lock (_lock)
             {
                 if (_queue.Count == 0) return Task.CompletedTask;
                 var i = 0;
