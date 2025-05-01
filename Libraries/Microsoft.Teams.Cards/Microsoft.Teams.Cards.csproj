@@ -5,7 +5,7 @@
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Cards</PackageId>
     <PackageDescription>An Adaptive Cards implementation with support for Teams-specific Adaptive Card elements.</PackageDescription>
-    <PackageProjectUrl>https://microsoft.github.io/teams.ts/2.getting-started/1.create-application.html</PackageProjectUrl>
+    <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
     <PackageTags>microsoft;teams;msteams;copilot;ai;adaptive-cards</PackageTags>
   </PropertyGroup>
 

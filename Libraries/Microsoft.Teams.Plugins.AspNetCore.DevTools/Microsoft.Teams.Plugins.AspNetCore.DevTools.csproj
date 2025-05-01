@@ -5,7 +5,7 @@
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Plugins.AspNetCore.DevTools</PackageId>
     <PackageDescription>Teams AspNetCore DevTools Plugin</PackageDescription>
-    <PackageProjectUrl>https://microsoft.github.io/teams.ts/2.getting-started/1.create-application.html</PackageProjectUrl>
+    <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
     <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore;devtools</PackageTags>
   </PropertyGroup>
 
