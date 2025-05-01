@@ -1,0 +1,18 @@
+{
+  "type": "Input.ChoiceSet",
+  "choices": [
+    {
+      "title": "1",
+      "value": "1"
+    },
+    {
+      "title": "2",
+      "value": "2"
+    }
+  ],
+  "choices.data": {
+    "dataset": "testing"
+  },
+  "isMultiSelect": true,
+  "wrap": true
+}
