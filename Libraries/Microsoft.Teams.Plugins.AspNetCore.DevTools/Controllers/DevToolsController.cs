@@ -20,10 +20,13 @@ public class DevToolsController : ControllerBase
     }
 
     [HttpGet("/devtools")]
-    [HttpGet("/devtools/{path}")]
+    [HttpGet("/devtools/{*path}")]
     public IResult Get(string? path)
     {
-        var file = _files.GetFileInfo(path ?? "index.html");
+        path ??= "index.html";
+
+        Console.WriteLine(path);
+        var file = _files.GetFileInfo(path);
 
         if (!file.Exists)
         {

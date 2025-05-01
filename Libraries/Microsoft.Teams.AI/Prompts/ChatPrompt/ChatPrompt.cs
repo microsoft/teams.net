@@ -6,6 +6,7 @@ using Json.Schema.Generation;
 using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.AI.Models;
+using Microsoft.Teams.Common.Extensions;
 using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.AI.Prompts;
@@ -226,17 +227,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
                 functionAttribute.Name ?? method.Name,
                 functionAttribute.Description ?? functionDescriptionAttribute?.Description,
                 parameters.Count() > 0 ? schema.Build() : null,
-                async (params object?[] args) =>
-                {
-                    var res = method.Invoke(value, args);
-
-                    if (res is Task<object?> task)
-                    {
-                        res = await task;
-                    }
-
-                    return res;
-                }
+                method.CreateDelegate(value)
             );
 
             prompt.Function(function);

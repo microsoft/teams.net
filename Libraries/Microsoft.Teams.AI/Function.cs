@@ -88,22 +88,26 @@ public class Function : IFunction
         }
 
         var args = call.Parse() ?? new Dictionary<string, object?>();
-        Console.WriteLine(JsonSerializer.Serialize(args));
         var method = Handler.GetMethodInfo();
         var parameters = method.GetParameters().Select(param =>
         {
             var name = param.GetCustomAttribute<ParamAttribute>()?.Name ?? param.Name ?? param.Position.ToString();
-            Console.WriteLine($"param: {name}");
             args.TryGetValue(name, out var value);
+            
+            if (value is JsonElement element)
+            {
+                return element.Deserialize(param.ParameterType);
+            }
+
             return value;
         }).ToArray();
 
-        Console.WriteLine(JsonSerializer.Serialize(parameters));
-        var res = method.Invoke(Handler.Target, [parameters]);
+        var res = method.Invoke(Handler.Target, parameters);
 
-        if (res is Task<object?> task)
+        if (res is Task task)
         {
-            res = await task;
+            await task.ConfigureAwait(false);
+            res = ((dynamic)task).Result;
         }
 
         return res;

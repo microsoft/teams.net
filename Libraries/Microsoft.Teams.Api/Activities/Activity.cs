@@ -314,7 +314,7 @@ public partial class Activity : IActivity
     /// </summary>
     public virtual Activity AddFeedback(bool value = true)
     {
-        ChannelData ??= new ChannelData();
+        ChannelData ??= new();
         ChannelData.FeedbackLoopEnabled = value;
         return this;
     }

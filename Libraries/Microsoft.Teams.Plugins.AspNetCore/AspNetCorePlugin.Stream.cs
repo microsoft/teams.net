@@ -17,7 +17,7 @@ public partial class AspNetCorePlugin
         public required Func<IActivity, Task<IActivity>> Send { get; set; }
         public event IStreamer.OnChunkHandler OnChunk = (_) => { };
 
-        protected int _index = 0;
+        protected int _index = 1;
         protected string? _id;
         protected string _text = string.Empty;
         protected ChannelData _channelData = new();
@@ -25,27 +25,21 @@ public partial class AspNetCorePlugin
         protected List<IEntity> _entities = [];
         protected Queue<IActivity> _queue = [];
 
-        private readonly System.Action _flush;
         private DateTime? _closedAt;
         private int _count = 0;
         private MessageActivity? _result;
-
-        public Stream()
-        {
-            Func<Task> flush = Flush;
-            _flush = flush.Debounce(100);
-        }
+        private readonly Lock _lock = new();
 
         public void Emit(MessageActivity activity)
         {
             _queue.Enqueue(activity);
-            _flush();
+            Task.Run(Flush);
         }
 
         public void Emit(TypingActivity activity)
         {
             _queue.Enqueue(activity);
-            _flush();
+            Task.Run(Flush);
         }
 
         public void Emit(string text)
@@ -59,7 +53,6 @@ public partial class AspNetCorePlugin
             if (_result != null) return _result;
             while (_id == null || _queue.Count > 0)
             {
-                _flush();
                 await Task.Delay(50);
             }
 
@@ -76,7 +69,7 @@ public partial class AspNetCorePlugin
 
             _result = activity;
             _closedAt = DateTime.Now;
-            _index = 0;
+            _index = 1;
             _id = null;
             _text = string.Empty;
             _attachments = [];
@@ -86,43 +79,50 @@ public partial class AspNetCorePlugin
             return (MessageActivity)res;
         }
 
-        protected async Task Flush()
+        protected Task Flush()
         {
-            if (_queue.Count == 0) return;
+            if (_queue.Count == 0) return Task.CompletedTask;
 
-            var i = 0;
-
-            while (i <= 10 && _queue.TryDequeue(out var activity))
+            lock(_lock)
             {
-                if (activity is MessageActivity message)
+                if (_queue.Count == 0) return Task.CompletedTask;
+                var i = 0;
+
+                while (i <= 10 && _queue.TryDequeue(out var activity))
                 {
-                    _text += message.Text;
-                    _attachments.AddRange(message.Attachments ?? []);
-                    _entities.AddRange(message.Entities ?? []);
+                    if (activity is MessageActivity message)
+                    {
+                        _text += message.Text;
+                        _attachments.AddRange(message.Attachments ?? []);
+                        _entities.AddRange(message.Entities ?? []);
+                    }
+
+                    if (activity.ChannelData != null)
+                    {
+                        _channelData = _channelData.Merge(activity.ChannelData);
+                    }
+
+                    i++;
+                    _count++;
                 }
 
-                if (activity.ChannelData != null)
+                if (i == 0) return Task.CompletedTask;
+
+                var toSend = new TypingActivity(_text);
+
+                if (_id != null)
                 {
-                    _channelData = _channelData.Merge(activity.ChannelData);
+                    toSend.WithId(_id);
                 }
 
-                i++;
-                _count++;
+                toSend.AddStreamUpdate(_index);
+                var res = Send(toSend).Retry(delay: 10).ConfigureAwait(false).GetAwaiter().GetResult();
+                OnChunk(res);
+                _id ??= res.Id;
+                _index++;
             }
 
-            if (i == 0) return;
-
-            _index++;
-            var toSend = new TypingActivity(_text).AddStreamUpdate(_index);
-
-            if (_id != null)
-            {
-                toSend.WithId(_id);
-            }
-
-            var res = await Send(toSend).Retry(delay: 50);
-            OnChunk(res);
-            _id ??= res.Id;
+            return Task.CompletedTask;
         }
     }
 }

@@ -45,7 +45,7 @@ public partial class OpenAIChatModel
             var result = await ChatClient.CompleteChatAsync(
                 chatMessages,
                 requestOptions,
-                cancellationToken
+                CancellationToken.None
             );
 
             var modelMessage = ChatMessage.CreateAssistantMessage(result.Value).ToTeams();
@@ -86,7 +86,7 @@ public partial class OpenAIChatModel
                 requestOptions.Tools.Add(tool);
             }
 
-            var res = ChatClient.CompleteChatStreamingAsync(chatMessages, requestOptions, cancellationToken);
+            var res = ChatClient.CompleteChatStreamingAsync(chatMessages, requestOptions, CancellationToken.None);
             var content = new StringBuilder();
             var toolCalls = new StreamingChatToolCallsBuilder();
 

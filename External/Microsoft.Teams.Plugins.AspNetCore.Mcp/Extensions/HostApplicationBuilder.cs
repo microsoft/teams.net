@@ -69,8 +69,11 @@ public static class HostApplicationBuilderExtensions
 
                 var res = method.Invoke(prompt, [call, cancellationToken]);
 
-                if (res is Task<object?> task)
-                    res = await task;
+                if (res is Task task)
+                {
+                    await task.ConfigureAwait(false);
+                    res = ((dynamic)task).Result;
+                }
 
                 return new()
                 {

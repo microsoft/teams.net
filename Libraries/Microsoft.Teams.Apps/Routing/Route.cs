@@ -59,9 +59,10 @@ public class AttributeRoute : IRoute
 
         var res = Method.Invoke(null, args?.ToArray());
 
-        if (res is Task<object?> task)
+        if (res is Task task)
         {
-            res = await task;
+            await task.ConfigureAwait(false);
+            res = ((dynamic)task).Result;
         }
 
         return res;
