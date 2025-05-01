@@ -1,0 +1,7 @@
+{
+  "type": "message",
+  "additionalType": [
+    "test",
+    "valid"
+  ]
+}
