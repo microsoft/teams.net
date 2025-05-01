@@ -14,10 +14,11 @@
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
-    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
-    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
+
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
   </ItemGroup>
 
 </Project>

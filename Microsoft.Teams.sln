@@ -21,7 +21,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Samples", "Samples", "{5D20
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Echo", "Samples\Samples.Echo\Samples.Echo.csproj", "{B7230B40-AE25-435A-87F6-0472826B0C70}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.AspNetCore", "Libraries\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj", "{638D92D5-351E-443C-B9B0-4FC2E8F86702}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.AspNetCore", "Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj", "{638D92D5-351E-443C-B9B0-4FC2E8F86702}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Cards", "Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj", "{C4D77769-EEC3-429D-B9B3-0C3B6B32FAA5}"
 EndProject
@@ -37,7 +37,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Extensions.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Extensions.Configuration", "Libraries\Microsoft.Teams.Extensions.Configuration\Microsoft.Teams.Extensions.Configuration.csproj", "{0A896738-C747-49C2-AF41-A5843F7BBA4F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.AspNetCore.DevTools", "Libraries\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj", "{15D7A915-DD11-40BF-811B-C97B2C963785}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.AspNetCore.DevTools", "Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj", "{15D7A915-DD11-40BF-811B-C97B2C963785}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Agents", "Libraries\Microsoft.Teams.Agents\Microsoft.Teams.Agents.csproj", "{606E13CC-9F41-4739-8659-948D0D5A6DAC}"
 EndProject
@@ -45,11 +45,13 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Extensions.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Agents.A2A", "Libraries\Microsoft.Teams.Agents.A2A\Microsoft.Teams.Agents.A2A.csproj", "{982F2C7D-2993-4C0E-8527-AF55CC90D47D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "External", "External", "{A288BEE0-695A-BEEA-455C-649571D89326}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.AspNetCore.Mcp", "External\Microsoft.Teams.Plugins.AspNetCore.Mcp\Microsoft.Teams.Plugins.AspNetCore.Mcp.csproj", "{690AAB87-F0AF-4C22-9612-608F3DEA2C31}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Mcp", "Samples\Samples.Mcp\Samples.Mcp.csproj", "{8E6AA215-43B1-4519-A554-A6642586E7A6}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.Teams.Plugins", "Microsoft.Teams.Plugins", "{F2D7E877-38D6-8C91-7D90-99648DD298BA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.Teams.Plugins.External", "Microsoft.Teams.Plugins.External", "{42F19D46-1D9C-DE55-864B-477603E3CF94}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.External.Mcp", "Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.External\Microsoft.Teams.Plugins.External.Mcp\Microsoft.Teams.Plugins.External.Mcp.csproj", "{0E24173B-D328-4721-B0C7-D6058E10AB9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -277,18 +279,6 @@ Global
 		{982F2C7D-2993-4C0E-8527-AF55CC90D47D}.Release|x64.Build.0 = Release|Any CPU
 		{982F2C7D-2993-4C0E-8527-AF55CC90D47D}.Release|x86.ActiveCfg = Release|Any CPU
 		{982F2C7D-2993-4C0E-8527-AF55CC90D47D}.Release|x86.Build.0 = Release|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|x64.Build.0 = Debug|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Debug|x86.Build.0 = Debug|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|Any CPU.Build.0 = Release|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|x64.ActiveCfg = Release|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|x64.Build.0 = Release|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|x86.ActiveCfg = Release|Any CPU
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31}.Release|x86.Build.0 = Release|Any CPU
 		{8E6AA215-43B1-4519-A554-A6642586E7A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8E6AA215-43B1-4519-A554-A6642586E7A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8E6AA215-43B1-4519-A554-A6642586E7A6}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -301,6 +291,18 @@ Global
 		{8E6AA215-43B1-4519-A554-A6642586E7A6}.Release|x64.Build.0 = Release|Any CPU
 		{8E6AA215-43B1-4519-A554-A6642586E7A6}.Release|x86.ActiveCfg = Release|Any CPU
 		{8E6AA215-43B1-4519-A554-A6642586E7A6}.Release|x86.Build.0 = Release|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Debug|x64.Build.0 = Debug|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Debug|x86.Build.0 = Debug|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Release|x64.ActiveCfg = Release|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Release|x64.Build.0 = Release|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Release|x86.ActiveCfg = Release|Any CPU
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -324,7 +326,9 @@ Global
 		{606E13CC-9F41-4739-8659-948D0D5A6DAC} = {809F86A1-1C4C-B159-0CD4-DF9D33D876CE}
 		{D05F88E8-34B8-4649-BCE6-1F6CB2938BB7} = {809F86A1-1C4C-B159-0CD4-DF9D33D876CE}
 		{982F2C7D-2993-4C0E-8527-AF55CC90D47D} = {809F86A1-1C4C-B159-0CD4-DF9D33D876CE}
-		{690AAB87-F0AF-4C22-9612-608F3DEA2C31} = {A288BEE0-695A-BEEA-455C-649571D89326}
 		{8E6AA215-43B1-4519-A554-A6642586E7A6} = {5D20AA90-6969-D8BD-9DCD-8634F4692FDA}
+		{F2D7E877-38D6-8C91-7D90-99648DD298BA} = {809F86A1-1C4C-B159-0CD4-DF9D33D876CE}
+		{42F19D46-1D9C-DE55-864B-477603E3CF94} = {F2D7E877-38D6-8C91-7D90-99648DD298BA}
+		{0E24173B-D328-4721-B0C7-D6058E10AB9E} = {42F19D46-1D9C-DE55-864B-477603E3CF94}
 	EndGlobalSection
 EndGlobal

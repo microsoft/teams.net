@@ -2,7 +2,7 @@ using Microsoft.Teams.AI.Models.OpenAI.Extensions;
 using Microsoft.Teams.Apps.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
-using Microsoft.Teams.Plugins.AspNetCore.Mcp.Extensions;
+using Microsoft.Teams.Plugins.External.Mcp.Extensions;
 
 using Samples.Mcp.Prompts;
 

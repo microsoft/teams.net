@@ -1,15 +1,14 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
-using Microsoft.Teams.Plugins.AspNetCore.DevTools;
+using Microsoft.Teams.Plugins.AspNetCore;
 
-namespace Microsoft.Teams.Plugins.AspNetCore.Mcp;
+namespace Microsoft.Teams.Plugins.External.Mcp;
 
 [Plugin(
     "High-level MCP server that provides a simpler API for working with resources, tools, and prompts.",
@@ -23,15 +22,6 @@ public class McpPlugin : IAspNetCorePlugin
     public ILogger Logger { get; set; }
 
     public event IPlugin.ErrorEventHandler ErrorEvent = (_, _) => Task.Run(() => { });
-
-    private readonly IServiceProvider _services;
-    private readonly DevToolsPlugin? _devtools;
-
-    public McpPlugin(IServiceProvider provider)
-    {
-        _services = provider;
-        _devtools = provider.GetService<DevToolsPlugin>();
-    }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {

@@ -11,7 +11,7 @@ using Microsoft.Teams.Apps.Extensions;
 using ModelContextProtocol.Protocol.Types;
 using ModelContextProtocol.Server;
 
-namespace Microsoft.Teams.Plugins.AspNetCore.Mcp.Extensions;
+namespace Microsoft.Teams.Plugins.External.Mcp.Extensions;
 
 public static class HostApplicationBuilderExtensions
 {
