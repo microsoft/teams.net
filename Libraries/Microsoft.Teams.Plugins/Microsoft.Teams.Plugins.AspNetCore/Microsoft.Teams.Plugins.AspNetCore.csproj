@@ -26,9 +26,9 @@
     <ProjectReference Include="..\..\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
     <ProjectReference Include="..\..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
     
-    <ProjectReference Include="..\..\Microsoft.Teams.Extensions.Logging\Microsoft.Teams.Extensions.Logging.csproj" />
-    <ProjectReference Include="..\..\Microsoft.Teams.Extensions.Configuration\Microsoft.Teams.Extensions.Configuration.csproj" />
-    <ProjectReference Include="..\..\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Logging\Microsoft.Teams.Extensions.Logging.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Configuration\Microsoft.Teams.Extensions.Configuration.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
   </ItemGroup>
 
 </Project>

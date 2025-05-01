@@ -13,7 +13,7 @@
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.AI\Microsoft.Teams.AI.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.AI.Models.OpenAI\Microsoft.Teams.AI.Models.OpenAI.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
-    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
 
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />

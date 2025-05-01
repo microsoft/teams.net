@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\Directory.Build.props" Condition="'$(Version)' == ''" />
+  <Import Project="..\..\Directory.Build.props" Condition="'$(Version)' == ''" />
 
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Extensions.Logging</PackageId>
@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
   </ItemGroup>
 
 </Project>
