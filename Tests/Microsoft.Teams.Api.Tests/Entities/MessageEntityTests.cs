@@ -73,27 +73,27 @@ public class MessageEntityTests
     public void MessageEntity_JsonDeserialize()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/MessageEntity.json");
-        var activity = JsonSerializer.Deserialize<MessageEntity>(json);
+        var entity = JsonSerializer.Deserialize<MessageEntity>(json);
         var expected = new MessageEntity()
         {
             AdditionalType = ["test", "valid"]
         };
 
-        Assert.Equivalent(expected, activity);
+        Assert.Equivalent(expected, entity);
     }
 
     [Fact]
     public void MessageEntity_JsonDeserialize_Derived()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/MessageEntity.json");
-        var activity = JsonSerializer.Deserialize<Entity>(json);
+        var entity = JsonSerializer.Deserialize<Entity>(json);
       
         var expected = new MessageEntity()
         {
             AdditionalType = ["test", "valid"]
         };
 
-        Assert.Equivalent(expected, activity);
+        Assert.Equivalent(expected, entity);
     }
 
 

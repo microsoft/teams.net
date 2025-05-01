@@ -78,7 +78,7 @@ public class AtMentionEntityTests
     public void AtMentionEntity_JsonDeserialize()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/AtMentionEntity.json");
-        var activity = JsonSerializer.Deserialize<MentionEntity>(json);
+        var entity = JsonSerializer.Deserialize<MentionEntity>(json);
         var account = new Account() { Id = "accountId", Name = "acctName" };
         var expected = new MentionEntity()
         {
@@ -86,14 +86,14 @@ public class AtMentionEntityTests
             Text = $"<at>{account.Name}</at>"
         };
 
-        Assert.Equivalent(expected, activity);
+        Assert.Equivalent(expected, entity);
     }
 
     [Fact]
     public void AtMentionEntity_JsonDeserialize_Derived()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/AtMentionEntity.json");
-        var activity = JsonSerializer.Deserialize<Entity>(json);
+        var entity = JsonSerializer.Deserialize<Entity>(json);
         var account = new Account() { Id = "accountId", Name = "acctName" };
         var expected = new MentionEntity()
         {
@@ -101,7 +101,7 @@ public class AtMentionEntityTests
             Text = $"<at>{account.Name}</at>"
         };
 
-        Assert.Equivalent(expected, activity);
+        Assert.Equivalent(expected, entity);
     }
 
 
