@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
@@ -23,12 +25,12 @@ public partial class AspNetCorePlugin
         protected ChannelData _channelData = new();
         protected List<Attachment> _attachments = [];
         protected List<IEntity> _entities = [];
-        protected Queue<IActivity> _queue = [];
+        protected ConcurrentQueue<IActivity> _queue = [];
 
         private DateTime? _closedAt;
         private int _count = 0;
         private MessageActivity? _result;
-        private readonly Lock _lock = new();
+        private readonly SemaphoreSlim _lock = new(1, 1);
 
         public void Emit(MessageActivity activity)
         {
@@ -79,13 +81,14 @@ public partial class AspNetCorePlugin
             return (MessageActivity)res;
         }
 
-        protected Task Flush()
+        protected async Task Flush()
         {
-            if (_queue.Count == 0) return Task.CompletedTask;
+            if (_queue.Count == 0) return;
 
-            lock (_lock)
+            await _lock.WaitAsync();
+
+            try
             {
-                if (_queue.Count == 0) return Task.CompletedTask;
                 var i = 0;
 
                 while (i <= 10 && _queue.TryDequeue(out var activity))
@@ -106,7 +109,7 @@ public partial class AspNetCorePlugin
                     _count++;
                 }
 
-                if (i == 0) return Task.CompletedTask;
+                if (i == 0) return;
 
                 var toSend = new TypingActivity(_text);
 
@@ -116,13 +119,15 @@ public partial class AspNetCorePlugin
                 }
 
                 toSend.AddStreamUpdate(_index);
-                var res = Send(toSend).Retry(delay: 10).ConfigureAwait(false).GetAwaiter().GetResult();
+                var res = await Send(toSend).Retry(delay: 10).ConfigureAwait(false);
                 OnChunk(res);
                 _id ??= res.Id;
                 _index++;
             }
-
-            return Task.CompletedTask;
+            finally
+            {
+                _lock.Release();
+            }
         }
     }
 }
