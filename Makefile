@@ -5,7 +5,7 @@ build:
 	dotnet build
 
 test:
-	dotnet test
+	dotnet test -v d
 
 clean:
 	dotnet clean

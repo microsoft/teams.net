@@ -43,6 +43,34 @@ public partial interface IApp
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
     public Task<MessageActivity> Send(string conversationId, Cards.Card card, string? serviceUrl = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    /// <param name="sender">the plugin to use</param>
+    /// <param name="token">the request token</param>
+    /// <param name="activity">the inbound activity</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    public Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    /// <param name="sender">the plugin to use</param>
+    /// <param name="token">the request token</param>
+    /// <param name="activity">the inbound activity</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <exception cref="Exception"></exception>
+    public Task<Response> Process(string sender, IToken token, IActivity activity, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    /// <param name="token">the request token</param>
+    /// <param name="activity">the inbound activity</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <exception cref="Exception"></exception>
+    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin;
 }
 
 public partial class App : IApp

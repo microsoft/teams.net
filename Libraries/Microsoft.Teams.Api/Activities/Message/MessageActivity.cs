@@ -133,4 +133,24 @@ public class MessageActivity : Activity
     {
         return (MentionEntity?)(Entities ?? []).FirstOrDefault(e => e is MentionEntity mention && mention.Mentioned.Id == accountId);
     }
+
+    public MessageActivity Merge(MessageActivity from)
+    {
+        base.Merge(from);
+
+        Text ??= from.Text;
+        Speak ??= from.Speak;
+        InputHint ??= from.InputHint;
+        Summary ??= from.Summary;
+        TextFormat ??= from.TextFormat;
+        AttachmentLayout ??= from.AttachmentLayout;
+        SuggestedActions ??= from.SuggestedActions;
+        Importance ??= from.Importance;
+        DeliveryMode ??= from.DeliveryMode;
+        Expiration ??= from.Expiration;
+        Value ??= from.Value;
+        AddAttachment(from.Attachments?.ToArray() ?? []);
+
+        return this;
+    }
 }

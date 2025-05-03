@@ -3,10 +3,10 @@
   <Import Project="..\Directory.Build.props" Condition="'$(Version)' == ''" />
 
   <PropertyGroup>
-    <PackageId>Microsoft.Teams.Apps</PackageId>
-    <PackageDescription>A package used to create apps/bots that can send/receive activities.</PackageDescription>
+    <PackageId>Microsoft.Teams.Apps.Testing</PackageId>
+    <PackageDescription>A package used to making testing apps easier.</PackageDescription>
     <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
-    <PackageTags>microsoft;teams;msteams;copilot;ai;adaptive-cards;apps;bots</PackageTags>
+    <PackageTags>microsoft;teams;msteams;copilot;ai;adaptive-cards;apps;bots;testing</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,17 +14,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <NoWarn>CS8601</NoWarn>
+    <NoWarn>CS8601,CS8618,CS0067</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
     <ProjectReference Include="..\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
     <ProjectReference Include="..\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
     <ProjectReference Include="..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Graph" Version="5.75.0" />
   </ItemGroup>
 
 </Project>

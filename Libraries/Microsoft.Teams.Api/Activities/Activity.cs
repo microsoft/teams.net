@@ -344,6 +344,38 @@ public partial class Activity : IActivity
     public EventActivity ToEvent() => (EventActivity)this;
     public InvokeActivity ToInvoke() => (InvokeActivity)this;
 
+    public Activity Merge(Activity from)
+    {
+        Id ??= from.Id;
+        ReplyToId ??= from.ReplyToId;
+        ChannelId ??= from.ChannelId;
+        From ??= from.From;
+        Recipient ??= from.Recipient;
+        Conversation ??= from.Conversation;
+        RelatesTo ??= from.RelatesTo;
+        ServiceUrl ??= from.ServiceUrl;
+        Locale ??= from.Locale;
+        Timestamp ??= from.Timestamp;
+        LocalTimestamp ??= from.LocalTimestamp;
+        AddEntity(from.Entities?.ToArray() ?? []);
+
+        if (from.ChannelData is not null)
+        {
+            WithData(from.ChannelData);
+        }
+
+        if (from.Properties is not null)
+        {
+            Properties ??= new Dictionary<string, object?>();
+
+            foreach (var kv in from.Properties)
+            {
+                Properties[kv.Key] = kv.Value;
+            }
+        }
+
+        return this;
+    }
     public override string ToString()
     {
         return JsonSerializer.Serialize(this, new JsonSerializerOptions()

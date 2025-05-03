@@ -55,6 +55,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Extensions.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Extensions.Configuration", "Libraries\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Configuration\Microsoft.Teams.Extensions.Configuration.csproj", "{E1AD5351-181A-4EEC-B1F6-BF1643E5A1FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Apps.Tests", "Tests\Microsoft.Teams.Apps.Tests\Microsoft.Teams.Apps.Tests.csproj", "{9251FA96-F118-4578-92A9-EBD667CE3978}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Apps.Testing", "Libraries\Microsoft.Teams.Apps.Testing\Microsoft.Teams.Apps.Testing.csproj", "{6542E318-AF5B-4D63-B5BA-242AA48085B9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -305,6 +309,30 @@ Global
 		{E1AD5351-181A-4EEC-B1F6-BF1643E5A1FA}.Release|x64.Build.0 = Release|Any CPU
 		{E1AD5351-181A-4EEC-B1F6-BF1643E5A1FA}.Release|x86.ActiveCfg = Release|Any CPU
 		{E1AD5351-181A-4EEC-B1F6-BF1643E5A1FA}.Release|x86.Build.0 = Release|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Debug|x64.Build.0 = Debug|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Debug|x86.Build.0 = Debug|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Release|x64.ActiveCfg = Release|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Release|x64.Build.0 = Release|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Release|x86.ActiveCfg = Release|Any CPU
+		{9251FA96-F118-4578-92A9-EBD667CE3978}.Release|x86.Build.0 = Release|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Debug|x64.Build.0 = Debug|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Debug|x86.Build.0 = Debug|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Release|x64.ActiveCfg = Release|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Release|x64.Build.0 = Release|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Release|x86.ActiveCfg = Release|Any CPU
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -333,5 +361,7 @@ Global
 		{26E1EE2F-D04D-40C2-80A3-BB0D1D444A6D} = {E2648928-28DE-6B24-129A-26A0E8B5B70E}
 		{D0BF4C70-B346-47C5-96C2-AED0039F0976} = {E2648928-28DE-6B24-129A-26A0E8B5B70E}
 		{E1AD5351-181A-4EEC-B1F6-BF1643E5A1FA} = {E2648928-28DE-6B24-129A-26A0E8B5B70E}
+		{9251FA96-F118-4578-92A9-EBD667CE3978} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{6542E318-AF5B-4D63-B5BA-242AA48085B9} = {809F86A1-1C4C-B159-0CD4-DF9D33D876CE}
 	EndGlobalSection
 EndGlobal

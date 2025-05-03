@@ -120,6 +120,6 @@ public partial class App
 
     protected Task<Response> OnActivityEvent(ISenderPlugin sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
     {
-        return Process(sender, token, activity, cancellationToken); 
+        return Process(sender, token, activity, cancellationToken);
     }
 }

@@ -22,21 +22,21 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
 
     public MessageReactionActivity AddReaction(Messages.Reaction reaction)
     {
-        if (ReactionsAdded == null)
-        {
-            ReactionsAdded = [];
-        }
-
+        ReactionsAdded ??= [];
         ReactionsAdded.Add(reaction);
+        return this;
+    }
+
+    public MessageReactionActivity AddReaction(Messages.ReactionType type)
+    {
+        ReactionsAdded ??= [];
+        ReactionsAdded.Add(new() { Type = type });
         return this;
     }
 
     public MessageReactionActivity RemoveReaction(Messages.Reaction reaction)
     {
-        if (ReactionsRemoved == null)
-        {
-            ReactionsRemoved = [];
-        }
+        ReactionsRemoved ??= [];
 
         if (ReactionsAdded != null)
         {
@@ -52,6 +52,25 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
         }
 
         ReactionsRemoved.Add(reaction);
+        return this;
+    }
+
+    public MessageReactionActivity RemoveReaction(Messages.ReactionType type)
+    {
+        ReactionsRemoved ??= [];
+
+        if (ReactionsAdded != null)
+        {
+            var i = ReactionsAdded.ToList().FindIndex(r => r.Type.Equals(type));
+
+            if (i > -1)
+            {
+                ReactionsAdded.RemoveAt(i);
+                return this;
+            }
+        }
+
+        ReactionsRemoved.Add(new() { Type = type });
         return this;
     }
 }
