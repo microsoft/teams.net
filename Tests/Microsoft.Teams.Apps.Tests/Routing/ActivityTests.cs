@@ -13,7 +13,7 @@ public class ActivityTests
     {
         _app = new App();
         _app.AddPlugin(new TestPlugin());
-        _token = new JsonWebToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30");
+        _token = Globals.Token;
     }
 
     [Fact]

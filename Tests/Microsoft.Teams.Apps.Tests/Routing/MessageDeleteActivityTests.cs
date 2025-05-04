@@ -4,12 +4,12 @@ using Microsoft.Teams.Apps.Testing.Plugins;
 
 namespace Microsoft.Teams.Apps.Tests.Routing;
 
-public class MessageUpdateActivityTests
+public class MessageDeleteActivityTests
 {
     private readonly IApp _app;
     private readonly IToken _token;
 
-    public MessageUpdateActivityTests()
+    public MessageDeleteActivityTests()
     {
         _app = new App();
         _app.AddPlugin(new TestPlugin());
@@ -24,19 +24,18 @@ public class MessageUpdateActivityTests
         _app.OnActivity(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsMessageUpdate);
+            Assert.True(context.Activity.Type.IsMessageDelete);
             return context.Next();
         });
 
-        _app.OnMessageUpdate(context =>
+        _app.OnMessageDelete(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsMessageUpdate);
-            Assert.Equal("testing123", context.Activity.Text);
+            Assert.True(context.Activity.Type.IsMessageDelete);
             return Task.CompletedTask;
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new MessageUpdateActivity("testing123"));
+        var res = await _app.Process<TestPlugin>(_token, new MessageDeleteActivity());
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(2, calls);
@@ -47,10 +46,10 @@ public class MessageUpdateActivityTests
     {
         var calls = 0;
 
-        _app.OnMessageUpdate(context =>
+        _app.OnMessageDelete(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsMessageUpdate);
+            Assert.True(context.Activity.Type.IsMessageDelete);
             return Task.CompletedTask;
         });
 

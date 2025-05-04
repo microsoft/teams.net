@@ -14,13 +14,20 @@ public class MessageReactionActivityTests
     {
         _app = new App();
         _app.AddPlugin(new TestPlugin());
-        _token = new JsonWebToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMn0.KMUFsIDTnFmyG3nMiGM6H9FNFUROf3wh7SmqJp-QV30");
+        _token = Globals.Token;
     }
 
     [Fact]
     public async Task Should_CallHandler()
     {
         var calls = 0;
+
+        _app.OnActivity(context =>
+        {
+            calls++;
+            Assert.True(context.Activity.Type.IsMessageReaction);
+            return context.Next();
+        });
 
         _app.OnMessageReaction(context =>
         {
@@ -34,7 +41,7 @@ public class MessageReactionActivityTests
         var res = await _app.Process<TestPlugin>(_token, new MessageReactionActivity().AddReaction(ReactionType.Angry));
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
-        Assert.Equal(1, calls);
+        Assert.Equal(2, calls);
     }
 
     [Fact]
