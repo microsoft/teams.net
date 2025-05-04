@@ -51,6 +51,7 @@ Generated\ Files/
 [Bb]uild[Ll]og.*
 
 # NUnit
+TestCoverage
 *.VisualState.xml
 TestResult.xml
 nunit-*.xml
