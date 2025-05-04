@@ -7,7 +7,7 @@ namespace Microsoft.Teams.Api;
 [JsonConverter(typeof(JsonConverter<ContentType>))]
 public partial class ContentType(string value) : StringEnum(value)
 {
-    public static readonly ContentType Html = new("html");
+    public static readonly ContentType Html = new("text/html");
     public bool IsHtml => Html.Equals(Value);
 
     public static readonly ContentType Text = new("text");

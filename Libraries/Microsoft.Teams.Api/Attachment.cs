@@ -42,7 +42,7 @@ public class Attachment
     /// </summary>
     [JsonPropertyName("content")]
     [JsonPropertyOrder(4)]
-    public virtual object? Content { get; set; }
+    public object? Content { get; set; }
 
     /// <summary>
     /// (OPTIONAL) Thumbnail associated with attachment

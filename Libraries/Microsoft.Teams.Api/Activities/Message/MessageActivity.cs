@@ -61,9 +61,15 @@ public class MessageActivity : Activity
     [JsonPropertyOrder(43)]
     public object? Value { get; set; }
 
+    [JsonIgnore]
+    public bool IsRecipientMentioned
+    {
+        get => (Entities ?? []).Any(e => e is MentionEntity mention && mention.Mentioned.Id == Recipient.Id);
+    }
+
     public MessageActivity() : base(ActivityType.Message)
     {
-        Text = string.Empty;
+        Text ??= string.Empty;
     }
 
     public MessageActivity(string text) : base(ActivityType.Message)
@@ -122,11 +128,6 @@ public class MessageActivity : Activity
         });
 
         return this;
-    }
-
-    public bool IsRecipientMentioned()
-    {
-        return (Entities ?? []).Any(e => e is MentionEntity mention && mention.Mentioned.Id == Recipient.Id);
     }
 
     public MentionEntity? GetAccountMention(string accountId)

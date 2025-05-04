@@ -72,7 +72,15 @@ public partial interface IActivity : IConvertible, ICloneable
     [JsonIgnore]
     public bool IsStreaming { get; }
 
+    /// <summary>
+    /// get the activity type/name path
+    /// </summary>
     public string GetPath();
+
+    /// <summary>
+    /// get the quote reply string form of this activity
+    /// </summary>
+    public string ToQuoteReply();
 }
 
 [JsonConverter(typeof(JsonConverter))]
@@ -167,9 +175,6 @@ public partial class Activity : IActivity
         Properties = activity.Properties;
     }
 
-    /// <summary>
-    /// is this a streaming activity
-    /// </summary>
     [JsonIgnore]
     public bool IsStreaming => Entities?.Any(entity => entity.Type == "streaminfo" && entity is StreamInfoEntity) ?? false;
 
@@ -376,6 +381,27 @@ public partial class Activity : IActivity
 
         return this;
     }
+
+    public string ToQuoteReply()
+    {
+        var text = string.Empty;
+
+        if (this is MessageActivity message)
+        {
+            text = $"<p itemprop=\"preview\">{message.Text}</p>";
+        }
+
+        return $"""
+        <blockquote itemscope="" itemtype="http://schema.skype.com/Reply" itemid="{Id}">
+            <strong itemprop="mri" itemid="{From.Id}">
+                {From.Name}
+            </strong>
+            <span itemprop="time" itemid="{Id}"></span>
+            {text}
+        </blockquote>
+        """;
+    }
+
     public override string ToString()
     {
         return JsonSerializer.Serialize(this, new JsonSerializerOptions()
