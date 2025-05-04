@@ -38,7 +38,7 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
     {
         ReactionsRemoved ??= [];
 
-        if (ReactionsAdded != null)
+        if (ReactionsAdded is not null)
         {
             var i = ReactionsAdded.ToList().FindIndex(r =>
                 r.Type.Equals(reaction.Type) && r.User?.Id == reaction.User?.Id
@@ -59,7 +59,7 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
     {
         ReactionsRemoved ??= [];
 
-        if (ReactionsAdded != null)
+        if (ReactionsAdded is not null)
         {
             var i = ReactionsAdded.ToList().FindIndex(r => r.Type.Equals(type));
 

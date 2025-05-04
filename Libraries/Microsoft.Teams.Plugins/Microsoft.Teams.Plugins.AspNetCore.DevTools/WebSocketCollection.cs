@@ -70,7 +70,7 @@ public class WebSocketCollection : IEnumerable<KeyValuePair<string, WebSocket>>
     {
         var socket = Get(key);
 
-        if (socket == null) return;
+        if (socket is null) return;
 
         var payload = JsonSerializer.SerializeToUtf8Bytes(@event, new JsonSerializerOptions()
         {

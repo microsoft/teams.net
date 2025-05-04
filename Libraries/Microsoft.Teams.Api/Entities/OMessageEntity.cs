@@ -34,7 +34,7 @@ public class OMessageEntity : Entity, IMessageEntity
 
             var oType = property.Deserialize<string>(options);
 
-            if (oType == null)
+            if (oType is null)
             {
                 throw new JsonException("failed to deserialize 'https://schema.org/Message' entity '@type' property");
             }

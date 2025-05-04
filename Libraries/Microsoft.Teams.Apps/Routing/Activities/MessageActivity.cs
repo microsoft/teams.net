@@ -23,7 +23,7 @@ public class MessageAttribute : ActivityAttribute
     {
         if (activity is MessageActivity message)
         {
-            return Pattern == null || Pattern.IsMatch(message.Text);
+            return Pattern is null || Pattern.IsMatch(message.Text);
         }
 
         return false;

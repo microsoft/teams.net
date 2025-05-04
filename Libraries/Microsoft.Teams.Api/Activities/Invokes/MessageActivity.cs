@@ -42,7 +42,7 @@ public abstract class MessageActivity(Name.Messages name) : InvokeActivity(new(n
 
             var name = property.Deserialize<string>(options);
 
-            if (name == null)
+            if (name is null)
             {
                 throw new JsonException("failed to deserialize invoke activity 'name' property");
             }

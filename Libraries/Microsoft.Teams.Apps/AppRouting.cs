@@ -80,7 +80,7 @@ public partial class App : RoutingModule
         {
             var connectionName = (string?)await Storage.GetAsync(key);
 
-            if (connectionName == null || context.Activity.Value.State == null)
+            if (connectionName is null || context.Activity.Value.State is null)
             {
                 context.Log.Warn($"auth state not found for conversation '{context.Ref.Conversation.Id}' and user '{context.Activity.From.Id}'");
                 return new Response(HttpStatusCode.NotFound);

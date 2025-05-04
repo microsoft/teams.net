@@ -69,7 +69,7 @@ public partial class App
         {
             Logger.Error(ex.Request?.RequestUri?.ToString());
 
-            if (ex.Request?.Content != null)
+            if (ex.Request?.Content is not null)
             {
                 var content = await ex.Request.Content.ReadAsStringAsync();
                 Logger.Error(content);
@@ -78,7 +78,7 @@ public partial class App
 
         foreach (var plugin in Plugins)
         {
-            if (sender != null && sender.Equals(plugin)) continue;
+            if (sender is not null && sender.Equals(plugin)) continue;
             await plugin.OnError(this, sender, exception, context, cancellationToken);
         }
     }

@@ -59,7 +59,7 @@ public class ActivityController : ControllerBase
 
         var activity = JsonSerializer.Deserialize<Activity>(JsonSerializer.Serialize(body));
 
-        if (activity == null)
+        if (activity is null)
         {
             return Results.BadRequest();
         }

@@ -150,7 +150,7 @@ public partial class App : IApp
                 Inject(plugin);
             }
 
-            if (Credentials != null)
+            if (Credentials is not null)
             {
                 var botToken = await Api.Bots.Token.GetAsync(Credentials);
                 var graphToken = await Api.Bots.Token.GetGraphAsync(Credentials);
@@ -186,7 +186,7 @@ public partial class App : IApp
     /// <param name="activity">activity activity to send</param>
     public async Task<T> Send<T>(string conversationId, T activity, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
     {
-        if (Id == null || Name == null)
+        if (Id is null || Name is null)
         {
             throw new InvalidOperationException("app not started");
         }
@@ -210,7 +210,7 @@ public partial class App : IApp
 
         var sender = Plugins.Where(plugin => plugin is ISenderPlugin).Select(plugin => plugin as ISenderPlugin).First();
 
-        if (sender == null)
+        if (sender is null)
         {
             throw new Exception("no plugin that can send activities was found");
         }
@@ -280,7 +280,7 @@ public partial class App : IApp
 
         var userGraphTokenProvider = Azure.Core.DelegatedTokenCredential.Create((context, _) =>
         {
-            return userToken == null ? default : new Azure.Core.AccessToken(userToken.ToString(), userToken.Token.ValidTo);
+            return userToken is null ? default : new Azure.Core.AccessToken(userToken.ToString(), userToken.Token.ValidTo);
         });
 
         object? data = null;
@@ -291,7 +291,7 @@ public partial class App : IApp
             if (i == routes.Count) return data;
             var res = await routes[i].Invoke(context);
 
-            if (res != null)
+            if (res is not null)
                 data = res;
 
             return res;
@@ -306,7 +306,7 @@ public partial class App : IApp
             Api = api,
             Activity = activity,
             Ref = reference,
-            IsSignedIn = userToken != null,
+            IsSignedIn = userToken is not null,
             OnNext = Next,
             UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
             CancellationToken = cancellationToken,

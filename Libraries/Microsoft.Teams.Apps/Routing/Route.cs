@@ -38,7 +38,7 @@ public class AttributeRoute : IRoute
             var generic = param.ParameterType.GenericTypeArguments.FirstOrDefault();
             var isContext = generic?.IsAssignableTo(Attr.Type) ?? false;
 
-            if (attribute == null && !isContext)
+            if (attribute is null && !isContext)
             {
                 result.AddError(param.Name ?? "??", "type must be `IContext<TActivity>` or an `IContext` accessor attribute");
             }
@@ -54,7 +54,7 @@ public class AttributeRoute : IRoute
         var args = Method.GetParameters().Select(param =>
         {
             var attribute = param.GetCustomAttribute<ContextAccessorAttribute>();
-            return attribute == null ? Attr.Coerce(context) : attribute.GetValue(context, param);
+            return attribute is null ? Attr.Coerce(context) : attribute.GetValue(context, param);
         });
 
         var res = Method.Invoke(null, args?.ToArray());

@@ -181,7 +181,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         var descriptionAttribute = type.GetCustomAttribute<Prompt.DescriptionAttribute>();
         var instructionsAttribute = type.GetCustomAttribute<Prompt.InstructionsAttribute>();
 
-        if (promptAttribute == null)
+        if (promptAttribute is null)
         {
             throw new Exception("only types utilizing the ChatPromptAttribute can be turned into a ChatPrompt");
         }
@@ -191,12 +191,12 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         var instructions = promptAttribute.Instructions ?? instructionsAttribute?.Instructions;
         options ??= new ChatPromptOptions().WithName(name);
 
-        if (description != null)
+        if (description is not null)
         {
             options = options.WithDescription(description);
         }
 
-        if (instructions != null)
+        if (instructions is not null)
         {
             options = options.WithInstructions(instructions);
         }
@@ -208,7 +208,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
             var functionAttribute = method.GetCustomAttribute<FunctionAttribute>();
             var functionDescriptionAttribute = method.GetCustomAttribute<Annotations.Function.DescriptionAttribute>();
 
-            if (functionAttribute == null) continue;
+            if (functionAttribute is null) continue;
 
             var parameters = method.GetParameters().Select(p =>
             {

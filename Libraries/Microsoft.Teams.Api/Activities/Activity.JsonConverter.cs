@@ -23,7 +23,7 @@ public partial interface IActivity
 
             var type = property.Deserialize<string>(options);
 
-            if (type == null)
+            if (type is null)
             {
                 throw new JsonException("failed to deserialize activity 'type' property");
             }
@@ -145,7 +145,7 @@ public partial class Activity
 
             var type = property.Deserialize<string>(options);
 
-            if (type == null)
+            if (type is null)
             {
                 throw new JsonException("failed to deserialize activity 'type' property");
             }

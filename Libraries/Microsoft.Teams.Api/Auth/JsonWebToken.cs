@@ -21,7 +21,7 @@ public class JsonWebToken : IToken
         {
             var serviceUrl = Token.Payload.TryGetValue("serviceurl", out var value) ? (string?)value : null;
 
-            if (serviceUrl == null)
+            if (serviceUrl is null)
             {
                 serviceUrl = "https://smba.trafficmanager.net/teams";
             }
@@ -38,7 +38,7 @@ public class JsonWebToken : IToken
     [JsonPropertyName("from")]
     public CallerType From
     {
-        get => AppId == null ? CallerType.Azure : CallerType.Bot;
+        get => AppId is null ? CallerType.Azure : CallerType.Bot;
     }
 
     [JsonPropertyName("fromId")]

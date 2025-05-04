@@ -48,7 +48,7 @@ public class Router : IRouter
             Handler = handler,
             Selector = (activity) =>
             {
-                if (name == null || name == "activity") return true;
+                if (name is null || name == "activity") return true;
                 if (activity.Type.Equals(name)) return true;
                 return false;
             }

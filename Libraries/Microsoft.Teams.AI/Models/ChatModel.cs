@@ -71,6 +71,6 @@ public class ChatModelOptions<TOptions>
     /// <returns>the function response</returns>
     public Task<object?> Invoke(FunctionCall call, CancellationToken cancellationToken = default)
     {
-        return OnInvoke == null ? Task.FromResult<object?>(null) : OnInvoke(call, cancellationToken);
+        return OnInvoke is null ? Task.FromResult<object?>(null) : OnInvoke(call, cancellationToken);
     }
 }

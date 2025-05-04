@@ -6,7 +6,7 @@ namespace Microsoft.Teams.Apps.Routing;
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class InvokeAttribute(string? name = null, Type? type = null) : ActivityAttribute(ActivityType.Invoke, type ?? typeof(InvokeActivity))
 {
-    public readonly Name? InvokeName = name != null ? new(name) : null;
+    public readonly Name? InvokeName = name is not null ? new(name) : null;
 
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<InvokeActivity>();
     public override bool Select(IActivity activity)

@@ -37,7 +37,7 @@ public class StringEnum(string value, bool caseSensitive = true) : ICloneable, I
         {
             var value = reader.GetString();
 
-            if (value == null)
+            if (value is null)
             {
                 throw new JsonException("value must not be null");
             }
@@ -47,7 +47,7 @@ public class StringEnum(string value, bool caseSensitive = true) : ICloneable, I
                 [value]
             );
 
-            if (res == null)
+            if (res is null)
             {
                 throw new JsonException($"could not create instance of '{typeof(TStringEnum)}'");
             }

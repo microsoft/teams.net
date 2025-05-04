@@ -29,7 +29,7 @@ public static class HostApplicationBuilderExtensions
         var loggingSettings = builder.Configuration.GetTeamsLogging();
 
         // client credentials
-        if (options.Credentials == null && settings.ClientId != null && settings.ClientSecret != null)
+        if (options.Credentials is null && settings.ClientId is not null && settings.ClientSecret is not null)
         {
             options.Credentials = new ClientCredentials(
                 settings.ClientId,
@@ -54,7 +54,7 @@ public static class HostApplicationBuilderExtensions
         var loggingSettings = builder.Configuration.GetTeamsLogging();
 
         // client credentials
-        if (settings.ClientId != null && settings.ClientSecret != null)
+        if (settings.ClientId is not null && settings.ClientSecret is not null)
         {
             appBuilder = appBuilder.AddCredentials(new ClientCredentials(
                 settings.ClientId,

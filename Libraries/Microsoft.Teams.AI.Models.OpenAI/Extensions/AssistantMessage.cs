@@ -27,10 +27,10 @@ public static partial class MessageExtensions
         var calls = message.FunctionCalls?.Select(call => ChatToolCall.CreateFunctionToolCall(
             call.Id,
             call.Name,
-            call.Arguments == null ? BinaryData.Empty : BinaryData.FromString(call.Arguments)
+            call.Arguments is null ? BinaryData.Empty : BinaryData.FromString(call.Arguments)
         ));
 
-        if (calls != null && calls.Count() > 0)
+        if (calls is not null && calls.Count() > 0)
         {
             return new AssistantChatMessage(calls?.ToList() ?? []);
         }

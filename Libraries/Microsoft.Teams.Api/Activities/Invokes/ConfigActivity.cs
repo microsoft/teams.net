@@ -44,7 +44,7 @@ public abstract class ConfigActivity(Name.Configs name) : InvokeActivity(new(nam
 
             var name = property.Deserialize<string>(options);
 
-            if (name == null)
+            if (name is null)
             {
                 throw new JsonException("failed to deserialize invoke activity 'name' property");
             }

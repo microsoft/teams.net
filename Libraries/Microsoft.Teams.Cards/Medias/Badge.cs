@@ -142,7 +142,7 @@ public class Badge() : Element(CardType.Badge)
     {
         Icon = value;
 
-        if (position != null)
+        if (position is not null)
         {
             IconPosition = position;
         }

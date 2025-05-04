@@ -93,12 +93,12 @@ public abstract class InputElement(CardType type) : Element(type)
     {
         Label = value;
 
-        if (position != null)
+        if (position is not null)
         {
             LabelPosition = position;
         }
 
-        if (width != null)
+        if (width is not null)
         {
             LabelWidth = width;
         }

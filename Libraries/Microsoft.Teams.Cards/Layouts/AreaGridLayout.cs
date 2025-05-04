@@ -130,7 +130,7 @@ public class GridArea
     {
         Column = value;
 
-        if (span != null)
+        if (span is not null)
         {
             ColumnSpan = span;
         }
@@ -154,7 +154,7 @@ public class GridArea
     {
         Row = value;
 
-        if (span != null)
+        if (span is not null)
         {
             RowSpan = span;
         }

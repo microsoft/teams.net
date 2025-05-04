@@ -86,10 +86,10 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
     /// <param name="client">the client to apply the http options to</param>
     public void Apply(System.Net.Http.HttpClient client)
     {
-        if (Timeout != null)
+        if (Timeout is not null)
             client.Timeout = (TimeSpan)Timeout;
 
-        if (Token != null)
+        if (Token is not null)
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {Token}");
 
         foreach (var kv in Headers)
@@ -104,11 +104,11 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
     /// <param name="request">the request to apply the http options to</param>
     public void Apply(HttpRequestMessage request)
     {
-        if (TokenFactory != null)
+        if (TokenFactory is not null)
         {
             var token = TokenFactory();
 
-            if (token != null)
+            if (token is not null)
             {
                 request.Headers.Authorization = new("Bearer", token.ToString());
             }

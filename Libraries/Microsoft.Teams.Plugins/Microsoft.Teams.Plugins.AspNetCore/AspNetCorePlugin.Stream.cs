@@ -12,7 +12,7 @@ public partial class AspNetCorePlugin
 {
     public class Stream : IStreamer
     {
-        public bool Closed => _closedAt != null;
+        public bool Closed => _closedAt is not null;
         public int Count => _count;
         public int Sequence => _index;
 
@@ -52,8 +52,8 @@ public partial class AspNetCorePlugin
         public async Task<MessageActivity?> Close()
         {
             if (_index == 0) return null;
-            if (_result != null) return _result;
-            while (_id == null || _queue.Count > 0)
+            if (_result is not null) return _result;
+            while (_id is null || _queue.Count > 0)
             {
                 await Task.Delay(50);
             }
@@ -100,7 +100,7 @@ public partial class AspNetCorePlugin
                         _entities.AddRange(message.Entities ?? []);
                     }
 
-                    if (activity.ChannelData != null)
+                    if (activity.ChannelData is not null)
                     {
                         _channelData = _channelData.Merge(activity.ChannelData);
                     }
@@ -113,7 +113,7 @@ public partial class AspNetCorePlugin
 
                 var toSend = new TypingActivity(_text);
 
-                if (_id != null)
+                if (_id is not null)
                 {
                     toSend.WithId(_id);
                 }

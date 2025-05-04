@@ -23,7 +23,7 @@ public partial class EventActivity
 
             var name = property.Deserialize<string>(options);
 
-            if (name == null)
+            if (name is null)
             {
                 throw new JsonException("failed to deserialize event activity 'name' property");
             }

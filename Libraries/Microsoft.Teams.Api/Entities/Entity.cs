@@ -39,7 +39,7 @@ public interface IEntity
 
             var type = property.Deserialize<string>(options);
 
-            if (type == null)
+            if (type is null)
             {
                 throw new JsonException("failed to deserialize entity 'type' property");
             }
@@ -133,7 +133,7 @@ public class Entity : IEntity
 
             var type = property.Deserialize<string>(options);
 
-            if (type == null)
+            if (type is null)
             {
                 throw new JsonException("failed to deserialize entity 'type' property");
             }

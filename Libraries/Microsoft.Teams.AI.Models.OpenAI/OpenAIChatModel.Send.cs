@@ -26,7 +26,7 @@ public partial class OpenAIChatModel
         var messages = await CallFunctions(message, options, cancellationToken);
         var chatMessages = messages.Select(m => m.ToOpenAI()).ToList();
 
-        if (options.Prompt != null)
+        if (options.Prompt is not null)
         {
             chatMessages.Insert(0, options.Prompt.ToOpenAI());
         }
@@ -70,7 +70,7 @@ public partial class OpenAIChatModel
         var messages = await CallFunctions(message, options, cancellationToken);
         var chatMessages = messages.Select(m => m.ToOpenAI()).ToList();
 
-        if (options.Prompt != null)
+        if (options.Prompt is not null)
         {
             chatMessages.Insert(0, options.Prompt.ToOpenAI());
         }

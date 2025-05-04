@@ -8,10 +8,10 @@ public partial class ActivityAttribute(
     Type? type = null
 ) : Attribute
 {
-    public readonly ActivityType? Name = name != null ? new(name) : null;
+    public readonly ActivityType? Name = name is not null ? new(name) : null;
     public readonly Type Type = type ?? typeof(Activity);
 
-    public virtual bool Select(IActivity activity) => Name == null || Name.Equals(activity.Type);
+    public virtual bool Select(IActivity activity) => Name is null || Name.Equals(activity.Type);
     public virtual object Coerce(IContext<IActivity> context) => context.ToActivityType<Activity>();
 }
 

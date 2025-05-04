@@ -90,7 +90,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         activity.From = reference.Bot;
         activity.Recipient = reference.User;
 
-        if (activity.Id != null && !activity.IsStreaming)
+        if (activity.Id is not null && !activity.IsStreaming)
         {
             await client
                 .Conversations

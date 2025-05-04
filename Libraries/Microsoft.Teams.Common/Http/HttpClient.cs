@@ -84,7 +84,7 @@ public class HttpClient : IHttpClient
             httpRequest.Headers.TryAddWithoutValidation(kv.Key, kv.Value);
         }
 
-        if (request.Body != null)
+        if (request.Body is not null)
         {
             if (request.Body is string stringBody)
             {
@@ -142,7 +142,7 @@ public class HttpClient : IHttpClient
             {
                 var bodyAsJson = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
 
-                if (bodyAsJson != null)
+                if (bodyAsJson is not null)
                     errorBody = bodyAsJson;
             }
 
