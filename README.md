@@ -39,6 +39,7 @@ $: dotnet test
 > ℹ️ core packages used to build client/server apps for Teams.
 
 - [`Microsoft.Teams.Apps`](./Libraries/Microsoft.Teams.Apps/README.md)
+- [`Microsoft.Teams.Apps.Testing`](./Libraries/Microsoft.Teams.Apps.Testing/README.md)
 - [`Microsoft.Teams.AI`](./Libraries/Microsoft.Teams.AI/README.md)
 - [`Microsoft.Teams.AI.Models.OpenAI`](./Libraries/Microsoft.Teams.AI.Models.OpenAI/README.md)
 - [`Microsoft.Teams.Api`](./Libraries/Microsoft.Teams.Api/README.md)
