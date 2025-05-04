@@ -7,6 +7,7 @@ using Json.Schema;
 
 using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Messages;
+using Microsoft.Teams.Common.Extensions;
 using Microsoft.Teams.Common.Json;
 
 namespace Microsoft.Teams.AI;
@@ -72,7 +73,7 @@ public class Function : IFunction
         Handler = handler;
     }
 
-    internal async Task<object?> Invoke(FunctionCall call)
+    internal Task<object?> Invoke(FunctionCall call)
     {
         if (call.Arguments is not null && Parameters is not null)
         {
@@ -102,15 +103,7 @@ public class Function : IFunction
             return value;
         }).ToArray();
 
-        var res = method.Invoke(Handler.Target, parameters);
-
-        if (res is Task task)
-        {
-            await task.ConfigureAwait(false);
-            res = ((dynamic)task).Result;
-        }
-
-        return res;
+        return method.InvokeAsync(Handler.Target, parameters);
     }
 
     public override string ToString()

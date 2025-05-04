@@ -5,6 +5,24 @@ namespace Microsoft.Teams.Common.Extensions;
 
 public static class MethodInfoExtensions
 {
+    public static async Task<object?> InvokeAsync(this MethodInfo methodinfo, object? target, object?[]? args)
+    {
+        var res = methodinfo.Invoke(target, args);
+
+        if (res is Task<object?> taskWithValue)
+        {
+            return await taskWithValue.ConfigureAwait(false);
+        }
+
+        if (res is Task task)
+        {
+            await task.ConfigureAwait(false);
+            return null;
+        }
+
+        return res;
+    }
+
     public static Delegate CreateDelegate(this MethodInfo methodInfo, object target)
     {
         Func<Type[], Type> getType;

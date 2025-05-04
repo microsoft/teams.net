@@ -1,6 +1,9 @@
+using System.Reflection;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
@@ -9,8 +12,27 @@ public static class ApplicationBuilderExtensions
 {
     public static IApp UseTeams(this IApplicationBuilder builder, bool routing = true)
     {
+        var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
         var app = builder.ApplicationServices.GetService<IApp>() ?? new App(builder.ApplicationServices.GetService<IAppOptions>());
         var plugins = builder.ApplicationServices.GetServices<IPlugin>();
+        var types = assembly.GetTypes();
+
+        foreach (var type in types)
+        {
+            var attribute = type.GetCustomAttribute<ActivityControllerAttribute>();
+
+            if (attribute is null)
+            {
+                continue;
+            }
+
+            var controller = builder.ApplicationServices.GetService(type);
+
+            if (controller is not null)
+            {
+                app.AddController(controller);
+            }
+        }
 
         foreach (var plugin in plugins)
         {

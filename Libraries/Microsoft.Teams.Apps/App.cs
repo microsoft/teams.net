@@ -133,7 +133,6 @@ public partial class App : IApp
         Container.Register("BotToken", new FactoryProvider(() => BotToken));
         Container.Register("GraphToken", new FactoryProvider(() => GraphToken));
 
-        RegisterAttributeRoutes();
         OnTokenExchange(OnTokenExchangeActivity);
         OnVerifyState(OnVerifyStateActivity);
     }

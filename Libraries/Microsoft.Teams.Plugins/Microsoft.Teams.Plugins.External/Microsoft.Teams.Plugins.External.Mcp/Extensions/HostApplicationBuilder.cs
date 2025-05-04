@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.AI.Prompts;
 using Microsoft.Teams.Apps.Extensions;
+using Microsoft.Teams.Common.Extensions;
 
 using ModelContextProtocol.Protocol.Types;
 using ModelContextProtocol.Server;
@@ -67,13 +68,7 @@ public static class HostApplicationBuilderExtensions
                     Arguments = JsonSerializer.Serialize(context.Params.Arguments)
                 };
 
-                var res = method.Invoke(prompt, [call, cancellationToken]);
-
-                if (res is Task task)
-                {
-                    await task.ConfigureAwait(false);
-                    res = ((dynamic)task).Result;
-                }
+                var res = await method.InvokeAsync(prompt, [call, cancellationToken]);
 
                 return new()
                 {

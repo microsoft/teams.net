@@ -26,6 +26,7 @@ public class AttributeRoute : IRoute
 {
     public required ActivityAttribute Attr { get; set; }
     public required MethodInfo Method { get; set; }
+    public object? Object { get; set; }
 
     public bool Select(IActivity activity) => Attr.Select(activity);
     public ValidationResult Validate()
@@ -47,7 +48,7 @@ public class AttributeRoute : IRoute
         return result;
     }
 
-    public async Task<object?> Invoke(IContext<IActivity> context)
+    public Task<object?> Invoke(IContext<IActivity> context)
     {
         var log = context.Log.Child(Method.Name);
         var contextClient = new IContext.Client(context);
@@ -57,15 +58,7 @@ public class AttributeRoute : IRoute
             return attribute is null ? Attr.Coerce(context) : attribute.GetValue(context, param);
         });
 
-        var res = Method.Invoke(null, args?.ToArray());
-
-        if (res is Task task)
-        {
-            await task.ConfigureAwait(false);
-            res = ((dynamic)task).Result;
-        }
-
-        return res;
+        return Method.InvokeAsync(Object, args?.ToArray());
     }
 
     public class ValidationResult

@@ -67,7 +67,7 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// <summary>
     /// the cancellation token
     /// </summary>
-    public CancellationToken CancellationToken { get; set; }
+    public CancellationToken CancellationToken { get; }
 
     /// <summary>
     /// destruct the context
