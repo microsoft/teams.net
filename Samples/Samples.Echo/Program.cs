@@ -40,8 +40,9 @@ public static partial class Program
         }
 
         [Message]
-        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client)
+        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client, [Context] Microsoft.Teams.Common.Logging.ILogger log)
         {
+            log.Info("hit!");
             await client.Typing();
             await client.Send($"you said '{activity.Text}'");
         }
