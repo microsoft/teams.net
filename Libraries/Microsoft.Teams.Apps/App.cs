@@ -102,7 +102,7 @@ public partial class App : IApp
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             version ??= "0.0.0";
-            return $"Teams.net[apps]/{version}";
+            return $"teams.net[apps]/{version}";
         }
     }
 
