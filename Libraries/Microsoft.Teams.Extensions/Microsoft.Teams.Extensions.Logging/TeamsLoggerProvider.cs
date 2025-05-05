@@ -17,11 +17,6 @@ public class TeamsLoggerProvider : ILoggerProvider, IDisposable
         _logger = logger;
     }
 
-    public TeamsLoggerProvider(Common.Logging.LoggingSettings settings)
-    {
-        _logger = new TeamsLogger(new Common.Logging.ConsoleLogger(settings));
-    }
-
     public IDisposable? BeginScope<TState>(TState state) where TState : notnull
     {
         return _logger.BeginScope(state);
