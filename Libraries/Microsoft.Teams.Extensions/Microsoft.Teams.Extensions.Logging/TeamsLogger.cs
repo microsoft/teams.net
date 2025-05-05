@@ -8,11 +8,6 @@ public class TeamsLogger : ILogger, IDisposable
 
     protected Common.Logging.ILogger _logger;
 
-    public TeamsLogger(Common.Logging.LoggingSettings settings)
-    {
-        _logger = new Common.Logging.ConsoleLogger(settings);
-    }
-
     public TeamsLogger(Common.Logging.ILogger logger)
     {
         _logger = logger;

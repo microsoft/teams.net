@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Product>Microsoft Teams SDK</Product>
-    <Version>0.0.6</Version>
+    <Version>0.0.7</Version>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
