@@ -10,6 +10,7 @@ using Microsoft.Teams.Common.Storage;
 
 namespace Microsoft.Teams.Apps.Annotations;
 
+[AttributeUsage(AttributeTargets.Parameter, Inherited = true)]
 public class ContextAttribute : ContextAccessorAttribute
 {
     public override object? GetValue(IContext<IActivity> context, ParameterInfo parameter)
