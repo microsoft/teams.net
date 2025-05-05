@@ -35,7 +35,7 @@ public class AttributeRoute : IRoute
 
         foreach (var param in Method.GetParameters())
         {
-            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>();
+            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>(true);
             var generic = param.ParameterType.GenericTypeArguments.FirstOrDefault();
             var isContext = generic?.IsAssignableTo(Attr.Type) ?? false;
 
@@ -50,11 +50,9 @@ public class AttributeRoute : IRoute
 
     public Task<object?> Invoke(IContext<IActivity> context)
     {
-        var log = context.Log.Child(Method.Name);
-        var contextClient = new IContext.Client(context);
         var args = Method.GetParameters().Select(param =>
         {
-            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>();
+            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>(true);
             return attribute is null ? Attr.Coerce(context) : attribute.GetValue(context, param);
         });
 
