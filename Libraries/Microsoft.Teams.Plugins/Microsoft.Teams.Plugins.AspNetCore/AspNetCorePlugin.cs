@@ -27,7 +27,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
     public event IPlugin.ErrorEventHandler ErrorEvent = (_, _) => Task.Run(() => { });
     public event ISenderPlugin.ActivityEventHandler ActivityEvent = (_, _, _, _) => Task.FromResult(new Response(System.Net.HttpStatusCode.OK));
 
-    private TeamsContext Context => _services.GetRequiredService<TeamsContext>();
+    private TeamsContext Context => _services.CreateScope().ServiceProvider.GetRequiredService<TeamsContext>();
     private readonly IServiceProvider _services;
 
     public AspNetCorePlugin(IServiceProvider provider)
