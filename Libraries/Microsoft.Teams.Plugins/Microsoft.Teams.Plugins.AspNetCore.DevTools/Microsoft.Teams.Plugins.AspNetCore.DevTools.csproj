@@ -34,7 +34,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include=".\web\**" Pack="True" PackagePath=".\" PackageCopyToOutput="True" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
+    <None Include="web\**" Pack="True" PackagePath="\" Visible="True" PackageCopyToOutput="True" CopyToOutputDirectory="Always" CopyToPublishDirectory="Always" />
   </ItemGroup>
 
 </Project>
