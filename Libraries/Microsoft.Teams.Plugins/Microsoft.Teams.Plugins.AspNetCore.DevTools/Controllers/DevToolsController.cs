@@ -16,17 +16,14 @@ public class DevToolsController : ControllerBase
     public DevToolsController(DevToolsPlugin plugin)
     {
         _plugin = plugin;
-        _files = new PhysicalFileProvider(Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "web"));
+        _files = new ManifestEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "web");
     }
 
     [HttpGet("/devtools")]
     [HttpGet("/devtools/{*path}")]
     public IResult Get(string? path)
     {
-        path ??= "index.html";
-
-        Console.WriteLine(path);
-        var file = _files.GetFileInfo(path);
+        var file = _files.GetFileInfo(path ?? "index.html");
 
         if (!file.Exists)
         {

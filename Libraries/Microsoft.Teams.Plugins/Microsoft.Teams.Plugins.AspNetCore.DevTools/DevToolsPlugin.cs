@@ -59,7 +59,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
         builder.UseStaticFiles(new StaticFileOptions()
         {
-            FileProvider = new PhysicalFileProvider(Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "web")),
+            FileProvider = new ManifestEmbeddedFileProvider(Assembly.GetExecutingAssembly(), "web"),
             ServeUnknownFileTypes = true,
             RequestPath = "/devtools"
         });
