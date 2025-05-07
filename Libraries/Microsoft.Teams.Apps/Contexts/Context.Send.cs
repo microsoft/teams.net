@@ -20,7 +20,7 @@ public partial interface IContext<TActivity>
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public Task<MessageActivity> Send(Cards.Card card);
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card);
 
     /// <summary>
     /// send an activity to the conversation as a reply
@@ -38,7 +38,7 @@ public partial interface IContext<TActivity>
     /// send a message activity with a card attachment as a reply
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public Task<MessageActivity> Reply(Cards.Card card);
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card);
 
     /// <summary>
     /// send a typing activity
@@ -64,7 +64,7 @@ public partial class Context<TActivity> : IContext<TActivity>
         return Send(new MessageActivity(text));
     }
 
-    public Task<MessageActivity> Send(Cards.Card card)
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card)
     {
         return Send(new MessageActivity().AddAttachment(card));
     }
@@ -90,7 +90,7 @@ public partial class Context<TActivity> : IContext<TActivity>
         return Reply(new MessageActivity(text));
     }
 
-    public Task<MessageActivity> Reply(Cards.Card card)
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card)
     {
         return Reply(new MessageActivity().AddAttachment(card));
     }

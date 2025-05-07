@@ -42,7 +42,7 @@ public partial interface IApp
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public Task<MessageActivity> Send(string conversationId, Cards.Card card, string? serviceUrl = null, CancellationToken cancellationToken = default);
+    public Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, string? serviceUrl = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// process an activity
@@ -232,7 +232,7 @@ public partial class App : IApp
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public async Task<MessageActivity> Send(string conversationId, Cards.Card card, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
         return await Send(conversationId, new MessageActivity().AddAttachment(card), serviceUrl, cancellationToken);
     }
