@@ -1,14 +1,6 @@
 using System.Text.Json.Serialization;
 
-using Microsoft.Teams.Common;
-
 namespace Microsoft.Teams.Cards;
-
-public partial class SubmitActionType : StringEnum
-{
-    public static readonly SubmitActionType IMBack = new("imBack");
-    public bool IsIMBack => IMBack.Equals(Value);
-}
 
 public class IMBackAction : SubmitAction
 {
@@ -16,14 +8,13 @@ public class IMBackAction : SubmitAction
     /// Initial data that input fields will be combined with. These are essentially ‘hidden’ properties.
     /// </summary>
     [JsonPropertyName("data")]
-    [JsonPropertyOrder(11)]
     public new IMBackActionData Data { get; set; }
 
     public IMBackAction(string value)
     {
         Data = new()
         {
-            MSTeams = new(value)
+            MsTeams = new(value)
         };
     }
 }
@@ -37,19 +28,23 @@ public class IMBackActionData : SubmitActionData
     /// Teams specific payload data.
     /// </summary>
     [JsonPropertyName("msteams")]
-    [JsonPropertyOrder(0)]
-    public new required IMBackMSTeamsActionData MSTeams { get; set; }
+    public new required IMBackMSTeamsActionData MsTeams { get; set; }
 }
 
 /// <summary>
 /// the IMBackAction teams data
 /// </summary>
-public class IMBackMSTeamsActionData(string value) : MSTeamsActionData(SubmitActionType.IMBack)
+public class IMBackMSTeamsActionData(string value) : MsTeamsSubmitActionData
 {
+    /// <summary>
+    /// The Teams-specifc sub-type of the action.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "imBack";
+
     /// <summary>
     /// String that needs to be echoed back in the chat.
     /// </summary>
     [JsonPropertyName("value")]
-    [JsonPropertyOrder(1)]
     public string Value { get; set; } = value;
 }

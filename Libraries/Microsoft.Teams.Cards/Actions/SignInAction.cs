@@ -1,14 +1,6 @@
 using System.Text.Json.Serialization;
 
-using Microsoft.Teams.Common;
-
 namespace Microsoft.Teams.Cards;
-
-public partial class SubmitActionType : StringEnum
-{
-    public static readonly SubmitActionType SignIn = new("signin");
-    public bool IsSignIn => SignIn.Equals(Value);
-}
 
 public class SignInAction : SubmitAction
 {
@@ -23,7 +15,7 @@ public class SignInAction : SubmitAction
     {
         Data = new()
         {
-            MSTeams = new(value)
+            MsTeams = new(value)
         };
     }
 }
@@ -37,19 +29,23 @@ public class SignInActionData : SubmitActionData
     /// Teams specific payload data.
     /// </summary>
     [JsonPropertyName("msteams")]
-    [JsonPropertyOrder(0)]
-    public new required SignInMSTeamsActionData MSTeams { get; set; }
+    public new required SignInMSTeamsActionData MsTeams { get; set; }
 }
 
 /// <summary>
 /// the SignInAction teams data
 /// </summary>
-public class SignInMSTeamsActionData(string value) : MSTeamsActionData(SubmitActionType.SignIn)
+public class SignInMSTeamsActionData(string value) : MsTeamsSubmitActionData
 {
+    /// <summary>
+    /// The Teams-specifc sub-type of the action.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "signin";
+
     /// <summary>
     /// Set to the `URL` where you want to redirect.
     /// </summary>
     [JsonPropertyName("value")]
-    [JsonPropertyOrder(1)]
     public string Value { get; set; } = value;
 }

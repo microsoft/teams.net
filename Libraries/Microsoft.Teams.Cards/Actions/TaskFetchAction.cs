@@ -1,14 +1,6 @@
 using System.Text.Json.Serialization;
 
-using Microsoft.Teams.Common;
-
 namespace Microsoft.Teams.Cards;
-
-public partial class SubmitActionType : StringEnum
-{
-    public static readonly SubmitActionType TaskFetch = new("task/fetch");
-    public bool IsTaskFetch => TaskFetch.Equals(Value);
-}
 
 public class TaskFetchAction : SubmitAction
 {
@@ -16,14 +8,13 @@ public class TaskFetchAction : SubmitAction
     /// Initial data that input fields will be combined with. These are essentially ‘hidden’ properties.
     /// </summary>
     [JsonPropertyName("data")]
-    [JsonPropertyOrder(11)]
     public new TaskFetchActionData Data { get; set; }
 
     public TaskFetchAction(object? value)
     {
         Data = new()
         {
-            MSTeams = new(value)
+            MsTeams = new(value)
         };
     }
 }
@@ -37,19 +28,23 @@ public class TaskFetchActionData : SubmitActionData
     /// Teams specific payload data.
     /// </summary>
     [JsonPropertyName("msteams")]
-    [JsonPropertyOrder(0)]
-    public new required TaskFetchMSTeamsActionData MSTeams { get; set; }
+    public new required TaskFetchMSTeamsActionData MsTeams { get; set; }
 }
 
 /// <summary>
 /// the TaskFetchAction teams data
 /// </summary>
-public class TaskFetchMSTeamsActionData(object? value) : MSTeamsActionData(SubmitActionType.TaskFetch)
+public class TaskFetchMSTeamsActionData(object? value) : MsTeamsSubmitActionData
 {
+    /// <summary>
+    /// The Teams-specifc sub-type of the action.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "task/fetch";
+
     /// <summary>
     /// The data value sent with the `task/fetch` invoke.
     /// </summary>
     [JsonPropertyName("value")]
-    [JsonPropertyOrder(1)]
     public object? Value { get; set; } = value;
 }

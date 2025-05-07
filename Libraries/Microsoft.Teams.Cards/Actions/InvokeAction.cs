@@ -1,14 +1,6 @@
 using System.Text.Json.Serialization;
 
-using Microsoft.Teams.Common;
-
 namespace Microsoft.Teams.Cards;
-
-public partial class SubmitActionType : StringEnum
-{
-    public static readonly SubmitActionType Invoke = new("invoke");
-    public bool IsInvoke => Invoke.Equals(Value);
-}
 
 public class InvokeAction : SubmitAction
 {
@@ -16,14 +8,13 @@ public class InvokeAction : SubmitAction
     /// Initial data that input fields will be combined with. These are essentially ‘hidden’ properties.
     /// </summary>
     [JsonPropertyName("data")]
-    [JsonPropertyOrder(11)]
     public new InvokeActionData Data { get; set; }
 
     public InvokeAction(object? value)
     {
         Data = new(value)
         {
-            MSTeams = new(value)
+            MsTeams = new(value)
         };
     }
 }
@@ -37,19 +28,23 @@ public class InvokeActionData(object? value) : SubmitActionData
     /// Teams specific payload data.
     /// </summary>
     [JsonPropertyName("msteams")]
-    [JsonPropertyOrder(0)]
-    public new InvokeMSTeamsActionData MSTeams { get; set; } = new(value);
+    public new InvokeMSTeamsActionData MsTeams { get; set; } = new(value);
 }
 
 /// <summary>
 /// the InvokeAction teams data
 /// </summary>
-public class InvokeMSTeamsActionData(object? value) : MSTeamsActionData(SubmitActionType.Invoke)
+public class InvokeMSTeamsActionData(object? value) : MsTeamsSubmitActionData
 {
+    /// <summary>
+    /// The Teams-specifc sub-type of the action.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "invoke";
+
     /// <summary>
     /// Set the value to send with the invoke
     /// </summary>
     [JsonPropertyName("value")]
-    [JsonPropertyOrder(1)]
     public object? Value { get; set; } = value;
 }

@@ -1,14 +1,6 @@
 using System.Text.Json.Serialization;
 
-using Microsoft.Teams.Common;
-
 namespace Microsoft.Teams.Cards;
-
-public partial class SubmitActionType : StringEnum
-{
-    public static readonly SubmitActionType MessageBack = new("messageBack");
-    public bool IsMessageBack => MessageBack.Equals(Value);
-}
 
 public class MessageBackAction : SubmitAction
 {
@@ -16,14 +8,13 @@ public class MessageBackAction : SubmitAction
     /// Initial data that input fields will be combined with. These are essentially ‘hidden’ properties.
     /// </summary>
     [JsonPropertyName("data")]
-    [JsonPropertyOrder(11)]
     public new MessageBackActionData Data { get; set; }
 
     public MessageBackAction(string text, string value)
     {
         Data = new()
         {
-            MSTeams = new()
+            MsTeams = new()
             {
                 Text = text,
                 Value = value
@@ -35,7 +26,7 @@ public class MessageBackAction : SubmitAction
     {
         Data = new()
         {
-            MSTeams = new()
+            MsTeams = new()
             {
                 Text = text,
                 DisplayText = displayText,
@@ -54,20 +45,24 @@ public class MessageBackActionData : SubmitActionData
     /// Teams specific payload data.
     /// </summary>
     [JsonPropertyName("msteams")]
-    [JsonPropertyOrder(0)]
-    public new required MessageBackMSTeamsActionData MSTeams { get; set; }
+    public new required MessageBackMSTeamsActionData MsTeams { get; set; }
 }
 
 /// <summary>
 /// the MessageBackAction teams data
 /// </summary>
-public class MessageBackMSTeamsActionData() : MSTeamsActionData(SubmitActionType.MessageBack)
+public class MessageBackMSTeamsActionData() : MsTeamsSubmitActionData
 {
+    /// <summary>
+    /// The Teams-specifc sub-type of the action.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "messageBack";
+
     /// <summary>
     /// Sent to your bot when the action is performed.
     /// </summary>
     [JsonPropertyName("text")]
-    [JsonPropertyOrder(1)]
     public required string Text { get; set; }
 
     /// <summary>
@@ -75,7 +70,6 @@ public class MessageBackMSTeamsActionData() : MSTeamsActionData(SubmitActionType
     /// This text isn't sent to your bot.
     /// </summary>
     [JsonPropertyName("displayText")]
-    [JsonPropertyOrder(2)]
     public string? DisplayText { get; set; }
 
     /// <summary>
@@ -83,6 +77,5 @@ public class MessageBackMSTeamsActionData() : MSTeamsActionData(SubmitActionType
     /// for the action, such as unique identifiers or a `JSON` object.
     /// </summary>
     [JsonPropertyName("value")]
-    [JsonPropertyOrder(3)]
     public required string Value { get; set; }
 }
