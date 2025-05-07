@@ -1,0 +1,40 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "task/submit",
+  "value": {
+    "data": {
+      "key": "value"
+    },
+    "context": {
+      "theme": "default"
+    }
+  },
+  "from": {
+    "id": "fromIdString",
+    "aadObjectId": "fromAadObjectIdString",
+    "role": "bot",
+    "name": "fromNameString"
+  },
+  "recipient": {
+    "id": "recipientIdString",
+    "name": "recipientNameString"
+  },
+  "conversation": {
+    "id": "conversationIdString",
+    "conversationType": "groupChat"
+  },
+  "serviceUrl": "fakeServiceUrl",
+  "locale": "en-en",
+  "channelData": {
+    "channel": {
+      "id": "channelIdString",
+      "name": "channelNameString"
+    },
+    "team": {
+      "id": "teamIdString",
+      "name": "teamNameString"
+    }
+  },
+  "key": "value"
+}

@@ -1,0 +1,10 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "tab/fetch",
+  "value": {
+    "tabContext": {
+      "tabEntityId": "tabEntityIdString"
+    }
+  }
+}

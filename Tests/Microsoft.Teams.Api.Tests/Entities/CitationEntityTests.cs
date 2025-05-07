@@ -2,7 +2,7 @@ using System.Text.Json;
 
 using Microsoft.Teams.Api.Entities;
 
-namespace Microsoft.Teams.Api.Tests.Activities;
+namespace Microsoft.Teams.Api.Tests.Entities;
 
 public class CitationEntityTests
 {
