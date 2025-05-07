@@ -1,71 +1,93 @@
-using Microsoft.Teams.Api;
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
-using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.Apps;
 
-public partial interface IApp
-{
-    public IApp OnError(ErrorEventHandler handler);
-    public IApp OnStart(StartEventHandler handler);
-    public IApp OnActivity(ActivityEventHandler handler);
-    public IApp OnActivitySent(ActivitySentEventHandler handler);
-    public IApp OnActivityResponse(ActivityResponseEventHandler handler);
-
-    public delegate Task StartEventHandler(IApp app, ILogger logger);
-    public delegate Task ErrorEventHandler(IApp app, IPlugin? plugin, Exception exception, IContext<IActivity>? context);
-    public delegate Task ActivityEventHandler(IApp app, IContext<IActivity> context);
-    public delegate Task ActivitySentEventHandler(IApp app, IActivity activity, IContext<IActivity> context);
-    public delegate Task ActivityResponseEventHandler(IApp app, Response? response, IContext<IActivity> context);
-}
-
 public partial class App
 {
-    protected event IApp.ErrorEventHandler ErrorEvent;
-    protected event IApp.StartEventHandler StartEvent;
-    protected event IApp.ActivityEventHandler ActivityEvent;
-    protected event IApp.ActivitySentEventHandler ActivitySentEvent;
-    protected event IApp.ActivityResponseEventHandler ActivityResponseEvent;
+    internal EventEmitter Events = new();
 
-    public IApp OnError(IApp.ErrorEventHandler handler)
+    public App OnEvent(string name, Action<IPlugin, Event> handler)
     {
-        ErrorEvent += handler;
+        Events.On(name, handler);
         return this;
     }
 
-    public IApp OnStart(IApp.StartEventHandler handler)
+    public App OnEvent<TEvent>(string name, Action<IPlugin, TEvent> handler) where TEvent : Event
     {
-        StartEvent += handler;
+        Events.On(name, (plugin, payload) => handler(plugin, (TEvent)payload));
         return this;
     }
 
-    public IApp OnActivity(IApp.ActivityEventHandler handler)
+    public App OnEvent(string name, Func<IPlugin, Event, CancellationToken, Task> handler)
     {
-        ActivityEvent += handler;
+        Events.On(name, handler);
         return this;
     }
 
-    public IApp OnActivitySent(IApp.ActivitySentEventHandler handler)
+    public App OnEvent<TEvent>(string name, Func<IPlugin, TEvent, CancellationToken, Task> handler) where TEvent : Event
     {
-        ActivitySentEvent += handler;
+        Events.On(name, (plugin, payload, token) => handler(plugin, (TEvent)payload, token));
         return this;
     }
 
-    public IApp OnActivityResponse(IApp.ActivityResponseEventHandler handler)
+    public App OnError(Action<IPlugin, ErrorEvent> handler)
     {
-        ActivityResponseEvent += handler;
-        return this;
+        return OnEvent("error", handler);
     }
 
-    protected async Task OnErrorEvent(IPlugin? sender, Exception exception, IContext<IActivity>? context)
+    public App OnError(Func<IPlugin, ErrorEvent, CancellationToken, Task> handler)
     {
-        var cancellationToken = context?.CancellationToken ?? default;
-        Logger.Error(exception);
+        return OnEvent("error", handler);
+    }
 
-        if (exception is HttpException ex)
+    public App OnStart(Action<IPlugin> handler)
+    {
+        return OnEvent("start", (plugin, _) => handler(plugin));
+    }
+
+    public App OnStart(Func<IPlugin, Task> handler)
+    {
+        return OnEvent("start", (plugin, _) => handler(plugin));
+    }
+
+    public App OnActivity(Action<ISenderPlugin, ActivityEvent> handler)
+    {
+        return OnEvent("activity", (plugin, @event) => handler((ISenderPlugin)plugin, (ActivityEvent)@event));
+    }
+
+    public App OnActivity(Func<ISenderPlugin, ActivityEvent, CancellationToken, Task> handler)
+    {
+        return OnEvent("activity", (plugin, @event, token) => handler((ISenderPlugin)plugin, (ActivityEvent)@event, token));
+    }
+
+    public App OnActivitySent(Action<ISenderPlugin, ActivitySentEvent> handler)
+    {
+        return OnEvent("activity.sent", (plugin, @event) => handler((ISenderPlugin)plugin, (ActivitySentEvent)@event));
+    }
+
+    public App OnActivitySent(Func<ISenderPlugin, ActivitySentEvent, CancellationToken, Task> handler)
+    {
+        return OnEvent("activity.sent", (plugin, @event, token) => handler((ISenderPlugin)plugin, (ActivitySentEvent)@event, token));
+    }
+
+    public App OnActivityResponse(Action<ISenderPlugin, ActivityResponseEvent> handler)
+    {
+        return OnEvent("activity.response", (plugin, @event) => handler((ISenderPlugin)plugin, (ActivityResponseEvent)@event));
+    }
+
+    public App OnActivityResponse(Func<ISenderPlugin, ActivityResponseEvent, CancellationToken, Task> handler)
+    {
+        return OnEvent("activity.response", (plugin, @event, token) => handler((ISenderPlugin)plugin, (ActivityResponseEvent)@event, token));
+    }
+
+    protected async Task OnErrorEvent(IPlugin sender, ErrorEvent @event, CancellationToken cancellationToken = default)
+    {
+        cancellationToken = @event.Context?.CancellationToken ?? cancellationToken;
+        Logger.Error(@event.Exception);
+
+        if (@event.Exception is HttpException ex)
         {
             Logger.Error(ex.Request?.RequestUri?.ToString());
 
@@ -78,48 +100,31 @@ public partial class App
 
         foreach (var plugin in Plugins)
         {
-            if (sender is not null && sender.Equals(plugin)) continue;
-            await plugin.OnError(this, sender, exception, context, cancellationToken);
+            if (sender.Equals(plugin)) continue;
+            await plugin.OnError(this, sender, @event, cancellationToken);
         }
     }
 
-    protected Task OnStartEvent()
+    protected async Task OnActivitySentEvent(ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Info("started"));
-    }
-
-    protected async Task OnActivitySentEvent(IActivity activity, IContext<IActivity> context)
-    {
-        Logger.Debug(activity);
-
         foreach (var plugin in Plugins)
         {
-            await plugin.OnActivitySent(this, activity, context);
+            if (sender.Equals(plugin)) continue;
+            await plugin.OnActivitySent(this, sender, @event, cancellationToken);
         }
     }
 
-    protected async Task OnActivitySentEvent(ISenderPlugin sender, IActivity activity, ConversationReference reference, CancellationToken cancellationToken = default)
+    protected async Task OnActivityResponseEvent(ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug(activity);
-
         foreach (var plugin in Plugins)
         {
-            await plugin.OnActivitySent(this, sender, activity, reference, cancellationToken);
+            if (sender.Equals(plugin)) continue;
+            await plugin.OnActivityResponse(this, sender, @event, cancellationToken);
         }
     }
 
-    protected async Task OnActivityResponseEvent(Response? response, IContext<IActivity> context)
+    protected Task<Response> OnActivityEvent(ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug(response);
-
-        foreach (var plugin in Plugins)
-        {
-            await plugin.OnActivityResponse(this, response, context);
-        }
-    }
-
-    protected Task<Response> OnActivityEvent(ISenderPlugin sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
-    {
-        return Process(sender, token, activity, cancellationToken);
+        return Process(sender, @event.Token, @event.Activity, cancellationToken);
     }
 }

@@ -35,7 +35,7 @@ public static class ServiceCollectionExtensions
         return collection;
     }
 
-    public static IServiceCollection AddTeams(this IServiceCollection collection, IAppOptions options)
+    public static IServiceCollection AddTeams(this IServiceCollection collection, AppOptions options)
     {
         var app = new App(options);
         var log = new TeamsLogger(app.Logger);
@@ -44,14 +44,14 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton(app.Storage);
         collection.AddSingleton<ILoggerFactory>(_ => new LoggerFactory([new TeamsLoggerProvider(log)]));
         collection.AddSingleton<ILogger>(log);
-        collection.AddSingleton<IApp>(app);
+        collection.AddSingleton<App>(app);
         collection.AddHostedService<TeamsService>();
         collection.AddScoped<TeamsContext>();
         collection.AddTransient(provider => provider.GetRequiredService<TeamsContext>().Activity);
         return collection;
     }
 
-    public static IServiceCollection AddTeams(this IServiceCollection collection, IAppBuilder builder)
+    public static IServiceCollection AddTeams(this IServiceCollection collection, AppBuilder builder)
     {
         var app = builder.Build();
         var log = new TeamsLogger(app.Logger);
@@ -67,7 +67,7 @@ public static class ServiceCollectionExtensions
         return collection;
     }
 
-    public static IServiceCollection AddTeams(this IServiceCollection collection, IApp app)
+    public static IServiceCollection AddTeams(this IServiceCollection collection, App app)
     {
         var log = new TeamsLogger(app.Logger);
 
@@ -82,7 +82,7 @@ public static class ServiceCollectionExtensions
         return collection;
     }
 
-    public static IServiceCollection AddTeams(this IServiceCollection collection, Func<IServiceProvider, IApp> factory)
+    public static IServiceCollection AddTeams(this IServiceCollection collection, Func<IServiceProvider, App> factory)
     {
         collection.AddSingleton(provider => provider.GetRequiredService<Common.Logging.ILogger>());
         collection.AddSingleton<ILoggerFactory, LoggerFactory>();
@@ -91,12 +91,12 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<TeamsContext>();
         collection.AddTransient(provider => provider.GetRequiredService<TeamsContext>().Activity);
         collection.AddSingleton(factory);
-        collection.AddSingleton(provider => provider.GetRequiredService<IApp>().Logger);
-        collection.AddSingleton(provider => provider.GetRequiredService<IApp>().Storage);
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);
         return collection;
     }
 
-    public static IServiceCollection AddTeams(this IServiceCollection collection, Func<IServiceProvider, Task<IApp>> factory)
+    public static IServiceCollection AddTeams(this IServiceCollection collection, Func<IServiceProvider, Task<App>> factory)
     {
         collection.AddSingleton(provider => provider.GetRequiredService<Common.Logging.ILogger>());
         collection.AddSingleton<ILoggerFactory, LoggerFactory>();
@@ -105,8 +105,8 @@ public static class ServiceCollectionExtensions
         collection.AddScoped<TeamsContext>();
         collection.AddTransient(provider => provider.GetRequiredService<TeamsContext>().Activity);
         collection.AddSingleton(provider => factory(provider).GetAwaiter().GetResult());
-        collection.AddSingleton(provider => provider.GetRequiredService<IApp>().Logger);
-        collection.AddSingleton(provider => provider.GetRequiredService<IApp>().Storage);
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);
         return collection;
     }
 

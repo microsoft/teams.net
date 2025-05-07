@@ -6,7 +6,7 @@ namespace Microsoft.Teams.Apps.Tests.Routing;
 
 public class MessageDeleteActivityTests
 {
-    private readonly IApp _app;
+    private readonly App _app;
     private readonly IToken _token;
 
     public MessageDeleteActivityTests()

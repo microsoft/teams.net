@@ -7,7 +7,7 @@ namespace Microsoft.Teams.Apps.Tests.Routing;
 
 public class MessageReactionActivityTests
 {
-    private readonly IApp _app;
+    private readonly App _app;
     private readonly IToken _token;
 
     public MessageReactionActivityTests()
