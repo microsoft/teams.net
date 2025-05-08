@@ -17,6 +17,11 @@
     <IncludeSymbols>true</IncludeSymbols>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>$([MSBuild]::GetPathOfFileAbove('key.snk'))</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Include=".\README.md" Pack="true" PackagePath="\" />
     <None Include="$(MSBuildThisFileDirectory)\..\Assets\icon.png" Pack="true" PackagePath="\" />
