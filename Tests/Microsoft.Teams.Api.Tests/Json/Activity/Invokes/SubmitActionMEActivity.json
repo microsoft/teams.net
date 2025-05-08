@@ -1,0 +1,33 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "composeExtension/submitAction",
+  "value": {
+    "data": {
+      "id": "submitButton",
+      "formField1": "formField1value",
+      "formField2": "formField2value"
+    },
+    "context": {
+      "theme": "default"
+    },
+    "commandId": "commandId",
+    "commandContext": "message",
+    "botMessagePreviewAction": "edit",
+    "messagePayload": {
+      "id": "messageId",
+      "messageType": "message",
+      "subject": "subject",
+      "from": {},
+      "body": {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": "\u003Cadaptive card content json\u003E",
+        "textContent": "text content"
+      }
+    }
+  },
+  "conversation": {
+    "id": "conversationId",
+    "conversationType": "personal"
+  }
+}

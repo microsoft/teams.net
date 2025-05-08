@@ -1,0 +1,27 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "composeExtension/fetchTask",
+  "value": {
+    "data": {
+      "key1": "value1",
+      "key2": "value2"
+    },
+    "context": {
+      "theme": "dark-theme"
+    },
+    "commandId": "commandId",
+    "commandContext": "compose",
+    "botMessagePreviewAction": "send",
+    "messagePayload": {
+      "id": "messageId",
+      "messageType": "message",
+      "subject": "subject",
+      "from": {},
+      "body": {
+        "contentType": "text",
+        "content": "content"
+      }
+    }
+  }
+}
