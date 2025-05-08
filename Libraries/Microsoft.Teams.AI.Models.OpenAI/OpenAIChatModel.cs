@@ -36,16 +36,22 @@ public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
 
     public OpenAIChatModel(string model, string apiKey, Options? options = null)
     {
+        options ??= new();
+        options.NetworkTimeout ??= TimeSpan.FromSeconds(60);
+
         Model = model;
-        Client = new(new ApiKeyCredential(apiKey), options ?? new());
+        Client = new(new ApiKeyCredential(apiKey), options);
         ChatClient = Client.GetChatClient(model);
         Logger = (options?.Logger ?? new ConsoleLogger()).Child(model);
     }
 
     public OpenAIChatModel(string model, ApiKeyCredential apiKey, Options? options = null)
     {
+        options ??= new();
+        options.NetworkTimeout ??= TimeSpan.FromSeconds(60);
+
         Model = model;
-        Client = new(apiKey, options ?? new());
+        Client = new(apiKey, options);
         ChatClient = Client.GetChatClient(model);
         Logger = (options?.Logger ?? new ConsoleLogger()).Child(model);
     }

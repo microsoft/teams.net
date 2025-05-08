@@ -4,6 +4,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
 using Microsoft.Teams.Common.Logging;
@@ -11,43 +12,9 @@ using Microsoft.Teams.Common.Storage;
 
 namespace Microsoft.Teams.Apps;
 
-public partial interface IApp
+public partial class App
 {
-    public ILogger Logger { get; }
-    public IStorage<string, object> Storage { get; }
-    public ApiClient Api { get; }
-    public IHttpClient Client { get; }
-    public IHttpCredentials? Credentials { get; }
-    public IToken? BotToken { get; }
-    public IToken? GraphToken { get; }
-
-    /// <summary>
-    /// start the app
-    /// </summary>
-    public Task Start(CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// send an activity to the conversation
-    /// </summary>
-    /// <param name="activity">activity activity to send</param>
-    public Task<T> Send<T>(string conversationId, T activity, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity;
-
-    /// <summary>
-    /// send a message activity to the conversation
-    /// </summary>
-    /// <param name="text">the text to send</param>
-    public Task<MessageActivity> Send(string conversationId, string text, string? serviceUrl = null, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// send a message activity with a card attachment
-    /// </summary>
-    /// <param name="card">the card to send as an attachment</param>
-    public Task<MessageActivity> Send(string conversationId, Cards.Card card, string? serviceUrl = null, CancellationToken cancellationToken = default);
-}
-
-public partial class App : IApp
-{
-    public static IAppBuilder Builder(IAppOptions? options = null) => new AppBuilder(options);
+    public static AppBuilder Builder(AppOptions? options = null) => new AppBuilder(options);
 
     /// <summary>
     /// the apps id
@@ -74,11 +41,11 @@ public partial class App : IApp
         {
             var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
             version ??= "0.0.0";
-            return $"Teams.net[apps]/{version}";
+            return $"teams.net[apps]/{version}";
         }
     }
 
-    public App(IAppOptions? options = null)
+    public App(AppOptions? options = null)
     {
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
@@ -88,11 +55,6 @@ public partial class App : IApp
         Credentials = options?.Credentials;
         Api = new ApiClient("https://smba.trafficmanager.net/teams", Client);
         Plugins = options?.Plugins ?? [];
-        ErrorEvent = (_, sender, exception, context) => OnErrorEvent(sender, exception, context);
-        StartEvent = (_, _) => OnStartEvent();
-        ActivityEvent = (_, _) => Task.Run(() => { });
-        ActivitySentEvent = (_, activity, context) => OnActivitySentEvent(activity, context);
-        ActivityResponseEvent = (_, res, context) => OnActivityResponseEvent(res, context);
 
         Container = new Container();
         Container.Register(Logger);
@@ -105,9 +67,12 @@ public partial class App : IApp
         Container.Register("BotToken", new FactoryProvider(() => BotToken));
         Container.Register("GraphToken", new FactoryProvider(() => GraphToken));
 
-        RegisterAttributeRoutes();
         OnTokenExchange(OnTokenExchangeActivity);
         OnVerifyState(OnVerifyStateActivity);
+        OnError(OnErrorEvent);
+        OnActivitySent(OnActivitySentEvent);
+        OnActivityResponse(OnActivityResponseEvent);
+        Events.On("activity", (plugin, @event, token) => OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token));
     }
 
     /// <summary>
@@ -122,7 +87,7 @@ public partial class App : IApp
                 Inject(plugin);
             }
 
-            if (Credentials != null)
+            if (Credentials is not null)
             {
                 var botToken = await Api.Bots.Token.GetAsync(Credentials);
                 var graphToken = await Api.Bots.Token.GetGraphAsync(Credentials);
@@ -143,12 +108,14 @@ public partial class App : IApp
             {
                 await plugin.OnStart(this, cancellationToken);
             }
-
-            await StartEvent(this, Logger);
         }
-        catch (Exception err)
+        catch (Exception ex)
         {
-            await ErrorEvent(this, null, err, null);
+            await Events.Emit(
+                null!,
+                "error",
+                new ErrorEvent() { Exception = ex }
+            );
         }
     }
 
@@ -158,7 +125,7 @@ public partial class App : IApp
     /// <param name="activity">activity activity to send</param>
     public async Task<T> Send<T>(string conversationId, T activity, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
     {
-        if (Id == null || Name == null)
+        if (Id is null || Name is null)
         {
             throw new InvalidOperationException("app not started");
         }
@@ -182,13 +149,20 @@ public partial class App : IApp
 
         var sender = Plugins.Where(plugin => plugin is ISenderPlugin).Select(plugin => plugin as ISenderPlugin).First();
 
-        if (sender == null)
+        if (sender is null)
         {
             throw new Exception("no plugin that can send activities was found");
         }
 
         var res = await sender.Send(activity, reference, cancellationToken);
-        await OnActivitySentEvent(sender, res, reference, cancellationToken).ConfigureAwait(false);
+
+        await Events.Emit(
+            sender,
+            "activity.sent",
+            new ActivitySentEvent() { Activity = res },
+            cancellationToken
+        );
+
         return res;
     }
 
@@ -205,8 +179,164 @@ public partial class App : IApp
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public async Task<MessageActivity> Send(string conversationId, Cards.Card card, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
         return await Send(conversationId, new MessageActivity().AddAttachment(card), serviceUrl, cancellationToken);
+    }
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    /// <param name="sender">the plugin to use</param>
+    /// <param name="token">the request token</param>
+    /// <param name="activity">the inbound activity</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    public async Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
+    {
+        var routes = Router.Select(activity);
+        JsonWebToken? userToken = null;
+
+        var api = new ApiClient(Api);
+
+        try
+        {
+            var tokenResponse = await api.Users.Token.GetAsync(new()
+            {
+                UserId = activity.From.Id,
+                ChannelId = activity.ChannelId,
+                ConnectionName = "graph"
+            });
+
+            userToken = new JsonWebToken(tokenResponse);
+        }
+        catch { }
+
+        var path = activity.GetPath();
+        Logger.Debug(path);
+
+        var reference = new ConversationReference()
+        {
+            ServiceUrl = activity.ServiceUrl ?? token.ServiceUrl,
+            ChannelId = activity.ChannelId,
+            Bot = activity.Recipient,
+            User = activity.From,
+            Locale = activity.Locale,
+            Conversation = activity.Conversation,
+        };
+
+        var userGraphTokenProvider = Azure.Core.DelegatedTokenCredential.Create((context, _) =>
+        {
+            return userToken is null ? default : new Azure.Core.AccessToken(userToken.ToString(), userToken.Token.ValidTo);
+        });
+
+        object? data = null;
+        var i = -1;
+        async Task<object?> Next(IContext<IActivity> context)
+        {
+            i++;
+            if (i == routes.Count) return data;
+            var res = await routes[i].Invoke(context);
+
+            if (res is not null)
+                data = res;
+
+            return res;
+        }
+
+        var stream = sender.CreateStream(reference, cancellationToken);
+        var context = new Context<IActivity>(sender, stream)
+        {
+            AppId = token.AppId ?? Id ?? string.Empty,
+            Log = Logger.Child(path),
+            Storage = Storage,
+            Api = api,
+            Activity = activity,
+            Ref = reference,
+            IsSignedIn = userToken is not null,
+            OnNext = Next,
+            UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
+            CancellationToken = cancellationToken,
+            OnActivitySent = (activity, context) => Events.Emit(
+                context.Sender,
+                "activity.sent",
+                new ActivitySentEvent() { Activity = activity },
+                context.CancellationToken
+            )
+        };
+
+        stream.OnChunk += activity => Events.Emit(
+            sender,
+            "activity.sent",
+            new ActivitySentEvent() { Activity = activity },
+            cancellationToken
+        );
+
+        try
+        {
+            var @event = new ActivityEvent()
+            {
+                Token = token,
+                Activity = activity
+            };
+
+            foreach (var plugin in Plugins)
+            {
+                await plugin.OnActivity(this, sender, @event, cancellationToken);
+            }
+
+            var res = await Next(context);
+            await stream.Close();
+
+            var response = res is Response value
+                ? value
+                : new Response(System.Net.HttpStatusCode.OK, res);
+
+            await Events.Emit(
+                sender,
+                "activity.response",
+                new ActivityResponseEvent() { Response = response },
+                cancellationToken
+            );
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            await Events.Emit(
+                sender,
+                "error",
+                new ErrorEvent() { Exception = ex },
+                cancellationToken
+            );
+
+            return new Response(System.Net.HttpStatusCode.InternalServerError);
+        }
+    }
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    /// <param name="sender">the plugin to use</param>
+    /// <param name="token">the request token</param>
+    /// <param name="activity">the inbound activity</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <exception cref="Exception"></exception>
+    public Task<Response> Process(string sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
+    {
+        var plugin = ((ISenderPlugin?)GetPlugin(sender)) ?? throw new Exception($"sender plugin '{sender}' not found");
+        return Process(plugin, token, activity, cancellationToken);
+    }
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    /// <param name="token">the request token</param>
+    /// <param name="activity">the inbound activity</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <exception cref="Exception"></exception>
+    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
+    {
+        var plugin = GetPlugin<TPlugin>() ?? throw new Exception($"sender plugin '{typeof(TPlugin).Name}' not found");
+        return Process(plugin, token, activity, cancellationToken);
     }
 }

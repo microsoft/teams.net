@@ -1,5 +1,6 @@
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Auth;
 
 namespace Microsoft.Teams.Apps.Plugins;
 
@@ -34,4 +35,9 @@ public interface ISenderPlugin : IPlugin
     /// <param name="reference">the conversation reference</param>
     /// <returns>a new stream</returns>
     public IStreamer CreateStream(ConversationReference reference, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default);
 }

@@ -157,7 +157,7 @@ public class CitationAppearance
             Url = Url,
             Abstract = Abstract,
             EncodingFormat = EncodingFormat,
-            Image = Icon == null ? null : new CitationEntity.AppearanceDocument.ImageObject() { Name = Icon },
+            Image = Icon is null ? null : new CitationEntity.AppearanceDocument.ImageObject() { Name = Icon },
             Keywords = Keywords,
             UsageInfo = UsageInfo
         };

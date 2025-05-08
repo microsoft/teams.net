@@ -47,6 +47,22 @@ public class Conversation
     [JsonPropertyName("members")]
     [JsonPropertyOrder(5)]
     public IList<Account>? Members { get; set; }
+
+    /// <summary>
+    /// The Conversation Thread Id
+    /// </summary>
+    [JsonIgnore]
+    public string ThreadId
+    {
+        get
+        {
+            var parts = Id.Split(';');
+            return parts.Length > 1 ? parts.First() : Id;
+        }
+    }
+
+    public object Clone() => MemberwiseClone();
+    public Conversation Copy() => (Conversation)Clone();
 }
 
 [JsonConverter(typeof(JsonConverter<ConversationType>))]

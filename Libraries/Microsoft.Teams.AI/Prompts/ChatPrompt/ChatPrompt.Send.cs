@@ -8,12 +8,12 @@ public partial class ChatPrompt<TOptions>
     public async Task<IMessage> Send(IMessage message, CancellationToken cancellationToken = default)
     {
         var buffer = string.Empty;
-        var prompt = Template != null ? await Template.Render() : null;
+        var prompt = Template is not null ? await Template.Render() : null;
         var res = await Model.Send(message, new(Invoke)
         {
             Functions = Functions.List,
             Messages = Messages,
-            Prompt = prompt == null ? null : new DeveloperMessage(prompt),
+            Prompt = prompt is null ? null : new DeveloperMessage(prompt),
         }, cancellationToken);
 
         return res;
@@ -45,11 +45,11 @@ public partial class ChatPrompt<TOptions>
     {
         var messages = options?.Messages ?? Messages;
         var buffer = string.Empty;
-        var prompt = Template != null ? await Template.Render(null, cancellationToken) : null;
+        var prompt = Template is not null ? await Template.Render(null, cancellationToken) : null;
 
         async Task OnChunk(string chunk)
         {
-            if (chunk == string.Empty || onChunk == null) return;
+            if (chunk == string.Empty || onChunk is null) return;
             buffer += chunk;
 
             try
@@ -64,8 +64,8 @@ public partial class ChatPrompt<TOptions>
         {
             Functions = Functions.List,
             Messages = messages,
-            Prompt = prompt == null ? null : new DeveloperMessage(prompt),
-            Options = options == null ? default : options.Request,
+            Prompt = prompt is null ? null : new DeveloperMessage(prompt),
+            Options = options is null ? default : options.Request,
         };
 
         ModelMessage<string>? res;
@@ -79,7 +79,7 @@ public partial class ChatPrompt<TOptions>
                 message = await plugin.OnBeforeSend(this, message, requestOptions.Options, cancellationToken);
             }
 
-            if (onChunk == null)
+            if (onChunk is null)
             {
                 res = await Model.Send(message, requestOptions, cancellationToken);
             }

@@ -26,12 +26,30 @@ public partial interface IContext
         /// send a message activity with a card attachment
         /// </summary>
         /// <param name="card">the card to send as an attachment</param>
-        public Task<MessageActivity> Send(Cards.Card card) => context.Send(card);
+        public Task<MessageActivity> Send(Cards.AdaptiveCard card) => context.Send(card);
+
+        /// <summary>
+        /// send an activity to the conversation as a reply
+        /// </summary>
+        /// <param name="activity">activity activity to send</param>
+        public Task<T> Reply<T>(T activity) where T : IActivity => context.Reply(activity);
+
+        /// <summary>
+        /// send a message activity to the conversation as a reply
+        /// </summary>
+        /// <param name="text">the text to send</param>
+        public Task<MessageActivity> Reply(string text) => context.Reply(text);
+
+        /// <summary>
+        /// send a message activity with a card attachment as a reply
+        /// </summary>
+        /// <param name="card">the card to send as an attachment</param>
+        public Task<MessageActivity> Reply(Cards.AdaptiveCard card) => context.Reply(card);
 
         /// <summary>
         /// send a typing activity
         /// </summary>
-        public Task<TypingActivity> Typing() => context.Typing();
+        public Task<TypingActivity> Typing(string? text = null) => context.Typing(text);
 
         /// <summary>
         /// trigger user signin flow for the activity sender

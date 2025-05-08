@@ -26,7 +26,7 @@ public partial class OpenAIChatModel
         var messages = await CallFunctions(message, options, cancellationToken);
         var chatMessages = messages.Select(m => m.ToOpenAI()).ToList();
 
-        if (options.Prompt != null)
+        if (options.Prompt is not null)
         {
             chatMessages.Insert(0, options.Prompt.ToOpenAI());
         }
@@ -45,7 +45,7 @@ public partial class OpenAIChatModel
             var result = await ChatClient.CompleteChatAsync(
                 chatMessages,
                 requestOptions,
-                cancellationToken
+                CancellationToken.None
             );
 
             var modelMessage = ChatMessage.CreateAssistantMessage(result.Value).ToTeams();
@@ -70,7 +70,7 @@ public partial class OpenAIChatModel
         var messages = await CallFunctions(message, options, cancellationToken);
         var chatMessages = messages.Select(m => m.ToOpenAI()).ToList();
 
-        if (options.Prompt != null)
+        if (options.Prompt is not null)
         {
             chatMessages.Insert(0, options.Prompt.ToOpenAI());
         }
@@ -86,7 +86,7 @@ public partial class OpenAIChatModel
                 requestOptions.Tools.Add(tool);
             }
 
-            var res = ChatClient.CompleteChatStreamingAsync(chatMessages, requestOptions, cancellationToken);
+            var res = ChatClient.CompleteChatStreamingAsync(chatMessages, requestOptions, CancellationToken.None);
             var content = new StringBuilder();
             var toolCalls = new StreamingChatToolCallsBuilder();
 

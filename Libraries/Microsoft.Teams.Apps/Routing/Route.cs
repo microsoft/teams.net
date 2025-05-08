@@ -26,6 +26,7 @@ public class AttributeRoute : IRoute
 {
     public required ActivityAttribute Attr { get; set; }
     public required MethodInfo Method { get; set; }
+    public object? Object { get; set; }
 
     public bool Select(IActivity activity) => Attr.Select(activity);
     public ValidationResult Validate()
@@ -34,11 +35,11 @@ public class AttributeRoute : IRoute
 
         foreach (var param in Method.GetParameters())
         {
-            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>();
+            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>(true);
             var generic = param.ParameterType.GenericTypeArguments.FirstOrDefault();
             var isContext = generic?.IsAssignableTo(Attr.Type) ?? false;
 
-            if (attribute == null && !isContext)
+            if (attribute is null && !isContext)
             {
                 result.AddError(param.Name ?? "??", "type must be `IContext<TActivity>` or an `IContext` accessor attribute");
             }
@@ -47,24 +48,15 @@ public class AttributeRoute : IRoute
         return result;
     }
 
-    public async Task<object?> Invoke(IContext<IActivity> context)
+    public Task<object?> Invoke(IContext<IActivity> context)
     {
-        var log = context.Log.Child(Method.Name);
-        var contextClient = new IContext.Client(context);
         var args = Method.GetParameters().Select(param =>
         {
-            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>();
-            return attribute == null ? Attr.Coerce(context) : attribute.GetValue(context, param);
+            var attribute = param.GetCustomAttribute<ContextAccessorAttribute>(true);
+            return attribute is null ? Attr.Coerce(context) : attribute.GetValue(context, param);
         });
 
-        var res = Method.Invoke(null, args?.ToArray());
-
-        if (res is Task<object?> task)
-        {
-            res = await task;
-        }
-
-        return res;
+        return Method.InvokeAsync(Object, args?.ToArray());
     }
 
     public class ValidationResult

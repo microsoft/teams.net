@@ -14,6 +14,7 @@ public static partial class Program
     {
         var builder = WebApplication.CreateBuilder(args);
         builder.Services.AddOpenApi();
+        builder.Services.AddTransient<Controller>();
         builder.AddTeams().AddTeamsDevTools();
 
         var app = builder.Build();
@@ -28,17 +29,22 @@ public static partial class Program
         app.Run();
     }
 
-    [Activity]
-    public static async Task OnActivity(IContext<Activity> context, [Context] IContext.Next next)
+    [ActivityController]
+    public class Controller
     {
-        context.Log.Info(context.AppId);
-        await next();
-    }
+        [Activity]
+        public async Task OnActivity(IContext<Activity> context, [Context] IContext.Next next)
+        {
+            context.Log.Info(context.AppId);
+            await next();
+        }
 
-    [Message]
-    public static async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client)
-    {
-        await client.Typing();
-        await client.Send($"you said '{activity.Text}'");
+        [Message]
+        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client, [Context] Microsoft.Teams.Common.Logging.ILogger log)
+        {
+            log.Info("hit!");
+            await client.Typing();
+            await client.Send($"you said '{activity.Text}'");
+        }
     }
 }

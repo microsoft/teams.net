@@ -85,7 +85,7 @@ public readonly struct Union<A, B> : IUnion<A, B>
 
     public override bool Equals(object? value)
     {
-        return value != null && value is Union<A, B> o && Equals(o);
+        return value is not null && value is Union<A, B> o && Equals(o);
     }
 
     public static bool operator ==(Union<A, B> left, Union<A, B> right)
@@ -133,7 +133,7 @@ public class UnionJsonConverter<A, B> : JsonConverter<Union<A, B>>
     {
         var value = JsonSerializer.Deserialize<object>(ref reader, options);
 
-        if (value == null)
+        if (value is null)
         {
             throw new JsonException("Union value must not be null");
         }
@@ -252,7 +252,7 @@ public readonly struct Union<A, B, C> : IUnion<A, B, C>
 
     public override bool Equals(object? value)
     {
-        return value != null && value is Union<A, B, C> o && Equals(o);
+        return value is not null && value is Union<A, B, C> o && Equals(o);
     }
 
     public static bool operator ==(Union<A, B, C> left, Union<A, B, C> right)
@@ -308,7 +308,7 @@ public class UnionJsonConverter<A, B, C> : JsonConverter<Union<A, B, C>>
     {
         var value = JsonSerializer.Deserialize<object>(ref reader, options);
 
-        if (value == null)
+        if (value is null)
         {
             throw new JsonException("Union value must not be null");
         }
@@ -450,7 +450,7 @@ public readonly struct Union<A, B, C, D> : IUnion<A, B, C, D>
 
     public override bool Equals(object? value)
     {
-        return value != null && value is Union<A, B, C> o && Equals(o);
+        return value is not null && value is Union<A, B, C> o && Equals(o);
     }
 
     public static bool operator ==(Union<A, B, C, D> left, Union<A, B, C, D> right)
@@ -514,7 +514,7 @@ public class UnionJsonConverter<A, B, C, D> : JsonConverter<Union<A, B, C, D>>
     {
         var value = JsonSerializer.Deserialize<object>(ref reader, options);
 
-        if (value == null)
+        if (value is null)
         {
             throw new JsonException("Union value must not be null");
         }
@@ -545,7 +545,7 @@ public class UnionJsonConverterFactory : JsonConverterFactory
         var name = $"UnionJsonConverter`{args.Length}";
         var type = GetType().Assembly.GetTypes().Where(t => t.Name == name).FirstOrDefault();
 
-        if (type == null)
+        if (type is null)
         {
             throw new JsonException($"type '{name}' not found");
         }

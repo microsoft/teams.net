@@ -72,7 +72,15 @@ public partial interface IActivity : IConvertible, ICloneable
     [JsonIgnore]
     public bool IsStreaming { get; }
 
+    /// <summary>
+    /// get the activity type/name path
+    /// </summary>
     public string GetPath();
+
+    /// <summary>
+    /// get the quote reply string form of this activity
+    /// </summary>
+    public string ToQuoteReply();
 }
 
 [JsonConverter(typeof(JsonConverter))]
@@ -167,9 +175,6 @@ public partial class Activity : IActivity
         Properties = activity.Properties;
     }
 
-    /// <summary>
-    /// is this a streaming activity
-    /// </summary>
     [JsonIgnore]
     public bool IsStreaming => Entities?.Any(entity => entity.Type == "streaminfo" && entity is StreamInfoEntity) ?? false;
 
@@ -314,7 +319,7 @@ public partial class Activity : IActivity
     /// </summary>
     public virtual Activity AddFeedback(bool value = true)
     {
-        ChannelData ??= new ChannelData();
+        ChannelData ??= new();
         ChannelData.FeedbackLoopEnabled = value;
         return this;
     }
@@ -343,6 +348,59 @@ public partial class Activity : IActivity
     public EndOfConversationActivity ToEndOfConversation() => (EndOfConversationActivity)this;
     public EventActivity ToEvent() => (EventActivity)this;
     public InvokeActivity ToInvoke() => (InvokeActivity)this;
+
+    public Activity Merge(Activity from)
+    {
+        Id ??= from.Id;
+        ReplyToId ??= from.ReplyToId;
+        ChannelId ??= from.ChannelId;
+        From ??= from.From;
+        Recipient ??= from.Recipient;
+        Conversation ??= from.Conversation;
+        RelatesTo ??= from.RelatesTo;
+        ServiceUrl ??= from.ServiceUrl;
+        Locale ??= from.Locale;
+        Timestamp ??= from.Timestamp;
+        LocalTimestamp ??= from.LocalTimestamp;
+        AddEntity(from.Entities?.ToArray() ?? []);
+
+        if (from.ChannelData is not null)
+        {
+            WithData(from.ChannelData);
+        }
+
+        if (from.Properties is not null)
+        {
+            Properties ??= new Dictionary<string, object?>();
+
+            foreach (var kv in from.Properties)
+            {
+                Properties[kv.Key] = kv.Value;
+            }
+        }
+
+        return this;
+    }
+
+    public string ToQuoteReply()
+    {
+        var text = string.Empty;
+
+        if (this is MessageActivity message)
+        {
+            text = $"<p itemprop=\"preview\">{message.Text}</p>";
+        }
+
+        return $"""
+        <blockquote itemscope="" itemtype="http://schema.skype.com/Reply" itemid="{Id}">
+            <strong itemprop="mri" itemid="{From.Id}">
+                {From.Name}
+            </strong>
+            <span itemprop="time" itemid="{Id}"></span>
+            {text}
+        </blockquote>
+        """;
+    }
 
     public override string ToString()
     {

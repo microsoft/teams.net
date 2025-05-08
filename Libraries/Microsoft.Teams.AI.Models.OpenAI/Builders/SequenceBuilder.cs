@@ -13,9 +13,9 @@ public class SequenceBuilder<T>
 
     public void Append(ReadOnlyMemory<T> data)
     {
-        if (_first == null)
+        if (_first is null)
         {
-            Debug.Assert(_last == null);
+            Debug.Assert(_last is null);
             _first = new Segment(data);
             _last = _first;
         }
@@ -27,15 +27,15 @@ public class SequenceBuilder<T>
 
     public ReadOnlySequence<T> Build()
     {
-        if (_first == null)
+        if (_first is null)
         {
-            Debug.Assert(_last == null);
+            Debug.Assert(_last is null);
             return ReadOnlySequence<T>.Empty;
         }
 
         if (_first == _last)
         {
-            Debug.Assert(_first.Next == null);
+            Debug.Assert(_first.Next is null);
             return new ReadOnlySequence<T>(_first.Memory);
         }
 

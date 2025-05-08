@@ -44,7 +44,7 @@ public abstract class TabActivity(Name.Tabs name) : InvokeActivity(new(name.Valu
 
             var name = property.Deserialize<string>(options);
 
-            if (name == null)
+            if (name is null)
             {
                 throw new JsonException("failed to deserialize invoke activity 'name' property");
             }

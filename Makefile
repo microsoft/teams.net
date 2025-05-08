@@ -5,7 +5,13 @@ build:
 	dotnet build
 
 test:
-	dotnet test
+	dotnet test -v d
+
+test_cov:
+	dotnet test -v d --collect:"XPlat Code Coverage"
+
+test_report:
+	reportgenerator -reporttypes:Html -reports:**/coverage.cobertura.xml -targetdir:TestCoverage
 
 clean:
 	dotnet clean

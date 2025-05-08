@@ -25,7 +25,7 @@ public static partial class MessageExtensions
         return ChatTool.CreateFunctionTool(
             function.Name,
             function.Description,
-            function.Parameters == null ? null : BinaryData.FromString(JsonSerializer.Serialize(function.Parameters)),
+            function.Parameters is null ? null : BinaryData.FromString(JsonSerializer.Serialize(function.Parameters)),
             false
         );
     }

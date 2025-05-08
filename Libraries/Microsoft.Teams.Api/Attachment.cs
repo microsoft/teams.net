@@ -42,7 +42,7 @@ public class Attachment
     /// </summary>
     [JsonPropertyName("content")]
     [JsonPropertyOrder(4)]
-    public virtual object? Content { get; set; }
+    public object? Content { get; set; }
 
     /// <summary>
     /// (OPTIONAL) Thumbnail associated with attachment
@@ -69,7 +69,7 @@ public class Attachment
         Content = content;
     }
 
-    public Attachment(Teams.Cards.Card card)
+    public Attachment(Teams.Cards.AdaptiveCard card)
     {
         ContentType = ContentType.AdaptiveCard;
         Content = card;

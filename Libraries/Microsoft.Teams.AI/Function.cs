@@ -7,6 +7,7 @@ using Json.Schema;
 
 using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Messages;
+using Microsoft.Teams.Common.Extensions;
 using Microsoft.Teams.Common.Json;
 
 namespace Microsoft.Teams.AI;
@@ -72,7 +73,7 @@ public class Function : IFunction
         Handler = handler;
     }
 
-    internal async Task<object?> Invoke(FunctionCall call)
+    internal Task<object?> Invoke(FunctionCall call)
     {
         if (call.Arguments is not null && Parameters is not null)
         {
@@ -88,25 +89,21 @@ public class Function : IFunction
         }
 
         var args = call.Parse() ?? new Dictionary<string, object?>();
-        Console.WriteLine(JsonSerializer.Serialize(args));
         var method = Handler.GetMethodInfo();
         var parameters = method.GetParameters().Select(param =>
         {
             var name = param.GetCustomAttribute<ParamAttribute>()?.Name ?? param.Name ?? param.Position.ToString();
-            Console.WriteLine($"param: {name}");
             args.TryGetValue(name, out var value);
+
+            if (value is JsonElement element)
+            {
+                return element.Deserialize(param.ParameterType);
+            }
+
             return value;
         }).ToArray();
 
-        Console.WriteLine(JsonSerializer.Serialize(parameters));
-        var res = method.Invoke(Handler.Target, [parameters]);
-
-        if (res is Task<object?> task)
-        {
-            res = await task;
-        }
-
-        return res;
+        return method.InvokeAsync(Handler.Target, parameters);
     }
 
     public override string ToString()

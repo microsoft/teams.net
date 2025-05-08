@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\Directory.Build.props" Condition="'$(Version)' == ''" />
+
+  <PropertyGroup>
+    <PackageId>Microsoft.Teams.Plugins.AspNetCore.DevTools</PackageId>
+    <PackageDescription>Teams AspNetCore DevTools Plugin</PackageDescription>
+    <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
+    <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore;devtools</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <NoWarn>CS8618,CS0067</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.8.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
+
+    <ProjectReference Include="..\..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="web\**" />
+  </ItemGroup>
+
+</Project>

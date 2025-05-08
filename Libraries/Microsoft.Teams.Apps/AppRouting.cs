@@ -2,40 +2,44 @@ using System.Net;
 using System.Reflection;
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Annotations;
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Apps;
 
-public partial interface IApp : IRoutingModule;
-
 public partial class App : RoutingModule
 {
-    protected void RegisterAttributeRoutes()
+    public App AddController<T>(T controller) where T : class
     {
-        var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
+        var type = controller.GetType();
+        var attribute = type.GetCustomAttribute<ActivityControllerAttribute>(true) ?? throw new Exception($"type '{type.Name}' is not a controller");
+        var methods = type.GetMethods();
 
-        foreach (Type type in assembly.GetTypes())
+        foreach (MethodInfo method in methods)
         {
-            var methods = type.GetMethods();
+            var attrs = method.GetCustomAttributes<ActivityAttribute>(true);
 
-            foreach (MethodInfo method in methods)
+            if (attrs.Count() == 0) continue;
+
+            foreach (var attr in attrs)
             {
-                var attrs = method.GetCustomAttributes(typeof(ActivityAttribute), true);
+                var route = new AttributeRoute() { Attr = attr, Method = method, Object = controller };
+                var result = route.Validate();
 
-                if (attrs.Length == 0) continue;
-
-                foreach (object attr in attrs)
+                if (!result.Valid)
                 {
-                    var attribute = (ActivityAttribute)attr;
-                    var route = new AttributeRoute() { Attr = attribute, Method = method };
-                    var result = route.Validate();
-
-                    if (!result.Valid) throw new InvalidOperationException(result.ToString());
-                    Router.Register(route);
+                    throw new InvalidOperationException(result.ToString());
                 }
+
+                Router.Register(route);
+                Logger.Debug($"route '{attribute.Name ?? type.Name}.{route.Method.Name}' registered");
             }
         }
+
+        Logger.Debug($"controller '{attribute.Name ?? type.Name}' registered");
+        return this;
     }
 
     protected async Task<object?> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context)
@@ -57,9 +61,19 @@ public partial class App : RoutingModule
         }
         catch (HttpException ex)
         {
+            await Events.Emit(
+                context.Sender,
+                "error",
+                new ErrorEvent()
+                {
+                    Exception = ex,
+                    Context = (IContext<IActivity>)context
+                },
+                context.CancellationToken
+            );
+
             if (ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.BadRequest && ex.StatusCode != HttpStatusCode.PreconditionFailed)
             {
-                await ErrorEvent(this, context.Sender, ex, (IContext<IActivity>)context);
                 return new Response(ex.StatusCode);
             }
 
@@ -80,7 +94,7 @@ public partial class App : RoutingModule
         {
             var connectionName = (string?)await Storage.GetAsync(key);
 
-            if (connectionName == null || context.Activity.Value.State == null)
+            if (connectionName is null || context.Activity.Value.State is null)
             {
                 context.Log.Warn($"auth state not found for conversation '{context.Ref.Conversation.Id}' and user '{context.Activity.From.Id}'");
                 return new Response(HttpStatusCode.NotFound);
@@ -99,9 +113,19 @@ public partial class App : RoutingModule
         }
         catch (HttpException ex)
         {
+            await Events.Emit(
+                context.Sender,
+                "error",
+                new ErrorEvent()
+                {
+                    Exception = ex,
+                    Context = (IContext<IActivity>)context
+                },
+                context.CancellationToken
+            );
+
             if (ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.BadRequest && ex.StatusCode != HttpStatusCode.PreconditionFailed)
             {
-                await ErrorEvent(this, context.Sender, ex, (IContext<IActivity>)context);
                 return new Response(ex.StatusCode);
             }
 

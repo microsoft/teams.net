@@ -6,6 +6,7 @@ using Json.Schema.Generation;
 using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.AI.Models;
+using Microsoft.Teams.Common.Extensions;
 using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.AI.Prompts;
@@ -180,7 +181,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         var descriptionAttribute = type.GetCustomAttribute<Prompt.DescriptionAttribute>();
         var instructionsAttribute = type.GetCustomAttribute<Prompt.InstructionsAttribute>();
 
-        if (promptAttribute == null)
+        if (promptAttribute is null)
         {
             throw new Exception("only types utilizing the ChatPromptAttribute can be turned into a ChatPrompt");
         }
@@ -190,12 +191,12 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         var instructions = promptAttribute.Instructions ?? instructionsAttribute?.Instructions;
         options ??= new ChatPromptOptions().WithName(name);
 
-        if (description != null)
+        if (description is not null)
         {
             options = options.WithDescription(description);
         }
 
-        if (instructions != null)
+        if (instructions is not null)
         {
             options = options.WithInstructions(instructions);
         }
@@ -207,7 +208,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
             var functionAttribute = method.GetCustomAttribute<FunctionAttribute>();
             var functionDescriptionAttribute = method.GetCustomAttribute<Annotations.Function.DescriptionAttribute>();
 
-            if (functionAttribute == null) continue;
+            if (functionAttribute is null) continue;
 
             var parameters = method.GetParameters().Select(p =>
             {
@@ -226,17 +227,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
                 functionAttribute.Name ?? method.Name,
                 functionAttribute.Description ?? functionDescriptionAttribute?.Description,
                 parameters.Count() > 0 ? schema.Build() : null,
-                async (params object?[] args) =>
-                {
-                    var res = method.Invoke(value, args);
-
-                    if (res is Task<object?> task)
-                    {
-                        res = await task;
-                    }
-
-                    return res;
-                }
+                method.CreateDelegate(value)
             );
 
             prompt.Function(function);

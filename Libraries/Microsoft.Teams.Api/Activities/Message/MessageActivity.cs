@@ -61,9 +61,15 @@ public class MessageActivity : Activity
     [JsonPropertyOrder(43)]
     public object? Value { get; set; }
 
+    [JsonIgnore]
+    public bool IsRecipientMentioned
+    {
+        get => (Entities ?? []).Any(e => e is MentionEntity mention && mention.Mentioned.Id == Recipient.Id);
+    }
+
     public MessageActivity() : base(ActivityType.Message)
     {
-        Text = string.Empty;
+        Text ??= string.Empty;
     }
 
     public MessageActivity(string text) : base(ActivityType.Message)
@@ -83,7 +89,7 @@ public class MessageActivity : Activity
         return this;
     }
 
-    public MessageActivity AddAttachment(Teams.Cards.Card card)
+    public MessageActivity AddAttachment(Teams.Cards.AdaptiveCard card)
     {
         return AddAttachment(new Attachment(card));
     }
@@ -124,13 +130,28 @@ public class MessageActivity : Activity
         return this;
     }
 
-    public bool IsRecipientMentioned()
-    {
-        return (Entities ?? []).Any(e => e is MentionEntity mention && mention.Mentioned.Id == Recipient.Id);
-    }
-
     public MentionEntity? GetAccountMention(string accountId)
     {
         return (MentionEntity?)(Entities ?? []).FirstOrDefault(e => e is MentionEntity mention && mention.Mentioned.Id == accountId);
+    }
+
+    public MessageActivity Merge(MessageActivity from)
+    {
+        base.Merge(from);
+
+        Text ??= from.Text;
+        Speak ??= from.Speak;
+        InputHint ??= from.InputHint;
+        Summary ??= from.Summary;
+        TextFormat ??= from.TextFormat;
+        AttachmentLayout ??= from.AttachmentLayout;
+        SuggestedActions ??= from.SuggestedActions;
+        Importance ??= from.Importance;
+        DeliveryMode ??= from.DeliveryMode;
+        Expiration ??= from.Expiration;
+        Value ??= from.Value;
+        AddAttachment(from.Attachments?.ToArray() ?? []);
+
+        return this;
     }
 }

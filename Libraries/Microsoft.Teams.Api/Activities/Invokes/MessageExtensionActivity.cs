@@ -58,7 +58,7 @@ public abstract class MessageExtensionActivity(Name.MessageExtensions name) : In
 
             var name = property.Deserialize<string>(options);
 
-            if (name == null)
+            if (name is null)
             {
                 throw new JsonException("failed to deserialize invoke activity 'name' property");
             }

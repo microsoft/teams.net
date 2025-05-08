@@ -44,7 +44,7 @@ public abstract class TaskActivity(Name.Tasks name) : InvokeActivity(new(name.Va
 
             var name = property.Deserialize<string>(options);
 
-            if (name == null)
+            if (name is null)
             {
                 throw new JsonException("failed to deserialize invoke activity 'name' property");
             }

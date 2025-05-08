@@ -16,20 +16,20 @@ public class StreamingChatToolCallsBuilder
     public void Append(StreamingChatToolCallUpdate toolCallUpdate)
     {
         // Keep track of which tool call ID belongs to this update index.
-        if (toolCallUpdate.ToolCallId != null)
+        if (toolCallUpdate.ToolCallId is not null)
         {
             _indexToToolCallId[toolCallUpdate.Index] = toolCallUpdate.ToolCallId;
         }
 
         // Keep track of which function name belongs to this update index.
-        if (toolCallUpdate.FunctionName != null)
+        if (toolCallUpdate.FunctionName is not null)
         {
             _indexToFunctionName[toolCallUpdate.Index] = toolCallUpdate.FunctionName;
         }
 
         // Keep track of which function arguments belong to this update index,
         // and accumulate the arguments as new updates arrive.
-        if (toolCallUpdate.FunctionArgumentsUpdate != null && !toolCallUpdate.FunctionArgumentsUpdate.ToMemory().IsEmpty)
+        if (toolCallUpdate.FunctionArgumentsUpdate is not null && !toolCallUpdate.FunctionArgumentsUpdate.ToMemory().IsEmpty)
         {
             if (!_indexToFunctionArguments.TryGetValue(toolCallUpdate.Index, out SequenceBuilder<byte>? argumentsBuilder))
             {

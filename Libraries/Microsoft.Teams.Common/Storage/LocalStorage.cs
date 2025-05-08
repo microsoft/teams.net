@@ -61,7 +61,7 @@ public class LocalStorage<TValue> : IStorage<string, TValue>
     public void Set(string key, TValue value)
     {
         if (!Hit(key)) _keys.Add(key);
-        if (_max != null)
+        if (_max is not null)
         {
             if (_keys.Count > _max)
             {
