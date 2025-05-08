@@ -94,17 +94,16 @@ public class DevToolsPlugin : IAspNetCorePlugin
             AddPage(page);
         }
 
-        return Task.Run(() =>
-        {
-            Logger.Warn(
-                new StringBuilder()
-                    .Bold(
-                        new StringBuilder()
-                            .Yellow("⚠️  Devtools are not secure and should not be used production environments ⚠️")
-                            .ToString()
-                    )
-            );
-        });
+        Logger.Warn(
+            new StringBuilder()
+                .Bold(
+                    new StringBuilder()
+                        .Yellow("⚠️  Devtools are not secure and should not be used production environments ⚠️")
+                        .ToString()
+                )
+        );
+
+        return Task.CompletedTask;
     }
 
     public Task OnStart(App app, CancellationToken cancellationToken = default)
@@ -117,12 +116,14 @@ public class DevToolsPlugin : IAspNetCorePlugin
             Logger.Info($"Available at {address}/devtools");
         }
 
-        return Task.Run(() => Logger.Debug("OnStart"));
+        Logger.Debug("OnStart");
+        return Task.CompletedTask;
     }
 
     public Task OnError(App app, IPlugin plugin, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnError"));
+        Logger.Debug("OnError");
+        return Task.CompletedTask;
     }
 
     public async Task OnActivity(App app, ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
@@ -153,7 +154,8 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
     public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnActivityResponse"));
+        Logger.Debug("OnActivityResponse");
+        return Task.CompletedTask;
     }
 
     public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)

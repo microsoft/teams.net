@@ -30,31 +30,36 @@ public class McpPlugin : IAspNetCorePlugin
 
     public Task OnInit(App app, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => { });
+        return Task.CompletedTask;
     }
 
     public Task OnStart(App app, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnStart"));
+        Logger.Debug("OnStart");
+        return Task.CompletedTask;
     }
 
     public Task OnError(App app, IPlugin plugin, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnError"));
+        Logger.Debug("OnError");
+        return Task.CompletedTask;
     }
 
     public Task OnActivity(App app, ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnActivity"));
+        Logger.Debug("OnActivity");
+        return Task.CompletedTask;
     }
 
     public Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnActivitySent"));
+        Logger.Debug("OnActivitySent");
+        return Task.CompletedTask;
     }
 
     public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnActivityResponse"));
+        Logger.Debug("OnActivityResponse");
+        return Task.CompletedTask;
     }
 }
