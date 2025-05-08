@@ -1,0 +1,40 @@
+{
+  "id": "f:622749630322482883",
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "composeExtension/selectItem",
+  "value": {
+    "commandId": "selectCmd",
+    "parameters": [
+      {
+        "name": "Somelist",
+        "value": "Toronto"
+      }
+    ]
+  },
+  "from": {
+    "id": "botId",
+    "aadObjectId": "aadObjectId",
+    "name": "User Name"
+  },
+  "recipient": {
+    "id": "recipientId",
+    "name": "Recipient Name"
+  },
+  "conversation": {
+    "id": "convId",
+    "conversationType": "personal"
+  },
+  "serviceUrl": "https://me-url",
+  "timestamp": "2017-05-01T15:45:50",
+  "localTimestamp": "2017-05-01T15:45:51.876-07:00",
+  "entities": [
+    {
+      "type": "clientInfo",
+      "locale": "en-US",
+      "country": "US",
+      "platform": "Windows",
+      "timezone": "GMT-8"
+    }
+  ]
+}
