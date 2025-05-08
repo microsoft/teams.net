@@ -26,7 +26,7 @@ public partial interface IContext
         /// send a message activity with a card attachment
         /// </summary>
         /// <param name="card">the card to send as an attachment</param>
-        public Task<MessageActivity> Send(Cards.Card card) => context.Send(card);
+        public Task<MessageActivity> Send(Cards.AdaptiveCard card) => context.Send(card);
 
         /// <summary>
         /// send an activity to the conversation as a reply
@@ -44,7 +44,7 @@ public partial interface IContext
         /// send a message activity with a card attachment as a reply
         /// </summary>
         /// <param name="card">the card to send as an attachment</param>
-        public Task<MessageActivity> Reply(Cards.Card card) => context.Reply(card);
+        public Task<MessageActivity> Reply(Cards.AdaptiveCard card) => context.Reply(card);
 
         /// <summary>
         /// send a typing activity

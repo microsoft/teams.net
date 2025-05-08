@@ -89,7 +89,7 @@ public class MessageActivity : Activity
         return this;
     }
 
-    public MessageActivity AddAttachment(Teams.Cards.Card card)
+    public MessageActivity AddAttachment(Teams.Cards.AdaptiveCard card)
     {
         return AddAttachment(new Attachment(card));
     }

@@ -69,7 +69,7 @@ public class Attachment
         Content = content;
     }
 
-    public Attachment(Teams.Cards.Card card)
+    public Attachment(Teams.Cards.AdaptiveCard card)
     {
         ContentType = ContentType.AdaptiveCard;
         Content = card;
