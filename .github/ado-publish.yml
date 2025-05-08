@@ -34,6 +34,9 @@ stages:
 
       - script: dotnet test --no-restore --verbosity normal --logger trx --configuration $(buildConfiguration)
         displayName: 'Test'
+      
+      - publish: '$(Build.SourcesDirectory)/Libraries'
+        artifact: 'BuildOutput'
 
 - stage: Publish
   dependsOn: Build_Test_Lint
@@ -42,6 +45,9 @@ stages:
     displayName: 'Sign DLLs, Pack, Sign NuGet, and Publish'
     steps:
       - checkout: self
+
+      - download: current
+        artifact: 'BuildOutput'
 
       - task: UseDotNet@2
         displayName: 'Use .NET 9'
@@ -60,7 +66,7 @@ stages:
           AuthAKVName: esrp-teams
           UseMSIAuthentication: true
           FolderPath: '$(folderPath)'
-          Pattern: Libraries/**/*.dll
+          Pattern: $(Pipeline.Workspace)/BuildOutput/Libraries/**/*.dll
           UseMinimatch: true
           signConfigType: 'inlineSignParams'
           inlineOperation: |
@@ -94,7 +100,7 @@ stages:
         displayName: 'Pack NuGet Packages'
         inputs:
           command: pack
-          packagesToPack: 'Libraries/**/*.csproj'
+          packagesToPack: '$(Pipeline.Workspace)/BuildOutput/Libraries/**/*.csproj'
           packDestination: '$(Build.ArtifactStagingDirectory)'
           includeSymbols: true
           nobuild: true
@@ -111,7 +117,7 @@ stages:
           AuthAKVName: esrp-teams
           UseMSIAuthentication: true
           FolderPath: '$(Build.ArtifactStagingDirectory)'
-          Pattern: 'Libraries/**/*.nupkg'
+          Pattern: '$(Pipeline.Workspace)/BuildOutput/Libraries/**/*.nupkg'
           UseMinimatch: true
           signConfigType: 'inlineSignParams'
           inlineOperation: |
