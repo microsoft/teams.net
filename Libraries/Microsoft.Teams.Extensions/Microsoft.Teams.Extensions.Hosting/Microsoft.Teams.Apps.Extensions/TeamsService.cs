@@ -5,10 +5,10 @@ namespace Microsoft.Teams.Apps.Extensions;
 
 public class TeamsService : IHostedLifecycleService
 {
-    protected IApp _app;
+    protected App _app;
     protected ILogger<TeamsService> _logger;
 
-    public TeamsService(IApp app, ILogger<TeamsService> logger)
+    public TeamsService(App app, ILogger<TeamsService> logger)
     {
         _app = app;
         _logger = logger;

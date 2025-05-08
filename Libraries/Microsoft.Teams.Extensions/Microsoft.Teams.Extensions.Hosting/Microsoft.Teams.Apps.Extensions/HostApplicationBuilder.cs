@@ -14,7 +14,7 @@ public static class HostApplicationBuilderExtensions
         return AddTeamsCore(builder, new AppOptions());
     }
 
-    public static IHostApplicationBuilder AddTeamsCore(this IHostApplicationBuilder builder, IApp app)
+    public static IHostApplicationBuilder AddTeamsCore(this IHostApplicationBuilder builder, App app)
     {
         builder.Services.AddSingleton(builder.Configuration.GetTeams());
         builder.Services.AddSingleton(builder.Configuration.GetTeamsLogging());
@@ -23,7 +23,7 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
-    public static IHostApplicationBuilder AddTeamsCore(this IHostApplicationBuilder builder, IAppOptions options)
+    public static IHostApplicationBuilder AddTeamsCore(this IHostApplicationBuilder builder, AppOptions options)
     {
         var settings = builder.Configuration.GetTeams();
         var loggingSettings = builder.Configuration.GetTeamsLogging();
@@ -48,7 +48,7 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
-    public static IHostApplicationBuilder AddTeamsCore(this IHostApplicationBuilder builder, IAppBuilder appBuilder)
+    public static IHostApplicationBuilder AddTeamsCore(this IHostApplicationBuilder builder, AppBuilder appBuilder)
     {
         var settings = builder.Configuration.GetTeams();
         var loggingSettings = builder.Configuration.GetTeamsLogging();

@@ -5,14 +5,6 @@ using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.Apps;
 
-public partial interface IApp
-{
-    public IPlugin? GetPlugin(string name);
-    public IPlugin? GetPlugin(Type type);
-    public TPlugin? GetPlugin<TPlugin>() where TPlugin : IPlugin;
-    public IApp AddPlugin(IPlugin plugin);
-}
-
 public partial class App
 {
     protected IList<IPlugin> Plugins { get; set; }
@@ -32,22 +24,16 @@ public partial class App
         return (TPlugin?)Plugins.SingleOrDefault(p => p.GetType() == typeof(TPlugin));
     }
 
-    public IApp AddPlugin(IPlugin plugin)
+    public App AddPlugin(IPlugin plugin)
     {
         var attr = GetPluginAttribute(plugin);
 
         // broadcast plugin events
-        plugin.ErrorEvent += (sender, exception) => ErrorEvent(this, sender, exception, null);
-
-        if (plugin is ISenderPlugin sender)
-        {
-            sender.ActivityEvent += OnActivityEvent;
-        }
-
+        plugin.Events += Events.Emit;
         Plugins.Add(plugin);
         Container.Register(attr.Name, new ValueProvider(plugin));
         Container.Register(plugin.GetType().Name, new ValueProvider(plugin));
-        Logger.Debug($"plugin {attr.Name} added");
+        Logger.Debug($"plugin {attr.Name} registered");
         return this;
     }
 

@@ -3,19 +3,15 @@ using System.Reflection;
 
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Annotations;
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Apps;
 
-public partial interface IApp : IRoutingModule
-{
-    public IApp AddController<T>(T controller) where T : class;
-}
-
 public partial class App : RoutingModule
 {
-    public IApp AddController<T>(T controller) where T : class
+    public App AddController<T>(T controller) where T : class
     {
         var type = controller.GetType();
         var attribute = type.GetCustomAttribute<ActivityControllerAttribute>(true) ?? throw new Exception($"type '{type.Name}' is not a controller");
@@ -65,9 +61,19 @@ public partial class App : RoutingModule
         }
         catch (HttpException ex)
         {
+            await Events.Emit(
+                context.Sender,
+                "error",
+                new ErrorEvent()
+                {
+                    Exception = ex,
+                    Context = (IContext<IActivity>)context
+                },
+                context.CancellationToken
+            );
+
             if (ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.BadRequest && ex.StatusCode != HttpStatusCode.PreconditionFailed)
             {
-                await ErrorEvent(this, context.Sender, ex, (IContext<IActivity>)context);
                 return new Response(ex.StatusCode);
             }
 
@@ -107,9 +113,19 @@ public partial class App : RoutingModule
         }
         catch (HttpException ex)
         {
+            await Events.Emit(
+                context.Sender,
+                "error",
+                new ErrorEvent()
+                {
+                    Exception = ex,
+                    Context = (IContext<IActivity>)context
+                },
+                context.CancellationToken
+            );
+
             if (ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.BadRequest && ex.StatusCode != HttpStatusCode.PreconditionFailed)
             {
-                await ErrorEvent(this, context.Sender, ex, (IContext<IActivity>)context);
                 return new Response(ex.StatusCode);
             }
 

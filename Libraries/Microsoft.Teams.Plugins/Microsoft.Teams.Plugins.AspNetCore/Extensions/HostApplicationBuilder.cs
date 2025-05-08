@@ -17,7 +17,7 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, IApp app)
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, App app)
     {
         builder.AddTeamsCore(app);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
@@ -25,7 +25,7 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, IAppOptions options)
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppOptions options)
     {
         builder.AddTeamsCore(options);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
@@ -33,7 +33,7 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, IAppBuilder appBuilder)
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppBuilder appBuilder)
     {
         builder.AddTeamsCore(appBuilder);
         builder.AddTeamsPlugin<AspNetCorePlugin>();

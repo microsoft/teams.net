@@ -2,57 +2,57 @@
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Apps.Testing.Plugins;
 
 /// <summary>
-/// a plugin used to test any IApp implementation
+/// a plugin used to test any App implementation
 /// </summary>
 [Plugin]
 public partial class TestPlugin : ISenderPlugin
 {
-    public event ISenderPlugin.ActivityEventHandler ActivityEvent;
-    public event IPlugin.ErrorEventHandler ErrorEvent;
+    public event EventFunction Events;
 
-    protected Action<IApp>? OnInitHandler { get; set; }
-    protected Action<IApp>? OnStartHandler { get; set; }
-    protected Action<IApp, IPlugin?, Exception, IContext<IActivity>?>? OnErrorHandler { get; set; }
-    protected Action<IApp, IContext<IActivity>>? OnActivityHandler { get; set; }
-    protected Action<IApp, Response?, IContext<IActivity>>? OnActivityResponseHandler { get; set; }
-    protected Action<IApp, IActivity, IContext<IActivity>>? OnActivitySentHandler { get; set; }
+    protected Action<App>? OnInitHandler { get; set; }
+    protected Action<App>? OnStartHandler { get; set; }
+    protected Action<App, IPlugin, ErrorEvent>? OnErrorHandler { get; set; }
+    protected Action<App, ISenderPlugin, ActivityEvent>? OnActivityHandler { get; set; }
+    protected Action<App, ISenderPlugin, ActivityResponseEvent>? OnActivityResponseHandler { get; set; }
+    protected Action<App, ISenderPlugin, ActivitySentEvent>? OnActivitySentHandler { get; set; }
 
-    public TestPlugin WithInit(Action<IApp> handler)
+    public TestPlugin WithInit(Action<App> handler)
     {
         OnInitHandler = handler;
         return this;
     }
 
-    public TestPlugin WithError(Action<IApp, IPlugin?, Exception, IContext<IActivity>?> handler)
+    public TestPlugin WithError(Action<App, IPlugin, ErrorEvent> handler)
     {
         OnErrorHandler = handler;
         return this;
     }
 
-    public TestPlugin WithActivity(Action<IApp, IContext<IActivity>> handler)
+    public TestPlugin WithActivity(Action<App, ISenderPlugin, ActivityEvent> handler)
     {
         OnActivityHandler = handler;
         return this;
     }
 
-    public TestPlugin WithActivityResponse(Action<IApp, Response?, IContext<IActivity>> handler)
+    public TestPlugin WithActivityResponse(Action<App, ISenderPlugin, ActivityResponseEvent> handler)
     {
         OnActivityResponseHandler = handler;
         return this;
     }
 
-    public TestPlugin WithActivitySent(Action<IApp, IActivity, IContext<IActivity>> handler)
+    public TestPlugin WithActivitySent(Action<App, ISenderPlugin, ActivitySentEvent> handler)
     {
         OnActivitySentHandler = handler;
         return this;
     }
 
-    public Task OnInit(IApp app, CancellationToken cancellationToken = default)
+    public Task OnInit(App app, CancellationToken cancellationToken = default)
     {
         if (OnInitHandler is not null)
         {
@@ -62,7 +62,7 @@ public partial class TestPlugin : ISenderPlugin
         return Task.CompletedTask;
     }
 
-    public Task OnStart(IApp app, CancellationToken cancellationToken = default)
+    public Task OnStart(App app, CancellationToken cancellationToken = default)
     {
         if (OnStartHandler is not null)
         {
@@ -72,48 +72,43 @@ public partial class TestPlugin : ISenderPlugin
         return Task.CompletedTask;
     }
 
-    public Task OnError(IApp app, IPlugin? plugin, Exception exception, IContext<IActivity>? context, CancellationToken cancellationToken = default)
+    public Task OnError(App app, IPlugin plugin, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
         if (OnErrorHandler is not null)
         {
-            OnErrorHandler(app, plugin, exception, context);
+            OnErrorHandler(app, plugin, @event);
         }
 
         return Task.CompletedTask;
     }
 
-    public Task OnActivity(IApp app, IContext<IActivity> context)
+    public Task OnActivity(App app, ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
         if (OnActivityHandler is not null)
         {
-            OnActivityHandler(app, context);
+            OnActivityHandler(app, sender, @event);
         }
 
         return Task.CompletedTask;
     }
 
-    public Task OnActivityResponse(IApp app, Response? response, IContext<IActivity> context)
+    public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
         if (OnActivityResponseHandler is not null)
         {
-            OnActivityResponseHandler(app, response, context);
+            OnActivityResponseHandler(app, sender, @event);
         }
 
         return Task.CompletedTask;
     }
 
-    public Task OnActivitySent(IApp app, IActivity activity, IContext<IActivity> context)
+    public Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
         if (OnActivitySentHandler is not null)
         {
-            OnActivitySentHandler(app, activity, context);
+            OnActivitySentHandler(app, sender, @event);
         }
 
-        return Task.CompletedTask;
-    }
-
-    public Task OnActivitySent(IApp app, ISenderPlugin sender, IActivity activity, ConversationReference reference, CancellationToken cancellationToken = default)
-    {
         return Task.CompletedTask;
     }
 
@@ -132,8 +127,26 @@ public partial class TestPlugin : ISenderPlugin
         return new Stream();
     }
 
-    public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)
+    public async Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)
     {
-        return ActivityEvent(this, token, activity, cancellationToken);
+        var @out = await Events(
+            this,
+            "activity",
+            new ActivityEvent()
+            {
+                Token = token,
+                Activity = activity
+            },
+            cancellationToken
+        );
+
+        var res = (Response?)@out;
+
+        if (res is null)
+        {
+            throw new Exception("expected activity response");
+        }
+
+        return res;
     }
 }
