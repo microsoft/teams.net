@@ -13,9 +13,9 @@ variables:
   nugetSignId: 'a94a770a-9a7b-4888-a3ea-24584b851e49'
 
 stages:
-- stage: Build_Test_Lint
+- stage: Build_Test_Sign_Pack
   jobs:
-  - job: BuildTestLint
+  - job: BuildTestSignPack
     displayName: 'Build, Test, and Lint'
     steps:
       - checkout: self
@@ -34,26 +34,6 @@ stages:
 
       - script: dotnet test --no-restore --verbosity normal --logger trx --configuration $(buildConfiguration)
         displayName: 'Test'
-      
-      - publish: '$(Build.SourcesDirectory)/Libraries'
-        artifact: 'BuildOutput'
-
-- stage: Publish
-  dependsOn: Build_Test_Lint
-  jobs:
-  - job: SignPackPush
-    displayName: 'Sign DLLs, Pack, Sign NuGet, and Publish'
-    steps:
-      - checkout: self
-
-      - download: current
-        artifact: 'BuildOutput'
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET 9'
-        inputs:
-          packageType: 'sdk'
-          version: '9.0.x'
 
       - task: EsrpCodeSigning@5
         displayName: "Authenticode Sign DLLs"
@@ -66,7 +46,7 @@ stages:
           AuthAKVName: esrp-teams
           UseMSIAuthentication: true
           FolderPath: '$(folderPath)'
-          Pattern: $(Pipeline.Workspace)/BuildOutput/Libraries/**/*.dll
+          Pattern: 'Libraries/**/*.dll'
           UseMinimatch: true
           signConfigType: 'inlineSignParams'
           inlineOperation: |
@@ -100,7 +80,7 @@ stages:
         displayName: 'Pack NuGet Packages'
         inputs:
           command: pack
-          packagesToPack: '$(Pipeline.Workspace)/BuildOutput/Libraries/**/*.csproj'
+          packagesToPack: '$(folderPath)/Libraries/**/*.csproj'
           packDestination: '$(Build.ArtifactStagingDirectory)'
           includeSymbols: true
           nobuild: true
@@ -117,7 +97,7 @@ stages:
           AuthAKVName: esrp-teams
           UseMSIAuthentication: true
           FolderPath: '$(Build.ArtifactStagingDirectory)'
-          Pattern: '$(Pipeline.Workspace)/BuildOutput/Libraries/**/*.nupkg'
+          Pattern: '*.nupkg'
           UseMinimatch: true
           signConfigType: 'inlineSignParams'
           inlineOperation: |
