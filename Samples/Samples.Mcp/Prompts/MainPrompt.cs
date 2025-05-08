@@ -2,7 +2,7 @@ using Microsoft.Teams.AI.Annotations;
 
 namespace Samples.Mcp.Prompts;
 
-[Prompt]
+[Prompt("main")]
 public class MainPrompt
 {
     private readonly IServiceProvider _services;
