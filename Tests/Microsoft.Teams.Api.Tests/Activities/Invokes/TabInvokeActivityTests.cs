@@ -16,7 +16,7 @@ public class TabInvokeActivityTests
     {
         var activity = new FetchActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -38,7 +38,7 @@ public class TabInvokeActivityTests
     {
         var activity = new FetchActivity()
         {
-            Value = new Tabs.Request() {
+            Value = new Request() {
                 TabContext= new EntityContext() { 
                     TabEntityId="tabEntityIdString" 
                 },
@@ -62,7 +62,7 @@ public class TabInvokeActivityTests
     {
         TabActivity activity = new FetchActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -88,7 +88,7 @@ public class TabInvokeActivityTests
     {
         Activity activity = new FetchActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -117,7 +117,7 @@ public class TabInvokeActivityTests
         var activity = JsonSerializer.Deserialize<FetchActivity>(json);
         var expected = new FetchActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -125,7 +125,7 @@ public class TabInvokeActivityTests
                 },
             },
         };
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity?.ToString());
     }
 
     [Fact]
@@ -135,7 +135,7 @@ public class TabInvokeActivityTests
         var activity = JsonSerializer.Deserialize<TabActivity>(json);
         var expected = new FetchActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -153,7 +153,7 @@ public class TabInvokeActivityTests
     {
         var activity = new SubmitActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -175,7 +175,7 @@ public class TabInvokeActivityTests
     {
         var activity = new SubmitActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -201,7 +201,7 @@ public class TabInvokeActivityTests
     {
         TabActivity activity = new SubmitActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -227,7 +227,7 @@ public class TabInvokeActivityTests
     {
         Activity activity = new SubmitActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -256,7 +256,7 @@ public class TabInvokeActivityTests
         var activity = JsonSerializer.Deserialize<SubmitActivity>(json);
         var expected = new SubmitActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {
@@ -264,7 +264,7 @@ public class TabInvokeActivityTests
                 },
             },
         };
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity?.ToString());
     }
 
     [Fact]
@@ -274,7 +274,7 @@ public class TabInvokeActivityTests
         var activity = JsonSerializer.Deserialize<TabActivity>(json);
         var expected = new SubmitActivity()
         {
-            Value = new Tabs.Request()
+            Value = new Request()
             {
                 TabContext = new EntityContext()
                 {

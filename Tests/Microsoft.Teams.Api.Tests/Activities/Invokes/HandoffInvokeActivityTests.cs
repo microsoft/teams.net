@@ -88,7 +88,7 @@ public class HandoffInvokeActivityTests
             ChannelId = new ChannelId("channelId"),
             Value = new HandoffActivityValue() { Continuation = " valid continuation" }
         };
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity?.ToString());
     }
 
     [Fact]
@@ -103,7 +103,7 @@ public class HandoffInvokeActivityTests
             Value = new HandoffActivityValue() { Continuation = " valid continuation" }
         };
 
-      Assert.Equal(expected.ToString(), activity.ToString());
+      Assert.Equal(expected.ToString(), activity?.ToString());
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class HandoffInvokeActivityTests
             Value = new HandoffActivityValue() { Continuation = " valid continuation" }
         };
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity?.ToString());
     }
 
 }

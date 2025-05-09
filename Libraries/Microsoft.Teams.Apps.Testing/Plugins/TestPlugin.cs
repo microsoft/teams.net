@@ -4,13 +4,14 @@ using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
+using Microsoft.Teams.Apps.Testing.Events;
 
 namespace Microsoft.Teams.Apps.Testing.Plugins;
 
 /// <summary>
 /// a plugin used to test any App implementation
 /// </summary>
-[Plugin]
+[Plugin(Name = "test")]
 public partial class TestPlugin : ISenderPlugin
 {
     public event EventFunction Events;
@@ -129,6 +130,16 @@ public partial class TestPlugin : ISenderPlugin
 
     public async Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)
     {
+        if (activity is MessageActivity message)
+        {
+            await Events(
+                this,
+                "message",
+                new TestMessageEvent() { Message = message.Text },
+                cancellationToken
+            );
+        }
+
         var @out = await Events(
             this,
             "activity",

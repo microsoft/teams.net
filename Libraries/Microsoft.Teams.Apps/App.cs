@@ -4,6 +4,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
+using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
@@ -67,12 +68,16 @@ public partial class App
         Container.Register("BotToken", new FactoryProvider(() => BotToken));
         Container.Register("GraphToken", new FactoryProvider(() => GraphToken));
 
-        OnTokenExchange(OnTokenExchangeActivity);
-        OnVerifyState(OnVerifyStateActivity);
-        OnError(OnErrorEvent);
-        OnActivitySent(OnActivitySentEvent);
-        OnActivityResponse(OnActivityResponseEvent);
-        Events.On("activity", (plugin, @event, token) => OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token));
+        this.OnTokenExchange(OnTokenExchangeActivity);
+        this.OnVerifyState(OnVerifyStateActivity);
+        this.OnError(OnErrorEvent);
+        this.OnActivitySent(OnActivitySentEvent);
+        this.OnActivityResponse(OnActivityResponseEvent);
+
+        Events.On(EventType.Activity, (plugin, @event, token) =>
+        {
+            return OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token);
+        });
     }
 
     /// <summary>
@@ -113,7 +118,7 @@ public partial class App
         {
             await Events.Emit(
                 null!,
-                "error",
+                EventType.Error,
                 new ErrorEvent() { Exception = ex }
             );
         }
@@ -158,7 +163,7 @@ public partial class App
 
         await Events.Emit(
             sender,
-            "activity.sent",
+            EventType.ActivitySent,
             new ActivitySentEvent() { Activity = res },
             cancellationToken
         );
@@ -256,20 +261,26 @@ public partial class App
             OnNext = Next,
             UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
             CancellationToken = cancellationToken,
-            OnActivitySent = (activity, context) => Events.Emit(
-                context.Sender,
-                "activity.sent",
-                new ActivitySentEvent() { Activity = activity },
-                context.CancellationToken
-            )
+            OnActivitySent = async (activity, context) =>
+            {
+                await Events.Emit(
+                    context.Sender,
+                    EventType.ActivitySent,
+                    new ActivitySentEvent() { Activity = activity },
+                    context.CancellationToken
+                );
+            }
         };
 
-        stream.OnChunk += activity => Events.Emit(
-            sender,
-            "activity.sent",
-            new ActivitySentEvent() { Activity = activity },
-            cancellationToken
-        );
+        stream.OnChunk += async activity =>
+        {
+            await Events.Emit(
+                sender,
+                EventType.ActivitySent,
+                new ActivitySentEvent() { Activity = activity },
+                cancellationToken
+            );
+        };
 
         try
         {
@@ -293,7 +304,7 @@ public partial class App
 
             await Events.Emit(
                 sender,
-                "activity.response",
+                EventType.ActivityResponse,
                 new ActivityResponseEvent() { Response = response },
                 cancellationToken
             );
@@ -304,7 +315,7 @@ public partial class App
         {
             await Events.Emit(
                 sender,
-                "error",
+                EventType.Error,
                 new ErrorEvent() { Exception = ex },
                 cancellationToken
             );
