@@ -4,6 +4,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
+using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
@@ -67,12 +68,16 @@ public partial class App
         Container.Register("BotToken", new FactoryProvider(() => BotToken));
         Container.Register("GraphToken", new FactoryProvider(() => GraphToken));
 
-        OnTokenExchange(OnTokenExchangeActivity);
-        OnVerifyState(OnVerifyStateActivity);
-        OnError(OnErrorEvent);
-        OnActivitySent(OnActivitySentEvent);
-        OnActivityResponse(OnActivityResponseEvent);
-        Events.On(EventType.Activity, (plugin, @event, token) => OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token));
+        this.OnTokenExchange(OnTokenExchangeActivity);
+        this.OnVerifyState(OnVerifyStateActivity);
+        this.OnError(OnErrorEvent);
+        this.OnActivitySent(OnActivitySentEvent);
+        this.OnActivityResponse(OnActivityResponseEvent);
+        
+        Events.On(EventType.Activity, (plugin, @event, token) =>
+        {
+            return OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token);
+        });
     }
 
     /// <summary>

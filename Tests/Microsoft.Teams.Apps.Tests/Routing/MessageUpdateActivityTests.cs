@@ -1,5 +1,6 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
+using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Testing.Plugins;
 
 namespace Microsoft.Teams.Apps.Tests.Routing;

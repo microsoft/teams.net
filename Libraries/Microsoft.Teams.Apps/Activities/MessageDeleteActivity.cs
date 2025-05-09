@@ -1,6 +1,7 @@
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class MessageDeleteAttribute() : ActivityAttribute(ActivityType.MessageDelete, typeof(MessageDeleteActivity))
@@ -8,16 +9,11 @@ public class MessageDeleteAttribute() : ActivityAttribute(ActivityType.MessageDe
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageDeleteActivity>();
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnMessageDelete(Func<IContext<MessageDeleteActivity>, Task> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnMessageDelete(Func<IContext<MessageDeleteActivity>, Task> handler)
+    public static App OnMessageDelete(this App app, Func<IContext<MessageDeleteActivity>, Task> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = async context =>
             {
@@ -35,6 +31,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }

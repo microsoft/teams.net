@@ -1,8 +1,9 @@
 using System.Text.RegularExpressions;
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class MessageAttribute : ActivityAttribute
@@ -30,18 +31,11 @@ public class MessageAttribute : ActivityAttribute
     }
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnMessage(Func<IContext<MessageActivity>, Task> handler);
-    public IRoutingModule OnMessage(string pattern, Func<IContext<MessageActivity>, Task> handler);
-    public IRoutingModule OnMessage(Regex pattern, Func<IContext<MessageActivity>, Task> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnMessage(Func<IContext<MessageActivity>, Task> handler)
+    public static App OnMessage(this App app, Func<IContext<MessageActivity>, Task> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = async context =>
             {
@@ -59,12 +53,12 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 
-    public IRoutingModule OnMessage(string pattern, Func<IContext<MessageActivity>, Task> handler)
+    public static App OnMessage(this App app, string pattern, Func<IContext<MessageActivity>, Task> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = async context =>
             {
@@ -82,12 +76,12 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 
-    public IRoutingModule OnMessage(Regex regex, Func<IContext<MessageActivity>, Task> handler)
+    public static App OnMessage(this App app, Regex regex, Func<IContext<MessageActivity>, Task> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = async context =>
             {
@@ -105,6 +99,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }

@@ -1,6 +1,7 @@
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class EndOfConversationAttribute() : ActivityAttribute(ActivityType.EndOfConversation, typeof(EndOfConversationActivity))
@@ -8,16 +9,11 @@ public class EndOfConversationAttribute() : ActivityAttribute(ActivityType.EndOf
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<EndOfConversationActivity>();
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnEndOfConversation(Func<IContext<EndOfConversationActivity>, Task> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnEndOfConversation(Func<IContext<EndOfConversationActivity>, Task> handler)
+    public static App OnEndOfConversation(this App app, Func<IContext<EndOfConversationActivity>, Task> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = async context =>
             {
@@ -35,6 +31,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }

@@ -2,6 +2,7 @@ using System.Net;
 using System.Reflection;
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Routing;
@@ -10,8 +11,10 @@ using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Apps;
 
-public partial class App : RoutingModule
+public partial class App
 {
+    internal IRouter Router { get; } = new Router();
+
     public App AddController<T>(T controller) where T : class
     {
         var type = controller.GetType();
@@ -45,7 +48,7 @@ public partial class App : RoutingModule
 
             foreach (var attr in attrs)
             {
-                OnEvent(attr.Name, async (plugin, @event, token) =>
+                this.OnEvent(attr.Name, async (plugin, @event, token) =>
                 {
                     await method.InvokeAsync(controller, [plugin, @event]);
                 });

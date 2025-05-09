@@ -1,6 +1,7 @@
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class EventAttribute() : ActivityAttribute(ActivityType.Event, typeof(EventActivity))
@@ -8,16 +9,11 @@ public class EventAttribute() : ActivityAttribute(ActivityType.Event, typeof(Eve
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<EventActivity>();
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnEvent(Func<IContext<EventActivity>, Task<object?>> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnEvent(Func<IContext<EventActivity>, Task<object?>> handler)
+    public static App OnEvent(this App app, Func<IContext<EventActivity>, Task<object?>> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<EventActivity>()),
             Selector = activity =>
@@ -31,6 +27,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }

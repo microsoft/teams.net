@@ -1,7 +1,8 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class InvokeAttribute(string? name = null, Type? type = null) : ActivityAttribute(ActivityType.Invoke, type ?? typeof(InvokeActivity))
@@ -20,16 +21,11 @@ public class InvokeAttribute(string? name = null, Type? type = null) : ActivityA
     }
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnInvoke(Func<IContext<InvokeActivity>, Task<object?>> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnInvoke(Func<IContext<InvokeActivity>, Task<object?>> handler)
+    public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, Task<object?>> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<InvokeActivity>()),
             Selector = activity =>
@@ -43,6 +39,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }

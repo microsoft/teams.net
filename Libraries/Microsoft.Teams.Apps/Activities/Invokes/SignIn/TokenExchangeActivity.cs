@@ -1,7 +1,8 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class TokenExchangeAttribute() : InvokeAttribute(Api.Activities.Invokes.Name.SignIn.TokenExchange, typeof(SignIn.TokenExchangeActivity))
@@ -9,16 +10,11 @@ public class TokenExchangeAttribute() : InvokeAttribute(Api.Activities.Invokes.N
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<SignIn.TokenExchangeActivity>();
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnTokenExchange(Func<IContext<SignIn.TokenExchangeActivity>, Task<object?>> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnTokenExchange(Func<IContext<SignIn.TokenExchangeActivity>, Task<object?>> handler)
+    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task<object?>> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
             Selector = activity =>
@@ -32,6 +28,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }

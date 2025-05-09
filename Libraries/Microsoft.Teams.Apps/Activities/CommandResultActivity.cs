@@ -1,6 +1,7 @@
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class CommandResultAttribute() : ActivityAttribute(ActivityType.CommandResult, typeof(CommandResultActivity))
@@ -8,16 +9,11 @@ public class CommandResultAttribute() : ActivityAttribute(ActivityType.CommandRe
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<CommandResultActivity>();
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnCommandResult(Func<IContext<CommandResultActivity>, Task<object?>> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnCommandResult(Func<IContext<CommandResultActivity>, Task<object?>> handler)
+    public static App OnCommandResult(this App app, Func<IContext<CommandResultActivity>, Task<object?>> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<CommandResultActivity>()),
             Selector = activity =>
@@ -31,6 +27,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }

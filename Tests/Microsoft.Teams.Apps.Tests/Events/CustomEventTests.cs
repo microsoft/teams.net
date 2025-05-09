@@ -1,5 +1,6 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Apps.Testing.Events;
 using Microsoft.Teams.Apps.Testing.Plugins;

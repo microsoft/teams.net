@@ -1,6 +1,7 @@
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class MessageUpdateAttribute() : ActivityAttribute(ActivityType.MessageUpdate, typeof(MessageUpdateActivity))
@@ -8,16 +9,11 @@ public class MessageUpdateAttribute() : ActivityAttribute(ActivityType.MessageUp
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageUpdateActivity>();
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnMessageUpdate(Func<IContext<MessageUpdateActivity>, Task> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnMessageUpdate(Func<IContext<MessageUpdateActivity>, Task> handler)
+    public static App OnMessageUpdate(this App app, Func<IContext<MessageUpdateActivity>, Task> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = async context =>
             {
@@ -35,6 +31,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }

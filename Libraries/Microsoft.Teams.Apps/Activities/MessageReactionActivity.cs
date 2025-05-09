@@ -1,6 +1,7 @@
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class MessageReactionAttribute() : ActivityAttribute(ActivityType.MessageReaction, typeof(MessageReactionActivity))
@@ -8,16 +9,11 @@ public class MessageReactionAttribute() : ActivityAttribute(ActivityType.Message
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageReactionActivity>();
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnMessageReaction(Func<IContext<MessageReactionActivity>, Task> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnMessageReaction(Func<IContext<MessageReactionActivity>, Task> handler)
+    public static App OnMessageReaction(this App app, Func<IContext<MessageReactionActivity>, Task> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = async context =>
             {
@@ -35,6 +31,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }

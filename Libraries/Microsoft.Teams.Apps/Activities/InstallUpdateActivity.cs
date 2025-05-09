@@ -1,6 +1,7 @@
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Routing;
+namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class InstallUpdateAttribute() : ActivityAttribute(ActivityType.InstallUpdate, typeof(InstallUpdateActivity))
@@ -8,16 +9,11 @@ public class InstallUpdateAttribute() : ActivityAttribute(ActivityType.InstallUp
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<InstallUpdateActivity>();
 }
 
-public partial interface IRoutingModule
+public static partial class AppExtensions
 {
-    public IRoutingModule OnInstallUpdate(Func<IContext<InstallUpdateActivity>, Task> handler);
-}
-
-public partial class RoutingModule : IRoutingModule
-{
-    public IRoutingModule OnInstallUpdate(Func<IContext<InstallUpdateActivity>, Task> handler)
+    public static App OnInstallUpdate(this App app, Func<IContext<InstallUpdateActivity>, Task> handler)
     {
-        Router.Register(new Route()
+        app.Router.Register(new Route()
         {
             Handler = async context =>
             {
@@ -35,6 +31,6 @@ public partial class RoutingModule : IRoutingModule
             }
         });
 
-        return this;
+        return app;
     }
 }
