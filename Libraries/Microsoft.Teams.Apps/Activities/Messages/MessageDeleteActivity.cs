@@ -3,10 +3,13 @@ using Microsoft.Teams.Apps.Routing;
 
 namespace Microsoft.Teams.Apps.Activities;
 
-[AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class MessageDeleteAttribute() : ActivityAttribute(ActivityType.MessageDelete, typeof(MessageDeleteActivity))
+public static partial class Message
 {
-    public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageDeleteActivity>();
+    [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+    public class DeleteAttribute() : ActivityAttribute(ActivityType.MessageDelete, typeof(MessageDeleteActivity))
+    {
+        public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageDeleteActivity>();
+    }
 }
 
 public static partial class AppActivityExtensions

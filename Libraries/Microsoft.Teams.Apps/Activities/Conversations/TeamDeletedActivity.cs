@@ -3,7 +3,7 @@ using Microsoft.Teams.Apps.Routing;
 
 namespace Microsoft.Teams.Apps.Activities;
 
-public static partial class Conversations
+public static partial class Conversation
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
     public class TeamDeletedAttribute(bool hard = false) : UpdateAttribute

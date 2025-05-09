@@ -3,10 +3,13 @@ using Microsoft.Teams.Apps.Routing;
 
 namespace Microsoft.Teams.Apps.Activities;
 
-[AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class MessageUpdateAttribute() : ActivityAttribute(ActivityType.MessageUpdate, typeof(MessageUpdateActivity))
+public static partial class Message
 {
-    public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageUpdateActivity>();
+    [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+    public class UpdateAttribute() : ActivityAttribute(ActivityType.MessageUpdate, typeof(MessageUpdateActivity))
+    {
+        public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageUpdateActivity>();
+    }
 }
 
 public static partial class AppActivityExtensions
