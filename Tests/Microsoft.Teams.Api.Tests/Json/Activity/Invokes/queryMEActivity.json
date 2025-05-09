@@ -1,27 +1,38 @@
 {
+  "id": "id:data",
   "type": "invoke",
   "channelId": "msteams",
-  "name": "composeExtension/setting",
+  "name": "composeExtension/query",
   "value": {
-    "commandId": "commandId",
+    "commandId": "searchCmd",
     "parameters": [
       {
-        "name": "parameter1",
-        "value": "value1"
-      },
-      {
-        "name": "parameter2",
-        "value": "value2"
+        "name": "Somelist",
+        "value": "Toronto"
       }
-    ],
-    "queryOptions": {
-      "skip": 0,
-      "count": 10
-    },
-    "state": "state"
+    ]
+  },
+  "from": {
+    "id": "botId",
+    "aadObjectId": "aadObjectId",
+    "name": "User Name"
+  },
+  "recipient": {
+    "id": "recipientId",
+    "name": "Recipient Name"
   },
   "conversation": {
-    "id": "conversationId",
-    "conversationType": "groupChat"
-  }
+    "id": "convId",
+    "conversationType": "personal"
+  },
+  "serviceUrl": "https://me-url",
+  "entities": [
+    {
+      "type": "clientInfo",
+      "locale": "en-US",
+      "country": "US",
+      "platform": "Windows",
+      "timezone": "GMT-8"
+    }
+  ]
 }
