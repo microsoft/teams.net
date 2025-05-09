@@ -3,15 +3,18 @@ using Microsoft.Teams.Apps.Routing;
 
 namespace Microsoft.Teams.Apps.Activities;
 
-[AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class EndOfConversationAttribute() : ActivityAttribute(ActivityType.EndOfConversation, typeof(EndOfConversationActivity))
+public static partial class Conversations
 {
-    public override object Coerce(IContext<IActivity> context) => context.ToActivityType<EndOfConversationActivity>();
+    [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+    public class EndAttribute() : ActivityAttribute(ActivityType.EndOfConversation, typeof(EndOfConversationActivity))
+    {
+        public override object Coerce(IContext<IActivity> context) => context.ToActivityType<EndOfConversationActivity>();
+    }
 }
 
 public static partial class AppActivityExtensions
 {
-    public static App OnEndOfConversation(this App app, Func<IContext<EndOfConversationActivity>, Task> handler)
+    public static App OnConversationEnd(this App app, Func<IContext<EndOfConversationActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
