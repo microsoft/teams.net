@@ -1,0 +1,10 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "tab/submit",
+  "value": {
+    "tabContext": {
+      "tabEntityId": "tabEntityIdString"
+    }
+  }
+}

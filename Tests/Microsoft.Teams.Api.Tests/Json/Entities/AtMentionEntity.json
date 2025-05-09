@@ -1,0 +1,8 @@
+{
+  "type": "mention",
+  "mentioned": {
+    "id": "accountId",
+    "name": "acctName"
+  },
+  "text": "\u003Cat\u003EacctName\u003C/at\u003E"
+}
