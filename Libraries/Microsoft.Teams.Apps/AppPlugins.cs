@@ -1,5 +1,6 @@
 using System.Reflection;
 
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
 
@@ -31,9 +32,16 @@ public partial class App
         // broadcast plugin events
         plugin.Events += async (plugin, name, @event, token) =>
         {
-            var res = await Events.Emit(plugin, name, @event, token);
-            res ??= await Events.Emit(plugin, $"{attr.Name}.{name}", @event, token);
-            return res;
+            var eventType = new EventType(name);
+
+            await Events.Emit(plugin, $"{attr.Name}.{name}", @event, token);
+
+            if (eventType.IsBuiltIn && !eventType.IsStart)
+            {
+                return await Events.Emit(plugin, name, @event, token);
+            }
+
+            return null;
         };
 
         Plugins.Add(plugin);

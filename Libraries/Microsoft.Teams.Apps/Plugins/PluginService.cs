@@ -14,8 +14,16 @@ internal static class PluginService
             throw new InvalidOperationException($"type '{plugin.GetType().Name}' is not a valid plugin");
         }
 
-        attribute.Name = assembly?.GetName().Name ?? throw new InvalidOperationException("plugin is missing a name");
-        attribute.Version = assembly?.GetName()?.Version?.ToString() ?? "0.0.0";
+        if (attribute.Name == string.Empty)
+        {
+            attribute.Name = assembly?.GetName().Name ?? throw new InvalidOperationException("plugin is missing a name");
+        }
+
+        if (attribute.Version == string.Empty)
+        {
+            attribute.Version = assembly?.GetName()?.Version?.ToString() ?? "0.0.0";
+        }
+        
         return attribute;
     }
 }

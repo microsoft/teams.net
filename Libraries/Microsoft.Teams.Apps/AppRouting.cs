@@ -15,6 +15,7 @@ public partial class App : RoutingModule
     {
         var type = controller.GetType();
         var attribute = type.GetCustomAttribute<TeamsControllerAttribute>(true) ?? throw new Exception($"type '{type.Name}' is not a controller");
+        var name = attribute.Name ?? type.Name;
         var methods = type.GetMethods();
 
         foreach (MethodInfo method in methods)
@@ -34,11 +35,11 @@ public partial class App : RoutingModule
                 }
 
                 Router.Register(route);
-                Logger.Debug($"route '{attribute.Name ?? type.Name}.{route.Method.Name}' registered");
+                Logger.Debug($"route '{name}.{route.Method.Name}' registered");
             }
         }
 
-        Logger.Debug($"controller '{attribute.Name ?? type.Name}' registered");
+        Logger.Debug($"controller '{name}' registered");
         return this;
     }
 
