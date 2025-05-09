@@ -82,11 +82,13 @@ public class AnonQueryLinkMEActivityTests
     public void AnonQueryLinkMEActivity_JsonDeserialize()
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/AnonQueryLinkMEActivity.json");
-        var activity = JsonSerializer.Deserialize<QueryLinkActivity>(json);
+        var activity = JsonSerializer.Deserialize<AnonQueryLinkActivity>(json);
         var expected = setupAnonQueryLinkActivity();
 
         Assert.Equal(expected.ToString(), activity.ToString());
         Assert.NotNull(activity.ToMessageExtension());
+        string expectedPath = "Activity.Invoke.ComposeExtension/anonymousQueryLink";
+        Assert.Equal(expectedPath, activity.GetPath());
     }
 
     [Fact]
@@ -128,5 +130,7 @@ public class AnonQueryLinkMEActivityTests
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
+        string expectedPath = "Activity.Invoke.ComposeExtension/anonymousQueryLink";
+        Assert.Equal(expectedPath, activity.GetPath());
     }
 }
