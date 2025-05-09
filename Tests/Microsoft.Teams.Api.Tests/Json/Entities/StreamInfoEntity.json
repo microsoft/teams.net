@@ -1,0 +1,6 @@
+{
+  "type": "streaminfo",
+  "streamId": "strId",
+  "streamType": "streaming",
+  "streamSequence": 3
+}

@@ -1,0 +1,7 @@
+{
+  "type": "clientInfo",
+  "locale": "en-US",
+  "country": "US",
+  "platform": "fakePlatform",
+  "timezone": "GMT-8"
+}
