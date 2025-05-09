@@ -3,7 +3,7 @@
 namespace Microsoft.Teams.Apps.Routing;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public partial class ActivityAttribute(
+public class ActivityAttribute(
     string? name = null,
     Type? type = null
 ) : Attribute

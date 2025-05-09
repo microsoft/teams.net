@@ -5,6 +5,7 @@ using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Routing;
+using Microsoft.Teams.Common.Extensions;
 using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Apps;
@@ -18,15 +19,14 @@ public partial class App : RoutingModule
         var name = attribute.Name ?? type.Name;
         var methods = type.GetMethods();
 
-        foreach (MethodInfo method in methods)
+        foreach (var method in methods)
         {
             var attrs = method.GetCustomAttributes<ActivityAttribute>(true);
-
-            if (attrs.Count() == 0) continue;
 
             foreach (var attr in attrs)
             {
                 var route = new AttributeRoute() { Attr = attr, Method = method, Object = controller };
+                var activityType = attr.Name?.ToString() ?? "activity";
                 var result = route.Validate();
 
                 if (!result.Valid)
@@ -35,7 +35,22 @@ public partial class App : RoutingModule
                 }
 
                 Router.Register(route);
-                Logger.Debug($"route '{name}.{route.Method.Name}' registered");
+                Logger.Debug($"'{activityType}' route '{name}.{method.Name}' registered");
+            }
+        }
+
+        foreach (var method in methods)
+        {
+            var attrs = method.GetCustomAttributes<Events.EventAttribute>(true);
+
+            foreach (var attr in attrs)
+            {
+                OnEvent(attr.Name, async (plugin, @event, token) =>
+                {
+                    await method.InvokeAsync(controller, [plugin, @event]);
+                });
+
+                Logger.Debug($"'{attr.Name}' event route '{name}.{method.Name}' registered");
             }
         }
 
@@ -64,7 +79,7 @@ public partial class App : RoutingModule
         {
             await Events.Emit(
                 context.Sender,
-                "error",
+                EventType.Error,
                 new ErrorEvent()
                 {
                     Exception = ex,
@@ -116,7 +131,7 @@ public partial class App : RoutingModule
         {
             await Events.Emit(
                 context.Sender,
-                "error",
+                EventType.Error,
                 new ErrorEvent()
                 {
                     Exception = ex,

@@ -23,3 +23,9 @@ public class Event : Dictionary<string, object>
         });
     }
 }
+
+[AttributeUsage(AttributeTargets.Method, Inherited = true)]
+public class EventAttribute(string name) : Attribute
+{
+    public readonly string Name = name;
+}

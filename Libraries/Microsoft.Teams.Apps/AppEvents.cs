@@ -105,8 +105,16 @@ public partial class App
         }
     }
 
+    protected Task<Response> OnActivityEvent(ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
+    {
+        Logger.Debug(EventType.Activity);
+        return Process(sender, @event.Token, @event.Activity, cancellationToken);
+    }
+
     protected async Task OnActivitySentEvent(ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
+        Logger.Debug(EventType.ActivitySent);
+
         foreach (var plugin in Plugins)
         {
             if (sender.Equals(plugin)) continue;
@@ -116,15 +124,12 @@ public partial class App
 
     protected async Task OnActivityResponseEvent(ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
+        Logger.Debug(EventType.ActivityResponse);
+
         foreach (var plugin in Plugins)
         {
             if (sender.Equals(plugin)) continue;
             await plugin.OnActivityResponse(this, sender, @event, cancellationToken);
         }
-    }
-
-    protected Task<Response> OnActivityEvent(ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
-    {
-        return Process(sender, @event.Token, @event.Activity, cancellationToken);
     }
 }

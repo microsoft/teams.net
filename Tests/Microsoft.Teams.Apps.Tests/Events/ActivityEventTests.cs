@@ -65,4 +65,29 @@ public class ActivityEventTests
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(2, calls);
     }
+
+    [Fact]
+    public async Task Should_CallHandler_OnActivityResponseEvent_Async()
+    {
+        var calls = 0;
+
+        _app.OnEvent("activity.response", (sender, @event, _) =>
+        {
+            calls++;
+            Assert.True(@event is ActivityResponseEvent);
+            return Task.CompletedTask;
+        });
+
+        _app.OnActivityResponse((sender, @event, _) =>
+        {
+            calls++;
+            Assert.True(@event is ActivityResponseEvent);
+            return Task.CompletedTask;
+        });
+
+        var res = await _plugin.Do(_token, new MessageActivity("hello world"));
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
+        Assert.Equal(2, calls);
+    }
 }

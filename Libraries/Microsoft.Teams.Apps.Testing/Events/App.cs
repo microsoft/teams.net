@@ -17,4 +17,12 @@ public static partial class AppExtensions
             handler((TestPlugin)plugin, (TestMessageEvent)@event);
         });
     }
+
+    public static App OnTestMessage(this App app, Func<TestPlugin, TestMessageEvent, CancellationToken, Task<object?>> handler)
+    {
+        return app.OnEvent("test.message", (plugin, @event, token) =>
+        {
+            return handler((TestPlugin)plugin, (TestMessageEvent)@event, token);
+        });
+    }
 }

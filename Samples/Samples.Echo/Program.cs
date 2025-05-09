@@ -2,6 +2,7 @@ using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Extensions;
+using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
@@ -45,6 +46,12 @@ public static partial class Program
             log.Info("hit!");
             await client.Typing();
             await client.Send($"you said '{activity.Text}'");
+        }
+
+        [Microsoft.Teams.Apps.Events.Event("activity")]
+        public void OnEvent(IPlugin plugin, Microsoft.Teams.Apps.Events.Event @event)
+        {
+            Console.WriteLine("!!HIT!!");
         }
     }
 }

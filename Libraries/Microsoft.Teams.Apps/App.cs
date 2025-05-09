@@ -113,7 +113,7 @@ public partial class App
         {
             await Events.Emit(
                 null!,
-                "error",
+                EventType.Error,
                 new ErrorEvent() { Exception = ex }
             );
         }
@@ -158,7 +158,7 @@ public partial class App
 
         await Events.Emit(
             sender,
-            "activity.sent",
+            EventType.ActivitySent,
             new ActivitySentEvent() { Activity = res },
             cancellationToken
         );
@@ -256,20 +256,26 @@ public partial class App
             OnNext = Next,
             UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
             CancellationToken = cancellationToken,
-            OnActivitySent = (activity, context) => Events.Emit(
-                context.Sender,
-                "activity.sent",
-                new ActivitySentEvent() { Activity = activity },
-                context.CancellationToken
-            )
+            OnActivitySent = async (activity, context) =>
+            {
+                await Events.Emit(
+                    context.Sender,
+                    EventType.ActivitySent,
+                    new ActivitySentEvent() { Activity = activity },
+                    context.CancellationToken
+                );
+            }
         };
 
-        stream.OnChunk += activity => Events.Emit(
-            sender,
-            "activity.sent",
-            new ActivitySentEvent() { Activity = activity },
-            cancellationToken
-        );
+        stream.OnChunk += async activity => 
+        {
+            await Events.Emit(
+                sender,
+                EventType.ActivitySent,
+                new ActivitySentEvent() { Activity = activity },
+                cancellationToken
+            );
+        };
 
         try
         {
@@ -293,7 +299,7 @@ public partial class App
 
             await Events.Emit(
                 sender,
-                "activity.response",
+                EventType.ActivityResponse,
                 new ActivityResponseEvent() { Response = response },
                 cancellationToken
             );
@@ -304,7 +310,7 @@ public partial class App
         {
             await Events.Emit(
                 sender,
-                "error",
+                EventType.Error,
                 new ErrorEvent() { Exception = ex },
                 cancellationToken
             );
