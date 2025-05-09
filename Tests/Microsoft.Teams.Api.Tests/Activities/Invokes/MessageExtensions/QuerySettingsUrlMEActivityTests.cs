@@ -7,7 +7,7 @@ using Microsoft.Teams.Api.MessageExtensions;
 
 using static Microsoft.Teams.Api.Activities.Invokes.MessageExtensions;
 
-namespace Microsoft.Teams.Api.Tests.Activities.Invokes.MessageExtensions;
+namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class QuerySettingsUrlMEActivityTests
 {
