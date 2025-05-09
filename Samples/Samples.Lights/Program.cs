@@ -10,6 +10,6 @@ builder.Services.AddSingleton<Controller>();
 builder.AddTeams().AddTeamsDevTools().AddOpenAI<LightsPrompt>();
 
 var app = builder.Build();
-var _ = app.UseTeams();
 
+app.UseTeams();
 app.Run();
