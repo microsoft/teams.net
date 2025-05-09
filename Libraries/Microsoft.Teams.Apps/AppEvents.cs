@@ -34,52 +34,52 @@ public partial class App
 
     public App OnError(Action<IPlugin, ErrorEvent> handler)
     {
-        return OnEvent("error", handler);
+        return OnEvent(EventType.Error, handler);
     }
 
     public App OnError(Func<IPlugin, ErrorEvent, CancellationToken, Task> handler)
     {
-        return OnEvent("error", handler);
+        return OnEvent(EventType.Error, handler);
     }
 
-    public App OnStart(Action<IPlugin> handler)
+    public App OnStart(Action<IPlugin, Event> handler)
     {
-        return OnEvent("start", (plugin, _) => handler(plugin));
+        return OnEvent(EventType.Start, handler);
     }
 
-    public App OnStart(Func<IPlugin, Task> handler)
+    public App OnStart(Func<IPlugin, Event, CancellationToken, Task> handler)
     {
-        return OnEvent("start", (plugin, _) => handler(plugin));
+        return OnEvent(EventType.Start, handler);
     }
 
     public App OnActivity(Action<ISenderPlugin, ActivityEvent> handler)
     {
-        return OnEvent("activity", (plugin, @event) => handler((ISenderPlugin)plugin, (ActivityEvent)@event));
+        return OnEvent(EventType.Activity, (plugin, @event) => handler((ISenderPlugin)plugin, (ActivityEvent)@event));
     }
 
     public App OnActivity(Func<ISenderPlugin, ActivityEvent, CancellationToken, Task> handler)
     {
-        return OnEvent("activity", (plugin, @event, token) => handler((ISenderPlugin)plugin, (ActivityEvent)@event, token));
+        return OnEvent(EventType.Activity, (plugin, @event, token) => handler((ISenderPlugin)plugin, (ActivityEvent)@event, token));
     }
 
     public App OnActivitySent(Action<ISenderPlugin, ActivitySentEvent> handler)
     {
-        return OnEvent("activity.sent", (plugin, @event) => handler((ISenderPlugin)plugin, (ActivitySentEvent)@event));
+        return OnEvent(EventType.ActivitySent, (plugin, @event) => handler((ISenderPlugin)plugin, (ActivitySentEvent)@event));
     }
 
     public App OnActivitySent(Func<ISenderPlugin, ActivitySentEvent, CancellationToken, Task> handler)
     {
-        return OnEvent("activity.sent", (plugin, @event, token) => handler((ISenderPlugin)plugin, (ActivitySentEvent)@event, token));
+        return OnEvent(EventType.ActivitySent, (plugin, @event, token) => handler((ISenderPlugin)plugin, (ActivitySentEvent)@event, token));
     }
 
     public App OnActivityResponse(Action<ISenderPlugin, ActivityResponseEvent> handler)
     {
-        return OnEvent("activity.response", (plugin, @event) => handler((ISenderPlugin)plugin, (ActivityResponseEvent)@event));
+        return OnEvent(EventType.ActivityResponse, (plugin, @event) => handler((ISenderPlugin)plugin, (ActivityResponseEvent)@event));
     }
 
     public App OnActivityResponse(Func<ISenderPlugin, ActivityResponseEvent, CancellationToken, Task> handler)
     {
-        return OnEvent("activity.response", (plugin, @event, token) => handler((ISenderPlugin)plugin, (ActivityResponseEvent)@event, token));
+        return OnEvent(EventType.ActivityResponse, (plugin, @event, token) => handler((ISenderPlugin)plugin, (ActivityResponseEvent)@event, token));
     }
 
     protected async Task OnErrorEvent(IPlugin sender, ErrorEvent @event, CancellationToken cancellationToken = default)

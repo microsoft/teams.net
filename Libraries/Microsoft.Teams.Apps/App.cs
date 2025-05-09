@@ -72,7 +72,7 @@ public partial class App
         OnError(OnErrorEvent);
         OnActivitySent(OnActivitySentEvent);
         OnActivityResponse(OnActivityResponseEvent);
-        Events.On("activity", (plugin, @event, token) => OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token));
+        Events.On(EventType.Activity, (plugin, @event, token) => OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token));
     }
 
     /// <summary>

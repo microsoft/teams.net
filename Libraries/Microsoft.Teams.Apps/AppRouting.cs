@@ -14,7 +14,7 @@ public partial class App : RoutingModule
     public App AddController<T>(T controller) where T : class
     {
         var type = controller.GetType();
-        var attribute = type.GetCustomAttribute<ActivityControllerAttribute>(true) ?? throw new Exception($"type '{type.Name}' is not a controller");
+        var attribute = type.GetCustomAttribute<TeamsControllerAttribute>(true) ?? throw new Exception($"type '{type.Name}' is not a controller");
         var methods = type.GetMethods();
 
         foreach (MethodInfo method in methods)

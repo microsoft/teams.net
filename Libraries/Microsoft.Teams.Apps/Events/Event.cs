@@ -1,3 +1,6 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace Microsoft.Teams.Apps.Events;
 
 /// <summary>
@@ -10,4 +13,13 @@ public class Event : Dictionary<string, object>
 
     public object Get(string key) => this[key];
     public T Get<T>(string key) => (T)this[key];
+
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(this, new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        });
+    }
 }

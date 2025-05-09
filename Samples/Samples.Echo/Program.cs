@@ -29,7 +29,7 @@ public static partial class Program
         app.Run();
     }
 
-    [ActivityController]
+    [TeamsController]
     public class Controller
     {
         [Activity]

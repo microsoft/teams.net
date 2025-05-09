@@ -68,7 +68,7 @@ public class DevToolsController : ControllerBase
         }
         catch (OperationCanceledException)
         {
-            
+
         }
         finally
         {

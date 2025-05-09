@@ -11,7 +11,8 @@ internal class Topic : List<Func<IPlugin, Event, CancellationToken, Task<object?
 
         foreach (var fn in this)
         {
-            res ??= await fn(plugin, @event, cancellationToken);
+            var @out = await fn(plugin, @event, cancellationToken);
+            res ??= @out;
         }
 
         return res;

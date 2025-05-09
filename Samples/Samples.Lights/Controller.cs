@@ -8,7 +8,7 @@ using Microsoft.Teams.Apps.Routing;
 
 namespace Samples.Lights;
 
-[ActivityController]
+[TeamsController]
 public class Controller
 {
     private readonly OpenAIChatPrompt _prompt;

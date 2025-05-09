@@ -11,7 +11,7 @@ public partial class App
 
     public IPlugin? GetPlugin(string name)
     {
-        return Plugins.SingleOrDefault(p => GetPluginAttribute(p).Name == name);
+        return Plugins.SingleOrDefault(p => PluginService.GetAttribute(p).Name == name);
     }
 
     public IPlugin? GetPlugin(Type type)
@@ -26,10 +26,16 @@ public partial class App
 
     public App AddPlugin(IPlugin plugin)
     {
-        var attr = GetPluginAttribute(plugin);
+        var attr = PluginService.GetAttribute(plugin);
 
         // broadcast plugin events
-        plugin.Events += Events.Emit;
+        plugin.Events += async (plugin, name, @event, token) =>
+        {
+            var res = await Events.Emit(plugin, name, @event, token);
+            res ??= await Events.Emit(plugin, $"{attr.Name}.{name}", @event, token);
+            return res;
+        };
+
         Plugins.Add(plugin);
         Container.Register(attr.Name, new ValueProvider(plugin));
         Container.Register(plugin.GetType().Name, new ValueProvider(plugin));
@@ -37,25 +43,10 @@ public partial class App
         return this;
     }
 
-    protected static PluginAttribute GetPluginAttribute(IPlugin plugin)
-    {
-        var assembly = Assembly.GetAssembly(plugin.GetType());
-        var attribute = (PluginAttribute?)Attribute.GetCustomAttribute(plugin.GetType(), typeof(PluginAttribute));
-
-        if (attribute is null)
-        {
-            throw new InvalidOperationException($"type '{plugin.GetType().Name}' is not a valid plugin");
-        }
-
-        attribute.Name = assembly?.GetName().Name ?? throw new InvalidOperationException("plugin is missing a name");
-        attribute.Version = assembly?.GetName()?.Version?.ToString() ?? "0.0.0";
-        return attribute;
-    }
-
     protected void Inject(IPlugin plugin)
     {
         var assembly = Assembly.GetAssembly(plugin.GetType());
-        var metadata = GetPluginAttribute(plugin);
+        var metadata = PluginService.GetAttribute(plugin);
         var properties = plugin
             .GetType()
             .GetProperties()
