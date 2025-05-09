@@ -9,7 +9,7 @@ public class MessageDeleteAttribute() : ActivityAttribute(ActivityType.MessageDe
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageDeleteActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnMessageDelete(this App app, Func<IContext<MessageDeleteActivity>, Task> handler)
     {

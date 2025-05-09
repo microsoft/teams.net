@@ -2,7 +2,7 @@ using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Activities;
+namespace Microsoft.Teams.Apps.Activities.Invokes;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class InvokeAttribute(string? name = null, Type? type = null) : ActivityAttribute(ActivityType.Invoke, type ?? typeof(InvokeActivity))
@@ -21,7 +21,7 @@ public class InvokeAttribute(string? name = null, Type? type = null) : ActivityA
     }
 }
 
-public static partial class AppExtensions
+public static partial class AppInvokeActivityExtensions
 {
     public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, Task<object?>> handler)
     {

@@ -1,7 +1,7 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Activities;
+namespace Microsoft.Teams.Apps.Activities.Events;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class EventAttribute() : ActivityAttribute(ActivityType.Event, typeof(EventActivity))
@@ -9,7 +9,7 @@ public class EventAttribute() : ActivityAttribute(ActivityType.Event, typeof(Eve
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<EventActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppEventActivityExtensions
 {
     public static App OnEvent(this App app, Func<IContext<EventActivity>, Task<object?>> handler)
     {

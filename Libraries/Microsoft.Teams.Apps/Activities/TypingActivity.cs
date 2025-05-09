@@ -9,7 +9,7 @@ public class TypingAttribute() : ActivityAttribute(ActivityType.Typing, typeof(T
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<TypingActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnTyping(this App app, Func<IContext<TypingActivity>, Task> handler)
     {

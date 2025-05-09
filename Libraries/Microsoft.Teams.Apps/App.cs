@@ -4,7 +4,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
-using Microsoft.Teams.Apps.Activities;
+using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
@@ -73,7 +73,7 @@ public partial class App
         this.OnError(OnErrorEvent);
         this.OnActivitySent(OnActivitySentEvent);
         this.OnActivityResponse(OnActivityResponseEvent);
-        
+
         Events.On(EventType.Activity, (plugin, @event, token) =>
         {
             return OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token);
@@ -272,7 +272,7 @@ public partial class App
             }
         };
 
-        stream.OnChunk += async activity => 
+        stream.OnChunk += async activity =>
         {
             await Events.Emit(
                 sender,

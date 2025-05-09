@@ -9,7 +9,7 @@ public class EndOfConversationAttribute() : ActivityAttribute(ActivityType.EndOf
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<EndOfConversationActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnEndOfConversation(this App app, Func<IContext<EndOfConversationActivity>, Task> handler)
     {

@@ -9,7 +9,7 @@ public class MessageUpdateAttribute() : ActivityAttribute(ActivityType.MessageUp
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageUpdateActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnMessageUpdate(this App app, Func<IContext<MessageUpdateActivity>, Task> handler)
     {

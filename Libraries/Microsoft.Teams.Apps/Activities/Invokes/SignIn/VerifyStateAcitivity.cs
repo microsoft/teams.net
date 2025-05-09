@@ -2,7 +2,7 @@ using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Apps.Routing;
 
-namespace Microsoft.Teams.Apps.Activities;
+namespace Microsoft.Teams.Apps.Activities.Invokes;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
 public class VerifyStateAttribute() : InvokeAttribute(Api.Activities.Invokes.Name.SignIn.VerifyState, typeof(SignIn.VerifyStateActivity))
@@ -10,7 +10,7 @@ public class VerifyStateAttribute() : InvokeAttribute(Api.Activities.Invokes.Nam
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<SignIn.VerifyStateActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppInvokeActivityExtensions
 {
     public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, Task<object?>> handler)
     {

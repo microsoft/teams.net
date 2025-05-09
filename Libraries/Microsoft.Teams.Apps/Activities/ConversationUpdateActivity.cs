@@ -9,7 +9,7 @@ public class ConversationUpdateAttribute() : ActivityAttribute(ActivityType.Conv
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<ConversationUpdateActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnConversationUpdate(this App app, Func<IContext<ConversationUpdateActivity>, Task> handler)
     {

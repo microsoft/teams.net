@@ -23,7 +23,7 @@ internal static class PluginService
         {
             attribute.Version = assembly?.GetName()?.Version?.ToString() ?? "0.0.0";
         }
-        
+
         return attribute;
     }
 }

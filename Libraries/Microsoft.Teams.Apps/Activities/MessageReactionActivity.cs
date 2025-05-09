@@ -9,7 +9,7 @@ public class MessageReactionAttribute() : ActivityAttribute(ActivityType.Message
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MessageReactionActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnMessageReaction(this App app, Func<IContext<MessageReactionActivity>, Task> handler)
     {

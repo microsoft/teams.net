@@ -9,7 +9,7 @@ public class InstallUpdateAttribute() : ActivityAttribute(ActivityType.InstallUp
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<InstallUpdateActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnInstallUpdate(this App app, Func<IContext<InstallUpdateActivity>, Task> handler)
     {

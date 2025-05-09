@@ -13,7 +13,7 @@ public class ActivityAttribute(string? name = null, Type? type = null) : Attribu
     public virtual object Coerce(IContext<IActivity> context) => context.ToActivityType<Activity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnActivity(this App app, Func<IContext<IActivity>, Task> handler)
     {

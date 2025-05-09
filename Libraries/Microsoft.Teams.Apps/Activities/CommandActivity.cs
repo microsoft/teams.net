@@ -9,7 +9,7 @@ public class CommandAttribute() : ActivityAttribute(ActivityType.Command, type: 
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<CommandActivity>();
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnCommand(this App app, Func<IContext<CommandActivity>, Task<object?>> handler)
     {

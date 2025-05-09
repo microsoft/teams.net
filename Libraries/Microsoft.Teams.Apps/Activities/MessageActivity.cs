@@ -31,7 +31,7 @@ public class MessageAttribute : ActivityAttribute
     }
 }
 
-public static partial class AppExtensions
+public static partial class AppActivityExtensions
 {
     public static App OnMessage(this App app, Func<IContext<MessageActivity>, Task> handler)
     {
