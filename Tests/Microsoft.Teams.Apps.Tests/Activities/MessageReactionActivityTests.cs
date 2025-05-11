@@ -4,7 +4,7 @@ using Microsoft.Teams.Api.Messages;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Testing.Plugins;
 
-namespace Microsoft.Teams.Apps.Tests.Routing;
+namespace Microsoft.Teams.Apps.Tests.Activities;
 
 public class MessageReactionActivityTests
 {

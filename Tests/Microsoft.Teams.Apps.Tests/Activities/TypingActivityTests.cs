@@ -3,14 +3,14 @@ using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Testing.Plugins;
 
-namespace Microsoft.Teams.Apps.Tests.Routing;
+namespace Microsoft.Teams.Apps.Tests.Activities;
 
-public class MessageActivityTests
+public class TypingActivityTests
 {
     private readonly App _app;
     private readonly IToken _token;
 
-    public MessageActivityTests()
+    public TypingActivityTests()
     {
         _app = new App();
         _app.AddPlugin(new TestPlugin());
@@ -25,19 +25,19 @@ public class MessageActivityTests
         _app.OnActivity(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsMessage);
+            Assert.True(context.Activity.Type.IsTyping);
             return context.Next();
         });
 
-        _app.OnMessage(context =>
+        _app.OnTyping(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsMessage);
+            Assert.True(context.Activity.Type.IsTyping);
             Assert.Equal("testing123", context.Activity.Text);
             return Task.CompletedTask;
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new MessageActivity("testing123"));
+        var res = await _app.Process<TestPlugin>(_token, new TypingActivity("testing123"));
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(2, calls);
@@ -48,14 +48,14 @@ public class MessageActivityTests
     {
         var calls = 0;
 
-        _app.OnMessage(context =>
+        _app.OnTyping(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsMessage);
+            Assert.True(context.Activity.Type.IsTyping);
             return Task.CompletedTask;
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new TypingActivity());
+        var res = await _app.Process<TestPlugin>(_token, new MessageActivity());
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(0, calls);
