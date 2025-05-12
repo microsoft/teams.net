@@ -13,7 +13,7 @@ public static class McpServerExtensions
     {
         var provider = builder.Services.BuildServiceProvider();
         var prompts = provider.GetServices<IChatPrompt>();
-        
+
         List<McpServerPrompt> mcpPrompts = [];
         List<McpServerTool> mcpTools = [];
 

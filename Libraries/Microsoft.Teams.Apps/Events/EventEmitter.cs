@@ -8,63 +8,75 @@ internal class EventEmitter
 
     public EventEmitter On(string name, Action<IPlugin, Event> handler)
     {
-        var topic = Topics.TryGetValue(name, out Topic? value) ? value : [];
+        if (!Topics.ContainsKey(name))
+        {
+            Topics[name] = [];
+        }
 
-        topic.Add(delegate (IPlugin plugin, Event @event, CancellationToken cancellationToken)
+        Topics[name].Add((plugin, @event, cancellationToken) =>
         {
             handler(plugin, @event);
             return Task.FromResult<object?>(null);
         });
 
-        Topics[name] = topic;
         return this;
     }
 
     public EventEmitter On<TResult>(string name, Func<IPlugin, Event, TResult> handler)
     {
-        var topic = Topics.TryGetValue(name, out Topic? value) ? value : [];
+        if (!Topics.ContainsKey(name))
+        {
+            Topics[name] = [];
+        }
 
-        topic.Add(delegate (IPlugin plugin, Event @event, CancellationToken cancellationToken)
+        Topics[name].Add((plugin, @event, cancellationToken) =>
         {
             var res = handler(plugin, @event);
             return Task.FromResult<object?>(res);
         });
 
-        Topics[name] = topic;
         return this;
     }
 
     public EventEmitter On(string name, Func<IPlugin, Event, CancellationToken, Task> handler)
     {
-        var topic = Topics.TryGetValue(name, out Topic? value) ? value : [];
+        if (!Topics.ContainsKey(name))
+        {
+            Topics[name] = [];
+        }
 
-        topic.Add(async delegate (IPlugin plugin, Event @event, CancellationToken cancellationToken)
+        Topics[name].Add(async (plugin, @event, cancellationToken) =>
         {
             await handler(plugin, @event, cancellationToken);
             return null;
         });
 
-        Topics[name] = topic;
         return this;
     }
 
     public EventEmitter On<TResult>(string name, Func<IPlugin, Event, CancellationToken, Task<TResult>> handler)
     {
-        var topic = Topics.TryGetValue(name, out Topic? value) ? value : [];
+        if (!Topics.ContainsKey(name))
+        {
+            Topics[name] = [];
+        }
 
-        topic.Add(async delegate (IPlugin plugin, Event @event, CancellationToken cancellationToken)
+        Topics[name].Add(async (plugin, @event, cancellationToken) =>
         {
             var res = await handler(plugin, @event, cancellationToken);
             return res;
         });
 
-        Topics[name] = topic;
         return this;
     }
 
-    public Task<object?> Emit(IPlugin plugin, string name, Event? @event = null, CancellationToken cancellationToken = default)
+    public async Task<object?> Emit(IPlugin plugin, string name, Event? @event = null, CancellationToken cancellationToken = default)
     {
-        var topic = Topics.TryGetValue(name, out Topic? value) ? value : [];
-        return topic.Emit(plugin, @event, cancellationToken);
+        if (!Topics.ContainsKey(name))
+        {
+            Topics[name] = [];
+        }
+
+        return await Topics[name].Emit(plugin, @event, cancellationToken);
     }
 }

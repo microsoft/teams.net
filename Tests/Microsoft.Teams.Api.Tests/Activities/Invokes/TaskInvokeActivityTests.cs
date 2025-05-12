@@ -201,7 +201,7 @@ public class TaskInvokeActivityTests
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/TaskFetchActivity.json");
         var activity = JsonSerializer.Deserialize<FetchActivity>(json);
         var expected = setupFetchTaskActivity();
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity?.ToString());
     }
 
     [Fact]
@@ -298,7 +298,7 @@ public class TaskInvokeActivityTests
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/TaskSubmitActivity.json");
         var activity = JsonSerializer.Deserialize<FetchActivity>(json);
         var expected = setupSubmitTaskActivity();
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity?.ToString());
     }
 
     [Fact]

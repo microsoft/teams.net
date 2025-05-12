@@ -2,30 +2,34 @@ using System.Net;
 using System.Reflection;
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Routing;
+using Microsoft.Teams.Common.Extensions;
 using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Apps;
 
-public partial class App : RoutingModule
+public partial class App
 {
+    internal IRouter Router { get; } = new Router();
+
     public App AddController<T>(T controller) where T : class
     {
         var type = controller.GetType();
-        var attribute = type.GetCustomAttribute<ActivityControllerAttribute>(true) ?? throw new Exception($"type '{type.Name}' is not a controller");
+        var attribute = type.GetCustomAttribute<TeamsControllerAttribute>(true) ?? throw new Exception($"type '{type.Name}' is not a controller");
+        var name = attribute.Name ?? type.Name;
         var methods = type.GetMethods();
 
-        foreach (MethodInfo method in methods)
+        foreach (var method in methods)
         {
             var attrs = method.GetCustomAttributes<ActivityAttribute>(true);
-
-            if (attrs.Count() == 0) continue;
 
             foreach (var attr in attrs)
             {
                 var route = new AttributeRoute() { Attr = attr, Method = method, Object = controller };
+                var activityType = attr.Name?.ToString() ?? "activity";
                 var result = route.Validate();
 
                 if (!result.Valid)
@@ -34,11 +38,26 @@ public partial class App : RoutingModule
                 }
 
                 Router.Register(route);
-                Logger.Debug($"route '{attribute.Name ?? type.Name}.{route.Method.Name}' registered");
+                Logger.Debug($"'{activityType}' route '{name}.{method.Name}' registered");
             }
         }
 
-        Logger.Debug($"controller '{attribute.Name ?? type.Name}' registered");
+        foreach (var method in methods)
+        {
+            var attrs = method.GetCustomAttributes<Events.EventAttribute>(true);
+
+            foreach (var attr in attrs)
+            {
+                this.OnEvent(attr.Name, async (plugin, @event, token) =>
+                {
+                    await method.InvokeAsync(controller, [plugin, @event]);
+                });
+
+                Logger.Debug($"'{attr.Name}' event route '{name}.{method.Name}' registered");
+            }
+        }
+
+        Logger.Debug($"controller '{name}' registered");
         return this;
     }
 
@@ -63,7 +82,7 @@ public partial class App : RoutingModule
         {
             await Events.Emit(
                 context.Sender,
-                "error",
+                EventType.Error,
                 new ErrorEvent()
                 {
                     Exception = ex,
@@ -115,7 +134,7 @@ public partial class App : RoutingModule
         {
             await Events.Emit(
                 context.Sender,
-                "error",
+                EventType.Error,
                 new ErrorEvent()
                 {
                     Exception = ex,

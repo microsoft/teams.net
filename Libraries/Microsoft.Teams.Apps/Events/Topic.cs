@@ -6,14 +6,15 @@ internal class Topic : List<Func<IPlugin, Event, CancellationToken, Task<object?
 {
     public async Task<object?> Emit(IPlugin plugin, Event? @event = null, CancellationToken cancellationToken = default)
     {
-        object? res = null;
+        object? result = null;
         @event ??= [];
 
         foreach (var fn in this)
         {
-            res ??= await fn(plugin, @event, cancellationToken);
+            var res = await fn(plugin, @event, cancellationToken);
+            result ??= res;
         }
 
-        return res;
+        return result;
     }
 }
