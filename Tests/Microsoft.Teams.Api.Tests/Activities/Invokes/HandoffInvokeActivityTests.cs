@@ -12,10 +12,11 @@ public class HandoffInvokeActivityTests
     [Fact]
     public void HandoffInvokeActivity_JsonSerialize()
     {
-        var activity = new HandoffActivity() { 
+        var activity = new HandoffActivity()
+        {
             Id = "handoffId",
             ChannelId = new ChannelId("channelId"),
-            Value = new HandoffActivityValue() { Continuation= " valid continuation"}
+            Value = new HandoffActivityValue() { Continuation = " valid continuation" }
         };
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
@@ -103,7 +104,7 @@ public class HandoffInvokeActivityTests
             Value = new HandoffActivityValue() { Continuation = " valid continuation" }
         };
 
-      Assert.Equal(expected.ToString(), activity?.ToString());
+        Assert.Equal(expected.ToString(), activity?.ToString());
     }
 
     [Fact]

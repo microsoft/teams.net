@@ -12,7 +12,7 @@ public class SensitiveUsageEntityTests
         var entity = new SensitiveUsageEntity()
         {
             Name = "A1",
-            Description = "desc valid", 
+            Description = "desc valid",
             Pattern = new DefinedTerm() { Name = "T1", TermCode = "code", InDefinedTermSet = "termSet" },
         };
 
@@ -49,8 +49,8 @@ public class SensitiveUsageEntityTests
         Assert.Equal(File.ReadAllText(
             @"../../../Json/Entities/SensitiveUsageEntity.json"
         ), json);
-    }  
-    
+    }
+
     [Fact]
     public void SensitiveUsageEntity_JsonSerialize_Interface_Derived()
     {
@@ -79,7 +79,7 @@ public class SensitiveUsageEntityTests
     {
         var json = File.ReadAllText(@"../../../Json/Entities/SensitiveUsageEntity.json");
         var entity = JsonSerializer.Deserialize<SensitiveUsageEntity>(json);
-     
+
         var expected = new SensitiveUsageEntity()
         {
             Name = "A1",

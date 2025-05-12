@@ -9,7 +9,7 @@ public class AtMentionEntityTests
     [Fact]
     public void AtMentionEntity_JsonSerialize()
     {
-        var account = new Account() { Id= "accountId", Name="acctName"};
+        var account = new Account() { Id = "accountId", Name = "acctName" };
         var entity = new MentionEntity()
         {
             Mentioned = account,
@@ -49,8 +49,8 @@ public class AtMentionEntityTests
         Assert.Equal(File.ReadAllText(
             @"../../../Json/Entities/AtMentionEntity.json"
         ), json);
-    }  
-    
+    }
+
     [Fact]
     public void AtMentionEntity_JsonSerialize_Interface_Derived()
     {
