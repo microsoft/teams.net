@@ -1,0 +1,21 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "signin/verifyState",
+  "value": {
+    "state": "success"
+  },
+  "from": {
+    "id": "botId",
+    "aadObjectId": "aadObjectId",
+    "name": "User Name"
+  },
+  "recipient": {
+    "id": "recipientId",
+    "name": "Recipient Name"
+  },
+  "conversation": {
+    "id": "conversationId",
+    "conversationType": "groupChat"
+  }
+}

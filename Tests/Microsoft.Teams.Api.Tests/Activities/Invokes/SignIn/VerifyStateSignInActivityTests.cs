@@ -8,17 +8,15 @@ using static Microsoft.Teams.Api.Activities.Invokes.SignIn;
 
 namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
-public class TokenExchangeSignInActivityTests
+public class VerifyStateSignInActivityTests
 {
-    private TokenExchangeActivity setupSignInTokenExchangeActivity()
+    private VerifyStateActivity setupSignInValidStateActivity()
     {
-        return new TokenExchangeActivity()
+        return new VerifyStateActivity()
         {
-            Value = new ExchangeToken()
+            Value = new StateVerifyQuery()
             {
-                Id= "tokenExchangeId",
-                ConnectionName = "connection Name",
-                Token = "token"
+                State = "success"
             },
             Conversation = new Conversation()
             {
@@ -40,9 +38,9 @@ public class TokenExchangeSignInActivityTests
     }
 
     [Fact]
-    public void SignInTokenExchangeActivity_JsonSerialize()
+    public void setupSignInVerifyStateActivity_JsonSerialize()
     {
-        var activity = setupSignInTokenExchangeActivity();
+        var activity = setupSignInValidStateActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -51,21 +49,21 @@ public class TokenExchangeSignInActivityTests
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
-        string expectedPath = "Activity.Invoke.Signin/tokenExchange";
+        string expectedPath = "Activity.Invoke.Signin/verifyState";
         Assert.Equal(expectedPath, activity.GetPath());
-        Assert.NotNull(activity.ToTokenExchange());
-        var expectedSubmitException = "Unable to cast object of type 'TokenExchangeActivity' to type 'VerifyStateActivity'.";
-        var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToVerifyState());
+        Assert.NotNull(activity.ToVerifyState());
+        var expectedSubmitException = "Unable to cast object of type 'VerifyStateActivity' to type 'TokenExchangeActivity'.";
+        var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTokenExchange());
         Assert.Equal(expectedSubmitException, ex.Message);
         Assert.Equal(File.ReadAllText(
-            @"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json"
+            @"../../../Json/Activity/Invokes/SignInVerifyStateActivity.json"
         ), json);
     }
 
     [Fact]
-    public void SignInTokenExchangeActivity_JsonSerialize_Derived()
+    public void setupSignInVerifyStateActivity_JsonSerialize_Derived()
     {
-        SignInActivity activity = setupSignInTokenExchangeActivity();
+        SignInActivity activity = setupSignInValidStateActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -74,17 +72,17 @@ public class TokenExchangeSignInActivityTests
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
-        string expectedPath = "Activity.Invoke.Signin/tokenExchange";
+        string expectedPath = "Activity.Invoke.Signin/verifyState";
         Assert.Equal(expectedPath, activity.GetPath());
         Assert.Equal(File.ReadAllText(
-            @"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json"
+            @"../../../Json/Activity/Invokes/SignInVerifyStateActivity.json"
         ), json);
     }
 
     [Fact]
-    public void SignInTokenExchangeActivity_JsonSerialize_Derived_Interface()
+    public void setupSignInVerifyStateActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupSignInTokenExchangeActivity();
+        InvokeActivity activity = setupSignInValidStateActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -93,34 +91,34 @@ public class TokenExchangeSignInActivityTests
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
-        string expectedPath = "Activity.Invoke.Signin/tokenExchange";
+        string expectedPath = "Activity.Invoke.Signin/verifyState";
         Assert.Equal(expectedPath, activity.GetPath());
         Assert.Equal(File.ReadAllText(
-            @"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json"
+            @"../../../Json/Activity/Invokes/SignInVerifyStateActivity.json"
         ), json);
     }
 
     [Fact]
-    public void SignInTokenExchangeActivity_JsonDeserialize()
+    public void setupSignInVerifyStateActivity_JsonDeserialize()
     {
-        var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json");
-        var activity = JsonSerializer.Deserialize<TokenExchangeActivity>(json);
-        var expected = setupSignInTokenExchangeActivity();
+        var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInVerifyStateActivity.json");
+        var activity = JsonSerializer.Deserialize<VerifyStateActivity>(json);
+        var expected = setupSignInValidStateActivity();
 
         Assert.Equal(expected.ToString(), activity.ToString());
-        Assert.NotNull(activity.ToTokenExchange());
+        Assert.NotNull(activity.ToVerifyState());
 
-        var expectedSubmitException = "Unable to cast object of type 'TokenExchangeActivity' to type 'VerifyStateActivity'.";
-        var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToVerifyState());
+        var expectedSubmitException = "Unable to cast object of type 'VerifyStateActivity' to type 'TokenExchangeActivity'.";
+        var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTokenExchange());
         Assert.Equal(expectedSubmitException, ex.Message);
     }
 
     [Fact]
-    public void SignInTokenExchangeActivity_JsonDeserialize_Derived()
+    public void setupSignInVerifyStateActivity_JsonDeserialize_Derived()
     {
-        var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json");
+        var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInVerifyStateActivity.json");
         var activity = JsonSerializer.Deserialize<SignInActivity>(json);
-        var expected = setupSignInTokenExchangeActivity();
+        var expected = setupSignInValidStateActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -129,22 +127,22 @@ public class TokenExchangeSignInActivityTests
     }
 
     [Fact]
-    public void SignInTokenExchangeActivity_JsonDeserialize_Derived_Interface()
+    public void setupSignInVerifyStateActivity_JsonDeserialize_Derived_Interface()
     {
-        var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json");
+        var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInVerifyStateActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupSignInTokenExchangeActivity();
+        var expected = setupSignInValidStateActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
     }
 
     [Fact]
-    public void SignInTokenExchangeActivity_JsonDeserialize_Derived_Activity_Interface()
+    public void setupSignInVerifyStateActivity_JsonDeserialize_Derived_Activity_Interface()
     {
-        var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json");
+        var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInVerifyStateActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupSignInTokenExchangeActivity();
+        var expected = setupSignInValidStateActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
