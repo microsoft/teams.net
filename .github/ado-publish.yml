@@ -13,9 +13,9 @@ variables:
   nugetSignId: 'a94a770a-9a7b-4888-a3ea-24584b851e49'
 
 stages:
-- stage: Build_Test_Lint
+- stage: Build_Test_Sign_Pack
   jobs:
-  - job: BuildTestLint
+  - job: BuildTestSignPack
     displayName: 'Build, Test, and Lint'
     steps:
       - checkout: self
@@ -35,20 +35,6 @@ stages:
       - script: dotnet test --no-restore --verbosity normal --logger trx --configuration $(buildConfiguration)
         displayName: 'Test'
 
-- stage: Publish
-  dependsOn: Build_Test_Lint
-  jobs:
-  - job: SignPackPush
-    displayName: 'Sign DLLs, Pack, Sign NuGet, and Publish'
-    steps:
-      - checkout: self
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET 9'
-        inputs:
-          packageType: 'sdk'
-          version: '9.0.x'
-
       - task: EsrpCodeSigning@5
         displayName: "Authenticode Sign DLLs"
         inputs:
@@ -60,7 +46,7 @@ stages:
           AuthAKVName: esrp-teams
           UseMSIAuthentication: true
           FolderPath: '$(folderPath)'
-          Pattern: Libraries/**/*.dll
+          Pattern: 'Libraries/**/*.dll'
           UseMinimatch: true
           signConfigType: 'inlineSignParams'
           inlineOperation: |
@@ -94,11 +80,12 @@ stages:
         displayName: 'Pack NuGet Packages'
         inputs:
           command: pack
-          packagesToPack: 'Libraries/**/*.csproj'
+          packagesToPack: '$(folderPath)/Libraries/**/*.csproj'
           packDestination: '$(Build.ArtifactStagingDirectory)'
           includeSymbols: true
           nobuild: true
           configuration: '$(buildConfiguration)'
+          arguments: '/p:SymbolPackageFormat=snupkg'
 
       - task: EsrpCodeSigning@5
         displayName: 'Sign NuGet Packages'
@@ -111,7 +98,9 @@ stages:
           AuthAKVName: esrp-teams
           UseMSIAuthentication: true
           FolderPath: '$(Build.ArtifactStagingDirectory)'
-          Pattern: 'Libraries/**/*.nupkg'
+          Pattern: |
+            *.nupkg
+            *.snupkg
           UseMinimatch: true
           signConfigType: 'inlineSignParams'
           inlineOperation: |
@@ -141,14 +130,3 @@ stages:
         inputs:
           PathToPublish: '$(Build.ArtifactStagingDirectory)'
           ArtifactName: 'Packages'
-
-      - task: NuGetAuthenticate@1
-        displayName: 'Authenticate with GitHub NuGet'
-
-      - task: NuGetCommand@2
-        displayName: 'Push to GitHub and Azure Feeds'
-        inputs:
-          command: push
-          publishVstsFeed: 'Github_Pipelines/Teams'
-          allowPackageConflicts: true
-          includeNugetOrg: true

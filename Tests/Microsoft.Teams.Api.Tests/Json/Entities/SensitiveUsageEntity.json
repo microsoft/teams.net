@@ -1,0 +1,13 @@
+{
+  "type": "https://schema.org/Message",
+  "@type": "CreativeWork",
+  "@context": "https://schema.org",
+  "name": "A1",
+  "description": "desc valid",
+  "pattern": {
+    "@type": "DefinedTerm",
+    "inDefinedTermSet": "termSet",
+    "name": "T1",
+    "termCode": "code"
+  }
+}

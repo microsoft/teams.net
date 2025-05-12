@@ -189,7 +189,8 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         var name = promptAttribute.Name ?? nameAttribute?.Name ?? type.Name;
         var description = promptAttribute.Description ?? descriptionAttribute?.Description;
         var instructions = promptAttribute.Instructions ?? instructionsAttribute?.Instructions;
-        options ??= new ChatPromptOptions().WithName(name);
+        options ??= new();
+        options.WithName(name);
 
         if (description is not null)
         {

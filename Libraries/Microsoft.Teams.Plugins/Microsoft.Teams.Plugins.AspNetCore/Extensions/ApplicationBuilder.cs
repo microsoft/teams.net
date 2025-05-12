@@ -19,7 +19,7 @@ public static class ApplicationBuilderExtensions
 
         foreach (var type in types)
         {
-            var attribute = type.GetCustomAttribute<ActivityControllerAttribute>();
+            var attribute = type.GetCustomAttribute<TeamsControllerAttribute>();
 
             if (attribute is null)
             {

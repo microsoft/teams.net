@@ -41,6 +41,7 @@ public partial class EventActivity(Events.Name name) : Activity(ActivityType.Eve
 
     public override object ToType(Type type, IFormatProvider? provider)
     {
+        if (type == Events.Name.ReadReceipt.ToType()) return ToReadReceipt();
         if (type == Events.Name.MeetingStart.ToType()) return ToMeetingStart();
         if (type == Events.Name.MeetingEnd.ToType()) return ToMeetingEnd();
         if (type == Events.Name.MeetingParticipantJoin.ToType()) return ToMeetingParticipantJoin();

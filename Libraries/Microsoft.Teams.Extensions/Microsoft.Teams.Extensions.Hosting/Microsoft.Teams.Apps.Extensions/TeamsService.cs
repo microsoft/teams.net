@@ -6,9 +6,9 @@ namespace Microsoft.Teams.Apps.Extensions;
 public class TeamsService : IHostedLifecycleService
 {
     protected App _app;
-    protected ILogger<TeamsService> _logger;
+    protected ILogger<App> _logger;
 
-    public TeamsService(App app, ILogger<TeamsService> logger)
+    public TeamsService(App app, ILogger<App> logger)
     {
         _app = app;
         _logger = logger;
@@ -16,32 +16,39 @@ public class TeamsService : IHostedLifecycleService
 
     public Task StartingAsync(CancellationToken cancellationToken)
     {
-        return Task.Run(() => _logger.LogDebug("Starting"));
+        _logger.LogDebug("Starting");
+        return Task.CompletedTask;
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
-        return Task.Run(() => _logger.LogDebug("Start"));
+        _logger.LogDebug("Start");
+        return Task.CompletedTask;
     }
 
     public async Task StartedAsync(CancellationToken cancellationToken)
     {
-        await _app.Start();
+        await _app.Start(cancellationToken);
         _logger.LogDebug("Started");
     }
 
     public Task StoppingAsync(CancellationToken cancellationToken)
     {
-        return Task.Run(() => _logger.LogDebug("Stopping"));
+        _logger.LogDebug("Stopping");
+        var src = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        src.Cancel();
+        return Task.CompletedTask;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        return Task.Run(() => _logger.LogDebug("Stop"));
+        _logger.LogDebug("Stop");
+        return Task.CompletedTask;
     }
 
     public Task StoppedAsync(CancellationToken cancellationToken)
     {
-        return Task.Run(() => _logger.LogDebug("Stopped"));
+        _logger.LogDebug("Stopped");
+        return Task.CompletedTask;
     }
 }
