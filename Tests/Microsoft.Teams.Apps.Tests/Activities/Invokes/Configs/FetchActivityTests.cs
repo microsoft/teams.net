@@ -53,11 +53,11 @@ public class ConfigsFetchActionActivityTests
     {
         var calls = 0;
 
-        _app.OnAdaptiveCardAction(context =>
+        _app.OnConfigFetch(context =>
         {
             calls++;
             Assert.True(context.Activity.Type.IsInvoke);
-            Assert.True(context.Activity.Name.IsAdaptiveCard);
+            Assert.True(context.Activity.Name.IsConfig);
             return Task.FromResult<object?>(null);
         });
 
