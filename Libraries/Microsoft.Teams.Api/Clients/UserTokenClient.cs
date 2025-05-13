@@ -1,6 +1,4 @@
 using System.Text.Json.Serialization;
-
-using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Api.Clients;
@@ -39,7 +37,7 @@ public class UserTokenClient : Client
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/GetAadTokens?{query}", body: request);
-        var res = await _http.SendAsync<IDictionary<string, TokenResponse>>(req, _cancellationToken);
+        var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, _cancellationToken);
         return (IDictionary<string, Token.Response>)res.Body;
     }
 
