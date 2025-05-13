@@ -23,15 +23,7 @@ public static partial class AppActivityExtensions
                 await handler(context.ToActivityType<MessageUpdateActivity>());
                 return null;
             },
-            Selector = activity =>
-            {
-                if (activity is MessageUpdateActivity messageUpdate)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is MessageUpdateActivity
         });
 
         return app;

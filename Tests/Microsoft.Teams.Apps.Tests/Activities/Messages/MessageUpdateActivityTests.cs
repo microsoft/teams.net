@@ -6,13 +6,13 @@ using Microsoft.Teams.Apps.Testing.Plugins;
 
 namespace Microsoft.Teams.Apps.Tests.Activities;
 
-public class TypingActivityTests
+public class MessageUpdateActivityTests
 {
     private readonly App _app = new();
     private readonly IToken _token = Globals.Token;
     private readonly Controller _controller = new();
 
-    public TypingActivityTests()
+    public MessageUpdateActivityTests()
     {
         _app.AddPlugin(new TestPlugin());
         _app.AddController(_controller);
@@ -26,19 +26,19 @@ public class TypingActivityTests
         _app.OnActivity(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsTyping);
+            Assert.True(context.Activity.Type.IsMessageUpdate);
             return context.Next();
         });
 
-        _app.OnTyping(context =>
+        _app.OnMessageUpdate(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsTyping);
+            Assert.True(context.Activity.Type.IsMessageUpdate);
             Assert.Equal("testing123", context.Activity.Text);
             return Task.CompletedTask;
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new TypingActivity("testing123"));
+        var res = await _app.Process<TestPlugin>(_token, new MessageUpdateActivity("testing123"));
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(2, calls);
@@ -50,10 +50,10 @@ public class TypingActivityTests
     {
         var calls = 0;
 
-        _app.OnTyping(context =>
+        _app.OnMessageUpdate(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsTyping);
+            Assert.True(context.Activity.Type.IsMessageUpdate);
             return Task.CompletedTask;
         });
 
@@ -69,8 +69,8 @@ public class TypingActivityTests
     {
         public int Calls { get; private set; } = 0;
 
-        [Typing]
-        public void OnTyping([Context] IContext.Next next)
+        [Message.Update]
+        public void OnMessageUpdate([Context] IContext.Next next)
         {
             Calls++;
             next();

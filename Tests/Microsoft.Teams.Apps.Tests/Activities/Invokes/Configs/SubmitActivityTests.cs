@@ -1,18 +1,20 @@
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Activities;
+using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Testing.Plugins;
 
 namespace Microsoft.Teams.Apps.Tests.Activities;
 
-public class TypingActivityTests
+public class ConfigsSubmitActionActivityTests
 {
     private readonly App _app = new();
     private readonly IToken _token = Globals.Token;
     private readonly Controller _controller = new();
 
-    public TypingActivityTests()
+    public ConfigsSubmitActionActivityTests()
     {
         _app.AddPlugin(new TestPlugin());
         _app.AddController(_controller);
@@ -26,19 +28,20 @@ public class TypingActivityTests
         _app.OnActivity(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsTyping);
+            Assert.True(context.Activity.Type.IsInvoke);
+            Assert.True(((Activity)context.Activity).ToInvoke().Name.IsConfig);
             return context.Next();
         });
 
-        _app.OnTyping(context =>
+        _app.OnConfigSubmit(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsTyping);
-            Assert.Equal("testing123", context.Activity.Text);
-            return Task.CompletedTask;
+            Assert.True(context.Activity.Type.IsInvoke);
+            Assert.True(context.Activity.Name == Name.Configs.Submit);
+            return Task.FromResult<object?>(null);
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new TypingActivity("testing123"));
+        var res = await _app.Process<TestPlugin>(_token, new Configs.SubmitActivity());
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(2, calls);
@@ -50,14 +53,15 @@ public class TypingActivityTests
     {
         var calls = 0;
 
-        _app.OnTyping(context =>
+        _app.OnConfigSubmit(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsTyping);
-            return Task.CompletedTask;
+            Assert.True(context.Activity.Type.IsInvoke);
+            Assert.True(context.Activity.Name.IsConfig);
+            return Task.FromResult<object?>(null);
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new MessageActivity());
+        var res = await _app.Process<TestPlugin>(_token, new TypingActivity());
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(0, calls);
@@ -69,8 +73,15 @@ public class TypingActivityTests
     {
         public int Calls { get; private set; } = 0;
 
-        [Typing]
-        public void OnTyping([Context] IContext.Next next)
+        [Config.Fetch]
+        public void OnFetch([Context] IContext.Next next)
+        {
+            Calls++;
+            next();
+        }
+
+        [Config.Submit]
+        public void OnSubmit([Context] IContext.Next next)
         {
             Calls++;
             next();

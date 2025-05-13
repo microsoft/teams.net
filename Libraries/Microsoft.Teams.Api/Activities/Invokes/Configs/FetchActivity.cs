@@ -15,7 +15,7 @@ public static partial class Configs
 {
     public class FetchActivity : ConfigActivity
     {
-        public FetchActivity(object? value) : base(Name.Configs.Fetch)
+        public FetchActivity(object? value = null) : base(Name.Configs.Fetch)
         {
             Value = value;
         }

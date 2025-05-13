@@ -29,15 +29,7 @@ public static partial class AppEventActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<ReadReceiptActivity>()),
-            Selector = activity =>
-            {
-                if (activity is ReadReceiptActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is ReadReceiptActivity
         });
 
         return app;

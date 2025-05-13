@@ -6,13 +6,13 @@ using Microsoft.Teams.Apps.Testing.Plugins;
 
 namespace Microsoft.Teams.Apps.Tests.Activities;
 
-public class TypingActivityTests
+public class MessageDeleteActivityTests
 {
     private readonly App _app = new();
     private readonly IToken _token = Globals.Token;
     private readonly Controller _controller = new();
 
-    public TypingActivityTests()
+    public MessageDeleteActivityTests()
     {
         _app.AddPlugin(new TestPlugin());
         _app.AddController(_controller);
@@ -26,19 +26,18 @@ public class TypingActivityTests
         _app.OnActivity(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsTyping);
+            Assert.True(context.Activity.Type.IsMessageDelete);
             return context.Next();
         });
 
-        _app.OnTyping(context =>
+        _app.OnMessageDelete(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsTyping);
-            Assert.Equal("testing123", context.Activity.Text);
+            Assert.True(context.Activity.Type.IsMessageDelete);
             return Task.CompletedTask;
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new TypingActivity("testing123"));
+        var res = await _app.Process<TestPlugin>(_token, new MessageDeleteActivity());
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(2, calls);
@@ -50,10 +49,10 @@ public class TypingActivityTests
     {
         var calls = 0;
 
-        _app.OnTyping(context =>
+        _app.OnMessageDelete(context =>
         {
             calls++;
-            Assert.True(context.Activity.Type.IsTyping);
+            Assert.True(context.Activity.Type.IsMessageDelete);
             return Task.CompletedTask;
         });
 
@@ -69,8 +68,8 @@ public class TypingActivityTests
     {
         public int Calls { get; private set; } = 0;
 
-        [Typing]
-        public void OnTyping([Context] IContext.Next next)
+        [Message.Delete]
+        public void OnMessageDelete([Context] IContext.Next next)
         {
             Calls++;
             next();

@@ -20,15 +20,7 @@ public static partial class AppActivityExtensions
                 await handler(context.ToActivityType<InstallUpdateActivity>());
                 return null;
             },
-            Selector = activity =>
-            {
-                if (activity is InstallUpdateActivity installUpdate)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is InstallUpdateActivity
         });
 
         return app;

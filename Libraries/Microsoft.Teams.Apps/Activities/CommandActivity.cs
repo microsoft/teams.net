@@ -16,15 +16,7 @@ public static partial class AppActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<CommandActivity>()),
-            Selector = activity =>
-            {
-                if (activity is CommandActivity command)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is CommandActivity
         });
 
         return app;
