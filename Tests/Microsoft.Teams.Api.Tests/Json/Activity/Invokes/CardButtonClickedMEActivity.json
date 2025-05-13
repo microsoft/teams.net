@@ -1,0 +1,14 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "composeExtension/onCardButtonClicked",
+  "value": {
+    "name": "Somelist",
+    "value": "Toronto"
+  },
+  "conversation": {
+    "id": "19:someid",
+    "conversationType": "personal"
+  },
+  "serviceUrl": "https://url-value"
+}

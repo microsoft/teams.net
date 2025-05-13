@@ -15,7 +15,7 @@ public static partial class Configs
 {
     public class SubmitActivity : ConfigActivity
     {
-        public SubmitActivity(object? value) : base(Name.Configs.Submit)
+        public SubmitActivity(object? value = null) : base(Name.Configs.Submit)
         {
             Value = value;
         }

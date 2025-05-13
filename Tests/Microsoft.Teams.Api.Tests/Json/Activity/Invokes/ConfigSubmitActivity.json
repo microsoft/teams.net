@@ -1,0 +1,6 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "config/submit",
+  "value": "You have chosen to submit config for bot"
+}

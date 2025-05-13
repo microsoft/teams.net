@@ -23,15 +23,7 @@ public static partial class AppActivityExtensions
                 await handler(context.ToActivityType<MessageDeleteActivity>());
                 return null;
             },
-            Selector = activity =>
-            {
-                if (activity is MessageDeleteActivity messageDelete)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is MessageDeleteActivity
         });
 
         return app;

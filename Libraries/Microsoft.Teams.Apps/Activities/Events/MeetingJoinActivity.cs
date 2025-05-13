@@ -29,15 +29,7 @@ public static partial class AppEventActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<MeetingParticipantJoinActivity>()),
-            Selector = activity =>
-            {
-                if (activity is MeetingParticipantJoinActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is MeetingParticipantJoinActivity
         });
 
         return app;

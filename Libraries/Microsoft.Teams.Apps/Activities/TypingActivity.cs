@@ -20,15 +20,7 @@ public static partial class AppActivityExtensions
                 await handler(context.ToActivityType<TypingActivity>());
                 return null;
             },
-            Selector = activity =>
-            {
-                if (activity is TypingActivity typing)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is TypingActivity
         });
 
         return app;
