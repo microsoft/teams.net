@@ -16,15 +16,7 @@ public static partial class AppEventActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<EventActivity>()),
-            Selector = activity =>
-            {
-                if (activity is EventActivity @event)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is EventActivity
         });
 
         return app;

@@ -17,15 +17,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<ExecuteActionActivity>()),
-            Selector = activity =>
-            {
-                if (activity is ExecuteActionActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is ExecuteActionActivity
         });
 
         return app;

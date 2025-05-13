@@ -17,15 +17,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<FileConsentActivity>()),
-            Selector = activity =>
-            {
-                if (activity is FileConsentActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is FileConsentActivity
         });
 
         return app;

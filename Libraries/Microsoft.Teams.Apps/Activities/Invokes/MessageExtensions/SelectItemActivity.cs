@@ -20,15 +20,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<MessageExtensions.SelectItemActivity>()),
-            Selector = activity =>
-            {
-                if (activity is MessageExtensions.SelectItemActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is MessageExtensions.SelectItemActivity
         });
 
         return app;

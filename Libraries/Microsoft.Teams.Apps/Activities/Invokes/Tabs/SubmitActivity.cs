@@ -20,15 +20,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<Tabs.SubmitActivity>()),
-            Selector = activity =>
-            {
-                if (activity is Tabs.SubmitActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is Tabs.SubmitActivity
         });
 
         return app;

@@ -42,15 +42,7 @@ public static partial class AppActivityExtensions
                 await handler(context.ToActivityType<MessageActivity>());
                 return null;
             },
-            Selector = activity =>
-            {
-                if (activity is MessageActivity message)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is MessageActivity
         });
 
         return app;

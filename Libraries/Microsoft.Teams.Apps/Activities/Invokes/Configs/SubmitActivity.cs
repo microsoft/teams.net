@@ -20,15 +20,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<Configs.SubmitActivity>()),
-            Selector = activity =>
-            {
-                if (activity is Configs.SubmitActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is Configs.SubmitActivity
         });
 
         return app;

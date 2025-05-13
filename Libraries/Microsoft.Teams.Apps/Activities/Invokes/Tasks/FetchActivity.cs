@@ -17,15 +17,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<Tasks.FetchActivity>()),
-            Selector = activity =>
-            {
-                if (activity is Tasks.FetchActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is Tasks.FetchActivity
         });
 
         return app;

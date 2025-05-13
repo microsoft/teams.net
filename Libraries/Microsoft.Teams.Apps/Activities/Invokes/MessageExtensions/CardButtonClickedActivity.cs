@@ -20,15 +20,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<MessageExtensions.CardButtonClickedActivity>()),
-            Selector = activity =>
-            {
-                if (activity is MessageExtensions.CardButtonClickedActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is MessageExtensions.CardButtonClickedActivity
         });
 
         return app;

@@ -23,15 +23,7 @@ public static partial class AppActivityExtensions
                 await handler(context.ToActivityType<EndOfConversationActivity>());
                 return null;
             },
-            Selector = activity =>
-            {
-                if (activity is EndOfConversationActivity endOfConversation)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is EndOfConversationActivity
         });
 
         return app;

@@ -17,15 +17,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<HandoffActivity>()),
-            Selector = activity =>
-            {
-                if (activity is HandoffActivity)
-                {
-                    return true;
-                }
-
-                return false;
-            }
+            Selector = activity => activity is HandoffActivity
         });
 
         return app;
