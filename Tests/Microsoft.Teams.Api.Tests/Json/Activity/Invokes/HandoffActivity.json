@@ -1,0 +1,9 @@
+{
+  "id": "handoffId",
+  "type": "invoke",
+  "channelId": "channelId",
+  "name": "handoff/action",
+  "value": {
+    "continuation": " valid continuation"
+  }
+}

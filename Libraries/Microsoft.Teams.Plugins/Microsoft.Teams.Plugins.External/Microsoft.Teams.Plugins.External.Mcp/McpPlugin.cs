@@ -1,9 +1,8 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Teams.Api;
-using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Plugins.AspNetCore;
@@ -21,7 +20,7 @@ public class McpPlugin : IAspNetCorePlugin
     [Dependency]
     public ILogger Logger { get; set; }
 
-    public event IPlugin.ErrorEventHandler ErrorEvent = (_, _) => Task.Run(() => { });
+    public event EventFunction Events;
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {
@@ -29,38 +28,38 @@ public class McpPlugin : IAspNetCorePlugin
         return builder.UseEndpoints(endpoints => endpoints.MapMcp("mcp"));
     }
 
-    public Task OnInit(IApp app, CancellationToken cancellationToken = default)
+    public Task OnInit(App app, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => { });
+        return Task.CompletedTask;
     }
 
-    public Task OnStart(IApp app, CancellationToken cancellationToken = default)
+    public Task OnStart(App app, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnStart"));
+        Logger.Debug("OnStart");
+        return Task.CompletedTask;
     }
 
-    public Task OnError(IApp app, IPlugin? plugin, Exception exception, IContext<IActivity>? context, CancellationToken cancellationToken = default)
+    public Task OnError(App app, IPlugin plugin, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnError"));
+        Logger.Debug("OnError");
+        return Task.CompletedTask;
     }
 
-    public Task OnActivity(IApp app, IContext<IActivity> context)
+    public Task OnActivity(App app, ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnActivity"));
+        Logger.Debug("OnActivity");
+        return Task.CompletedTask;
     }
 
-    public Task OnActivityResponse(IApp app, Response? response, IContext<IActivity> context)
+    public Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnActivityResponse"));
+        Logger.Debug("OnActivitySent");
+        return Task.CompletedTask;
     }
 
-    public Task OnActivitySent(IApp app, IActivity activity, IContext<IActivity> context)
+    public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnActivitySent"));
-    }
-
-    public Task OnActivitySent(IApp app, ISenderPlugin sender, IActivity activity, ConversationReference reference, CancellationToken cancellationToken = default)
-    {
-        return Task.Run(() => Logger.Debug("OnActivitySent"));
+        Logger.Debug("OnActivityResponse");
+        return Task.CompletedTask;
     }
 }

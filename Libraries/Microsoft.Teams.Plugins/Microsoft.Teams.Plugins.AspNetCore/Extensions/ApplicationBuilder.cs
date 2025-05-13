@@ -10,16 +10,16 @@ namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
 public static class ApplicationBuilderExtensions
 {
-    public static IApp UseTeams(this IApplicationBuilder builder, bool routing = true)
+    public static App UseTeams(this IApplicationBuilder builder, bool routing = true)
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
-        var app = builder.ApplicationServices.GetService<IApp>() ?? new App(builder.ApplicationServices.GetService<IAppOptions>());
+        var app = builder.ApplicationServices.GetService<App>() ?? new App(builder.ApplicationServices.GetService<AppOptions>());
         var plugins = builder.ApplicationServices.GetServices<IPlugin>();
         var types = assembly.GetTypes();
 
         foreach (var type in types)
         {
-            var attribute = type.GetCustomAttribute<ActivityControllerAttribute>();
+            var attribute = type.GetCustomAttribute<TeamsControllerAttribute>();
 
             if (attribute is null)
             {

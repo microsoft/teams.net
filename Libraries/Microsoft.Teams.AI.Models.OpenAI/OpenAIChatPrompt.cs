@@ -23,6 +23,7 @@ public class OpenAIChatPrompt : ChatPrompt<ChatCompletionOptions>
 
     public static OpenAIChatPrompt From<T>(OpenAIChatModel model, T value, ChatPromptOptions? options = null) where T : class
     {
-        return new OpenAIChatPrompt(value.GetType().Name, ChatPrompt<ChatCompletionOptions>.From(model, value, options));
+        var prompt = ChatPrompt<ChatCompletionOptions>.From(model, value, options);
+        return new OpenAIChatPrompt(prompt);
     }
 }

@@ -10,11 +10,6 @@ namespace Microsoft.Teams.Apps.Plugins;
 public interface ISenderPlugin : IPlugin
 {
     /// <summary>
-    /// emitted when the plugin receives an activity
-    /// </summary>
-    public event ActivityEventHandler ActivityEvent;
-
-    /// <summary>
     /// called by the `App`
     /// to send an activity
     /// </summary>
@@ -45,6 +40,4 @@ public interface ISenderPlugin : IPlugin
     /// process an activity
     /// </summary>
     public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default);
-
-    public delegate Task<Response> ActivityEventHandler(ISenderPlugin sender, IToken token, IActivity activity, CancellationToken cancellationToken = default);
 }

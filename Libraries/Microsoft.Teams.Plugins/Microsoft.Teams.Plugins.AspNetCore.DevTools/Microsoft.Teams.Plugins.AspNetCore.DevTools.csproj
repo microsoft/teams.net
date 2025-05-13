@@ -15,6 +15,7 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
+    <NoWarn>CS8618,CS0067</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

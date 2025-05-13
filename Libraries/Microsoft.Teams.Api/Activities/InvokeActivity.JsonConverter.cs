@@ -43,6 +43,11 @@ public partial class InvokeActivity
                 return JsonSerializer.Deserialize<Invokes.MessageExtensionActivity>(element.ToString(), options);
             }
 
+            if (name.StartsWith("handOff/"))
+            {
+                return JsonSerializer.Deserialize<Invokes.HandoffActivity>(element.ToString(), options);
+            }
+
             if (name.StartsWith("message/"))
             {
                 return JsonSerializer.Deserialize<Invokes.MessageActivity>(element.ToString(), options);
@@ -83,6 +88,12 @@ public partial class InvokeActivity
             if (value is Invokes.ConfigActivity config)
             {
                 JsonSerializer.Serialize(writer, config, options);
+                return;
+            }
+
+            if (value is Invokes.HandoffActivity handoff)
+            {
+                JsonSerializer.Serialize(writer, handoff, options);
                 return;
             }
 

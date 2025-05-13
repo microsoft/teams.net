@@ -1,17 +1,10 @@
 using System.Reflection;
 
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.Apps;
-
-public partial interface IApp
-{
-    public IPlugin? GetPlugin(string name);
-    public IPlugin? GetPlugin(Type type);
-    public TPlugin? GetPlugin<TPlugin>() where TPlugin : IPlugin;
-    public IApp AddPlugin(IPlugin plugin);
-}
 
 public partial class App
 {
@@ -19,7 +12,7 @@ public partial class App
 
     public IPlugin? GetPlugin(string name)
     {
-        return Plugins.SingleOrDefault(p => GetPluginAttribute(p).Name == name);
+        return Plugins.SingleOrDefault(p => PluginService.GetAttribute(p).Name == name);
     }
 
     public IPlugin? GetPlugin(Type type)
@@ -32,44 +25,36 @@ public partial class App
         return (TPlugin?)Plugins.SingleOrDefault(p => p.GetType() == typeof(TPlugin));
     }
 
-    public IApp AddPlugin(IPlugin plugin)
+    public App AddPlugin(IPlugin plugin)
     {
-        var attr = GetPluginAttribute(plugin);
+        var attr = PluginService.GetAttribute(plugin);
 
         // broadcast plugin events
-        plugin.ErrorEvent += (sender, exception) => ErrorEvent(this, sender, exception, null);
-
-        if (plugin is ISenderPlugin sender)
+        plugin.Events += async (plugin, name, @event, token) =>
         {
-            sender.ActivityEvent += OnActivityEvent;
-        }
+            var eventType = new EventType(name);
+
+            await Events.Emit(plugin, $"{attr.Name}.{name}", @event, token);
+
+            if (eventType.IsBuiltIn && !eventType.IsStart)
+            {
+                return await Events.Emit(plugin, name, @event, token);
+            }
+
+            return null;
+        };
 
         Plugins.Add(plugin);
         Container.Register(attr.Name, new ValueProvider(plugin));
         Container.Register(plugin.GetType().Name, new ValueProvider(plugin));
-        Logger.Debug($"plugin {attr.Name} added");
+        Logger.Debug($"plugin {attr.Name} registered");
         return this;
-    }
-
-    protected static PluginAttribute GetPluginAttribute(IPlugin plugin)
-    {
-        var assembly = Assembly.GetAssembly(plugin.GetType());
-        var attribute = (PluginAttribute?)Attribute.GetCustomAttribute(plugin.GetType(), typeof(PluginAttribute));
-
-        if (attribute is null)
-        {
-            throw new InvalidOperationException($"type '{plugin.GetType().Name}' is not a valid plugin");
-        }
-
-        attribute.Name = assembly?.GetName().Name ?? throw new InvalidOperationException("plugin is missing a name");
-        attribute.Version = assembly?.GetName()?.Version?.ToString() ?? "0.0.0";
-        return attribute;
     }
 
     protected void Inject(IPlugin plugin)
     {
         var assembly = Assembly.GetAssembly(plugin.GetType());
-        var metadata = GetPluginAttribute(plugin);
+        var metadata = PluginService.GetAttribute(plugin);
         var properties = plugin
             .GetType()
             .GetProperties()

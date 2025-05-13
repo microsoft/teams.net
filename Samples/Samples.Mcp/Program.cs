@@ -7,11 +7,17 @@ using Microsoft.Teams.Plugins.External.Mcp.Extensions;
 using Samples.Mcp.Prompts;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder
     .AddTeams()
     .AddTeamsDevTools()
-    .AddOpenAI<MainPrompt>()
     .AddTeamsMcp()
+    .AddOpenAI<MainPrompt>()
+    .AddOpenAI<AnotherPrompt>();
+
+builder.Services
+    .AddMcpServer()
+    .WithTeamsChatPrompts()
     .WithHttpTransport();
 
 var app = builder.Build();

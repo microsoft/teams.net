@@ -8,10 +8,10 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Common.Text;
@@ -33,7 +33,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
     [Dependency("AppName", optional: true)]
     public string? AppName { get; set; }
 
-    public event IPlugin.ErrorEventHandler ErrorEvent = (_, _) => Task.Run(() => { });
+    public event EventFunction Events;
 
     internal MetaData MetaData => new() { Id = AppId, Name = AppName, Pages = _pages };
     internal readonly WebSocketCollection Sockets = [];
@@ -87,27 +87,26 @@ public class DevToolsPlugin : IAspNetCorePlugin
         return this;
     }
 
-    public Task OnInit(IApp app, CancellationToken cancellationToken = default)
+    public Task OnInit(App app, CancellationToken cancellationToken = default)
     {
         foreach (var page in _settings.Pages)
         {
             AddPage(page);
         }
 
-        return Task.Run(() =>
-        {
-            Logger.Warn(
-                new StringBuilder()
-                    .Bold(
-                        new StringBuilder()
-                            .Yellow("⚠️  Devtools are not secure and should not be used production environments ⚠️")
-                            .ToString()
-                    )
-            );
-        });
+        Logger.Warn(
+            new StringBuilder()
+                .Bold(
+                    new StringBuilder()
+                        .Yellow("⚠️  Devtools are not secure and should not be used production environments ⚠️")
+                        .ToString()
+                )
+        );
+
+        return Task.CompletedTask;
     }
 
-    public Task OnStart(IApp app, CancellationToken cancellationToken = default)
+    public Task OnStart(App app, CancellationToken cancellationToken = default)
     {
         var server = _services.GetRequiredService<IServer>();
         var addresses = server.Features.GetRequiredFeature<IServerAddressesFeature>().Addresses;
@@ -117,44 +116,46 @@ public class DevToolsPlugin : IAspNetCorePlugin
             Logger.Info($"Available at {address}/devtools");
         }
 
-        return Task.Run(() => Logger.Debug("OnStart"));
+        Logger.Debug("OnStart");
+        return Task.CompletedTask;
     }
 
-    public Task OnError(IApp app, IPlugin? plugin, Exception exception, IContext<IActivity>? context, CancellationToken cancellationToken = default)
+    public Task OnError(App app, IPlugin plugin, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnError"));
+        Logger.Debug("OnError");
+        return Task.CompletedTask;
     }
 
-    public async Task OnActivity(IApp app, IContext<IActivity> context)
+    public async Task OnActivity(App app, ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
         Logger.Debug("OnActivity");
-        await Sockets.Emit(Events.ActivityEvent.Received(
-            context.Activity,
-            context.Ref.Conversation
-        ), context.CancellationToken);
-    }
 
-    public async Task OnActivitySent(IApp app, IActivity activity, IContext<IActivity> context)
-    {
-        Logger.Debug("OnActivitySent");
         await Sockets.Emit(
-            Events.ActivityEvent.Sent(activity, context.Ref.Conversation),
-            context.CancellationToken
-        );
-    }
-
-    public async Task OnActivitySent(IApp app, ISenderPlugin sender, IActivity activity, ConversationReference reference, CancellationToken cancellationToken = default)
-    {
-        Logger.Debug("OnActivitySent");
-        await Sockets.Emit(
-            Events.ActivityEvent.Sent(activity, reference.Conversation),
+            DevTools.Events.ActivityEvent.Received(
+                @event.Activity,
+                @event.Activity.Conversation
+            ),
             cancellationToken
         );
     }
 
-    public Task OnActivityResponse(IApp app, Response? response, IContext<IActivity> context)
+    public async Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
-        return Task.Run(() => Logger.Debug("OnActivityResponse"));
+        Logger.Debug("OnActivitySent");
+
+        await Sockets.Emit(
+            DevTools.Events.ActivityEvent.Sent(
+                @event.Activity,
+                @event.Activity.Conversation
+            ),
+            cancellationToken
+        );
+    }
+
+    public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
+    {
+        Logger.Debug("OnActivityResponse");
+        return Task.CompletedTask;
     }
 
     public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)

@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <Product>Microsoft Teams SDK</Product>
-    <Version>2.0.0-preview.1</Version>
+    <Version>2.0.0-preview.4</Version>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
@@ -16,6 +16,11 @@
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <IncludeSymbols>true</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>$([MSBuild]::GetPathOfFileAbove('key.snk'))</AssemblyOriginatorKeyFile>
   </PropertyGroup>
 
   <PropertyGroup>

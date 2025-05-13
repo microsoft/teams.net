@@ -85,6 +85,7 @@ stages:
           includeSymbols: false
           nobuild: true
           configuration: '$(buildConfiguration)'
+          arguments: '/p:SymbolPackageFormat=snupkg'
 
       - task: EsrpCodeSigning@5
         displayName: 'Sign NuGet Packages'
