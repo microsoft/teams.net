@@ -44,7 +44,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton(app.Storage);
         collection.AddSingleton<ILoggerFactory>(_ => new LoggerFactory([new TeamsLoggerProvider(log)]));
         collection.AddSingleton<ILogger>(log);
-        collection.AddSingleton<App>(app);
+        collection.AddSingleton(app);
         collection.AddHostedService<TeamsService>();
         collection.AddScoped<TeamsContext>();
         collection.AddTransient(provider => provider.GetRequiredService<TeamsContext>().Activity);

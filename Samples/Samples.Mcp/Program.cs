@@ -12,7 +12,8 @@ builder
     .AddTeams()
     .AddTeamsDevTools()
     .AddTeamsMcp()
-    .AddOpenAI<MainPrompt>();
+    .AddOpenAI<MainPrompt>()
+    .AddOpenAI<AnotherPrompt>();
 
 builder.Services
     .AddMcpServer()
