@@ -82,7 +82,7 @@ stages:
           command: pack
           packagesToPack: '$(folderPath)/Libraries/**/*.csproj'
           packDestination: '$(Build.ArtifactStagingDirectory)'
-          includeSymbols: true
+          includeSymbols: false
           nobuild: true
           configuration: '$(buildConfiguration)'
           arguments: '/p:SymbolPackageFormat=snupkg'
