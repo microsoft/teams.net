@@ -12,7 +12,7 @@ namespace Microsoft.Teams.Api.Tests.Clients;
 public class ConversationClientTests
 {
     [Fact]
-    public async Task ConversationClient_GetAsync_Async()
+    public async Task ConversationClient_CreateAsync()
     {
         var createRequest = new CreateRequest()
         {
