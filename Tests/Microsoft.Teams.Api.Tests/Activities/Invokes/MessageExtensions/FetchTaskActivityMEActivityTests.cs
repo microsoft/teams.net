@@ -10,11 +10,17 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class FetchTaskActivityMEActivityTests
 {
-    private FetchTaskActivity setupFetchTaskActivity()
+    private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new JsonSerializerOptions()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private static FetchTaskActivity SetupFetchTaskActivity()
     {
         return new FetchTaskActivity()
         {
-            Value = new Api.MessageExtensions.Action()
+            Value = new MessageExtensions.Action()
             {
                 CommandContext = Commands.Context.Compose,
                 CommandId = "commandId",
@@ -46,14 +52,9 @@ public class FetchTaskActivityMEActivityTests
     [Fact]
     public void FetchTaskMEActivity_JsonSerialize()
     {
-        var activity = setupFetchTaskActivity();
+        var activity = SetupFetchTaskActivity();
 
-        var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            IndentSize = 2,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(activity, CachedJsonSerializerOptions);
 
         string expectedPath = "Activity.Invoke.ComposeExtension/fetchTask";
         Assert.Equal(expectedPath, activity.GetPath());
@@ -65,14 +66,9 @@ public class FetchTaskActivityMEActivityTests
     [Fact]
     public void FetchTaskMEActivity_JsonSerialize_Derived()
     {
-        MessageExtensionActivity activity = setupFetchTaskActivity();
+        MessageExtensionActivity activity = SetupFetchTaskActivity();
 
-        var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            IndentSize = 2,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(activity, CachedJsonSerializerOptions);
 
         string expectedPath = "Activity.Invoke.ComposeExtension/fetchTask";
         Assert.Equal(expectedPath, activity.GetPath());
@@ -84,14 +80,9 @@ public class FetchTaskActivityMEActivityTests
     [Fact]
     public void FetchTaskMEActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupFetchTaskActivity();
+        InvokeActivity activity = SetupFetchTaskActivity();
 
-        var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            IndentSize = 2,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(activity, CachedJsonSerializerOptions);
 
         string expectedPath = "Activity.Invoke.ComposeExtension/fetchTask";
         Assert.Equal(expectedPath, activity.GetPath());
@@ -104,10 +95,9 @@ public class FetchTaskActivityMEActivityTests
     public void FetchTaskMEActivity_JsonDeserialize()
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/FetchTaskMEActivity.json");
-        var activity = JsonSerializer.Deserialize<FetchTaskActivity>(json);
-        var expected = setupFetchTaskActivity();
-        Assert.Equal(expected.ToString(), activity.ToString());
-
+        var activity = JsonSerializer.Deserialize<FetchTaskActivity>(json, CachedJsonSerializerOptions);
+        var expected = SetupFetchTaskActivity();
+        Assert.Equal(expected.ToString(), activity!.ToString());
 
         var expectedSubmitException = "Unable to cast object of type 'FetchTaskActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.TaskActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTask());
@@ -118,8 +108,8 @@ public class FetchTaskActivityMEActivityTests
     public void FetchTaskMEActivityJsonDeserialize_Derived()
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/FetchTaskMEActivity.json");
-        var activity = JsonSerializer.Deserialize<MessageExtensionActivity>(json);
-        var expected = setupFetchTaskActivity();
+        var activity = JsonSerializer.Deserialize<MessageExtensionActivity>(json, CachedJsonSerializerOptions);
+        var expected = SetupFetchTaskActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -129,8 +119,8 @@ public class FetchTaskActivityMEActivityTests
     public void FetchTaskMEActivity_JsonDeserialize_Derived_Interface()
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/FetchTaskMEActivity.json");
-        var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupFetchTaskActivity();
+        var activity = JsonSerializer.Deserialize<InvokeActivity>(json, CachedJsonSerializerOptions);
+        var expected = SetupFetchTaskActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -140,8 +130,8 @@ public class FetchTaskActivityMEActivityTests
     public void FetchTaskMEActivity_JsonDeserialize_Derived_Activity_Interface()
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/FetchTaskMEActivity.json");
-        var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupFetchTaskActivity();
+        var activity = JsonSerializer.Deserialize<Activity>(json, CachedJsonSerializerOptions);
+        var expected = SetupFetchTaskActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());

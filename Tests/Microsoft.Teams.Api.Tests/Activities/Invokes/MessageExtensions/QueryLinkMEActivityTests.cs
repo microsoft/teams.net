@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class QueryLinkMEActivityTests
 {
-    private QueryLinkActivity setupQueryLinkActivity()
+    private QueryLinkActivity SetupQueryLinkActivity()
     {
         return new QueryLinkActivity()
         {
@@ -24,7 +24,7 @@ public class QueryLinkMEActivityTests
     [Fact]
     public void QueryLinkMEActivity_JsonSerialize()
     {
-        var activity = setupQueryLinkActivity();
+        var activity = SetupQueryLinkActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -43,7 +43,7 @@ public class QueryLinkMEActivityTests
     [Fact]
     public void QueryLinkMEActivity_JsonSerialize_Derived()
     {
-        MessageExtensionActivity activity = setupQueryLinkActivity();
+        MessageExtensionActivity activity = SetupQueryLinkActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -62,7 +62,7 @@ public class QueryLinkMEActivityTests
     [Fact]
     public void QueryLinkMEActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupQueryLinkActivity();
+        InvokeActivity activity = SetupQueryLinkActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -83,9 +83,9 @@ public class QueryLinkMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/QueryLinkMEActivity.json");
         var activity = JsonSerializer.Deserialize<QueryLinkActivity>(json);
-        var expected = setupQueryLinkActivity();
+        var expected = SetupQueryLinkActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
     }
 
@@ -94,9 +94,9 @@ public class QueryLinkMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/QueryLinkMEActivity.json");
         var activity = JsonSerializer.Deserialize<MessageExtensionActivity>(json);
-        var expected = setupQueryLinkActivity();
+        var expected = SetupQueryLinkActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
         var expectedSubmitException = "Unable to cast object of type 'QueryLinkActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.TaskActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTask());
@@ -108,7 +108,7 @@ public class QueryLinkMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/QueryLinkMEActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupQueryLinkActivity();
+        var expected = SetupQueryLinkActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -124,7 +124,7 @@ public class QueryLinkMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/QueryLinkMEActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupQueryLinkActivity();
+        var expected = SetupQueryLinkActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());

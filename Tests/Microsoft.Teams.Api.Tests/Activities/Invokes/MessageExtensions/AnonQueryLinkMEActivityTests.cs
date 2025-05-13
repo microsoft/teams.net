@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class AnonQueryLinkMEActivityTests
 {
-    private AnonQueryLinkActivity setupAnonQueryLinkActivity()
+    private AnonQueryLinkActivity SetupAnonQueryLinkActivity()
     {
         return new AnonQueryLinkActivity()
         {
@@ -24,7 +24,7 @@ public class AnonQueryLinkMEActivityTests
     [Fact]
     public void AnonQueryLinkMEActivity_JsonSerialize()
     {
-        var activity = setupAnonQueryLinkActivity();
+        var activity = SetupAnonQueryLinkActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -43,7 +43,7 @@ public class AnonQueryLinkMEActivityTests
     [Fact]
     public void AnonQueryLinkMEActivity_JsonSerialize_Derived()
     {
-        MessageExtensionActivity activity = setupAnonQueryLinkActivity();
+        MessageExtensionActivity activity = SetupAnonQueryLinkActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -62,7 +62,7 @@ public class AnonQueryLinkMEActivityTests
     [Fact]
     public void AnonQueryLinkMEActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupAnonQueryLinkActivity();
+        InvokeActivity activity = SetupAnonQueryLinkActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -83,9 +83,9 @@ public class AnonQueryLinkMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/AnonQueryLinkMEActivity.json");
         var activity = JsonSerializer.Deserialize<AnonQueryLinkActivity>(json);
-        var expected = setupAnonQueryLinkActivity();
+        var expected = SetupAnonQueryLinkActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
         string expectedPath = "Activity.Invoke.ComposeExtension/anonymousQueryLink";
         Assert.Equal(expectedPath, activity.GetPath());
@@ -96,9 +96,9 @@ public class AnonQueryLinkMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/AnonQueryLinkMEActivity.json");
         var activity = JsonSerializer.Deserialize<MessageExtensionActivity>(json);
-        var expected = setupAnonQueryLinkActivity();
+        var expected = SetupAnonQueryLinkActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
         var expectedSubmitException = "Unable to cast object of type 'AnonQueryLinkActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.TaskActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTask());
@@ -110,10 +110,10 @@ public class AnonQueryLinkMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/AnonQueryLinkMEActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupAnonQueryLinkActivity();
+        var expected = SetupAnonQueryLinkActivity();
 
         Assert.NotNull(activity);
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
 
         var expectedSubmitException = "Unable to cast object of type 'AnonQueryLinkActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.SignInActivity'.";
@@ -126,7 +126,7 @@ public class AnonQueryLinkMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/AnonQueryLinkMEActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupAnonQueryLinkActivity();
+        var expected = SetupAnonQueryLinkActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());

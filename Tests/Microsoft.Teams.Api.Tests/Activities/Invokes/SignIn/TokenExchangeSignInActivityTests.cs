@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class TokenExchangeSignInActivityTests
 {
-    private TokenExchangeActivity setupSignInTokenExchangeActivity()
+    private TokenExchangeActivity SetupSignInTokenExchangeActivity()
     {
         return new TokenExchangeActivity()
         {
@@ -42,7 +42,7 @@ public class TokenExchangeSignInActivityTests
     [Fact]
     public void SignInTokenExchangeActivity_JsonSerialize()
     {
-        var activity = setupSignInTokenExchangeActivity();
+        var activity = SetupSignInTokenExchangeActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -65,7 +65,7 @@ public class TokenExchangeSignInActivityTests
     [Fact]
     public void SignInTokenExchangeActivity_JsonSerialize_Derived()
     {
-        SignInActivity activity = setupSignInTokenExchangeActivity();
+        SignInActivity activity = SetupSignInTokenExchangeActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -84,7 +84,7 @@ public class TokenExchangeSignInActivityTests
     [Fact]
     public void SignInTokenExchangeActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupSignInTokenExchangeActivity();
+        InvokeActivity activity = SetupSignInTokenExchangeActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -105,9 +105,9 @@ public class TokenExchangeSignInActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json");
         var activity = JsonSerializer.Deserialize<TokenExchangeActivity>(json);
-        var expected = setupSignInTokenExchangeActivity();
+        var expected = SetupSignInTokenExchangeActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToTokenExchange());
 
         var expectedSubmitException = "Unable to cast object of type 'TokenExchangeActivity' to type 'VerifyStateActivity'.";
@@ -120,7 +120,7 @@ public class TokenExchangeSignInActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json");
         var activity = JsonSerializer.Deserialize<SignInActivity>(json);
-        var expected = setupSignInTokenExchangeActivity();
+        var expected = SetupSignInTokenExchangeActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -133,7 +133,7 @@ public class TokenExchangeSignInActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupSignInTokenExchangeActivity();
+        var expected = SetupSignInTokenExchangeActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -144,7 +144,7 @@ public class TokenExchangeSignInActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SignInTokenExchangeActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupSignInTokenExchangeActivity();
+        var expected = SetupSignInTokenExchangeActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());

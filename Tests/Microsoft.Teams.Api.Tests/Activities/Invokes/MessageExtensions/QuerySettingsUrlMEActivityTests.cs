@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class QuerySettingsUrlMEActivityTests
 {
-    private QuerySettingsUrlActivity setupQuerySettingsUrlActivity()
+    private QuerySettingsUrlActivity SetupQuerySettingsUrlActivity()
     {
         IList<IEntity> _entityList =
         [
@@ -62,7 +62,7 @@ public class QuerySettingsUrlMEActivityTests
     [Fact]
     public void QuerySettingsUrlMEActivity_JsonSerialize()
     {
-        var activity = setupQuerySettingsUrlActivity();
+        var activity = SetupQuerySettingsUrlActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -81,7 +81,7 @@ public class QuerySettingsUrlMEActivityTests
     [Fact]
     public void QuerySettingsUrlMEActivity_JsonSerialize_Derived()
     {
-        MessageExtensionActivity activity = setupQuerySettingsUrlActivity();
+        MessageExtensionActivity activity = SetupQuerySettingsUrlActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -100,7 +100,7 @@ public class QuerySettingsUrlMEActivityTests
     [Fact]
     public void QuerySettingsUrlMEActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupQuerySettingsUrlActivity();
+        InvokeActivity activity = SetupQuerySettingsUrlActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -121,10 +121,10 @@ public class QuerySettingsUrlMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/QuerySettingsUrlMEActivity.json");
         var activity = JsonSerializer.Deserialize<QuerySettingsUrlActivity>(json);
-        var expected = setupQuerySettingsUrlActivity();
+        var expected = SetupQuerySettingsUrlActivity();
 
         string expectedPath = "Activity.Invoke.ComposeExtension/querySettingsUrl";
-        Assert.Equal(expectedPath, activity.GetPath());
+        Assert.Equal(expectedPath, activity!.GetPath());
 
         Assert.Equal(expected.ToString(), activity.ToString());
         Assert.NotNull(activity.ToMessageExtension());
@@ -135,9 +135,9 @@ public class QuerySettingsUrlMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/QuerySettingsUrlMEActivity.json");
         var activity = JsonSerializer.Deserialize<MessageExtensionActivity>(json);
-        var expected = setupQuerySettingsUrlActivity();
+        var expected = SetupQuerySettingsUrlActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
         var expectedSubmitException = "Unable to cast object of type 'QuerySettingsUrlActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.TaskActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTask());
@@ -149,7 +149,7 @@ public class QuerySettingsUrlMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/QuerySettingsUrlMEActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupQuerySettingsUrlActivity();
+        var expected = SetupQuerySettingsUrlActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -165,7 +165,7 @@ public class QuerySettingsUrlMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/QuerySettingsUrlMEActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupQuerySettingsUrlActivity();
+        var expected = SetupQuerySettingsUrlActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());

@@ -9,7 +9,14 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class ConfigFetchActivityTests
 {
-    private FetchActivity setupConfigFetchActivity()
+    private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        IndentSize = 2,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
+    private FetchActivity SetupConfigFetchActivity()
     {
         var value = new Cards.HeroCard()
         {
@@ -22,14 +29,9 @@ public class ConfigFetchActivityTests
     [Fact]
     public void ConfigFetchActivity_JsonSerialize()
     {
-        var activity = setupConfigFetchActivity();
+        var activity = SetupConfigFetchActivity();
 
-        var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            IndentSize = 2,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(activity, CachedJsonSerializerOptions);
 
         string expectedPath = "Activity.Invoke.Config/fetch";
         Assert.Equal(expectedPath, activity.GetPath());
@@ -47,14 +49,9 @@ public class ConfigFetchActivityTests
     [Fact]
     public void ConfigFetchActivity_JsonSerialize_Derived()
     {
-        ConfigActivity activity = setupConfigFetchActivity();
+        ConfigActivity activity = SetupConfigFetchActivity();
 
-        var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            IndentSize = 2,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(activity, CachedJsonSerializerOptions);
 
         string expectedPath = "Activity.Invoke.Config/fetch";
         Assert.Equal(expectedPath, activity.GetPath());
@@ -66,14 +63,9 @@ public class ConfigFetchActivityTests
     [Fact]
     public void ConfigFetchActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupConfigFetchActivity();
+        InvokeActivity activity = SetupConfigFetchActivity();
 
-        var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            IndentSize = 2,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(activity, CachedJsonSerializerOptions);
 
         string expectedPath = "Activity.Invoke.Config/fetch";
         Assert.Equal(expectedPath, activity.GetPath());
@@ -87,9 +79,9 @@ public class ConfigFetchActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/ConfigFetchActivity.json");
         var activity = JsonSerializer.Deserialize<SubmitActivity>(json);
-        var expected = setupConfigFetchActivity();
+        var expected = SetupConfigFetchActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToConfig());
 
         var expectedSubmitException = "Unable to cast object of type 'SubmitActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.TaskActivity'.";
@@ -102,13 +94,14 @@ public class ConfigFetchActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/ConfigFetchActivity.json");
         var activity = JsonSerializer.Deserialize<ConfigActivity>(json);
-        var expected = setupConfigFetchActivity();
+        var expected = SetupConfigFetchActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
         Assert.NotNull(activity.ToFetch());
         var expectedSubmitException = "Unable to cast object of type 'FetchActivity' to type 'SubmitActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToSubmit());
+        Assert.Equal(expectedSubmitException, ex.Message);
     }
 
     [Fact]
@@ -116,11 +109,10 @@ public class ConfigFetchActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/ConfigFetchActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupConfigFetchActivity();
+        var expected = SetupConfigFetchActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
-
     }
 
     [Fact]
@@ -128,7 +120,7 @@ public class ConfigFetchActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/ConfigFetchActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupConfigFetchActivity();
+        var expected = SetupConfigFetchActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());

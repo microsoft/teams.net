@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class CardButtonClickedMEActivityTests
 {
-    private CardButtonClickedActivity setupCardButtonClickedActivity()
+    private CardButtonClickedActivity SetupCardButtonClickedActivity()
     {
         var anyValueObject = new Parameter()
         {
@@ -32,7 +32,7 @@ public class CardButtonClickedMEActivityTests
     [Fact]
     public void CardButtonClickedMEActivity_JsonSerialize()
     {
-        var activity = setupCardButtonClickedActivity();
+        var activity = SetupCardButtonClickedActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -51,7 +51,7 @@ public class CardButtonClickedMEActivityTests
     [Fact]
     public void CardButtonClickedMEActivity_JsonSerialize_Derived()
     {
-        MessageExtensionActivity activity = setupCardButtonClickedActivity();
+        MessageExtensionActivity activity = SetupCardButtonClickedActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -70,7 +70,7 @@ public class CardButtonClickedMEActivityTests
     [Fact]
     public void CardButtonClickedMEActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupCardButtonClickedActivity();
+        InvokeActivity activity = SetupCardButtonClickedActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -91,9 +91,10 @@ public class CardButtonClickedMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/CardButtonClickedMEActivity.json");
         var activity = JsonSerializer.Deserialize<CardButtonClickedActivity>(json);
-        var expected = setupCardButtonClickedActivity();
+        Assert.NotNull(activity); // Ensure activity is not null before dereferencing
+        var expected = SetupCardButtonClickedActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString()); // Use null-forgiving operator
         Assert.NotNull(activity.ToMessageExtension());
         string expectedPath = "Activity.Invoke.ComposeExtension/onCardButtonClicked";
         Assert.Equal(expectedPath, activity.GetPath());
@@ -104,9 +105,10 @@ public class CardButtonClickedMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/CardButtonClickedMEActivity.json");
         var activity = JsonSerializer.Deserialize<MessageExtensionActivity>(json);
-        var expected = setupCardButtonClickedActivity();
+        Assert.NotNull(activity); // Ensure activity is not null before dereferencing
+        var expected = SetupCardButtonClickedActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString()); // Use null-forgiving operator
         Assert.NotNull(activity.ToMessageExtension());
         var expectedSubmitException = "Unable to cast object of type 'CardButtonClickedActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.TaskActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTask());
@@ -118,10 +120,10 @@ public class CardButtonClickedMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/CardButtonClickedMEActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupCardButtonClickedActivity();
+        Assert.NotNull(activity); // Ensure activity is not null before dereferencing
+        var expected = SetupCardButtonClickedActivity();
 
-        Assert.NotNull(activity);
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString()); // Use null-forgiving operator
         Assert.NotNull(activity.ToMessageExtension());
     }
 
@@ -130,10 +132,10 @@ public class CardButtonClickedMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/CardButtonClickedMEActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupCardButtonClickedActivity();
+        Assert.NotNull(activity); // Ensure activity is not null before dereferencing
+        var expected = SetupCardButtonClickedActivity();
 
-        Assert.NotNull(activity);
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString()); // Use null-forgiving operator
         string expectedPath = "Activity.Invoke.ComposeExtension/onCardButtonClicked";
         Assert.Equal(expectedPath, activity.GetPath());
     }

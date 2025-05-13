@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class SettingMEActivityTests
 {
-    private SettingActivity setupSettingMEActivity()
+    private SettingActivity SetupSettingMEActivity()
     {
         return new SettingActivity()
         {
@@ -48,7 +48,7 @@ public class SettingMEActivityTests
     [Fact]
     public void SettingMEActivity_JsonSerialize()
     {
-        var activity = setupSettingMEActivity();
+        var activity = SetupSettingMEActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -67,7 +67,7 @@ public class SettingMEActivityTests
     [Fact]
     public void SettingMEActivity_JsonSerialize_Derived()
     {
-        MessageExtensionActivity activity = setupSettingMEActivity();
+        MessageExtensionActivity activity = SetupSettingMEActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -86,7 +86,7 @@ public class SettingMEActivityTests
     [Fact]
     public void SettingMEActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupSettingMEActivity();
+        InvokeActivity activity = SetupSettingMEActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -107,9 +107,9 @@ public class SettingMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SettingMEActivity.json");
         var activity = JsonSerializer.Deserialize<SettingActivity>(json);
-        var expected = setupSettingMEActivity();
+        var expected = SetupSettingMEActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
 
 
@@ -120,9 +120,9 @@ public class SettingMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SettingMEActivity.json");
         var activity = JsonSerializer.Deserialize<MessageExtensionActivity>(json);
-        var expected = setupSettingMEActivity();
+        var expected = SetupSettingMEActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
         var expectedSubmitException = "Unable to cast object of type 'SettingActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.TaskActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTask());
@@ -134,7 +134,7 @@ public class SettingMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SettingMEActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupSettingMEActivity();
+        var expected = SetupSettingMEActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -146,7 +146,7 @@ public class SettingMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SettingMEActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupSettingMEActivity();
+        var expected = SetupSettingMEActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());

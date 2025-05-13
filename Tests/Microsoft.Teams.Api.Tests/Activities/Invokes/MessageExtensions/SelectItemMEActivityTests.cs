@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class SelectItemMEActivityTests
 {
-    private SelectItemActivity setupSelectItemActivity()
+    private SelectItemActivity SetupSelectItemActivity()
     {
         IList<IEntity> _entityList =
         [
@@ -65,7 +65,7 @@ public class SelectItemMEActivityTests
     [Fact]
     public void SelectItemMEActivity_JsonSerialize()
     {
-        var activity = setupSelectItemActivity();
+        var activity = SetupSelectItemActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -84,7 +84,7 @@ public class SelectItemMEActivityTests
     [Fact]
     public void SelectItemMEActivity_JsonSerialize_Derived()
     {
-        MessageExtensionActivity activity = setupSelectItemActivity();
+        MessageExtensionActivity activity = SetupSelectItemActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -103,7 +103,7 @@ public class SelectItemMEActivityTests
     [Fact]
     public void SelectItemMEActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupSelectItemActivity();
+        InvokeActivity activity = SetupSelectItemActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -124,9 +124,9 @@ public class SelectItemMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SelectItemMEActivity.json");
         var activity = JsonSerializer.Deserialize<SelectItemActivity>(json);
-        var expected = setupSelectItemActivity();
+        var expected = SetupSelectItemActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
     }
 
@@ -135,9 +135,9 @@ public class SelectItemMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SelectItemMEActivity.json");
         var activity = JsonSerializer.Deserialize<MessageExtensionActivity>(json);
-        var expected = setupSelectItemActivity();
+        var expected = SetupSelectItemActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
         var expectedSubmitException = "Unable to cast object of type 'SelectItemActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.TaskActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTask());
@@ -149,7 +149,7 @@ public class SelectItemMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SelectItemMEActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupSelectItemActivity();
+        var expected = SetupSelectItemActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -161,7 +161,7 @@ public class SelectItemMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SelectItemMEActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupSelectItemActivity();
+        var expected = SetupSelectItemActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());

@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Api.Tests.Activities.Invokes;
 
 public class SubmitActionMEActivityTests
 {
-    private SubmitActionActivity setupSubmitActionActivity()
+    private SubmitActionActivity SetupSubmitActionActivity()
     {
         return new SubmitActionActivity()
         {
@@ -54,7 +54,7 @@ public class SubmitActionMEActivityTests
     [Fact]
     public void SubmitActionMEActivity_JsonSerialize()
     {
-        var activity = setupSubmitActionActivity();
+        var activity = SetupSubmitActionActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -73,7 +73,7 @@ public class SubmitActionMEActivityTests
     [Fact]
     public void SubmitActionMEActivity_JsonSerialize_Derived()
     {
-        MessageExtensionActivity activity = setupSubmitActionActivity();
+        MessageExtensionActivity activity = SetupSubmitActionActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -92,7 +92,7 @@ public class SubmitActionMEActivityTests
     [Fact]
     public void SubmitActionMEActivity_JsonSerialize_Derived_Interface()
     {
-        InvokeActivity activity = setupSubmitActionActivity();
+        InvokeActivity activity = SetupSubmitActionActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -113,9 +113,9 @@ public class SubmitActionMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SubmitActionMEActivity.json");
         var activity = JsonSerializer.Deserialize<SubmitActionActivity>(json);
-        var expected = setupSubmitActionActivity();
+        var expected = SetupSubmitActionActivity();
 
-        Assert.Equal(expected.ToString(), activity.ToString());
+        Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToMessageExtension());
 
         var expectedSubmitException = "Unable to cast object of type 'SubmitActionActivity' to type 'Microsoft.Teams.Api.Activities.Invokes.TaskActivity'.";
@@ -128,7 +128,7 @@ public class SubmitActionMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SubmitActionMEActivity.json");
         var activity = JsonSerializer.Deserialize<MessageExtensionActivity>(json);
-        var expected = setupSubmitActionActivity();
+        var expected = SetupSubmitActionActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -139,7 +139,7 @@ public class SubmitActionMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SubmitActionMEActivity.json");
         var activity = JsonSerializer.Deserialize<InvokeActivity>(json);
-        var expected = setupSubmitActionActivity();
+        var expected = SetupSubmitActionActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
@@ -150,7 +150,7 @@ public class SubmitActionMEActivityTests
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Invokes/SubmitActionMEActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = setupSubmitActionActivity();
+        var expected = SetupSubmitActionActivity();
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
