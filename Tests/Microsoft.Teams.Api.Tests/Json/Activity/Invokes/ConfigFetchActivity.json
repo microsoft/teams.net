@@ -1,0 +1,9 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "config/fetch",
+  "value": {
+    "title": "test card",
+    "subtitle": "test fetch config activity"
+  }
+}

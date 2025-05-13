@@ -1,0 +1,27 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "composeExtension/setting",
+  "value": {
+    "commandId": "commandId",
+    "parameters": [
+      {
+        "name": "parameter1",
+        "value": "value1"
+      },
+      {
+        "name": "parameter2",
+        "value": "value2"
+      }
+    ],
+    "queryOptions": {
+      "skip": 0,
+      "count": 10
+    },
+    "state": "state"
+  },
+  "conversation": {
+    "id": "conversationId",
+    "conversationType": "groupChat"
+  }
+}

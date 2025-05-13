@@ -1,0 +1,8 @@
+{
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "composeExtension/queryLink",
+  "value": {
+    "url": "https://some-url"
+  }
+}
