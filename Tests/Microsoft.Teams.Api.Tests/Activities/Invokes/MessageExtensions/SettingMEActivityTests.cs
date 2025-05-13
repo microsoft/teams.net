@@ -60,7 +60,7 @@ public class SettingMEActivityTests
         string expectedPath = "Activity.Invoke.ComposeExtension/setting";
         Assert.Equal(expectedPath, activity.GetPath());
         Assert.Equal(File.ReadAllText(
-            @"../../../Json/Activity/Invokes/settingMEActivity.json"
+            @"../../../Json/Activity/Invokes/SettingMEActivity.json"
         ), json);
     }
 
