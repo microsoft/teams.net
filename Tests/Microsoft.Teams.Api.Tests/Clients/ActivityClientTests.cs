@@ -16,7 +16,7 @@ public class ActivityClientTests
     public async Task ActivityClient_CreateAsync()
     {
         Resource responseResource = new Resource() { Id = "activityId" };
-      
+
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var responseBody = new Resource() { Id = "activityId" };
@@ -40,7 +40,7 @@ public class ActivityClientTests
         };
         var activity = new FetchActivity(value);
         var response = await activityClient.CreateAsync(conversationId, activity);
-       
+
         Assert.Equal(responseResource.Id, response!.Id);
         string expecteUrl = "https://serviceurl.com/v3/conversations/conversationId/activities";
         HttpMethod expectedMethod = HttpMethod.Post;
@@ -54,7 +54,7 @@ public class ActivityClientTests
     [Fact]
     public async Task ActivityClient_CreateAsync_NullResponse()
     {
-                  var responseMessage = new HttpResponseMessage();
+        var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var responseBody = new Resource() { Id = "activityId" };
         var mockHandler = new Mock<IHttpClient>();
@@ -78,7 +78,7 @@ public class ActivityClientTests
         var activity = new FetchActivity(value);
         var response = await activityClient.CreateAsync(conversationId, activity);
 
-        Assert.Null( response);
+        Assert.Null(response);
         string expecteUrl = "https://serviceurl.com/v3/conversations/conversationId/activities";
         HttpMethod expectedMethod = HttpMethod.Post;
         mockHandler.Verify(x => x.SendAsync(
@@ -115,7 +115,7 @@ public class ActivityClientTests
             SubTitle = "test fetch config activity"
         };
         var activity = new FetchActivity(value);
-        var response = await activityClient.UpdateAsync(conversationId, responseResource.Id , activity);
+        var response = await activityClient.UpdateAsync(conversationId, responseResource.Id, activity);
 
         Assert.Equal(responseResource.Id, response!.Id);
         string expecteUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId";
