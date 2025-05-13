@@ -1,8 +1,8 @@
 using System.Net;
 
-using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Common.Http;
+
 using Moq;
 
 using static Microsoft.Teams.Api.Clients.UserTokenClient;
@@ -169,9 +169,9 @@ public class UserTokenClientTests
         {
             UserId = "userId-aad",
             ChannelId = new ChannelId("msteams"),
-            ConnectionName = "connectionName",         
+            ConnectionName = "connectionName",
         };
-       
+
 
         var responseMessage = new HttpResponseMessage
         {
@@ -251,9 +251,9 @@ public class UserTokenClientTests
         var reqBody = await UserTokenClient.ExchangeAsync(tokenRequest);
 
         Assert.Equal("validToken", reqBody.Token);
-
+        HttpMethod expectedMethod = HttpMethod.Post;
         string expecteUrl = "https://token.botframework.com/api/usertoken/exchange?userId=userId-aad&connectionName=connectionName&channelId=msteams";
-        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 }

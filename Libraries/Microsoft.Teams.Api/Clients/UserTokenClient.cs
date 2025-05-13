@@ -1,4 +1,5 @@
 using System.Text.Json.Serialization;
+
 using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Api.Clients;

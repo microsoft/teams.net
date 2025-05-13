@@ -14,4 +14,14 @@ public class BotClientTests
     }
 
 
+    [Fact]
+    public void UserClient_Default()
+    {
+        var userClient = new UserClient();
+
+        Assert.NotNull(userClient.Token);
+    }
+
+
+
 }

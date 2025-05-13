@@ -1,6 +1,8 @@
 using System.Net;
+
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Common.Http;
+
 using Moq;
 
 namespace Microsoft.Teams.Api.Tests.Clients;
