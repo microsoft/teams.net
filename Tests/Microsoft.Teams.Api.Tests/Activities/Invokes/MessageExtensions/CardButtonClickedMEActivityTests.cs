@@ -18,12 +18,12 @@ public class CardButtonClickedMEActivityTests
             Value = "Toronto"
         };
         return new CardButtonClickedActivity()
-        {          
+        {
             Value = anyValueObject,
             Conversation = new Conversation()
             {
                 Id = "19:someid",
-                Type = ConversationType.Personal 
+                Type = ConversationType.Personal
             },
             ServiceUrl = "https://url-value"
         };

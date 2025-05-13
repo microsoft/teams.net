@@ -9,7 +9,8 @@ public class CitationEntityTests
     [Fact]
     public void CitationEntity_JsonSerialize()
     {
-        var appearance = new CitationAppearance() {
+        var appearance = new CitationAppearance()
+        {
             Name = "doc",
             Abstract = "document abstract",
             Keywords = ["sample", "doc"],
@@ -18,7 +19,7 @@ public class CitationEntityTests
         var entity = new CitationEntity()
         {
             Appearance = appearance.ToDocument(),
-           Position =2,
+            Position = 2,
             AdditionalType = ["some", "string"]
         };
 
@@ -62,8 +63,8 @@ public class CitationEntityTests
         Assert.Equal(File.ReadAllText(
             @"../../../Json/Entities/CitationEntity.json"
         ), json);
-    }  
-    
+    }
+
     [Fact]
     public void CitationEntity_JsonSerialize_Interface_Derived()
     {

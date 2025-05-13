@@ -16,7 +16,7 @@ public class TokenExchangeSignInActivityTests
         {
             Value = new ExchangeToken()
             {
-                Id= "tokenExchangeId",
+                Id = "tokenExchangeId",
                 ConnectionName = "connection Name",
                 Token = "token"
             },
@@ -125,7 +125,7 @@ public class TokenExchangeSignInActivityTests
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
         Assert.NotNull(activity.ToSignIn());
-    
+
     }
 
     [Fact]

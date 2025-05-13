@@ -123,7 +123,7 @@ public class VerifyStateSignInActivityTests
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
         Assert.NotNull(activity.ToSignIn());
-    
+
     }
 
     [Fact]

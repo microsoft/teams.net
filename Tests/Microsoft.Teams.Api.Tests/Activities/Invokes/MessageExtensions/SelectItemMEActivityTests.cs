@@ -13,7 +13,7 @@ public class SelectItemMEActivityTests
 {
     private SelectItemActivity setupSelectItemActivity()
     {
-        IList<IEntity> _entityList = 
+        IList<IEntity> _entityList =
         [
             new ClientInfoEntity()
             {

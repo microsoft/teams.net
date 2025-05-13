@@ -41,8 +41,8 @@ public partial class InvokeActivity
             if (name.StartsWith("composeExtension/"))
             {
                 return JsonSerializer.Deserialize<Invokes.MessageExtensionActivity>(element.ToString(), options);
-            } 
-            
+            }
+
             if (name.StartsWith("handOff/"))
             {
                 return JsonSerializer.Deserialize<Invokes.HandoffActivity>(element.ToString(), options);

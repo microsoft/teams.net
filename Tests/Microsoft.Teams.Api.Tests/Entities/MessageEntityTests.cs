@@ -46,8 +46,8 @@ public class MessageEntityTests
         Assert.Equal(File.ReadAllText(
             @"../../../Json/Entities/MessageEntity.json"
         ), json);
-    }  
-    
+    }
+
     [Fact]
     public void MessageEntity_JsonSerialize_Interface_Derived()
     {
@@ -87,7 +87,7 @@ public class MessageEntityTests
     {
         var json = File.ReadAllText(@"../../../Json/Entities/MessageEntity.json");
         var entity = JsonSerializer.Deserialize<Entity>(json);
-      
+
         var expected = new MessageEntity()
         {
             AdditionalType = ["test", "valid"]

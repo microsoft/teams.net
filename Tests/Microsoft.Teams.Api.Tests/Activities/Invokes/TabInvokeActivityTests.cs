@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Api.Tabs;
+
 using static Microsoft.Teams.Api.Activities.Invokes.Tabs;
 
 namespace Microsoft.Teams.Api.Tests.Activities;
@@ -38,9 +39,11 @@ public class TabInvokeActivityTests
     {
         var activity = new FetchActivity()
         {
-            Value = new Request() {
-                TabContext= new EntityContext() { 
-                    TabEntityId="tabEntityIdString" 
+            Value = new Request()
+            {
+                TabContext = new EntityContext()
+                {
+                    TabEntityId = "tabEntityIdString"
                 },
             },
         };
@@ -164,7 +167,7 @@ public class TabInvokeActivityTests
 
         var expectedSubmitException = "Unable to cast object of type 'SubmitActivity' to type 'FetchActivity'.";
 
-        Assert.NotNull(activity. ToSubmit());
+        Assert.NotNull(activity.ToSubmit());
 
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToFetch());
         Assert.Equal(expectedSubmitException, ex.Message);

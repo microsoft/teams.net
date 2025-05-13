@@ -13,7 +13,7 @@ public class SettingMEActivityTests
     private SettingActivity setupSettingMEActivity()
     {
         return new SettingActivity()
-        {  
+        {
             Value = new Query()
             {
                 CommandId = "commandId",
@@ -40,7 +40,7 @@ public class SettingMEActivityTests
             Conversation = new Conversation()
             {
                 Id = "conversationId",
-                Type = ConversationType.GroupChat 
+                Type = ConversationType.GroupChat
             },
         };
     }
@@ -112,7 +112,7 @@ public class SettingMEActivityTests
         Assert.Equal(expected.ToString(), activity.ToString());
         Assert.NotNull(activity.ToMessageExtension());
 
-        
+
     }
 
     [Fact]

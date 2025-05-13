@@ -4,6 +4,7 @@ using System.Text.Json;
 
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
+
 using static Microsoft.Teams.Api.Activities.Invokes.Tasks;
 
 namespace Microsoft.Teams.Api.Tests.Activities;
@@ -134,9 +135,9 @@ public class TaskInvokeActivityTests
                     Theme = "default",
                 },
             },
-            
+
         };
-     
+
         var expectedSubmitException = "Unable to cast object of type 'FetchActivity' to type 'SubmitActivity'.";
 
         Assert.NotNull(activity.ToFetch());
@@ -164,7 +165,7 @@ public class TaskInvokeActivityTests
     [Fact]
     public void TaskFetchActivity_JsonSerialize_Derived()
     {
-        TaskActivity activity = setupFetchTaskActivity(); 
+        TaskActivity activity = setupFetchTaskActivity();
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {

@@ -11,10 +11,10 @@ public class ClientInfoEntityTests
     {
         var entity = new ClientInfoEntity()
         {
-           Platform="fakePlatform",
-           Locale="en-US",
-           Country="US",
-           Timezone="GMT-8",
+            Platform = "fakePlatform",
+            Locale = "en-US",
+            Country = "US",
+            Timezone = "GMT-8",
         };
 
         var json = JsonSerializer.Serialize(entity, new JsonSerializerOptions()
@@ -51,8 +51,8 @@ public class ClientInfoEntityTests
         Assert.Equal(File.ReadAllText(
             @"../../../Json/Entities/ClientInfoEntity.json"
         ), json);
-    }  
-    
+    }
+
     [Fact]
     public void ClientInfoEntity_JsonSerialize_Interface_Derived()
     {
@@ -82,7 +82,7 @@ public class ClientInfoEntityTests
     {
         var json = File.ReadAllText(@"../../../Json/Entities/ClientInfoEntity.json");
         var entity = JsonSerializer.Deserialize<ClientInfoEntity>(json);
-       
+
         var expected = new ClientInfoEntity()
         {
             Platform = "fakePlatform",

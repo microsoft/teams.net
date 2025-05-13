@@ -13,7 +13,7 @@ public class QueryMEActivityTests
 {
     private QueryActivity setupQueryActivity()
     {
-        IList<IEntity> _entityList = 
+        IList<IEntity> _entityList =
         [
             new ClientInfoEntity()
             {

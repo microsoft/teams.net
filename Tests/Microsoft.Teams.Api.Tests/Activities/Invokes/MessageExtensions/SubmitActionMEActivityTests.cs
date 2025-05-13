@@ -13,7 +13,7 @@ public class SubmitActionMEActivityTests
     private SubmitActionActivity setupSubmitActionActivity()
     {
         return new SubmitActionActivity()
-        {  
+        {
             Value = new Api.MessageExtensions.Action()
             {
                 CommandContext = Commands.Context.Message,
@@ -46,7 +46,7 @@ public class SubmitActionMEActivityTests
             Conversation = new Conversation()
             {
                 Id = "conversationId",
-                Type = ConversationType.Personal 
+                Type = ConversationType.Personal
             },
         };
     }

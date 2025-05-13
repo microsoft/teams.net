@@ -1,5 +1,4 @@
 using System.Text.Json;
-using System.Text.RegularExpressions;
 
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
@@ -75,7 +74,7 @@ public class ConfigFetchActivityTests
             IndentSize = 2,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
-        
+
         string expectedPath = "Activity.Invoke.Config/fetch";
         Assert.Equal(expectedPath, activity.GetPath());
         Assert.Equal(File.ReadAllText(

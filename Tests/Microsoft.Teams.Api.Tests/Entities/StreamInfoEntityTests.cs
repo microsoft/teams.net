@@ -42,7 +42,7 @@ public class StreamInfoEntityTests
             StreamType = new StreamType("final")
         };
 
-        Assert.True( entity.StreamType.IsFinal);
+        Assert.True(entity.StreamType.IsFinal);
         Assert.False(entity.StreamType.IsInformative);
         Assert.False(entity.StreamType.IsStreaming);
     }
@@ -84,8 +84,8 @@ public class StreamInfoEntityTests
         ), json);
 
 
-    }  
-    
+    }
+
     [Fact]
     public void StreamInfoEntity_JsonSerialize_Interface_Derived()
     {
@@ -114,7 +114,7 @@ public class StreamInfoEntityTests
     {
         var json = File.ReadAllText(@"../../../Json/Entities/StreamInfoEntity.json");
         var entity = JsonSerializer.Deserialize<StreamInfoEntity>(json);
-     
+
         var expected = new StreamInfoEntity()
         {
             StreamId = "strId",
