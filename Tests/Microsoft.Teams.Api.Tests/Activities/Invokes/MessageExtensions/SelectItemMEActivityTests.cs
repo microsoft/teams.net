@@ -57,8 +57,6 @@ public class SelectItemMEActivityTests
                 Name = "Recipient Name",
             },
             Entities = _entityList,
-            Timestamp = DateTime.Parse("2017-05-01 15:45:50"),
-            LocalTimestamp = DateTime.Parse("2017-05-01T15:45:51.876-07:00"),
         };
     }
 
