@@ -26,8 +26,6 @@
     "conversationType": "personal"
   },
   "serviceUrl": "https://me-url",
-  "timestamp": "2017-05-01T15:45:50",
-  "localTimestamp": "2017-05-01T15:45:51.876-07:00",
   "entities": [
     {
       "type": "clientInfo",
