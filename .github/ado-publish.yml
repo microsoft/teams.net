@@ -16,7 +16,7 @@ stages:
 - stage: Build_Test_Sign_Pack
   jobs:
   - job: BuildTestSignPack
-    displayName: 'Build, Test, and Lint'
+    displayName: 'Build, Test, Sign, and Pack'
     steps:
       - checkout: self
 
@@ -130,3 +130,29 @@ stages:
         inputs:
           PathToPublish: '$(Build.ArtifactStagingDirectory)'
           ArtifactName: 'Packages'
+
+- stage: PushToNuGet
+  displayName: 'Push NuGet Packages to nuget.org'
+  dependsOn: Build_Test_Sign_Pack
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+  jobs:
+  - deployment: PushPackages
+    displayName: 'Manual Approval Required to Push Packages'
+    environment:
+      name: 'nuget-publish'
+      resourceType: VirtualMachine
+      action: ManualApproval
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: Packages
+
+          - task: NuGetCommand@2
+            displayName: 'Push NuGet Packages'
+            inputs:
+              command: push
+              packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
+              nuGetFeedType: external
+              publishFeedCredentials: 'Microsoft.Teams.*'
