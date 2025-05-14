@@ -1,0 +1,53 @@
+{
+  "id": "readReceiptId",
+  "type": "event",
+  "replyToId": "replyToId",
+  "channelId": "webchat",
+  "name": "application/vnd.microsoft.readReceipt",
+  "recipient": {
+    "id": "recipientId",
+    "name": "recipientName"
+  },
+  "conversation": {
+    "id": "conversationId",
+    "conversationType": "group",
+    "name": "conversationName"
+  },
+  "channelData": {
+    "channel": {
+      "id": "channelId",
+      "type": "standard",
+      "name": "channelName"
+    },
+    "eventType": "readReceipt",
+    "team": {
+      "id": "teamId",
+      "type": "standard",
+      "name": "teamName"
+    },
+    "tenant": {
+      "id": "tenantId"
+    },
+    "notification": {},
+    "settings": {
+      "selectedChannel": {
+        "id": "selectedChannelId",
+        "type": "standard",
+        "name": "selectedChannelName"
+      },
+      "channelDataSettingskey1": "value1",
+      "channelDataSettingskey2": "value2"
+    },
+    "app": {
+      "id": "appId",
+      "appPropKey1": "value1",
+      "appPropKey2": "value2"
+    },
+    "feedbackLoopEnabled": true,
+    "streamId": "streamId",
+    "streamType": "streaming",
+    "streamSequence": 3,
+    "key1": "value1",
+    "key2": "value2"
+  }
+}
