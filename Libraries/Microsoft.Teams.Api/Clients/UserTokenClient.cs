@@ -39,7 +39,7 @@ public class UserTokenClient : Client
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/GetAadTokens?{query}", body: request);
         var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, _cancellationToken);
-        return (IDictionary<string, Token.Response>)res.Body;
+        return res.Body;
     }
 
     public async Task<IList<Token.Status>> GetStatusAsync(GetTokenStatusRequest request)

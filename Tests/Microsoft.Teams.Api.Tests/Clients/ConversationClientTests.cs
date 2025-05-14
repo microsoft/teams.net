@@ -45,7 +45,6 @@ public class ConversationClientTests
 
         Assert.Equal(serviceUrl, reqBody.ServiceUrl);
 
-        // TODO: confirm end of slash is included in serviceUrl
         string expecteUrl = "https://serviceurl.com/v3/conversations";
         HttpMethod expectedMethod = HttpMethod.Post;
         mockHandler.Verify(x => x.SendAsync<ConversationResource>(

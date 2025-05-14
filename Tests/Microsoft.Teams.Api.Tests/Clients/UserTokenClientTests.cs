@@ -12,7 +12,7 @@ namespace Microsoft.Teams.Api.Tests.Clients;
 public class UserTokenClientTests
 {
     [Fact]
-    public async Task UserTokenClient_GetAsync_Async()
+    public async Task UserTokenClient_GetAsync()
     {
         var tokenRequest = new GetTokenRequest
         {
@@ -52,14 +52,14 @@ public class UserTokenClientTests
     }
 
     [Fact]
-    public async Task UserTokenClient_GetAadAsync_Async()
+    public async Task UserTokenClient_GetAadAsync()
     {
         var aadTokenRequest = new GetAadTokenRequest
         {
             UserId = "userId-aad",
             ConnectionName = "connectionName",
             ChannelId = new ChannelId("webchat"),
-            ResourceUrls = ["resourceUrl1", "resourceUrl2"],
+            ResourceUrls = ["value1", "value2"],
         };
 
         var responseMessage = new HttpResponseMessage
@@ -103,13 +103,12 @@ public class UserTokenClientTests
 
         Assert.Equal(2, reqBody.Count);
 
-        // TODO - double check on ResourceURLs querystring
-        string expecteUrl = "https://token.botframework.com/api/usertoken/GetAadTokens?userId=userId-aad&connectionName=connectionName&channelId=webchat&resourceUrls=System.Collections.Generic.List%601%5bSystem.String%5d";
+        string expecteUrl = "https://token.botframework.com/api/usertoken/GetAadTokens?userId=userId-aad&connectionName=connectionName&channelId=webchat&resourceUrls%5b0%5d=value1&resourceUrls%5b1%5d=value2";
         mockHandler.Verify(x => x.SendAsync<IDictionary<string, Token.Response>>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
-    public async Task UserTokenClient_GetStatusAsync_Async()
+    public async Task UserTokenClient_GetStatusAsync()
     {
         var tokenStatusRequest = new GetTokenStatusRequest
         {
@@ -163,7 +162,7 @@ public class UserTokenClientTests
 
 
     [Fact]
-    public async Task UserTokenClient_SignOutAsync_Async()
+    public async Task UserTokenClient_SignOutAsync()
     {
         var signOutRequest = new SignOutRequest
         {
@@ -216,7 +215,7 @@ public class UserTokenClientTests
     }
 
     [Fact]
-    public async Task UserTokenClient_ExchangeAsync_Async()
+    public async Task UserTokenClient_ExchangeAsync()
     {
         var tokenRequest = new ExchangeTokenRequest()
         {
