@@ -117,6 +117,7 @@ public class MeetingEndActivityTests
         var expected = SetupMeetingEndActivity();
 
         Assert.Equal(expected.ToString(), activity!.ToString());
+        Assert.Equal(typeof(MeetingEndActivity), activity.Name.ToType());
         Assert.Equal("Application/vnd.microsoft.meetingEnd", activity.Name.ToPrettyString());
         Assert.NotNull(activity.ToMeetingEnd());
     }
@@ -131,6 +132,7 @@ public class MeetingEndActivityTests
 
         Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToEvent());
+        Assert.Equal(typeof(MeetingEndActivity), activity.Name.ToType());
         var expectedSubmitException = "Unable to cast object of type 'Microsoft.Teams.Api.Activities.Events.MeetingEndActivity' to type 'Microsoft.Teams.Api.Activities.InstallUpdateActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToInstallUpdate());
         Assert.Equal(expectedSubmitException, ex.Message);

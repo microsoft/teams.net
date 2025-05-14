@@ -9,6 +9,7 @@ public partial class Name(string value) : StringEnum(value)
 {
     public Type ToType()
     {
+        if (IsReadReceipt) return typeof(ReadReceiptActivity);
         if (IsMeetingStart) return typeof(MeetingStartActivity);
         if (IsMeetingEnd) return typeof(MeetingEndActivity);
         if (IsMeetingParticipantJoin) return typeof(MeetingParticipantJoinActivity);

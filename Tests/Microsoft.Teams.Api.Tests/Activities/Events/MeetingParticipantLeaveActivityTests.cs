@@ -154,6 +154,7 @@ public class MeetingParticipantLeaveActivityTests
 
         Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.Equal("Application/vnd.microsoft.meetingParticipantLeave", activity.Name.ToPrettyString());
+        Assert.Equal(typeof(MeetingParticipantLeaveActivity), activity.Name.ToType());
         Assert.NotNull(activity.ToMeetingParticipantLeave());
     }
 
@@ -167,6 +168,7 @@ public class MeetingParticipantLeaveActivityTests
 
         Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToEvent());
+        Assert.Equal(typeof(MeetingParticipantLeaveActivity), activity.Name.ToType());
         var expectedSubmitException = "Unable to cast object of type 'Microsoft.Teams.Api.Activities.Events.MeetingParticipantLeaveActivity' to type 'Microsoft.Teams.Api.Activities.InstallUpdateActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToInstallUpdate());
         Assert.Equal(expectedSubmitException, ex.Message);

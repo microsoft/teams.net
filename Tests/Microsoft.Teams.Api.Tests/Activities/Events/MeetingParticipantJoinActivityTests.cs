@@ -153,6 +153,7 @@ public class MeetingParticipantJoinActivityTests
         var expected = SetupMeetingParticipantJoinActivity();
 
         Assert.Equal(expected.ToString(), activity!.ToString());
+        Assert.Equal(typeof(MeetingParticipantJoinActivity), activity.Name.ToType());
         Assert.Equal("Application/vnd.microsoft.meetingParticipantJoin", activity.Name.ToPrettyString());
         Assert.NotNull(activity.ToMeetingParticipantJoin());
     }
@@ -167,6 +168,7 @@ public class MeetingParticipantJoinActivityTests
 
         Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToEvent());
+        Assert.Equal(typeof(MeetingParticipantJoinActivity), activity.Name.ToType());
         var expectedSubmitException = "Unable to cast object of type 'Microsoft.Teams.Api.Activities.Events.MeetingParticipantJoinActivity' to type 'Microsoft.Teams.Api.Activities.InstallUpdateActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToInstallUpdate());
         Assert.Equal(expectedSubmitException, ex.Message);
