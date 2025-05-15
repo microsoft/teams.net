@@ -1,0 +1,41 @@
+{
+  "type": "event",
+  "channelId": "msteams",
+  "name": "application/vnd.microsoft.meetingParticipantJoin",
+  "value": {
+    "members": [
+      {
+        "user": {
+          "id": "userId",
+          "name": "userName"
+        },
+        "meeting": {
+          "inMeeting": true,
+          "role": "user"
+        }
+      },
+      {
+        "user": {
+          "id": "botId",
+          "name": "BotUser"
+        },
+        "meeting": {
+          "inMeeting": true,
+          "role": "bot"
+        }
+      }
+    ]
+  },
+  "recipient": {
+    "id": "recipientId",
+    "name": "recipientName"
+  },
+  "entities": [
+    {
+      "type": "streaminfo",
+      "streamId": "strId",
+      "streamType": "streaming",
+      "streamSequence": 3
+    }
+  ]
+}
