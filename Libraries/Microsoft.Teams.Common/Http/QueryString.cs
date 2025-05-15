@@ -14,6 +14,11 @@ public static class QueryString
 
         foreach (var property in properties)
         {
+            if (property.PropertyType == typeof(IList<string>))
+            {
+                SerializeIListString(value, property, parts);
+                continue;
+            }
             var builder = new StringBuilder();
             var jsonAttribute = property.GetCustomAttribute<JsonPropertyNameAttribute>();
             var name = jsonAttribute?.Name ?? property.Name;
@@ -25,5 +30,27 @@ public static class QueryString
         }
 
         return string.Join("&", parts);
+    }
+
+    private static void SerializeIListString(object value, PropertyInfo property, List<string> parts)
+    {
+        var jsonAttributeList = property.GetCustomAttribute<JsonPropertyNameAttribute>();
+        var nameList = jsonAttributeList?.Name ?? property.Name;
+        var listObject = property.GetValue(value, null) as IList<string>;
+        if (listObject != null)
+        {
+            for (int i = 0; i < listObject.Count; i++)
+            {
+                if (listObject[i] != null)
+                {
+                    var builder = new StringBuilder();
+                    builder.Append(HttpUtility.UrlEncode(nameList));
+                    builder.Append(HttpUtility.UrlEncode($"[{i}]"));
+                    builder.Append('=');
+                    builder.Append(HttpUtility.UrlEncode(listObject[i]));
+                    parts.Add(builder.ToString());
+                }
+            }
+        }
     }
 }
