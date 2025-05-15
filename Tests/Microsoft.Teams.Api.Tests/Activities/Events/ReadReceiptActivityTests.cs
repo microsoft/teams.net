@@ -73,7 +73,7 @@ public class ReadReceiptActivityTests
                 StreamSequence = 3,
                 StreamType = new StreamType("streaming"),
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "conversationId",
                 Name = "conversationName",
