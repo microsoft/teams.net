@@ -12,7 +12,7 @@ public static partial class Conversation
         {
             if (activity is ConversationUpdateActivity update)
             {
-                return update.ChannelData?.EventType == ConversationUpdateActivity.EventType.TeamRenamed;
+                return update.ChannelData?.EventType == ConversationUpdateActivity.EventType.TeamRestored;
             }
 
             return false;
