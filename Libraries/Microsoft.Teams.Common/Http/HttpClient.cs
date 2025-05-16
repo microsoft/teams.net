@@ -73,6 +73,25 @@ public class HttpClient : IHttpClient
 
         Options.Apply(httpRequest);
 
+        if (request.Body is not null)
+        {
+            if (request.Body is string stringBody)
+            {
+                httpRequest.Content = new StringContent(stringBody);
+            }
+            else if (request.Body is IEnumerable<KeyValuePair<string, string>> dictionaryBody)
+            {
+                httpRequest.Content = new FormUrlEncodedContent(dictionaryBody);
+            }
+            else
+            {
+                httpRequest.Content = JsonContent.Create(request.Body, options: new JsonSerializerOptions()
+                {
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                });
+            }
+        }
+
         foreach (var kv in request.Headers)
         {
             if (kv.Key.StartsWith("Content-"))
@@ -83,27 +102,6 @@ public class HttpClient : IHttpClient
 
             httpRequest.Headers.TryAddWithoutValidation(kv.Key, kv.Value);
         }
-
-        if (request.Body is not null)
-        {
-            if (request.Body is string stringBody)
-            {
-                httpRequest.Content = new StringContent(stringBody);
-                return httpRequest;
-            }
-
-            if (request.Body is IEnumerable<KeyValuePair<string, string>> dictionaryBody)
-            {
-                httpRequest.Content = new FormUrlEncodedContent(dictionaryBody);
-                return httpRequest;
-            }
-
-            httpRequest.Content = JsonContent.Create(request.Body, options: new JsonSerializerOptions()
-            {
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            });
-        }
-
         return httpRequest;
     }
 
