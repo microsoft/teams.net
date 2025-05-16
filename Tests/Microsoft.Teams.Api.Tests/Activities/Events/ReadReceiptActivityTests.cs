@@ -73,7 +73,7 @@ public class ReadReceiptActivityTests
                 StreamSequence = 3,
                 StreamType = new StreamType("streaming"),
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "conversationId",
                 Name = "conversationName",
@@ -140,6 +140,7 @@ public class ReadReceiptActivityTests
 
         string expectedPath = "Activity.Event.Application/vnd.microsoft.readReceipt";
         Assert.Equal(expectedPath, activity.GetPath());
+        Assert.Equal(typeof(ReadReceiptActivity), activity.Name.ToType());
         Assert.True(activity.Name.IsReadReceipt);
         Assert.False(activity.Name.IsMeetingStart);
         Assert.Equal(File.ReadAllText(

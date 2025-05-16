@@ -38,7 +38,7 @@ public class SelectItemMEActivityTests
                     }
                 },
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "convId",
                 Type = ConversationType.Personal

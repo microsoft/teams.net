@@ -18,7 +18,7 @@ public class VerifyStateSignInActivityTests
             {
                 State = "success"
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "conversationId",
                 Type = ConversationType.GroupChat
