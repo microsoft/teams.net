@@ -35,7 +35,6 @@ public class HttpRequestTests
         Assert.Contains("value", request.Headers["key"]);
     }
 
-
     [Fact]
     public void HttpRequest_ValidateHttpRequest_Post()
     {
@@ -52,15 +51,17 @@ public class HttpRequestTests
         var options = new Common.Http.HttpRequestOptions();
         options.AddHeader("Authorization", "Bearer mocked-token");
         options.AddHeader("key", "value");
+        options.AddUserAgent("mocked-user-agent");
 
         HttpRequest request = HttpRequest.Post("https://mocked-url.com?data=true", null, options);
         Assert.Equal(HttpMethod.Post, request.Method);
         Assert.Equal("https://mocked-url.com?data=true", request.Url);
         Assert.Null(request.Body);
-        Assert.Equal(2, request.Headers.Count);
+        Assert.Equal(3, request.Headers.Count);
         Assert.True(request.Headers.ContainsKey("Authorization"));
         Assert.Contains("Bearer mocked-token", request.Headers["Authorization"]);
         Assert.Contains("value", request.Headers["key"]);
+        Assert.Contains("mocked-user-agent", request.Headers["User-Agent"]);
     }
 
     [Fact]
@@ -105,15 +106,17 @@ public class HttpRequestTests
         var options = new Common.Http.HttpRequestOptions();
         options.AddHeader("Authorization", "Bearer mocked-token");
         options.AddHeader("key", "value");
+        options.AddUserAgent(["mocked-user-agent1", "mocked-user-agent2"]);
 
         HttpRequest request = HttpRequest.Patch("https://mocked-url.com?data=true", null, options);
         Assert.Equal(HttpMethod.Patch, request.Method);
         Assert.Equal("https://mocked-url.com?data=true", request.Url);
         Assert.Null(request.Body);
-        Assert.Equal(2, request.Headers.Count);
+        Assert.Equal(3, request.Headers.Count);
         Assert.True(request.Headers.ContainsKey("Authorization"));
         Assert.Contains("Bearer mocked-token", request.Headers["Authorization"]);
         Assert.Contains("value", request.Headers["key"]);
+        Assert.Equal(2, request.Headers["User-Agent"].Count);
     }
 
     [Fact]

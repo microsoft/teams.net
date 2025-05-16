@@ -111,21 +111,8 @@ public class HttpClientTests
         Assert.Equal(urlResponse.ToString(), response.Body.ToString());
     }
 
-    //[Fact]
-    //public void HttpClient_ShouldDisposeClient()
-    //{
-    //    // Arrange
-    //    var mockMessageHandler = new Mock<HttpMessageHandler>();
-    //    mockMessageHandler.Protected().Setup("Dispose");
-    //    var httpClient = new Common.Http.HttpClient(new System.Net.Http.HttpClient(mockMessageHandler.Object));
-    //    // Act
-    //    httpClient.Dispose();
-    //    // Assert
-    //    mockMessageHandler.Protected().Verify("Dispose", Times.Once());
-    //}
-
     [Fact]
-    public void HttpClient_ShouldDisposeClientWithNullHandler()
+    public void HttpClient_ShouldDisposeClient()
     {
         // Arrange
         var httpClient = new Common.Http.HttpClient();
@@ -133,7 +120,10 @@ public class HttpClientTests
         httpClient.Dispose();
         // Assert
         Assert.True(true); // No exception should be thrown
+        Assert.NotNull(httpClient.Options);
     }
+
+
 
     public class MockHttpClient : Common.Http.HttpClient
     {
@@ -141,6 +131,11 @@ public class HttpClientTests
         {
             var httpRequestMessage = CreateRequest(request);
             return httpRequestMessage;
+        }
+
+        public async Task<IHttpResponse<string>> ValidateCreateResponse(HttpResponseMessage response, CancellationToken cancellationToken = default)
+        {
+            return await CreateResponse(response, cancellationToken);
         }
     }
 
@@ -276,5 +271,71 @@ public class HttpClientTests
 
         var deserializedContent = await httpRequestMessage.Content.ReadFromJsonAsync<Api.Tabs.Request>();
         Assert.Equal(tokenData.ToString(), deserializedContent!.ToString());
+    }
+
+    [Fact]
+    public async Task HttpClient_ShouldThrowException_WhenResponseIsNotSuccess()
+    {
+        // Arrange
+        var errorResponse = new Dictionary<string, object>
+        {
+            { "error", "invalid_grant" },
+            { "error_description", "The provided value for the 'client_assertion' parameter is not valid." }
+        };
+        var errorResponseJson = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            IndentSize = 2,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        });
+        var mockMessageHandler = new Mock<HttpMessageHandler>();
+        mockMessageHandler.Protected()
+               .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(new HttpResponseMessage
+               {
+                   StatusCode = HttpStatusCode.BadRequest,
+                   Content = new StringContent(errorResponseJson, Encoding.UTF8, "application/json"),
+               });
+        var httpClient = new Common.Http.HttpClient(new System.Net.Http.HttpClient(mockMessageHandler.Object));
+        HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
+        // Act & Assert
+        await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync(request));
+    }
+
+
+    [Fact]
+    public async Task HttpClient_ShouldThrowException_WhenResponseObjectIsNotSuccess()
+    {
+        var errorResponse = new Dictionary<string, object>
+        {
+            { "error", "invalid_grant" },
+            { "error_description", "The provided value for the 'client_assertion' parameter is not valid." }
+        };
+        var errorResponseJson = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            IndentSize = 2,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        });
+        var mockMessageHandler = new Mock<HttpMessageHandler>();
+        mockMessageHandler.Protected()
+               .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(new HttpResponseMessage
+               {
+                   StatusCode = HttpStatusCode.BadRequest,
+                   Content = new StringContent(errorResponseJson, Encoding.UTF8, "application/json"),
+               });
+        var httpClient = new Common.Http.HttpClient(new System.Net.Http.HttpClient(mockMessageHandler.Object));
+        HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
+
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync<UrlResponse>(request));
+
+        var expectedSubmitException = "Exception of type 'Microsoft.Teams.Common.Http.HttpException' was thrown.";
+        Assert.Equal(expectedSubmitException, ex.Message);
+        Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
+        Assert.NotNull(ex.Body);
+        Assert.Equal(errorResponseJson.ToString(), ex.ToString());
     }
 }
