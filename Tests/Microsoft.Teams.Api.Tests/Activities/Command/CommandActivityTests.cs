@@ -8,6 +8,12 @@ namespace Microsoft.Teams.Api.Tests.Activities.Command;
 
 public class CommandActivityTests
 {
+    private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new JsonSerializerOptions
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
+
     private CommandActivity SetupCommandActivity()
     {
         return new CommandActivity()
@@ -46,19 +52,12 @@ public class CommandActivityTests
     {
         var activity = SetupCommandActivity();
 
-
         Assert.NotNull(activity.ToCommand());
 
         var expectedSubmitException = "Unable to cast object of type 'Microsoft.Teams.Api.Activities.CommandActivity' to type 'Microsoft.Teams.Api.Activities.ConversationUpdateActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToConversationUpdate());
         Assert.Equal(expectedSubmitException, ex.Message);
     }
-
-    private static readonly JsonSerializerOptions CachedJsonSerializerOptions = new JsonSerializerOptions
-    {
-        WriteIndented = true,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-    };
 
     [Fact]
     public void CommandActivity_JsonSerialize()
@@ -73,7 +72,7 @@ public class CommandActivityTests
     }
 
     [Fact]
-    public void CommandActivity_JsonSerialize_Derived()
+    public void CommandActivity_JsonSerialize_Derived_From_Class()
     {
         Activity activity = SetupCommandActivity();
 
@@ -85,7 +84,7 @@ public class CommandActivityTests
     }
 
     [Fact]
-    public void CommandActivity_JsonSerialize_Derived_Interface()
+    public void CommandActivity_JsonSerialize_Derived_From_Interface()
     {
         IActivity activity = SetupCommandActivity();
 
