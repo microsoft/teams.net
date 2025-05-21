@@ -74,7 +74,7 @@ public class CommandResultActivityTests
     }
 
     [Fact]
-    public void CommandResultActivity_JsonSerialize_Derived()
+    public void CommandResultActivity_JsonSerialize_Derived_From_Class()
     {
         Activity activity = SetupCommandResultActivity();
 
@@ -86,7 +86,7 @@ public class CommandResultActivityTests
     }
 
     [Fact]
-    public void CommandResultActivity_JsonSerialize_Derived_Interface()
+    public void CommandResultActivity_JsonSerialize_Derived_From_Interface()
     {
         IActivity activity = SetupCommandResultActivity();
 
@@ -96,19 +96,6 @@ public class CommandResultActivityTests
             @"../../../Json/Activity/Command/CommandResultActivity.json"
         ), json);
     }
-
-    [Fact]
-    public void CommandResultActivity_JsonSerialize_Interface_Derived()
-    {
-        IActivity activity = SetupCommandResultActivity();
-
-        var json = JsonSerializer.Serialize(activity, CachedJsonSerializerOptions);
-
-        Assert.Equal(File.ReadAllText(
-            @"../../../Json/Activity/Command/CommandResultActivity.json"
-        ), json);
-    }
-
 
     [Fact]
     public void CommandResultActivity_JsonDeserialize()
@@ -126,7 +113,7 @@ public class CommandResultActivityTests
 
 
     [Fact]
-    public void CommandResultActivity_JsonDeserialize_Derived()
+    public void CommandResultActivity_JsonDeserialize_Derived_From_Class()
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Command/CommandResultActivity.json");
         var activity = JsonSerializer.Deserialize<Activity>(json);
@@ -138,4 +125,5 @@ public class CommandResultActivityTests
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToInstallUpdate());
         Assert.Equal(expectedSubmitException, ex.Message);
     }
+
 }

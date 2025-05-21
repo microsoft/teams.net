@@ -84,7 +84,7 @@ public class ConversationUpdateActivityTests
     }
 
     [Fact]
-    public void ConversationUpdateActivity_JsonSerialize_Derived()
+    public void ConversationUpdateActivity_JsonSerialize_Derived_From_Class()
     {
         Activity activity = SetupConversationUpdateActivity();
 
@@ -96,7 +96,7 @@ public class ConversationUpdateActivityTests
     }
 
     [Fact]
-    public void ConversationUpdateActivity_JsonSerialize_Interface_Derived()
+    public void ConversationUpdateActivity_JsonSerialize_Derived_From_Interface()
     {
         IActivity activity = SetupConversationUpdateActivity();
 

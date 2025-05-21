@@ -118,7 +118,7 @@ public class ReadReceiptActivityTests
 
 
     [Fact]
-    public void ReadReceiptActivity_JsonSerialize_Derived()
+    public void ReadReceiptActivity_JsonSerialize_Object()
     {
         ReadReceiptActivity activity = SetupReadReceiptActivity();
 
@@ -132,7 +132,7 @@ public class ReadReceiptActivityTests
     }
 
     [Fact]
-    public void ReadReceiptActivity_JsonSerialize_Derived_Type()
+    public void ReadReceiptActivity_JsonSerialize_Derived_From_Class()
     {
         EventActivity activity = SetupReadReceiptActivity();
 
@@ -149,7 +149,7 @@ public class ReadReceiptActivityTests
     }
 
     [Fact]
-    public void ReadReceiptActivity_JsonSerialize_Derived_Interface()
+    public void ReadReceiptActivity_JsonSerialize_Derived_From_Interface()
     {
         IActivity activity = SetupReadReceiptActivity();
 

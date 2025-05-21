@@ -64,7 +64,7 @@ public class MeetingStartActivityTests
 
 
     [Fact]
-    public void MeetingStartActivity_JsonSerialize_Derived()
+    public void MeetingStartActivity_JsonSerialize_Object()
     {
         MeetingStartActivity activity = SetupMeetingStartActivity();
 
@@ -78,7 +78,7 @@ public class MeetingStartActivityTests
     }
 
     [Fact]
-    public void MeetingStartActivity_JsonSerialize_Derived_Type()
+    public void MeetingStartActivity_JsonSerialize_Derived_From_Class()
     {
         EventActivity activity = SetupMeetingStartActivity();
 
@@ -94,7 +94,7 @@ public class MeetingStartActivityTests
     }
 
     [Fact]
-    public void MeetingStartActivity_JsonSerialize_Derived_Interface()
+    public void MeetingStartActivity_JsonSerialize_Derived_From_Interface()
     {
         IActivity activity = SetupMeetingStartActivity();
 

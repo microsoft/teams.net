@@ -75,7 +75,7 @@ public class EndOfConversationActivityTests
     }
 
     [Fact]
-    public void EndOfConversationActivity_JsonSerialize_Derived()
+    public void EndOfConversationActivity_JsonSerialize_Derived_From_Class()
     {
         Activity activity = SetupEndOfConversationActivity();
 
@@ -87,7 +87,7 @@ public class EndOfConversationActivityTests
     }
 
     [Fact]
-    public void EndOfConversationActivity_JsonSerialize_Derived_Interface()
+    public void EndOfConversationActivity_JsonSerialize_Derived_From_Interface()
     {
         IActivity activity = SetupEndOfConversationActivity();
 
@@ -97,19 +97,6 @@ public class EndOfConversationActivityTests
             @"../../../Json/Activity/Conversation/EndOfConversationActivity.json"
         ), json);
     }
-
-    [Fact]
-    public void EndOfConversationActivity_JsonSerialize_Interface_Derived()
-    {
-        IActivity activity = SetupEndOfConversationActivity();
-
-        var json = JsonSerializer.Serialize(activity, CachedJsonSerializerOptions);
-
-        Assert.Equal(File.ReadAllText(
-            @"../../../Json/Activity/Conversation/EndOfConversationActivity.json"
-        ), json);
-    }
-
 
     [Fact]
     public void EndOfConversationActivity_JsonDeserialize()
