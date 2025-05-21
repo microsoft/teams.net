@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Activities\Meetings\" />
+  </ItemGroup>
+
 </Project>

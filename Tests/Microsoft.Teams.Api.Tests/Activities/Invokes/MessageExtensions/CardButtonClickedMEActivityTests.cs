@@ -20,7 +20,7 @@ public class CardButtonClickedMEActivityTests
         return new CardButtonClickedActivity()
         {
             Value = anyValueObject,
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "19:someid",
                 Type = ConversationType.Personal

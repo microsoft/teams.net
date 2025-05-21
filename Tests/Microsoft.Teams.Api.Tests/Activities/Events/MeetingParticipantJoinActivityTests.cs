@@ -102,7 +102,7 @@ public class MeetingParticipantJoinActivityTests
 
 
     [Fact]
-    public void MeetingParticipantJoinActivity_JsonSerialize_Derived()
+    public void MeetingParticipantJoinActivity_JsonSerialize_Object()
     {
         MeetingParticipantJoinActivity activity = SetupMeetingParticipantJoinActivity();
 
@@ -116,7 +116,7 @@ public class MeetingParticipantJoinActivityTests
     }
 
     [Fact]
-    public void MeetingParticipantJoinActivity_JsonSerialize_Derived_Type()
+    public void MeetingParticipantJoinActivity_JsonSerialize_Derived_from_Class()
     {
         EventActivity activity = SetupMeetingParticipantJoinActivity();
 
@@ -132,7 +132,7 @@ public class MeetingParticipantJoinActivityTests
     }
 
     [Fact]
-    public void MeetingParticipantJoinActivity_JsonSerialize_Derived_Interface()
+    public void MeetingParticipantJoinActivity_JsonSerialize_Derived__From_Interface()
     {
         IActivity activity = SetupMeetingParticipantJoinActivity();
 

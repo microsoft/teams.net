@@ -66,7 +66,7 @@ public class MeetingEndActivityTests
 
 
     [Fact]
-    public void MeetingEndActivity_JsonSerialize_Derived()
+    public void MeetingEndActivity_JsonSerialize_Object()
     {
         MeetingEndActivity activity = SetupMeetingEndActivity();
 
@@ -80,7 +80,7 @@ public class MeetingEndActivityTests
     }
 
     [Fact]
-    public void MeetingEndActivity_JsonSerialize_Derived_Type()
+    public void MeetingEndActivity_JsonSerialize_Derived_From_Class()
     {
         EventActivity activity = SetupMeetingEndActivity();
 
@@ -96,7 +96,7 @@ public class MeetingEndActivityTests
     }
 
     [Fact]
-    public void MeetingEndActivity_JsonSerialize_Derived_Interface()
+    public void MeetingEndActivity_JsonSerialize_Derived_From_Interface()
     {
         IActivity activity = SetupMeetingEndActivity();
 

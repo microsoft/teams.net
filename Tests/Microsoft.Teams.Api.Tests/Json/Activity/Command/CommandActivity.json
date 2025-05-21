@@ -1,0 +1,26 @@
+{
+  "type": "command",
+  "channelId": "msteams",
+  "name": "TestCommand",
+  "from": {
+    "id": "botId",
+    "aadObjectId": "aadObjectId",
+    "role": "bot",
+    "name": "Bot user",
+    "properties": {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  },
+  "recipient": {
+    "id": "userId1",
+    "name": "User One"
+  },
+  "conversation": {
+    "id": "someguid",
+    "tenantId": "tenantId",
+    "conversationType": "channel",
+    "name": "channelName",
+    "isGroup": false
+  }
+}
