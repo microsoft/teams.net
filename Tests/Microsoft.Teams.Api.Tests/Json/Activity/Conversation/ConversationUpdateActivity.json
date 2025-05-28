@@ -1,0 +1,42 @@
+{
+  "type": "conversationUpdate",
+  "channelId": "msteams",
+  "topicName": "topicName",
+  "membersAdded": [
+    {
+      "id": "userId1",
+      "name": "User One"
+    },
+    {
+      "id": "userId2",
+      "name": "User Two"
+    }
+  ],
+  "membersRemoved": [
+    {
+      "id": "userId3",
+      "name": "User Three"
+    }
+  ],
+  "from": {
+    "id": "botId",
+    "aadObjectId": "aadObjectId",
+    "role": "bot",
+    "name": "Bot user",
+    "properties": {
+      "key1": "value1",
+      "key2": "value2"
+    }
+  },
+  "recipient": {
+    "id": "userId1",
+    "name": "User One"
+  },
+  "conversation": {
+    "id": "someguid",
+    "tenantId": "tenantId",
+    "conversationType": "channel",
+    "name": "channelName",
+    "isGroup": false
+  }
+}
