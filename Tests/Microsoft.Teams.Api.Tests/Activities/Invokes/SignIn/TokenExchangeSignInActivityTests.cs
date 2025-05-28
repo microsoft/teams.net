@@ -20,7 +20,7 @@ public class TokenExchangeSignInActivityTests
                 ConnectionName = "connection Name",
                 Token = "token"
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "conversationId",
                 Type = ConversationType.GroupChat

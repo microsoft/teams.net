@@ -43,7 +43,7 @@ public class SubmitActionMEActivityTests
                     { "formField2", "formField2value" }
                 },
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "conversationId",
                 Type = ConversationType.Personal

@@ -26,7 +26,7 @@ public class TaskInvokeActivityTests
                     Theme = "default",
                 },
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "conversationIdString",
                 Type = ConversationType.GroupChat,
@@ -80,7 +80,7 @@ public class TaskInvokeActivityTests
                     Theme = "default",
                 },
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "conversationIdString",
                 Type = ConversationType.GroupChat,

@@ -73,7 +73,7 @@ public class ReadReceiptActivityTests
                 StreamSequence = 3,
                 StreamType = new StreamType("streaming"),
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "conversationId",
                 Name = "conversationName",
@@ -118,7 +118,7 @@ public class ReadReceiptActivityTests
 
 
     [Fact]
-    public void ReadReceiptActivity_JsonSerialize_Derived()
+    public void ReadReceiptActivity_JsonSerialize_Object()
     {
         ReadReceiptActivity activity = SetupReadReceiptActivity();
 
@@ -132,7 +132,7 @@ public class ReadReceiptActivityTests
     }
 
     [Fact]
-    public void ReadReceiptActivity_JsonSerialize_Derived_Type()
+    public void ReadReceiptActivity_JsonSerialize_Derived_From_Class()
     {
         EventActivity activity = SetupReadReceiptActivity();
 
@@ -140,6 +140,7 @@ public class ReadReceiptActivityTests
 
         string expectedPath = "Activity.Event.Application/vnd.microsoft.readReceipt";
         Assert.Equal(expectedPath, activity.GetPath());
+        Assert.Equal(typeof(ReadReceiptActivity), activity.Name.ToType());
         Assert.True(activity.Name.IsReadReceipt);
         Assert.False(activity.Name.IsMeetingStart);
         Assert.Equal(File.ReadAllText(
@@ -148,7 +149,7 @@ public class ReadReceiptActivityTests
     }
 
     [Fact]
-    public void ReadReceiptActivity_JsonSerialize_Derived_Interface()
+    public void ReadReceiptActivity_JsonSerialize_Derived_From_Interface()
     {
         IActivity activity = SetupReadReceiptActivity();
 

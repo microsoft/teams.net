@@ -37,7 +37,7 @@ public class SettingMEActivityTests
                 },
                 State = "state"
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "conversationId",
                 Type = ConversationType.GroupChat
