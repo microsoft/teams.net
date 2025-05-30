@@ -36,10 +36,19 @@ public class TypingActivity : Activity
         AddEntity(new StreamInfoEntity()
         {
             StreamId = Id,
-            StreamType = StreamType.Streaming,
-            StreamSequence = sequence
+            StreamType = ChannelData.StreamType,
+            StreamSequence = ChannelData.StreamSequence
         });
 
         return this;
+    }
+}
+
+public class InformativeUpdate : TypingActivity {
+    public InformativeUpdate(string text) : base(text) {
+        ChannelData = new()
+        {
+            StreamType = StreamType.Informative
+        };
     }
 }
