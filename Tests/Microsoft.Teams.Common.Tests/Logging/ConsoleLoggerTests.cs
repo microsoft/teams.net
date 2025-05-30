@@ -213,10 +213,10 @@ public class ConsoleLoggerTests
             logger.Debug("registered function error ");
 
             // Assert
-            var output = sw.ToString();
+            var output = sw.ToString().Replace("\r\n", "\n"); ;
             Assert.Contains("DEBUG", output, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("TestLogger", output);
-            var expectedString = "\u001b[35m\u001b[1m[DEBUG]\u001b[22m\u001b[0m \u001b[35m\u001b[1mTestLogger\u001b[22m\u001b[0m\u001b[0m registered function error \r\n";
+            var expectedString = "\u001b[35m\u001b[1m[DEBUG]\u001b[22m\u001b[0m \u001b[35m\u001b[1mTestLogger\u001b[22m\u001b[0m\u001b[0m registered function error \n";
 
             Assert.Equal(expectedString, output);
         }
@@ -241,10 +241,10 @@ public class ConsoleLoggerTests
             logger.Info("Starting to connect ");
 
             // Assert
-            var output = sw.ToString();
+            var output = sw.ToString().Replace("\r\n", "\n"); ;
             Assert.Contains("INFO", output, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("TestLogger", output);
-            var expectedString = "\u001b[36m\u001b[1m[INFO]\u001b[22m\u001b[0m \u001b[36m\u001b[1mTestLogger\u001b[22m\u001b[0m\u001b[0m Starting to connect \r\n";
+            var expectedString = "\u001b[36m\u001b[1m[INFO]\u001b[22m\u001b[0m \u001b[36m\u001b[1mTestLogger\u001b[22m\u001b[0m\u001b[0m Starting to connect \n";
 
             Assert.Equal(expectedString, output);
         }
@@ -275,10 +275,10 @@ public class ConsoleLoggerTests
             logger.Warn(testMessage);
 
             // Assert
-            var output = sw.ToString();
+            var output = sw.ToString().Replace("\r\n", "\n"); ;
             Assert.Contains("WARN", output, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("TestLogger", output);
-            var expectedString = "\u001b[33m\u001b[1m[WARN]\u001b[22m\u001b[0m \u001b[33m\u001b[1mTestLogger\u001b[22m\u001b[0m\u001b[0m \u001b[1m\u001b[33m⚠️  Devtools ⚠️\u001b[0m\u001b[22m\r\n";
+            var expectedString = "\u001b[33m\u001b[1m[WARN]\u001b[22m\u001b[0m \u001b[33m\u001b[1mTestLogger\u001b[22m\u001b[0m\u001b[0m \u001b[1m\u001b[33m⚠️  Devtools ⚠️\u001b[0m\u001b[22m\n";
 
             Assert.Equal(expectedString, output);
         }
@@ -334,10 +334,10 @@ public class ConsoleLoggerTests
             logger.Error(testMessage);
 
             // Assert
-            var output = sw.ToString();
+            var output = sw.ToString().Replace("\r\n", "\n"); ;
             Assert.Contains("ERROR", output, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("TestLogger", output);
-            var expectedString = "\u001b[31m\u001b[1m[ERROR]\u001b[22m\u001b[0m \u001b[31m\u001b[1mTestLogger\u001b[22m\u001b[0m\u001b[0m \u001b[1m\u001b[31m!! Error !!\u001b[0m\u001b[22m\r\n";
+            var expectedString = "\u001b[31m\u001b[1m[ERROR]\u001b[22m\u001b[0m \u001b[31m\u001b[1mTestLogger\u001b[22m\u001b[0m\u001b[0m \u001b[1m\u001b[31m!! Error !!\u001b[0m\u001b[22m\n";
 
             Assert.Equal(expectedString, output);
         }
