@@ -48,6 +48,15 @@ public partial class AspNetCorePlugin
             Emit(new MessageActivity(text));
         }
 
+        public void Update(string text)
+        {
+            Emit(new TypingActivity(text) {
+                ChannelData = new() {
+                    StreamType = StreamType.Informative
+                }
+            });
+        }
+
         public async Task<MessageActivity?> Close()
         {
             if (_index == 1) return null;

@@ -43,12 +43,3 @@ public class TypingActivity : Activity
         return this;
     }
 }
-
-public class InformativeUpdate : TypingActivity {
-    public InformativeUpdate(string text) : base(text) {
-        ChannelData = new()
-        {
-            StreamType = StreamType.Informative
-        };
-    }
-}
