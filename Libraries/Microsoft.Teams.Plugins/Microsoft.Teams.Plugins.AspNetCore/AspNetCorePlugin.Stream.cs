@@ -59,7 +59,7 @@ public partial class AspNetCorePlugin
 
         public async Task<MessageActivity?> Close()
         {
-            if (_index == 1) return null;
+            if (_index == 1 && _queue.Count == 0) return null;
             if (_result is not null) return _result;
             while (_id is null || _queue.Count > 0)
             {
