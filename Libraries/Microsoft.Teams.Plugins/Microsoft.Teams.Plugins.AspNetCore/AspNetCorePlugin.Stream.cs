@@ -127,12 +127,14 @@ public partial class AspNetCorePlugin
 
                 if (i == 0) return;
 
+                // Send informative updates
                 if (informativeUpdates.Count > 0) {
                     while (informativeUpdates.TryDequeue(out var typing)) {
                         await SendActivity(typing);
                     }
                 }
 
+                // Send text chunk
                 var toSend = new TypingActivity(_text);
                 await SendActivity(toSend);
 
