@@ -1,5 +1,6 @@
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Entities;
 using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Apps.Testing.Plugins;
@@ -38,6 +39,15 @@ public partial class TestPlugin
         public void Emit(string text)
         {
             Emit(new MessageActivity(text));
+        }
+
+        public void Update(string text)
+        {
+            Emit(new TypingActivity(text) {
+                ChannelData = new() {
+                    StreamType = StreamType.Informative
+                }
+            });
         }
 
         public Task<MessageActivity?> Close()

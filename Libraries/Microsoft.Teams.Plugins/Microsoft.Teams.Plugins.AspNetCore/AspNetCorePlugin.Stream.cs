@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
@@ -49,6 +48,15 @@ public partial class AspNetCorePlugin
             Emit(new MessageActivity(text));
         }
 
+        public void Update(string text)
+        {
+            Emit(new TypingActivity(text) {
+                ChannelData = new() {
+                    StreamType = StreamType.Informative
+                }
+            });
+        }
+
         public async Task<MessageActivity?> Close()
         {
             if (_index == 1) return null;
@@ -91,6 +99,8 @@ public partial class AspNetCorePlugin
             {
                 var i = 0;
 
+                Queue<TypingActivity> informativeUpdates = new();
+
                 while (i <= 10 && _queue.TryDequeue(out var activity))
                 {
                     if (activity is MessageActivity message)
@@ -105,24 +115,39 @@ public partial class AspNetCorePlugin
                         _channelData = _channelData.Merge(activity.ChannelData);
                     }
 
+                    if (activity is TypingActivity typing  && typing.ChannelData?.StreamType == StreamType.Informative && _text == string.Empty) {
+                        // If `_text` is not empty then it's possible that streaming has started.
+                        // And so informative updates cannot be sent.
+                        informativeUpdates.Enqueue(typing);
+                    }
+
                     i++;
                     _count++;
                 }
 
                 if (i == 0) return;
 
-                var toSend = new TypingActivity(_text);
-
-                if (_id is not null)
-                {
-                    toSend.WithId(_id);
+                if (informativeUpdates.Count > 0) {
+                    while (informativeUpdates.TryDequeue(out var typing)) {
+                        await SendActivity(typing);
+                    }
                 }
 
-                toSend.AddStreamUpdate(_index);
-                var res = await Send(toSend).Retry(delay: 10).ConfigureAwait(false);
-                OnChunk(res);
-                _id ??= res.Id;
-                _index++;
+                var toSend = new TypingActivity(_text);
+                await SendActivity(toSend);
+
+                async Task SendActivity(TypingActivity toSend) {
+                    if (_id is not null)
+                    {
+                        toSend.WithId(_id);
+                    }
+
+                    toSend.AddStreamUpdate(_index);
+                    var res = await Send(toSend).Retry(delay: 10).ConfigureAwait(false);
+                    OnChunk(res);
+                    _id ??= res.Id;
+                    _index++;
+                }
             }
             finally
             {

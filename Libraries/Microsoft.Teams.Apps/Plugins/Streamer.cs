@@ -52,6 +52,12 @@ public interface IStreamer
     public void Emit(string text);
 
     /// <summary>
+    /// send status updates before emitting (ex. "Thinking...")
+    /// </summary>
+    /// <param name="text">the text</param>
+    public void Update(string text);
+
+    /// <summary>
     /// close the stream
     /// </summary>
     public Task<MessageActivity?> Close();
