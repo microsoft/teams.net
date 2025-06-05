@@ -139,9 +139,7 @@ stages:
   - deployment: PushPackages
     displayName: 'Manual Approval Required to Push Packages'
     environment:
-      name: 'nuget-publish'
-      resourceType: VirtualMachine
-      action: ManualApproval
+      name: 'teams-net-publish'
     strategy:
       runOnce:
         deploy:
