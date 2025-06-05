@@ -1,5 +1,4 @@
-﻿
-using System.Net;
+﻿using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
@@ -282,26 +281,60 @@ public class HttpClientTests
             { "error", "invalid_grant" },
             { "error_description", "The provided value for the 'client_assertion' parameter is not valid." }
         };
-        var errorResponseJson = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions()
+        var errorResponseContent = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions()
         {
             WriteIndented = true,
             IndentSize = 2,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
+
         var mockMessageHandler = new Mock<HttpMessageHandler>();
         mockMessageHandler.Protected()
                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
                .ReturnsAsync(new HttpResponseMessage
                {
                    StatusCode = HttpStatusCode.BadRequest,
-                   Content = new StringContent(errorResponseJson, Encoding.UTF8, "application/json"),
+                   Content = new StringContent(errorResponseContent, Encoding.UTF8, "application/json"),
                });
         var httpClient = new Common.Http.HttpClient(new System.Net.Http.HttpClient(mockMessageHandler.Object));
         HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
+
         // Act & Assert
-        await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync(request));
+        var ex = await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync(request));
+
+        var expectedSubmitException = "Exception of type 'Microsoft.Teams.Common.Http.HttpException' was thrown.";
+        Assert.Equal(expectedSubmitException, ex.Message);
+        Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
+        Assert.NotNull(ex.Body);
+        Assert.Equal(errorResponseContent.ToString(), ex.ToString());
     }
 
+    [Fact]
+    public async Task HttpClient_ShouldThrowException_WhenResponseIsNotSuccess_WithPlainTextContent()
+    {
+        // Arrange
+        var errorResponseContent = "Invalid request";
+
+        var mockMessageHandler = new Mock<HttpMessageHandler>();
+        mockMessageHandler.Protected()
+               .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+               .ReturnsAsync(new HttpResponseMessage
+               {
+                   StatusCode = HttpStatusCode.BadRequest,
+                   Content = new StringContent(errorResponseContent, Encoding.UTF8, "text/plain"),
+               });
+        var httpClient = new Common.Http.HttpClient(new System.Net.Http.HttpClient(mockMessageHandler.Object));
+        HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
+
+        // Act & Assert
+        var ex = await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync(request));
+
+        var expectedSubmitException = "Exception of type 'Microsoft.Teams.Common.Http.HttpException' was thrown.";
+        Assert.Equal(expectedSubmitException, ex.Message);
+        Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
+        Assert.NotNull(ex.Body);
+        Assert.Equal(errorResponseContent, ex.ToString());
+    }
 
     [Fact]
     public async Task HttpClient_ShouldThrowException_WhenResponseObjectIsNotSuccess()
