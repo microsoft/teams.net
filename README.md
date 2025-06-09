@@ -50,6 +50,7 @@ $: dotnet test
 - [`Microsoft.Teams.Extensions.Logging`](./Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Logging/README.md)
 - [`Microsoft.Teams.Plugins.AspNetCore`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore/README.md)
 - [`Microsoft.Teams.Plugins.AspNetCore.DevTools`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore.DevTools/README.md)
+- [`Microsoft.Teams.Plugins.AspNetCore.BotBuilder`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore.BotBuilder/README.md)
 
 ## External Packages
 
