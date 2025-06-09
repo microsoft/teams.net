@@ -8,11 +8,15 @@ public class TeamsSettings
     public string? ClientSecret { get; set; }
     public string? TenantId { get; set; }
 
+    public bool Empty { 
+        get { return ClientId != "" && ClientSecret != ""; }
+    }
+
     public AppOptions Apply(AppOptions? options = null)
     {
         options ??= new AppOptions();
 
-        if (ClientId is not null && ClientSecret is not null && IsNotEmpty())
+        if (ClientId is not null && ClientSecret is not null && !Empty)
         {
             options.Credentials = new ClientCredentials(ClientId, ClientSecret, TenantId);
         }
