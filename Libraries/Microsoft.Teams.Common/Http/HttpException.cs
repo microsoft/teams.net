@@ -14,6 +14,11 @@ public class HttpException : Exception
 
     public override string ToString()
     {
+        if (Body is string textBody)
+        {
+            return textBody;
+        }
+
         return JsonSerializer.Serialize(Body, new JsonSerializerOptions()
         {
             WriteIndented = true,

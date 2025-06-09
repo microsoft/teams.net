@@ -38,7 +38,7 @@ public class QueryMEActivityTests
                     }
                 },
             },
-            Conversation = new Conversation()
+            Conversation = new Api.Conversation()
             {
                 Id = "convId",
                 Type = ConversationType.Personal

@@ -102,7 +102,7 @@ public class MeetingParticipantLeaveActivityTests
 
 
     [Fact]
-    public void MeetingParticipantLeaveActivity_JsonSerialize_Derived()
+    public void MeetingParticipantLeaveActivity_JsonSerialize_Object()
     {
         MeetingParticipantLeaveActivity activity = SetupMeetingParticipantLeaveActivity();
 
@@ -116,7 +116,7 @@ public class MeetingParticipantLeaveActivityTests
     }
 
     [Fact]
-    public void MeetingParticipantLeaveActivity_JsonSerialize_Derived_Type()
+    public void MeetingParticipantLeaveActivity_JsonSerialize_Derived_From_Class()
     {
         EventActivity activity = SetupMeetingParticipantLeaveActivity();
 
@@ -132,7 +132,7 @@ public class MeetingParticipantLeaveActivityTests
     }
 
     [Fact]
-    public void MeetingParticipantLeaveActivity_JsonSerialize_Derived_Interface()
+    public void MeetingParticipantLeaveActivity_JsonSerialize_Derived_From_Interface()
     {
         IActivity activity = SetupMeetingParticipantLeaveActivity();
 

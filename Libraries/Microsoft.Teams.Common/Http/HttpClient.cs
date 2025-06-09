@@ -73,6 +73,25 @@ public class HttpClient : IHttpClient
 
         Options.Apply(httpRequest);
 
+        if (request.Body is not null)
+        {
+            if (request.Body is string stringBody)
+            {
+                httpRequest.Content = new StringContent(stringBody);
+            }
+            else if (request.Body is IEnumerable<KeyValuePair<string, string>> dictionaryBody)
+            {
+                httpRequest.Content = new FormUrlEncodedContent(dictionaryBody);
+            }
+            else
+            {
+                httpRequest.Content = JsonContent.Create(request.Body, options: new JsonSerializerOptions()
+                {
+                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+                });
+            }
+        }
+
         foreach (var kv in request.Headers)
         {
             if (kv.Key.StartsWith("Content-"))
@@ -83,27 +102,6 @@ public class HttpClient : IHttpClient
 
             httpRequest.Headers.TryAddWithoutValidation(kv.Key, kv.Value);
         }
-
-        if (request.Body is not null)
-        {
-            if (request.Body is string stringBody)
-            {
-                httpRequest.Content = new StringContent(stringBody);
-                return httpRequest;
-            }
-
-            if (request.Body is IEnumerable<KeyValuePair<string, string>> dictionaryBody)
-            {
-                httpRequest.Content = new FormUrlEncodedContent(dictionaryBody);
-                return httpRequest;
-            }
-
-            httpRequest.Content = JsonContent.Create(request.Body, options: new JsonSerializerOptions()
-            {
-                DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-            });
-        }
-
         return httpRequest;
     }
 
@@ -111,13 +109,14 @@ public class HttpClient : IHttpClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            var errorBody = await response.Content.ReadFromJsonAsync<Dictionary<string, object>>(cancellationToken);
+            var errorBody = await ParseErrorBody(response);
 
             throw new HttpException()
             {
                 Headers = response.Headers,
                 StatusCode = response.StatusCode,
-                Body = errorBody
+                Body = errorBody,
+                Request = response.RequestMessage
             };
         }
 
@@ -135,16 +134,7 @@ public class HttpClient : IHttpClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            var content = await response.Content.ReadAsStringAsync() ?? throw new ArgumentNullException();
-            object errorBody = content;
-
-            if (content != string.Empty)
-            {
-                var bodyAsJson = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
-
-                if (bodyAsJson is not null)
-                    errorBody = bodyAsJson;
-            }
+            var errorBody = await ParseErrorBody(response);
 
             throw new HttpException()
             {
@@ -163,5 +153,27 @@ public class HttpClient : IHttpClient
             Headers = response.Headers,
             StatusCode = response.StatusCode
         };
+    }
+
+    private async Task<object> ParseErrorBody(HttpResponseMessage response)
+    {
+        var content = await response.Content.ReadAsStringAsync() ?? throw new ArgumentNullException();
+        object errorBody = content;
+
+        try
+        {
+            var bodyAsJson = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
+
+            if (bodyAsJson is not null)
+            {
+                errorBody = bodyAsJson;
+            }
+        }
+        catch
+        {
+            // content is probably not a valid json
+        }
+
+        return errorBody;
     }
 }
