@@ -10,6 +10,9 @@ public class EventType(string value) : StringEnum(value)
     public static readonly EventType Error = new("error");
     public bool IsError => Error.Equals(Value);
 
+    public static readonly EventType SignIn = new("signin");
+    public bool IsSignIn => SignIn.Equals(Value);
+
     public static readonly EventType Activity = new("activity");
     public bool IsActivity => Activity.Equals(Value);
 
@@ -19,5 +22,5 @@ public class EventType(string value) : StringEnum(value)
     public static readonly EventType ActivityResponse = new("activity.response");
     public bool IsActivityResponse => ActivityResponse.Equals(Value);
 
-    public bool IsBuiltIn => IsStart || IsError || IsActivity || IsActivitySent || IsActivityResponse;
+    public bool IsBuiltIn => IsStart || IsError || IsSignIn || IsActivity || IsActivitySent || IsActivityResponse;
 }

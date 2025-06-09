@@ -13,6 +13,12 @@ public partial interface IContext<TActivity>
     public bool IsSignedIn { get; set; }
 
     /// <summary>
+    /// the default connection name to use for the app.
+    /// by default it is  "graph".
+    /// </summary>
+    public string ConnectionName { get; set; }
+
+    /// <summary>
     /// trigger user signin flow for the activity sender
     /// </summary>
     /// <param name="options">option overrides</param>
@@ -30,6 +36,8 @@ public partial class Context<TActivity> : IContext<TActivity>
 {
     public bool IsSignedIn { get; set; } = false;
 
+    public required string ConnectionName { get; set; }
+
     public async Task<string?> SignIn(SignInOptions? options = null)
     {
         options ??= new SignInOptions();
@@ -41,17 +49,25 @@ public partial class Context<TActivity> : IContext<TActivity>
             {
                 UserId = Activity.From.Id,
                 ChannelId = Activity.ChannelId,
-                ConnectionName = options.ConnectionName,
+                ConnectionName = ConnectionName,
             });
 
             return tokenResponse.Token;
         }
         catch { }
 
-        // create new 1:1 conversation with user to do SSO
-        // because groupchats don't support it.
+        var tokenExchangeState = new Api.TokenExchange.State()
+        {
+            ConnectionName = ConnectionName,
+            Conversation = reference,
+            RelatesTo = Activity.RelatesTo,
+            MsAppId = AppId
+        };
+
         if (Activity.Conversation.IsGroup == true)
         {
+            // create new 1:1 conversation with user to do SSO
+            // because groupchats don't support it.
             var (id, _, _) = await Api.Conversations.CreateAsync(new()
             {
                 TenantId = Ref.Conversation.TenantId,
@@ -67,14 +83,6 @@ public partial class Context<TActivity> : IContext<TActivity>
             await OnActivitySent(oauthCardActivity, (IContext<IActivity>)this);
         }
 
-        var tokenExchangeState = new Api.TokenExchange.State()
-        {
-            ConnectionName = options.ConnectionName,
-            Conversation = reference,
-            RelatesTo = Activity.RelatesTo,
-            MsAppId = AppId
-        };
-
         var state = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(tokenExchangeState));
         var resource = await Api.Bots.SignIn.GetResourceAsync(new() { State = state });
         var activity = new MessageActivity();
@@ -85,7 +93,7 @@ public partial class Context<TActivity> : IContext<TActivity>
         activity.AddAttachment(new Api.Cards.OAuthCard()
         {
             Text = options.OAuthCardText,
-            ConnectionName = options.ConnectionName,
+            ConnectionName = ConnectionName,
             TokenExchangeResource = resource.TokenExchangeResource,
             TokenPostResource = resource.TokenPostResource,
             Buttons = [
@@ -108,18 +116,13 @@ public partial class Context<TActivity> : IContext<TActivity>
         {
             ChannelId = Ref.ChannelId,
             UserId = Activity.From.Id,
-            ConnectionName = connectionName ?? "graph",
+            ConnectionName = connectionName ?? ConnectionName,
         });
     }
 }
 
 public class SignInOptions
 {
-    /// <summary>
-    /// the connection name
-    /// </summary>
-    public string ConnectionName { get; set; } = "graph";
-
     /// <summary>
     /// the oauth card text
     /// </summary>
