@@ -22,7 +22,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
-    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
   </ItemGroup>
 
 </Project>

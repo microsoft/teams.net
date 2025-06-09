@@ -1,15 +1,28 @@
 ﻿
 using System.Text.Json;
-
 using Microsoft.Teams.Common.Json;
-using Microsoft.Teams.Plugins.AspNetCore.DevTools;
-using Microsoft.Teams.Plugins.AspNetCore.DevTools.Events;
-using Microsoft.Teams.Plugins.AspNetCore.DevTools.Models;
 
 namespace Microsoft.Teams.Common.Tests.Json;
+
+[TrueTypeJson<IValidateEvent>]
+public interface IValidateEvent
+{
+    public string Id { get; }
+    public string Type { get; }
+    public object? Body { get; }
+    public DateTime SentAt { get; }
+}
+
+public class ValidateEvent: IValidateEvent
+{
+    public string Id { get; set; }
+    public string Type { get;  } = "test";
+    public object? Body { get; set; }
+    public DateTime SentAt { get; set; } = DateTime.UtcNow;
+}
+
 public class TrueTypeJsonAttributeTests
 {
-    // Test that the attribute can be applied and sets the correct converter type
     [Fact]
     public void TrueTypeJsonAttribute_SetsConverterType()
     {
@@ -18,43 +31,44 @@ public class TrueTypeJsonAttributeTests
     }
 
     [Fact]
+    public void TrueTypeJsonAttribute_SetsConverterTypeObject()
+    {
+        var attr = new TrueTypeJsonAttribute<IValidateEvent>();
+        Assert.Equal(typeof(TrueTypeJsonConverter<IValidateEvent>), attr.ConverterType);
+    }
+
+    [Fact]
     public void TrueTypeJsonConverter_Serialize()
     {
-        // Arrange
-        MetaData body = new MetaData();
-        body.Id = "bodyGuid";
-        body.Name = "MetaDataName";
-        var metaDataEvent = new MetaDataEvent(body);
-        Assert.True(metaDataEvent is MetaDataEvent);
-        Assert.Equal("metadata", metaDataEvent.Type);
-
+        // Arrange   
+        var validateEvent = new ValidateEvent();
+        validateEvent.Id = "bodyGuid";
+        Assert.True(validateEvent is ValidateEvent);
+     
         // Act
-        var json = JsonSerializer.Serialize(metaDataEvent);
+        var json = JsonSerializer.Serialize(validateEvent);
         // Assert
-        Assert.Contains("\"id\":\"bodyGuid\"", json);
-        Assert.Contains("\"name\":\"MetaDataName\"", json);
-        Assert.Contains("\"type\":\"metadata\"", json);
-        Assert.Contains("\"sentAt\":\"", json);
+        Assert.Contains("\"Id\":\"bodyGuid\"", json);
+        Assert.Contains("\"Type\":\"test\"", json);
+        Assert.Contains("\"SentAt\":\"", json);
 
     }
 
     [Fact]
     public void TrueTypeJsonConverter_Deserialize()
     {
-        // Arrange
-        MetaData body = new MetaData();
-        body.Id = "bodyGuid";
-        body.Name = "MetaDataName";
-        var metaDataEvent = new MetaDataEvent(body);
-        var json = JsonSerializer.Serialize<IEvent>(metaDataEvent);
+        // Arrange   
+        var validateEvent = new ValidateEvent()
+        {
+            Id = "guid",
+            SentAt = DateTime.UtcNow
+        };
+        var json = JsonSerializer.Serialize<IValidateEvent>(validateEvent);
 
         // Act
-        var ex = Assert.Throws<System.NotImplementedException>(() => JsonSerializer.Deserialize<IEvent>(json));
+        var ex = Assert.Throws<System.NotImplementedException>(() => JsonSerializer.Deserialize<IValidateEvent>(json));
         // Assert
         var expectedSubmitException = "The method or operation is not implemented.";
         Assert.Equal(expectedSubmitException, ex.Message);
     }
-
-
-
 }
