@@ -1,7 +1,7 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 
-namespace Samples.BotBuilder
+namespace Samples.BotBuilder.Bot
 {
     public class Bot : ActivityHandler
     {
