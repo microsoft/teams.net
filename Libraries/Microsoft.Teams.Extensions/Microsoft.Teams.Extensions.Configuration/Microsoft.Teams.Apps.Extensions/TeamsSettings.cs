@@ -12,15 +12,11 @@ public class TeamsSettings
     {
         options ??= new AppOptions();
 
-        if (ClientId is not null && ClientSecret is not null && IsNotEmpty())
+        if (ClientId is not null && ClientSecret is not null)
         {
             options.Credentials = new ClientCredentials(ClientId, ClientSecret, TenantId);
         }
 
         return options;
-    }
-
-    public bool IsNotEmpty() {
-        return ClientId != "" && ClientSecret != "";
     }
 }
