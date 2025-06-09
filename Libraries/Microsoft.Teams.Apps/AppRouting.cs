@@ -63,11 +63,14 @@ public partial class App
 
     protected async Task<object?> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context)
     {
-        var key = $"auth/{context.Ref.Conversation.Id}/{context.Activity.From.Id}";
+        var connectionName = context.Activity.Value.ConnectionName;
+
+        if (OAuth.DefaultConnectionName != connectionName) {
+            Logger.Warn($"`default connection name \"{OAuth.DefaultConnectionName}\" does not match activity connection name \"{connectionName}\"");
+        }
 
         try
         {
-            await Storage.SetAsync(key, context.Activity.Value.ConnectionName);
             var res = await context.Api.Users.Token.ExchangeAsync(new()
             {
                 ChannelId = context.Activity.ChannelId,
@@ -76,6 +79,22 @@ public partial class App
                 ExchangeRequest = new() { Token = context.Activity.Value.Token },
             });
 
+            var userGraphTokenProvider = Azure.Core.DelegatedTokenCredential.Create((context, _) =>
+            {
+                var expirationTime = res.Expiration is null ? DateTime.Now.AddMinutes(45) : DateTime.Parse(res.Expiration);
+                return new Azure.Core.AccessToken(res.Token, expirationTime);
+            });
+
+            context.UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider);
+
+            await Events.Emit(
+                context.Sender,
+                EventType.SignIn,
+                new SignInEvent() {
+                    Context = context.ToActivityType<Api.Activities.Invokes.SignInActivity>(),
+                    Token = res
+                }
+            );
             return new Response(HttpStatusCode.OK);
         }
         catch (HttpException ex)
@@ -86,7 +105,7 @@ public partial class App
                 new ErrorEvent()
                 {
                     Exception = ex,
-                    Context = (IContext<IActivity>)context
+                    Context = context.ToActivityType<IActivity>()
                 },
                 context.CancellationToken
             );
@@ -107,13 +126,9 @@ public partial class App
 
     protected async Task<object?> OnVerifyStateActivity(IContext<Api.Activities.Invokes.SignIn.VerifyStateActivity> context)
     {
-        var key = $"auth/{context.Ref.Conversation.Id}/{context.Activity.From.Id}";
-
         try
         {
-            var connectionName = (string?)await Storage.GetAsync(key);
-
-            if (connectionName is null || context.Activity.Value.State is null)
+            if (context.Activity.Value.State is null)
             {
                 context.Log.Warn($"auth state not found for conversation '{context.Ref.Conversation.Id}' and user '{context.Activity.From.Id}'");
                 return new Response(HttpStatusCode.NotFound);
@@ -123,11 +138,26 @@ public partial class App
             {
                 ChannelId = context.Activity.ChannelId,
                 UserId = context.Activity.From.Id,
-                ConnectionName = connectionName,
+                ConnectionName = OAuth.DefaultConnectionName,
                 Code = context.Activity.Value.State
             });
 
-            await Storage.DeleteAsync(key);
+            var userGraphTokenProvider = Azure.Core.DelegatedTokenCredential.Create((context, _) =>
+            {
+                var expirationTime = res.Expiration is null ? DateTime.Now.AddMinutes(45) : DateTime.Parse(res.Expiration);
+                return new Azure.Core.AccessToken(res.Token, expirationTime);
+            });
+
+            context.UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider);
+
+            await Events.Emit(
+                context.Sender,
+                EventType.SignIn,
+                new SignInEvent() {
+                    Context = context.ToActivityType<Api.Activities.Invokes.SignInActivity>(),
+                    Token = res
+                }
+            );
             return new Response(HttpStatusCode.OK);
         }
         catch (HttpException ex)
@@ -138,7 +168,7 @@ public partial class App
                 new ErrorEvent()
                 {
                     Exception = ex,
-                    Context = (IContext<IActivity>)context
+                    Context = context.ToActivityType<IActivity>()
                 },
                 context.CancellationToken
             );

@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.Asp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Cards", "Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj", "{C4D77769-EEC3-429D-B9B3-0C3B6B32FAA5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Auth", "Samples\Samples.Auth\Samples.Auth.csproj", "{596A87F7-4BD9-42A7-9C20-2FD1CF9676CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Graph", "Samples\Samples.Graph\Samples.Graph.csproj", "{596A87F7-4BD9-42A7-9C20-2FD1CF9676CA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.AI", "Libraries\Microsoft.Teams.AI\Microsoft.Teams.AI.csproj", "{384D1962-D3F9-4E26-8FCB-4D25B09CB7FC}"
 EndProject
