@@ -24,9 +24,4 @@ public class TeamsSettings
 
         return options;
     }
-
-    public bool IsNotEmpty()
-    {
-        return ClientId != "" && ClientSecret != "";
-    }
 }
