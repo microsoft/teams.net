@@ -1,0 +1,22 @@
+{
+  "composeExtension": {
+    "attachmentLayout": "list",
+    "type": "result",
+    "attachments": [
+      {
+        "contentType": "application/vnd.microsoft.card.adaptive",
+        "content": {
+          "type": "AdaptiveCard",
+          "body": [
+            {}
+          ],
+          "actions": []
+        },
+        "preview": {
+          "contentType": "application/vnd.microsoft.card.thumbnail",
+          "thumbnailUrl": "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/memory-sample-agent/docs/images/memory-thumbnail.png"
+        }
+      }
+    ]
+  }
+}
