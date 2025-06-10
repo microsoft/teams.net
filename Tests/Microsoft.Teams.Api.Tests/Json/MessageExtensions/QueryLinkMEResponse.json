@@ -9,8 +9,7 @@
           "type": "AdaptiveCard",
           "body": [
             {}
-          ],
-          "actions": []
+          ]
         },
         "preview": {
           "contentType": "application/vnd.microsoft.card.thumbnail",
