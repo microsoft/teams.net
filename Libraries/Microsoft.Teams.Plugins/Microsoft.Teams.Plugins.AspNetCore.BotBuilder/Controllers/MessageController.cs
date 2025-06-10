@@ -1,14 +1,14 @@
+using System.Text.Json;
+
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Teams.Api.Auth;
-
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Teams.Apps.Extensions;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.AspNetCore.Http;
-using System.Text.Json;
+using Microsoft.Teams.Api.Auth;
+using Microsoft.Teams.Apps.Extensions;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
 {
@@ -38,7 +38,8 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
             Activity? activity = JsonSerializer.Deserialize<Activity>(body);
             HttpContext.Request.Body.Position = 0;
 
-            if (activity == null) {
+            if (activity == null)
+            {
                 return Results.BadRequest("Missing activity");
             }
 
@@ -46,7 +47,8 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
             // The adapter will invoke the bot.
             await _adapter.ProcessAsync(HttpContext.Request, HttpContext.Response, _bot);
 
-            if (Response.HasStarted) {
+            if (Response.HasStarted)
+            {
                 return Results.Empty;
             }
 

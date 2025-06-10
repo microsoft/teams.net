@@ -73,6 +73,7 @@ public partial class InvokeActivity
                 "actionableMessage/executeAction" => JsonSerializer.Deserialize<Invokes.ExecuteActionActivity>(element.ToString(), options),
                 "fileConsent/invoke" => JsonSerializer.Deserialize<Invokes.FileConsentActivity>(element.ToString(), options),
                 "handoff/action" => JsonSerializer.Deserialize<Invokes.HandoffActivity>(element.ToString(), options),
+                "application/search" => JsonSerializer.Deserialize<Invokes.SearchActivity>(element.ToString(), options),
                 _ => JsonSerializer.Deserialize<InvokeActivity>(element.ToString(), options)
             };
         }

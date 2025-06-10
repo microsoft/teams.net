@@ -1,6 +1,7 @@
+using System.Reflection;
+
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
-using System.Reflection;
 
 public class RemoveDefaultMessageController : IApplicationFeatureProvider<ControllerFeature>
 {
@@ -9,7 +10,8 @@ public class RemoveDefaultMessageController : IApplicationFeatureProvider<Contro
         Type messageController = typeof(Microsoft.Teams.Plugins.AspNetCore.Controllers.MessageController);
 
         List<TypeInfo> matches = feature.Controllers.Where(c => c.AsType() == messageController).ToList();
-        foreach (TypeInfo match in matches) {
+        foreach (TypeInfo match in matches)
+        {
             feature.Controllers.Remove(match);
         }
     }
