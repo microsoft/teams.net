@@ -17,14 +17,14 @@ public class HomeController
     }
 
     [MessageExtension.SubmitAction]
-    public Task<Microsoft.Teams.Api.MessageExtensions.Response> OnSubmitAction([Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SubmitActionActivity action, [Context] IContext.Client client)
+    public Task<Microsoft.Teams.Api.MessageExtensions.Response?> OnSubmitAction([Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SubmitActionActivity action, [Context] IContext.Client client)
     {
         var commanndId = action.Value.CommandId;
 
         if (string.IsNullOrEmpty(commanndId))
         {
             // context.Log.Error("No command ID provided for submit action.");
-            return Task.FromResult<Microsoft.Teams.Api.MessageExtensions.Response>(null);
+            return Task.FromResult<Microsoft.Teams.Api.MessageExtensions.Response?>(null);
         }
 
         if (commanndId == "createCard")
@@ -40,16 +40,16 @@ public class HomeController
         else
         {
             // context.Log.Error($"Unknown command ID: {commanndId}");
-            return Task.FromResult<Microsoft.Teams.Api.MessageExtensions.Response>(null);
+            return Task.FromResult<Microsoft.Teams.Api.MessageExtensions.Response?>(null);
         }
 
-        return Task.FromResult(new Microsoft.Teams.Api.MessageExtensions.Response()
+        return Task.FromResult<Microsoft.Teams.Api.MessageExtensions.Response?>(new Microsoft.Teams.Api.MessageExtensions.Response()
         {
             ComposeExtension = new Result()
             {
-                Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>()
+                Attachments = new List<Attachment>()
                 {
-                    new Microsoft.Teams.Api.MessageExtensions.Attachment()
+                    new Attachment()
                     {
                         Content = "Your updated content here",
                         Name = "Your updated attachment name",

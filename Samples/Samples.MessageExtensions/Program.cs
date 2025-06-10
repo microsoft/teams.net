@@ -34,21 +34,25 @@ teams.OnQueryLink(async context => {
                 new TextBlock("Hello from Samples.Agent!")
                 {
                     Size = TextSize.Large,
-                    Weight = TextWeight.Bolder
+                    Weight = TextWeight.Bolder,
+                    Color = TextColor.Accent,
+                    Style = StyleEnum.Expanded,
                 },
-                new TextBlock("This is a sample card created with the CreateCard method.") {
-                    Wrap = true
+                new TextBlock(url) {
+                    Size= TextSize.Small,
+                    Weight = TextWeight.Lighter,
+                    Color = TextColor.Good,
                 }
             },
     };
 
-    var response = new Microsoft.Teams.Api.MessageExtensions.Response
+    var response = new Response
     {
         ComposeExtension = new Result
         {
-            Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>
+            Attachments = new List<Attachment>
                {
-                    new Microsoft.Teams.Api.MessageExtensions.Attachment()
+                    new Attachment()
                     {
                         Content = card,
                         Name = "Sample Card",
@@ -58,7 +62,7 @@ teams.OnQueryLink(async context => {
         }
     };
 
-    return response;
+    return await Task.FromResult(response);
 });
 
 teams.OnMessageExtensionSubmitAction(async context =>
@@ -89,13 +93,13 @@ teams.OnMessageExtensionSubmitAction(async context =>
         context.Log.Error($"Unknown command ID: {commanndId}");
         return null;
     }
-    return new Response()
+    return await Task.FromResult(new Response()
     {
         ComposeExtension = new Result()
         {
-            Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>()
+            Attachments = new List<Attachment>()
             {
-                new Microsoft.Teams.Api.MessageExtensions.Attachment()
+                new Attachment()
                 {
                     Content = "Your updated content here",
                     Name = "Your updated attachment name",
@@ -103,7 +107,7 @@ teams.OnMessageExtensionSubmitAction(async context =>
             },
             AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
         }
-    };
+    });
 
 });
 
@@ -129,13 +133,13 @@ teams.OnQuery(async context => {
                 }
             },
         };
-        return new Response()
+        return await Task.FromResult(new Response()
         {
             ComposeExtension = new Result()
             {
-                Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>()
+                Attachments = new List<Attachment>()
             {
-                new Microsoft.Teams.Api.MessageExtensions.Attachment()
+                new Attachment()
                 {
                     Content = "Your updated content here",
                     Name = "Your updated attachment name",
@@ -143,7 +147,7 @@ teams.OnQuery(async context => {
             },
                 AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
             }
-        };
+        });
     }
     return null;
 
