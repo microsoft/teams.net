@@ -15,7 +15,7 @@ public interface IValidateEvent
 
 public class ValidateEvent: IValidateEvent
 {
-    public string Id { get; set; }
+    public required string Id { get; set; }
     public string Type { get;  } = "test";
     public object? Body { get; set; }
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
@@ -41,8 +41,10 @@ public class TrueTypeJsonAttributeTests
     public void TrueTypeJsonConverter_Serialize()
     {
         // Arrange   
-        var validateEvent = new ValidateEvent();
-        validateEvent.Id = "bodyGuid";
+        var validateEvent = new ValidateEvent
+        {
+            Id = "bodyGuid"
+        };
         Assert.True(validateEvent is ValidateEvent);
      
         // Act
