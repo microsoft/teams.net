@@ -4,6 +4,8 @@ using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Testing.Plugins;
 
+using static Microsoft.Teams.Apps.Activities.Message;
+
 namespace Microsoft.Teams.Apps.Tests.Activities;
 
 public class MessageDeleteActivityTests
@@ -61,6 +63,19 @@ public class MessageDeleteActivityTests
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(0, calls);
         Assert.Equal(0, _controller.Calls);
+    }
+
+
+    [Fact]
+    public void MessageDeleteAttribute_ShouldHaveCorrectNameAndType()
+    {
+        // Arrange & Act
+        var attribute = new DeleteAttribute();
+
+        // Assert
+        Assert.NotNull(attribute.Name);
+        Assert.Equal(ActivityType.MessageDelete.ToString(), attribute.Name);
+        Assert.Equal(typeof(MessageDeleteActivity), attribute.Type);
     }
 
     [TeamsController]

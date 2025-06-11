@@ -8,7 +8,7 @@ using Microsoft.Teams.Apps.Annotations;
 
 
 namespace Samples.MessageExtensions;
-public class HomeController 
+public class HomeController
 {
     [Message]
     public async Task OnMessage([Context] Microsoft.Teams.Api.Activities.MessageActivity activity, [Context] IContext.Client client)

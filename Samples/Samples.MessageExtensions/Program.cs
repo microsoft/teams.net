@@ -8,7 +8,6 @@ using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 using Samples.MessageExtensions;
 
 
-
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTransient<HomeController>();
 builder.AddTeams(Microsoft.Teams.Apps.App.Builder().AddLogger(level: Microsoft.Teams.Common.Logging.LogLevel.Debug));
@@ -17,7 +16,8 @@ var app = builder.Build();
 var teams = app.UseTeams();
 
 
-teams.OnQueryLink(async context => {
+teams.OnQueryLink(async context =>
+{
     context.Log.Info("OnQueryLink triggered:");
     var url = context.Activity.Value.Url;
 
@@ -113,7 +113,8 @@ teams.OnMessageExtensionSubmitAction(async context =>
 
 
 
-teams.OnQuery(async context => {
+teams.OnQuery(async context =>
+{
     context.Log.Info("OnQuery triggered:");
 
     var query = context.Activity.Value;

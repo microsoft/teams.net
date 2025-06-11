@@ -91,6 +91,12 @@ public partial class InvokeActivity
                 return;
             }
 
+            if (value is Invokes.FileConsentActivity fileConsent)
+            {
+                JsonSerializer.Serialize(writer, fileConsent, options);
+                return;
+            }
+
             if (value is Invokes.HandoffActivity handoff)
             {
                 JsonSerializer.Serialize(writer, handoff, options);
