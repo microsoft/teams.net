@@ -15,7 +15,7 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
-    public static App OnSubmitAction(this App app, Func<IContext<MessageExtensions.SubmitActionActivity>, Task<object?>> handler)
+    public static App OnMessageExtensionSubmitAction(this App app, Func<IContext<MessageExtensions.SubmitActionActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()
         {

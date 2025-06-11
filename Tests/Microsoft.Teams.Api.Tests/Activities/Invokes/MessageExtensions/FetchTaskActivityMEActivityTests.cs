@@ -20,7 +20,7 @@ public class FetchTaskActivityMEActivityTests
     {
         return new FetchTaskActivity()
         {
-            Value = new MessageExtensions.Action()
+            Value = new Api.MessageExtensions.Action()
             {
                 CommandContext = Commands.Context.Compose,
                 CommandId = "commandId",

@@ -1,0 +1,22 @@
+{
+  "id": "fileConsentId123",
+  "type": "invoke",
+  "channelId": "msteams",
+  "name": "fileConsent/invoke",
+  "value": {
+    "action": "accept",
+    "context": {
+      "description": "File description",
+      "sizeInBytes": 123456,
+      "acceptContext": "Accepted context",
+      "declineContext": "Declined context"
+    },
+    "uploadInfo": {
+      "name": "example.txt",
+      "uploadUrl": "https://example.com/upload.txt",
+      "contentUrl": "https://example.com/content.txt",
+      "uniqueId": "unique-id-12345",
+      "fileType": "text/plain"
+    }
+  }
+}
