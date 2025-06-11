@@ -33,4 +33,15 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, Task<Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<InvokeActivity>()),
+            Selector = activity => activity is InvokeActivity
+        });
+
+        return app;
+    }
 }
