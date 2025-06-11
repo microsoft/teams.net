@@ -1,7 +1,7 @@
 using Microsoft.Teams.Api.Activities.Invokes;
-using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
+
+namespace Microsoft.Teams.Apps.Events;
 
 public class SignInEvent : Event {
     public required Microsoft.Teams.Api.Token.Response Token { get; set; }
