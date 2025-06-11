@@ -51,4 +51,7 @@ public partial class ContentType(string value) : StringEnum(value)
 
     public static readonly ContentType PreConditionFailed = new("application/vnd.microsoft.error.preconditionFailed");
     public bool IsPreConditionFailed => PreConditionFailed.Equals(Value);
+
+    public static readonly ContentType SearchResponse = new("application/vnd.microsoft.search.searchResponse");
+    public bool IsSearchResponse => SearchResponse.Equals(Value);
 }

@@ -22,4 +22,15 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, Task<Response?>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<SignIn.VerifyStateActivity>()),
+            Selector = activity => activity is SignIn.VerifyStateActivity
+        });
+
+        return app;
+    }
 }
