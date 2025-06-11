@@ -25,7 +25,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.Asp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Cards", "Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj", "{C4D77769-EEC3-429D-B9B3-0C3B6B32FAA5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Auth", "Samples\Samples.Auth\Samples.Auth.csproj", "{596A87F7-4BD9-42A7-9C20-2FD1CF9676CA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Graph", "Samples\Samples.Graph\Samples.Graph.csproj", "{596A87F7-4BD9-42A7-9C20-2FD1CF9676CA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.AI", "Libraries\Microsoft.Teams.AI\Microsoft.Teams.AI.csproj", "{384D1962-D3F9-4E26-8FCB-4D25B09CB7FC}"
 EndProject
@@ -56,6 +56,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Apps.Testing", "Libraries\Microsoft.Teams.Apps.Testing\Microsoft.Teams.Apps.Testing.csproj", "{6542E318-AF5B-4D63-B5BA-242AA48085B9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.MessageExtensions", "Samples\Samples.MessageExtensions\Samples.MessageExtensions.csproj", "{106FB8FA-063F-4DF8-B8D5-F8296ADD7149}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Plugins.AspNetCore.BotBuilder", "Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.BotBuilder\Microsoft.Teams.Plugins.AspNetCore.BotBuilder.csproj", "{E7277625-CD7C-42C0-84C1-EE39D8CCF909}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.BotBuilder", "Samples\Samples.BotBuilder\Samples.BotBuilder.csproj", "{6A21694E-6F76-463E-AF50-C258A0C94BF4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -319,6 +323,30 @@ Global
 		{106FB8FA-063F-4DF8-B8D5-F8296ADD7149}.Release|x64.Build.0 = Release|Any CPU
 		{106FB8FA-063F-4DF8-B8D5-F8296ADD7149}.Release|x86.ActiveCfg = Release|Any CPU
 		{106FB8FA-063F-4DF8-B8D5-F8296ADD7149}.Release|x86.Build.0 = Release|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Debug|x64.Build.0 = Debug|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Debug|x86.Build.0 = Debug|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Release|x64.ActiveCfg = Release|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Release|x64.Build.0 = Release|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Release|x86.ActiveCfg = Release|Any CPU
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909}.Release|x86.Build.0 = Release|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Debug|x64.Build.0 = Debug|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Debug|x86.Build.0 = Debug|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Release|x64.ActiveCfg = Release|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Release|x64.Build.0 = Release|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Release|x86.ActiveCfg = Release|Any CPU
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -351,5 +379,7 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {9EC3B7E3-78AC-4806-9379-A2F0A168A78C}
+		{E7277625-CD7C-42C0-84C1-EE39D8CCF909} = {F2D7E877-38D6-8C91-7D90-99648DD298BA}
+		{6A21694E-6F76-463E-AF50-C258A0C94BF4} = {5D20AA90-6969-D8BD-9DCD-8634F4692FDA}
 	EndGlobalSection
 EndGlobal

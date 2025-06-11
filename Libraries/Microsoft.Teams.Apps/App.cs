@@ -34,6 +34,7 @@ public partial class App
     public IHttpCredentials? Credentials { get; }
     public IToken? BotToken { get; internal set; }
     public IToken? GraphToken { get; internal set; }
+    public OAuthSettings OAuth { get; internal set; }
 
     internal IContainer Container { get; set; }
     internal string UserAgent
@@ -56,6 +57,7 @@ public partial class App
         Credentials = options?.Credentials;
         Api = new ApiClient("https://smba.trafficmanager.net/teams", Client);
         Plugins = options?.Plugins ?? [];
+        OAuth = options?.OAuth ?? new OAuthSettings();
 
         Container = new Container();
         Container.Register(Logger);
@@ -209,7 +211,7 @@ public partial class App
             {
                 UserId = activity.From.Id,
                 ChannelId = activity.ChannelId,
-                ConnectionName = "graph"
+                ConnectionName = OAuth.DefaultConnectionName
             });
 
             userToken = new JsonWebToken(tokenResponse);
@@ -261,6 +263,7 @@ public partial class App
             OnNext = Next,
             UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
             CancellationToken = cancellationToken,
+            ConnectionName = OAuth.DefaultConnectionName,
             OnActivitySent = async (activity, context) =>
             {
                 await Events.Emit(

@@ -3,7 +3,7 @@ trigger: none
 pr: none
 
 pool:
-  vmImage: 'ubuntu-latest'
+  vmImage: 'ubuntu-22.04'
 
 variables:
   buildConfiguration: 'Release'
@@ -139,9 +139,7 @@ stages:
   - deployment: PushPackages
     displayName: 'Manual Approval Required to Push Packages'
     environment:
-      name: 'nuget-publish'
-      resourceType: VirtualMachine
-      action: ManualApproval
+      name: 'teams-net-publish'
     strategy:
       runOnce:
         deploy:

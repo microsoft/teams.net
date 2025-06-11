@@ -36,8 +36,8 @@ public class TypingActivity : Activity
         AddEntity(new StreamInfoEntity()
         {
             StreamId = Id,
-            StreamType = StreamType.Streaming,
-            StreamSequence = sequence
+            StreamType = ChannelData.StreamType,
+            StreamSequence = ChannelData.StreamSequence
         });
 
         return this;

@@ -172,6 +172,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
             Ref = Ref,
             UserGraph = UserGraph,
             IsSignedIn = IsSignedIn,
+            ConnectionName = ConnectionName,
             Extra = Extra,
             CancellationToken = CancellationToken,
             OnNext = OnNext,
