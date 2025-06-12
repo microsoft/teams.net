@@ -2,6 +2,7 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
+using Microsoft.Teams.Apps.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
