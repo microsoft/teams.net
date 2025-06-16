@@ -13,6 +13,21 @@ public class SearchAttribute() : InvokeAttribute(Api.Activities.Invokes.Name.Sea
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnSearch(this App app, Func<IContext<SearchActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<SearchActivity>());
+                return null;
+            },
+            Selector = activity => activity is SearchActivity
+        });
+
+        return app;
+    }
+
     public static App OnSearch(this App app, Func<IContext<SearchActivity>, Task<Response<SearchResponse>>> handler)
     {
         app.Router.Register(new Route()

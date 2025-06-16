@@ -61,7 +61,7 @@ public partial class App
         return this;
     }
 
-    protected async Task<object?> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context)
+    protected async Task<Response> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context)
     {
         var connectionName = context.Activity.Value.ConnectionName;
 
@@ -97,6 +97,7 @@ public partial class App
                     Token = res
                 }
             );
+
             return new Response(HttpStatusCode.OK);
         }
         catch (HttpException ex)

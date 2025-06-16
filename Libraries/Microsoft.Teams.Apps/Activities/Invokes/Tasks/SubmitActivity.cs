@@ -12,6 +12,21 @@ public class TaskSubmitAttribute() : InvokeAttribute(Api.Activities.Invokes.Name
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnTaskSubmit(this App app, Func<IContext<Tasks.SubmitActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Tasks.SubmitActivity>());
+                return null;
+            },
+            Selector = activity => activity is Tasks.SubmitActivity
+        });
+
+        return app;
+    }
+
     public static App OnTaskSubmit(this App app, Func<IContext<Tasks.SubmitActivity>, Task<Response<Api.TaskModules.Response>>> handler)
     {
         app.Router.Register(new Route()

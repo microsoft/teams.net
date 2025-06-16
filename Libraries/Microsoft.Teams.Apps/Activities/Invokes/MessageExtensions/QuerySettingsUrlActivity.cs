@@ -15,6 +15,21 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnQuerySettingsUrl(this App app, Func<IContext<MessageExtensions.QuerySettingsUrlActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.QuerySettingsUrlActivity>());
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.QuerySettingsUrlActivity
+        });
+
+        return app;
+    }
+
     public static App OnQuerySettingsUrl(this App app, Func<IContext<MessageExtensions.QuerySettingsUrlActivity>, Task<Response<Api.MessageExtensions.Response>>> handler)
     {
         app.Router.Register(new Route()

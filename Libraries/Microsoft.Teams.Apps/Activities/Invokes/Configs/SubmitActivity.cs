@@ -16,6 +16,21 @@ public static partial class Config
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnConfigSubmit(this App app, Func<IContext<Configs.SubmitActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Configs.SubmitActivity>());
+                return null;
+            },
+            Selector = activity => activity is Configs.SubmitActivity
+        });
+
+        return app;
+    }
+
     public static App OnConfigSubmit(this App app, Func<IContext<Configs.SubmitActivity>, Task<Response<ConfigResponse>>> handler)
     {
         app.Router.Register(new Route()

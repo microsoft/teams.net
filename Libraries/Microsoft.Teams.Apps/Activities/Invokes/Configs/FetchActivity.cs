@@ -16,6 +16,21 @@ public static partial class Config
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Configs.FetchActivity>());
+                return null;
+            },
+            Selector = activity => activity is Configs.FetchActivity
+        });
+
+        return app;
+    }
+
     public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task<Response<ConfigResponse>>> handler)
     {
         app.Router.Register(new Route()

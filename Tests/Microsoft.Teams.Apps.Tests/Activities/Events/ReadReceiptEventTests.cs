@@ -5,6 +5,7 @@ using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Activities.Events;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Testing.Plugins;
+
 using static Microsoft.Teams.Apps.Activities.Events.Event;
 
 namespace Microsoft.Teams.Apps.Tests.Activities.Events;
@@ -40,7 +41,7 @@ public class ReadReceiptEventTests
         // Create a ReadReceiptActivity
         var ReadReceiptActivity = new ReadReceiptActivity
         {
-           Id = "readReceiptId",
+            Id = "readReceiptId",
         };
 
         // Act

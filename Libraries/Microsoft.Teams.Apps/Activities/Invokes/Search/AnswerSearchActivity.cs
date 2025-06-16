@@ -24,6 +24,29 @@ public static partial class Search
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnAnswerSearch(this App app, Func<IContext<SearchActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<SearchActivity>());
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is SearchActivity search)
+                {
+                    return search.Value.Kind.IsSearchAnswer;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
     public static App OnAnswerSearch(this App app, Func<IContext<SearchActivity>, Task<Response<SearchResponse>>> handler)
     {
         app.Router.Register(new Route()

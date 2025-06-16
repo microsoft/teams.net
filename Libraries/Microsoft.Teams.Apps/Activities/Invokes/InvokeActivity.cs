@@ -23,6 +23,21 @@ public class InvokeAttribute(string? name = null, Type? type = null) : ActivityA
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<InvokeActivity>());
+                return null;
+            },
+            Selector = activity => activity is InvokeActivity
+        });
+
+        return app;
+    }
+
     public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()

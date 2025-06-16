@@ -12,6 +12,21 @@ public class TaskFetchAttribute() : InvokeAttribute(Api.Activities.Invokes.Name.
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnTaskFetch(this App app, Func<IContext<Tasks.FetchActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Tasks.FetchActivity>());
+                return null;
+            },
+            Selector = activity => activity is Tasks.FetchActivity
+        });
+
+        return app;
+    }
+
     public static App OnTaskFetch(this App app, Func<IContext<Tasks.FetchActivity>, Task<Response<Api.TaskModules.Response>>> handler)
     {
         app.Router.Register(new Route()

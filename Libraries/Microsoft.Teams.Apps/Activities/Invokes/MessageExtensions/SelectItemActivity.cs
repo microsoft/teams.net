@@ -15,6 +15,21 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>());
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.SelectItemActivity
+        });
+
+        return app;
+    }
+
     public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, Task<Response<Api.MessageExtensions.Response>>> handler)
     {
         app.Router.Register(new Route()

@@ -215,12 +215,12 @@ public class SearchActivityTests
     {
         var calls = 0;
 
-        _app.OnSearch(context =>
+        _app.OnSearch(async context =>
         {
             calls++;
             Assert.True(context.Activity.Type.IsInvoke);
             Assert.True(context.Activity.Name.IsSearch);
-            return context.Next();
+            await context.Next();
         });
 
         _app.OnTypeaheadSearch(context =>
