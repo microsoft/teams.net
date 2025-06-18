@@ -1,5 +1,6 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
+using Microsoft.Teams.Api.Config;
 using Microsoft.Teams.Apps.Routing;
 
 namespace Microsoft.Teams.Apps.Activities.Invokes;
@@ -15,11 +16,37 @@ public static partial class Config
 
 public static partial class AppInvokeActivityExtensions
 {
-    public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task<object?>> handler)
+    public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<Configs.FetchActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Configs.FetchActivity>());
+                return null;
+            },
+            Selector = activity => activity is Configs.FetchActivity
+        });
+
+        return app;
+    }
+
+    public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task<Response<ConfigResponse>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<Configs.FetchActivity>()),
+            Selector = activity => activity is Configs.FetchActivity
+        });
+
+        return app;
+    }
+
+    public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task<ConfigResponse>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<Configs.FetchActivity>()),
             Selector = activity => activity is Configs.FetchActivity
         });
 

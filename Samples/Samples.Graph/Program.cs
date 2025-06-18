@@ -47,7 +47,8 @@ teams.OnMessage(async context =>
     await context.Send($"user '{me!.DisplayName}' is already signed in!");
 });
 
-teams.OnSignIn(async (_, @event) => {
+teams.OnSignIn(async (_, @event) =>
+{
     var token = @event.Token;
     var context = @event.Context;
 

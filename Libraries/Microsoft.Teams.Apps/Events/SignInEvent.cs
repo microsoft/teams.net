@@ -3,11 +3,12 @@ using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Apps.Events;
 
-public class SignInEvent : Event {
+public class SignInEvent : Event
+{
     public required Microsoft.Teams.Api.Token.Response Token { get; set; }
 
     public required IContext<SignInActivity> Context { get; set; }
-} 
+}
 
 public static partial class AppEventExtensions
 {

@@ -15,11 +15,37 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
-    public static App OnAnonQueryLink(this App app, Func<IContext<MessageExtensions.AnonQueryLinkActivity>, Task<object?>> handler)
+    public static App OnAnonQueryLink(this App app, Func<IContext<MessageExtensions.AnonQueryLinkActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>());
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
+        });
+
+        return app;
+    }
+
+    public static App OnAnonQueryLink(this App app, Func<IContext<MessageExtensions.AnonQueryLinkActivity>, Task<Response<Api.MessageExtensions.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()),
+            Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
+        });
+
+        return app;
+    }
+
+    public static App OnAnonQueryLink(this App app, Func<IContext<MessageExtensions.AnonQueryLinkActivity>, Task<Api.MessageExtensions.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()),
             Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
         });
 

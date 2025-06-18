@@ -15,11 +15,15 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
-    public static App OnSetting(this App app, Func<IContext<MessageExtensions.SettingActivity>, Task<object?>> handler)
+    public static App OnSetting(this App app, Func<IContext<MessageExtensions.SettingActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<MessageExtensions.SettingActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.SettingActivity>());
+                return null;
+            },
             Selector = activity => activity is MessageExtensions.SettingActivity
         });
 

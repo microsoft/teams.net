@@ -15,11 +15,37 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
-    public static App OnFetchTask(this App app, Func<IContext<MessageExtensions.FetchTaskActivity>, Task<object?>> handler)
+    public static App OnFetchTask(this App app, Func<IContext<MessageExtensions.FetchTaskActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<MessageExtensions.FetchTaskActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.FetchTaskActivity>());
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.FetchTaskActivity
+        });
+
+        return app;
+    }
+
+    public static App OnFetchTask(this App app, Func<IContext<MessageExtensions.FetchTaskActivity>, Task<Response<Api.MessageExtensions.ActionResponse>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.FetchTaskActivity>()),
+            Selector = activity => activity is MessageExtensions.FetchTaskActivity
+        });
+
+        return app;
+    }
+
+    public static App OnFetchTask(this App app, Func<IContext<MessageExtensions.FetchTaskActivity>, Task<Api.MessageExtensions.ActionResponse>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.FetchTaskActivity>()),
             Selector = activity => activity is MessageExtensions.FetchTaskActivity
         });
 
