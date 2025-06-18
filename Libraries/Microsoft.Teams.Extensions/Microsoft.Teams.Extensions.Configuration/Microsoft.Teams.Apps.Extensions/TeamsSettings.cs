@@ -9,8 +9,8 @@ public class TeamsSettings
     public string? TenantId { get; set; }
 
     public bool Empty
-    {
-        get { return ClientId != "" && ClientSecret != ""; }
+    { 
+        get { return ClientId == "" || ClientSecret == ""; }
     }
 
     public AppOptions Apply(AppOptions? options = null)
