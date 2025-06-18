@@ -24,11 +24,15 @@ public static partial class Event
 
 public static partial class AppEventActivityExtensions
 {
-    public static App OnMeetingLeave(this App app, Func<IContext<MeetingParticipantLeaveActivity>, Task<object?>> handler)
+    public static App OnMeetingLeave(this App app, Func<IContext<MeetingParticipantLeaveActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<MeetingParticipantLeaveActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MeetingParticipantLeaveActivity>());
+                return null;
+            },
             Selector = activity => activity is MeetingParticipantLeaveActivity
         });
 

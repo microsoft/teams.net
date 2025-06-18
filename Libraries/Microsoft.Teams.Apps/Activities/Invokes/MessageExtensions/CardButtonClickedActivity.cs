@@ -15,11 +15,15 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
-    public static App OnCardButtonClicked(this App app, Func<IContext<MessageExtensions.CardButtonClickedActivity>, Task<object?>> handler)
+    public static App OnCardButtonClicked(this App app, Func<IContext<MessageExtensions.CardButtonClickedActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<MessageExtensions.CardButtonClickedActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.CardButtonClickedActivity>());
+                return null;
+            },
             Selector = activity => activity is MessageExtensions.CardButtonClickedActivity
         });
 

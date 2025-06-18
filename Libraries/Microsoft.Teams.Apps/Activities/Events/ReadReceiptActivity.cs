@@ -24,11 +24,15 @@ public static partial class Event
 
 public static partial class AppEventActivityExtensions
 {
-    public static App OnReadReceipt(this App app, Func<IContext<ReadReceiptActivity>, Task<object?>> handler)
+    public static App OnReadReceipt(this App app, Func<IContext<ReadReceiptActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<ReadReceiptActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ReadReceiptActivity>());
+                return null;
+            },
             Selector = activity => activity is ReadReceiptActivity
         });
 

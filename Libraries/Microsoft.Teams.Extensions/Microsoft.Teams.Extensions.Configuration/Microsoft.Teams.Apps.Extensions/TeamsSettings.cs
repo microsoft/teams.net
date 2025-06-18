@@ -8,7 +8,8 @@ public class TeamsSettings
     public string? ClientSecret { get; set; }
     public string? TenantId { get; set; }
 
-    public bool Empty { 
+    public bool Empty
+    {
         get { return ClientId != "" && ClientSecret != ""; }
     }
 
@@ -22,9 +23,5 @@ public class TeamsSettings
         }
 
         return options;
-    }
-
-    public bool IsNotEmpty() {
-        return ClientId != "" && ClientSecret != "";
     }
 }
