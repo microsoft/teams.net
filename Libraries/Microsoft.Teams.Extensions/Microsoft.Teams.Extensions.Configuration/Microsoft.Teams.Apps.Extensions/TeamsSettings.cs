@@ -9,7 +9,7 @@ public class TeamsSettings
     public string? TenantId { get; set; }
 
     public bool Empty
-    { 
+    {
         get { return ClientId == "" || ClientSecret == ""; }
     }
 
