@@ -34,6 +34,7 @@ public partial class App
     public IHttpCredentials? Credentials { get; }
     public IToken? BotToken { get; internal set; }
     public IToken? GraphToken { get; internal set; }
+    public IDictionary<string, object> ContextExtra { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
     internal IContainer Container { get; set; }
@@ -58,6 +59,7 @@ public partial class App
         Api = new ApiClient("https://smba.trafficmanager.net/teams", Client);
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
+        ContextExtra = options?.ContextExtra ?? new Dictionary<string, object>();
 
         Container = new Container();
         Container.Register(Logger);
@@ -261,6 +263,7 @@ public partial class App
             Ref = reference,
             IsSignedIn = userToken is not null,
             OnNext = Next,
+            Extra = ContextExtra,
             UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
             CancellationToken = cancellationToken,
             ConnectionName = OAuth.DefaultConnectionName,

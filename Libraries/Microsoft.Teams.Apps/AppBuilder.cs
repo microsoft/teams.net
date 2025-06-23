@@ -95,6 +95,12 @@ public partial class AppBuilder
         return this;
     }
 
+    public AppBuilder AddContextExtra(IDictionary<string, object> extra)
+    {
+        _options.ContextExtra = extra;
+        return this;
+    }
+
     public App Build()
     {
         return new App(_options);

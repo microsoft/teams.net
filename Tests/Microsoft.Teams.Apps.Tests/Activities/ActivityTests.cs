@@ -8,13 +8,19 @@ namespace Microsoft.Teams.Apps.Tests.Activities;
 
 public class ActivityTests
 {
-    private readonly App _app = new();
+    private readonly App _app;
     private readonly IToken _token = Globals.Token;
     private readonly TestPlugin _plugin = new();
     private readonly Controller _controller = new();
 
+    private readonly IDictionary<string, object> _extra = new Dictionary<string, object>
+    {
+        { "text", "avalue" }
+    };
+
     public ActivityTests()
     {
+        _app = App.Builder().AddContextExtra(_extra).Build();
         _app.AddPlugin(_plugin);
         _app.AddController(_controller);
     }
@@ -55,6 +61,21 @@ public class ActivityTests
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(1, calls);
         Assert.Equal(1, _controller.Calls);
+    }
+
+    [Fact]
+    public async Task Should_Pass_ContextExtra_OnActivity()
+    {
+        IDictionary<string, object>? extra = null;
+        _app.OnActivity(context =>
+        {
+            extra = context.Extra;
+            return Task.CompletedTask;
+        });
+
+        var res = await _app.Process<TestPlugin>(_token, new MessageActivity());
+
+        Assert.Equal(_extra, extra);
     }
 
     [TeamsController]

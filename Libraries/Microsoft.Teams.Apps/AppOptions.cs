@@ -9,6 +9,7 @@ public class AppOptions
     public Common.Http.IHttpClient? Client { get; set; }
     public Common.Http.IHttpClientFactory? ClientFactory { get; set; }
     public Common.Http.IHttpCredentials? Credentials { get; set; }
+    public IDictionary<string, object>? ContextExtra { get; set; }
     public IList<IPlugin> Plugins { get; set; } = [];
     public OAuthSettings OAuth { get; set; } = new OAuthSettings();
 }
