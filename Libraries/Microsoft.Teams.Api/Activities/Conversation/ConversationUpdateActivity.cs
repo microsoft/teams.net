@@ -58,6 +58,9 @@ public class ConversationUpdateActivity() : Activity(ActivityType.ConversationUp
         public static readonly EventType ChannelShared = new("channelShared");
         public bool IsChannelShared => ChannelShared.Equals(Value);
 
+        public static readonly EventType ChannelUnShared = new("channelUnshared");
+        public bool IsChannelUnShared => ChannelUnShared.Equals(Value);
+
         public static readonly EventType ChannelMemberAdded = new("channelMemberAdded");
         public bool IsChannelMemberAdded => ChannelMemberAdded.Equals(Value);
 
