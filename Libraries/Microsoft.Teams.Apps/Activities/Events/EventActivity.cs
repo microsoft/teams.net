@@ -14,11 +14,15 @@ public class EventAttribute() : ActivityAttribute(ActivityType.Event, typeof(Eve
 
 public static partial class AppEventActivityExtensions
 {
-    public static App OnEvent(this App app, Func<IContext<EventActivity>, Task<object?>> handler)
+    public static App OnEvent(this App app, Func<IContext<EventActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<EventActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<EventActivity>());
+                return null;
+            },
             Selector = activity => activity is EventActivity
         });
 

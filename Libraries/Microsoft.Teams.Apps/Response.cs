@@ -41,3 +41,18 @@ public class Response
         });
     }
 }
+
+/// <summary>
+/// Represents a response returned by a bot when it receives an activity.
+/// </summary>
+public class Response<T> : Response where T : notnull
+{
+    [JsonPropertyName("body")]
+    [JsonPropertyOrder(1)]
+    public new T Body { get; set; }
+
+    public Response(HttpStatusCode status, T body) : base(status, body)
+    {
+        Body = body;
+    }
+}

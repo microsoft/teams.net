@@ -15,7 +15,8 @@ public static class HostApplicationBuilderExtensions
 {
     public static IHostApplicationBuilder AddBotBuilder(this IHostApplicationBuilder builder)
     {
-        builder.Services.AddControllers().ConfigureApplicationPartManager((apm) => {
+        builder.Services.AddControllers().ConfigureApplicationPartManager((apm) =>
+        {
             apm.FeatureProviders.Add(new RemoveDefaultMessageController());
             apm.ApplicationParts.Add(new AssemblyPart(typeof(MessageController).Assembly));
         });
@@ -27,7 +28,8 @@ public static class HostApplicationBuilderExtensions
         builder.Services.AddSingleton(authentication);
         builder.Services.AddSingleton(adapter);
         builder.Services.AddTransient<IBot, TBot>();
-        builder.Services.AddControllers().ConfigureApplicationPartManager((apm) => {
+        builder.Services.AddControllers().ConfigureApplicationPartManager((apm) =>
+        {
             apm.FeatureProviders.Add(new RemoveDefaultMessageController());
             apm.ApplicationParts.Add(new AssemblyPart(typeof(MessageController).Assembly));
         });
@@ -39,7 +41,8 @@ public static class HostApplicationBuilderExtensions
         builder.Services.AddSingleton<BotFrameworkAuthentication, TBotFrameworkAuthentication>();
         builder.Services.AddSingleton<IBotFrameworkHttpAdapter, TBotFrameworkHttpAdapter>();
         builder.Services.AddTransient<IBot, TBot>();
-        builder.Services.AddControllers().ConfigureApplicationPartManager((apm) => {
+        builder.Services.AddControllers().ConfigureApplicationPartManager((apm) =>
+        {
             apm.FeatureProviders.Add(new RemoveDefaultMessageController());
             apm.ApplicationParts.Add(new AssemblyPart(typeof(MessageController).Assembly));
         });

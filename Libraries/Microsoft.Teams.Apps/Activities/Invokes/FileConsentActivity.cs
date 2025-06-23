@@ -15,6 +15,21 @@ public class FileConsentAttribute() : InvokeAttribute(Api.Activities.Invokes.Nam
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnFileConsent(this App app, Func<IContext<FileConsentActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<FileConsentActivity>());
+                return null;
+            },
+            Selector = activity => activity is FileConsentActivity
+        });
+
+        return app;
+    }
+
     public static App OnFileConsent(this App app, Func<IContext<FileConsentActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()

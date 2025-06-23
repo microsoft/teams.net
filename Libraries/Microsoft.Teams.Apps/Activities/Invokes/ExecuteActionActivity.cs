@@ -15,6 +15,21 @@ public class ExecuteActionAttribute() : InvokeAttribute(Api.Activities.Invokes.N
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnExecuteAction(this App app, Func<IContext<ExecuteActionActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ExecuteActionActivity>());
+                return null;
+            },
+            Selector = activity => activity is ExecuteActionActivity
+        });
+
+        return app;
+    }
+
     public static App OnExecuteAction(this App app, Func<IContext<ExecuteActionActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()

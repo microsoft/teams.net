@@ -15,11 +15,48 @@ public class TokenExchangeAttribute() : InvokeAttribute(Api.Activities.Invokes.N
 
 public static partial class AppInvokeActivityExtensions
 {
-    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task<object?>> handler)
+    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<SignIn.TokenExchangeActivity>());
+                return null;
+            },
+            Selector = activity => activity is SignIn.TokenExchangeActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task<Response<Api.TokenExchange.InvokeResponse>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
+            Selector = activity => activity is SignIn.TokenExchangeActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task<Api.TokenExchange.InvokeResponse>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
+            Selector = activity => activity is SignIn.TokenExchangeActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task<Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
 

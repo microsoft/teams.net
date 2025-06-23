@@ -46,8 +46,10 @@ public partial class TestPlugin
 
         public void Update(string text)
         {
-            Emit(new TypingActivity(text) {
-                ChannelData = new() {
+            Emit(new TypingActivity(text)
+            {
+                ChannelData = new()
+                {
                     StreamType = StreamType.Informative
                 }
             });

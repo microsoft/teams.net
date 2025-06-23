@@ -14,11 +14,15 @@ public class CommandAttribute() : ActivityAttribute(ActivityType.Command, type: 
 
 public static partial class AppActivityExtensions
 {
-    public static App OnCommand(this App app, Func<IContext<CommandActivity>, Task<object?>> handler)
+    public static App OnCommand(this App app, Func<IContext<CommandActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<CommandActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<CommandActivity>());
+                return null;
+            },
             Selector = activity => activity is CommandActivity
         });
 

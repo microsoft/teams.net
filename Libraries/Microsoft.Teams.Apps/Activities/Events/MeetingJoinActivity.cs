@@ -27,11 +27,15 @@ public static partial class Event
 
 public static partial class AppEventActivityExtensions
 {
-    public static App OnMeetingJoin(this App app, Func<IContext<MeetingParticipantJoinActivity>, Task<object?>> handler)
+    public static App OnMeetingJoin(this App app, Func<IContext<MeetingParticipantJoinActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<MeetingParticipantJoinActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MeetingParticipantJoinActivity>());
+                return null;
+            },
             Selector = activity => activity is MeetingParticipantJoinActivity
         });
 

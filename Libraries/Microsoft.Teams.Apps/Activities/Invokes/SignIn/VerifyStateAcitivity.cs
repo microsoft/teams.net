@@ -15,11 +15,37 @@ public class VerifyStateAttribute() : InvokeAttribute(Api.Activities.Invokes.Nam
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<SignIn.VerifyStateActivity>());
+                return null;
+            },
+            Selector = activity => activity is SignIn.VerifyStateActivity
+        });
+
+        return app;
+    }
+
     public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()
         {
             Handler = context => handler(context.ToActivityType<SignIn.VerifyStateActivity>()),
+            Selector = activity => activity is SignIn.VerifyStateActivity
+        });
+
+        return app;
+    }
+
+    public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, Task<Response?>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<SignIn.VerifyStateActivity>()),
             Selector = activity => activity is SignIn.VerifyStateActivity
         });
 

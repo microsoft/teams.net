@@ -22,6 +22,7 @@ public partial class Name(string value) : StringEnum(value)
         if (IsSignIn) return typeof(SignInActivity);
         if (IsTab) return typeof(TabActivity);
         if (IsTask) return typeof(TaskActivity);
+        if (IsSearch) return typeof(SearchActivity);
         return typeof(InvokeActivity);
     }
 

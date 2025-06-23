@@ -18,6 +18,21 @@ public static partial class Message
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnSubmitAction(this App app, Func<IContext<Messages.SubmitActionActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Messages.SubmitActionActivity>());
+                return null;
+            },
+            Selector = activity => activity is Messages.SubmitActionActivity
+        });
+
+        return app;
+    }
+
     public static App OnSubmitAction(this App app, Func<IContext<Messages.SubmitActionActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()

@@ -92,7 +92,8 @@ public partial class AppBuilder
         return this;
     }
 
-    public AppBuilder AddOAuth(string defaultConnectionName) {
+    public AppBuilder AddOAuth(string defaultConnectionName)
+    {
         _options.OAuth = new OAuthSettings(defaultConnectionName);
         return this;
     }

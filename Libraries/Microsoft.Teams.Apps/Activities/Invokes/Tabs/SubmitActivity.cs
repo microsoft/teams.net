@@ -18,11 +18,37 @@ public static partial class Tab
 
 public static partial class AppInvokeActivityExtensions
 {
-    public static App OnTabSubmit(this App app, Func<IContext<Tabs.SubmitActivity>, Task<object?>> handler)
+    public static App OnTabSubmit(this App app, Func<IContext<Tabs.SubmitActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<Tabs.SubmitActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Tabs.SubmitActivity>());
+                return null;
+            },
+            Selector = activity => activity is Tabs.SubmitActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTabSubmit(this App app, Func<IContext<Tabs.SubmitActivity>, Task<Response<Api.Tabs.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>()),
+            Selector = activity => activity is Tabs.SubmitActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTabSubmit(this App app, Func<IContext<Tabs.SubmitActivity>, Task<Api.Tabs.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>()),
             Selector = activity => activity is Tabs.SubmitActivity
         });
 

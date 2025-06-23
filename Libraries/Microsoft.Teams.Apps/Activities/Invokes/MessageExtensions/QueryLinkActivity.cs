@@ -18,11 +18,37 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
-    public static App OnQueryLink(this App app, Func<IContext<MessageExtensions.QueryLinkActivity>, Task<object?>> handler)
+    public static App OnQueryLink(this App app, Func<IContext<MessageExtensions.QueryLinkActivity>, Task> handler)
     {
         app.Router.Register(new Route()
         {
-            Handler = context => handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>()),
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>());
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.QueryLinkActivity
+        });
+
+        return app;
+    }
+
+    public static App OnQueryLink(this App app, Func<IContext<MessageExtensions.QueryLinkActivity>, Task<Response<Api.MessageExtensions.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>()),
+            Selector = activity => activity is MessageExtensions.QueryLinkActivity
+        });
+
+        return app;
+    }
+
+    public static App OnQueryLink(this App app, Func<IContext<MessageExtensions.QueryLinkActivity>, Task<Api.MessageExtensions.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>()),
             Selector = activity => activity is MessageExtensions.QueryLinkActivity
         });
 

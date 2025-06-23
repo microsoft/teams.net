@@ -64,11 +64,12 @@ public partial class App
         return this;
     }
 
-    protected async Task<object?> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context)
+    protected async Task<Response> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context)
     {
         var connectionName = context.Activity.Value.ConnectionName;
 
-        if (OAuth.DefaultConnectionName != connectionName) {
+        if (OAuth.DefaultConnectionName != connectionName)
+        {
             Logger.Warn($"`default connection name \"{OAuth.DefaultConnectionName}\" does not match activity connection name \"{connectionName}\"");
         }
 
@@ -93,11 +94,13 @@ public partial class App
             await Events.Emit(
                 context.Sender,
                 EventType.SignIn,
-                new SignInEvent() {
+                new SignInEvent()
+                {
                     Context = context.ToActivityType<Api.Activities.Invokes.SignInActivity>(),
                     Token = res
                 }
             );
+
             return new Response(HttpStatusCode.OK);
         }
         catch (HttpException ex)
@@ -156,7 +159,8 @@ public partial class App
             await Events.Emit(
                 context.Sender,
                 EventType.SignIn,
-                new SignInEvent() {
+                new SignInEvent()
+                {
                     Context = context.ToActivityType<Api.Activities.Invokes.SignInActivity>(),
                     Token = res
                 }

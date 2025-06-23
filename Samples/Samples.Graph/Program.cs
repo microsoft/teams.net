@@ -2,6 +2,7 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
+using Microsoft.Teams.Apps.Events;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,7 +47,8 @@ teams.OnMessage(async context =>
     await context.Send($"user '{me!.DisplayName}' is already signed in!");
 });
 
-teams.OnSignIn(async (_, @event) => {
+teams.OnSignIn(async (_, @event) =>
+{
     var token = @event.Token;
     var context = @event.Context;
 

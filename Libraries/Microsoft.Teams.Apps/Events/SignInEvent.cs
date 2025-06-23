@@ -2,15 +2,16 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Api.Activities.Invokes;
-using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 
-public class SignInEvent : Event {
+namespace Microsoft.Teams.Apps.Events;
+
+public class SignInEvent : Event
+{
     public required Microsoft.Teams.Api.Token.Response Token { get; set; }
 
     public required IContext<SignInActivity> Context { get; set; }
-} 
+}
 
 public static partial class AppEventExtensions
 {

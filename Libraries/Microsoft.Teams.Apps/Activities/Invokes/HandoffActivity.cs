@@ -15,6 +15,21 @@ public class HandoffAttribute() : InvokeAttribute(Api.Activities.Invokes.Name.Ha
 
 public static partial class AppInvokeActivityExtensions
 {
+    public static App OnHandoff(this App app, Func<IContext<HandoffActivity>, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<HandoffActivity>());
+                return null;
+            },
+            Selector = activity => activity is HandoffActivity
+        });
+
+        return app;
+    }
+
     public static App OnHandoff(this App app, Func<IContext<HandoffActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()

@@ -1,5 +1,6 @@
 ﻿
 using System.Text.Json;
+
 using Microsoft.Teams.Common.Json;
 
 namespace Microsoft.Teams.Common.Tests.Json;
@@ -13,10 +14,10 @@ public interface IValidateEvent
     public DateTime SentAt { get; }
 }
 
-public class ValidateEvent: IValidateEvent
+public class ValidateEvent : IValidateEvent
 {
     public required string Id { get; set; }
-    public string Type { get;  } = "test";
+    public string Type { get; } = "test";
     public object? Body { get; set; }
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
 }
@@ -46,7 +47,7 @@ public class TrueTypeJsonAttributeTests
             Id = "bodyGuid"
         };
         Assert.True(validateEvent is ValidateEvent);
-     
+
         // Act
         var json = JsonSerializer.Serialize(validateEvent);
         // Assert

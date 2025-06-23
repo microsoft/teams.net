@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Concurrent;
+
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
@@ -53,8 +54,10 @@ public partial class AspNetCorePlugin
 
         public void Update(string text)
         {
-            Emit(new TypingActivity(text) {
-                ChannelData = new() {
+            Emit(new TypingActivity(text)
+            {
+                ChannelData = new()
+                {
                     StreamType = StreamType.Informative
                 }
             });
@@ -118,7 +121,8 @@ public partial class AspNetCorePlugin
                         _channelData = _channelData.Merge(activity.ChannelData);
                     }
 
-                    if (activity is TypingActivity typing  && typing.ChannelData?.StreamType == StreamType.Informative && _text == string.Empty) {
+                    if (activity is TypingActivity typing && typing.ChannelData?.StreamType == StreamType.Informative && _text == string.Empty)
+                    {
                         // If `_text` is not empty then it's possible that streaming has started.
                         // And so informative updates cannot be sent.
                         informativeUpdates.Enqueue(typing);
@@ -131,8 +135,10 @@ public partial class AspNetCorePlugin
                 if (i == 0) return;
 
                 // Send informative updates
-                if (informativeUpdates.Count > 0) {
-                    while (informativeUpdates.TryDequeue(out var typing)) {
+                if (informativeUpdates.Count > 0)
+                {
+                    while (informativeUpdates.TryDequeue(out var typing))
+                    {
                         await SendActivity(typing);
                     }
                 }
@@ -141,7 +147,8 @@ public partial class AspNetCorePlugin
                 var toSend = new TypingActivity(_text);
                 await SendActivity(toSend);
 
-                async Task SendActivity(TypingActivity toSend) {
+                async Task SendActivity(TypingActivity toSend)
+                {
                     if (_id is not null)
                     {
                         toSend.WithId(_id);
