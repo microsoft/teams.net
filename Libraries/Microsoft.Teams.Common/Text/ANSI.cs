@@ -1,3 +1,6 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 namespace Microsoft.Teams.Common.Text;
 
 public class ANSI(string value) : StringEnum(value)

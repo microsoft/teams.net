@@ -1,3 +1,6 @@
+<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+<!-- Licensed under the MIT License.-->
+
 # Teams: AspNetCore DevTools Plugin
 
 <a href="https://microsoft.github.io/teams-ai" target="_blank">
