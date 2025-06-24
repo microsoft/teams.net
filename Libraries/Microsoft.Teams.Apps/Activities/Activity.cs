@@ -1,4 +1,7 @@
-﻿using Microsoft.Teams.Api.Activities;
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
+using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Routing;
 
 namespace Microsoft.Teams.Apps.Activities;
