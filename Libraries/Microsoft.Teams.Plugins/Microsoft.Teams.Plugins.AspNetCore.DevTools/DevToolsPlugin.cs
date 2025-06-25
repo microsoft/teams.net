@@ -158,8 +158,8 @@ public class DevToolsPlugin : IAspNetCorePlugin
         return Task.CompletedTask;
     }
 
-    public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)
+    public Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
     {
-        return _sender.Do(token, activity, cancellationToken);
+        return _sender.Do(token, activity, contextExtra, cancellationToken);
     }
 }
