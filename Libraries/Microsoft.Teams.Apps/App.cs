@@ -260,6 +260,8 @@ public partial class App
             {
                 foreach (var kvp in plugin.ContextExtra)
                 {
+                    // this will overwrite any existing keys
+                    // plugins registered later take precedence
                     mergedExtra[kvp.Key] = kvp.Value;
                 }
             }
