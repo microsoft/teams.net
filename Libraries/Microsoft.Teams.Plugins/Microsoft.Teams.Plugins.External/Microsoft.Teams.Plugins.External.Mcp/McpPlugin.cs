@@ -20,6 +20,8 @@ public class McpPlugin : IAspNetCorePlugin
     [Dependency]
     public ILogger Logger { get; set; }
 
+    public IDictionary<string, object>? ContextExtra { get; set; }
+    
     public event EventFunction Events;
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
