@@ -349,7 +349,6 @@ public partial class App
     /// <param name="sender">the plugin to use</param>
     /// <param name="token">the request token</param>
     /// <param name="activity">the inbound activity</param>
-    /// <param name="extra">extra data to pass into the context object</param>
     /// <param name="cancellationToken">the cancellation token</param>
     /// <exception cref="Exception"></exception>
     public Task<Response> Process(string sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
@@ -363,10 +362,9 @@ public partial class App
     /// </summary>
     /// <param name="token">the request token</param>
     /// <param name="activity">the inbound activity</param>
-    /// <param name="extra">extra data to pass into the context object</param>
     /// <param name="cancellationToken">the cancellation token</param>
     /// <exception cref="Exception"></exception>
-    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, IDictionary<string, object>? extra = null, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
+    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
     {
         var plugin = GetPlugin<TPlugin>() ?? throw new Exception($"sender plugin '{typeof(TPlugin).Name}' not found");
         return Process(plugin, token, activity, cancellationToken);

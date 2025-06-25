@@ -83,7 +83,7 @@ public class ActivityController : ControllerBase
         var context = HttpContext.RequestServices.GetRequiredService<TeamsContext>();
         context.Token = token;
 
-        _plugin.Do(token, activity, null, cancellationToken);
+        _plugin.Do(token, activity, cancellationToken);
         return Results.Json(new { id = body["id"] }, statusCode: 201);
     }
 }

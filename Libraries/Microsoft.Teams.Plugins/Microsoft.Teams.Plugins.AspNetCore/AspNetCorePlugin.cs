@@ -120,7 +120,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         };
     }
 
-    public async Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object>? contextExtra, CancellationToken cancellationToken = default)
+    public async Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -130,7 +130,8 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 new ActivityEvent()
                 {
                     Token = token,
-                    Activity = activity                },
+                    Activity = activity
+                },
                 cancellationToken
             );
 
