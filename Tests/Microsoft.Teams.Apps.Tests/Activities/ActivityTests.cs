@@ -77,7 +77,8 @@ public class ActivityTests
         {
             { "perRequestContextExtraKey", "value" }
         };
-        var res = await _app.Process<TestPlugin>(_token, new MessageActivity(), contextExtra);
+        this._plugin.ContextExtra = contextExtra;
+        var res = await _app.Process<TestPlugin>(_token, new MessageActivity());
 
         Assert.Equal(extra!["staticContextExtraKey"], "value");
         Assert.Equal(extra["perRequestContextExtraKey"], "value");

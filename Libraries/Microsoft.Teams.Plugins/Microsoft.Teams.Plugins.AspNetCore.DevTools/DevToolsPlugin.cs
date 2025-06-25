@@ -23,6 +23,8 @@ namespace Microsoft.Teams.Plugins.AspNetCore.DevTools;
 [Plugin]
 public class DevToolsPlugin : IAspNetCorePlugin
 {
+    public IDictionary<string, object>? ContextExtra { get; set; }
+
     [AllowNull]
     [Dependency]
     public ILogger Logger { get; set; }
@@ -158,8 +160,8 @@ public class DevToolsPlugin : IAspNetCorePlugin
         return Task.CompletedTask;
     }
 
-    public Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
+    public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)
     {
-        return _sender.Do(token, activity, contextExtra, cancellationToken);
+        return _sender.Do(token, activity, cancellationToken);
     }
 }

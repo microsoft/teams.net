@@ -8,6 +8,8 @@ namespace Microsoft.Teams.Apps.Plugins;
 /// </summary>
 public interface IPlugin
 {
+    public IDictionary<string, object>? ContextExtra { get; set; }
+
     /// <summary>
     /// emitted when the plugin encounters an error
     /// </summary>

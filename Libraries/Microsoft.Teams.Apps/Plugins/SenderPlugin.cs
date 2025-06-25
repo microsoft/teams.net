@@ -39,5 +39,5 @@ public interface ISenderPlugin : IPlugin
     /// <summary>
     /// process an activity
     /// </summary>
-    public Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default);
+    public Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default);
 }

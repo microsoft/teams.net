@@ -200,7 +200,7 @@ public partial class App
     /// <param name="token">the request token</param>
     /// <param name="activity">the inbound activity</param>
     /// <param name="cancellationToken">the cancellation token</param>
-    public async Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, IDictionary<string, object>? extra, CancellationToken cancellationToken = default)
+    public async Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
     {
         var routes = Router.Select(activity);
         JsonWebToken? userToken = null;
@@ -254,11 +254,14 @@ public partial class App
 
         // merge extra data into context extras
         var mergedExtra = new Dictionary<string, object>(ContextExtra);
-        if (extra is not null)
+        foreach (var plugin in Plugins)
         {
-            foreach (var kvp in extra)
+            if (plugin.ContextExtra is not null)
             {
-                mergedExtra[kvp.Key] = kvp.Value;
+                foreach (var kvp in plugin.ContextExtra)
+                {
+                    mergedExtra[kvp.Key] = kvp.Value;
+                }
             }
         }
 
@@ -349,10 +352,10 @@ public partial class App
     /// <param name="extra">extra data to pass into the context object</param>
     /// <param name="cancellationToken">the cancellation token</param>
     /// <exception cref="Exception"></exception>
-    public Task<Response> Process(string sender, IToken token, IActivity activity, IDictionary<string, object>? extra = null, CancellationToken cancellationToken = default)
+    public Task<Response> Process(string sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
     {
         var plugin = ((ISenderPlugin?)GetPlugin(sender)) ?? throw new Exception($"sender plugin '{sender}' not found");
-        return Process(plugin, token, activity, extra, cancellationToken);
+        return Process(plugin, token, activity, cancellationToken);
     }
 
     /// <summary>
@@ -366,6 +369,6 @@ public partial class App
     public Task<Response> Process<TPlugin>(IToken token, IActivity activity, IDictionary<string, object>? extra = null, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
     {
         var plugin = GetPlugin<TPlugin>() ?? throw new Exception($"sender plugin '{typeof(TPlugin).Name}' not found");
-        return Process(plugin, token, activity, extra, cancellationToken);
+        return Process(plugin, token, activity, cancellationToken);
     }
 }
