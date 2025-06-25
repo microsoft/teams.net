@@ -44,6 +44,34 @@ public class ActivityEventTests
     }
 
     [Fact]
+    public async Task Should_PassContextExtra_OnActivityEvent()
+    {
+        IDictionary<string, object>? onEventExtra = null;
+        _app.OnEvent("activity", (sender, @event) =>
+        {
+            Assert.True(@event is ActivityEvent);
+            onEventExtra = ((ActivityEvent)@event).ContextExtra;
+        });
+
+        IDictionary<string, object>? onActivityExtra = null;
+        _app.OnActivity((sender, @event) =>
+        {
+            Assert.True(@event is ActivityEvent);
+            onActivityExtra = @event.ContextExtra;
+        });
+
+        var contextExtra = new Dictionary<string, object>
+        {
+            { "perRequestContextExtraKey", "value" }
+        };
+        var res = await _plugin.Do(_token, new MessageActivity("hello world"), contextExtra);
+
+        // staticContextExtraKey is registered with the app. And not passed in onEvent handlers.
+        Assert.Equal(onEventExtra!["perRequestContextExtraKey"], "value");
+        Assert.Equal(onActivityExtra!["perRequestContextExtraKey"], "value");
+    }
+
+    [Fact]
     public async Task Should_CallHandler_OnActivityResponseEvent()
     {
         var calls = 0;

@@ -15,7 +15,7 @@ public class ActivityTests
 
     private readonly IDictionary<string, object> _extra = new Dictionary<string, object>
     {
-        { "text", "avalue" }
+        { "staticContextExtraKey", "value" }
     };
 
     public ActivityTests()
@@ -73,9 +73,14 @@ public class ActivityTests
             return Task.CompletedTask;
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new MessageActivity());
+        var contextExtra = new Dictionary<string, object>
+        {
+            { "perRequestContextExtraKey", "value" }
+        };
+        var res = await _app.Process<TestPlugin>(_token, new MessageActivity(), contextExtra);
 
-        Assert.Equal(_extra, extra);
+        Assert.Equal(extra!["staticContextExtraKey"], "value");
+        Assert.Equal(extra["perRequestContextExtraKey"], "value");
     }
 
     [TeamsController]

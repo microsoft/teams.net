@@ -200,7 +200,7 @@ public partial class App
     /// <param name="token">the request token</param>
     /// <param name="activity">the inbound activity</param>
     /// <param name="cancellationToken">the cancellation token</param>
-    public async Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
+    public async Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, IDictionary<string, object>? extra, CancellationToken cancellationToken = default)
     {
         var routes = Router.Select(activity);
         JsonWebToken? userToken = null;
@@ -252,6 +252,16 @@ public partial class App
             return res;
         }
 
+        // merge extra data into context extras
+        var mergedExtra = new Dictionary<string, object>(ContextExtra);
+        if (extra is not null)
+        {
+            foreach (var kvp in extra)
+            {
+                mergedExtra[kvp.Key] = kvp.Value;
+            }
+        }
+
         var stream = sender.CreateStream(reference, cancellationToken);
         var context = new Context<IActivity>(sender, stream)
         {
@@ -263,7 +273,7 @@ public partial class App
             Ref = reference,
             IsSignedIn = userToken is not null,
             OnNext = Next,
-            Extra = ContextExtra,
+            Extra = mergedExtra,
             UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
             CancellationToken = cancellationToken,
             ConnectionName = OAuth.DefaultConnectionName,
@@ -336,12 +346,13 @@ public partial class App
     /// <param name="sender">the plugin to use</param>
     /// <param name="token">the request token</param>
     /// <param name="activity">the inbound activity</param>
+    /// <param name="extra">extra data to pass into the context object</param>
     /// <param name="cancellationToken">the cancellation token</param>
     /// <exception cref="Exception"></exception>
-    public Task<Response> Process(string sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
+    public Task<Response> Process(string sender, IToken token, IActivity activity, IDictionary<string, object>? extra = null, CancellationToken cancellationToken = default)
     {
         var plugin = ((ISenderPlugin?)GetPlugin(sender)) ?? throw new Exception($"sender plugin '{sender}' not found");
-        return Process(plugin, token, activity, cancellationToken);
+        return Process(plugin, token, activity, extra, cancellationToken);
     }
 
     /// <summary>
@@ -349,11 +360,12 @@ public partial class App
     /// </summary>
     /// <param name="token">the request token</param>
     /// <param name="activity">the inbound activity</param>
+    /// <param name="extra">extra data to pass into the context object</param>
     /// <param name="cancellationToken">the cancellation token</param>
     /// <exception cref="Exception"></exception>
-    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
+    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, IDictionary<string, object>? extra = null, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
     {
         var plugin = GetPlugin<TPlugin>() ?? throw new Exception($"sender plugin '{typeof(TPlugin).Name}' not found");
-        return Process(plugin, token, activity, cancellationToken);
+        return Process(plugin, token, activity, extra, cancellationToken);
     }
 }

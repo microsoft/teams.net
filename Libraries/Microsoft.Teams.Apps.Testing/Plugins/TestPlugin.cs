@@ -128,7 +128,7 @@ public partial class TestPlugin : ISenderPlugin
         return new Stream();
     }
 
-    public async Task<Response> Do(IToken token, IActivity activity, CancellationToken cancellationToken = default)
+    public async Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
     {
         if (activity is MessageActivity message)
         {
@@ -146,7 +146,8 @@ public partial class TestPlugin : ISenderPlugin
             new ActivityEvent()
             {
                 Token = token,
-                Activity = activity
+                Activity = activity,
+                ContextExtra = contextExtra
             },
             cancellationToken
         );
