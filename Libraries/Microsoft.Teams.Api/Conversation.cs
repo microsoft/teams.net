@@ -76,6 +76,9 @@ public class ConversationType(string value) : StringEnum(value)
 
     public static readonly ConversationType GroupChat = new("groupChat");
     public bool IsGroupChat => GroupChat.Equals(Value);
+
+    public static readonly ConversationType Channel = new("channel");
+    public bool IsChannel => Channel.Equals(Value);
 }
 
 /// <summary>
