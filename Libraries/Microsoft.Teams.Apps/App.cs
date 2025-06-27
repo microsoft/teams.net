@@ -34,7 +34,6 @@ public partial class App
     public IHttpCredentials? Credentials { get; }
     public IToken? BotToken { get; internal set; }
     public IToken? GraphToken { get; internal set; }
-    public IDictionary<string, object> ContextExtra { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
     internal IContainer Container { get; set; }
@@ -59,7 +58,6 @@ public partial class App
         Api = new ApiClient("https://smba.trafficmanager.net/teams", Client);
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
-        ContextExtra = options?.ContextExtra ?? new Dictionary<string, object>();
 
         Container = new Container();
         Container.Register(Logger);
@@ -200,7 +198,7 @@ public partial class App
     /// <param name="token">the request token</param>
     /// <param name="activity">the inbound activity</param>
     /// <param name="cancellationToken">the cancellation token</param>
-    public async Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
+    public async Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
     {
         var routes = Router.Select(activity);
         JsonWebToken? userToken = null;
@@ -252,21 +250,7 @@ public partial class App
             return res;
         }
 
-        // merge extra data into context extras
-        var mergedExtra = new Dictionary<string, object>(ContextExtra);
-        foreach (var plugin in Plugins)
-        {
-            if (plugin.ContextExtra is not null)
-            {
-                foreach (var kvp in plugin.ContextExtra)
-                {
-                    // this will overwrite any existing keys
-                    // plugins registered later take precedence
-                    mergedExtra[kvp.Key] = kvp.Value;
-                }
-            }
-        }
-
+        var extra = ResolveContextExtra(contextExtra);
         var stream = sender.CreateStream(reference, cancellationToken);
         var context = new Context<IActivity>(sender, stream)
         {
@@ -278,7 +262,7 @@ public partial class App
             Ref = reference,
             IsSignedIn = userToken is not null,
             OnNext = Next,
-            Extra = mergedExtra,
+            Extra = extra,
             UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
             CancellationToken = cancellationToken,
             ConnectionName = OAuth.DefaultConnectionName,
@@ -353,10 +337,10 @@ public partial class App
     /// <param name="activity">the inbound activity</param>
     /// <param name="cancellationToken">the cancellation token</param>
     /// <exception cref="Exception"></exception>
-    public Task<Response> Process(string sender, IToken token, IActivity activity, CancellationToken cancellationToken = default)
+    public Task<Response> Process(string sender, IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
     {
         var plugin = ((ISenderPlugin?)GetPlugin(sender)) ?? throw new Exception($"sender plugin '{sender}' not found");
-        return Process(plugin, token, activity, cancellationToken);
+        return Process(plugin, token, activity, contextExtra, cancellationToken);
     }
 
     /// <summary>
@@ -366,9 +350,43 @@ public partial class App
     /// <param name="activity">the inbound activity</param>
     /// <param name="cancellationToken">the cancellation token</param>
     /// <exception cref="Exception"></exception>
-    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
+    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
     {
         var plugin = GetPlugin<TPlugin>() ?? throw new Exception($"sender plugin '{typeof(TPlugin).Name}' not found");
-        return Process(plugin, token, activity, cancellationToken);
+        return Process(plugin, token, activity, contextExtra, cancellationToken);
+    }
+
+    /// <summary>
+    /// Merges the context extra data from plugins and the provided context extra.
+    /// </summary>
+    /// <param name="contextExtra">abitrary data to add to context object</param>
+    private IDictionary<string, object>? ResolveContextExtra(IDictionary<string, object>? contextExtra)
+    {
+        // merge extra data into context extras
+        var mergedExtra = new Dictionary<string, object>();
+        foreach (var plugin in Plugins)
+        {
+            if (plugin.ContextExtra is not null)
+            {
+                foreach (var kvp in plugin.ContextExtra)
+                {
+                    // this will overwrite any existing keys
+                    // plugins registered later take precedence
+                    mergedExtra[kvp.Key] = kvp.Value;
+                }
+            }
+        }
+
+        if (contextExtra is not null)
+        {
+            foreach (var kvp in contextExtra)
+            {
+                // this will overwrite any existing keys
+                // context extra takes precedence over plugin context extra
+                mergedExtra[kvp.Key] = kvp.Value;
+            }
+        }
+        
+        return mergedExtra;
     }
 }

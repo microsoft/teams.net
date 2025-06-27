@@ -8,6 +8,10 @@ namespace Microsoft.Teams.Apps.Plugins;
 /// </summary>
 public interface IPlugin
 {
+    /// <summary>
+    /// Arbitrary context data that is added to added to the context object when processing an activity.
+    /// It should be set on a per-activity basis, and not shared across multiple activities.
+    /// </summary>
     public IDictionary<string, object>? ContextExtra { get; set; }
 
     /// <summary>

@@ -34,7 +34,7 @@ public partial class App
     protected Task<Response> OnActivityEvent(ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
         Logger.Debug(EventType.Activity);
-        return Process(sender, @event.Token, @event.Activity, cancellationToken);
+        return Process(sender, @event.Token, @event.Activity, null, cancellationToken);
     }
 
     protected async Task OnActivitySentEvent(ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)

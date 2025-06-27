@@ -13,14 +13,9 @@ public class ActivityTests
     private readonly TestPlugin _plugin = new();
     private readonly Controller _controller = new();
 
-    private readonly IDictionary<string, object> _extra = new Dictionary<string, object>
-    {
-        { "staticContextExtraKey", "value" }
-    };
-
     public ActivityTests()
     {
-        _app = App.Builder().AddContextExtra(_extra).Build();
+        _app = new App();
         _app.AddPlugin(_plugin);
         _app.AddController(_controller);
     }
@@ -64,7 +59,7 @@ public class ActivityTests
     }
 
     [Fact]
-    public async Task Should_Pass_ContextExtra_OnActivity()
+    public async Task Should_Pass_ContextExtra_OnActivity_PluginConfigured()
     {
         IDictionary<string, object>? extra = null;
         _app.OnActivity(context =>
@@ -73,15 +68,19 @@ public class ActivityTests
             return Task.CompletedTask;
         });
 
-        var contextExtra = new Dictionary<string, object>
+        var contextExtraFromParameter = new Dictionary<string, object>
         {
-            { "perRequestContextExtraKey", "value" }
+            { "paramContextKey", "value" }
         };
-        this._plugin.ContextExtra = contextExtra;
-        var res = await _app.Process<TestPlugin>(_token, new MessageActivity());
+        var contextExtraFromPlugin = new Dictionary<string, object>
+        {
+            { "pluginContextKey", "value" }
+        };
+        this._plugin.ContextExtra = contextExtraFromPlugin;
+        var res = await _app.Process<TestPlugin>(_token, new MessageActivity(), contextExtraFromParameter);
 
-        Assert.Equal(extra!["staticContextExtraKey"], "value");
-        Assert.Equal(extra["perRequestContextExtraKey"], "value");
+        Assert.Equal(extra!["pluginContextKey"], "value");
+        Assert.Equal(extra!["paramContextKey"], "value");
     }
 
     [TeamsController]
