@@ -18,6 +18,8 @@ namespace Microsoft.Teams.Plugins.AspNetCore;
 [Plugin]
 public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 {
+    public IDictionary<string, object>? ContextExtra { get; set; }
+
     [Dependency]
     public ILogger Logger { get; set; }
 

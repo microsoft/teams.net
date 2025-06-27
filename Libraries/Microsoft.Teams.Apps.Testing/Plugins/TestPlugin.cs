@@ -17,6 +17,7 @@ namespace Microsoft.Teams.Apps.Testing.Plugins;
 [Plugin(Name = "test")]
 public partial class TestPlugin : ISenderPlugin
 {
+    public IDictionary<string, object>? ContextExtra { get; set; }
     public event EventFunction Events;
 
     protected Action<App>? OnInitHandler { get; set; }
