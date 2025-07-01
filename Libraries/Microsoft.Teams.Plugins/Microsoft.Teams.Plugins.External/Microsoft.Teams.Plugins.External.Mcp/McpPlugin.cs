@@ -19,8 +19,6 @@ public class McpPlugin : IAspNetCorePlugin
     [AllowNull]
     [Dependency]
     public ILogger Logger { get; set; }
-
-    public IDictionary<string, object>? ContextExtra { get; set; }
     
     public event EventFunction Events;
 

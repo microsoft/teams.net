@@ -23,8 +23,6 @@ namespace Microsoft.Teams.Plugins.AspNetCore.DevTools;
 [Plugin]
 public class DevToolsPlugin : IAspNetCorePlugin
 {
-    public IDictionary<string, object>? ContextExtra { get; set; }
-
     [AllowNull]
     [Dependency]
     public ILogger Logger { get; set; }
