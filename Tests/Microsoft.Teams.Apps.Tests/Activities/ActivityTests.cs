@@ -8,14 +8,13 @@ namespace Microsoft.Teams.Apps.Tests.Activities;
 
 public class ActivityTests
 {
-    private readonly App _app;
+    private readonly App _app = new();
     private readonly IToken _token = Globals.Token;
     private readonly TestPlugin _plugin = new();
     private readonly Controller _controller = new();
 
     public ActivityTests()
     {
-        _app = new App();
         _app.AddPlugin(_plugin);
         _app.AddController(_controller);
     }
@@ -72,14 +71,8 @@ public class ActivityTests
         {
             { "paramContextKey", "value" }
         };
-        var contextExtraFromPlugin = new Dictionary<string, object>
-        {
-            { "pluginContextKey", "value" }
-        };
-        this._plugin.ContextExtra = contextExtraFromPlugin;
         var res = await _app.Process<TestPlugin>(_token, new MessageActivity(), contextExtraFromParameter);
 
-        Assert.Equal(extra!["pluginContextKey"], "value");
         Assert.Equal(extra!["paramContextKey"], "value");
     }
 

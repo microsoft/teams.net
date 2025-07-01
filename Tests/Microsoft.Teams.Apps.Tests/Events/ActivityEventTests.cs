@@ -44,6 +44,26 @@ public class ActivityEventTests
     }
 
     [Fact]
+    public async Task Should_PassContextExtra_OnActivityEvent()
+    {
+        IDictionary<string, object>? extra = null;
+        _app.OnEvent("activity", (sender, @event) =>
+        {
+            Assert.True(@event is ActivityEvent);
+            extra = ((ActivityEvent)@event).ContextExtra;
+        });
+
+        var contextExtraFromParameter = new Dictionary<string, object>
+        {
+            { "paramContextKey", "value" }
+        };
+        var res = await _plugin.Do(_token, new MessageActivity("hello world"), contextExtraFromParameter);
+
+        Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
+        Assert.Equal(extra!["paramContextKey"], contextExtraFromParameter["paramContextKey"]);
+    }
+
+    [Fact]
     public async Task Should_CallHandler_OnActivityResponseEvent()
     {
         var calls = 0;
