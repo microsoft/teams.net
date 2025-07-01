@@ -261,7 +261,7 @@ public partial class App
             Ref = reference,
             IsSignedIn = userToken is not null,
             OnNext = Next,
-            Extra = contextExtra,
+            Extra = contextExtra ?? new Dictionary<string, object>(),
             UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
             CancellationToken = cancellationToken,
             ConnectionName = OAuth.DefaultConnectionName,
