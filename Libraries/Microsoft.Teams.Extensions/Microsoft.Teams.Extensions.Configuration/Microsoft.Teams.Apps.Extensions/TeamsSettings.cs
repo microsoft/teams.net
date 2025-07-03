@@ -1,3 +1,6 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using Microsoft.Teams.Api.Auth;
 
 namespace Microsoft.Teams.Apps.Extensions;
@@ -9,7 +12,7 @@ public class TeamsSettings
     public string? TenantId { get; set; }
 
     public bool Empty
-    { 
+    {
         get { return ClientId == "" || ClientSecret == ""; }
     }
 
