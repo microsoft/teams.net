@@ -1,6 +1,7 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -97,9 +98,15 @@ public class HttpClient : IHttpClient
 
         foreach (var kv in request.Headers)
         {
-            if (kv.Key.StartsWith("Content-"))
+            if (kv.Key.StartsWith("Content-") && httpRequest.Content != null)
             {
-                httpRequest.Content?.Headers.TryAddWithoutValidation(kv.Key, kv.Value);
+                if (kv.Key == "Content-Type")
+                {
+                    httpRequest.Content.Headers.ContentType = new MediaTypeHeaderValue(kv.Value.First());
+                    continue;
+                }
+
+                httpRequest.Content.Headers.TryAddWithoutValidation(kv.Key, kv.Value);
                 continue;
             }
 

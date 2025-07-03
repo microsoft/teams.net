@@ -1,6 +1,7 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common.Http;
@@ -9,6 +10,11 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class UserTokenClient : Client
 {
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     public UserTokenClient(CancellationToken cancellationToken = default) : base(cancellationToken)
     {
 
@@ -69,7 +75,13 @@ public class UserTokenClient : Client
             channelId = request.ChannelId
         });
 
-        var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/exchange?{query}", request.GetBody());
+        // This ensures that the request body is buffered so that when sent the `Content-Length` header is set.
+        // This is required for the Bot Framework Token Service to process the request correctly.
+        var body = JsonSerializer.Serialize(request.GetBody(), _jsonSerializerOptions);
+
+        var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/exchange?{query}", body);
+        req.Headers.Add("Content-Type", new List<string>(){ "application/json" });
+
         var res = await _http.SendAsync<Token.Response>(req, _cancellationToken);
         return res.Body;
     }
@@ -160,13 +172,6 @@ public class UserTokenClient : Client
         [JsonPropertyOrder(3)]
         public required TokenExchange.Request ExchangeRequest { get; set; }
 
-        internal Body GetBody() => new() { ExchangeRequest = ExchangeRequest };
-
-        internal class Body
-        {
-            [JsonPropertyName("exchangeRequest")]
-            [JsonPropertyOrder(0)]
-            public required TokenExchange.Request ExchangeRequest { get; set; }
-        }
+        internal TokenExchange.Request GetBody() => ExchangeRequest;
     }
 }

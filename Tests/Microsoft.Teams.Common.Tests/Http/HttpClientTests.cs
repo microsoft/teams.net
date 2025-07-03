@@ -165,7 +165,6 @@ public class HttpClientTests
         var customRequestHeader = new List<string> { "HeaderValue", "someOther value" };
         HttpRequest request = HttpRequest.Post("https://www.microsoft.com");
         request.AddHeader("Custom-Header", customRequestHeader);
-        request.AddHeader("Content-Type", "application/json");
         request.Body = new Dictionary<string, string>()
         {
             { "grant_type", "client_credentials" },
@@ -186,10 +185,9 @@ public class HttpClientTests
         Assert.Equal("someOther value", httpRequestHeaders[1]);
 
         var contentTypeHeader = httpRequestMessage.Content?.Headers.GetValues("Content-Type").ToList();
-        Assert.Equal(2, contentTypeHeader!.Count);
+        Assert.Single(contentTypeHeader!);
         Assert.Equal("application/x-www-form-urlencoded", httpRequestMessage.Content?.Headers.ContentType?.MediaType);
-        Assert.Equal("application/x-www-form-urlencoded", contentTypeHeader[0]);
-        Assert.Equal("application/json", contentTypeHeader[1]);
+        Assert.Equal("application/x-www-form-urlencoded", contentTypeHeader![0]);
 
         // TODO : Check the content of the request body 
         //var requestBody = httpRequestMessage.Content?.ToString();
@@ -219,10 +217,9 @@ public class HttpClientTests
         Assert.Equal("someOther value", httpRequestHeaders[1]);
 
         var contentTypeHeader = httpRequestMessage.Content?.Headers.GetValues("Content-Type").ToList();
-        Assert.Equal(2, contentTypeHeader!.Count);
-        Assert.Equal("text/plain", httpRequestMessage.Content?.Headers.ContentType?.MediaType);
-        Assert.Equal("text/plain; charset=utf-8", contentTypeHeader[0]);
-        Assert.Equal("application/json", contentTypeHeader[1]);
+        Assert.Single(contentTypeHeader!);
+        Assert.Equal("application/json", httpRequestMessage.Content?.Headers.ContentType?.MediaType);
+        Assert.Equal("application/json", contentTypeHeader![0]);
 
         // TODO : Check the content of the request body 
     }
