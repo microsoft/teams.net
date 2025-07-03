@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Apps.Plugins;
 

@@ -1,3 +1,6 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common;
@@ -73,6 +76,9 @@ public class ConversationType(string value) : StringEnum(value)
 
     public static readonly ConversationType GroupChat = new("groupChat");
     public bool IsGroupChat => GroupChat.Equals(Value);
+
+    public static readonly ConversationType Channel = new("channel");
+    public bool IsChannel => Channel.Equals(Value);
 }
 
 /// <summary>

@@ -1,3 +1,6 @@
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Licensed under the MIT License.
+
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common;
@@ -54,6 +57,18 @@ public class ConversationUpdateActivity() : Activity(ActivityType.ConversationUp
 
         public static readonly EventType ChannelRestored = new("channelRestored");
         public bool IsChannelRestored => ChannelRestored.Equals(Value);
+
+        public static readonly EventType ChannelShared = new("channelShared");
+        public bool IsChannelShared => ChannelShared.Equals(Value);
+
+        public static readonly EventType ChannelUnShared = new("channelUnshared");
+        public bool IsChannelUnShared => ChannelUnShared.Equals(Value);
+
+        public static readonly EventType ChannelMemberAdded = new("channelMemberAdded");
+        public bool IsChannelMemberAdded => ChannelMemberAdded.Equals(Value);
+
+        public static readonly EventType ChannelMemberRemoved = new("channelMemberRemoved");
+        public bool IsChannelMemberRemoved => ChannelMemberRemoved.Equals(Value);
 
         public static readonly EventType TeamArchived = new("teamArchived");
         public bool IsTeamArchived => TeamArchived.Equals(Value);
