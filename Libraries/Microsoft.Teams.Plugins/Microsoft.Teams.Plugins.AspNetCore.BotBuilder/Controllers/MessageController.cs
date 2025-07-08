@@ -60,7 +60,7 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
             var token = new JsonWebToken(authHeader.Replace("Bearer ", ""));
             var context = HttpContext.RequestServices.GetRequiredService<TeamsContext>();
             context.Token = token;
-            var res = await _plugin.Do(token, activity, _lifetime.ApplicationStopping);
+            var res = await _plugin.Do(token, activity, null, _lifetime.ApplicationStopping);
             return Results.Json(res.Body, statusCode: (int)res.Status);
         }
     }
