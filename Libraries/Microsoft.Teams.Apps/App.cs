@@ -18,7 +18,7 @@ namespace Microsoft.Teams.Apps;
 
 public partial class App
 {
-    public static AppBuilder Builder(AppOptions? options = null) => new AppBuilder(options);
+    public static AppBuilder Builder(AppOptions? options = null) => new(options);
 
     /// <summary>
     /// the apps id
@@ -39,6 +39,7 @@ public partial class App
     public IToken? GraphToken { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
+    internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
     internal string UserAgent
     {
@@ -61,6 +62,7 @@ public partial class App
         Api = new ApiClient("https://smba.trafficmanager.net/teams", Client);
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
+        Provider = options?.Provider;
 
         Container = new Container();
         Container.Register(Logger);
@@ -201,9 +203,52 @@ public partial class App
     /// <param name="token">the request token</param>
     /// <param name="activity">the inbound activity</param>
     /// <param name="cancellationToken">the cancellation token</param>
-    public async Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
+    public async Task<Response> Process(ISenderPlugin sender, IToken token, IActivity activity, IDictionary<string, object?>? extra = null, CancellationToken cancellationToken = default)
     {
-        var routes = Router.Select(activity);
+        return await Process(sender, new()
+        {
+            Token = token,
+            Activity = activity,
+            Extra = extra
+        }, cancellationToken);
+    }
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    /// <param name="sender">the plugin to use</param>
+    /// <param name="token">the request token</param>
+    /// <param name="activity">the inbound activity</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <exception cref="Exception"></exception>
+    public Task<Response> Process(string sender, IToken token, IActivity activity, IDictionary<string, object?>? extra = null, CancellationToken cancellationToken = default)
+    {
+        var plugin = ((ISenderPlugin?)GetPlugin(sender)) ?? throw new Exception($"sender plugin '{sender}' not found");
+        return Process(plugin, token, activity, extra, cancellationToken);
+    }
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    /// <param name="token">the request token</param>
+    /// <param name="activity">the inbound activity</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <exception cref="Exception"></exception>
+    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, IDictionary<string, object?>? extra = null, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
+    {
+        var plugin = GetPlugin<TPlugin>() ?? throw new Exception($"sender plugin '{typeof(TPlugin).Name}' not found");
+        return Process(plugin, token, activity, extra, cancellationToken);
+    }
+
+    /// <summary>
+    /// process an activity
+    /// </summary>
+    /// <param name="sender">the plugin to use</param>
+    /// <param name="@event">the activity event</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    private async Task<Response> Process(ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
+    {
+        var routes = Router.Select(@event.Activity);
         JsonWebToken? userToken = null;
 
         var api = new ApiClient(Api);
@@ -212,8 +257,8 @@ public partial class App
         {
             var tokenResponse = await api.Users.Token.GetAsync(new()
             {
-                UserId = activity.From.Id,
-                ChannelId = activity.ChannelId,
+                UserId = @event.Activity.From.Id,
+                ChannelId = @event.Activity.ChannelId,
                 ConnectionName = OAuth.DefaultConnectionName
             });
 
@@ -221,17 +266,17 @@ public partial class App
         }
         catch { }
 
-        var path = activity.GetPath();
+        var path = @event.Activity.GetPath();
         Logger.Debug(path);
 
         var reference = new ConversationReference()
         {
-            ServiceUrl = activity.ServiceUrl ?? token.ServiceUrl,
-            ChannelId = activity.ChannelId,
-            Bot = activity.Recipient,
-            User = activity.From,
-            Locale = activity.Locale,
-            Conversation = activity.Conversation,
+            ServiceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl,
+            ChannelId = @event.Activity.ChannelId,
+            Bot = @event.Activity.Recipient,
+            User = @event.Activity.From,
+            Locale = @event.Activity.Locale,
+            Conversation = @event.Activity.Conversation,
         };
 
         var userGraphTokenProvider = Azure.Core.DelegatedTokenCredential.Create((context, _) =>
@@ -256,15 +301,15 @@ public partial class App
         var stream = sender.CreateStream(reference, cancellationToken);
         var context = new Context<IActivity>(sender, stream)
         {
-            AppId = token.AppId ?? Id ?? string.Empty,
+            AppId = @event.Token.AppId ?? Id ?? string.Empty,
             Log = Logger.Child(path),
             Storage = Storage,
             Api = api,
-            Activity = activity,
+            Activity = @event.Activity,
             Ref = reference,
             IsSignedIn = userToken is not null,
             OnNext = Next,
-            Extra = contextExtra ?? new Dictionary<string, object>(),
+            Extra = @event.Extra ?? new Dictionary<string, object?>(),
             UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
             CancellationToken = cancellationToken,
             ConnectionName = OAuth.DefaultConnectionName,
@@ -291,11 +336,16 @@ public partial class App
 
         try
         {
-            var @event = new ActivityEvent()
+            if (@event.Services is not null)
             {
-                Token = token,
-                Activity = activity
-            };
+                var req = (Request?)@event.Services.GetService(typeof(Request));
+
+                if (req is not null)
+                {
+                    req.Token = @event.Token;
+                    req.Context = context;
+                }
+            }
 
             foreach (var plugin in Plugins)
             {
@@ -329,32 +379,5 @@ public partial class App
 
             return new Response(System.Net.HttpStatusCode.InternalServerError);
         }
-    }
-
-    /// <summary>
-    /// process an activity
-    /// </summary>
-    /// <param name="sender">the plugin to use</param>
-    /// <param name="token">the request token</param>
-    /// <param name="activity">the inbound activity</param>
-    /// <param name="cancellationToken">the cancellation token</param>
-    /// <exception cref="Exception"></exception>
-    public Task<Response> Process(string sender, IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
-    {
-        var plugin = ((ISenderPlugin?)GetPlugin(sender)) ?? throw new Exception($"sender plugin '{sender}' not found");
-        return Process(plugin, token, activity, contextExtra, cancellationToken);
-    }
-
-    /// <summary>
-    /// process an activity
-    /// </summary>
-    /// <param name="token">the request token</param>
-    /// <param name="activity">the inbound activity</param>
-    /// <param name="cancellationToken">the cancellation token</param>
-    /// <exception cref="Exception"></exception>
-    public Task<Response> Process<TPlugin>(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default) where TPlugin : ISenderPlugin
-    {
-        var plugin = GetPlugin<TPlugin>() ?? throw new Exception($"sender plugin '{typeof(TPlugin).Name}' not found");
-        return Process(plugin, token, activity, contextExtra, cancellationToken);
     }
 }

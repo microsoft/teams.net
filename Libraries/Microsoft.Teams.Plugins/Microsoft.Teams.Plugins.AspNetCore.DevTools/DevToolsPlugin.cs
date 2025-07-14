@@ -11,8 +11,6 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
@@ -161,8 +159,8 @@ public class DevToolsPlugin : IAspNetCorePlugin
         return Task.CompletedTask;
     }
 
-    public Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
+    public Task<Response> Do(ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        return _sender.Do(token, activity, contextExtra, cancellationToken);
+        return _sender.Do(@event, cancellationToken);
     }
 }

@@ -3,7 +3,7 @@
 
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
+using Microsoft.Teams.Apps.Events;
 
 namespace Microsoft.Teams.Apps.Plugins;
 
@@ -42,5 +42,5 @@ public interface ISenderPlugin : IPlugin
     /// <summary>
     /// process an activity
     /// </summary>
-    public Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default);
+    public Task<Response> Do(ActivityEvent @event, CancellationToken cancellationToken = default);
 }

@@ -11,7 +11,8 @@ public class ActivityEvent : Event
 {
     public required IToken Token { get; set; }
     public required IActivity Activity { get; set; }
-    public IDictionary<string, object>? ContextExtra { get; set; }
+    public IServiceProvider? Services { get; set; }
+    public IDictionary<string, object?>? Extra { get; set; }
 }
 
 public static partial class AppEventExtensions

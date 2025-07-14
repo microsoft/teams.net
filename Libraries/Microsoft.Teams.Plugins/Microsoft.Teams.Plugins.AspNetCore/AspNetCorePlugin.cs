@@ -2,13 +2,11 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
-using Microsoft.Teams.Apps.Extensions;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
 using Microsoft.Teams.Common.Logging;
@@ -29,7 +27,6 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public event EventFunction Events;
 
-    private TeamsContext Context => _services.CreateScope().ServiceProvider.GetRequiredService<TeamsContext>();
     private readonly IServiceProvider _services;
 
     public AspNetCorePlugin(IServiceProvider provider)
@@ -121,19 +118,14 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         };
     }
 
-    public async Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
+    public async Task<Response> Do(ActivityEvent @event, CancellationToken cancellationToken = default)
     {
         try
         {
             var @out = await Events(
                 this,
                 "activity",
-                new ActivityEvent()
-                {
-                    Token = token,
-                    Activity = activity,
-                    ContextExtra = contextExtra
-                },
+                @event,
                 cancellationToken
             );
 

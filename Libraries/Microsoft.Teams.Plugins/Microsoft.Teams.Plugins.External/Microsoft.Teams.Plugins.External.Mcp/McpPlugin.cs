@@ -22,7 +22,7 @@ public class McpPlugin : IAspNetCorePlugin
     [AllowNull]
     [Dependency]
     public ILogger Logger { get; set; }
-    
+
     public event EventFunction Events;
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)

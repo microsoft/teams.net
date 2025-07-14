@@ -21,7 +21,7 @@ public class AsynTests
     {
         _app.OnSubmitAction(context =>
         {
-            var index = (int)context.Extra["index"];
+            var index = (int?)context.Extra["index"];
             return Task.FromResult<object?>(index);
         });
 
@@ -39,7 +39,7 @@ public class AsynTests
                         ActionValue = "value"
                     }
                 },
-                new Dictionary<string, object>()
+                new Dictionary<string, object?>()
                 {
                     { "index", i }
                 }
