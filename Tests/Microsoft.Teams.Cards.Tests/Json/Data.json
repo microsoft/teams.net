@@ -1,0 +1,192 @@
+{
+  "type": "AdaptiveCard",
+  "id": "dataCard",
+  "$schema": "https://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "FactSet",
+      "facts": [
+        {
+          "title": "Name",
+          "value": "John Doe"
+        },
+        {
+          "title": "Department",
+          "value": "Engineering"
+        },
+        {
+          "title": "Start Date",
+          "value": "2023-01-15"
+        },
+        {
+          "title": "Location",
+          "value": "Seattle, WA"
+        },
+        {
+          "title": "Employee ID",
+          "value": "EMP001"
+        }
+      ]
+    },
+    {
+      "type": "Table",
+      "columns": [
+        {
+          "width": 1
+        },
+        {
+          "width": 1
+        },
+        {
+          "width": 1
+        }
+      ],
+      "rows": [
+        {
+          "type": "TableRow",
+          "cells": [
+            {
+              "type": "TableCell",
+              "items": [
+                { 
+                  "type": "TextBlock",
+                  "text": "Product",
+                  "weight": "Bolder"
+                }
+              ]
+            },
+            {
+              "type": "TableCell",
+              "items": [
+                { 
+                  "type": "TextBlock",
+                  "text": "Description",
+                  "weight": "Bolder"
+                }
+              ]
+            },
+            {
+              "type": "TableCell",
+              "items": [
+                { 
+                  "type":"TextBlock",
+                  "text": "Price",
+                  "weight": "Bolder" 
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "TableRow",
+          "cells": [
+            {
+              "type": "TableCell",
+              "items": [
+                { 
+                  "type": "TextBlock",
+                  "text": "Widget A"
+                }
+              ]
+            },
+            {
+              "type": "TableCell",
+              "items": [
+                { 
+                  "type": "TextBlock",
+                  "text": "High-quality widget for everyday use"
+                }
+              ]
+            },
+            {
+              "type": "TableCell",
+              "items": [
+                { 
+                  "type": "TextBlock",
+                  "text": "$29.99"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "TableRow",
+          "cells": [
+            {
+              "type": "TableCell",
+              "items": [
+                { 
+                  "type": "TextBlock",
+                  "text": "Widget B"
+                }
+              ]
+            },
+            {
+              "type": "TableCell",
+              "items": [
+                { 
+                  "type": "TextBlock",
+                  "text": "Premium widget with advanced features"
+                }
+              ]
+            },
+            {
+              "type": "TableCell",
+              "items": [
+                { 
+                  "type": "TextBlock",
+                  "text": "$49.99"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "ColumnSet",
+      "columns": [
+        {
+          "type": "Column",
+          "width": "auto",
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "Left Column",
+              "weight": "Bolder"
+            },
+            {
+              "type": "TextBlock",
+              "text": "Content in the left column with some sample text.",
+              "wrap": true
+            }
+          ]
+        },
+        {
+          "type": "Column",
+          "width": "stretch",
+          "items": [
+            {
+              "type": "TextBlock",
+              "horizontalAlignment": "Center",
+              "text": "Right Column",
+              "weight": "Bolder"
+            },
+            {
+              "type": "TextBlock",
+              "text": "Content in the right column with different information.",
+              "wrap": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "CodeBlock",
+      "codeSnippet": "function echo(a) {\n    return a;\n}",
+      "language": "JavaScript"
+    }
+  ]
+}

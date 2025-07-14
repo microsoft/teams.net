@@ -1,0 +1,49 @@
+{
+  "type": "AdaptiveCard",
+  "id": "mediaCard",
+  "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "Image",
+      "horizontalAlignment": "Center",
+      "url": "https://picsum.photos/400/200",
+      "altText": "Sample landscape image",
+      "style": "RoundedCorners",
+      "size": "Large"
+    },
+    {
+      "type": "Media",
+      "sources": [
+        {
+          "mimeType": "video/mp4",
+          "url": "https://adaptivecardsblob.blob.core.windows.net/assets/AdaptiveCardsOverviewVideo.mp4"
+        }
+      ],
+      "poster": "https://adaptivecards.io/content/poster-video.png"
+    },
+    {
+      "type": "ImageSet",
+      "images": [
+        {
+          "type": "Image",
+          "url": "https://picsum.photos/100/100?random=1",
+          "altText": "Random image 1",
+          "size": "Medium"
+        },
+        {
+          "type": "Image",
+          "url": "https://picsum.photos/100/100?random=2",
+          "altText": "Random image 2",
+          "size": "Medium"
+        },
+        {
+          "type": "Image",
+          "url": "https://picsum.photos/100/100?random=3",
+          "altText": "Random image 3",
+          "size": "Medium"
+        }
+      ]
+    }
+  ]
+}
