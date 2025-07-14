@@ -79,7 +79,7 @@ public class ActivityTests
     [Fact]
     public async Task Should_Pass_ContextExtra_AcrossActivityHandlers()
     {
-        
+
         _app.OnActivity(async context =>
         {
             // Set the context in the first handler
