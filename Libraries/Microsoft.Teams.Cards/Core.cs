@@ -771,8 +771,12 @@ public abstract class SerializableObject
     }
 }
 
+[JsonConverter(typeof(CardElementJsonConverter))]
 public abstract class CardElement : SerializableObject { }
+
+[JsonConverter(typeof(ActionJsonConverter))]
 public abstract class Action : SerializableObject { }
+
 public abstract class ContainerLayout : SerializableObject { }
 
 /// <summary>
@@ -1853,7 +1857,7 @@ public class ToggleVisibilityAction : Action
     /// The Ids of the elements to toggle the visibility of.
     /// </summary>
     [JsonPropertyName("targetElements")]
-    public IUnion<IList<string>, IList<TargetElement>>? TargetElements { get; set; }
+    public IList<TargetElement>? TargetElements { get; set; }
 
     /// <summary>
     /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
@@ -1909,7 +1913,7 @@ public class ToggleVisibilityAction : Action
         return this;
     }
 
-    public ToggleVisibilityAction WithTargetElements(IUnion<IList<string>, IList<TargetElement>> value)
+    public ToggleVisibilityAction WithTargetElements(IList<TargetElement> value)
     {
         this.TargetElements = value;
         return this;
