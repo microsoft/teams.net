@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -46,7 +45,7 @@ public class MessageController : ControllerBase
             Token = token,
             Activity = activity,
             Extra = data,
-            Services = HttpContext.RequestServices.CreateAsyncScope().ServiceProvider
+            Services = HttpContext.RequestServices
         }, _lifetime.ApplicationStopping);
 
         return Results.Json(res.Body, statusCode: (int)res.Status);
