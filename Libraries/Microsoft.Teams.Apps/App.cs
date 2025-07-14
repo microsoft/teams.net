@@ -338,12 +338,11 @@ public partial class App
         {
             if (@event.Services is not null)
             {
-                var req = (Request?)@event.Services.GetService(typeof(Request));
+                var accessor = (IContext.Accessor?)@event.Services.GetService(typeof(IContext.Accessor));
 
-                if (req is not null)
+                if (accessor is not null)
                 {
-                    req.Token = @event.Token;
-                    req.Context = context;
+                    accessor.Value = context;
                 }
             }
 

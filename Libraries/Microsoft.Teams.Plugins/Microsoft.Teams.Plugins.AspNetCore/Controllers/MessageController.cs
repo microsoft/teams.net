@@ -25,7 +25,6 @@ public class MessageController : ControllerBase
     [HttpPost("/api/messages")]
     public async Task<IResult> OnMessage([FromBody] Activity activity)
     {
-        var scope = HttpContext.RequestServices.CreateScope();
         var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
         var token = new JsonWebToken(authHeader.Replace("Bearer ", ""));
         var data = new Dictionary<string, object?>
@@ -47,7 +46,7 @@ public class MessageController : ControllerBase
             Token = token,
             Activity = activity,
             Extra = data,
-            Services = scope.ServiceProvider
+            Services = HttpContext.RequestServices.CreateAsyncScope().ServiceProvider
         }, _lifetime.ApplicationStopping);
 
         return Results.Json(res.Body, statusCode: (int)res.Status);

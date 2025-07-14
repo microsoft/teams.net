@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -35,7 +34,6 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
         [HttpPost("/api/messages")]
         public async Task<IResult> PostAsync()
         {
-            var scope = HttpContext.RequestServices.CreateScope();
             HttpContext.Request.EnableBuffering();
             var body = await new StreamReader(Request.Body).ReadToEndAsync();
             Activity? activity = JsonSerializer.Deserialize<Activity>(body);
@@ -62,7 +60,7 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
             {
                 Token = token,
                 Activity = activity,
-                Services = scope.ServiceProvider
+                Services = HttpContext.RequestServices
             }, _lifetime.ApplicationStopping);
 
             return Results.Json(res.Body, statusCode: (int)res.Status);
