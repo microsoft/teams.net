@@ -14,7 +14,7 @@ public partial interface IContext
         public IContext<IActivity>? Value
         {
             get => _async.Value?.Context;
-            set
+            private set
             {
                 _async.Value?.Clear();
 
