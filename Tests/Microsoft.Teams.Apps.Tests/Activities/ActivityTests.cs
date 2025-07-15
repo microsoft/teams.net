@@ -58,28 +58,28 @@ public class ActivityTests
     }
 
     [Fact]
-    public async Task Should_Pass_ContextExtra_OnActivity()
+    public async Task Should_Pass_Extra_OnActivity()
     {
-        IDictionary<string, object>? extra = null;
+        IDictionary<string, object?>? extra = null;
         _app.OnActivity(context =>
         {
             extra = context.Extra;
             return Task.CompletedTask;
         });
 
-        var contextExtraFromParameter = new Dictionary<string, object>
+        var extraFromParameter = new Dictionary<string, object?>
         {
             { "paramContextKey", "value" }
         };
-        var res = await _app.Process<TestPlugin>(_token, new MessageActivity(), contextExtraFromParameter);
+        var res = await _app.Process<TestPlugin>(_token, new MessageActivity(), extraFromParameter);
 
         Assert.Equal(extra!["paramContextKey"], "value");
     }
 
     [Fact]
-    public async Task Should_Pass_ContextExtra_AcrossActivityHandlers()
+    public async Task Should_Pass_Extra_AcrossActivityHandlers()
     {
-        
+
         _app.OnActivity(async context =>
         {
             // Set the context in the first handler
@@ -88,7 +88,7 @@ public class ActivityTests
             await context.Next();
         });
 
-        IDictionary<string, object>? extra = null;
+        IDictionary<string, object?>? extra = null;
         _app.OnActivity(context =>
         {
             // Retrieve the context data set in the previous handler

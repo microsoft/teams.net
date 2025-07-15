@@ -12,7 +12,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
-using Microsoft.Teams.Apps.Extensions;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.DevTools.Controllers;
 
@@ -29,7 +28,7 @@ public class ActivityController : ControllerBase
     }
 
     [HttpPost("/v3/conversations/{conversationId}/activities")]
-    public IResult Create(string conversationId, [FromBody] JsonNode body, CancellationToken cancellationToken)
+    public async Task<IResult> Create(string conversationId, [FromBody] JsonNode body, CancellationToken cancellationToken)
     {
         var isClient = HttpContext.Request.Headers.TryGetValue("x-teams-devtools", out var strings) && strings.Any(h => h == "true");
         body["id"] ??= Guid.NewGuid().ToString();
@@ -83,10 +82,13 @@ public class ActivityController : ControllerBase
 
         var tokenString = tokenHandler.CreateToken(descriptor);
         var token = new JsonWebToken(tokenString);
-        var context = HttpContext.RequestServices.GetRequiredService<TeamsContext>();
-        context.Token = token;
+        var _ = await _plugin.Do(new()
+        {
+            Token = token,
+            Activity = activity,
+            Services = HttpContext.RequestServices.CreateAsyncScope().ServiceProvider,
+        }, cancellationToken);
 
-        _plugin.Do(token, activity, null, cancellationToken);
         return Results.Json(new { id = body["id"] }, statusCode: 201);
     }
 }
