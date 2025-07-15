@@ -7,6 +7,11 @@ namespace Microsoft.Teams.Apps;
 
 public partial interface IContext
 {
+    /// <summary>
+    /// Accessor
+    /// 
+    /// based on https://github.com/dotnet/aspnetcore/blob/main/src/Http/Http/src/HttpContextAccessor.cs
+    /// </summary>
     public class Accessor
     {
         private static readonly AsyncLocal<ContextHolder> _async = new();
