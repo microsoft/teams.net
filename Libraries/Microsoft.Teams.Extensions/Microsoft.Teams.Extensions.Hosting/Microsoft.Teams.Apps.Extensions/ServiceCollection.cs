@@ -84,7 +84,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddTeams(this IServiceCollection collection, Func<IServiceProvider, App> factory)
     {
         collection.AddSingleton(provider => provider.GetRequiredService<Common.Logging.ILogger>());
-        collection.AddSingleton<ILoggerFactory, LoggerFactory>();        
+        collection.AddSingleton<ILoggerFactory, LoggerFactory>();
         collection.AddHostedService<TeamsService>();
         collection.AddSingleton(factory);
         collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
