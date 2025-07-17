@@ -39,7 +39,14 @@ public class ConversationClient : Client
 
     public async Task<ConversationResource> CreateAsync(CreateRequest request)
     {
-        var req = HttpRequest.Post($"{ServiceUrl}v3/conversations", body: request);
+        var req = HttpRequest.Post($"{ServiceUrl}/v3/conversations", body: request);
+        var res = await _http.SendAsync<ConversationResource>(req, _cancellationToken);
+        return res.Body;
+    }
+
+    public async Task<ConversationResource> CreateAsyncChannel(Activity activity)
+    {
+        var req = HttpRequest.Post($"{ServiceUrl}/v3/conversations/{activity?.ChannelData?.Channel?.Id}/activities", body: activity);
         var res = await _http.SendAsync<ConversationResource>(req, _cancellationToken);
         return res.Body;
     }
