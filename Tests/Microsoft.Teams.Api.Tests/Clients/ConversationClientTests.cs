@@ -1,5 +1,6 @@
 using System.Net;
 
+using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Common.Http;
 
@@ -49,6 +50,51 @@ public class ConversationClientTests
         HttpMethod expectedMethod = HttpMethod.Post;
         mockHandler.Verify(x => x.SendAsync<ConversationResource>(
             It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ConversationClient_CreateAsyncChannel()
+    {
+        var activity = new MessageActivity("testActivity")
+        {
+            From = new Account() { Id = "botId" },
+            ChannelData = new ChannelData()
+            {
+                Channel = new Channel() { Id = "channelId" },
+                Team = new Team() { Id = "teamId" },
+                Tenant = new Tenant() { Id = "tenantId" }
+            }
+        };
+
+        var responseMessage = new HttpResponseMessage();
+        responseMessage.Headers.Add("Custom-Header", "HeaderValue");
+        var mockHandler = new Mock<IHttpClient>();
+        mockHandler
+            .Setup(handler => handler.SendAsync<ConversationResource>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponse<ConversationResource>()
+            {
+                Headers = responseMessage.Headers,
+                StatusCode = HttpStatusCode.OK,
+                Body = new ConversationResource
+                {
+                    Id = "conversationId",
+                    ServiceUrl = "https://serviceurl.com/"
+                }
+            });
+
+        string serviceUrl = "https://serviceurl.com/";
+        var conversationClient = new ConversationClient(serviceUrl, mockHandler.Object);
+
+        var reqBody = await conversationClient.CreateAsyncChannel(activity);
+
+        Assert.Equal(serviceUrl, reqBody.ServiceUrl);
+
+        string expectedUrl = "https://serviceurl.com/v3/conversations/channelId/activities";
+        HttpMethod expectedMethod = HttpMethod.Post;
+        mockHandler.Verify(x => x.SendAsync<ConversationResource>(
+            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

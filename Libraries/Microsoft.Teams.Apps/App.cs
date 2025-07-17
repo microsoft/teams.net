@@ -59,7 +59,7 @@ public partial class App
         Client.Options.TokenFactory = () => BotToken;
         Client.Options.AddUserAgent(UserAgent);
         Credentials = options?.Credentials;
-        Api = new ApiClient("https://smba.trafficmanager.net/teams", Client);
+        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
