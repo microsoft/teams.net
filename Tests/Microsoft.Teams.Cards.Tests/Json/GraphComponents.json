@@ -1,0 +1,65 @@
+{
+  "type": "AdaptiveCard",
+  "id": "graphComponentsCard",
+  "$schema": "https://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "TextBlock",
+      "text": "Microsoft Graph Components",
+      "size": "Large",
+      "weight": "Bolder",
+      "color": "Accent"
+    },
+    {
+      "type": "Component.User",
+      "id": "userComponent",
+      "name": "graph.microsoft.com/user",
+      "properties": {
+        "userPrincipalName": "user@contoso.com"
+      }
+    },
+    {
+      "type": "Component.Users",
+      "id": "usersComponent",
+      "name": "graph.microsoft.com/users",
+      "properties": {
+        "users": [
+          {
+            "userPrincipalName": "user1@contoso.com"
+          },
+          {
+            "userPrincipalName": "user2@contoso.com"
+          }
+        ]
+      }
+    },
+    {
+      "type": "Component.Resource",
+      "id": "resourceComponent",
+      "name": "graph.microsoft.com/resource",
+      "properties": {
+        "id": "resource-id-123",
+        "resourceReference": {
+          "type": "channel"
+        }
+      }
+    },
+    {
+      "type": "Component.File",
+      "id": "fileComponent",
+      "name": "graph.microsoft.com/file",
+      "properties": {
+        "name": "file-id-456"
+      }
+    },
+    {
+      "type": "Component.Event",
+      "id": "eventComponent",
+      "name": "graph.microsoft.com/event",
+      "properties": {
+        "id": "event-id-789"
+      }
+    }
+  ]
+}

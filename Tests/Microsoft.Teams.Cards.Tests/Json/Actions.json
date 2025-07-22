@@ -1,0 +1,128 @@
+{
+  "type": "AdaptiveCard",
+  "id": "actions-card",
+  "$schema": "https://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "Input.Text",
+      "id": "fullName",
+      "label": "Full Name",
+      "isRequired": true,
+      "errorMessage": "Please enter your name",
+      "placeholder": "Enter your full name"
+    },
+    {
+      "type": "Input.Text",
+      "id": "email",
+      "label": "Email Address",
+      "isRequired": true,
+      "errorMessage": "Please enter your email",
+      "placeholder": "Enter your email",
+      "style": "Email"
+    },
+    {
+      "type": "Input.Number",
+      "id": "age",
+      "label": "Age",
+      "value": 25,
+      "placeholder": "Enter your age",
+      "min": 18,
+      "max": 120
+    },
+    {
+      "type": "Input.ChoiceSet",
+      "id": "department",
+      "label": "Department",
+      "choices": [
+        {
+          "title": "Engineering",
+          "value": "eng"
+        },
+        {
+          "title": "Marketing",
+          "value": "marketing"
+        },
+        {
+          "title": "Sales",
+          "value": "sales"
+        },
+        {
+          "title": "Support",
+          "value": "support"
+        }
+      ],
+      "style": "expanded"
+    },
+    {
+      "type": "Input.Toggle",
+      "id": "newsletter",
+      "value": "true",
+      "title": "Subscribe to newsletter",
+      "valueOn": "yes",
+      "valueOff": "no"
+    },
+    {
+      "type": "Input.Rating",
+      "id": "satisfaction",
+      "label": "Satisfaction Rating"
+    },
+    {
+      "type": "Input.Date",
+      "id": "eventDate",
+      "label": "Event Date",
+      "isRequired": true,
+      "errorMessage": "Please select a date",
+      "placeholder": "Select a date"
+    },
+    {
+      "type": "Input.Time",
+      "id": "eventTime",
+      "label": "Event Time",
+      "isRequired": true,
+      "errorMessage": "Please select a time",
+      "placeholder": "Select a time"
+    },
+    {
+      "type": "ActionSet",
+      "actions": [
+        {
+          "type": "Action.Submit",
+          "id": "submit-all",
+          "title": "Submit Form",
+          "style": "positive",
+          "data": {
+            "action": "submit"
+          }
+        },
+        {
+          "type": "Action.OpenUrl",
+          "id": "visit-website",
+          "title": "Visit Website",
+          "iconUrl": "globe,regular",
+          "url": "https://example.com"
+        },
+        {
+          "type": "Action.Execute",
+          "id": "validate",
+          "title": "Validate",
+          "data": {
+            "action": "validate"
+          },
+          "verb": "validate"
+        },
+        {
+          "type": "Action.ToggleVisibility",
+          "id": "toggle-advanced",
+          "title": "Toggle Advanced",
+          "targetElements": [
+            {
+              "elementId": "advanced-section",
+              "isVisible": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,237 @@
+{
+  "type": "AdaptiveCard",
+  "id": "chartsCard",
+  "$schema": "https://adaptivecards.io/schemas/adaptive-card.json",
+  "version": "1.5",
+  "body": [
+    {
+      "type": "Container",
+      "items": [
+        {
+          "type": "TextBlock",
+          "text": "Charts Section",
+          "size": "Medium",
+          "weight": "Bolder",
+          "color": "Attention"
+        },
+        {
+          "type": "Chart.Donut",
+          "title": "Sales Distribution",
+          "data": [
+            {
+              "legend": "Q1",
+              "value": 25,
+              "color": "categoricalBlue"
+            },
+            {
+              "legend": "Q2",
+              "value": 30,
+              "color": "categoricalGreen"
+            },
+            {
+              "legend": "Q3",
+              "value": 25,
+              "color": "categoricalPurple"
+            },
+            {
+              "legend": "Q4",
+              "value": 20,
+              "color": "categoricalTeal"
+            }
+          ]
+        },
+        {
+          "type": "Chart.Gauge",
+          "title": "Performance Score",
+          "min": 0,
+          "max": 100,
+          "segments": [
+            {
+              "size": 60,
+              "legend": "Poor",
+              "color": "attention"
+            },
+            {
+              "size": 30,
+              "legend": "Good",
+              "color": "warning"
+            },
+            {
+              "size": 10,
+              "legend": "Excellent",
+              "color": "good"
+            }
+          ],
+          "value": 85,
+          "valueFormat": "Percentage"
+        },
+        {
+          "type": "Chart.Pie",
+          "title": "Market Share",
+          "data": [
+            {
+              "legend": "Product A",
+              "value": 40,
+              "color": "good"
+            },
+            {
+              "legend": "Product B",
+              "value": 30,
+              "color": "attention"
+            },
+            {
+              "legend": "Product C",
+              "value": 30,
+              "color": "warning"
+            }
+          ]
+        },
+        {
+          "type": "Chart.VerticalBar.Grouped",
+          "title": "Departmental Revenue",
+          "data": [
+            {
+              "legend": "Engineering",
+              "values": [
+                {
+                  "x": "Q1",
+                  "y": 120
+                },
+                {
+                  "x": "Q2",
+                  "y": 135
+                }
+              ]
+            },
+            {
+              "legend": "Marketing",
+              "values": [
+                {
+                  "x": "Q1",
+                  "y": 110
+                },
+                {
+                  "x": "Q2",
+                  "y": 140
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Chart.HorizontalBar.Stacked",
+          "title": "Customer Segments",
+          "data": [
+            {
+              "title": "SMBs",
+              "data": [
+                {
+                  "legend": "SMBs",
+                  "value": 60,
+                  "color": "good"
+                }
+              ]
+            },
+            {
+              "title": "Enterprises",
+              "data": [
+                {
+                  "legend": "Enterprises",
+                  "value": 40,
+                  "color": "warning"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Chart.Line",
+          "title": "Monthly Sales Trend",
+          "data": [
+            {
+              "legend": "2023",
+              "values": [
+                {
+                  "x": "Jan",
+                  "y": 100
+                },
+                {
+                  "x": "Feb",
+                  "y": 120
+                },
+                {
+                  "x": "Mar",
+                  "y": 110
+                },
+                {
+                  "x": "Apr",
+                  "y": 130
+                }
+              ]
+            },
+            {
+              "legend": "2024",
+              "values": [
+                {
+                  "x": "Jan",
+                  "y": 110
+                },
+                {
+                  "x": "Feb",
+                  "y": 125
+                },
+                {
+                  "x": "Mar",
+                  "y": 115
+                },
+                {
+                  "x": "Apr",
+                  "y": 140
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "Chart.VerticalBar",
+          "title": "Product Sales",
+          "data": [
+            {
+              "x": "Product A",
+              "y": 85,
+              "color": "categoricalBlue"
+            },
+            {
+              "x": "Product B",
+              "y": 92,
+              "color": "categoricalGreen"
+            },
+            {
+              "x": "Product C",
+              "y": 78,
+              "color": "categoricalPurple"
+            }
+          ]
+        },
+        {
+          "type": "Chart.HorizontalBar",
+          "title": "Customer Satisfaction",
+          "data": [
+            {
+              "x": "Service",
+              "y": 88
+            },
+            {
+              "x": "Quality",
+              "y": 95
+            },
+            {
+              "x": "Value",
+              "y": 82
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
