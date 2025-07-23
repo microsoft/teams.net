@@ -66,7 +66,7 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// <summary>
     /// any extra data
     /// </summary>
-    public IDictionary<string, object> Extra { get; set; }
+    public IDictionary<string, object?> Extra { get; set; }
 
     /// <summary>
     /// the cancellation token
@@ -130,7 +130,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     public required TActivity Activity { get; set; }
     public required ConversationReference Ref { get; set; }
     public required JsonWebToken? UserGraphToken { get; set; }
-    public IDictionary<string, object> Extra { get; set; } = new Dictionary<string, object>();
+    public IDictionary<string, object?> Extra { get; set; } = new Dictionary<string, object?>();
     public CancellationToken CancellationToken { get; set; }
 
     internal Func<IContext<IActivity>, Task<object?>> OnNext { get; set; } = (_) => Task.FromResult<object?>(null);

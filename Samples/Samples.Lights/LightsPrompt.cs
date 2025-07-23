@@ -1,7 +1,6 @@
 using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Extensions;
 
 namespace Samples.Lights;
 
@@ -12,30 +11,24 @@ namespace Samples.Lights;
     "The assistant can turn the lights on or off.",
     "The lights are currently off."
 )]
-public class LightsPrompt
+public class LightsPrompt(IContext.Accessor accessor)
 {
-    private IContext<IActivity> Context => _services.GetTeamsContext();
-    private readonly IServiceProvider _services;
-
-    public LightsPrompt(IServiceProvider provider)
-    {
-        _services = provider;
-    }
+    private IContext<IActivity> context => accessor.Value!;
 
     [Function]
     [Function.Description("get the current light status")]
     public bool GetLightStatus()
     {
-        return State.From(Context).Status;
+        return State.From(context).Status;
     }
 
     [Function]
     [Function.Description("turn the lights on")]
     public string LightsOn()
     {
-        var state = State.From(Context);
+        var state = State.From(context);
         state.Status = true;
-        state.Save(Context);
+        state.Save(context);
         return "the lights are now on";
     }
 
@@ -43,9 +36,9 @@ public class LightsPrompt
     [Function.Description("turn the lights off")]
     public string LightsOff()
     {
-        var state = State.From(Context);
+        var state = State.From(context);
         state.Status = false;
-        state.Save(Context);
+        state.Save(context);
         return "the lights are now off";
     }
 }

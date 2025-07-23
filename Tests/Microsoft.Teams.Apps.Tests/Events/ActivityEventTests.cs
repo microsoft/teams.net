@@ -1,7 +1,6 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Events;
-using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Apps.Testing.Plugins;
 
 namespace Microsoft.Teams.Apps.Tests.Events;
@@ -9,7 +8,7 @@ namespace Microsoft.Teams.Apps.Tests.Events;
 public class ActivityEventTests
 {
     private readonly App _app;
-    private readonly ISenderPlugin _plugin;
+    private readonly TestPlugin _plugin;
     private readonly IToken _token;
 
     public ActivityEventTests()
@@ -44,23 +43,23 @@ public class ActivityEventTests
     }
 
     [Fact]
-    public async Task Should_PassContextExtra_OnActivityEvent()
+    public async Task Should_PassExtra_OnActivityEvent()
     {
-        IDictionary<string, object>? extra = null;
+        IDictionary<string, object?>? extra = null;
         _app.OnEvent("activity", (sender, @event) =>
         {
             Assert.True(@event is ActivityEvent);
-            extra = ((ActivityEvent)@event).ContextExtra;
+            extra = ((ActivityEvent)@event).Extra;
         });
 
-        var contextExtraFromParameter = new Dictionary<string, object>
+        var extraFromParameter = new Dictionary<string, object?>
         {
             { "paramContextKey", "value" }
         };
-        var res = await _plugin.Do(_token, new MessageActivity("hello world"), contextExtraFromParameter);
+        var res = await _plugin.Do(_token, new MessageActivity("hello world"), extraFromParameter);
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
-        Assert.Equal(extra!["paramContextKey"], contextExtraFromParameter["paramContextKey"]);
+        Assert.Equal(extra!["paramContextKey"], extraFromParameter["paramContextKey"]);
     }
 
     [Fact]

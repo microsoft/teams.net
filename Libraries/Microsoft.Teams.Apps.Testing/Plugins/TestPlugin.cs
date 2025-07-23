@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -131,9 +130,19 @@ public partial class TestPlugin : ISenderPlugin
         return new Stream();
     }
 
-    public async Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object>? contextExtra = null, CancellationToken cancellationToken = default)
+    public async Task<Response> Do(IToken token, IActivity activity, IDictionary<string, object?>? extra = null, CancellationToken cancellationToken = default)
     {
-        if (activity is MessageActivity message)
+        return await Do(new()
+        {
+            Token = token,
+            Activity = activity,
+            Extra = extra
+        }, cancellationToken);
+    }
+
+    public async Task<Response> Do(ActivityEvent @event, CancellationToken cancellationToken = default)
+    {
+        if (@event.Activity is MessageActivity message)
         {
             await Events(
                 this,
@@ -146,12 +155,7 @@ public partial class TestPlugin : ISenderPlugin
         var @out = await Events(
             this,
             "activity",
-            new ActivityEvent()
-            {
-                Token = token,
-                Activity = activity,
-                ContextExtra = contextExtra
-            },
+            @event,
             cancellationToken
         );
 

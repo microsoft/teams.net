@@ -3,11 +3,9 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
-using Microsoft.Teams.Apps.Extensions;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Controllers;
 
@@ -28,9 +26,28 @@ public class MessageController : ControllerBase
     {
         var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
         var token = new JsonWebToken(authHeader.Replace("Bearer ", ""));
-        var context = HttpContext.RequestServices.GetRequiredService<TeamsContext>();
-        context.Token = token;
-        var res = await _plugin.Do(token, activity, null, _lifetime.ApplicationStopping);
+        var data = new Dictionary<string, object?>
+        {
+            ["Request.TraceId"] = HttpContext.TraceIdentifier
+        };
+
+        foreach (var pair in HttpContext.Items)
+        {
+            var key = pair.Key.ToString();
+
+            if (key is null) continue;
+
+            data[key] = pair.Value;
+        }
+
+        var res = await _plugin.Do(new()
+        {
+            Token = token,
+            Activity = activity,
+            Extra = data,
+            Services = HttpContext.RequestServices
+        }, _lifetime.ApplicationStopping);
+
         return Results.Json(res.Body, statusCode: (int)res.Status);
     }
 }
