@@ -279,11 +279,6 @@ public partial class App
             Conversation = @event.Activity.Conversation,
         };
 
-        var userGraphTokenProvider = Azure.Core.DelegatedTokenCredential.Create((context, _) =>
-        {
-            return userToken is null ? default : new Azure.Core.AccessToken(userToken.ToString(), userToken.Token.ValidTo);
-        });
-
         object? data = null;
         var i = -1;
         async Task<object?> Next(IContext<IActivity> context)
@@ -310,7 +305,7 @@ public partial class App
             IsSignedIn = userToken is not null,
             OnNext = Next,
             Extra = @event.Extra ?? new Dictionary<string, object?>(),
-            UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider),
+            UserGraphToken = userToken,
             CancellationToken = cancellationToken,
             ConnectionName = OAuth.DefaultConnectionName,
             OnActivitySent = async (activity, context) =>
