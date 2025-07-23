@@ -6,7 +6,7 @@
     <Import Project="..\..\Directory.Build.props" Condition="'$(Version)' == ''" />
 
     <PropertyGroup>
-        <PackageId>Microsoft.Teams.Extensions.Context</PackageId>
+        <PackageId>Microsoft.Teams.Extensions.Graph</PackageId>
         <PackageDescription>Teams Context Extensions</PackageDescription>
         <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
         <PackageTags>microsoft;teams;msteams;copilot;ai;extensions;graph;context</PackageTags>
@@ -20,7 +20,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.Graph" Version="5.75.0" />
+        <PackageReference Include="Microsoft.Graph" Version="[5.0.0,)" />
     </ItemGroup>
 
     <ItemGroup>

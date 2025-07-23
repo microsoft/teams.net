@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\Libraries\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Context\Microsoft.Teams.Extensions.Context.csproj" />
+        <ProjectReference Include="..\..\..\Libraries\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Graph\Microsoft.Teams.Extensions.Graph.csproj" />
     </ItemGroup>
 
 </Project>

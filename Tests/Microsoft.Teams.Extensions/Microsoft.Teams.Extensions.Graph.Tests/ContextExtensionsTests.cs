@@ -5,23 +5,21 @@ using Microsoft.Teams.Apps;
 
 using Moq;
 
-namespace Microsoft.Teams.Extensions.Context;
+namespace Microsoft.Teams.Extensions.Graph.Tests;
 
 public class ContextExtensionsTests
 {
     [Fact]
-    public void ContextExtensions_GetUserGraphClient_ShouldReturnNull()
+    public void ContextExtensions_GetUserGraphClient_ShouldThrowException()
     {
         // Arrange
         var context = new Mock<IContext<IActivity>>();
         context.Setup(c => c.UserGraphToken).Returns((JsonWebToken?)null);
 
-        // Act
-        var client = context.Object.GetUserGraphClient();
-
-        // Assert
-        Assert.Null(client);
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() => context.Object.GetUserGraphClient());
     }
+
 
     [Fact]
     public void ContextExtensions_GetUserGraphClient_ShouldReturnGraphClient()
