@@ -58,22 +58,6 @@ public class ChannelActivityClient : Client
         return body;
     }
 
-    public async Task<Resource?> ReplyAsync(string channelId, string id, IActivity activity)
-    {
-        activity.ReplyToId = id;
-        var req = HttpRequest.Post(
-            $"{ServiceUrl}v3/conversations/{channelId}/activities/{id}",
-            body: activity
-        );
-
-        var res = await _http.SendAsync(req, _cancellationToken);
-
-        if (res.Body == string.Empty) return null;
-
-        var body = JsonSerializer.Deserialize<Resource>(res.Body);
-        return body;
-    }
-
     public async Task DeleteAsync(string channelId, string id)
     {
         var req = HttpRequest.Delete(
