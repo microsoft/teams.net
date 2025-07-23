@@ -1,7 +1,6 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Events;
-using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Apps.Testing.Plugins;
 
 namespace Microsoft.Teams.Apps.Tests.Events;
@@ -9,7 +8,7 @@ namespace Microsoft.Teams.Apps.Tests.Events;
 public class EventTests
 {
     private readonly App _app;
-    private readonly ISenderPlugin _plugin;
+    private readonly TestPlugin _plugin;
     private readonly IToken _token;
 
     public EventTests()

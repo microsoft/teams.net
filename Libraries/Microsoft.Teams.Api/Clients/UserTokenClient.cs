@@ -80,7 +80,7 @@ public class UserTokenClient : Client
         var body = JsonSerializer.Serialize(request.GetBody(), _jsonSerializerOptions);
 
         var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/exchange?{query}", body);
-        req.Headers.Add("Content-Type", new List<string>(){ "application/json" });
+        req.Headers.Add("Content-Type", new List<string>() { "application/json" });
 
         var res = await _http.SendAsync<Token.Response>(req, _cancellationToken);
         return res.Body;

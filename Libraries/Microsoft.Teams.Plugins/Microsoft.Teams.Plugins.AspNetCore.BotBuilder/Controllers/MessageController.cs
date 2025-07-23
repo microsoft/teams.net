@@ -7,11 +7,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
-using Microsoft.Teams.Apps.Extensions;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
 {
@@ -58,9 +56,13 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
             // Fallback logic
             var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
             var token = new JsonWebToken(authHeader.Replace("Bearer ", ""));
-            var context = HttpContext.RequestServices.GetRequiredService<TeamsContext>();
-            context.Token = token;
-            var res = await _plugin.Do(token, activity, null, _lifetime.ApplicationStopping);
+            var res = await _plugin.Do(new()
+            {
+                Token = token,
+                Activity = activity,
+                Services = HttpContext.RequestServices
+            }, _lifetime.ApplicationStopping);
+
             return Results.Json(res.Body, statusCode: (int)res.Status);
         }
     }
