@@ -10,6 +10,7 @@ public class ApiClient : Client
     public readonly string ServiceUrl;
     public readonly BotClient Bots;
     public readonly ConversationClient Conversations;
+    public readonly ChannelClient Channels;
     public readonly UserClient Users;
 
     public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
@@ -18,6 +19,7 @@ public class ApiClient : Client
         Bots = new BotClient(_http, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
+        Channels = new ChannelClient(serviceUrl, _http, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
@@ -26,6 +28,7 @@ public class ApiClient : Client
         Bots = new BotClient(_http, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
+        Channels = new ChannelClient(serviceUrl, _http, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
@@ -34,6 +37,7 @@ public class ApiClient : Client
         Bots = new BotClient(_http, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
+        Channels = new ChannelClient(serviceUrl, _http, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
@@ -42,6 +46,7 @@ public class ApiClient : Client
         Bots = new BotClient(_http, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
+        Channels = new ChannelClient(serviceUrl, _http, cancellationToken);
     }
 
     public ApiClient(ApiClient client) : base()
@@ -50,6 +55,7 @@ public class ApiClient : Client
         Bots = client.Bots;
         Conversations = client.Conversations;
         Users = client.Users;
+        Channels = client.Channels;
         _cancellationToken = client._cancellationToken;
     }
 }

@@ -43,14 +43,7 @@ public class ConversationClient : Client
         var res = await _http.SendAsync<ConversationResource>(req, _cancellationToken);
         return res.Body;
     }
-
-    public async Task<ConversationResource> CreateAsyncChannel(Activity activity)
-    {
-        var req = HttpRequest.Post($"{ServiceUrl}v3/conversations/{activity?.ChannelData?.Channel?.Id}/activities", body: activity);
-        var res = await _http.SendAsync<ConversationResource>(req, _cancellationToken);
-        return res.Body;
-    }
-
+    
     public class CreateRequest
     {
         [JsonPropertyName("isGroup")]
