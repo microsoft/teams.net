@@ -29,7 +29,7 @@ public class ContextExtensionsTests
         var jwtToken = new JsonWebToken(token);
         var context = new Mock<IContext<IActivity>>();
         context.Setup(c => c.UserGraphToken).Returns(jwtToken);
-        context.Setup(c => c.Extra).Returns(new Dictionary<string, object>());
+        context.Setup(c => c.Extra).Returns(new Dictionary<string, object?>());
 
         // Act
         var graphClient = context.Object.GetUserGraphClient();
