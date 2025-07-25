@@ -59,7 +59,7 @@ public partial class App
         Client.Options.TokenFactory = () => BotToken;
         Client.Options.AddUserAgent(UserAgent);
         Credentials = options?.Credentials;
-        Api = new ApiClient("https://smba.trafficmanager.net/teams", Client);
+        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
@@ -194,6 +194,67 @@ public partial class App
     public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
         return await Send(conversationId, new MessageActivity().AddAttachment(card), serviceUrl, cancellationToken);
+    }
+
+        /// <summary>
+    /// Send a text message to a channel.
+    /// </summary>
+    /// <param name="channelId">the channel id</param>
+    /// <param name="text">the text to send</param>
+    /// <param name="serviceUrl">the service url</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <returns>the sent activity</returns>
+    public async Task<MessageActivity> SendToChannel(string channelId, string text, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    {
+        return await SendToChannel(channelId, new MessageActivity(text), serviceUrl, cancellationToken);
+    }
+
+    /// <summary>
+    /// Send a card to a channel.
+    /// </summary>
+    /// <param name="channelId">the channel id</param>
+    /// <param name="card">the card to send as an attachment</param>
+    /// <param name="serviceUrl">the service url</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <returns>the sent activity</returns>
+    public async Task<MessageActivity> SendToChannel(string channelId, Cards.AdaptiveCard card, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    {
+        return await SendToChannel(channelId, new MessageActivity().AddAttachment(card), serviceUrl, cancellationToken);
+    }
+
+    /// <summary>
+    /// Send an activity to a channel using the channels API.
+    /// </summary>
+    /// <typeparam name="T">the activity type</typeparam>
+    /// <param name="channelId">the channel id</param>
+    /// <param name="activity">the activity to send</param>
+    /// <param name="serviceUrl">the service url</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <returns>the sent activity</returns>
+    public async Task<T> SendToChannel<T>(string channelId, T activity, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
+    {
+        if (Id is null || Name is null)
+        {
+            throw new InvalidOperationException("app not started");
+        }
+
+        var sender = Plugins.Where(plugin => plugin is ISenderPlugin).Select(plugin => plugin as ISenderPlugin).First();
+
+        if (sender is null)
+        {
+            throw new Exception("no plugin that can send activities was found");
+        }
+
+        var res = await sender.SendToChannel(activity, channelId, serviceUrl ?? Api.ServiceUrl, cancellationToken);
+
+        await Events.Emit(
+            sender,
+            EventType.ActivitySent,
+            new ActivitySentEvent() { Activity = res },
+            cancellationToken
+        );
+
+        return res;
     }
 
     /// <summary>

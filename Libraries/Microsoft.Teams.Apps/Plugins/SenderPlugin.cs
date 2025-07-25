@@ -33,6 +33,18 @@ public interface ISenderPlugin : IPlugin
 
     /// <summary>
     /// called by the `App`
+    /// to send an activity to a channel
+    /// </summary>
+    /// <typeparam name="TActivity">the activity type</typeparam>
+    /// <param name="activity">the activity to send</param>
+    /// <param name="channelId">the channel id</param>
+    /// <param name="serviceUrl">the service url</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <returns>the sent activity</returns>
+    public Task<TActivity> SendToChannel<TActivity>(TActivity activity, string channelId, string serviceUrl, CancellationToken cancellationToken = default) where TActivity : IActivity;
+
+    /// <summary>
+    /// called by the `App`
     /// to create a new activity stream
     /// </summary>
     /// <param name="reference">the conversation reference</param>

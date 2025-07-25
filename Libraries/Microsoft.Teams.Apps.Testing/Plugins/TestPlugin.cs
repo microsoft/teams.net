@@ -120,6 +120,11 @@ public partial class TestPlugin : ISenderPlugin
         return Task.FromResult(activity);
     }
 
+    public Task<TActivity> SendToChannel<TActivity>(TActivity activity, string channelId, string serviceUrl, CancellationToken cancellationToken = default) where TActivity : IActivity
+    {
+        return Task.FromResult(activity);
+    }
+
     public Task<TActivity> Send<TActivity>(TActivity activity, ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
         return Task.FromResult(activity);

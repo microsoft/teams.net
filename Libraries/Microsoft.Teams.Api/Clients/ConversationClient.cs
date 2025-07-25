@@ -43,7 +43,7 @@ public class ConversationClient : Client
         var res = await _http.SendAsync<ConversationResource>(req, _cancellationToken);
         return res.Body;
     }
-
+    
     public class CreateRequest
     {
         [JsonPropertyName("isGroup")]
