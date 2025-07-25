@@ -106,6 +106,29 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         return activity;
     }
 
+    public async Task<TActivity> SendToChannel<TActivity>(TActivity activity, string channelId, string serviceUrl, CancellationToken cancellationToken = default) where TActivity : IActivity
+    {
+        var client = new ApiClient(serviceUrl, Client, cancellationToken);
+
+        if (activity.Id is not null)
+        {
+            await client
+                .Channels
+                .Activities
+                .UpdateAsync(channelId, activity.Id, activity);
+
+            return activity;
+        }
+
+        var res = await client
+            .Channels
+            .Activities
+            .CreateAsync(channelId, activity);
+
+        activity.Id = res?.Id;
+        return activity;
+    }
+
     public IStreamer CreateStream(Api.ConversationReference reference, CancellationToken cancellationToken = default)
     {
         return new Stream()
