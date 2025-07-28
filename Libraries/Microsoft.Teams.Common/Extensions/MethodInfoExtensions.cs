@@ -20,7 +20,7 @@ public static class MethodInfoExtensions
         if (res is Task task)
         {
             await task.ConfigureAwait(false);
-            return null;
+            return task.GetType().GetProperty("Result")?.GetValue(task);
         }
 
         return res;
