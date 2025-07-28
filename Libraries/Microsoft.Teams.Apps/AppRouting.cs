@@ -5,6 +5,7 @@ using System.Net;
 using System.Reflection;
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Events;
@@ -83,13 +84,7 @@ public partial class App
                 ExchangeRequest = new() { Token = context.Activity.Value.Token },
             });
 
-            var userGraphTokenProvider = Azure.Core.DelegatedTokenCredential.Create((context, _) =>
-            {
-                var expirationTime = res.Expiration is null ? DateTime.Now.AddMinutes(45) : DateTime.Parse(res.Expiration);
-                return new Azure.Core.AccessToken(res.Token, expirationTime);
-            });
-
-            context.UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider);
+            context.UserGraphToken = new JsonWebToken(res);
 
             await Events.Emit(
                 context.Sender,
@@ -148,13 +143,7 @@ public partial class App
                 Code = context.Activity.Value.State
             });
 
-            var userGraphTokenProvider = Azure.Core.DelegatedTokenCredential.Create((context, _) =>
-            {
-                var expirationTime = res.Expiration is null ? DateTime.Now.AddMinutes(45) : DateTime.Parse(res.Expiration);
-                return new Azure.Core.AccessToken(res.Token, expirationTime);
-            });
-
-            context.UserGraph = new Graph.GraphServiceClient(userGraphTokenProvider);
+            context.UserGraphToken = new JsonWebToken(res);
 
             await Events.Emit(
                 context.Sender,

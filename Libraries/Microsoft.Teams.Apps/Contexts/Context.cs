@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
@@ -58,9 +59,9 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     public ConversationReference Ref { get; set; }
 
     /// <summary>
-    /// the users graph client
+    /// The user's access token to the Microsoft Graph API.
     /// </summary>
-    public Graph.GraphServiceClient UserGraph { get; set; }
+    public JsonWebToken? UserGraphToken { get; set; }
 
     /// <summary>
     /// any extra data
@@ -128,7 +129,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     public required ApiClient Api { get; set; }
     public required TActivity Activity { get; set; }
     public required ConversationReference Ref { get; set; }
-    public required Graph.GraphServiceClient UserGraph { get; set; }
+    public required JsonWebToken? UserGraphToken { get; set; }
     public IDictionary<string, object?> Extra { get; set; } = new Dictionary<string, object?>();
     public CancellationToken CancellationToken { get; set; }
 
@@ -173,7 +174,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
             Api = Api,
             Activity = (TToActivity)Activity.ToType(typeof(TToActivity), null),
             Ref = Ref,
-            UserGraph = UserGraph,
+            UserGraphToken = UserGraphToken,
             IsSignedIn = IsSignedIn,
             ConnectionName = ConnectionName,
             Extra = Extra,

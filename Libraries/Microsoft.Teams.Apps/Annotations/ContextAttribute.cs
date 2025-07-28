@@ -5,6 +5,7 @@ using System.Reflection;
 
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Extensions;
@@ -28,8 +29,8 @@ public class ContextAttribute : ContextAccessorAttribute
         if (type == typeof(CancellationToken)) return context.CancellationToken;
         if (type == typeof(ConversationReference)) return context.Ref;
         if (type == typeof(IContext.Client)) return new IContext.Client(context);
-        if (type == typeof(Graph.GraphServiceClient)) return context.UserGraph;
         if (type == typeof(IContext.Next)) return new IContext.Next(context.Next);
+        if (type == typeof(JsonWebToken)) return context.UserGraphToken;
         return context;
     }
 }
