@@ -8,9 +8,9 @@ namespace Microsoft.Teams.Common.Extensions;
 
 public static class MethodInfoExtensions
 {
-    public static async Task<object?> InvokeAsync(this MethodInfo methodinfo, object? target, object?[]? args)
+    public static async Task<object?> InvokeAsync(this MethodInfo methodInfo, object? target, object?[]? args)
     {
-        var res = methodinfo.Invoke(target, args);
+        var res = methodInfo.Invoke(target, args);
 
         if (res is Task<object?> taskWithValue)
         {
