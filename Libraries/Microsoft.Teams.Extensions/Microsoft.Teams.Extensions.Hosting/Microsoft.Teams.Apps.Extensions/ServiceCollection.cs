@@ -85,11 +85,11 @@ public static class ServiceCollectionExtensions
     {
         collection.AddSingleton(provider => provider.GetRequiredService<Common.Logging.ILogger>());
         collection.AddSingleton<ILoggerFactory, LoggerFactory>();
-        collection.AddSingleton<ILogger, TeamsLogger>(provider => provider.GetRequiredService<TeamsLogger>());
         collection.AddHostedService<TeamsService>();
         collection.AddSingleton(factory);
         collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
         collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);
+        collection.AddSingleton<ILogger, TeamsLogger>(provider => new TeamsLogger(provider.GetRequiredService<App>().Logger));
         collection.AddSingleton<IContext.Accessor>();
         return collection;
     }
@@ -98,11 +98,11 @@ public static class ServiceCollectionExtensions
     {
         collection.AddSingleton(provider => provider.GetRequiredService<Common.Logging.ILogger>());
         collection.AddSingleton<ILoggerFactory, LoggerFactory>();
-        collection.AddSingleton<ILogger, TeamsLogger>(provider => provider.GetRequiredService<TeamsLogger>());
         collection.AddHostedService<TeamsService>();
         collection.AddSingleton(provider => factory(provider).GetAwaiter().GetResult());
         collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
         collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);
+        collection.AddSingleton<ILogger, TeamsLogger>(provider => new TeamsLogger(provider.GetRequiredService<App>().Logger));
         collection.AddSingleton<IContext.Accessor>();
         return collection;
     }
