@@ -59,7 +59,7 @@ public partial class App
         Client.Options.TokenFactory = () => BotToken;
         Client.Options.AddUserAgent(UserAgent);
         Credentials = options?.Credentials;
-        Api = new ApiClient("https://smba.trafficmanager.net/teams", Client);
+        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
@@ -135,7 +135,7 @@ public partial class App
     /// send an activity to the conversation
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    public async Task<T> Send<T>(string conversationId, T activity, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
+    public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
     {
         if (Id is null || Name is null)
         {
@@ -155,7 +155,7 @@ public partial class App
             Conversation = new()
             {
                 Id = conversationId,
-                Type = ConversationType.Personal
+                Type = conversationType ?? ConversationType.Personal
             }
         };
 
@@ -182,18 +182,18 @@ public partial class App
     /// send a message activity to the conversation
     /// </summary>
     /// <param name="text">the text to send</param>
-    public async Task<MessageActivity> Send(string conversationId, string text, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
-        return await Send(conversationId, new MessageActivity(text), serviceUrl, cancellationToken);
+        return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, cancellationToken);
     }
 
     /// <summary>
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
-        return await Send(conversationId, new MessageActivity().AddAttachment(card), serviceUrl, cancellationToken);
+        return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, cancellationToken);
     }
 
     /// <summary>
