@@ -167,9 +167,9 @@ public class ConversationResource
     /// </summary>
     [JsonPropertyName("serviceUrl")]
     [JsonPropertyOrder(2)]
-    public required string ServiceUrl { get; set; }
+    public string? ServiceUrl { get; set; }
 
-    public void Deconstruct(out string id, out string? activityId, out string serviceUrl)
+    public void Deconstruct(out string id, out string? activityId, out string? serviceUrl)
     {
         id = Id;
         activityId = ActivityId;
