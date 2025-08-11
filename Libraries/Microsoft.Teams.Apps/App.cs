@@ -137,7 +137,7 @@ public partial class App
     /// <param name="activity">activity activity to send</param>
     public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
     {
-        if (Id is null || Name is null)
+        if (Id is null)
         {
             throw new InvalidOperationException("app not started");
         }
