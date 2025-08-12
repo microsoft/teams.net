@@ -34,17 +34,29 @@ public partial class AspNetCorePlugin
         private int _count = 0;
         private MessageActivity? _result;
         private readonly SemaphoreSlim _lock = new(1, 1);
+        private CancellationTokenSource? _timeoutCancellation;
+        private Task? _timeoutTask;
 
         public void Emit(MessageActivity activity)
         {
+            // Cancel any pending timeout if flush hasn't started (lock is available)
+            if (_timeoutCancellation != null && _lock.CurrentCount > 0)
+            {
+                _timeoutCancellation.Cancel();
+            }
             _queue.Enqueue(activity);
-            Task.Run(Flush);
+            ScheduleDelayedFlush();
         }
 
         public void Emit(TypingActivity activity)
         {
+            // Cancel any pending timeout if flush hasn't started (lock is available)
+            if (_timeoutCancellation != null && _lock.CurrentCount > 0)
+            {
+                _timeoutCancellation.Cancel();
+            }
             _queue.Enqueue(activity);
-            Task.Run(Flush);
+            ScheduleDelayedFlush();
         }
 
         public void Emit(string text)
@@ -65,11 +77,16 @@ public partial class AspNetCorePlugin
 
         public async Task<MessageActivity?> Close()
         {
-            if (_index == 1 && _queue.Count == 0) return null;
+            if (_index == 1 && _queue.Count == 0 && _lock.CurrentCount > 0) return null;
             if (_result is not null) return _result;
             while (_id is null || _queue.Count > 0)
             {
                 await Task.Delay(50);
+            }
+
+            if (_text == string.Empty && _attachments.Count == 0) // when only informative updates are present
+            {
+                _text = "Streaming closed with no content";
             }
 
             var activity = new MessageActivity(_text)
@@ -93,6 +110,19 @@ public partial class AspNetCorePlugin
             _channelData = new();
 
             return (MessageActivity)res;
+        }
+
+        private void ScheduleDelayedFlush()
+        {
+            // Create new cancellation token for the timeout
+            _timeoutCancellation = new CancellationTokenSource();
+
+            // Schedule delayed flush (200ms delay)
+            _timeoutTask = Task.Run(async () =>
+            {
+                await Task.Delay(500, _timeoutCancellation.Token);
+                await Flush(); 
+            });
         }
 
         protected async Task Flush()
@@ -144,8 +174,16 @@ public partial class AspNetCorePlugin
                 }
 
                 // Send text chunk
-                var toSend = new TypingActivity(_text);
-                await SendActivity(toSend);
+                if (_text != string.Empty)
+                {
+                    var toSend = new TypingActivity(_text);
+                    await SendActivity(toSend);
+                }
+
+                if (_queue.Count > 0)
+                {
+                    ScheduleDelayedFlush();
+                }
 
                 async Task SendActivity(TypingActivity toSend)
                 {
