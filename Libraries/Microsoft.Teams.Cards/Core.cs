@@ -770,9 +770,11 @@ public abstract class SerializableObject
         });
     }
 }
-
+[JsonConverter(typeof(CardElementJsonConverter))]
 public abstract class CardElement : SerializableObject { }
+[JsonConverter(typeof(ActionJsonConverter))]
 public abstract class Action : SerializableObject { }
+[JsonConverter(typeof(ContainerLayoutJsonConverter))]
 public abstract class ContainerLayout : SerializableObject { }
 
 /// <summary>
