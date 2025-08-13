@@ -763,11 +763,12 @@ public abstract class SerializableObject
 {
     public override string ToString()
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions()
+        var options = new JsonSerializerOptions()
         {
-            WriteIndented = true,
+            WriteIndented = true, 
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+        };
+        return JsonSerializer.Serialize(this,this.GetType(), options);
     }
 }
 [JsonConverter(typeof(CardElementJsonConverter))]
