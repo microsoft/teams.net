@@ -34,29 +34,36 @@ public partial class AspNetCorePlugin
         private int _count = 0;
         private MessageActivity? _result;
         private readonly SemaphoreSlim _lock = new(1, 1);
-        private CancellationTokenSource? _timeoutCancellation;
-        private Task? _timeoutTask;
+        private Timer? _timeout;
 
         public void Emit(MessageActivity activity)
         {
-            // Cancel any pending timeout if flush hasn't started (lock is available)
-            if (_timeoutCancellation != null && _lock.CurrentCount > 0)
+            if (_timeout != null)
             {
-                _timeoutCancellation.Cancel();
+                _timeout.Dispose();
+                _timeout = null;
             }
+
             _queue.Enqueue(activity);
-            ScheduleDelayedFlush();
+            _timeout = new Timer(async _ =>
+            {
+                await Flush();
+            }, null, 1000, Timeout.Infinite);
         }
 
         public void Emit(TypingActivity activity)
         {
-            // Cancel any pending timeout if flush hasn't started (lock is available)
-            if (_timeoutCancellation != null && _lock.CurrentCount > 0)
+            if (_timeout != null)
             {
-                _timeoutCancellation.Cancel();
+                _timeout.Dispose();
+                _timeout = null;
             }
+
             _queue.Enqueue(activity);
-            ScheduleDelayedFlush();
+            _timeout = new Timer(async _ =>
+            {
+                await Flush();
+            }, null, 1000, Timeout.Infinite);
         }
 
         public void Emit(string text)
@@ -112,19 +119,6 @@ public partial class AspNetCorePlugin
             return (MessageActivity)res;
         }
 
-        private void ScheduleDelayedFlush()
-        {
-            // Create new cancellation token for the timeout
-            _timeoutCancellation = new CancellationTokenSource();
-
-            // Schedule delayed flush (200ms delay)
-            _timeoutTask = Task.Run(async () =>
-            {
-                await Task.Delay(500, _timeoutCancellation.Token);
-                await Flush(); 
-            });
-        }
-
         protected async Task Flush()
         {
             if (_queue.Count == 0) return;
@@ -133,6 +127,12 @@ public partial class AspNetCorePlugin
 
             try
             {
+                if (_timeout != null)
+                {
+                    _timeout.Dispose();
+                    _timeout = null;
+                }
+
                 var i = 0;
 
                 Queue<TypingActivity> informativeUpdates = new();
@@ -182,7 +182,10 @@ public partial class AspNetCorePlugin
 
                 if (_queue.Count > 0)
                 {
-                    ScheduleDelayedFlush();
+                    _timeout = new Timer(async _ =>
+                    {
+                        await Flush();
+                    }, null, 1000, Timeout.Infinite);
                 }
 
                 async Task SendActivity(TypingActivity toSend)
