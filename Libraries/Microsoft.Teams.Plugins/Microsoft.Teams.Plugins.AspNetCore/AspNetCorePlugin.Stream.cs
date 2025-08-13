@@ -48,7 +48,7 @@ public partial class AspNetCorePlugin
             _timeout = new Timer(async _ =>
             {
                 await Flush();
-            }, null, 1000, Timeout.Infinite);
+            }, null, 500, Timeout.Infinite);
         }
 
         public void Emit(TypingActivity activity)
@@ -63,7 +63,7 @@ public partial class AspNetCorePlugin
             _timeout = new Timer(async _ =>
             {
                 await Flush();
-            }, null, 1000, Timeout.Infinite);
+            }, null, 500, Timeout.Infinite);
         }
 
         public void Emit(string text)
@@ -185,7 +185,7 @@ public partial class AspNetCorePlugin
                     _timeout = new Timer(async _ =>
                     {
                         await Flush();
-                    }, null, 1000, Timeout.Infinite);
+                    }, null, 500, Timeout.Infinite);
                 }
 
                 async Task SendActivity(TypingActivity toSend)
