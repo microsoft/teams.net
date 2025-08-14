@@ -83,7 +83,7 @@ public class PolymorphicConvertersTests
     }
 
     [Fact]
-    public void Deserialize_CardElement_Throws_NotSupported_When_Converter_Registered()
+    public void Deserialize_CardElement_TextBlock_Succeeds()
     {
         // Arrange
         const string payload = "{\"type\":\"TextBlock\",\"text\":\"Hello\"}";
@@ -91,15 +91,17 @@ public class PolymorphicConvertersTests
         var options = new JsonSerializerOptions();
         options.Converters.Add(new CardElementJsonConverter());
 
-        // Act + Assert
-        var ex = Assert.Throws<NotSupportedException>(() =>
-            JsonSerializer.Deserialize<CardElement>(payload, options));
+        // Act
+        var element = JsonSerializer.Deserialize<CardElement>(payload, options);
 
-        Assert.Contains("Deserializing CardElement is not supported", ex.Message);
+        // Assert
+        Assert.NotNull(element);
+        var tb = Assert.IsType<TextBlock>(element);
+        Assert.Equal("Hello", tb.Text);
     }
 
     [Fact]
-    public void Deserialize_Action_Throws_NotSupported_When_Converter_Registered()
+    public void Deserialize_Action_OpenUrl_Succeeds()
     {
         // Arrange
         const string payload = "{\"type\":\"Action.OpenUrl\",\"url\":\"https://example.com\",\"title\":\"Open\"}";
@@ -107,15 +109,18 @@ public class PolymorphicConvertersTests
         var options = new JsonSerializerOptions();
         options.Converters.Add(new ActionJsonConverter());
 
-        // Act + Assert
-        var ex = Assert.Throws<NotSupportedException>(() =>
-            JsonSerializer.Deserialize<Action>(payload, options));
+        // Act
+        var action = JsonSerializer.Deserialize<Action>(payload, options);
 
-        Assert.Contains("Deserializing Action is not supported", ex.Message);
+        // Assert
+        Assert.NotNull(action);
+        var openUrl = Assert.IsType<OpenUrlAction>(action);
+        Assert.Equal("https://example.com", openUrl.Url);
+        Assert.Equal("Open", openUrl.Title);
     }
 
     [Fact]
-    public void Deserialize_ContainerLayout_Throws_NotSupported_When_Converter_Registered()
+    public void Deserialize_ContainerLayout_Flow_Succeeds()
     {
         // Arrange
         const string payload = "{\"type\":\"Layout.Flow\",\"itemWidth\":\"120px\"}";
@@ -123,10 +128,75 @@ public class PolymorphicConvertersTests
         var options = new JsonSerializerOptions();
         options.Converters.Add(new ContainerLayoutJsonConverter());
 
-        // Act + Assert
-        var ex = Assert.Throws<NotSupportedException>(() =>
-            JsonSerializer.Deserialize<ContainerLayout>(payload, options));
+        // Act
+        var layout = JsonSerializer.Deserialize<ContainerLayout>(payload, options);
 
-        Assert.Contains("Deserializing ContainerLayout is not supported", ex.Message);
+        // Assert
+        Assert.NotNull(layout);
+        var flow = Assert.IsType<FlowLayout>(layout);
+        Assert.Equal("120px", flow.ItemWidth);
+    }
+
+    [Fact]
+    public void Deserialize_AdaptiveCard_With_PolymorphicBody_Actions_And_Layouts_Succeeds()
+    {
+        // Arrange: full card with body, actions, and nested container + layouts
+        const string payload = """
+        {
+          "type": "AdaptiveCard",
+          "body": [
+            { "type": "TextBlock", "id": "t1", "text": "Hello" },
+            { "type": "Image", "url": "https://example.com/a.png", "altText": "logo" },
+            {
+              "type": "Container",
+              "items": [
+                { "type": "TextBlock", "text": "Inside" }
+              ],
+              "layouts": [
+                { "type": "Layout.Flow", "itemWidth": "120px" },
+                { "type": "Layout.Stack" }
+              ]
+            }
+          ],
+          "actions": [
+            { "type": "Action.OpenUrl", "url": "https://example.com", "title": "Open" }
+          ]
+        }
+        """;
+
+        // Act: rely on [JsonConverter] attributes on base types to resolve polymorphic members
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(payload);
+
+        // Assert
+        Assert.NotNull(card);
+        Assert.NotNull(card.Body);
+        Assert.True(card.Body.Count >= 3);
+
+        var b0 = card.Body[0];
+        var text = Assert.IsType<TextBlock>(b0);
+        Assert.Equal("t1", text.Id);
+        Assert.Equal("Hello", text.Text);
+
+        var b1 = card.Body[1];
+        var image = Assert.IsType<Image>(b1);
+        Assert.Equal("https://example.com/a.png", image.Url);
+        Assert.Equal("logo", image.AltText);
+
+        var b2 = card.Body[2];
+        var container = Assert.IsType<Container>(b2);
+        Assert.NotNull(container.Items);
+        var innerText = Assert.IsType<TextBlock>(Assert.Single(container.Items));
+        Assert.Equal("Inside", innerText.Text);
+
+        Assert.NotNull(container.Layouts);
+        Assert.Equal(2, container.Layouts!.Count);
+        var flow = Assert.IsType<FlowLayout>(container.Layouts![0]);
+        Assert.Equal("120px", flow.ItemWidth);
+        Assert.IsType<StackLayout>(container.Layouts![1]);
+
+        Assert.NotNull(card.Actions);
+        var openUrl = Assert.IsType<OpenUrlAction>(Assert.Single(card.Actions!));
+        Assert.Equal("https://example.com", openUrl.Url);
+        Assert.Equal("Open", openUrl.Title);
     }
 }
