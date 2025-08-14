@@ -57,3 +57,7 @@ $: dotnet test
 > ℹ️ external packages (typically plugins) used to integrate with other platforms.
 
 - [`Microsoft.Teams.Plugins.External.Mcp`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.Mcp/README.md)
+
+## Feedback and Support
+
+For questions, feedback, or support regarding the Teams AI SDK, please contact us at [TeamsAISDKFeedback@microsoft.com](mailto:TeamsAISDKFeedback@microsoft.com).
