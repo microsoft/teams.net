@@ -1081,6 +1081,52 @@ public class AdaptiveCard : CardElement
         this.Actions = value;
         return this;
     }
+    public AdaptiveCard FromJson(string json, JsonSerializerOptions? options = null)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            this.Body = new List<CardElement>();
+            return this;
+        }
+
+        options ??= new JsonSerializerOptions
+        {
+            PropertyNameCaseInsensitive = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            AllowTrailingCommas = true
+        };
+
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        // Case 1: JSON array of elements
+        if (root.ValueKind == JsonValueKind.Array)
+        {
+            this.Body = JsonSerializer.Deserialize<IList<CardElement>>(root.GetRawText(), options);
+            return this;
+        }
+
+        // Case 2: Full card JSON with a "body" array
+        if (root.ValueKind == JsonValueKind.Object)
+        {
+            if (root.TryGetProperty("body", out var bodyEl))
+            {
+                if (bodyEl.ValueKind != JsonValueKind.Array)
+                    throw new JsonException("The 'body' property must be a JSON array.");
+
+                this.Body = JsonSerializer.Deserialize<IList<CardElement>>(bodyEl.GetRawText(), options);
+                return this;
+            }
+
+            // Case 3: Single element object -> wrap into body
+            var element = JsonSerializer.Deserialize<CardElement>(root.GetRawText(), options)
+                          ?? throw new JsonException("Unable to deserialize CardElement from JSON.");
+            this.Body = new List<CardElement> { element };
+            return this;
+        }
+
+        throw new JsonException("Expected a JSON array of elements, a card object with 'body', or a single element object.");
+    }
 }
 
 /// <summary>
