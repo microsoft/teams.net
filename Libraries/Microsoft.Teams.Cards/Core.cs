@@ -768,7 +768,7 @@ public abstract class SerializableObject
             WriteIndented = true, 
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
-        return JsonSerializer.Serialize(this,this.GetType(), options);
+        return JsonSerializer.Serialize(this, this.GetType(), options);
     }
 }
 [JsonConverter(typeof(CardElementJsonConverter))]
