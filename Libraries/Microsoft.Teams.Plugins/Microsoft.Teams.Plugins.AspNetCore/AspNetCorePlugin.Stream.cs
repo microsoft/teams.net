@@ -45,9 +45,9 @@ public partial class AspNetCorePlugin
             }
 
             _queue.Enqueue(activity);
-            _timeout = new Timer(async _ =>
+            _timeout = new Timer(_ =>
             {
-                await Flush();
+                _ = Flush();
             }, null, 500, Timeout.Infinite);
         }
 
@@ -60,9 +60,9 @@ public partial class AspNetCorePlugin
             }
 
             _queue.Enqueue(activity);
-            _timeout = new Timer(async _ =>
+            _timeout = new Timer(_ =>
             {
-                await Flush();
+                _ = Flush();
             }, null, 500, Timeout.Infinite);
         }
 
@@ -182,9 +182,9 @@ public partial class AspNetCorePlugin
 
                 if (_queue.Count > 0)
                 {
-                    _timeout = new Timer(async _ =>
+                    _timeout = new Timer(_ =>
                     {
-                        await Flush();
+                       _ = Flush();
                     }, null, 500, Timeout.Infinite);
                 }
 
