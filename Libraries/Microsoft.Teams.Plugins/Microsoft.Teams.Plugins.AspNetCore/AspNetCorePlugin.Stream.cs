@@ -7,7 +7,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Extensions;
+using static Microsoft.Teams.Common.Extensions.TaskExtensions;
 
 namespace Microsoft.Teams.Plugins.AspNetCore;
 
@@ -104,7 +104,7 @@ public partial class AspNetCorePlugin
             activity.AddEntity(_entities.ToArray());
             activity.AddStreamFinal();
 
-            var res = await Send(activity).Retry();
+            var res = await Retry(() => Send(activity)).ConfigureAwait(false);
             OnChunk(res);
 
             _result = activity;
@@ -196,7 +196,7 @@ public partial class AspNetCorePlugin
                     }
 
                     toSend.AddStreamUpdate(_index);
-                    var res = await Send(toSend).Retry(delay: 10).ConfigureAwait(false);
+                    var res = await Retry(() => Send(toSend)).ConfigureAwait(false);
                     OnChunk(res);
                     _id ??= res.Id;
                     _index++;
