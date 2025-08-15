@@ -1,5 +1,5 @@
-﻿
-using System.Text;
+﻿using System.Text;
+using System.Reflection;
 
 using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Common.Text;
@@ -12,6 +12,9 @@ public class ConsoleLoggerTests
     [Fact]
     public void ConsoleLogger_DefaultProps()
     {
+        // Arrange
+        var expectedName = Assembly.GetEntryAssembly()?.GetName().Name ?? "Microsoft.Teams";
+
         // Act
         var logger = new ConsoleLogger();
 
@@ -22,7 +25,7 @@ public class ConsoleLoggerTests
         Assert.True(logger.IsEnabled(LogLevel.Warn));
         Assert.True(logger.IsEnabled(LogLevel.Info));
         Assert.False(logger.IsEnabled(LogLevel.Debug));
-        Assert.Equal("testhost", logger.Name);
+        Assert.Equal(expectedName, logger.Name);
         Assert.Equal(LogLevel.Info, logger.Level);
     }
 
@@ -47,6 +50,8 @@ public class ConsoleLoggerTests
     [Fact]
     public void ConsoleLogger_LoggingSettings_NonMatchingPattern()
     {
+        // Arrange
+        var expectedName = Assembly.GetEntryAssembly()?.GetName().Name ?? "Microsoft.Teams";
         var loggingSettings = new LoggingSettings();
         loggingSettings.Enable = "Tests*";
         loggingSettings.Level = LogLevel.Error;
@@ -56,7 +61,7 @@ public class ConsoleLoggerTests
         // Assert
         Assert.NotNull(logger);
         Assert.Equal(typeof(ConsoleLogger), logger.GetType());
-        Assert.Equal("testhost", logger.Name);
+        Assert.Equal(expectedName, logger.Name);
         Assert.False(logger.IsEnabled(LogLevel.Error));
     }
 
@@ -64,8 +69,9 @@ public class ConsoleLoggerTests
     public void ConsoleLogger_LoggingSettings_PatternMatchingName()
     {
         // Arrange
+        var expectedName = Assembly.GetEntryAssembly()?.GetName().Name ?? "Microsoft.Teams";
         var loggingSettings = new LoggingSettings();
-        loggingSettings.Enable = "testhost*";
+        loggingSettings.Enable = $"{expectedName}*";
         loggingSettings.Level = LogLevel.Warn;
 
         // Act
@@ -73,9 +79,9 @@ public class ConsoleLoggerTests
 
         // Assert
         Assert.NotNull(logger);
-        Assert.Equal("testhost", logger.Name);
-        Assert.Equal(logger.Level, logger.Level);
-        Assert.Equal(logger.GetType(), logger.GetType());
+        Assert.Equal(expectedName, logger.Name);
+        Assert.Equal(LogLevel.Warn, logger.Level);
+        Assert.Equal(typeof(ConsoleLogger), logger.GetType());
         Assert.True(logger.IsEnabled(LogLevel.Warn));
     }
 
