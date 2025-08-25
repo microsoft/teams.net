@@ -7,7 +7,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Extensions;
+using static Microsoft.Teams.Common.Extensions.TaskExtensions;
 
 namespace Microsoft.Teams.Plugins.AspNetCore;
 
@@ -34,17 +34,36 @@ public partial class AspNetCorePlugin
         private int _count = 0;
         private MessageActivity? _result;
         private readonly SemaphoreSlim _lock = new(1, 1);
+        private Timer? _timeout;
 
         public void Emit(MessageActivity activity)
         {
+            if (_timeout != null)
+            {
+                _timeout.Dispose();
+                _timeout = null;
+            }
+
             _queue.Enqueue(activity);
-            Task.Run(Flush);
+            _timeout = new Timer(_ =>
+            {
+                _ = Flush();
+            }, null, 500, Timeout.Infinite);
         }
 
         public void Emit(TypingActivity activity)
         {
+            if (_timeout != null)
+            {
+                _timeout.Dispose();
+                _timeout = null;
+            }
+
             _queue.Enqueue(activity);
-            Task.Run(Flush);
+            _timeout = new Timer(_ =>
+            {
+                _ = Flush();
+            }, null, 500, Timeout.Infinite);
         }
 
         public void Emit(string text)
@@ -65,11 +84,16 @@ public partial class AspNetCorePlugin
 
         public async Task<MessageActivity?> Close()
         {
-            if (_index == 1 && _queue.Count == 0) return null;
+            if (_index == 1 && _queue.Count == 0 && _lock.CurrentCount > 0) return null;
             if (_result is not null) return _result;
             while (_id is null || _queue.Count > 0)
             {
                 await Task.Delay(50);
+            }
+
+            if (_text == string.Empty && _attachments.Count == 0) // when only informative updates are present
+            {
+                _text = "Streaming closed with no content";
             }
 
             var activity = new MessageActivity(_text)
@@ -80,7 +104,7 @@ public partial class AspNetCorePlugin
             activity.AddEntity(_entities.ToArray());
             activity.AddStreamFinal();
 
-            var res = await Send(activity).Retry();
+            var res = await Retry(() => Send(activity)).ConfigureAwait(false);
             OnChunk(res);
 
             _result = activity;
@@ -103,6 +127,12 @@ public partial class AspNetCorePlugin
 
             try
             {
+                if (_timeout != null)
+                {
+                    _timeout.Dispose();
+                    _timeout = null;
+                }
+
                 var i = 0;
 
                 Queue<TypingActivity> informativeUpdates = new();
@@ -144,8 +174,19 @@ public partial class AspNetCorePlugin
                 }
 
                 // Send text chunk
-                var toSend = new TypingActivity(_text);
-                await SendActivity(toSend);
+                if (_text != string.Empty)
+                {
+                    var toSend = new TypingActivity(_text);
+                    await SendActivity(toSend);
+                }
+
+                if (_queue.Count > 0)
+                {
+                    _timeout = new Timer(_ =>
+                    {
+                       _ = Flush();
+                    }, null, 500, Timeout.Infinite);
+                }
 
                 async Task SendActivity(TypingActivity toSend)
                 {
@@ -155,7 +196,7 @@ public partial class AspNetCorePlugin
                     }
 
                     toSend.AddStreamUpdate(_index);
-                    var res = await Send(toSend).Retry(delay: 10).ConfigureAwait(false);
+                    var res = await Retry(() => Send(toSend)).ConfigureAwait(false);
                     OnChunk(res);
                     _id ??= res.Id;
                     _index++;
