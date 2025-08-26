@@ -7,7 +7,7 @@ namespace Microsoft.Teams.Api.Memberships;
 /// <summary>
 /// The type of roster the user is a member of
 /// </summary>
-[JsonConverter(typeof(JsonConverter<MembershipType>))]
+[JsonConverter(typeof(JsonConverter<MembershipSourceType>))]
 public class MembershipSourceType(string value) : StringEnum(value)
 {
     public static readonly MembershipSourceType Channel = new("channel");
