@@ -25,31 +25,38 @@ public class Team
     public string? AadGroupId { get; set; }
 
     /// <summary>
+    /// The tenant Id of the Team
+    /// </summary>
+    [JsonPropertyName("tenantId")]
+    [JsonPropertyOrder(2)]
+    public string? TenantId { get; set; }
+
+    /// <summary>
     /// The type of the team
     /// </summary>
     [JsonPropertyName("type")]
-    [JsonPropertyOrder(2)]
+    [JsonPropertyOrder(3)]
     public TeamType? Type { get; set; }
 
     /// <summary>
     /// The team name
     /// </summary>
     [JsonPropertyName("name")]
-    [JsonPropertyOrder(3)]
+    [JsonPropertyOrder(4)]
     public string? Name { get; set; }
 
     /// <summary>
     /// Count of channels in the team
     /// </summary>
     [JsonPropertyName("channelCount")]
-    [JsonPropertyOrder(4)]
+    [JsonPropertyOrder(5)]
     public int? ChannelCount { get; set; }
 
     /// <summary>
     /// Count of the members in the team
     /// </summary>
     [JsonPropertyName("memberCount")]
-    [JsonPropertyOrder(5)]
+    [JsonPropertyOrder(6)]
     public int? MemberCount { get; set; }
 }
 
