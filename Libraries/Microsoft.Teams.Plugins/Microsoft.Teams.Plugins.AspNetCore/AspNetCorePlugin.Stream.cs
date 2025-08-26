@@ -7,6 +7,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
 using Microsoft.Teams.Apps.Plugins;
+
 using static Microsoft.Teams.Common.Extensions.TaskExtensions;
 
 namespace Microsoft.Teams.Plugins.AspNetCore;
@@ -184,7 +185,7 @@ public partial class AspNetCorePlugin
                 {
                     _timeout = new Timer(_ =>
                     {
-                       _ = Flush();
+                        _ = Flush();
                     }, null, 500, Timeout.Infinite);
                 }
 
