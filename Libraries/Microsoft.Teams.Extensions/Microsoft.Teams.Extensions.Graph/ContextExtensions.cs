@@ -1,6 +1,6 @@
-﻿using Microsoft.Teams.Apps;
+﻿using Microsoft.Graph;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Graph;
+using Microsoft.Teams.Apps;
 
 namespace Microsoft.Teams.Extensions.Graph;
 
