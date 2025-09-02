@@ -21,6 +21,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.ConversationUpdate,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<ConversationUpdateActivity>());

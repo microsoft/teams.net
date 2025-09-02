@@ -39,6 +39,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = type,
             Handler = async (context) =>
             {
                 await handler(context);
@@ -54,6 +55,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = type,
             Handler = handler,
             Selector = (activity) => activity.Type.Equals(type),
         });

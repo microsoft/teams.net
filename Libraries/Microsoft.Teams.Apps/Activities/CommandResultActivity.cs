@@ -18,6 +18,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.CommandResult,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<CommandResultActivity>());

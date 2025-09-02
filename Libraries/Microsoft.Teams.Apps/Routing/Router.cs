@@ -30,6 +30,16 @@ public class Router : IRouter
 
     public IRouter Register(IRoute route)
     {
+        if (route.Type == RouteType.User)
+        {
+            var i = _routes.FindIndex(r => r.Name == route.Name && r.Type == RouteType.System);
+
+            if (i > -1)
+            {
+                _routes.RemoveAt(i);
+            }
+        }
+
         _routes.Add(route);
         return this;
     }

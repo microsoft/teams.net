@@ -18,6 +18,7 @@ public static partial class AppEventActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Event,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<EventActivity>());

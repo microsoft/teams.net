@@ -22,6 +22,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>());
@@ -37,6 +38,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>()),
             Selector = activity => activity is MessageExtensions.SelectItemActivity
         });
@@ -48,6 +50,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>()),
             Selector = activity => activity is MessageExtensions.SelectItemActivity
         });

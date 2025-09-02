@@ -31,6 +31,7 @@ public static partial class AppEventActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Event, Name.MeetingStart]),
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MeetingStartActivity>());

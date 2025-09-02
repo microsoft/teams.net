@@ -23,6 +23,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Configs.Fetch]),
             Handler = async context =>
             {
                 await handler(context.ToActivityType<Configs.FetchActivity>());
@@ -38,6 +39,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Configs.Fetch]),
             Handler = async context => await handler(context.ToActivityType<Configs.FetchActivity>()),
             Selector = activity => activity is Configs.FetchActivity
         });
@@ -49,6 +51,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Configs.Fetch]),
             Handler = async context => await handler(context.ToActivityType<Configs.FetchActivity>()),
             Selector = activity => activity is Configs.FetchActivity
         });

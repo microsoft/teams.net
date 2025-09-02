@@ -23,6 +23,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
             Handler = async context =>
             {
                 await handler(context.ToActivityType<AdaptiveCards.ActionActivity>());
@@ -38,6 +39,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
             Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>()),
             Selector = activity => activity is AdaptiveCards.ActionActivity
         });
@@ -49,6 +51,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
             Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>()),
             Selector = activity => activity is AdaptiveCards.ActionActivity
         });

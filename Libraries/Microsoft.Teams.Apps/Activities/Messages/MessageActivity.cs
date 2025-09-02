@@ -40,6 +40,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Message,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageActivity>());
@@ -55,6 +56,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Message,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageActivity>());
@@ -78,6 +80,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Message,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageActivity>());

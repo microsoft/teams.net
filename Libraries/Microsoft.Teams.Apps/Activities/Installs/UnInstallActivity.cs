@@ -26,6 +26,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.InstallUpdate, InstallUpdateAction.Remove]),
             Handler = async context =>
             {
                 await handler(context.ToActivityType<InstallUpdateActivity>());

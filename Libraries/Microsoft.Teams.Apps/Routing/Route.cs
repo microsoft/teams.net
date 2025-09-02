@@ -12,6 +12,9 @@ namespace Microsoft.Teams.Apps.Routing;
 
 public interface IRoute
 {
+    public string? Name { get; }
+    public RouteType Type { get; }
+
     public bool Select(IActivity activity);
     public Task<object?> Invoke(IContext<IActivity> context);
 }
@@ -19,6 +22,7 @@ public interface IRoute
 public class Route : IRoute
 {
     public string? Name { get; set; }
+    public RouteType Type { get; set; } = RouteType.User;
     public required Func<IActivity, bool> Selector { get; set; }
     public required Func<IContext<IActivity>, Task<object?>> Handler { get; set; }
 
@@ -28,6 +32,8 @@ public class Route : IRoute
 
 public class AttributeRoute : IRoute
 {
+    public string? Name => Attr.Name?.Value;
+    public RouteType Type { get; set; } = RouteType.User;
     public required ActivityAttribute Attr { get; set; }
     public required MethodInfo Method { get; set; }
     public object? Object { get; set; }
