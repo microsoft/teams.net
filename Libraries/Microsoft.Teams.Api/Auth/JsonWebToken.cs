@@ -50,6 +50,12 @@ public class JsonWebToken : IToken
         get => From.IsBot ? $"urn:botframework:aadappid:{AppId}" : "urn:botframework:azure";
     }
 
+    [JsonPropertyName("expiration")]
+    public DateTime? Expiration
+    {
+        get => Token.ValidTo;
+    }
+
     public JwtSecurityToken Token { get; }
     private readonly string _tokenAsString;
 
@@ -67,5 +73,6 @@ public class JsonWebToken : IToken
         _tokenAsString = response.Token;
     }
 
+    public bool IsExpired() => Token.ValidTo <= DateTime.UtcNow.AddMilliseconds(1000 * 60 * 5);
     public override string ToString() => _tokenAsString;
 }
