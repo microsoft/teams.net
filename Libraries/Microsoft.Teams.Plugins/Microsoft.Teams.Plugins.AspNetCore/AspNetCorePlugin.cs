@@ -27,13 +27,6 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public event EventFunction Events;
 
-    private readonly IServiceProvider _services;
-
-    public AspNetCorePlugin(IServiceProvider provider)
-    {
-        _services = provider;
-    }
-
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {
         return builder;
