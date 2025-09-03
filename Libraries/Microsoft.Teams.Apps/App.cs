@@ -56,15 +56,29 @@ public partial class App
     {
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
-        Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
-        Client.Options.TokenFactory = () => BotToken;
-        Client.Options.AddUserAgent(UserAgent);
         Credentials = options?.Credentials;
-        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
 
+        Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
+        Client.Options.AddUserAgent(UserAgent);
+        Client.Options.TokenFactory = () =>
+        {
+            if (BotToken is not null && BotToken.IsExpired && Credentials is not null)
+            {
+                var res = Credentials.Resolve(Client, [.. BotToken.Scopes])
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
+
+                BotToken = new JsonWebToken(res.AccessToken);
+            }
+
+            return BotToken;
+        };
+
+        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Container = new Container();
         Container.Register(Logger);
         Container.Register(Storage);

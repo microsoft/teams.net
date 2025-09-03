@@ -49,7 +49,12 @@ public interface IToken
     /// check if the token is expired
     /// </summary>
     /// <returns>true if expired, otherwise false</returns>
-    public bool IsExpired();
+    public bool IsExpired { get; }
+
+    /// <summary>
+    /// a list of the tokens scopes
+    /// </summary>
+    public IEnumerable<string> Scopes { get; }
 
     /// <summary>
     /// convert the token to its string representation

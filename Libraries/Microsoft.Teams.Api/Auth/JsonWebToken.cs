@@ -56,6 +56,23 @@ public class JsonWebToken : IToken
         get => Token.ValidTo;
     }
 
+    [JsonIgnore]
+    public bool IsExpired
+    {
+        get => Token.ValidTo <= DateTime.UtcNow.AddMilliseconds(1000 * 60 * 5);
+    }
+
+    [JsonPropertyName("scopes")]
+    public IEnumerable<string> Scopes
+    {
+        get
+        {
+            var claim = Token.Claims.FirstOrDefault(c => c.Type == "scope" || c.Type == "scp");
+            if (claim is null) return [];
+            return claim.Value.Split(' ');
+        }
+    }
+
     public JwtSecurityToken Token { get; }
     private readonly string _tokenAsString;
 
@@ -73,6 +90,5 @@ public class JsonWebToken : IToken
         _tokenAsString = response.Token;
     }
 
-    public bool IsExpired() => Token.ValidTo <= DateTime.UtcNow.AddMilliseconds(1000 * 60 * 5);
     public override string ToString() => _tokenAsString;
 }
