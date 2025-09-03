@@ -8,9 +8,14 @@ using Microsoft.Teams.Apps.Routing;
 namespace Microsoft.Teams.Apps.Activities.Invokes;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class InvokeAttribute(string? name = null, Type? type = null) : ActivityAttribute(ActivityType.Invoke, type ?? typeof(InvokeActivity))
+public class InvokeAttribute : ActivityAttribute
 {
-    public readonly Name? InvokeName = name is not null ? new(name) : null;
+    public Name? InvokeName { get; }
+
+    public InvokeAttribute(string? name = null, Type? type = null) : base(name is null ? ActivityType.Invoke : string.Join("/", [ActivityType.Invoke, name]), type ?? typeof(InvokeActivity))
+    {
+        InvokeName = name is not null ? new(name) : null;
+    }
 
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<InvokeActivity>();
     public override bool Select(IActivity activity)
@@ -30,6 +35,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Invoke,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<InvokeActivity>());
@@ -45,6 +52,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Invoke,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = context => handler(context.ToActivityType<InvokeActivity>()),
             Selector = activity => activity is InvokeActivity
         });
@@ -56,6 +65,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Invoke,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<InvokeActivity>()),
             Selector = activity => activity is InvokeActivity
         });

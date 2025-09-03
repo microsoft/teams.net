@@ -48,7 +48,7 @@ public partial class App
 
         foreach (var method in methods)
         {
-            var attrs = method.GetCustomAttributes<Events.EventAttribute>(true);
+            var attrs = method.GetCustomAttributes<EventAttribute>(true);
 
             foreach (var attr in attrs)
             {

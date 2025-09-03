@@ -48,6 +48,14 @@ public class MessageController : ControllerBase
             Services = HttpContext.RequestServices
         }, _lifetime.ApplicationStopping);
 
+        // convert response metadata to headers
+        foreach (var (key, value) in res.Meta)
+        {
+            var str = value?.ToString();
+            if (string.IsNullOrEmpty(str)) continue;
+            Response.Headers.Append($"X-Teams-{char.ToUpper(key[0]) + key[1..]}", str);
+        }
+
         return Results.Json(res.Body, statusCode: (int)res.Status);
     }
 }

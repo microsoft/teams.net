@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Apps.Activities.Events;
 public static partial class Event
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-    public class MeetingLeaveAttribute() : EventAttribute
+    public class MeetingLeaveAttribute() : EventAttribute(Api.Activities.Events.Name.MeetingParticipantLeave)
     {
         public override object Coerce(IContext<IActivity> context) => context.ToActivityType<MeetingParticipantLeaveActivity>();
         public override bool Select(IActivity activity)
@@ -31,6 +31,8 @@ public static partial class AppEventActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Event, Name.MeetingParticipantLeave]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MeetingParticipantLeaveActivity>());

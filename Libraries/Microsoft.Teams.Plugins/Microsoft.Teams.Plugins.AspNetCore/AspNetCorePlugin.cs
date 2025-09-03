@@ -1,9 +1,8 @@
-﻿﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
@@ -22,17 +21,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
     [Dependency]
     public IHttpClient Client { get; set; }
 
-    [Dependency("BotToken", optional: true)]
-    public IToken? BotToken { get; set; }
-
     public event EventFunction Events;
-
-    private readonly IServiceProvider _services;
-
-    public AspNetCorePlugin(IServiceProvider provider)
-    {
-        _services = provider;
-    }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {

@@ -7,7 +7,7 @@ using Microsoft.Teams.Apps.Routing;
 namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class UnInstallAttribute() : InstallUpdateAttribute
+public class UnInstallAttribute() : InstallUpdateAttribute(InstallUpdateAction.Remove)
 {
     public override bool Select(IActivity activity)
     {
@@ -26,6 +26,8 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.InstallUpdate, InstallUpdateAction.Remove]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<InstallUpdateActivity>());

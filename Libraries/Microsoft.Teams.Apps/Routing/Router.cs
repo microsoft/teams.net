@@ -30,6 +30,16 @@ public class Router : IRouter
 
     public IRouter Register(IRoute route)
     {
+        if (route.Type == RouteType.User)
+        {
+            var i = _routes.FindIndex(r => r.Name == route.Name && r.Type == RouteType.System);
+
+            if (i > -1)
+            {
+                _routes.RemoveAt(i);
+            }
+        }
+
         _routes.Add(route);
         return this;
     }
@@ -38,20 +48,21 @@ public class Router : IRouter
     {
         return Register(new Route()
         {
+            Name = "activity",
             Selector = _ => true,
             Handler = handler
         });
     }
 
-    public IRouter Register(string? name, Func<IContext<IActivity>, Task<object?>> handler)
+    public IRouter Register(string name, Func<IContext<IActivity>, Task<object?>> handler)
     {
         return Register(new Route()
         {
             Name = name,
             Handler = handler,
-            Selector = (activity) =>
+            Selector = activity =>
             {
-                if (name is null || name == "activity") return true;
+                if (name == "activity") return true;
                 if (activity.Type.Equals(name)) return true;
                 return false;
             }

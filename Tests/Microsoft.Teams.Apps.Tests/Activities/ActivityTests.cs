@@ -36,6 +36,7 @@ public class ActivityTests
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(1, calls);
         Assert.Equal(1, _controller.Calls);
+        Assert.Equal(2, res.Meta.Routes);
     }
 
     [Fact]
@@ -55,6 +56,7 @@ public class ActivityTests
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(1, calls);
         Assert.Equal(1, _controller.Calls);
+        Assert.Equal(2, res.Meta.Routes);
     }
 
     [Fact]

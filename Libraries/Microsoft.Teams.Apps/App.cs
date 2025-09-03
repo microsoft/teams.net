@@ -23,20 +23,20 @@ public partial class App
     /// <summary>
     /// the apps id
     /// </summary>
-    public string? Id => BotToken?.AppId ?? GraphToken?.AppId;
+    public string? Id => Token?.AppId;
 
     /// <summary>
     /// the apps name
     /// </summary>
-    public string? Name => BotToken?.AppDisplayName ?? GraphToken?.AppDisplayName;
+    public string? Name => Token?.AppDisplayName;
 
+    public Status? Status { get; internal set; }
     public ILogger Logger { get; }
     public IStorage<string, object> Storage { get; }
     public ApiClient Api { get; }
     public IHttpClient Client { get; }
     public IHttpCredentials? Credentials { get; }
-    public IToken? BotToken { get; internal set; }
-    public IToken? GraphToken { get; internal set; }
+    public IToken? Token { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
     internal IServiceProvider? Provider { get; set; }
@@ -55,15 +55,29 @@ public partial class App
     {
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
-        Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
-        Client.Options.TokenFactory = () => BotToken;
-        Client.Options.AddUserAgent(UserAgent);
         Credentials = options?.Credentials;
-        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
 
+        Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
+        Client.Options.AddUserAgent(UserAgent);
+        Client.Options.TokenFactory = () =>
+        {
+            if (Token is not null && Token.IsExpired && Credentials is not null)
+            {
+                var res = Credentials.Resolve(Client, [.. Token.Scopes])
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
+
+                Token = new JsonWebToken(res.AccessToken);
+            }
+
+            return Token;
+        };
+
+        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Container = new Container();
         Container.Register(Logger);
         Container.Register(Storage);
@@ -72,8 +86,7 @@ public partial class App
         Container.Register<IHttpCredentials>(new FactoryProvider(() => Credentials));
         Container.Register("AppId", new FactoryProvider(() => Id));
         Container.Register("AppName", new FactoryProvider(() => Name));
-        Container.Register("BotToken", new FactoryProvider(() => BotToken));
-        Container.Register("GraphToken", new FactoryProvider(() => GraphToken));
+        Container.Register("Token", new FactoryProvider(() => Token));
 
         this.OnTokenExchange(OnTokenExchangeActivity);
         this.OnVerifyState(OnVerifyStateActivity);
@@ -85,6 +98,8 @@ public partial class App
         {
             return OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token);
         });
+
+        Status = Apps.Status.Ready;
     }
 
     /// <summary>
@@ -101,11 +116,8 @@ public partial class App
 
             if (Credentials is not null)
             {
-                var botToken = await Api.Bots.Token.GetAsync(Credentials);
-                var graphToken = await Api.Bots.Token.GetGraphAsync(Credentials);
-
-                BotToken = new JsonWebToken(botToken.AccessToken);
-                GraphToken = new JsonWebToken(graphToken.AccessToken);
+                var res = await Api.Bots.Token.GetAsync(Credentials);
+                Token = new JsonWebToken(res.AccessToken);
             }
 
             Logger.Debug(Id);
@@ -120,9 +132,12 @@ public partial class App
             {
                 await plugin.OnStart(this, cancellationToken);
             }
+
+            Status = Apps.Status.Started;
         }
         catch (Exception ex)
         {
+            Status = Apps.Status.Stopped;
             await Events.Emit(
                 null!,
                 EventType.Error,
@@ -135,7 +150,7 @@ public partial class App
     /// send an activity to the conversation
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
+    public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
     {
         if (Id is null)
         {
@@ -182,7 +197,7 @@ public partial class App
     /// send a message activity to the conversation
     /// </summary>
     /// <param name="text">the text to send</param>
-    public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
         return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, cancellationToken);
     }
@@ -191,7 +206,7 @@ public partial class App
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
         return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, cancellationToken);
     }
@@ -248,6 +263,7 @@ public partial class App
     /// <param name="cancellationToken">the cancellation token</param>
     private async Task<Response> Process(ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
+        var start = DateTime.UtcNow;
         var routes = Router.Select(@event.Activity);
         JsonWebToken? userToken = null;
 
@@ -283,8 +299,9 @@ public partial class App
         var i = -1;
         async Task<object?> Next(IContext<IActivity> context)
         {
+            if (i + 1 == routes.Count) return data;
+
             i++;
-            if (i == routes.Count) return data;
             var res = await routes[i].Invoke(context);
 
             if (res is not null)
@@ -352,6 +369,9 @@ public partial class App
             var response = res is Response value
                 ? value
                 : new Response(System.Net.HttpStatusCode.OK, res);
+
+            response.Meta.Routes = i + 1;
+            response.Meta.Elapse = (DateTime.UtcNow - start).Milliseconds;
 
             await Events.Emit(
                 sender,

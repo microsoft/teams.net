@@ -19,6 +19,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Handoff]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<HandoffActivity>());
@@ -34,6 +36,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Handoff]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = context => handler(context.ToActivityType<HandoffActivity>()),
             Selector = activity => activity is HandoffActivity
         });

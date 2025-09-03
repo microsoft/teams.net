@@ -1,5 +1,5 @@
-﻿using System.Text;
-using System.Reflection;
+﻿using System.Reflection;
+using System.Text;
 
 using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Common.Text;
