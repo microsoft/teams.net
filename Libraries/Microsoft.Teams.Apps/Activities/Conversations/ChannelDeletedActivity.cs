@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Apps.Activities;
 public static partial class Conversation
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-    public class ChannelDeletedAttribute() : UpdateAttribute
+    public class ChannelDeletedAttribute() : UpdateAttribute(ConversationUpdateActivity.EventType.ChannelDeleted)
     {
         public override bool Select(IActivity activity)
         {

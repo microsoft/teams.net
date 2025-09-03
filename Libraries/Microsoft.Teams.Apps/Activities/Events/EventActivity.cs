@@ -2,13 +2,24 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Activities.Events;
 using Microsoft.Teams.Apps.Routing;
 
 namespace Microsoft.Teams.Apps.Activities.Events;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class EventAttribute() : ActivityAttribute(ActivityType.Event, typeof(EventActivity))
+public class EventAttribute : ActivityAttribute
 {
+    public EventAttribute() : base(ActivityType.Event, typeof(EventActivity))
+    {
+
+    }
+
+    public EventAttribute(Name name) : base(string.Join("/", [ActivityType.Event, name]), typeof(EventActivity))
+    {
+
+    }
+
     public override object Coerce(IContext<IActivity> context) => context.ToActivityType<EventActivity>();
 }
 

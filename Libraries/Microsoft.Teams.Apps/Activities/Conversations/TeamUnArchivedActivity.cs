@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Apps.Activities;
 public static partial class Conversation
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-    public class TeamUnArchivedAttribute() : UpdateAttribute
+    public class TeamUnArchivedAttribute() : UpdateAttribute(ConversationUpdateActivity.EventType.TeamUnarchived)
     {
         public override bool Select(IActivity activity)
         {

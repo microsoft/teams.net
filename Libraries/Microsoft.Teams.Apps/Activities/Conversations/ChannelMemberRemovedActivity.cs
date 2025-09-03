@@ -6,7 +6,7 @@ namespace Microsoft.Teams.Apps.Activities;
 public static partial class Conversation
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-    public class ChannelMemberRemovedAttribute() : UpdateAttribute
+    public class ChannelMemberRemovedAttribute() : UpdateAttribute(ConversationUpdateActivity.EventType.ChannelMemberRemoved)
     {
         public override bool Select(IActivity activity)
         {

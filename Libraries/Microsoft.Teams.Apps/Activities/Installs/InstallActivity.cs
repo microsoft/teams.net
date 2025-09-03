@@ -7,7 +7,7 @@ using Microsoft.Teams.Apps.Routing;
 namespace Microsoft.Teams.Apps.Activities;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-public class InstallAttribute() : InstallUpdateAttribute
+public class InstallAttribute() : InstallUpdateAttribute(InstallUpdateAction.Add)
 {
     public override bool Select(IActivity activity)
     {

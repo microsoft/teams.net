@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Apps.Activities.Events;
 public static partial class Event
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-    public class ReadReceiptAttribute() : EventAttribute
+    public class ReadReceiptAttribute() : EventAttribute(Api.Activities.Events.Name.ReadReceipt)
     {
         public override object Coerce(IContext<IActivity> context) => context.ToActivityType<ReadReceiptActivity>();
         public override bool Select(IActivity activity)

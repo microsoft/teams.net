@@ -9,8 +9,18 @@ namespace Microsoft.Teams.Apps.Activities;
 public static partial class Conversation
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-    public class UpdateAttribute() : ActivityAttribute(ActivityType.ConversationUpdate, typeof(ConversationUpdateActivity))
+    public class UpdateAttribute : ActivityAttribute
     {
+        public UpdateAttribute() : base(ActivityType.ConversationUpdate, typeof(ConversationUpdateActivity))
+        {
+
+        }
+
+        public UpdateAttribute(ConversationUpdateActivity.EventType eventType) : base(string.Join("/", [ActivityType.ConversationUpdate, eventType]), typeof(ConversationUpdateActivity))
+        {
+
+        }
+
         public override object Coerce(IContext<IActivity> context) => context.ToActivityType<ConversationUpdateActivity>();
     }
 }

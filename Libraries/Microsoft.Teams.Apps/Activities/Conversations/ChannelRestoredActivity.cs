@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Apps.Activities;
 public static partial class Conversation
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-    public class ChannelRestoredAttribute() : UpdateAttribute
+    public class ChannelRestoredAttribute() : UpdateAttribute(ConversationUpdateActivity.EventType.ChannelRestored)
     {
         public override bool Select(IActivity activity)
         {

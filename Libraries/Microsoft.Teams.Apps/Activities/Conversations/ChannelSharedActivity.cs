@@ -6,7 +6,7 @@ namespace Microsoft.Teams.Apps.Activities;
 public static partial class Conversation
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
-    public class ChannelSharedAttribute() : UpdateAttribute
+    public class ChannelSharedAttribute() : UpdateAttribute(ConversationUpdateActivity.EventType.ChannelShared)
     {
         public override bool Select(IActivity activity)
         {
