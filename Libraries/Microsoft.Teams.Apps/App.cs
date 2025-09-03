@@ -150,7 +150,7 @@ public partial class App
     /// send an activity to the conversation
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
+    public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
     {
         if (Id is null)
         {
@@ -197,7 +197,7 @@ public partial class App
     /// send a message activity to the conversation
     /// </summary>
     /// <param name="text">the text to send</param>
-    public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
         return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, cancellationToken);
     }
@@ -206,7 +206,7 @@ public partial class App
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType, string? serviceUrl = null, CancellationToken cancellationToken = default)
+    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
         return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, cancellationToken);
     }
