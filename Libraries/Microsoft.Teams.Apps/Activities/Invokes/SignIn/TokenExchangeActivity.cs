@@ -20,6 +20,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<SignIn.TokenExchangeActivity>());
@@ -36,6 +37,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
@@ -48,6 +50,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
@@ -60,6 +63,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });

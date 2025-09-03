@@ -20,6 +20,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.FileConsent]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<FileConsentActivity>());
@@ -36,6 +37,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.FileConsent]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = context => handler(context.ToActivityType<FileConsentActivity>()),
             Selector = activity => activity is FileConsentActivity
         });

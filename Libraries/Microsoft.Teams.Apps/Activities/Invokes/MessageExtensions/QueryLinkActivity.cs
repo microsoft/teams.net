@@ -23,6 +23,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>());
@@ -39,6 +40,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>()),
             Selector = activity => activity is MessageExtensions.QueryLinkActivity
         });
@@ -51,6 +53,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>()),
             Selector = activity => activity is MessageExtensions.QueryLinkActivity
         });

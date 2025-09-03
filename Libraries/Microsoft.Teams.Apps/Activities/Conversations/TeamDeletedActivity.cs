@@ -32,6 +32,7 @@ public static partial class AppActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.ConversationUpdate, ConversationUpdateActivity.EventType.TeamDeleted]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<ConversationUpdateActivity>());
@@ -56,6 +57,7 @@ public static partial class AppActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.ConversationUpdate, ConversationUpdateActivity.EventType.TeamHardDeleted]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<ConversationUpdateActivity>());

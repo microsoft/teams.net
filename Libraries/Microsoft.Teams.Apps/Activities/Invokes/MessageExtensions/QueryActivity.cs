@@ -23,6 +23,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageExtensions.QueryActivity>());
@@ -39,6 +40,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>()),
             Selector = activity => activity is MessageExtensions.QueryActivity
         });
@@ -51,6 +53,7 @@ public static partial class AppInvokeActivityExtensions
         app.Router.Register(new Route()
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>()),
             Selector = activity => activity is MessageExtensions.QueryActivity
         });

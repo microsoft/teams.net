@@ -30,6 +30,7 @@ public partial class App
     /// </summary>
     public string? Name => BotToken?.AppDisplayName ?? GraphToken?.AppDisplayName;
 
+    public Status? Status { get; internal set; }
     public ILogger Logger { get; }
     public IStorage<string, object> Storage { get; }
     public ApiClient Api { get; }
@@ -85,6 +86,8 @@ public partial class App
         {
             return OnActivityEvent((ISenderPlugin)plugin, (ActivityEvent)@event, token);
         });
+
+        Status = Apps.Status.Ready;
     }
 
     /// <summary>
@@ -120,9 +123,12 @@ public partial class App
             {
                 await plugin.OnStart(this, cancellationToken);
             }
+
+            Status = Apps.Status.Started;
         }
         catch (Exception ex)
         {
+            Status = Apps.Status.Stopped;
             await Events.Emit(
                 null!,
                 EventType.Error,
