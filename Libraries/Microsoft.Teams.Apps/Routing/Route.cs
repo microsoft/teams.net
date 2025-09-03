@@ -21,7 +21,7 @@ public interface IRoute
 
 public class Route : IRoute
 {
-    public string? Name { get; set; }
+    public required string Name { get; set; }
     public RouteType Type { get; set; } = RouteType.User;
     public required Func<IActivity, bool> Selector { get; set; }
     public required Func<IContext<IActivity>, Task<object?>> Handler { get; set; }

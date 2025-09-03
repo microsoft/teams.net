@@ -28,6 +28,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.SearchAnswer]),
             Handler = async context =>
             {
                 await handler(context.ToActivityType<SearchActivity>());
@@ -51,6 +52,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.SearchAnswer]),
             Handler = async context => await handler(context.ToActivityType<SearchActivity>()),
             Selector = activity =>
             {
@@ -70,6 +72,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.SearchAnswer]),
             Handler = async context => await handler(context.ToActivityType<SearchActivity>()),
             Selector = activity =>
             {

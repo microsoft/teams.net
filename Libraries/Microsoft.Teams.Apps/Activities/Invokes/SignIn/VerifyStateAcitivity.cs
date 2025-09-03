@@ -19,6 +19,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.VerifyState]),
             Handler = async context =>
             {
                 await handler(context.ToActivityType<SignIn.VerifyStateActivity>());
@@ -34,6 +35,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.VerifyState]),
             Handler = context => handler(context.ToActivityType<SignIn.VerifyStateActivity>()),
             Selector = activity => activity is SignIn.VerifyStateActivity
         });
@@ -45,6 +47,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.VerifyState]),
             Handler = async context => await handler(context.ToActivityType<SignIn.VerifyStateActivity>()),
             Selector = activity => activity is SignIn.VerifyStateActivity
         });

@@ -248,6 +248,7 @@ public partial class App
     /// <param name="cancellationToken">the cancellation token</param>
     private async Task<Response> Process(ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
+        var start = DateTime.UtcNow;
         var routes = Router.Select(@event.Activity);
         JsonWebToken? userToken = null;
 
@@ -352,6 +353,9 @@ public partial class App
             var response = res is Response value
                 ? value
                 : new Response(System.Net.HttpStatusCode.OK, res);
+
+            response.Meta.Routes = i + 1;
+            response.Meta.Elapse = (DateTime.UtcNow - start).Milliseconds;
 
             await Events.Emit(
                 sender,

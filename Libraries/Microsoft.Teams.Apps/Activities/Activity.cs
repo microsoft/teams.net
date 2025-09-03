@@ -67,6 +67,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = "activity",
             Handler = async (context) =>
             {
                 await handler(context.ToActivityType<TActivity>());
@@ -82,6 +83,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = "activity",
             Handler = (context) => handler(context.ToActivityType<TActivity>()),
             Selector = (activity) => activity.GetType() == typeof(TActivity),
         });
@@ -93,6 +95,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = "activity",
             Selector = select,
             Handler = async (context) =>
             {
@@ -108,6 +111,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = "activity",
             Selector = select,
             Handler = handler
         });

@@ -19,6 +19,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.ExecuteAction]),
             Handler = async context =>
             {
                 await handler(context.ToActivityType<ExecuteActionActivity>());
@@ -34,6 +35,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.ExecuteAction]),
             Handler = context => handler(context.ToActivityType<ExecuteActionActivity>()),
             Selector = activity => activity is ExecuteActionActivity
         });

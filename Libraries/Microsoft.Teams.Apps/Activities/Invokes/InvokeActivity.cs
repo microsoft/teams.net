@@ -30,6 +30,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Invoke,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<InvokeActivity>());
@@ -45,6 +46,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Invoke,
             Handler = context => handler(context.ToActivityType<InvokeActivity>()),
             Selector = activity => activity is InvokeActivity
         });
@@ -56,6 +58,7 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = ActivityType.Invoke,
             Handler = async context => await handler(context.ToActivityType<InvokeActivity>()),
             Selector = activity => activity is InvokeActivity
         });
