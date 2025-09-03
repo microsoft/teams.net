@@ -23,12 +23,12 @@ public partial class App
     /// <summary>
     /// the apps id
     /// </summary>
-    public string? Id => BotToken?.AppId ?? GraphToken?.AppId;
+    public string? Id => Token?.AppId;
 
     /// <summary>
     /// the apps name
     /// </summary>
-    public string? Name => BotToken?.AppDisplayName ?? GraphToken?.AppDisplayName;
+    public string? Name => Token?.AppDisplayName;
 
     public Status? Status { get; internal set; }
     public ILogger Logger { get; }
@@ -36,8 +36,7 @@ public partial class App
     public ApiClient Api { get; }
     public IHttpClient Client { get; }
     public IHttpCredentials? Credentials { get; }
-    public IToken? BotToken { get; internal set; }
-    public IToken? GraphToken { get; internal set; }
+    public IToken? Token { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
     internal IServiceProvider? Provider { get; set; }
@@ -65,17 +64,17 @@ public partial class App
         Client.Options.AddUserAgent(UserAgent);
         Client.Options.TokenFactory = () =>
         {
-            if (BotToken is not null && BotToken.IsExpired && Credentials is not null)
+            if (Token is not null && Token.IsExpired && Credentials is not null)
             {
-                var res = Credentials.Resolve(Client, [.. BotToken.Scopes])
+                var res = Credentials.Resolve(Client, [.. Token.Scopes])
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
 
-                BotToken = new JsonWebToken(res.AccessToken);
+                Token = new JsonWebToken(res.AccessToken);
             }
 
-            return BotToken;
+            return Token;
         };
 
         Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
@@ -87,8 +86,7 @@ public partial class App
         Container.Register<IHttpCredentials>(new FactoryProvider(() => Credentials));
         Container.Register("AppId", new FactoryProvider(() => Id));
         Container.Register("AppName", new FactoryProvider(() => Name));
-        Container.Register("BotToken", new FactoryProvider(() => BotToken));
-        Container.Register("GraphToken", new FactoryProvider(() => GraphToken));
+        Container.Register("Token", new FactoryProvider(() => Token));
 
         this.OnTokenExchange(OnTokenExchangeActivity);
         this.OnVerifyState(OnVerifyStateActivity);
@@ -118,11 +116,8 @@ public partial class App
 
             if (Credentials is not null)
             {
-                var botToken = await Api.Bots.Token.GetAsync(Credentials);
-                var graphToken = await Api.Bots.Token.GetGraphAsync(Credentials);
-
-                BotToken = new JsonWebToken(botToken.AccessToken);
-                GraphToken = new JsonWebToken(graphToken.AccessToken);
+                var res = await Api.Bots.Token.GetAsync(Credentials);
+                Token = new JsonWebToken(res.AccessToken);
             }
 
             Logger.Debug(Id);
