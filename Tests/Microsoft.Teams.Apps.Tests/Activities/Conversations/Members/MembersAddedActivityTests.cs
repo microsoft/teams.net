@@ -46,6 +46,7 @@ public class MembersAddedActivityTests
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(2, calls);
         Assert.Equal(1, _controller.Calls);
+        Assert.Equal(3, res.Meta.Routes);
     }
 
     [Fact]
@@ -68,6 +69,7 @@ public class MembersAddedActivityTests
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(0, calls);
         Assert.Equal(0, _controller.Calls);
+        Assert.Equal(0, res.Meta.Routes);
     }
 
     [TeamsController]

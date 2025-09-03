@@ -284,8 +284,9 @@ public partial class App
         var i = -1;
         async Task<object?> Next(IContext<IActivity> context)
         {
+            if (i + 1 == routes.Count) return data;
+
             i++;
-            if (i == routes.Count) return data;
             var res = await routes[i].Invoke(context);
 
             if (res is not null)
