@@ -38,7 +38,6 @@ public partial interface IContext<TActivity>
 public partial class Context<TActivity> : IContext<TActivity>
 {
     public bool IsSignedIn { get; set; } = false;
-
     public required string ConnectionName { get; set; }
 
     public async Task<string?> SignIn(SignInOptions? options = null)
@@ -52,7 +51,7 @@ public partial class Context<TActivity> : IContext<TActivity>
             {
                 UserId = Activity.From.Id,
                 ChannelId = Activity.ChannelId,
-                ConnectionName = ConnectionName,
+                ConnectionName = options.ConnectionName ?? ConnectionName,
             });
 
             return tokenResponse.Token;
@@ -61,7 +60,7 @@ public partial class Context<TActivity> : IContext<TActivity>
 
         var tokenExchangeState = new Api.TokenExchange.State()
         {
-            ConnectionName = ConnectionName,
+            ConnectionName = options.ConnectionName ?? ConnectionName,
             Conversation = reference,
             RelatesTo = Activity.RelatesTo,
             MsAppId = AppId
@@ -96,14 +95,14 @@ public partial class Context<TActivity> : IContext<TActivity>
         activity.AddAttachment(new Api.Cards.OAuthCard()
         {
             Text = options.OAuthCardText,
-            ConnectionName = ConnectionName,
+            ConnectionName = options.ConnectionName ?? ConnectionName,
             TokenExchangeResource = resource.TokenExchangeResource,
             TokenPostResource = resource.TokenPostResource,
             Buttons = [
                 new(Teams.Api.Cards.ActionType.SignIn)
                 {
                     Title = options.SignInButtonText,
-                    Value = resource.SignInLink
+                    Value = options.SignInLink ?? resource.SignInLink
                 }
             ]
         });
@@ -135,4 +134,16 @@ public class SignInOptions
     /// the sign in button text
     /// </summary>
     public string SignInButtonText { get; set; } = "Sign In";
+
+    /// <summary>
+    /// the auth connection name to use, defaults
+    /// to the default connection name of the app
+    /// </summary>
+    public string? ConnectionName { get; set; }
+
+    /// <summary>
+    /// the sign in link to use, defaults to
+    /// the link returned by the sign in resource
+    /// </summary>
+    public string? SignInLink { get; set; }
 }
