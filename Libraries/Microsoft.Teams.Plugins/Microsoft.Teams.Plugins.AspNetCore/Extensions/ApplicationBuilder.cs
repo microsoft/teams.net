@@ -4,7 +4,10 @@
 using System.Reflection;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Plugins;
@@ -62,13 +65,65 @@ public static class ApplicationBuilderExtensions
         return app;
     }
 
+    /// <summary>
+    /// get the AspNetCorePlugin instance
+    /// </summary>
     public static AspNetCorePlugin GetAspNetCorePlugin(this IApplicationBuilder builder)
     {
         return builder.ApplicationServices.GetAspNetCorePlugin();
     }
 
-    public static AspNetCorePlugin GetAspNetCorePlugin(this IServiceProvider provider)
+    /// <summary>
+    /// add/update a static tab.
+    /// the tab will be hosted at
+    /// <code>http://localhost:{{PORT}}/tabs/{{name}}</code> or
+    /// <code>https://{{BOT_DOMAIN}}/tabs/{{name}}</code>
+    /// </summary>
+    /// <param name="name">A unique identifier for the entity which the tab displays</param>
+    /// <param name="path">The path to the web `dist` folder</param>
+    public static IApplicationBuilder AddTeamsTab(this IApplicationBuilder builder, string name, string path)
     {
-        return provider.GetRequiredService<AspNetCorePlugin>();
+        var provider = new ManifestEmbeddedFileProvider(Assembly.GetCallingAssembly(), path);
+        IResult OnGet(string path)
+        {
+            var file = provider.GetFileInfo(path);
+
+            if (!file.Exists)
+            {
+                return Results.NotFound($"file \"{path}\" not found");
+            }
+
+            return Results.File(file.CreateReadStream(), contentType: "text/html");
+        }
+
+        builder.UseStaticFiles(new StaticFileOptions()
+        {
+            FileProvider = provider,
+            ServeUnknownFileTypes = true,
+            RequestPath = $"/tabs/{name}"
+        });
+
+        builder.UseEndpoints(endpoints =>
+        {
+            endpoints.MapGet($"/tabs/{name}", async context =>
+            {
+                await OnGet("index.html").ExecuteAsync(context);
+            });
+
+            endpoints.MapGet($"/tabs/{name}/{{*path}}", async context =>
+            {
+                var path = context.GetRouteData().Values["path"]?.ToString();
+
+                if (path is null)
+                {
+                    await Results.NotFound().ExecuteAsync(context);
+                    return;
+                }
+
+                await OnGet(path).ExecuteAsync(context);
+            });
+        });
+
+        return builder;
     }
 }
