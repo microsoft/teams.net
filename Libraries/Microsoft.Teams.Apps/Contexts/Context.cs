@@ -34,6 +34,11 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     public string AppId { get; set; }
 
     /// <summary>
+    /// the tenant id of the request/activity
+    /// </summary>
+    public string TenantId { get; set; }
+
+    /// <summary>
     /// the app logger instance
     /// </summary>
     public ILogger Log { get; set; }
@@ -124,6 +129,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     public IStreamer Stream { get; set; } = stream;
 
     public required string AppId { get; set; }
+    public required string TenantId { get; set; }
     public required ILogger Log { get; set; }
     public required IStorage<string, object> Storage { get; set; }
     public required ApiClient Api { get; set; }
@@ -169,6 +175,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
         {
             Sender = Sender,
             AppId = AppId,
+            TenantId = TenantId,
             Log = Log,
             Storage = Storage,
             Api = Api,
