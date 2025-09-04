@@ -34,7 +34,7 @@ teams.OnMessage(async context =>
 {
     if (!context.IsSignedIn)
     {
-        await context.SignIn(new SignInOptions()
+        await context.SignIn(new OAuthOptions()
         {
             // Customize the OAuth card text (only applies to OAuth flow, not SSO)
             OAuthCardText = "Sign in to your account",
