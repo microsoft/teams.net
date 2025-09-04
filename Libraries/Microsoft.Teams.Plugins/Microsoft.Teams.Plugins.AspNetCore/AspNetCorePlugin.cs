@@ -118,13 +118,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 cancellationToken
             );
 
-            var res = (Response?)@out;
-
-            if (res is null)
-            {
-                throw new Exception("expected activity response");
-            }
-
+            var res = (Response?)@out ?? throw new Exception("expected activity response");
             Logger.Debug(res);
             return res;
         }

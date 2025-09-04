@@ -13,6 +13,12 @@ namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
 public static class ApplicationBuilderExtensions
 {
+    /// <summary>
+    /// initializes/starts your Teams app after
+    /// adding all registered IPlugin's
+    /// </summary>
+    /// <param name="routing">set to false to disable the plugins default http controller endpoints</param>
+    /// <returns>your app instance</returns>
     public static App UseTeams(this IApplicationBuilder builder, bool routing = true)
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();

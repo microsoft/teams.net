@@ -12,35 +12,78 @@ namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
 public static class HostApplicationBuilderExtensions
 {
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder)
+    /// <summary>
+    /// adds core Teams services and the
+    /// AspNetCorePlugin
+    /// </summary>
+    /// <param name="routing">set to false to disable the plugins default http controller</param>
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, bool routing = true)
     {
         builder.AddTeamsCore();
         builder.AddTeamsPlugin<AspNetCorePlugin>();
-        builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
+
+        if (routing)
+        {
+            builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
+        }
+
         return builder;
     }
 
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, App app)
+    /// <summary>
+    /// adds core Teams services and the
+    /// AspNetCorePlugin
+    /// </summary>
+    /// <param name="app">your app instance</param>
+    /// <param name="routing">set to false to disable the plugins default http controller</param>
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, App app, bool routing = true)
     {
         builder.AddTeamsCore(app);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
-        builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
+
+        if (routing)
+        {
+            builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
+        }
+
         return builder;
     }
 
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppOptions options)
+    /// <summary>
+    /// adds core Teams services and the
+    /// AspNetCorePlugin
+    /// </summary>
+    /// <param name="builder">your app options</param>
+    /// <param name="routing">set to false to disable the plugins default http controller</param>
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppOptions options, bool routing = true)
     {
         builder.AddTeamsCore(options);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
-        builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
+
+        if (routing)
+        {
+            builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
+        }
+
         return builder;
     }
 
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppBuilder appBuilder)
+    /// <summary>
+    /// adds core Teams services and the
+    /// AspNetCorePlugin
+    /// </summary>
+    /// <param name="appBuilder">your app builder</param>
+    /// <param name="routing">set to false to disable the plugins default http controller</param>
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppBuilder appBuilder, bool routing = true)
     {
         builder.AddTeamsCore(appBuilder);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
-        builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
+
+        if (routing)
+        {
+            builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
+        }
+
         return builder;
     }
 }
