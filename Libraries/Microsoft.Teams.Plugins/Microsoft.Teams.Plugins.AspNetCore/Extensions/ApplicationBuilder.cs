@@ -80,10 +80,9 @@ public static class ApplicationBuilderExtensions
     /// <code>https://{{BOT_DOMAIN}}/tabs/{{name}}</code>
     /// </summary>
     /// <param name="name">A unique identifier for the entity which the tab displays</param>
-    /// <param name="path">The path to the web `dist` folder</param>
-    public static IApplicationBuilder AddTeamsTab(this IApplicationBuilder builder, string name, string path)
+    /// <param name="provider">The file provider used to serve static assets</param>
+    public static IApplicationBuilder AddTeamsTab(this IApplicationBuilder builder, string name, IFileProvider provider)
     {
-        var provider = new ManifestEmbeddedFileProvider(Assembly.GetCallingAssembly(), path);
         IResult OnGet(string path)
         {
             var file = provider.GetFileInfo(path);
@@ -125,5 +124,22 @@ public static class ApplicationBuilderExtensions
         });
 
         return builder;
+    }
+
+    /// <summary>
+    /// add/update a static tab.
+    /// the tab will be hosted at
+    /// <code>http://localhost:{{PORT}}/tabs/{{name}}</code> or
+    /// <code>https://{{BOT_DOMAIN}}/tabs/{{name}}</code>
+    /// </summary>
+    /// <param name="name">A unique identifier for the entity which the tab displays</param>
+    /// <param name="path">The filepath to use when creating a file provider</param>
+    /// <remarks>
+    /// The default file provider type is <code>ManifestEmbeddedFileProvider</code>,
+    /// to use your own file provider use see <see cref="AddTeamsTab" />
+    /// </remarks>
+    public static IApplicationBuilder AddTeamsTab(this IApplicationBuilder builder, string name, string path)
+    {
+        return builder.AddTeamsTab(name, new ManifestEmbeddedFileProvider(Assembly.GetCallingAssembly(), path));
     }
 }
