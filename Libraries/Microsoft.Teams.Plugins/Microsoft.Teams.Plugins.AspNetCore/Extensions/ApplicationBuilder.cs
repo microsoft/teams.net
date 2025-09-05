@@ -4,17 +4,14 @@
 using System.Reflection;
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.FileProviders;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
-public static class ApplicationBuilderExtensions
+public static partial class ApplicationBuilderExtensions
 {
     /// <summary>
     /// initializes/starts your Teams app after
@@ -71,75 +68,5 @@ public static class ApplicationBuilderExtensions
     public static AspNetCorePlugin GetAspNetCorePlugin(this IApplicationBuilder builder)
     {
         return builder.ApplicationServices.GetAspNetCorePlugin();
-    }
-
-    /// <summary>
-    /// add/update a static tab.
-    /// the tab will be hosted at
-    /// <code>http://localhost:{{PORT}}/tabs/{{name}}</code> or
-    /// <code>https://{{BOT_DOMAIN}}/tabs/{{name}}</code>
-    /// </summary>
-    /// <param name="name">A unique identifier for the entity which the tab displays</param>
-    /// <param name="provider">The file provider used to serve static assets</param>
-    public static IApplicationBuilder AddTeamsTab(this IApplicationBuilder builder, string name, IFileProvider provider)
-    {
-        IResult OnGet(string path)
-        {
-            var file = provider.GetFileInfo(path);
-
-            if (!file.Exists)
-            {
-                return Results.NotFound($"file \"{path}\" not found");
-            }
-
-            return Results.File(file.CreateReadStream(), contentType: "text/html");
-        }
-
-        builder.UseStaticFiles(new StaticFileOptions()
-        {
-            FileProvider = provider,
-            ServeUnknownFileTypes = true,
-            RequestPath = $"/tabs/{name}"
-        });
-
-        builder.UseEndpoints(endpoints =>
-        {
-            endpoints.MapGet($"/tabs/{name}", async context =>
-            {
-                await OnGet("index.html").ExecuteAsync(context);
-            });
-
-            endpoints.MapGet($"/tabs/{name}/{{*path}}", async context =>
-            {
-                var path = context.GetRouteData().Values["path"]?.ToString();
-
-                if (path is null)
-                {
-                    await Results.NotFound().ExecuteAsync(context);
-                    return;
-                }
-
-                await OnGet(path).ExecuteAsync(context);
-            });
-        });
-
-        return builder;
-    }
-
-    /// <summary>
-    /// add/update a static tab.
-    /// the tab will be hosted at
-    /// <code>http://localhost:{{PORT}}/tabs/{{name}}</code> or
-    /// <code>https://{{BOT_DOMAIN}}/tabs/{{name}}</code>
-    /// </summary>
-    /// <param name="name">A unique identifier for the entity which the tab displays</param>
-    /// <param name="path">The filepath to use when creating a file provider</param>
-    /// <remarks>
-    /// The default file provider type is <code>ManifestEmbeddedFileProvider</code>,
-    /// to use your own file provider use see <see cref="AddTeamsTab" />
-    /// </remarks>
-    public static IApplicationBuilder AddTeamsTab(this IApplicationBuilder builder, string name, string path)
-    {
-        return builder.AddTeamsTab(name, new ManifestEmbeddedFileProvider(Assembly.GetCallingAssembly(), path));
     }
 }

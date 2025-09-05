@@ -1,8 +1,8 @@
 import React from 'react';
-import * as client from '@microsoft/teams.client';
-import { ConsoleLogger } from '@microsoft/teams.common';
-import * as endpoints from '@microsoft/teams.graph-endpoints';
 import * as teamsJs from '@microsoft/teams-js';
+import * as client from '@microsoft/teams.client';
+import * as endpoints from '@microsoft/teams.graph-endpoints';
+import { ConsoleLogger } from '@microsoft/teams.common';
 
 import './App.css';
 
@@ -14,13 +14,9 @@ export default function App() {
 
   React.useEffect(() => {
     (async () => {
-
       // initialize the app and prompt for Graph scope consent, if not already granted
       const app = new client.App(clientId, {
         logger: new ConsoleLogger('@tests/tab', { level: 'debug' }),
-        msalOptions: {
-          prewarmScopes: ['User.Read', 'Presence.ReadWrite', 'Team.ReadBasic.All']
-        }
       });
 
       await app.start();
