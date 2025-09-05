@@ -140,6 +140,7 @@ public static partial class ApplicationBuilderExtensions
                     context.Request.Headers.Authorization
                         .FirstOrDefault()?
                         .Replace("bearer ", string.Empty)
+                        .Replace("Bearer ", string.Empty)
                 );
 
                 var ctx = new FunctionContext<TBody>(app)
