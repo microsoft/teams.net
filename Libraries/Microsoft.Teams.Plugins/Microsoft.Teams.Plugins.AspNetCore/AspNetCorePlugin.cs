@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
@@ -17,6 +18,9 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 {
     [Dependency]
     public ILogger Logger { get; set; }
+
+    [Dependency("Token", optional: true)]
+    public IToken? Token { get; set; }
 
     [Dependency]
     public IHttpClient Client { get; set; }
@@ -118,13 +122,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 cancellationToken
             );
 
-            var res = (Response?)@out;
-
-            if (res is null)
-            {
-                throw new Exception("expected activity response");
-            }
-
+            var res = (Response?)@out ?? throw new Exception("expected activity response");
             Logger.Debug(res);
             return res;
         }

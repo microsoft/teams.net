@@ -314,6 +314,7 @@ public partial class App
         var context = new Context<IActivity>(sender, stream)
         {
             AppId = @event.Token.AppId ?? Id ?? string.Empty,
+            TenantId = @event.Token.TenantId ?? string.Empty,
             Log = Logger.Child(path),
             Storage = Storage,
             Api = api,

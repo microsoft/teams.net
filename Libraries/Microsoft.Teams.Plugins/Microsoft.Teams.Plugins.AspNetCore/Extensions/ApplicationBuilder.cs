@@ -11,8 +11,14 @@ using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
-public static class ApplicationBuilderExtensions
+public static partial class ApplicationBuilderExtensions
 {
+    /// <summary>
+    /// initializes/starts your Teams app after
+    /// adding all registered IPlugin's
+    /// </summary>
+    /// <param name="routing">set to false to disable the plugins default http controller endpoints</param>
+    /// <returns>your app instance</returns>
     public static App UseTeams(this IApplicationBuilder builder, bool routing = true)
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
@@ -56,13 +62,11 @@ public static class ApplicationBuilderExtensions
         return app;
     }
 
+    /// <summary>
+    /// get the AspNetCorePlugin instance
+    /// </summary>
     public static AspNetCorePlugin GetAspNetCorePlugin(this IApplicationBuilder builder)
     {
         return builder.ApplicationServices.GetAspNetCorePlugin();
-    }
-
-    public static AspNetCorePlugin GetAspNetCorePlugin(this IServiceProvider provider)
-    {
-        return provider.GetRequiredService<AspNetCorePlugin>();
     }
 }

@@ -22,12 +22,12 @@ public class Resource
     /// </summary>
     [JsonPropertyName("uri")]
     [JsonPropertyOrder(1)]
-    public required string Uri { get; set; }
+    public string? Uri { get; set; }
 
     /// <summary>
     /// An identifier for the identity provider with which to attempt a token exchange.
     /// </summary>
     [JsonPropertyName("providerId")]
     [JsonPropertyOrder(2)]
-    public required string ProviderId { get; set; }
+    public string? ProviderId { get; set; }
 }

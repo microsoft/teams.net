@@ -37,20 +37,22 @@ public class Response
     /// Response metadata containing information
     /// about the handling of the activity
     /// </summary>
+    [JsonPropertyName("$meta")]
+    [JsonPropertyOrder(0)]
     public MetaData Meta { get; set; }
 
     /// <summary>
     /// The HTTP status code of the response.
     /// </summary>
     [JsonPropertyName("status")]
-    [JsonPropertyOrder(0)]
+    [JsonPropertyOrder(1)]
     public HttpStatusCode Status { get; set; }
 
     /// <summary>
     /// Optional. The body of the response.
     /// </summary>
     [JsonPropertyName("body")]
-    [JsonPropertyOrder(1)]
+    [JsonPropertyOrder(2)]
     public object? Body { get; set; }
 
     public Response(object? body)

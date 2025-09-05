@@ -63,6 +63,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Extensions.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Extensions.Graph.Tests", "Tests\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Graph.Tests\Microsoft.Teams.Extensions.Graph.Tests.csproj", "{7F2AC320-D203-B440-D85B-BB7A1AE3AA94}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Tab", "Samples\Samples.Tab\Samples.Tab.csproj", "{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -361,6 +363,18 @@ Global
 		{7F2AC320-D203-B440-D85B-BB7A1AE3AA94}.Release|x64.Build.0 = Release|Any CPU
 		{7F2AC320-D203-B440-D85B-BB7A1AE3AA94}.Release|x86.ActiveCfg = Release|Any CPU
 		{7F2AC320-D203-B440-D85B-BB7A1AE3AA94}.Release|x86.Build.0 = Release|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Debug|x64.Build.0 = Debug|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Debug|x86.Build.0 = Debug|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Release|x64.ActiveCfg = Release|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Release|x64.Build.0 = Release|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Release|x86.ActiveCfg = Release|Any CPU
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -393,6 +407,7 @@ Global
 		{6A21694E-6F76-463E-AF50-C258A0C94BF4} = {5D20AA90-6969-D8BD-9DCD-8634F4692FDA}
 		{DDDCE455-DF26-5A96-3944-23439F0FA243} = {E2648928-28DE-6B24-129A-26A0E8B5B70E}
 		{7F2AC320-D203-B440-D85B-BB7A1AE3AA94} = {0AB3BF05-4346-4AA6-1389-037BE0695223}
+		{1F168FCB-B034-43E3-B27C-C0C2E0D23D89} = {5D20AA90-6969-D8BD-9DCD-8634F4692FDA}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {378263F2-C2B2-4DB1-83CF-CA228AF03ABF}
