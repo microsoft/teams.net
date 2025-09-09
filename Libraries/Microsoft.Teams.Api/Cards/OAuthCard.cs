@@ -11,18 +11,11 @@ namespace Microsoft.Teams.Api.Cards;
 public class OAuthCard : Card
 {
     /// <summary>
-    /// Text for signin request
-    /// </summary>
-    [JsonPropertyName("text")]
-    [JsonPropertyOrder(2)]
-    public new required string Text { get; set; }
-
-    /// <summary>
     /// The name of the registered connection
     /// </summary>
     [JsonPropertyName("connectionName")]
     [JsonPropertyOrder(4)]
-    public required string ConnectionName { get; set; }
+    public string? ConnectionName { get; set; }
 
     /// <summary>
     /// The token exchange resource for single sign on

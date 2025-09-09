@@ -59,7 +59,13 @@ public partial interface IContext
         /// </summary>
         /// <param name="options">option overrides</param>
         /// <returns>the existing user token if found</returns>
-        public Task<string?> SignIn(SignInOptions? options = null) => context.SignIn(options);
+        public Task<string?> SignIn(OAuthOptions? options = null) => context.SignIn(options);
+
+        /// <summary>
+        /// trigger user SSO signin flow for the activity sender
+        /// </summary>
+        /// <param name="options">option overrides</param>
+        public Task SignIn(SSOOptions options) => context.SignIn(options);
 
         /// <summary>
         /// trigger user signin flow for the activity sender
