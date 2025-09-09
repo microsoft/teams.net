@@ -25,6 +25,7 @@ public static class HostApplicationBuilderExtensions
     {
         builder.AddTeamsCore();
         builder.AddTeamsPlugin<AspNetCorePlugin>();
+        builder.AddTeamsTokenAuthentication();
         builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
         return builder;
     }
@@ -33,6 +34,7 @@ public static class HostApplicationBuilderExtensions
     {
         builder.AddTeamsCore(app);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
+        builder.AddTeamsTokenAuthentication();
         builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
         return builder;
     }
@@ -41,6 +43,7 @@ public static class HostApplicationBuilderExtensions
     {
         builder.AddTeamsCore(options);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
+        builder.AddTeamsTokenAuthentication();
         builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
         return builder;
     }
@@ -49,13 +52,15 @@ public static class HostApplicationBuilderExtensions
     {
         builder.AddTeamsCore(appBuilder);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
+        builder.AddTeamsTokenAuthentication();
         builder.Services.AddControllers().AddApplicationPart(Assembly.GetExecutingAssembly());
         return builder;
     }
 
-    public static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder)
+    private static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder)
     {
         var settings = builder.Configuration.GetTeams();
+        Console.WriteLine("Configuring JWT Bearer Authentication");
 
         builder.Services.AddAuthentication(options =>
         {
