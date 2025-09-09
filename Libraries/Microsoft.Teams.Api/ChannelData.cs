@@ -4,6 +4,7 @@
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Api.Entities;
+using Microsoft.Teams.Api.Memberships;
 
 namespace Microsoft.Teams.Api;
 
@@ -79,6 +80,34 @@ public class ChannelData
     [JsonPropertyName("streamSequence")]
     [JsonPropertyOrder(10)]
     public int? StreamSequence { get; set; }
+
+    /// <summary>
+    /// Information about the users on behalf of whom the action is performed
+    /// </summary>
+    [JsonPropertyName("onBehalfOf")]
+    [JsonPropertyOrder(11)]
+    public IList<OnBehalfOf>? OnBehalfOf { get; set; }
+
+    /// <summary>
+    /// List of teams that a channel was shared with
+    /// </summary>
+    [JsonPropertyName("sharedWithTeams")]
+    [JsonPropertyOrder(12)]
+    public IList<Team>? SharedWithTeams { get; set; }
+
+    /// <summary>
+    /// List of temas that a channel was unshared from
+    /// </summary>
+    [JsonPropertyName("unsharedFromTeams")]
+    [JsonPropertyOrder(13)]
+    public IList<Team>? UnSharedFromTeams { get; set; }
+
+    /// <summary>
+    /// Information about the source of the member that was added or removed froma shared channel
+    /// </summary>
+    [JsonPropertyName("membershipSource")]
+    [JsonPropertyOrder(14)]
+    public MembershipSource? MembershipSource { get; set; }
 
     /// <summary>
     /// All extra data present

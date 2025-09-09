@@ -5,14 +5,60 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Api.Auth;
 
+/// <summary>
+/// any authorized token
+/// </summary>
 public interface IToken
 {
+    /// <summary>
+    /// the app id
+    /// </summary>
     public string? AppId { get; }
+
+    /// <summary>
+    /// the app display name
+    /// </summary>
     public string? AppDisplayName { get; }
+
+    /// <summary>
+    /// the tenant id
+    /// </summary>
     public string? TenantId { get; }
+
+    /// <summary>
+    /// the service url to send responses to
+    /// </summary>
     public string ServiceUrl { get; }
+
+    /// <summary>
+    /// where the activity originated from
+    /// </summary>
     public CallerType From { get; }
+
+    /// <summary>
+    /// the id of the acitivity sender
+    /// </summary>
     public string FromId { get; }
+
+    /// <summary>
+    /// the timestamp when this token expires
+    /// </summary>
+    public DateTime? Expiration { get; }
+
+    /// <summary>
+    /// check if the token is expired
+    /// </summary>
+    /// <returns>true if expired, otherwise false</returns>
+    public bool IsExpired { get; }
+
+    /// <summary>
+    /// a list of the tokens scopes
+    /// </summary>
+    public IEnumerable<string> Scopes { get; }
+
+    /// <summary>
+    /// convert the token to its string representation
+    /// </summary>
     public string ToString();
 }
 

@@ -12,6 +12,7 @@
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Graph\Microsoft.Teams.Extensions.Graph.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
   </ItemGroup>
 

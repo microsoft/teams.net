@@ -3,6 +3,7 @@
 
 using System.Text.Json.Serialization;
 
+using Microsoft.Teams.Api.Memberships;
 using Microsoft.Teams.Common;
 
 namespace Microsoft.Teams.Api;
@@ -25,8 +26,12 @@ public class Account
     [JsonPropertyOrder(3)]
     public string? Name { get; set; }
 
-    [JsonPropertyName("properties")]
+    [JsonPropertyName("membershipSources")]
     [JsonPropertyOrder(4)]
+    public IList<MembershipSource>? MembershipSources { get; set; }
+
+    [JsonPropertyName("properties")]
+    [JsonPropertyOrder(5)]
     public Dictionary<string, object>? Properties { get; set; }
 }
 

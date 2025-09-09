@@ -22,6 +22,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>());
@@ -37,6 +39,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()),
             Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
         });
@@ -48,6 +52,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()),
             Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
         });

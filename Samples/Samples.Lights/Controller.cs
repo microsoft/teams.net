@@ -9,15 +9,8 @@ using Microsoft.Teams.Apps.Annotations;
 namespace Samples.Lights;
 
 [TeamsController]
-public class Controller
+public class Controller(OpenAIChatPrompt _prompt)
 {
-    private readonly OpenAIChatPrompt _prompt;
-
-    public Controller(OpenAIChatPrompt prompt)
-    {
-        _prompt = prompt;
-    }
-
     [Message("/history")]
     public async Task OnHistory(IContext<MessageActivity> context)
     {

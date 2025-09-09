@@ -22,6 +22,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SubmitAction]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageExtensions.SubmitActionActivity>());
@@ -37,6 +39,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SubmitAction]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.SubmitActionActivity>()),
             Selector = activity => activity is MessageExtensions.SubmitActionActivity
         });
@@ -48,6 +52,8 @@ public static partial class AppInvokeActivityExtensions
     {
         app.Router.Register(new Route()
         {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SubmitAction]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.SubmitActionActivity>()),
             Selector = activity => activity is MessageExtensions.SubmitActionActivity
         });

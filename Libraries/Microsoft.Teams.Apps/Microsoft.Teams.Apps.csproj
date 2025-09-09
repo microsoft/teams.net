@@ -1,4 +1,4 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
 <!-- Licensed under the MIT License.-->
 
 <Project Sdk="Microsoft.NET.Sdk">
@@ -24,10 +24,6 @@
     <ProjectReference Include="..\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
     <ProjectReference Include="..\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
     <ProjectReference Include="..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Graph" Version="5.75.0" />
   </ItemGroup>
 
 </Project>
