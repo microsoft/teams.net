@@ -64,14 +64,27 @@ public partial class App
         Client.Options.AddUserAgent(UserAgent);
         Client.Options.TokenFactory = () =>
         {
-            if (Token is not null && Token.IsExpired && Credentials is not null)
+            if (Credentials is not null)
             {
-                var res = Credentials.Resolve(Client, [.. Token.Scopes])
+                if (Token is null)
+                {
+                    var res = Api!.Bots.Token.GetAsync(Credentials)
+                    .ConfigureAwait(false)
+                    .GetAwaiter()
+                    .GetResult();
+                    
+                    Token = new JsonWebToken(res.AccessToken);
+                }
+
+                if (Token.IsExpired) 
+                {
+                    var res = Credentials.Resolve(Client, [.. Token.Scopes])
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
 
-                Token = new JsonWebToken(res.AccessToken);
+                    Token = new JsonWebToken(res.AccessToken);
+                }
             }
 
             return Token;
@@ -116,8 +129,15 @@ public partial class App
 
             if (Credentials is not null)
             {
-                var res = await Api.Bots.Token.GetAsync(Credentials);
-                Token = new JsonWebToken(res.AccessToken);
+                try
+                {
+                    var res = await Api.Bots.Token.GetAsync(Credentials);
+                    Token = new JsonWebToken(res.AccessToken);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error("Failed to get bot token on app startup.", ex);
+                }
             }
 
             Logger.Debug(Id);
