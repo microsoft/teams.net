@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +23,7 @@ public class MessageController : ControllerBase
     }
 
     [HttpPost("/api/messages")]
+    [Authorize(Policy = "TeamsJWTPolicy")]
     public async Task<IResult> OnMessage([FromBody] Activity activity)
     {
         var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();

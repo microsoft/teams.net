@@ -43,4 +43,14 @@ public class TeamsSettings
             "https://login.microsoftonline.com/69e9b82d-4842-4902-8d1e-abc5b98a55e8/v2.0",
         ];
     }
+
+    public void AddDefaultAudiences()
+    {
+        if (ClientId is not null && !Activity.Audiences.Contains(ClientId))
+            Activity.Audiences.Add(ClientId);
+
+        var apiAudience = $"api://{ClientId}";
+        if (ClientId is not null && !Activity.Audiences.Contains(apiAudience))
+            Activity.Audiences.Add(apiAudience);
+    }
 }

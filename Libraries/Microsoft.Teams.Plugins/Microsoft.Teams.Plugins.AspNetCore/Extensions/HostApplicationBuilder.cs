@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Collections.Concurrent;
-using System.IdentityModel.Tokens.Jwt;
 using System.Reflection;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,11 +25,12 @@ public static class HostApplicationBuilderExtensions
     /// AspNetCorePlugin
     /// </summary>
     /// <param name="routing">set to false to disable the plugins default http controller</param>
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, bool routing = true)
+    /// <param name="skipAuth">set to true to disable token authentication</param>
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, bool routing = true, bool skipAuth = false)
     {
         builder.AddTeamsCore();
         builder.AddTeamsPlugin<AspNetCorePlugin>();
-        builder.AddTeamsTokenAuthentication();
+        builder.AddTeamsTokenAuthentication(skipAuth);
 
         if (routing)
         {
@@ -46,11 +46,13 @@ public static class HostApplicationBuilderExtensions
     /// </summary>
     /// <param name="app">your app instance</param>
     /// <param name="routing">set to false to disable the plugins default http controller</param>
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, App app, bool routing = true)
+    /// <param name="skipAuth">set to true to disable token authentication</param>
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, App app, bool routing = true, bool skipAuth = false)
     {
         builder.AddTeamsCore(app);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
-        builder.AddTeamsTokenAuthentication();
+        builder.AddTeamsTokenAuthentication(skipAuth);
+
 
         if (routing)
         {
@@ -64,13 +66,14 @@ public static class HostApplicationBuilderExtensions
     /// adds core Teams services and the
     /// AspNetCorePlugin
     /// </summary>
-    /// <param name="builder">your app options</param>
+    /// <param name="options">your app options</param>
     /// <param name="routing">set to false to disable the plugins default http controller</param>
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppOptions options, bool routing = true)
+    /// <param name="skipAuth">set to true to disable token authentication</param>
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppOptions options, bool routing = true, bool skipAuth = false)
     {
         builder.AddTeamsCore(options);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
-        builder.AddTeamsTokenAuthentication();
+        builder.AddTeamsTokenAuthentication(skipAuth);
 
         if (routing)
         {
@@ -86,11 +89,12 @@ public static class HostApplicationBuilderExtensions
     /// </summary>
     /// <param name="appBuilder">your app builder</param>
     /// <param name="routing">set to false to disable the plugins default http controller</param>
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppBuilder appBuilder, bool routing = true)
+    /// <param name="skipAuth">set to true to disable token authentication</param>
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, AppBuilder appBuilder, bool routing = true, bool skipAuth = false)
     {
         builder.AddTeamsCore(appBuilder);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
-        builder.AddTeamsTokenAuthentication();
+        builder.AddTeamsTokenAuthentication(skipAuth);
 
         if (routing)
         {
@@ -100,17 +104,27 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
-    private static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder)
+    /// <summary>
+    /// adds authentication and authorization to validate incoming Teams tokens
+    /// </summary>
+    /// <returns></returns>
+    private static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false)
     {
         var settings = builder.Configuration.GetTeams();
-        Console.WriteLine("Configuring JWT Bearer Authentication");
+
+        if (string.IsNullOrEmpty(settings.ClientId))
+        {
+            return builder;
+        }
+
+        settings.AddDefaultAudiences();
 
         builder.Services.AddAuthentication(options =>
         {
             options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
             options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
         })
-        .AddJwtBearer(options =>
+        .AddJwtBearer("TeamsJWTScheme", options =>
         {
             options.SaveToken = true;
             options.TokenValidationParameters = new()
@@ -125,46 +139,36 @@ public static class HostApplicationBuilderExtensions
                 ValidAudiences = settings.Activity.Audiences,
             };
 
+            // stricter validation: ensures the key’s issuer matches the token issuer
             options.TokenValidationParameters.EnableAadSigningKeyIssuerValidation();
-            options.Events = new()
+            // use cached OpenID Connect metadata
+            options.ConfigurationManager = _openIdMetadataCache.GetOrAdd(
+            settings.Activity.OpenIdMetadataUrl,
+            key => new ConfigurationManager<OpenIdConnectConfiguration>(
+                settings.Activity.OpenIdMetadataUrl,
+                new OpenIdConnectConfigurationRetriever(),
+                new HttpClient())
             {
-                OnMessageReceived = async context =>
+                AutomaticRefreshInterval = BaseConfigurationManager.DefaultAutomaticRefreshInterval
+            });
+        });
+
+        // add [Authorize(Policy="..")] support for endpoints
+        builder.Services.AddAuthorization(options =>
+        {
+            options.AddPolicy("TeamsJWTPolicy", policy =>
+            {
+                if (skipAuth)
                 {
-                    var header = context.Request.Headers.Authorization.ToString();
-
-                    if (string.IsNullOrEmpty(header))
-                    {
-                        context.Options.TokenValidationParameters.ConfigurationManager ??= options.ConfigurationManager as BaseConfigurationManager;
-                        await Task.CompletedTask.ConfigureAwait(false);
-                        return;
-                    }
-
-                    var parts = header.Split(' ');
-
-                    if (parts.Length != 2 || parts.First() != "Bearer")
-                    {
-                        context.Options.TokenValidationParameters.ConfigurationManager ??= options.ConfigurationManager as BaseConfigurationManager;
-                        await Task.CompletedTask.ConfigureAwait(false);
-                        return;
-                    }
-
-                    var token = new JwtSecurityToken(parts[1]);
-                    var issuer = token.Claims.FirstOrDefault(claim => claim.Type == "iss")?.Value;
-
-                    if (issuer == "https://api.botframework.com")
-                    {
-                        context.Options.TokenValidationParameters.ConfigurationManager = _openIdMetadataCache.GetOrAdd(settings.Activity.OpenIdMetadataUrl, key =>
-                        {
-                            return new ConfigurationManager<OpenIdConnectConfiguration>(settings.Activity.OpenIdMetadataUrl, new OpenIdConnectConfigurationRetriever(), new HttpClient())
-                            {
-                                AutomaticRefreshInterval = BaseConfigurationManager.DefaultAutomaticRefreshInterval
-                            };
-                        });
-                    }
-
-                    await Task.CompletedTask.ConfigureAwait(false);
-                },
-            };
+                    // bypass authentication
+                    policy.RequireAssertion(_ => true);
+                }
+                else
+                {
+                    policy.AddAuthenticationSchemes("TeamsJWTScheme");
+                    policy.RequireAuthenticatedUser();
+                }
+            });
         });
 
         return builder;
