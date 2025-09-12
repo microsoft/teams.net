@@ -56,6 +56,7 @@ public static partial class ApplicationBuilderExtensions
         if (routing)
         {
             builder.UseRouting();
+            builder.UseAuthorization();
             builder.UseEndpoints(endpoints => endpoints.MapControllers());
         }
 

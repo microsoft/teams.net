@@ -1,11 +1,14 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
+
+using static Microsoft.Teams.Plugins.AspNetCore.Extensions.HostApplicationBuilderExtensions;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Controllers;
 
@@ -22,6 +25,7 @@ public class MessageController : ControllerBase
     }
 
     [HttpPost("/api/messages")]
+    [Authorize(Policy = TeamsTokenAuthConstants.AuthorizationPolicy)]
     public async Task<IResult> OnMessage([FromBody] Activity activity)
     {
         var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
