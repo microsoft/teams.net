@@ -98,7 +98,9 @@ public static class HostApplicationBuilderExtensions
 
     public static class TeamsTokenAuthDefaults
     {
+        // the authentication scheme for validating incoming Teams tokens
         public const string AuthenticationScheme = "TeamsJWTScheme";
+        // the authorization policy attached to endpoints or controllers
         public const string PolicyName = "TeamsJWTPolicy";
     }
 
