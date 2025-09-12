@@ -8,6 +8,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 
+using static Microsoft.Teams.Plugins.AspNetCore.Extensions.HostApplicationBuilderExtensions;
+
 namespace Microsoft.Teams.Plugins.AspNetCore.Controllers;
 
 [ApiController]
@@ -23,7 +25,7 @@ public class MessageController : ControllerBase
     }
 
     [HttpPost("/api/messages")]
-    [Authorize(Policy = "TeamsJWTPolicy")]
+    [Authorize(Policy = TeamsTokenAuthDefaults.PolicyName)]
     public async Task<IResult> OnMessage([FromBody] Activity activity)
     {
         var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();

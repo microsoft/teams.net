@@ -96,11 +96,17 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
+    public static class TeamsTokenAuthDefaults
+    {
+        public const string AuthenticationScheme = "TeamsJWTScheme";
+        public const string PolicyName = "TeamsJWTPolicy";
+    }
+
     /// <summary>
     /// adds authentication and authorization to validate incoming Teams tokens
     /// </summary>
     /// <returns></returns>
-    private static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false, TeamsValidationSettings? teamsValidationSettings = null)
+    private static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false)
     {
         var settings = builder.Configuration.GetTeams();
 
@@ -109,11 +115,11 @@ public static class HostApplicationBuilderExtensions
             return builder;
         }
 
-        teamsValidationSettings ??= new TeamsValidationSettings();
+        var teamsValidationSettings = new TeamsValidationSettings();
         teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer("TeamsJWTScheme", options =>
+        .AddJwtBearer(TeamsTokenAuthDefaults.AuthenticationScheme, options =>
         {
             TokenValidator.ConfigureValidation(options, teamsValidationSettings.Issuers, teamsValidationSettings.Audiences, teamsValidationSettings.OpenIdMetadataUrl);
         });
@@ -121,7 +127,7 @@ public static class HostApplicationBuilderExtensions
         // add [Authorize(Policy="..")] support for endpoints
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy("TeamsJWTPolicy", policy =>
+            options.AddPolicy(TeamsTokenAuthDefaults.PolicyName, policy =>
             {
                 if (skipAuth)
                 {
@@ -130,7 +136,7 @@ public static class HostApplicationBuilderExtensions
                 }
                 else
                 {
-                    policy.AddAuthenticationSchemes("TeamsJWTScheme");
+                    policy.AddAuthenticationSchemes(TeamsTokenAuthDefaults.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
                 }
             });
