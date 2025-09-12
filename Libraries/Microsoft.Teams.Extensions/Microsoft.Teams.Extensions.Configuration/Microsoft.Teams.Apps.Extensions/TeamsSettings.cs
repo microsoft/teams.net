@@ -10,7 +10,6 @@ public class TeamsSettings
     public string? ClientId { get; set; }
     public string? ClientSecret { get; set; }
     public string? TenantId { get; set; }
-    public ActivitySettings Activity { get; set; } = new();
 
     public bool Empty
     {
@@ -27,30 +26,5 @@ public class TeamsSettings
         }
 
         return options;
-    }
-
-    public class ActivitySettings
-    {
-        public string OpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openidconfiguration";
-        public List<string> Audiences = [];
-        public List<string> Issuers = [
-            "https://api.botframework.com",
-            "https://sts.windows.net/d6d49420-f39b-4df7-a1dc-d59a935871db/",
-            "https://login.microsoftonline.com/d6d49420-f39b-4df7-a1dc-d59a935871db/v2.0",
-            "https://sts.windows.net/f8cdef31-a31e-4b4a-93e4-5f571e91255a/",
-            "https://login.microsoftonline.com/f8cdef31-a31e-4b4a-93e4-5f571e91255a/v2.0",
-            "https://sts.windows.net/69e9b82d-4842-4902-8d1e-abc5b98a55e8/",
-            "https://login.microsoftonline.com/69e9b82d-4842-4902-8d1e-abc5b98a55e8/v2.0",
-        ];
-    }
-
-    public void AddDefaultAudiences()
-    {
-        if (ClientId is not null && !Activity.Audiences.Contains(ClientId))
-            Activity.Audiences.Add(ClientId);
-
-        var apiAudience = $"api://{ClientId}";
-        if (ClientId is not null && !Activity.Audiences.Contains(apiAudience))
-            Activity.Audiences.Add(apiAudience);
     }
 }

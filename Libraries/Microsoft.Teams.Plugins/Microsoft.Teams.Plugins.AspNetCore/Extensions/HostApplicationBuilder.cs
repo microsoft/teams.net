@@ -1,16 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Collections.Concurrent;
 using System.Reflection;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.IdentityModel.Protocols;
-using Microsoft.IdentityModel.Protocols.OpenIdConnect;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.IdentityModel.Validators;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Extensions;
 
@@ -18,8 +13,6 @@ namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
 public static class HostApplicationBuilderExtensions
 {
-    private static readonly ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> _openIdMetadataCache = new();
-
     /// <summary>
     /// adds core Teams services and the
     /// AspNetCorePlugin
@@ -52,7 +45,6 @@ public static class HostApplicationBuilderExtensions
         builder.AddTeamsCore(app);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
         builder.AddTeamsTokenAuthentication(skipAuth);
-
 
         if (routing)
         {
@@ -108,7 +100,7 @@ public static class HostApplicationBuilderExtensions
     /// adds authentication and authorization to validate incoming Teams tokens
     /// </summary>
     /// <returns></returns>
-    private static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false)
+    private static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false, TeamsValidationSettings? teamsValidationSettings = null)
     {
         var settings = builder.Configuration.GetTeams();
 
@@ -117,40 +109,13 @@ public static class HostApplicationBuilderExtensions
             return builder;
         }
 
-        settings.AddDefaultAudiences();
+        teamsValidationSettings ??= new TeamsValidationSettings();
+        teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
 
-        builder.Services.AddAuthentication(options =>
-        {
-            options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-            options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-        })
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer("TeamsJWTScheme", options =>
         {
-            options.SaveToken = true;
-            options.TokenValidationParameters = new()
-            {
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateLifetime = true,
-                ValidateIssuerSigningKey = true,
-                RequireSignedTokens = true,
-                ClockSkew = TimeSpan.FromMinutes(5),
-                ValidIssuers = settings.Activity.Issuers,
-                ValidAudiences = settings.Activity.Audiences,
-            };
-
-            // stricter validation: ensures the key’s issuer matches the token issuer
-            options.TokenValidationParameters.EnableAadSigningKeyIssuerValidation();
-            // use cached OpenID Connect metadata
-            options.ConfigurationManager = _openIdMetadataCache.GetOrAdd(
-            settings.Activity.OpenIdMetadataUrl,
-            key => new ConfigurationManager<OpenIdConnectConfiguration>(
-                settings.Activity.OpenIdMetadataUrl,
-                new OpenIdConnectConfigurationRetriever(),
-                new HttpClient())
-            {
-                AutomaticRefreshInterval = BaseConfigurationManager.DefaultAutomaticRefreshInterval
-            });
+            TokenValidator.ConfigureValidation(options, teamsValidationSettings.Issuers, teamsValidationSettings.Audiences, teamsValidationSettings.OpenIdMetadataUrl);
         });
 
         // add [Authorize(Policy="..")] support for endpoints

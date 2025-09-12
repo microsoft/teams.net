@@ -6,7 +6,7 @@ using Xunit;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 using Microsoft.Extensions.Hosting;
 
-public class TeamsExtensionsTests
+public class HostApplicationBuilderTests
 {
     [Fact]
     public void AddTeamsTokenAuthentication_Should_Register_JwtBearerScheme()
