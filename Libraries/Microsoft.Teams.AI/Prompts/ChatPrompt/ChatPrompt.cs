@@ -216,12 +216,9 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
 
             var parameters = method.GetParameters().Select(p =>
             {
-                var param = p.GetCustomAttribute<ParamAttribute>();
-                var name = param?.Name ?? p.Name ?? p.Position.ToString();
+                var name = p.GetCustomAttribute<ParamAttribute>()?.Name ?? p.Name ?? p.Position.ToString();
+                var schema = new JsonSchemaBuilder().FromType(p.ParameterType).Build();
                 var required = !p.IsOptional;
-                var schema = param?.Ref is not null
-                    ? new JsonSchemaBuilder().Ref(param.Ref).Build()
-                    : new JsonSchemaBuilder().FromType(p.ParameterType).Build();
                 return (name, schema, required);
             });
 

@@ -9,15 +9,10 @@ public class ParamAttribute(string? name = null) : Attribute
     /// <summary>
     /// the parameter name
     /// </summary>
-    public string? Name { get; set; } = name;
+    public string? Name { get; private set; } = name;
 
     /// <summary>
     /// the parameter description
     /// </summary>
-    public string? Description { get; set; }
-
-    /// <summary>
-    /// the $ref url of the JSON schema
-    /// </summary>
-    public string? Ref { get; set; }
+    public string? Description { get; private set; }
 }
