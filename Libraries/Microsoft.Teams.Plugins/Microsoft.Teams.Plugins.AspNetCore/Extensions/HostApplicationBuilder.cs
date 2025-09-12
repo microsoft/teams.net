@@ -96,12 +96,12 @@ public static class HostApplicationBuilderExtensions
         return builder;
     }
 
-    public static class TeamsTokenAuthDefaults
+    public static class TeamsTokenAuthConstants
     {
         // the authentication scheme for validating incoming Teams tokens
         public const string AuthenticationScheme = "TeamsJWTScheme";
         // the authorization policy attached to endpoints or controllers
-        public const string PolicyName = "TeamsJWTPolicy";
+        public const string AuthorizationPolicy = "TeamsJWTPolicy";
     }
 
     /// <summary>
@@ -121,7 +121,7 @@ public static class HostApplicationBuilderExtensions
         teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(TeamsTokenAuthDefaults.AuthenticationScheme, options =>
+        .AddJwtBearer(TeamsTokenAuthConstants.AuthenticationScheme, options =>
         {
             TokenValidator.ConfigureValidation(options, teamsValidationSettings.Issuers, teamsValidationSettings.Audiences, teamsValidationSettings.OpenIdMetadataUrl);
         });
@@ -129,7 +129,7 @@ public static class HostApplicationBuilderExtensions
         // add [Authorize(Policy="..")] support for endpoints
         builder.Services.AddAuthorization(options =>
         {
-            options.AddPolicy(TeamsTokenAuthDefaults.PolicyName, policy =>
+            options.AddPolicy(TeamsTokenAuthConstants.AuthorizationPolicy, policy =>
             {
                 if (skipAuth)
                 {
@@ -138,7 +138,7 @@ public static class HostApplicationBuilderExtensions
                 }
                 else
                 {
-                    policy.AddAuthenticationSchemes(TeamsTokenAuthDefaults.AuthenticationScheme);
+                    policy.AddAuthenticationSchemes(TeamsTokenAuthConstants.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
                 }
             });

@@ -25,7 +25,7 @@ public class MessageController : ControllerBase
     }
 
     [HttpPost("/api/messages")]
-    [Authorize(Policy = TeamsTokenAuthDefaults.PolicyName)]
+    [Authorize(Policy = TeamsTokenAuthConstants.AuthorizationPolicy)]
     public async Task<IResult> OnMessage([FromBody] Activity activity)
     {
         var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
