@@ -73,6 +73,20 @@ public static class ServiceCollectionExtensions
             return OpenAIChatPrompt.From(model, value, (options ?? new()).WithLogger(logger));
         });
 
-        return collection.AddScoped<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
+        collection.AddScoped<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
+
+        // Add a singleton factory for creating scoped prompts 
+        // required when added as dependency to singleton controllers
+        collection.AddSingleton<Func<OpenAIChatPrompt>>(provider =>
+        {
+            var serviceProvider = provider;
+            return () =>
+            {
+                var scope = serviceProvider.CreateScope();
+                return scope.ServiceProvider.GetRequiredService<OpenAIChatPrompt>();
+            };
+        });
+
+        return collection;
     }
 }
