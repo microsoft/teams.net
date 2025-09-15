@@ -49,8 +49,8 @@ public static partial class Program
         [Message]
         public async Task OnMessage([Context] Microsoft.Teams.Api.Activities.MessageActivity activity, [Context] IContext.Client client, [Context] Microsoft.Teams.Common.Logging.ILogger log)
         {
-            log.Info($"[MESSAGE] Received: {activity.Text}");
-            log.Info($"[MESSAGE] From: {activity.From?.Name}");
+            log.Info($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
+            log.Info($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
 
             var text = activity.Text?.ToLowerInvariant() ?? "";
 
@@ -513,6 +513,14 @@ public static partial class Program
         public void OnEvent(IPlugin plugin, Microsoft.Teams.Apps.Events.Event @event)
         {
             Console.WriteLine("!!HIT!!");
+        }
+
+        // Helper method to sanitize user input for logging
+        private static string SanitizeForLog(string input)
+        {
+            if (input == null) return "";
+            // Remove carriage returns and line feeds to prevent log forging
+            return input.Replace("\r", "").Replace("\n", "");
         }
     }
 }
