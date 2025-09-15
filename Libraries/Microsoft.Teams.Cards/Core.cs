@@ -56,19 +56,6 @@ public class ImageInsertPosition(string value) : StringEnum(value, caseSensitive
   public bool IsBottom => Bottom.Equals(Value);
 }
 
-[JsonConverter(typeof(JsonConverter<ImageInsertPosition>))]
-public class ImageInsertPosition(string value) : StringEnum(value, caseSensitive: false)
-{
-  public static readonly ImageInsertPosition Selection = new("Selection");
-  public bool IsSelection => Selection.Equals(Value);
-
-  public static readonly ImageInsertPosition Top = new("Top");
-  public bool IsTop => Top.Equals(Value);
-
-  public static readonly ImageInsertPosition Bottom = new("Bottom");
-  public bool IsBottom => Bottom.Equals(Value);
-}
-
 [JsonConverter(typeof(JsonConverter<FallbackAction>))]
 public class FallbackAction(string value) : StringEnum(value, caseSensitive: false)
 {
@@ -1034,6 +1021,12 @@ public class AdaptiveCard : CardElement
   public bool? IsSortKey { get; set; }
 
   /// <summary>
+  /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
+  /// </summary>
+  [JsonPropertyName("selectAction")]
+  public Action? SelectAction { get; set; }
+
+  /// <summary>
   /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
   /// </summary>
   [JsonPropertyName("style")]
@@ -1170,9 +1163,15 @@ public class AdaptiveCard : CardElement
     return this;
   }
 
-  public AdaptiveCard WithIsSortKey(bool value)
+  public AdaptiveCard WithSelectAction(Action value)
   {
-    this.IsSortKey = value;
+    this.SelectAction = value;
+    return this;
+  }
+
+  public AdaptiveCard WithStyle(ContainerStyle value)
+  {
+    this.Style = value;
     return this;
   }
 
@@ -2503,164 +2502,6 @@ public class InsertImageAction : Action
   /// </summary>
   [JsonPropertyName("fallback")]
   public Union<Action, FallbackAction>? Fallback { get; set; }
-
-  public InsertImageAction WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
-
-  public InsertImageAction WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
-
-  public InsertImageAction WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
-
-  public InsertImageAction WithIconUrl(string value)
-  {
-    this.IconUrl = value;
-    return this;
-  }
-
-  public InsertImageAction WithStyle(ActionStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
-
-  public InsertImageAction WithMode(ActionMode value)
-  {
-    this.Mode = value;
-    return this;
-  }
-
-  public InsertImageAction WithTooltip(string value)
-  {
-    this.Tooltip = value;
-    return this;
-  }
-
-  public InsertImageAction WithIsEnabled(bool value)
-  {
-    this.IsEnabled = value;
-    return this;
-  }
-
-  public InsertImageAction WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
-
-  public InsertImageAction WithAltText(string value)
-  {
-    this.AltText = value;
-    return this;
-  }
-
-  public InsertImageAction WithInsertPosition(ImageInsertPosition value)
-  {
-    this.InsertPosition = value;
-    return this;
-  }
-
-  public InsertImageAction WithFallback(IUnion<Action, FallbackAction> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
-}
-
-/// <summary>
-/// Inserts an image into the host application's canvas.
-/// </summary>
-public class InsertImageAction : Action
-{
-  /// <summary>
-  /// Must be **Action.InsertImage**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Action.InsertImage";
-
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
-
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
-
-  /// <summary>
-  /// The title of the action, as it appears on buttons.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
-
-  /// <summary>
-  /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
-  /// 
-  /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
-  /// </summary>
-  [JsonPropertyName("iconUrl")]
-  public string? IconUrl { get; set; }
-
-  /// <summary>
-  /// Control the style of the action, affecting its visual and spoken representations.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ActionStyle? Style { get; set; }
-
-  /// <summary>
-  /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
-  /// </summary>
-  [JsonPropertyName("mode")]
-  public ActionMode? Mode { get; set; }
-
-  /// <summary>
-  /// The tooltip text to display when the action is hovered over.
-  /// </summary>
-  [JsonPropertyName("tooltip")]
-  public string? Tooltip { get; set; }
-
-  /// <summary>
-  /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
-  /// </summary>
-  [JsonPropertyName("isEnabled")]
-  public bool? IsEnabled { get; set; }
-
-  /// <summary>
-  /// The URL of the image to insert.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
-
-  /// <summary>
-  /// The alternate text for the image.
-  /// </summary>
-  [JsonPropertyName("altText")]
-  public string? AltText { get; set; }
-
-  /// <summary>
-  /// The position at which to insert the image.
-  /// </summary>
-  [JsonPropertyName("insertPosition")]
-  public ImageInsertPosition? InsertPosition { get; set; }
-
-  /// <summary>
-  /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
   public InsertImageAction WithId(string value)
   {
@@ -7200,18 +7041,6 @@ public class ChoiceSetInput : CardElement
   public string? GridArea { get; set; }
 
   /// <summary>
-  /// The minimum width, in pixels, for each column when using a multi-column layout. This ensures that choice items remain readable even when horizontal space is limited. Default is 100 pixels.
-  /// </summary>
-  [JsonPropertyName("minColumnWidth")]
-  public string? MinColumnWidth { get; set; }
-
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
-
-  /// <summary>
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
@@ -7330,21 +7159,9 @@ public class ChoiceSetInput : CardElement
     return this;
   }
 
-  public ChoiceSetInput WithUseMultipleColumns(bool value)
+  public ChoiceSetInput WithPlaceholder(string value)
   {
-    this.UseMultipleColumns = value;
-    return this;
-  }
-
-  public ChoiceSetInput WithMinColumnWidth(string value)
-  {
-    this.MinColumnWidth = value;
-    return this;
-  }
-
-  public ChoiceSetInput WithGridArea(string value)
-  {
-    this.GridArea = value;
+    this.Placeholder = value;
     return this;
   }
 
@@ -9444,20 +9261,6 @@ public class GroupedVerticalBarChart : CardElement
   public string? GridArea { get; set; }
 
   /// <summary>
-  /// The requested maximum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
-  /// 
-  /// `yMax` is ignored if `stacked` is set to `true`.
-  /// </summary>
-  [JsonPropertyName("yMax")]
-  public float? YMax { get; set; }
-
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
-
-  /// <summary>
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
@@ -9559,21 +9362,9 @@ public class GroupedVerticalBarChart : CardElement
     return this;
   }
 
-  public GroupedVerticalBarChart WithYMin(float value)
+  public GroupedVerticalBarChart WithData(params IList<GroupedVerticalBarChartData> value)
   {
-    this.YMin = value;
-    return this;
-  }
-
-  public GroupedVerticalBarChart WithYMax(float value)
-  {
-    this.YMax = value;
-    return this;
-  }
-
-  public GroupedVerticalBarChart WithGridArea(string value)
-  {
-    this.GridArea = value;
+    this.Data = value;
     return this;
   }
 
@@ -9812,18 +9603,6 @@ public class VerticalBarChart : CardElement
   public string? GridArea { get; set; }
 
   /// <summary>
-  /// The requested maximum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
-  /// </summary>
-  [JsonPropertyName("yMax")]
-  public float? YMax { get; set; }
-
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
-
-  /// <summary>
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
@@ -9919,21 +9698,9 @@ public class VerticalBarChart : CardElement
     return this;
   }
 
-  public VerticalBarChart WithYMin(float value)
+  public VerticalBarChart WithColor(ChartColor value)
   {
-    this.YMin = value;
-    return this;
-  }
-
-  public VerticalBarChart WithYMax(float value)
-  {
-    this.YMax = value;
-    return this;
-  }
-
-  public VerticalBarChart WithGridArea(string value)
-  {
-    this.GridArea = value;
+    this.Color = value;
     return this;
   }
 
@@ -10718,18 +10485,6 @@ public class LineChart : CardElement
   public string? GridArea { get; set; }
 
   /// <summary>
-  /// The minimum y range.
-  /// </summary>
-  [JsonPropertyName("yMax")]
-  public float? YMax { get; set; }
-
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
-
-  /// <summary>
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
@@ -10819,21 +10574,9 @@ public class LineChart : CardElement
     return this;
   }
 
-  public LineChart WithYMin(float value)
+  public LineChart WithColor(ChartColor value)
   {
-    this.YMin = value;
-    return this;
-  }
-
-  public LineChart WithYMax(float value)
-  {
-    this.YMax = value;
-    return this;
-  }
-
-  public LineChart WithGridArea(string value)
-  {
-    this.GridArea = value;
+    this.Color = value;
     return this;
   }
 
@@ -11058,6 +10801,12 @@ public class GaugeChart : CardElement
   public IList<GaugeChartLegend>? Segments { get; set; }
 
   /// <summary>
+  /// The value of the gauge.
+  /// </summary>
+  [JsonPropertyName("value")]
+  public float? Value { get; set; }
+
+  /// <summary>
   /// The format used to display the gauge's value.
   /// </summary>
   [JsonPropertyName("valueFormat")]
@@ -11177,9 +10926,15 @@ public class GaugeChart : CardElement
     return this;
   }
 
-  public GaugeChart WithSegments(params IList<GaugeChartLegend> value)
+  public GaugeChart WithValue(float value)
   {
-    this.Segments = value;
+    this.Value = value;
+    return this;
+  }
+
+  public GaugeChart WithValueFormat(GaugeChartValueFormat value)
+  {
+    this.ValueFormat = value;
     return this;
   }
 
@@ -13861,324 +13616,6 @@ public class ImageRun : CardElement
   /// </summary>
   [JsonPropertyName("fallback")]
   public Union<CardElement, FallbackElement>? Fallback { get; set; }
-
-  public ImageRun WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
-
-  public ImageRun WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
-
-  public ImageRun WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
-
-  public ImageRun WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
-
-  public ImageRun WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
-
-  public ImageRun WithSize(SizeEnum value)
-  {
-    this.Size = value;
-    return this;
-  }
-
-  public ImageRun WithStyle(ImageStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
-
-  public ImageRun WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
-
-  public ImageRun WithThemedUrls(params IList<ThemedUrl> value)
-  {
-    this.ThemedUrls = value;
-    return this;
-  }
-
-  public ImageRun WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
-
-  public ImageRun WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
-}
-
-/// <summary>
-/// Defines a theme-specific URL.
-/// </summary>
-public class ThemedUrl : SerializableObject
-{
-  /// <summary>
-  /// The theme this URL applies to.
-  /// </summary>
-  [JsonPropertyName("theme")]
-  public ThemeName? Theme { get; set; }
-
-  /// <summary>
-  /// The URL to use for the associated theme.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
-
-  public ThemedUrl WithTheme(ThemeName value)
-  {
-    this.Theme = value;
-    return this;
-  }
-
-  public ThemedUrl WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
-}
-
-/// <summary>
-/// An inline icon inside a RichTextBlock element.
-/// </summary>
-public class IconRun : CardElement
-{
-  /// <summary>
-  /// Must be **IconRun**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "IconRun";
-
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
-
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
-
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
-
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
-
-  /// <summary>
-  /// The name of the inline icon to display.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string? Name { get; set; }
-
-  /// <summary>
-  /// The size of the inline icon.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public SizeEnum? Size { get; set; }
-
-  /// <summary>
-  /// The style of the inline icon.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public IconStyle? Style { get; set; }
-
-  /// <summary>
-  /// The color of the inline icon.
-  /// </summary>
-  [JsonPropertyName("color")]
-  public TextColor? Color { get; set; }
-
-  /// <summary>
-  /// An Action that will be invoked when the inline icon is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
-
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
-
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
-
-  public IconRun WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
-
-  public IconRun WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
-
-  public IconRun WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
-
-  public IconRun WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
-
-  public IconRun WithName(string value)
-  {
-    this.Name = value;
-    return this;
-  }
-
-  public IconRun WithSize(SizeEnum value)
-  {
-    this.Size = value;
-    return this;
-  }
-
-  public IconRun WithStyle(IconStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
-
-  public IconRun WithColor(TextColor value)
-  {
-    this.Color = value;
-    return this;
-  }
-
-  public IconRun WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
-
-  public IconRun WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
-
-  public IconRun WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
-}
-
-/// <summary>
-/// An inline image inside a RichTextBlock element.
-/// </summary>
-public class ImageRun : CardElement
-{
-  /// <summary>
-  /// Must be **ImageRun**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "ImageRun";
-
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
-
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
-
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
-
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
-
-  /// <summary>
-  /// The URL (or Base64-encoded Data URI) of the image. Acceptable formats are PNG, JPEG, GIF and SVG.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
-
-  /// <summary>
-  /// The size of the inline image.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public SizeEnum? Size { get; set; }
-
-  /// <summary>
-  /// The style of the inline image.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ImageStyle? Style { get; set; }
-
-  /// <summary>
-  /// An Action that will be invoked when the image is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
-
-  /// <summary>
-  /// A set of theme-specific image URLs.
-  /// </summary>
-  [JsonPropertyName("themedUrls")]
-  public IList<ThemedUrl>? ThemedUrls { get; set; }
-
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
-
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ImageRun WithId(string value)
   {
