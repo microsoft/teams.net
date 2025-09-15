@@ -12,7 +12,6 @@ namespace Microsoft.Teams.AI;
 /// </summary>
 public interface IChatPlugin
 {
-    /// TODO: Duplicate code from IPlugin - can we avoid this?
     /// <summary>
     /// called before a prompt sends
     /// a message
