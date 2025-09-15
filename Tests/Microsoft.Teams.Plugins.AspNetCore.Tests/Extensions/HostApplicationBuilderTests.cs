@@ -26,7 +26,6 @@ public class HostApplicationBuilderTests
         var schemes = services.GetRequiredService<IAuthenticationSchemeProvider>();
         Assert.Null(await schemes.GetSchemeAsync(TeamsTokenAuthConstants.AuthenticationScheme));
         Assert.Null(await schemes.GetSchemeAsync(EntraTokenAuthConstants.AuthenticationScheme));
-        
 
         var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
         Assert.Null(await authOptions.GetPolicyAsync(TeamsTokenAuthConstants.AuthorizationPolicy));
