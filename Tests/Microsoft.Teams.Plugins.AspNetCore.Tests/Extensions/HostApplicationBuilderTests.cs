@@ -53,6 +53,7 @@ public class HostApplicationBuilderTests
         var mvcBuilder = services.GetService<Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider>();
 
         Assert.NotNull(scheme);
+        Assert.NotNull(policy);
         Assert.Equal("JwtBearerHandler", scheme.HandlerType.Name);
         Assert.True(policy.Requirements.OfType<RolesAuthorizationRequirement>().Any() ||
             policy.Requirements.OfType<IAuthorizationRequirement>().Any(r => r is not AssertionRequirement));
@@ -99,6 +100,7 @@ public class HostApplicationBuilderTests
         var mvcBuilder = services.GetService<Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider>();
 
         Assert.NotNull(scheme);
+        Assert.NotNull(policy);
         Assert.Equal("JwtBearerHandler", scheme.HandlerType.Name);
         Assert.True(policy.Requirements.OfType<RolesAuthorizationRequirement>().Any() ||
             policy.Requirements.OfType<IAuthorizationRequirement>().Any(r => r is not AssertionRequirement));
