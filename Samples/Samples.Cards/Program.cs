@@ -118,14 +118,7 @@ public static partial class Program
             }
 
             // Extract action from the Value property
-            string? action = null;
-            if (data.TryGetValue("Value", out var valueObj) &&
-                valueObj is System.Text.Json.JsonElement valueElement &&
-                valueElement.ValueKind == System.Text.Json.JsonValueKind.Object &&
-                valueElement.TryGetProperty("action", out var actionElement))
-            {
-                action = actionElement.GetString();
-            }
+            string? action = data.TryGetValue("action", out var actionObj) ? actionObj?.ToString() : null;
 
             if (string.IsNullOrEmpty(action))
             {
