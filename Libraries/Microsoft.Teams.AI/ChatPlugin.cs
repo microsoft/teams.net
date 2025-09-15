@@ -10,8 +10,9 @@ namespace Microsoft.Teams.AI;
 /// a component that can change the
 /// way a ChatPrompt works
 /// </summary>
-public interface IChatPlugin : IPlugin
+public interface IChatPlugin
 {
+    /// TODO: Duplicate code from IPlugin - can we avoid this?
     /// <summary>
     /// called before a prompt sends
     /// a message
@@ -50,4 +51,21 @@ public interface IChatPlugin : IPlugin
     /// <param name="output">the functions return value</param>
     /// <returns>the transformed response</returns>
     public Task<object?> OnAfterFunctionCall<TOptions>(IChatPrompt<TOptions> prompt, IFunction function, FunctionCall call, object? output, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Modify the prompt functions passed to the model.
+    /// </summary>
+    /// <param name="prompt">the prompt</param>
+    /// <param name="functions">a copy of the configured chat prompt functions</param>
+    /// <param name="cancellationToken">the cancellation token</param>
+    /// <returns>the transformed functions</returns>
+    public Task<FunctionCollection> OnBuildFunctions<TOptions>(IChatPrompt<TOptions> prompt, FunctionCollection functions, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Modify the prompt instructions passed to the model.
+    /// </summary>
+    /// <param name="prompt">the prompt</param>
+    /// <param name="instructions">the instructions</param>
+    /// <returns>the transformed instructions</returns>
+    public Task<DeveloperMessage?> OnBuildInstructions<TOptions>(IChatPrompt<TOptions> prompt, DeveloperMessage? instructions);
 }
