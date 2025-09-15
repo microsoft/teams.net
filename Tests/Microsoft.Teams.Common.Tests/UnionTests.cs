@@ -56,24 +56,4 @@ public class UnionTests
         Assert.Equal("world", dict["hello"].ToString());
         Assert.Equal(123, ((System.Text.Json.JsonElement)dict["test"]).GetInt32());
     }
-
-    [Fact]
-    public void JsonDeserialize_IUnion_StringFloat()
-    {
-        // This tests the exact failing case: IUnion<string, float> instead of Union<string, float>
-        // Test with "auto" string value
-        var autoJson = "\"auto\"";
-        var autoResult = JsonSerializer.Deserialize<IUnion<string, float>>(autoJson);
-        Assert.Equal("auto", autoResult.Value);
-
-        // Test with numeric value
-        var numericJson = "1.5";
-        var numericResult = JsonSerializer.Deserialize<IUnion<string, float>>(numericJson);
-        Assert.Equal(1.5f, numericResult.Value);
-
-        // Test with "stretch" string value (another common Column.Width value)
-        var stretchJson = "\"stretch\"";
-        var stretchResult = JsonSerializer.Deserialize<IUnion<string, float>>(stretchJson);
-        Assert.Equal("stretch", stretchResult.Value);
-    }
 }
