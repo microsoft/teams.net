@@ -259,10 +259,23 @@ public class IUnionJsonConverter<A, B> : JsonConverter<IUnion<A, B>>
             throw new JsonException("Cannot deserialize null to Union");
         }
 
-        if (TryConvertJsonElement<A>(element, out var valueA, options))
-            return new Union<A, B>(valueA);
-        if (TryConvertJsonElement<B>(element, out var valueB, options))
-            return new Union<A, B>(valueB);
+        // Try type A first
+        try
+        {
+            var valueA = JsonSerializer.Deserialize<A>(element, options);
+            if (valueA != null)
+                return new Union<A, B>(valueA);
+        }
+        catch { }
+
+        // Try type B
+        try
+        {
+            var valueB = JsonSerializer.Deserialize<B>(element, options);
+            if (valueB != null)
+                return new Union<A, B>(valueB);
+        }
+        catch { }
 
         throw new JsonException($"Cannot convert JSON to Union<{typeof(A).Name}, {typeof(B).Name}>");
     }
@@ -270,62 +283,6 @@ public class IUnionJsonConverter<A, B> : JsonConverter<IUnion<A, B>>
     public override void Write(Utf8JsonWriter writer, IUnion<A, B> value, JsonSerializerOptions options)
     {
         JsonSerializer.Serialize(writer, value.Value, options);
-    }
-
-    private static bool TryConvertJsonElement<T>(JsonElement element, out T value, JsonSerializerOptions? options = null) where T : notnull
-    {
-        value = default!;
-        try
-        {
-            if (typeof(T) == typeof(string) && element.ValueKind == JsonValueKind.String)
-            {
-                value = (T)(object)element.GetString()!;
-                return true;
-            }
-            if (typeof(T) == typeof(int) && element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var intVal))
-            {
-                value = (T)(object)intVal;
-                return true;
-            }
-            if (typeof(T) == typeof(float) && element.ValueKind == JsonValueKind.Number && element.TryGetSingle(out var floatVal))
-            {
-                value = (T)(object)floatVal;
-                return true;
-            }
-            if (typeof(T) == typeof(double) && element.ValueKind == JsonValueKind.Number && element.TryGetDouble(out var doubleVal))
-            {
-                value = (T)(object)doubleVal;
-                return true;
-            }
-            if (typeof(T) == typeof(bool) && element.ValueKind == JsonValueKind.True)
-            {
-                value = (T)(object)true;
-                return true;
-            }
-            if (typeof(T) == typeof(bool) && element.ValueKind == JsonValueKind.False)
-            {
-                value = (T)(object)false;
-                return true;
-            }
-
-            // For complex objects, try to deserialize directly
-            if (element.ValueKind == JsonValueKind.Object || element.ValueKind == JsonValueKind.Array)
-            {
-                var jsonString = element.GetRawText();
-                var result = JsonSerializer.Deserialize<T>(jsonString, options);
-                if (result != null)
-                {
-                    value = result;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
     }
 }
 
@@ -537,12 +494,32 @@ public class IUnionJsonConverter<A, B, C> : JsonConverter<IUnion<A, B, C>>
             throw new JsonException("Cannot deserialize null to Union");
         }
 
-        if (TryConvertJsonElement<A>(element, out var valueA, options))
-            return new Union<A, B, C>(valueA);
-        if (TryConvertJsonElement<B>(element, out var valueB, options))
-            return new Union<A, B, C>(valueB);
-        if (TryConvertJsonElement<C>(element, out var valueC, options))
-            return new Union<A, B, C>(valueC);
+        // Try type A first
+        try
+        {
+            var valueA = JsonSerializer.Deserialize<A>(element, options);
+            if (valueA != null)
+                return new Union<A, B, C>(valueA);
+        }
+        catch { }
+
+        // Try type B
+        try
+        {
+            var valueB = JsonSerializer.Deserialize<B>(element, options);
+            if (valueB != null)
+                return new Union<A, B, C>(valueB);
+        }
+        catch { }
+
+        // Try type C
+        try
+        {
+            var valueC = JsonSerializer.Deserialize<C>(element, options);
+            if (valueC != null)
+                return new Union<A, B, C>(valueC);
+        }
+        catch { }
 
         throw new JsonException($"Cannot convert JSON to Union<{typeof(A).Name}, {typeof(B).Name}, {typeof(C).Name}>");
     }
@@ -550,62 +527,6 @@ public class IUnionJsonConverter<A, B, C> : JsonConverter<IUnion<A, B, C>>
     public override void Write(Utf8JsonWriter writer, IUnion<A, B, C> value, JsonSerializerOptions options)
     {
         JsonSerializer.Serialize(writer, value.Value, options);
-    }
-
-    private static bool TryConvertJsonElement<T>(JsonElement element, out T value, JsonSerializerOptions? options = null) where T : notnull
-    {
-        value = default!;
-        try
-        {
-            if (typeof(T) == typeof(string) && element.ValueKind == JsonValueKind.String)
-            {
-                value = (T)(object)element.GetString()!;
-                return true;
-            }
-            if (typeof(T) == typeof(int) && element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var intVal))
-            {
-                value = (T)(object)intVal;
-                return true;
-            }
-            if (typeof(T) == typeof(float) && element.ValueKind == JsonValueKind.Number && element.TryGetSingle(out var floatVal))
-            {
-                value = (T)(object)floatVal;
-                return true;
-            }
-            if (typeof(T) == typeof(double) && element.ValueKind == JsonValueKind.Number && element.TryGetDouble(out var doubleVal))
-            {
-                value = (T)(object)doubleVal;
-                return true;
-            }
-            if (typeof(T) == typeof(bool) && element.ValueKind == JsonValueKind.True)
-            {
-                value = (T)(object)true;
-                return true;
-            }
-            if (typeof(T) == typeof(bool) && element.ValueKind == JsonValueKind.False)
-            {
-                value = (T)(object)false;
-                return true;
-            }
-
-            // For complex objects, try to deserialize directly
-            if (element.ValueKind == JsonValueKind.Object || element.ValueKind == JsonValueKind.Array)
-            {
-                var jsonString = element.GetRawText();
-                var result = JsonSerializer.Deserialize<T>(jsonString, options);
-                if (result != null)
-                {
-                    value = result;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
     }
 }
 
@@ -855,14 +776,41 @@ public class IUnionJsonConverter<A, B, C, D> : JsonConverter<IUnion<A, B, C, D>>
             throw new JsonException("Cannot deserialize null to Union");
         }
 
-        if (TryConvertJsonElement<A>(element, out var valueA, options))
-            return new Union<A, B, C, D>(valueA);
-        if (TryConvertJsonElement<B>(element, out var valueB, options))
-            return new Union<A, B, C, D>(valueB);
-        if (TryConvertJsonElement<C>(element, out var valueC, options))
-            return new Union<A, B, C, D>(valueC);
-        if (TryConvertJsonElement<D>(element, out var valueD, options))
-            return new Union<A, B, C, D>(valueD);
+        // Try type A first
+        try
+        {
+            var valueA = JsonSerializer.Deserialize<A>(element, options);
+            if (valueA != null)
+                return new Union<A, B, C, D>(valueA);
+        }
+        catch { }
+
+        // Try type B
+        try
+        {
+            var valueB = JsonSerializer.Deserialize<B>(element, options);
+            if (valueB != null)
+                return new Union<A, B, C, D>(valueB);
+        }
+        catch { }
+
+        // Try type C
+        try
+        {
+            var valueC = JsonSerializer.Deserialize<C>(element, options);
+            if (valueC != null)
+                return new Union<A, B, C, D>(valueC);
+        }
+        catch { }
+
+        // Try type D
+        try
+        {
+            var valueD = JsonSerializer.Deserialize<D>(element, options);
+            if (valueD != null)
+                return new Union<A, B, C, D>(valueD);
+        }
+        catch { }
 
         throw new JsonException($"Cannot convert JSON to Union<{typeof(A).Name}, {typeof(B).Name}, {typeof(C).Name}, {typeof(D).Name}>");
     }
@@ -870,62 +818,6 @@ public class IUnionJsonConverter<A, B, C, D> : JsonConverter<IUnion<A, B, C, D>>
     public override void Write(Utf8JsonWriter writer, IUnion<A, B, C, D> value, JsonSerializerOptions options)
     {
         JsonSerializer.Serialize(writer, value.Value, options);
-    }
-
-    private static bool TryConvertJsonElement<T>(JsonElement element, out T value, JsonSerializerOptions? options = null) where T : notnull
-    {
-        value = default!;
-        try
-        {
-            if (typeof(T) == typeof(string) && element.ValueKind == JsonValueKind.String)
-            {
-                value = (T)(object)element.GetString()!;
-                return true;
-            }
-            if (typeof(T) == typeof(int) && element.ValueKind == JsonValueKind.Number && element.TryGetInt32(out var intVal))
-            {
-                value = (T)(object)intVal;
-                return true;
-            }
-            if (typeof(T) == typeof(float) && element.ValueKind == JsonValueKind.Number && element.TryGetSingle(out var floatVal))
-            {
-                value = (T)(object)floatVal;
-                return true;
-            }
-            if (typeof(T) == typeof(double) && element.ValueKind == JsonValueKind.Number && element.TryGetDouble(out var doubleVal))
-            {
-                value = (T)(object)doubleVal;
-                return true;
-            }
-            if (typeof(T) == typeof(bool) && element.ValueKind == JsonValueKind.True)
-            {
-                value = (T)(object)true;
-                return true;
-            }
-            if (typeof(T) == typeof(bool) && element.ValueKind == JsonValueKind.False)
-            {
-                value = (T)(object)false;
-                return true;
-            }
-
-            // For complex objects, try to deserialize directly
-            if (element.ValueKind == JsonValueKind.Object || element.ValueKind == JsonValueKind.Array)
-            {
-                var jsonString = element.GetRawText();
-                var result = JsonSerializer.Deserialize<T>(jsonString, options);
-                if (result != null)
-                {
-                    value = result;
-                    return true;
-                }
-            }
-
-            return false;
-        }
-        catch
-        {
-            return false;
-        }
     }
 }
 
