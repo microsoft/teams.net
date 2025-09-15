@@ -65,7 +65,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Extensions.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Tab", "Samples\Samples.Tab\Samples.Tab.csproj", "{1F168FCB-B034-43E3-B27C-C0C2E0D23D89}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Cards.Tests", "Tests\Microsoft.Teams.Cards.Tests\Microsoft.Teams.Cards.Tests.csproj", "{3B055754-F282-71F9-5050-12CAAA900DEA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Cards", "Samples\Samples.Cards\Samples.Cards.csproj", "{6FD6A058-C762-4B2D-B45A-C2847CED502A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Samples.Cards", "Samples\Samples.Cards\Samples.Cards.csproj", "{6FD6A058-C762-4B2D-B45A-C2847CED502A}"
 EndProject
