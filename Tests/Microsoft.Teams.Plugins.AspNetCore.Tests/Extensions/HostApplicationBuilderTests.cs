@@ -1,47 +1,107 @@
-using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Authorization.Infrastructure;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
-using Microsoft.Extensions.Hosting;
+
+using static Microsoft.Teams.Plugins.AspNetCore.Extensions.HostApplicationBuilderExtensions;
 
 public class HostApplicationBuilderTests
 {
-    [Fact]
-    public void AddTeamsTokenAuthentication_Should_Register_JwtBearerScheme()
-    {
-        var builder = Host.CreateDefaultBuilder();
 
+    [Fact]
+    public async Task AddTeamsTokenAuthentication_ShouldSkipAuthentication_WhenClientIdIsMissing()
+    {
+        var builder = WebApplication.CreateBuilder();
+        var mockSettings = new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = null,
+        };
+        builder.Configuration.AddInMemoryCollection(mockSettings);
         builder.AddTeams();
 
         var services = builder.Build().Services;
         var schemes = services.GetRequiredService<IAuthenticationSchemeProvider>();
-        var scheme = schemes.GetSchemeAsync("TeamsJWTScheme").Result;
+        Assert.Null(await schemes.GetSchemeAsync(TeamsTokenAuthConstants.AuthenticationScheme));
+        Assert.Null(await schemes.GetSchemeAsync(EntraTokenAuthConstants.AuthenticationScheme));
+        
+
+        var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
+        Assert.Null(await authOptions.GetPolicyAsync(TeamsTokenAuthConstants.AuthorizationPolicy));
+        Assert.Null(await authOptions.GetPolicyAsync(EntraTokenAuthConstants.AuthorizationPolicy));
+    }
+
+    [Fact]
+    public async Task AddTeamsTokenAuthentication_ShouldRegisterJwtBearerScheme()
+    {
+        var builder = WebApplication.CreateBuilder();
+        var mockSettings = new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "test-client-id",
+        };
+        builder.Configuration.AddInMemoryCollection(mockSettings);
+        builder.AddTeams();
+
+        var services = builder.Build().Services;
+        var schemes = services.GetRequiredService<IAuthenticationSchemeProvider>();
+        var scheme = await schemes.GetSchemeAsync(TeamsTokenAuthConstants.AuthenticationScheme);
         var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
 
-        var policy = authOptions.GetPolicyAsync("TeamsJWTPolicy").Result;
+        var policy = await authOptions.GetPolicyAsync(TeamsTokenAuthConstants.AuthorizationPolicy);
         var mvcBuilder = services.GetService<Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider>();
 
         Assert.NotNull(scheme);
         Assert.Equal("JwtBearerHandler", scheme.HandlerType.Name);
         Assert.True(policy.Requirements.OfType<RolesAuthorizationRequirement>().Any() ||
             policy.Requirements.OfType<IAuthorizationRequirement>().Any(r => r is not AssertionRequirement));
-        Assert.NotNull(mvcBuilder); 
+        Assert.NotNull(mvcBuilder);
     }
 
     [Fact]
-    public void AddTeamsTokenAuthentication_WithSkipAuth()
+    public async Task AddTeamsTokenAuthentication_ShouldSkipJwtAuthentication_WhenWithSkipIsTrue()
     {
-        var builder = Host.CreateDefaultBuilder();
-
+        var builder = WebApplication.CreateBuilder();
+        var mockSettings = new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "test-client-id",
+        };
+        builder.Configuration.AddInMemoryCollection(mockSettings);
         builder.AddTeams(skipAuth: true);
         var services = builder.Build().Services;
         var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
 
-        var policy = authOptions.GetPolicyAsync("TeamsJWTPolicy").Result;
+        var policy = await authOptions.GetPolicyAsync(TeamsTokenAuthConstants.AuthorizationPolicy);
 
         // Should allow all requests
+        Assert.NotNull(policy);
         Assert.True(policy.Requirements.OfType<AssertionRequirement>().Any());
+    }
+
+    [Fact]
+    public async Task AddTeamsTokenAuthentication_ShouldRegisterEntraTokenValidation()
+    {
+        var builder = WebApplication.CreateBuilder();
+        var mockSettings = new Dictionary<string, string?>
+        {
+            ["Teams:ClientId"] = "test-client-id",
+        };
+        builder.Configuration.AddInMemoryCollection(mockSettings);
+        builder.AddTeams();
+
+        var services = builder.Build().Services;
+        var schemes = services.GetRequiredService<IAuthenticationSchemeProvider>();
+        var scheme = await schemes.GetSchemeAsync(EntraTokenAuthConstants.AuthenticationScheme);
+        var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
+
+        var policy = await authOptions.GetPolicyAsync(EntraTokenAuthConstants.AuthorizationPolicy);
+        var mvcBuilder = services.GetService<Microsoft.AspNetCore.Mvc.Infrastructure.IActionDescriptorCollectionProvider>();
+
+        Assert.NotNull(scheme);
+        Assert.Equal("JwtBearerHandler", scheme.HandlerType.Name);
+        Assert.True(policy.Requirements.OfType<RolesAuthorizationRequirement>().Any() ||
+            policy.Requirements.OfType<IAuthorizationRequirement>().Any(r => r is not AssertionRequirement));
+        Assert.NotNull(mvcBuilder);
     }
 }

@@ -23,4 +23,19 @@ public class TeamsValidationSettings
         if (ClientId is not null && !Audiences.Contains(apiAudience))
             Audiences.Add(apiAudience);
     }
+
+    public IEnumerable<string> GetValidIssuersForTenant(string? tenantId) 
+    {
+        var validIssuers = new List<string>();
+        if (!string.IsNullOrEmpty(tenantId))
+        {
+            validIssuers.Add($"https://login.microsoftonline.com/{tenantId}/");
+        }
+        return validIssuers;
+    }
+
+    public string GetTenantSpecificOpenIdMetadataUrl(string? tenantId)
+    {
+        return $"https://login.microsoftonline.com/{tenantId ?? "common"}/v2.0/.well-known/openid-configuration";
+    }
 }
