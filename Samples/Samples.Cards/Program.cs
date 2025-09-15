@@ -84,6 +84,12 @@ public static partial class Program
                 var card = CreateTaskFormCard();
                 await client.Send(card);
             }
+            else if (text.Contains("json"))
+            {
+                log.Info("[JSON] JSON deserialization card requested");
+                var card = CreateCardFromJson();
+                await client.Send(card);
+            }
             else if (text.Contains("reply"))
             {
                 await client.Send("Hello! How can I assist you today?");
@@ -91,7 +97,7 @@ public static partial class Program
             else
             {
                 await client.Typing();
-                await client.Send($"You said '{activity.Text}'. Try typing: card, profile, validation, feedback, form, or reply");
+                await client.Send($"You said '{activity.Text}'. Try typing: card, profile, validation, feedback, form, json, or reply");
             }
         }
 
@@ -101,40 +107,70 @@ public static partial class Program
             log.Info("[CARD_ACTION] Card action received");
 
             var data = activity.Value?.Action?.Data;
-            if (data == null || !data.ContainsKey("action"))
+
+            // Let's log the actual data structure to understand what we're working with
+            log.Info($"[CARD_ACTION] Raw data: {System.Text.Json.JsonSerializer.Serialize(data)}");
+
+            if (data == null)
+            {
+                log.Error("[CARD_ACTION] No data in card action");
+                return new ActionResponse.Message("No data specified") { StatusCode = 400 };
+            }
+
+            // Extract action from the Value property
+            string? action = null;
+            if (data.TryGetValue("Value", out var valueObj) &&
+                valueObj is System.Text.Json.JsonElement valueElement &&
+                valueElement.ValueKind == System.Text.Json.JsonValueKind.Object &&
+                valueElement.TryGetProperty("action", out var actionElement))
+            {
+                action = actionElement.GetString();
+            }
+
+            if (string.IsNullOrEmpty(action))
             {
                 log.Error("[CARD_ACTION] No action specified in card data");
                 return new ActionResponse.Message("No action specified") { StatusCode = 400 };
             }
-
-            var action = data["action"]?.ToString();
             log.Info($"[CARD_ACTION] Processing action: {action}");
+
+            // Helper method to extract form field values (they're at root level, not in Value)
+            string? GetFormValue(string key)
+            {
+                if (data.TryGetValue(key, out var val))
+                {
+                    if (val is System.Text.Json.JsonElement element)
+                        return element.GetString();
+                    return val?.ToString();
+                }
+                return null;
+            }
 
             switch (action)
             {
                 case "submit_basic":
-                    var notifyValue = data.TryGetValue("notify", out var notify) ? notify?.ToString() : "false";
+                    var notifyValue = GetFormValue("notify") ?? "false";
                     await client.Send($"Basic card submitted! Notify setting: {notifyValue}");
                     break;
 
                 case "submit_feedback":
-                    var feedbackText = data.TryGetValue("feedback", out var feedback) ? feedback?.ToString() : "No feedback provided";
+                    var feedbackText = GetFormValue("feedback") ?? "No feedback provided";
                     await client.Send($"Feedback received: {feedbackText}");
                     break;
 
                 case "create_task":
-                    var title = data.TryGetValue("title", out var t) ? t?.ToString() : "Untitled";
-                    var priority = data.TryGetValue("priority", out var p) ? p?.ToString() : "medium";
-                    var dueDate = data.TryGetValue("due_date", out var d) ? d?.ToString() : "No date";
+                    var title = GetFormValue("title") ?? "Untitled";
+                    var priority = GetFormValue("priority") ?? "medium";
+                    var dueDate = GetFormValue("due_date") ?? "No date";
                     await client.Send($"Task created!\nTitle: {title}\nPriority: {priority}\nDue: {dueDate}");
                     break;
 
                 case "save_profile":
-                    var name = data.TryGetValue("name", out var n) ? n?.ToString() : "Unknown";
-                    var email = data.TryGetValue("email", out var e) ? e?.ToString() : "No email";
-                    var subscribe = data.TryGetValue("subscribe", out var s) ? s?.ToString() : "false";
-                    var age = data.TryGetValue("age", out var a) ? a?.ToString() : null;
-                    var location = data.TryGetValue("location", out var l) ? l?.ToString() : "Not specified";
+                    var name = GetFormValue("name") ?? "Unknown";
+                    var email = GetFormValue("email") ?? "No email";
+                    var subscribe = GetFormValue("subscribe") ?? "false";
+                    var age = GetFormValue("age");
+                    var location = GetFormValue("location") ?? "Not specified";
 
                     var response = $"Profile saved!\nName: {name}\nEmail: {email}\nSubscribed: {subscribe}";
                     if (!string.IsNullOrEmpty(age))
@@ -143,6 +179,10 @@ public static partial class Program
                         response += $"\nLocation: {location}";
 
                     await client.Send(response);
+                    break;
+
+                case "test_json":
+                    await client.Send("✅ JSON deserialization test successful! The card was properly created from JSON and the action was processed correctly.");
                     break;
 
                 default:
@@ -361,6 +401,119 @@ public static partial class Program
                     }
                 }
             };
+        }
+
+        private static AdaptiveCard CreateCardFromJson()
+        {
+            // JSON similar to the Python create_model_validate_card example
+            var cardJson = @"{
+                ""type"": ""AdaptiveCard"",
+                ""body"": [
+                    {
+                        ""type"": ""ColumnSet"",
+                        ""columns"": [
+                            {
+                                ""type"": ""Column"",
+                                ""verticalContentAlignment"": ""center"",
+                                ""items"": [
+                                    {
+                                        ""type"": ""Image"",
+                                        ""style"": ""Person"",
+                                        ""url"": ""https://aka.ms/AAp9xo4"",
+                                        ""size"": ""Small"",
+                                        ""altText"": ""Portrait of David Claux""
+                                    }
+                                ],
+                                ""width"": ""auto""
+                            },
+                            {
+                                ""type"": ""Column"",
+                                ""spacing"": ""medium"",
+                                ""verticalContentAlignment"": ""center"",
+                                ""items"": [
+                                    {
+                                        ""type"": ""TextBlock"",
+                                        ""weight"": ""Bolder"",
+                                        ""text"": ""David Claux"",
+                                        ""wrap"": true
+                                    }
+                                ],
+                                ""width"": ""auto""
+                            },
+                            {
+                                ""type"": ""Column"",
+                                ""spacing"": ""medium"",
+                                ""verticalContentAlignment"": ""center"",
+                                ""items"": [
+                                    {
+                                        ""type"": ""TextBlock"",
+                                        ""text"": ""Principal Platform Architect at Microsoft"",
+                                        ""isSubtle"": true,
+                                        ""wrap"": true
+                                    }
+                                ],
+                                ""width"": ""stretch""
+                            }
+                        ]
+                    },
+                    {
+                        ""type"": ""TextBlock"",
+                        ""text"": ""This card was created from JSON deserialization!"",
+                        ""wrap"": true,
+                        ""color"": ""good"",
+                        ""spacing"": ""medium""
+                    }
+                ],
+                ""actions"": [
+                    {
+                        ""type"": ""Action.Execute"",
+                        ""title"": ""Test JSON Action"",
+                        ""data"": {
+                            ""Value"": {
+                                ""action"": ""test_json""
+                            }
+                        },
+                        ""associatedInputs"": ""auto""
+                    }
+                ],
+                ""version"": ""1.5"",
+                ""schema"": ""http://adaptivecards.io/schemas/adaptive-card.json""
+            }";
+
+            try
+            {
+                // Deserialize the JSON into an AdaptiveCard object
+                var card = System.Text.Json.JsonSerializer.Deserialize<AdaptiveCard>(cardJson, new System.Text.Json.JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
+                });
+
+                return card ?? throw new InvalidOperationException("Failed to deserialize card");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error deserializing card JSON: {ex.Message}");
+                // If deserialization fails, return a fallback card with error info
+                return new AdaptiveCard
+                {
+                    Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+                    Body = new List<CardElement>
+                    {
+                        new TextBlock("JSON Deserialization Test")
+                        {
+                            Weight = TextWeight.Bolder,
+                            Size = TextSize.Large,
+                            Color = TextColor.Attention
+                        },
+                        new TextBlock($"Deserialization failed: {ex.Message}")
+                        {
+                            Wrap = true,
+                            Color = TextColor.Attention
+                        }
+                    }
+                };
+            }
         }
 
         [Microsoft.Teams.Apps.Events.Event("activity")]
