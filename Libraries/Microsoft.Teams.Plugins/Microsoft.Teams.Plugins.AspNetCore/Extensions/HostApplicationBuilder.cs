@@ -146,7 +146,7 @@ public static class HostApplicationBuilderExtensions
             {
                 if (skipAuth)
                 {
-                    // bypass authentication when running in dev tools
+                    // bypass authentication
                     policy.RequireAssertion(_ => true);
                 }
                 else
