@@ -1187,7 +1187,7 @@ public class AdaptiveCard : CardElement
     return this;
   }
 
-  public AdaptiveCard WithBackgroundImage(IUnion<string, BackgroundImage> value)
+  public AdaptiveCard WithBackgroundImage(Union<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -1259,7 +1259,7 @@ public class AdaptiveCard : CardElement
     return this;
   }
 
-  public AdaptiveCard WithFallback(IUnion<CardElement, FallbackElement> value)
+  public AdaptiveCard WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -1426,7 +1426,7 @@ public class ExecuteAction : Action
     return this;
   }
 
-  public ExecuteAction WithData(IUnion<string, SubmitActionData> value)
+  public ExecuteAction WithData(Union<string, SubmitActionData> value)
   {
     this.Data = value;
     return this;
@@ -1450,7 +1450,7 @@ public class ExecuteAction : Action
     return this;
   }
 
-  public ExecuteAction WithFallback(IUnion<Action, FallbackAction> value)
+  public ExecuteAction WithFallback(Union<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -1780,7 +1780,7 @@ public class SubmitAction : Action
     return this;
   }
 
-  public SubmitAction WithData(IUnion<string, SubmitActionData> value)
+  public SubmitAction WithData(Union<string, SubmitActionData> value)
   {
     this.Data = value;
     return this;
@@ -1804,7 +1804,7 @@ public class SubmitAction : Action
     return this;
   }
 
-  public SubmitAction WithFallback(IUnion<Action, FallbackAction> value)
+  public SubmitAction WithFallback(Union<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -1979,7 +1979,7 @@ public class OpenUrlAction : Action
     return this;
   }
 
-  public OpenUrlAction WithFallback(IUnion<Action, FallbackAction> value)
+  public OpenUrlAction WithFallback(Union<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2107,13 +2107,13 @@ public class ToggleVisibilityAction : Action
     return this;
   }
 
-  public ToggleVisibilityAction WithTargetElements(IUnion<IList<string>, IList<TargetElement>> value)
+  public ToggleVisibilityAction WithTargetElements(Union<IList<string>, IList<TargetElement>> value)
   {
     this.TargetElements = value;
     return this;
   }
 
-  public ToggleVisibilityAction WithFallback(IUnion<Action, FallbackAction> value)
+  public ToggleVisibilityAction WithFallback(Union<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2271,7 +2271,7 @@ public class ShowCardAction : Action
     return this;
   }
 
-  public ShowCardAction WithFallback(IUnion<Action, FallbackAction> value)
+  public ShowCardAction WithFallback(Union<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2411,7 +2411,7 @@ public class ResetInputsAction : Action
     return this;
   }
 
-  public ResetInputsAction WithFallback(IUnion<Action, FallbackAction> value)
+  public ResetInputsAction WithFallback(Union<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2569,7 +2569,7 @@ public class InsertImageAction : Action
     return this;
   }
 
-  public InsertImageAction WithFallback(IUnion<Action, FallbackAction> value)
+  public InsertImageAction WithFallback(Union<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2767,7 +2767,7 @@ public class AreaGridLayout : ContainerLayout
     return this;
   }
 
-  public AreaGridLayout WithColumns(IUnion<IList<float>, IList<string>> value)
+  public AreaGridLayout WithColumns(Union<IList<float>, IList<string>> value)
   {
     this.Columns = value;
     return this;
@@ -3482,7 +3482,7 @@ public class Container : CardElement
     return this;
   }
 
-  public Container WithBackgroundImage(IUnion<string, BackgroundImage> value)
+  public Container WithBackgroundImage(Union<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -3512,7 +3512,7 @@ public class Container : CardElement
     return this;
   }
 
-  public Container WithFallback(IUnion<CardElement, FallbackElement> value)
+  public Container WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -3685,7 +3685,7 @@ public class ActionSet : CardElement
     return this;
   }
 
-  public ActionSet WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ActionSet WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -3925,7 +3925,7 @@ public class ColumnSet : CardElement
     return this;
   }
 
-  public ColumnSet WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ColumnSet WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -4123,7 +4123,7 @@ public class Media : CardElement
     return this;
   }
 
-  public Media WithFallback(IUnion<CardElement, FallbackElement> value)
+  public Media WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -4357,13 +4357,13 @@ public class RichTextBlock : CardElement
     return this;
   }
 
-  public RichTextBlock WithFallback(IUnion<CardElement, FallbackElement> value)
+  public RichTextBlock WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
   }
 
-  public RichTextBlock WithInlines(IUnion<IList<CardElement>, IList<string>> value)
+  public RichTextBlock WithInlines(Union<IList<CardElement>, IList<string>> value)
   {
     this.Inlines = value;
     return this;
@@ -4633,7 +4633,7 @@ public class Table : CardElement
     return this;
   }
 
-  public Table WithFallback(IUnion<CardElement, FallbackElement> value)
+  public Table WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -4681,7 +4681,7 @@ public class ColumnDefinition : SerializableObject
     return this;
   }
 
-  public ColumnDefinition WithWidth(IUnion<string, float> value)
+  public ColumnDefinition WithWidth(Union<string, float> value)
   {
     this.Width = value;
     return this;
@@ -4950,7 +4950,7 @@ public class TextBlock : CardElement
     return this;
   }
 
-  public TextBlock WithFallback(IUnion<CardElement, FallbackElement> value)
+  public TextBlock WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -5111,7 +5111,7 @@ public class FactSet : CardElement
     return this;
   }
 
-  public FactSet WithFallback(IUnion<CardElement, FallbackElement> value)
+  public FactSet WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -5332,7 +5332,7 @@ public class ImageSet : CardElement
     return this;
   }
 
-  public ImageSet WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ImageSet WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -5601,7 +5601,7 @@ public class Image : CardElement
     return this;
   }
 
-  public Image WithFallback(IUnion<CardElement, FallbackElement> value)
+  public Image WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -5897,7 +5897,7 @@ public class TextInput : CardElement
     return this;
   }
 
-  public TextInput WithFallback(IUnion<CardElement, FallbackElement> value)
+  public TextInput WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -6139,7 +6139,7 @@ public class DateInput : CardElement
     return this;
   }
 
-  public DateInput WithFallback(IUnion<CardElement, FallbackElement> value)
+  public DateInput WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -6381,7 +6381,7 @@ public class TimeInput : CardElement
     return this;
   }
 
-  public TimeInput WithFallback(IUnion<CardElement, FallbackElement> value)
+  public TimeInput WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -6623,7 +6623,7 @@ public class NumberInput : CardElement
     return this;
   }
 
-  public NumberInput WithFallback(IUnion<CardElement, FallbackElement> value)
+  public NumberInput WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -6882,7 +6882,7 @@ public class ToggleInput : CardElement
     return this;
   }
 
-  public ToggleInput WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ToggleInput WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -7189,7 +7189,7 @@ public class ChoiceSetInput : CardElement
     return this;
   }
 
-  public ChoiceSetInput WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ChoiceSetInput WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -7533,7 +7533,7 @@ public class RatingInput : CardElement
     return this;
   }
 
-  public RatingInput WithFallback(IUnion<CardElement, FallbackElement> value)
+  public RatingInput WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -7761,7 +7761,7 @@ public class Rating : CardElement
     return this;
   }
 
-  public Rating WithFallback(IUnion<CardElement, FallbackElement> value)
+  public Rating WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -7977,7 +7977,7 @@ public class CompoundButton : CardElement
     return this;
   }
 
-  public CompoundButton WithFallback(IUnion<CardElement, FallbackElement> value)
+  public CompoundButton WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -8240,7 +8240,7 @@ public class Icon : CardElement
     return this;
   }
 
-  public Icon WithFallback(IUnion<CardElement, FallbackElement> value)
+  public Icon WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -8426,7 +8426,7 @@ public class Carousel : CardElement
     return this;
   }
 
-  public Carousel WithFallback(IUnion<CardElement, FallbackElement> value)
+  public Carousel WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -8684,7 +8684,7 @@ public class Badge : CardElement
     return this;
   }
 
-  public Badge WithFallback(IUnion<CardElement, FallbackElement> value)
+  public Badge WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -8876,7 +8876,7 @@ public class DonutChart : CardElement
     return this;
   }
 
-  public DonutChart WithFallback(IUnion<CardElement, FallbackElement> value)
+  public DonutChart WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -9110,7 +9110,7 @@ public class PieChart : CardElement
     return this;
   }
 
-  public PieChart WithFallback(IUnion<CardElement, FallbackElement> value)
+  public PieChart WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -9392,7 +9392,7 @@ public class GroupedVerticalBarChart : CardElement
     return this;
   }
 
-  public GroupedVerticalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
+  public GroupedVerticalBarChart WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -9728,7 +9728,7 @@ public class VerticalBarChart : CardElement
     return this;
   }
 
-  public VerticalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
+  public VerticalBarChart WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -9758,7 +9758,7 @@ public class VerticalBarChartDataValue : SerializableObject
   [JsonPropertyName("color")]
   public ChartColor? Color { get; set; }
 
-  public VerticalBarChartDataValue WithX(IUnion<string, float> value)
+  public VerticalBarChartDataValue WithX(Union<string, float> value)
   {
     this.X = value;
     return this;
@@ -10010,7 +10010,7 @@ public class HorizontalBarChart : CardElement
     return this;
   }
 
-  public HorizontalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
+  public HorizontalBarChart WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -10280,7 +10280,7 @@ public class StackedHorizontalBarChart : CardElement
     return this;
   }
 
-  public StackedHorizontalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
+  public StackedHorizontalBarChart WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -10604,7 +10604,7 @@ public class LineChart : CardElement
     return this;
   }
 
-  public LineChart WithFallback(IUnion<CardElement, FallbackElement> value)
+  public LineChart WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -10674,7 +10674,7 @@ public class LineChartValue : SerializableObject
   [JsonPropertyName("y")]
   public float? Y { get; set; }
 
-  public LineChartValue WithX(IUnion<float, string> value)
+  public LineChartValue WithX(Union<float, string> value)
   {
     this.X = value;
     return this;
@@ -10944,7 +10944,7 @@ public class GaugeChart : CardElement
     return this;
   }
 
-  public GaugeChart WithFallback(IUnion<CardElement, FallbackElement> value)
+  public GaugeChart WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11178,7 +11178,7 @@ public class CodeBlock : CardElement
     return this;
   }
 
-  public CodeBlock WithFallback(IUnion<CardElement, FallbackElement> value)
+  public CodeBlock WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11352,7 +11352,7 @@ public class ComUserMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComUserMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ComUserMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11556,7 +11556,7 @@ public class ComUsersMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComUsersMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ComUsersMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11748,7 +11748,7 @@ public class ComResourceMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComResourceMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ComResourceMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11982,7 +11982,7 @@ public class ComFileMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComFileMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ComFileMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -12198,7 +12198,7 @@ public class ComEventMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComEventMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ComEventMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -12635,7 +12635,7 @@ public class CarouselPage : CardElement
     return this;
   }
 
-  public CarouselPage WithBackgroundImage(IUnion<string, BackgroundImage> value)
+  public CarouselPage WithBackgroundImage(Union<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -12665,7 +12665,7 @@ public class CarouselPage : CardElement
     return this;
   }
 
-  public CarouselPage WithFallback(IUnion<CardElement, FallbackElement> value)
+  public CarouselPage WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -12893,7 +12893,7 @@ public class TableRow : CardElement
     return this;
   }
 
-  public TableRow WithFallback(IUnion<CardElement, FallbackElement> value)
+  public TableRow WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13132,7 +13132,7 @@ public class TableCell : CardElement
     return this;
   }
 
-  public TableCell WithBackgroundImage(IUnion<string, BackgroundImage> value)
+  public TableCell WithBackgroundImage(Union<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -13162,7 +13162,7 @@ public class TableCell : CardElement
     return this;
   }
 
-  public TableCell WithFallback(IUnion<CardElement, FallbackElement> value)
+  public TableCell WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13389,7 +13389,7 @@ public class TextRun : CardElement
     return this;
   }
 
-  public TextRun WithFallback(IUnion<CardElement, FallbackElement> value)
+  public TextRun WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13533,7 +13533,7 @@ public class IconRun : CardElement
     return this;
   }
 
-  public IconRun WithFallback(IUnion<CardElement, FallbackElement> value)
+  public IconRun WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13677,7 +13677,7 @@ public class ImageRun : CardElement
     return this;
   }
 
-  public ImageRun WithFallback(IUnion<CardElement, FallbackElement> value)
+  public ImageRun WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13982,7 +13982,7 @@ public class Column : CardElement
     return this;
   }
 
-  public Column WithBackgroundImage(IUnion<string, BackgroundImage> value)
+  public Column WithBackgroundImage(Union<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -14006,7 +14006,7 @@ public class Column : CardElement
     return this;
   }
 
-  public Column WithWidth(IUnion<string, float> value)
+  public Column WithWidth(Union<string, float> value)
   {
     this.Width = value;
     return this;
@@ -14018,7 +14018,7 @@ public class Column : CardElement
     return this;
   }
 
-  public Column WithFallback(IUnion<CardElement, FallbackElement> value)
+  public Column WithFallback(Union<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
