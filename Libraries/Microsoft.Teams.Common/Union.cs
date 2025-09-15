@@ -134,14 +134,28 @@ public class UnionJsonConverter<A, B> : JsonConverter<Union<A, B>>
 {
     public override Union<A, B> Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        var value = JsonSerializer.Deserialize<object>(ref reader, options);
+        using var jsonDoc = JsonDocument.ParseValue(ref reader);
+        var jsonElement = jsonDoc.RootElement;
 
-        if (value is null)
+        // Try to deserialize as A
+        try
         {
-            throw new JsonException("Union value must not be null");
+            var a = jsonElement.Deserialize<A>(options);
+            if (a is not null)
+                return new Union<A, B>(a);
         }
+        catch { /* swallow and try B */ }
 
-        return new Union<A, B>(value);
+        // Try to deserialize as B
+        try
+        {
+            var b = jsonElement.Deserialize<B>(options);
+            if (b is not null)
+                return new Union<A, B>(b);
+        }
+        catch { }
+
+        throw new JsonException($"Unable to deserialize union value to either {typeof(A).Name} or {typeof(B).Name}");
     }
 
     public override void Write(Utf8JsonWriter writer, Union<A, B> value, JsonSerializerOptions options)
