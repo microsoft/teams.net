@@ -475,4 +475,59 @@ public class AdaptiveCardsTest
         Assert.True(textInput.IsRequired);
         Assert.Equal("Name is required", textInput.ErrorMessage);
     }
+
+    [Fact]
+    public void Should_Deserialize_With_Minimal_JsonOptions()
+    {
+        // Test what minimal JsonSerializerOptions are actually required
+        string json = """
+        {
+            "type": "AdaptiveCard",
+            "body": [
+                {
+                    "type": "TextBlock",
+                    "text": "Hello World",
+                    "weight": "Bolder"
+                }
+            ],
+            "actions": [
+                {
+                    "type": "Action.Execute",
+                    "title": "Submit",
+                    "associatedInputs": "auto"
+                }
+            ]
+        }
+        """;
+
+        // Test 1: No options at all
+        var card1 = JsonSerializer.Deserialize<AdaptiveCard>(json);
+        Assert.NotNull(card1);
+        Assert.Single(card1.Body!);
+
+        // Test 2: Only PropertyNameCaseInsensitive 
+        var options2 = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+        var card2 = JsonSerializer.Deserialize<AdaptiveCard>(json, options2);
+        Assert.NotNull(card2);
+        Assert.Single(card2.Body!);
+
+        // Test 3: With CamelCase policy (what we had in docs)
+        var options3 = new JsonSerializerOptions 
+        { 
+            PropertyNameCaseInsensitive = true,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+        };
+        var card3 = JsonSerializer.Deserialize<AdaptiveCard>(json, options3);
+        Assert.NotNull(card3);
+        Assert.Single(card3.Body!);
+
+        // All should work the same
+        var textBlock1 = card1.Body![0] as TextBlock;
+        var textBlock2 = card2.Body![0] as TextBlock;
+        var textBlock3 = card3.Body![0] as TextBlock;
+        
+        Assert.Equal("Hello World", textBlock1?.Text);
+        Assert.Equal("Hello World", textBlock2?.Text);
+        Assert.Equal("Hello World", textBlock3?.Text);
+    }
 }
