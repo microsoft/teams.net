@@ -9,7 +9,7 @@ using Microsoft.Teams.Apps.Annotations;
 namespace Samples.Lights;
 
 [TeamsController]
-public class Controller(Func<OpenAIChatPrompt> _promptFactory)
+public class Controller(OpenAIChatPrompt _prompt)
 {
     [Message("/history")]
     public async Task OnHistory(IContext<MessageActivity> context)
@@ -26,8 +26,7 @@ public class Controller(Func<OpenAIChatPrompt> _promptFactory)
     {
         var state = State.From(context);
 
-        var prompt = _promptFactory();
-        await prompt.Send(context.Activity.Text, new() { Messages = state.Messages }, (chunk) => Task.Run(() =>
+        await _prompt.Send(context.Activity.Text, new() { Messages = state.Messages }, (chunk) => Task.Run(() =>
         {
             context.Stream.Emit(chunk);
         }), context.CancellationToken);
