@@ -7,11 +7,32 @@ namespace Microsoft.Teams.Cards;
 
 public class TaskFetchAction : SubmitAction
 {
-    public TaskFetchAction(object value)
+    public TaskFetchAction(IDictionary<string, object?>? value = null)
     {
-        Data = new Union<string, SubmitActionData>(new SubmitActionData
+        var submitActionData = new SubmitActionData
         {
-            MsTeams = new TaskFetchSubmitActionData(value)
-        });
+            MsTeams = new TaskFetchSubmitActionData()
+        };
+
+        if (value != null)
+        {
+            foreach (var kvp in value)
+            {
+                submitActionData.NonSchemaProperties[kvp.Key] = kvp.Value;
+            }
+        }
+
+        Data = new Union<string, SubmitActionData>(submitActionData);
+    }
+
+    public static IDictionary<string, object?> FromObject(object obj)
+    {
+        if (obj == null) throw new ArgumentNullException(nameof(obj));
+
+        return obj.GetType()
+                  .GetProperties()
+                  .ToDictionary(
+                      p => p.Name,
+                      p => (object?)p.GetValue(obj));
     }
 }

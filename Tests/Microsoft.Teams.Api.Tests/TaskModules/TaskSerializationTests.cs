@@ -155,4 +155,31 @@ public class TaskSerializationTests
             JsonSerializer.Deserialize<Microsoft.Teams.Api.TaskModules.Task>(json, _jsonOptions));
     }
 
+    [Fact]
+    public void TaskFetchAction_Should_Merge_Properties()
+    {
+        // arrange - TaskFetchAction should merge properties into root data (like TypeScript version)
+        var action = new Microsoft.Teams.Cards.TaskFetchAction(Microsoft.Teams.Cards.TaskFetchAction.FromObject(new { opendialogtype = "simple_form", customProperty = "value" }));
+
+        // act
+        var json = JsonSerializer.Serialize(action, _jsonOptions);
+
+        // Debug: Print actual JSON to see structure
+        System.Console.WriteLine($"Actual JSON: {json}");
+
+        // assert
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        Assert.True(root.TryGetProperty("data", out var dataElement));
+        Assert.True(dataElement.TryGetProperty("msTeams", out var msTeamsElement));
+        Assert.Equal("task/fetch", msTeamsElement.GetProperty("type").GetString());
+
+        // TaskFetchAction is special - it merges custom properties into the root SubmitActionData
+        // This matches the TypeScript implementation behavior
+        Assert.True(dataElement.TryGetProperty("opendialogtype", out var dialogTypeElement));
+        Assert.Equal("simple_form", dialogTypeElement.GetString());
+        Assert.True(dataElement.TryGetProperty("customProperty", out var customElement));
+        Assert.Equal("value", customElement.GetString());
+    }
 }

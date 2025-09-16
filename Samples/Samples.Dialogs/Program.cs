@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Apps;
@@ -185,65 +186,45 @@ public static partial class Program
 
         private static Microsoft.Teams.Cards.AdaptiveCard CreateDialogLauncherCard()
         {
-            var cardJson = """
+            var card = new Microsoft.Teams.Cards.AdaptiveCard
             {
-                "type": "AdaptiveCard",
-                "version": "1.4",
-                "body": [
+                Body = new List<Microsoft.Teams.Cards.CardElement>
+                {
+                    new Microsoft.Teams.Cards.TextBlock("Select the examples you want to see!")
                     {
-                        "type": "TextBlock",
-                        "text": "Select the examples you want to see!",
-                        "size": "Large",
-                        "weight": "Bolder"
+                        Size = Microsoft.Teams.Cards.TextSize.Large,
+                        Weight = Microsoft.Teams.Cards.TextWeight.Bolder
                     }
-                ],
-                "actions": [
-                    {
-                        "type": "Action.Submit",
-                        "title": "Simple form test",
-                        "data": {
-                            "msteams": {
-                                "type": "task/fetch"
-                            },
-                            "opendialogtype": "simple_form"
-                        }
-                    },
-                    {
-                        "type": "Action.Submit",
-                        "title": "Webpage Dialog",
-                        "data": {
-                            "msteams": {
-                                "type": "task/fetch"
-                            },
-                            "opendialogtype": "webpage_dialog"
-                        }
-                    },
-                    {
-                        "type": "Action.Submit",
-                        "title": "Multi-step Form",
-                        "data": {
-                            "msteams": {
-                                "type": "task/fetch"
-                            },
-                            "opendialogtype": "multi_step_form"
-                        }
-                    },
-                    {
-                        "type": "Action.Submit",
-                        "title": "Mixed Example",
-                        "data": {
-                            "msteams": {
-                                "type": "task/fetch"
-                            },
-                            "opendialogtype": "mixed_example"
-                        }
-                    }
-                ]
-            }
-            """;
+                },
+                Actions = new List<Microsoft.Teams.Cards.Action>
+                {
+                    new Microsoft.Teams.Cards.TaskFetchAction(
+    Microsoft.Teams.Cards.TaskFetchAction.FromObject(new { opendialogtype = "simple_form" }))
+{
+    Title = "Simple form test"
+},
+new Microsoft.Teams.Cards.TaskFetchAction(
+    Microsoft.Teams.Cards.TaskFetchAction.FromObject(new { opendialogtype = "webpage_dialog" }))
+{
+    Title = "Webpage Dialog"
+},
+new Microsoft.Teams.Cards.TaskFetchAction(
+    Microsoft.Teams.Cards.TaskFetchAction.FromObject(new { opendialogtype = "multi_step_form" }))
+{
+    Title = "Multi-step Form"
+},
+new Microsoft.Teams.Cards.TaskFetchAction(
+    Microsoft.Teams.Cards.TaskFetchAction.FromObject(new { opendialogtype = "mixed_example" }))
+{
+    Title = "Mixed Example"
+}
+                }
+            };
 
-            return System.Text.Json.JsonSerializer.Deserialize<Microsoft.Teams.Cards.AdaptiveCard>(cardJson)
-                ?? throw new InvalidOperationException("Failed to deserialize launcher card");
+            var serializedCard = JsonSerializer.Serialize(card, new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+            Console.WriteLine($"[DEBUG] Launcher Card JSON: {serializedCard}");
+
+            return card;
         }
 
         private static Microsoft.Teams.Api.TaskModules.Response CreateSimpleFormDialog()

@@ -1101,7 +1101,7 @@ public class AdaptiveCard : CardElement
   /// <summary>
   /// Teams-specific metadata associated with the card.
   /// </summary>
-  [JsonPropertyName("msTeams")]
+  [JsonPropertyName("msteams")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public TeamsCardProperties? MsTeams { get; set; }
 
@@ -1466,7 +1466,7 @@ public class SubmitActionData : SerializableObject
   /// <summary>
   /// Defines the optional Teams-specific portion of the action's data.
   /// </summary>
-  [JsonPropertyName("msTeams")]
+  [JsonPropertyName("msteams")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public object? MsTeams { get; set; }
 
@@ -1625,21 +1625,8 @@ public class TaskFetchSubmitActionData : SerializableObject
   [JsonPropertyName("type")]
   public string Type { get; } = "task/fetch";
 
-  /// <summary>
-  /// The contextual data sent to the Bot to specify which task module to open.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public object? Value { get; set; }
-
-  public TaskFetchSubmitActionData(object value)
+  public TaskFetchSubmitActionData()
   {
-    this.Value = value;
-  }
-
-  public TaskFetchSubmitActionData WithValue(object value)
-  {
-    this.Value = value;
-    return this;
   }
 }
 
@@ -1725,7 +1712,7 @@ public class SubmitAction : Action
   /// <summary>
   /// Teams-specific metadata associated with the action.
   /// </summary>
-  [JsonPropertyName("msTeams")]
+  [JsonPropertyName("msteams")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public TeamsSubmitActionProperties? MsTeams { get; set; }
 
@@ -5458,7 +5445,7 @@ public class Image : CardElement
   /// <summary>
   /// Teams-specific metadata associated with the image.
   /// </summary>
-  [JsonPropertyName("msTeams")]
+  [JsonPropertyName("msteams")]
   [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public TeamsImageProperties? MsTeams { get; set; }
 
