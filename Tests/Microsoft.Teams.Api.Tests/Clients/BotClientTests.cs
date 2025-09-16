@@ -21,7 +21,4 @@ public class BotClientTests
 
         Assert.NotNull(userClient.Token);
     }
-
-
-
 }
