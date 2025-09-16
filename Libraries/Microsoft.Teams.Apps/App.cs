@@ -67,7 +67,7 @@ public partial class App
             if (Credentials is not null && (Token is null || Token.IsExpired))
             {
                 var tokenClient = new Common.Http.HttpClient();
-                var scopes = Token is not null ? Token.Scopes : ["https://api.botframework.com/.default"];
+                var scopes = Token is not null ? Token.Scopes : [BotTokenClient.BotScope];
                 var res = Credentials.Resolve(tokenClient, [.. scopes])
                 .ConfigureAwait(false)
                 .GetAwaiter()
