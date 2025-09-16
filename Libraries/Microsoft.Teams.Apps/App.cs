@@ -408,7 +408,7 @@ public partial class App
             await Events.Emit(
                 sender,
                 EventType.Error,
-                new ErrorEvent() { Exception = ex, Context = context?.ToActivityType<IActivity>() },
+                new ErrorEvent() { Exception = ex, Context = context.ToActivityType<IActivity>() },
                 cancellationToken
             );
 
