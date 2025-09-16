@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Common;
+
 namespace Microsoft.Teams.Cards;
 
 public class IMBackAction : SubmitAction
@@ -11,9 +13,9 @@ public class IMBackAction : SubmitAction
     /// 
     public IMBackAction(string value)
     {
-        Data = new()
+        Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
             MsTeams = new ImBackSubmitActionData(value)
-        };
+        });
     }
 }

@@ -1,25 +1,27 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Common;
+
 namespace Microsoft.Teams.Cards;
 
 public class MessageBackAction : SubmitAction
 {
     public MessageBackAction(string text, string value)
     {
-        Data = new()
+        Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
             MsTeams = new MessageBackSubmitActionData()
             {
                 Text = text,
                 Value = value
             }
-        };
+        });
     }
 
     public MessageBackAction(string text, string displayText, string value)
     {
-        Data = new()
+        Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
             MsTeams = new MessageBackSubmitActionData()
             {
@@ -27,6 +29,6 @@ public class MessageBackAction : SubmitAction
                 DisplayText = displayText,
                 Value = value
             }
-        };
+        });
     }
 }
