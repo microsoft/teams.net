@@ -18,7 +18,6 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton(model);
         collection.AddSingleton<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
         collection.AddSingleton(prompt);
-        collection.AddSingleton(provider => provider.GetRequiredService<OpenAIChatPrompt>());
         return collection.AddSingleton<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
     }
 
@@ -30,7 +29,6 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton(chatModel);
         collection.AddSingleton<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
         collection.AddSingleton(prompt);
-        collection.AddSingleton(provider => provider.GetRequiredService<OpenAIChatPrompt>());
         return collection.AddSingleton<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
     }
 
