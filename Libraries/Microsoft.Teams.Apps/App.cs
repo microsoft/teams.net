@@ -62,29 +62,18 @@ public partial class App
 
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
         Client.Options.AddUserAgent(UserAgent);
-        Client.Options.TokenFactory = () =>
+        Client.Options.TokenFactory ??= () =>
         {
-            if (Credentials is not null)
+            if (Credentials is not null && (Token is null || Token.IsExpired))
             {
-                if (Token is null)
-                {
-                    var res = Api!.Bots.Token.GetAsync(Credentials)
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
-                    
-                    Token = new JsonWebToken(res.AccessToken);
-                }
+                var tokenClient = new Common.Http.HttpClient();
+                var scopes = Token is not null ? Token.Scopes : ["https://api.botframework.com/.default"];
+                var res = Credentials.Resolve(tokenClient, [.. scopes])
+                .ConfigureAwait(false)
+                .GetAwaiter()
+                .GetResult();
 
-                if (Token.IsExpired) 
-                {
-                    var res = Credentials.Resolve(Client, [.. Token.Scopes])
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
-
-                    Token = new JsonWebToken(res.AccessToken);
-                }
+                Token = new JsonWebToken(res.AccessToken);
             }
 
             return Token;
