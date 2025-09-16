@@ -188,4 +188,30 @@ public class AppTests
         api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Never);
         Assert.Null(app.Token);
     }
+
+    [Fact]
+    public void Test_App_Client_CustomTokenFactory()
+    {
+        // arrange
+        var client = new Mock<Common.Http.HttpClient>() { CallBase = true };
+        var tokenFactoryInvoked = false;
+        IHttpClientOptions.HttpTokenFactory tokenFactory = () =>
+        {
+            tokenFactoryInvoked = true;
+            return null;
+        };
+        client.Object.Options.TokenFactory = tokenFactory;
+        var options = new AppOptions()
+        {
+            Client = client.Object,
+            Credentials = null,
+        };
+        var app = new App(options);
+
+        // act
+        client.Object.Options.TokenFactory();
+
+        // assert
+        Assert.True(tokenFactoryInvoked);
+    }
 }
