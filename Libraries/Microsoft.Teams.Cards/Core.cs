@@ -1102,6 +1102,7 @@ public class AdaptiveCard : CardElement
   /// Teams-specific metadata associated with the card.
   /// </summary>
   [JsonPropertyName("msTeams")]
+  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public TeamsCardProperties? MsTeams { get; set; }
 
   /// <summary>
@@ -1466,6 +1467,7 @@ public class SubmitActionData : SerializableObject
   /// Defines the optional Teams-specific portion of the action's data.
   /// </summary>
   [JsonPropertyName("msTeams")]
+  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public object? MsTeams { get; set; }
 
   public SubmitActionData WithMsTeams(object value)
@@ -1724,6 +1726,7 @@ public class SubmitAction : Action
   /// Teams-specific metadata associated with the action.
   /// </summary>
   [JsonPropertyName("msTeams")]
+  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public TeamsSubmitActionProperties? MsTeams { get; set; }
 
   /// <summary>
@@ -5456,6 +5459,7 @@ public class Image : CardElement
   /// Teams-specific metadata associated with the image.
   /// </summary>
   [JsonPropertyName("msTeams")]
+  [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
   public TeamsImageProperties? MsTeams { get; set; }
 
   /// <summary>

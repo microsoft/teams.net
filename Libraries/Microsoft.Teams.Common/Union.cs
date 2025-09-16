@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Common;
 
+[JsonConverter(typeof(UnionJsonConverterFactory))]
 public partial interface IUnion<A, B> : IEquatable<Union<A, B>>
     where A : notnull
     where B : notnull
@@ -552,7 +553,10 @@ public class UnionJsonConverterFactory : JsonConverterFactory
         return (
             type.Name == typeof(Union<,>).Name ||
             type.Name == typeof(Union<,,>).Name ||
-            type.Name == typeof(Union<,,,>).Name
+            type.Name == typeof(Union<,,,>).Name ||
+            type.Name == typeof(IUnion<,>).Name ||
+            type.Name == typeof(IUnion<,,>).Name ||
+            type.Name == typeof(IUnion<,,,>).Name
         );
     }
 

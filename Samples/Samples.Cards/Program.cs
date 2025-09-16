@@ -1,9 +1,11 @@
 using Microsoft.Teams.Api.Activities.Invokes;
-using Microsoft.Teams.Apps.Activities;
+using Microsoft.Teams.Api.AdaptiveCards;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Activities.Invokes;
+using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Extensions;
+using Microsoft.Teams.Apps.Plugins;
+using Microsoft.Teams.Cards;
 using Microsoft.Teams.Common;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;

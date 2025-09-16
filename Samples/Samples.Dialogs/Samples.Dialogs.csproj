@@ -4,7 +4,13 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateEmbeddedFilesManifest>true</GenerateEmbeddedFilesManifest>
   </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Web/**" />
+    <Content Remove="Web/**" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="../../Libraries/Microsoft.Teams.Api/Microsoft.Teams.Api.csproj" />
@@ -15,6 +21,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.9" />
+    <PackageReference Include="Microsoft.Extensions.FileProviders.Embedded" Version="9.0.0" />
   </ItemGroup>
 
 </Project>
