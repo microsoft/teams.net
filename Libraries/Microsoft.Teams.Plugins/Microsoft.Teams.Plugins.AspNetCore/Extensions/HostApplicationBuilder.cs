@@ -118,13 +118,11 @@ public static class HostApplicationBuilderExtensions
     {
         var settings = builder.Configuration.GetTeams();
 
-        if (string.IsNullOrEmpty(settings.ClientId))
-        {
-            return builder;
-        }
-
         var teamsValidationSettings = new TeamsValidationSettings();
-        teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
+        if (!string.IsNullOrEmpty(settings.ClientId))
+        {
+            teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
+        }
 
         builder.Services.
             AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -144,7 +142,7 @@ public static class HostApplicationBuilderExtensions
             // token validation policy for SMBA tokens
             options.AddPolicy(TeamsTokenAuthConstants.AuthorizationPolicy, policy =>
             {
-                if (skipAuth)
+                if (skipAuth || string.IsNullOrEmpty(settings.ClientId))
                 {
                     // bypass authentication
                     policy.RequireAssertion(_ => true);
