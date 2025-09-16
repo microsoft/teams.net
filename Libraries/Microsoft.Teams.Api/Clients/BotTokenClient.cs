@@ -30,12 +30,12 @@ public class BotTokenClient : Client
 
     }
 
-    public async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http)
+    public async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null)
     {
         return await credentials.Resolve(http ?? _http, [BotScope], _cancellationToken);
     }
 
-    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, IHttpClient? http)
+    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, IHttpClient? http = null)
     {
         return await credentials.Resolve(http ?? _http, [GraphScope], _cancellationToken);
     }
