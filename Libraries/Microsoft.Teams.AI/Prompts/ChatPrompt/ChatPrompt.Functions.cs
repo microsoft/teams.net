@@ -34,14 +34,19 @@ public partial class ChatPrompt<TOptions>
         return this;
     }
 
-    public async Task<object?> Invoke(FunctionCall call, CancellationToken cancellationToken = default)
+    public Func<FunctionCall, CancellationToken, Task<object?>> Invoke(FunctionCollection functions)
     {
-        var function = Functions.Get(call.Name) ?? throw new NotImplementedException();
-        var logger = Logger.Child($"Functions.{call.Name}");
+        return async (call, cancellationToken) => await _Invoke(call, functions, cancellationToken);
+    }
+
+    private async Task<object?> _Invoke(FunctionCall call, FunctionCollection functions, CancellationToken cancellationToken = default)
+    {
+        var function = functions.Get(call.Name) ?? throw new NotImplementedException();
+        var logger = Logger.Child($"functions.{call.Name}");
 
         if (function is Function func)
         {
-            foreach (var plugin in ChatPlugins)
+            foreach (var plugin in Plugins)
             {
                 call = await plugin.OnBeforeFunctionCall(this, func, call, cancellationToken);
             }
@@ -55,7 +60,7 @@ public partial class ChatPrompt<TOptions>
             logger.Debug(res);
             logger.Debug($"elapse time: {(endedAt - startedAt).Humanize(3)}");
 
-            foreach (var plugin in ChatPlugins)
+            foreach (var plugin in Plugins)
             {
                 res = await plugin.OnAfterFunctionCall(this, func, call, res, cancellationToken);
             }

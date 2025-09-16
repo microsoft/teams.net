@@ -125,8 +125,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
     protected IChatModel<TOptions> Model { get; }
     protected ITemplate? Template { get; }
     protected ILogger Logger { get; }
-    protected IList<IPlugin> Plugins { get; }
-    protected IList<IChatPlugin> ChatPlugins => Plugins.Where(p => p is IChatPlugin).Select(p => (IChatPlugin)p).ToList();
+    protected IList<IChatPlugin> Plugins { get; }
     protected event EventHandler<Exception> ErrorEvent;
 
     public ChatPrompt(IChatModel<TOptions> model, ChatPromptOptions? options = null)
