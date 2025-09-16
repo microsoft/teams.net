@@ -26,7 +26,8 @@ public class Controller(Func<OpenAIChatPrompt> _promptFactory)
     {
         var state = State.From(context);
 
-        await _promptFactory().Send(context.Activity.Text, new() { Messages = state.Messages }, (chunk) => Task.Run(() =>
+        var prompt = _promptFactory();
+        await prompt.Send(context.Activity.Text, new() { Messages = state.Messages }, (chunk) => Task.Run(() =>
         {
             context.Stream.Emit(chunk);
         }), context.CancellationToken);
