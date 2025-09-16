@@ -1048,7 +1048,7 @@ public class AdaptiveCard : CardElement
   /// Defines the container's background image.
   /// </summary>
   [JsonPropertyName("backgroundImage")]
-  public Union<string, BackgroundImage>? BackgroundImage { get; set; }
+  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
   /// <summary>
   /// Controls how the container's content should be vertically aligned.
@@ -1121,7 +1121,7 @@ public class AdaptiveCard : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The body of the card, comprised of a list of elements displayed according to the layouts property. If the layouts property is not specified, a Layout.Stack is used.
@@ -1188,7 +1188,7 @@ public class AdaptiveCard : CardElement
     return this;
   }
 
-  public AdaptiveCard WithBackgroundImage(Union<string, BackgroundImage> value)
+  public AdaptiveCard WithBackgroundImage(IUnion<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -1260,7 +1260,7 @@ public class AdaptiveCard : CardElement
     return this;
   }
 
-  public AdaptiveCard WithFallback(Union<CardElement, FallbackElement> value)
+  public AdaptiveCard WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -1353,7 +1353,7 @@ public class ExecuteAction : Action
   /// The data to send to the Bot when the action is executed. When expressed as an object, `data` is sent back to the Bot when the action is executed, adorned with the values of the inputs expressed as key/value pairs, where the key is the Id of the input. If `data` is expressed as a string, input values are not sent to the Bot.
   /// </summary>
   [JsonPropertyName("data")]
-  public Union<string, SubmitActionData>? Data { get; set; }
+  public IUnion<string, SubmitActionData>? Data { get; set; }
 
   /// <summary>
   /// The Ids of the inputs associated with the Action.Submit. When the action is executed, the values of the associated inputs are sent to the Bot. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
@@ -1377,7 +1377,7 @@ public class ExecuteAction : Action
   /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<Action, FallbackAction>? Fallback { get; set; }
+  public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
   public ExecuteAction WithId(string value)
   {
@@ -1427,7 +1427,7 @@ public class ExecuteAction : Action
     return this;
   }
 
-  public ExecuteAction WithData(Union<string, SubmitActionData> value)
+  public ExecuteAction WithData(IUnion<string, SubmitActionData> value)
   {
     this.Data = value;
     return this;
@@ -1451,7 +1451,7 @@ public class ExecuteAction : Action
     return this;
   }
 
-  public ExecuteAction WithFallback(Union<Action, FallbackAction> value)
+  public ExecuteAction WithFallback(IUnion<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -1708,7 +1708,7 @@ public class SubmitAction : Action
   /// The data to send to the Bot when the action is executed. When expressed as an object, `data` is sent back to the Bot when the action is executed, adorned with the values of the inputs expressed as key/value pairs, where the key is the Id of the input. If `data` is expressed as a string, input values are not sent to the Bot.
   /// </summary>
   [JsonPropertyName("data")]
-  public Union<string, SubmitActionData>? Data { get; set; }
+  public IUnion<string, SubmitActionData>? Data { get; set; }
 
   /// <summary>
   /// The Ids of the inputs associated with the Action.Submit. When the action is executed, the values of the associated inputs are sent to the Bot. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
@@ -1733,7 +1733,7 @@ public class SubmitAction : Action
   /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<Action, FallbackAction>? Fallback { get; set; }
+  public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
   public SubmitAction WithId(string value)
   {
@@ -1783,7 +1783,7 @@ public class SubmitAction : Action
     return this;
   }
 
-  public SubmitAction WithData(Union<string, SubmitActionData> value)
+  public SubmitAction WithData(IUnion<string, SubmitActionData> value)
   {
     this.Data = value;
     return this;
@@ -1807,7 +1807,7 @@ public class SubmitAction : Action
     return this;
   }
 
-  public SubmitAction WithFallback(Union<Action, FallbackAction> value)
+  public SubmitAction WithFallback(IUnion<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -1921,7 +1921,7 @@ public class OpenUrlAction : Action
   /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<Action, FallbackAction>? Fallback { get; set; }
+  public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
   public OpenUrlAction(string url)
   {
@@ -1982,7 +1982,7 @@ public class OpenUrlAction : Action
     return this;
   }
 
-  public OpenUrlAction WithFallback(Union<Action, FallbackAction> value)
+  public OpenUrlAction WithFallback(IUnion<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2054,13 +2054,13 @@ public class ToggleVisibilityAction : Action
   /// The Ids of the elements to toggle the visibility of.
   /// </summary>
   [JsonPropertyName("targetElements")]
-  public Union<IList<string>, IList<TargetElement>>? TargetElements { get; set; }
+  public IUnion<IList<string>, IList<TargetElement>>? TargetElements { get; set; }
 
   /// <summary>
   /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<Action, FallbackAction>? Fallback { get; set; }
+  public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
   public ToggleVisibilityAction WithId(string value)
   {
@@ -2110,13 +2110,13 @@ public class ToggleVisibilityAction : Action
     return this;
   }
 
-  public ToggleVisibilityAction WithTargetElements(Union<IList<string>, IList<TargetElement>> value)
+  public ToggleVisibilityAction WithTargetElements(IUnion<IList<string>, IList<TargetElement>> value)
   {
     this.TargetElements = value;
     return this;
   }
 
-  public ToggleVisibilityAction WithFallback(Union<Action, FallbackAction> value)
+  public ToggleVisibilityAction WithFallback(IUnion<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2218,7 +2218,7 @@ public class ShowCardAction : Action
   /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<Action, FallbackAction>? Fallback { get; set; }
+  public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
   /// <summary>
   /// The card that should be displayed when the action is executed.
@@ -2274,7 +2274,7 @@ public class ShowCardAction : Action
     return this;
   }
 
-  public ShowCardAction WithFallback(Union<Action, FallbackAction> value)
+  public ShowCardAction WithFallback(IUnion<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2358,7 +2358,7 @@ public class ResetInputsAction : Action
   /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<Action, FallbackAction>? Fallback { get; set; }
+  public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
   public ResetInputsAction WithId(string value)
   {
@@ -2414,7 +2414,7 @@ public class ResetInputsAction : Action
     return this;
   }
 
-  public ResetInputsAction WithFallback(Union<Action, FallbackAction> value)
+  public ResetInputsAction WithFallback(IUnion<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2504,7 +2504,7 @@ public class InsertImageAction : Action
   /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<Action, FallbackAction>? Fallback { get; set; }
+  public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
   public InsertImageAction WithId(string value)
   {
@@ -2572,7 +2572,7 @@ public class InsertImageAction : Action
     return this;
   }
 
-  public InsertImageAction WithFallback(Union<Action, FallbackAction> value)
+  public InsertImageAction WithFallback(IUnion<Action, FallbackAction> value)
   {
     this.Fallback = value;
     return this;
@@ -2744,7 +2744,7 @@ public class AreaGridLayout : ContainerLayout
   /// The columns in the grid layout, defined as a percentage of the available width or in pixels using the `<number>px` format.
   /// </summary>
   [JsonPropertyName("columns")]
-  public Union<IList<float>, IList<string>>? Columns { get; set; }
+  public IUnion<IList<float>, IList<string>>? Columns { get; set; }
 
   /// <summary>
   /// The areas in the grid layout.
@@ -2770,7 +2770,7 @@ public class AreaGridLayout : ContainerLayout
     return this;
   }
 
-  public AreaGridLayout WithColumns(Union<IList<float>, IList<string>> value)
+  public AreaGridLayout WithColumns(IUnion<IList<float>, IList<string>> value)
   {
     this.Columns = value;
     return this;
@@ -3340,7 +3340,7 @@ public class Container : CardElement
   /// Defines the container's background image.
   /// </summary>
   [JsonPropertyName("backgroundImage")]
-  public Union<string, BackgroundImage>? BackgroundImage { get; set; }
+  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
   /// <summary>
   /// Controls how the container's content should be vertically aligned.
@@ -3370,7 +3370,7 @@ public class Container : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The elements in the container.
@@ -3485,7 +3485,7 @@ public class Container : CardElement
     return this;
   }
 
-  public Container WithBackgroundImage(Union<string, BackgroundImage> value)
+  public Container WithBackgroundImage(IUnion<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -3515,7 +3515,7 @@ public class Container : CardElement
     return this;
   }
 
-  public Container WithFallback(Union<CardElement, FallbackElement> value)
+  public Container WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -3609,7 +3609,7 @@ public class ActionSet : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The actions in the set.
@@ -3688,7 +3688,7 @@ public class ActionSet : CardElement
     return this;
   }
 
-  public ActionSet WithFallback(Union<CardElement, FallbackElement> value)
+  public ActionSet WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -3818,7 +3818,7 @@ public class ColumnSet : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The columns in the set.
@@ -3928,7 +3928,7 @@ public class ColumnSet : CardElement
     return this;
   }
 
-  public ColumnSet WithFallback(Union<CardElement, FallbackElement> value)
+  public ColumnSet WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -4040,7 +4040,7 @@ public class Media : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public Media WithId(string value)
   {
@@ -4126,7 +4126,7 @@ public class Media : CardElement
     return this;
   }
 
-  public Media WithFallback(Union<CardElement, FallbackElement> value)
+  public Media WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -4286,13 +4286,13 @@ public class RichTextBlock : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The inlines making up the rich text block.
   /// </summary>
   [JsonPropertyName("inlines")]
-  public Union<IList<CardElement>, IList<string>>? Inlines { get; set; }
+  public IUnion<IList<CardElement>, IList<string>>? Inlines { get; set; }
 
   public RichTextBlock WithId(string value)
   {
@@ -4360,13 +4360,13 @@ public class RichTextBlock : CardElement
     return this;
   }
 
-  public RichTextBlock WithFallback(Union<CardElement, FallbackElement> value)
+  public RichTextBlock WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
   }
 
-  public RichTextBlock WithInlines(Union<IList<CardElement>, IList<string>> value)
+  public RichTextBlock WithInlines(IUnion<IList<CardElement>, IList<string>> value)
   {
     this.Inlines = value;
     return this;
@@ -4508,7 +4508,7 @@ public class Table : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The rows of the table.
@@ -4636,7 +4636,7 @@ public class Table : CardElement
     return this;
   }
 
-  public Table WithFallback(Union<CardElement, FallbackElement> value)
+  public Table WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -4670,7 +4670,7 @@ public class ColumnDefinition : SerializableObject
   /// The width of the column in the table, expressed as either a percentage of the available width or in pixels, using the `<number>px` format.
   /// </summary>
   [JsonPropertyName("width")]
-  public Union<string, float>? Width { get; set; }
+  public IUnion<string, float>? Width { get; set; }
 
   public ColumnDefinition WithHorizontalCellContentAlignment(HorizontalAlignment value)
   {
@@ -4684,7 +4684,7 @@ public class ColumnDefinition : SerializableObject
     return this;
   }
 
-  public ColumnDefinition WithWidth(Union<string, float> value)
+  public ColumnDefinition WithWidth(IUnion<string, float> value)
   {
     this.Width = value;
     return this;
@@ -4826,7 +4826,7 @@ public class TextBlock : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public TextBlock(string text)
   {
@@ -4953,7 +4953,7 @@ public class TextBlock : CardElement
     return this;
   }
 
-  public TextBlock WithFallback(Union<CardElement, FallbackElement> value)
+  public TextBlock WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -5041,7 +5041,7 @@ public class FactSet : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public FactSet(params IList<Fact> facts)
   {
@@ -5114,7 +5114,7 @@ public class FactSet : CardElement
     return this;
   }
 
-  public FactSet WithFallback(Union<CardElement, FallbackElement> value)
+  public FactSet WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -5250,7 +5250,7 @@ public class ImageSet : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ImageSet(params IList<Image> images)
   {
@@ -5335,7 +5335,7 @@ public class ImageSet : CardElement
     return this;
   }
 
-  public ImageSet WithFallback(Union<CardElement, FallbackElement> value)
+  public ImageSet WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -5478,7 +5478,7 @@ public class Image : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public Image(string url)
   {
@@ -5605,7 +5605,7 @@ public class Image : CardElement
     return this;
   }
 
-  public Image WithFallback(Union<CardElement, FallbackElement> value)
+  public Image WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -5773,7 +5773,7 @@ public class TextInput : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public TextInput WithId(string value)
   {
@@ -5901,7 +5901,7 @@ public class TextInput : CardElement
     return this;
   }
 
-  public TextInput WithFallback(Union<CardElement, FallbackElement> value)
+  public TextInput WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -6033,7 +6033,7 @@ public class DateInput : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public DateInput WithId(string value)
   {
@@ -6143,7 +6143,7 @@ public class DateInput : CardElement
     return this;
   }
 
-  public DateInput WithFallback(Union<CardElement, FallbackElement> value)
+  public DateInput WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -6275,7 +6275,7 @@ public class TimeInput : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public TimeInput WithId(string value)
   {
@@ -6385,7 +6385,7 @@ public class TimeInput : CardElement
     return this;
   }
 
-  public TimeInput WithFallback(Union<CardElement, FallbackElement> value)
+  public TimeInput WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -6517,7 +6517,7 @@ public class NumberInput : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public NumberInput WithId(string value)
   {
@@ -6627,7 +6627,7 @@ public class NumberInput : CardElement
     return this;
   }
 
-  public NumberInput WithFallback(Union<CardElement, FallbackElement> value)
+  public NumberInput WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -6765,7 +6765,7 @@ public class ToggleInput : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ToggleInput(string title)
   {
@@ -6886,7 +6886,7 @@ public class ToggleInput : CardElement
     return this;
   }
 
-  public ToggleInput WithFallback(Union<CardElement, FallbackElement> value)
+  public ToggleInput WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -7048,7 +7048,7 @@ public class ChoiceSetInput : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ChoiceSetInput(params IList<Choice> choices)
   {
@@ -7193,7 +7193,7 @@ public class ChoiceSetInput : CardElement
     return this;
   }
 
-  public ChoiceSetInput WithFallback(Union<CardElement, FallbackElement> value)
+  public ChoiceSetInput WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -7421,7 +7421,7 @@ public class RatingInput : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public RatingInput WithId(string value)
   {
@@ -7537,7 +7537,7 @@ public class RatingInput : CardElement
     return this;
   }
 
-  public RatingInput WithFallback(Union<CardElement, FallbackElement> value)
+  public RatingInput WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -7661,7 +7661,7 @@ public class Rating : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public Rating WithId(string value)
   {
@@ -7765,7 +7765,7 @@ public class Rating : CardElement
     return this;
   }
 
-  public Rating WithFallback(Union<CardElement, FallbackElement> value)
+  public Rating WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -7883,7 +7883,7 @@ public class CompoundButton : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public CompoundButton WithId(string value)
   {
@@ -7981,7 +7981,7 @@ public class CompoundButton : CardElement
     return this;
   }
 
-  public CompoundButton WithFallback(Union<CardElement, FallbackElement> value)
+  public CompoundButton WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -8147,7 +8147,7 @@ public class Icon : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public Icon(string name)
   {
@@ -8244,7 +8244,7 @@ public class Icon : CardElement
     return this;
   }
 
-  public Icon WithFallback(Union<CardElement, FallbackElement> value)
+  public Icon WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -8344,7 +8344,7 @@ public class Carousel : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The pages in the carousel.
@@ -8430,7 +8430,7 @@ public class Carousel : CardElement
     return this;
   }
 
-  public Carousel WithFallback(Union<CardElement, FallbackElement> value)
+  public Carousel WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -8572,7 +8572,7 @@ public class Badge : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public Badge WithId(string value)
   {
@@ -8688,7 +8688,7 @@ public class Badge : CardElement
     return this;
   }
 
-  public Badge WithFallback(Union<CardElement, FallbackElement> value)
+  public Badge WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -8794,7 +8794,7 @@ public class DonutChart : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public DonutChart WithId(string value)
   {
@@ -8880,7 +8880,7 @@ public class DonutChart : CardElement
     return this;
   }
 
-  public DonutChart WithFallback(Union<CardElement, FallbackElement> value)
+  public DonutChart WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -9028,7 +9028,7 @@ public class PieChart : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public PieChart WithId(string value)
   {
@@ -9114,7 +9114,7 @@ public class PieChart : CardElement
     return this;
   }
 
-  public PieChart WithFallback(Union<CardElement, FallbackElement> value)
+  public PieChart WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -9268,7 +9268,7 @@ public class GroupedVerticalBarChart : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public GroupedVerticalBarChart WithId(string value)
   {
@@ -9396,7 +9396,7 @@ public class GroupedVerticalBarChart : CardElement
     return this;
   }
 
-  public GroupedVerticalBarChart WithFallback(Union<CardElement, FallbackElement> value)
+  public GroupedVerticalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -9610,7 +9610,7 @@ public class VerticalBarChart : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public VerticalBarChart WithId(string value)
   {
@@ -9732,7 +9732,7 @@ public class VerticalBarChart : CardElement
     return this;
   }
 
-  public VerticalBarChart WithFallback(Union<CardElement, FallbackElement> value)
+  public VerticalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -9748,7 +9748,7 @@ public class VerticalBarChartDataValue : SerializableObject
   /// The x axis value of the data point.
   /// </summary>
   [JsonPropertyName("x")]
-  public Union<string, float>? X { get; set; }
+  public IUnion<string, float>? X { get; set; }
 
   /// <summary>
   /// The y axis value of the data point.
@@ -9762,7 +9762,7 @@ public class VerticalBarChartDataValue : SerializableObject
   [JsonPropertyName("color")]
   public ChartColor? Color { get; set; }
 
-  public VerticalBarChartDataValue WithX(Union<string, float> value)
+  public VerticalBarChartDataValue WithX(IUnion<string, float> value)
   {
     this.X = value;
     return this;
@@ -9904,7 +9904,7 @@ public class HorizontalBarChart : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public HorizontalBarChart WithId(string value)
   {
@@ -10014,7 +10014,7 @@ public class HorizontalBarChart : CardElement
     return this;
   }
 
-  public HorizontalBarChart WithFallback(Union<CardElement, FallbackElement> value)
+  public HorizontalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -10180,7 +10180,7 @@ public class StackedHorizontalBarChart : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public StackedHorizontalBarChart WithId(string value)
   {
@@ -10284,7 +10284,7 @@ public class StackedHorizontalBarChart : CardElement
     return this;
   }
 
-  public StackedHorizontalBarChart WithFallback(Union<CardElement, FallbackElement> value)
+  public StackedHorizontalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -10492,7 +10492,7 @@ public class LineChart : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public LineChart WithId(string value)
   {
@@ -10608,7 +10608,7 @@ public class LineChart : CardElement
     return this;
   }
 
-  public LineChart WithFallback(Union<CardElement, FallbackElement> value)
+  public LineChart WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -10670,7 +10670,7 @@ public class LineChartValue : SerializableObject
   /// Otherwise, if x values are represented as a mix of numbers and strings or if at least one x value isn't in the `YYYY-MM-DD` format, the chart will be rendered as a categorical chart, i.e. x axis values will be displayed as categories.
   /// </summary>
   [JsonPropertyName("x")]
-  public Union<float, string>? X { get; set; }
+  public IUnion<float, string>? X { get; set; }
 
   /// <summary>
   /// The y axis value of the data point.
@@ -10678,7 +10678,7 @@ public class LineChartValue : SerializableObject
   [JsonPropertyName("y")]
   public float? Y { get; set; }
 
-  public LineChartValue WithX(Union<float, string> value)
+  public LineChartValue WithX(IUnion<float, string> value)
   {
     this.X = value;
     return this;
@@ -10826,7 +10826,7 @@ public class GaugeChart : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public GaugeChart WithId(string value)
   {
@@ -10948,7 +10948,7 @@ public class GaugeChart : CardElement
     return this;
   }
 
-  public GaugeChart WithFallback(Union<CardElement, FallbackElement> value)
+  public GaugeChart WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11096,7 +11096,7 @@ public class CodeBlock : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public CodeBlock WithId(string value)
   {
@@ -11182,7 +11182,7 @@ public class CodeBlock : CardElement
     return this;
   }
 
-  public CodeBlock WithFallback(Union<CardElement, FallbackElement> value)
+  public CodeBlock WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11282,7 +11282,7 @@ public class ComUserMicrosoftGraphComponent : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ComUserMicrosoftGraphComponent WithId(string value)
   {
@@ -11356,7 +11356,7 @@ public class ComUserMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComUserMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
+  public ComUserMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11486,7 +11486,7 @@ public class ComUsersMicrosoftGraphComponent : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ComUsersMicrosoftGraphComponent WithId(string value)
   {
@@ -11560,7 +11560,7 @@ public class ComUsersMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComUsersMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
+  public ComUsersMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11678,7 +11678,7 @@ public class ComResourceMicrosoftGraphComponent : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ComResourceMicrosoftGraphComponent WithId(string value)
   {
@@ -11752,7 +11752,7 @@ public class ComResourceMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComResourceMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
+  public ComResourceMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -11912,7 +11912,7 @@ public class ComFileMicrosoftGraphComponent : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ComFileMicrosoftGraphComponent WithId(string value)
   {
@@ -11986,7 +11986,7 @@ public class ComFileMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComFileMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
+  public ComFileMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -12128,7 +12128,7 @@ public class ComEventMicrosoftGraphComponent : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ComEventMicrosoftGraphComponent WithId(string value)
   {
@@ -12202,7 +12202,7 @@ public class ComEventMicrosoftGraphComponent : CardElement
     return this;
   }
 
-  public ComEventMicrosoftGraphComponent WithFallback(Union<CardElement, FallbackElement> value)
+  public ComEventMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -12518,7 +12518,7 @@ public class CarouselPage : CardElement
   /// Defines the container's background image.
   /// </summary>
   [JsonPropertyName("backgroundImage")]
-  public Union<string, BackgroundImage>? BackgroundImage { get; set; }
+  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
   /// <summary>
   /// Controls how the container's content should be vertically aligned.
@@ -12548,7 +12548,7 @@ public class CarouselPage : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The elements in the page.
@@ -12639,7 +12639,7 @@ public class CarouselPage : CardElement
     return this;
   }
 
-  public CarouselPage WithBackgroundImage(Union<string, BackgroundImage> value)
+  public CarouselPage WithBackgroundImage(IUnion<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -12669,7 +12669,7 @@ public class CarouselPage : CardElement
     return this;
   }
 
-  public CarouselPage WithFallback(Union<CardElement, FallbackElement> value)
+  public CarouselPage WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -12793,7 +12793,7 @@ public class TableRow : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The cells in the row.
@@ -12897,7 +12897,7 @@ public class TableRow : CardElement
     return this;
   }
 
-  public TableRow WithFallback(Union<CardElement, FallbackElement> value)
+  public TableRow WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13009,7 +13009,7 @@ public class TableCell : CardElement
   /// Defines the container's background image.
   /// </summary>
   [JsonPropertyName("backgroundImage")]
-  public Union<string, BackgroundImage>? BackgroundImage { get; set; }
+  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
   /// <summary>
   /// Controls how the container's content should be vertically aligned.
@@ -13039,7 +13039,7 @@ public class TableCell : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The items (elements) in the cell.
@@ -13136,7 +13136,7 @@ public class TableCell : CardElement
     return this;
   }
 
-  public TableCell WithBackgroundImage(Union<string, BackgroundImage> value)
+  public TableCell WithBackgroundImage(IUnion<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -13166,7 +13166,7 @@ public class TableCell : CardElement
     return this;
   }
 
-  public TableCell WithFallback(Union<CardElement, FallbackElement> value)
+  public TableCell WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13290,7 +13290,7 @@ public class TextRun : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public TextRun(string text)
   {
@@ -13393,7 +13393,7 @@ public class TextRun : CardElement
     return this;
   }
 
-  public TextRun WithFallback(Union<CardElement, FallbackElement> value)
+  public TextRun WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13475,7 +13475,7 @@ public class IconRun : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public IconRun WithId(string value)
   {
@@ -13537,7 +13537,7 @@ public class IconRun : CardElement
     return this;
   }
 
-  public IconRun WithFallback(Union<CardElement, FallbackElement> value)
+  public IconRun WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13619,7 +13619,7 @@ public class ImageRun : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   public ImageRun WithId(string value)
   {
@@ -13681,7 +13681,7 @@ public class ImageRun : CardElement
     return this;
   }
 
-  public ImageRun WithFallback(Union<CardElement, FallbackElement> value)
+  public ImageRun WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
@@ -13835,7 +13835,7 @@ public class Column : CardElement
   /// Defines the container's background image.
   /// </summary>
   [JsonPropertyName("backgroundImage")]
-  public Union<string, BackgroundImage>? BackgroundImage { get; set; }
+  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
   /// <summary>
   /// Controls how the container's content should be vertically aligned.
@@ -13859,7 +13859,7 @@ public class Column : CardElement
   /// The width of the column. If expressed as a number, represents the relative weight of the column in the set. If expressed as a string, `auto` will automatically adjust the column's width according to its content, `stretch` will make the column use the remaining horizontal space (shared with other columns with width set to `stretch`) and using the `<number>px` format will give the column an explicit width in pixels.
   /// </summary>
   [JsonPropertyName("width")]
-  public Union<string, float>? Width { get; set; }
+  public IUnion<string, float>? Width { get; set; }
 
   /// <summary>
   /// The area of a Layout.AreaGrid layout in which an element should be displayed.
@@ -13871,7 +13871,7 @@ public class Column : CardElement
   /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
   /// </summary>
   [JsonPropertyName("fallback")]
-  public Union<CardElement, FallbackElement>? Fallback { get; set; }
+  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
   /// <summary>
   /// The elements in the column.
@@ -13986,7 +13986,7 @@ public class Column : CardElement
     return this;
   }
 
-  public Column WithBackgroundImage(Union<string, BackgroundImage> value)
+  public Column WithBackgroundImage(IUnion<string, BackgroundImage> value)
   {
     this.BackgroundImage = value;
     return this;
@@ -14010,7 +14010,7 @@ public class Column : CardElement
     return this;
   }
 
-  public Column WithWidth(Union<string, float> value)
+  public Column WithWidth(IUnion<string, float> value)
   {
     this.Width = value;
     return this;
@@ -14022,7 +14022,7 @@ public class Column : CardElement
     return this;
   }
 
-  public Column WithFallback(Union<CardElement, FallbackElement> value)
+  public Column WithFallback(IUnion<CardElement, FallbackElement> value)
   {
     this.Fallback = value;
     return this;
