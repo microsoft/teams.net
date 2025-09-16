@@ -33,12 +33,13 @@ public partial class App
     public Status? Status { get; internal set; }
     public ILogger Logger { get; }
     public IStorage<string, object> Storage { get; }
-    public ApiClient Api { get; }
+    public ApiClient Api { get; internal set; }
     public IHttpClient Client { get; }
     public IHttpCredentials? Credentials { get; }
     public IToken? Token { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
+    internal IHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
     internal string UserAgent
@@ -60,25 +61,26 @@ public partial class App
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
 
+        TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
         Client.Options.AddUserAgent(UserAgent);
-        Client.Options.TokenFactory = () =>
+        Client.Options.TokenFactory ??= () =>
         {
             if (Credentials is not null)
             {
                 if (Token is null)
                 {
-                    var res = Api!.Bots.Token.GetAsync(Credentials)
+                    var res = Api!.Bots.Token.GetAsync(Credentials, TokenClient)
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
-                    
+
                     Token = new JsonWebToken(res.AccessToken);
                 }
 
-                if (Token.IsExpired) 
+                if (Token.IsExpired)
                 {
-                    var res = Credentials.Resolve(Client, [.. Token.Scopes])
+                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes])
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
@@ -131,7 +133,7 @@ public partial class App
             {
                 try
                 {
-                    var res = await Api.Bots.Token.GetAsync(Credentials);
+                    var res = await Api.Bots.Token.GetAsync(Credentials, TokenClient);
                     Token = new JsonWebToken(res.AccessToken);
                 }
                 catch (Exception ex)
