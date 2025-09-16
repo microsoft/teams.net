@@ -172,7 +172,7 @@ public class TaskSerializationTests
         var root = doc.RootElement;
 
         Assert.True(root.TryGetProperty("data", out var dataElement));
-        Assert.True(dataElement.TryGetProperty("msTeams", out var msTeamsElement));
+        Assert.True(dataElement.TryGetProperty("msteams", out var msTeamsElement));
         Assert.Equal("task/fetch", msTeamsElement.GetProperty("type").GetString());
 
         // TaskFetchAction is special - it merges custom properties into the root SubmitActionData
