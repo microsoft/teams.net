@@ -33,7 +33,7 @@ public partial class App
     public Status? Status { get; internal set; }
     public ILogger Logger { get; }
     public IStorage<string, object> Storage { get; }
-    public ApiClient Api { get; }
+    public ApiClient Api { get; internal set; }
     public IHttpClient Client { get; }
     public IHttpCredentials? Credentials { get; }
     public IToken? Token { get; internal set; }

@@ -10,6 +10,11 @@ public class BotTokenClient : Client
     public static readonly string BotScope = "https://api.botframework.com/.default";
     public static readonly string GraphScope = "https://graph.microsoft.com/.default";
 
+    public BotTokenClient() : this(default)
+    {
+
+    }
+
     public BotTokenClient(CancellationToken cancellationToken = default) : base(cancellationToken)
     {
 
@@ -30,7 +35,7 @@ public class BotTokenClient : Client
 
     }
 
-    public async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null)
+    public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null)
     {
         return await credentials.Resolve(http ?? _http, [BotScope], _cancellationToken);
     }
