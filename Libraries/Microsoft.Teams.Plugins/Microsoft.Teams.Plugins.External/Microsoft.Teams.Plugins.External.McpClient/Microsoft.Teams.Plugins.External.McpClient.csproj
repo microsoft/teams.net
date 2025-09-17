@@ -1,0 +1,42 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+<!-- Licensed under the MIT License.-->
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="..\..\..\Libraries\Directory.Build.props" Condition="'$(Version)' == ''" />
+
+    <PropertyGroup>
+        <PackageId>Microsoft.Teams.Plugins.External.McpClient</PackageId>
+        <PackageDescription>Teams MCP Client Plugin</PackageDescription>
+        <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
+        <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;mcp;modelcontextprotocol;client;mcpclient</PackageTags>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <LangVersion>latest</LangVersion>
+        <NoWarn>CS8618,CS0067</NoWarn>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="ModelContextProtocol" Version="0.3.0-preview.4" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
+        <ProjectReference Include="..\..\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
+
+        <ProjectReference Include="..\..\..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
+        <ProjectReference Include="..\..\..\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
+        <ProjectReference Include="..\..\..\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
+        <ProjectReference Include="..\..\..\Microsoft.Teams.AI\Microsoft.Teams.AI.csproj" />
+        <ProjectReference Include="..\..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
+    </ItemGroup>
+
+</Project>
