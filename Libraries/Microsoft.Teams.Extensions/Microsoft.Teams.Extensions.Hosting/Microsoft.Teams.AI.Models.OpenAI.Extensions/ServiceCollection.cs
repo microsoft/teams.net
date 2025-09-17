@@ -73,7 +73,7 @@ public static class ServiceCollectionExtensions
         });
 
         collection.AddScoped<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
-        collection.AddHttpContextAccessor();
+
         // Add a factory for creating scoped prompts by accessing the HttpContext
         collection.AddSingleton<Func<OpenAIChatPrompt>>(provider =>
         {
