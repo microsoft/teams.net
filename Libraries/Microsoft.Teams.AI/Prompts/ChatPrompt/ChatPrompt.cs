@@ -236,6 +236,17 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
             prompt.Function(function);
         }
 
+        foreach (var fields in type.GetFields())
+        {
+            var chatPluginAttribute = fields.GetCustomAttribute<ChatPluginAttribute>();
+            if (chatPluginAttribute is null) continue;
+            var plugin = fields.GetValue(value);
+            if (plugin is IChatPlugin chatPlugin)
+            {
+                prompt.Plugin(chatPlugin);
+            }
+        }
+
         return prompt;
     }
 }
