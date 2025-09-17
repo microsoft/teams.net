@@ -24,4 +24,11 @@ public static class HostApplicationBuilderExtensions
         builder.Services.AddOpenAI<T>();
         return builder;
     }
+
+    public static IHostApplicationBuilder AddOpenAI<T>(this IHostApplicationBuilder builder, OpenAIChatModel model) where T : class
+    {
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddOpenAI<T>(model);
+        return builder;
+    }
 }
