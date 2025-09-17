@@ -1,7 +1,6 @@
 using System.Text.Json;
 
 using Microsoft.Teams.Api.Cards;
-using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Activities.Invokes;
