@@ -2,9 +2,6 @@
 <!-- Licensed under the MIT License.-->
 
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\Directory.Build.props" Condition="'$(Version)' == ''" />
-
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Common</PackageId>
     <PackageDescription>Common modules used to provide utility functionality to the other packages while minimizing external dependencies.</PackageDescription>

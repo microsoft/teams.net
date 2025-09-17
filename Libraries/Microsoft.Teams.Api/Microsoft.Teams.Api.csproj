@@ -2,9 +2,6 @@
 <!-- Licensed under the MIT License.-->
 
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\Directory.Build.props" Condition="'$(Version)' == ''" />
-
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Api</PackageId>
     <PackageDescription>Model and client implementations used to send and receive requests from Teams.</PackageDescription>

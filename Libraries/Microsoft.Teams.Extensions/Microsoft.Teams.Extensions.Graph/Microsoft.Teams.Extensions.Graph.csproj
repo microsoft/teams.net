@@ -2,9 +2,6 @@
 <!-- Licensed under the MIT License.-->
 
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <Import Project="..\..\Directory.Build.props" Condition="'$(Version)' == ''" />
-
     <PropertyGroup>
         <PackageId>Microsoft.Teams.Extensions.Graph</PackageId>
         <PackageDescription>Teams Context Extensions</PackageDescription>
