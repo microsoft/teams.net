@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps;
 
+using static Microsoft.Teams.Plugins.AspNetCore.Extensions.HostApplicationBuilderExtensions;
+
 namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
 public static partial class ApplicationBuilderExtensions
@@ -136,12 +138,11 @@ public static partial class ApplicationBuilderExtensions
                     return;
                 }
 
-                var token = new JwtSecurityTokenHandler().ReadJwtToken(
-                    context.Request.Headers.Authorization
+                var authToken = context.Request.Headers.Authorization
                         .FirstOrDefault()?
                         .Replace("bearer ", string.Empty)
-                        .Replace("Bearer ", string.Empty)
-                );
+                        .Replace("Bearer ", string.Empty);
+                var token = new JwtSecurityTokenHandler().ReadJwtToken(authToken);
 
                 var ctx = new FunctionContext<TBody>(app)
                 {
@@ -152,7 +153,7 @@ public static partial class ApplicationBuilderExtensions
                     UserId = token.Claims.First(c => c.Type == "oid").Value,
                     UserName = token.Claims.First(c => c.Type == "name").Value,
                     PageId = pageId,
-                    AuthToken = token.ToString(),
+                    AuthToken = authToken,
                     Data = await context.Request.ReadFromJsonAsync<TBody>(),
                 };
 
@@ -190,7 +191,7 @@ public static partial class ApplicationBuilderExtensions
                 var res = handler(ctx);
                 log.Debug(res?.ToString());
                 await Results.Json(res).ExecuteAsync(context);
-            });
+            }).RequireAuthorization(EntraTokenAuthConstants.AuthorizationPolicy);
         });
 
         return builder;
