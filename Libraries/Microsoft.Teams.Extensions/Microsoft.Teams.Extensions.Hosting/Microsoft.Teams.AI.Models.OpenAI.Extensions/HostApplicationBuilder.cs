@@ -20,7 +20,6 @@ public static class HostApplicationBuilderExtensions
     {
         var settings = builder.Configuration.GetOpenAI();
         builder.Services.AddSingleton(settings);
-        builder.Services.AddHttpContextAccessor();
         builder.Services.AddOpenAI<T>();
         return builder;
     }
