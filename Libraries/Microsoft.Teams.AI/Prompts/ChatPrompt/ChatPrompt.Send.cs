@@ -108,7 +108,7 @@ public partial class ChatPrompt<TOptions>
         catch (Exception ex)
         {
             ErrorEvent(Model, ex);
-            throw new Exception("an error occurred while attempting to send the message", ex);
+            throw new Exception("An error occurred while attempting to send the message", ex);
         }
     }
 }
