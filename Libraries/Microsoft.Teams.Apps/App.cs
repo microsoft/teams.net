@@ -66,7 +66,7 @@ public partial class App
         Client.Options.AddUserAgent(UserAgent);
         Client.Options.TokenFactory ??= () =>
         {
-            if (Credentials is not null && (Token is null || Token.IsExpired))
+            if (Credentials is not null)
             {
                 if (Token is null)
                 {
