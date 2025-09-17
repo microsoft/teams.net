@@ -7,12 +7,18 @@ using Microsoft.Teams.Apps.Annotations;
 namespace Samples.McpClient;
 
 [TeamsController]
-public class Controller(OpenAIChatPrompt _prompt)
+public class Controller(IHttpContextAccessor httpContextAccessor)
 {
+    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
+
     [Message]
     public async Task OnMessage(IContext<MessageActivity> context)
     {
-        await _prompt.Send(context.Activity.Text, new(), (chunk) => Task.Run(() =>
+        var httpContext = _httpContextAccessor.HttpContext
+                  ?? throw new InvalidOperationException("No active HttpContext. Cannot resolve OpenAIChatPrompt.");
+
+        var prompt = httpContext.RequestServices.GetRequiredService<OpenAIChatPrompt>();
+        await prompt.Send(context.Activity.Text, new(), (chunk) => Task.Run(() =>
         {
             context.Stream.Emit(chunk);
         }), context.CancellationToken);

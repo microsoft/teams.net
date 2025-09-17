@@ -13,5 +13,5 @@ namespace Samples.McpClient;
 public class DocsPrompt(McpClientPlugin mcpClientPlugin)
 {
     [ChatPlugin]
-    private readonly IChatPlugin _plugin = mcpClientPlugin;
+    public readonly IChatPlugin Plugin = mcpClientPlugin;
 }

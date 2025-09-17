@@ -1,7 +1,6 @@
 ﻿using Json.Schema;
 
 using Microsoft.Teams.AI;
-using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Prompts;
 using Microsoft.Teams.Common.Logging;
 
@@ -51,7 +50,7 @@ public class McpClientPlugin : BaseChatPlugin
     /// </summary>
     /// <param name="url">MCP server URL to connect to</param>
     /// <param name="pluginParams">Optional configuration parameters for the server</param>
-    public void UseMcpServer(string url, McpClientPluginParams? pluginParams = null)
+    public McpClientPlugin UseMcpServer(string url, McpClientPluginParams? pluginParams = null)
     {
         _mcpServerParams[url] = pluginParams ?? new McpClientPluginParams();
 
@@ -65,6 +64,8 @@ public class McpClientPlugin : BaseChatPlugin
                 Transport = pluginParams.Transport
             };
         }
+
+        return this;
     }
 
     /// <summary>
@@ -97,16 +98,16 @@ public class McpClientPlugin : BaseChatPlugin
             }
         }
 
-        if (fetchNeeded.Count == 0)
+        if (fetchNeeded.Count > 0)
         {
-            Task<List<McpToolDetails>>[] tasks = [];
+            IList<Task<List<McpToolDetails>>> tasks = [];
             foreach (var entry in fetchNeeded)
             {
                 string url = entry.Key;
                 McpClientPluginParams pluginParams = entry.Value;
-                tasks.Append(FetchToolsFromServer(new Uri(url), pluginParams));
+                tasks.Add(FetchToolsFromServer(new Uri(url), pluginParams));
             }
-            Task.WaitAll(tasks);
+            Task.WaitAll(tasks.ToArray());
 
             int i = 0;
             foreach (var entry in fetchNeeded)
@@ -119,6 +120,7 @@ public class McpClientPlugin : BaseChatPlugin
                 {
                     if (pluginParams.SkipIfUnavailable)
                     {
+                        i += 1;
                         _logger.Error($"Failed to fetch tools from MCP server at {url}, but continuing as SkipIfUnavailable is set.", result.Exception);
                     }
                     else
@@ -138,6 +140,7 @@ public class McpClientPlugin : BaseChatPlugin
                 Cache[url].Transport = pluginParams.Transport;
 
                 _logger.Debug($"Cached {tools.Count} tools from MCP server at {url}");
+                i += 1;
             }
         }
     }
@@ -184,13 +187,12 @@ public class McpClientPlugin : BaseChatPlugin
             tool.Name, 
             tool.Description, 
             JsonSchema.FromText(tool.InputSchema?.GetRawText() ?? "{}"), 
-            async ([Param] IReadOnlyDictionary<string, object?> args) =>
+            async (IDictionary<string, object?> args) =>
             {
-                // TODO: Gonna run into this issue here for sure.
                 try
                 {
                     _logger.Debug($"Making call to {url} for tool {tool.Name}");
-                    string result = await CallMcpTool(url, tool, args, pluginParams);
+                    string result = await CallMcpTool(url, tool, args.AsReadOnly(), pluginParams);
                     _logger.Debug($"Received result from {tool.Name}: {result}");
                     return result;
                 }
@@ -214,7 +216,6 @@ public class McpClientPlugin : BaseChatPlugin
             _logger.Warn($"MCP tool call to {tool.Name} return error status");
         }
 
-        // TODO: Validate this is correct
         return response.Content.Select(c => c.Type == "text" ? ((TextContentBlock)c).Text : "").Aggregate((a, b) => $"{a},{b}");
     }
 

@@ -7,15 +7,10 @@ using Microsoft.Teams.Plugins.External.McpClient;
 using Samples.McpClient;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<Controller>();
-builder.Services.AddSingleton(() =>
-{
-    var mcpClientPlugin = new McpClientPlugin();
-
-    // Hook it up to Microsoft Learn MCP server
-    mcpClientPlugin.UseMcpServer("https://learn.microsoft.com/api/mcp");
-});
+builder.Services.AddTransient<Controller>().AddHttpContextAccessor();
+builder.Services.AddSingleton((sp) => new McpClientPlugin().UseMcpServer("https://learn.microsoft.com/api/mcp"));
 builder.AddTeams().AddTeamsDevTools().AddOpenAI<DocsPrompt>();
+
 
 var app = builder.Build();
 
