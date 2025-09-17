@@ -68,12 +68,39 @@ public class McpClientPlugin : BaseChatPlugin
         return this;
     }
 
+    public override async Task<FunctionCollection> OnBuildFunctions<TOptions>(IChatPrompt<TOptions> prompt, FunctionCollection functions, CancellationToken cancellationToken = default)
+    {
+        await FetchToolsIfNeeded();
+
+        foreach (var entry in _mcpServerParams)
+        {
+            string url = entry.Key;
+            McpClientPluginParams pluginParams = entry.Value;
+            if (Cache.TryGetValue(url, out McpCachedValue? value))
+            {
+                if (value?.AvailableTools == null)
+                {
+                    continue;
+                }
+
+                foreach (var tool in value.AvailableTools)
+                {
+                    var function = CreateFunctionFromTool(new Uri(url), tool, pluginParams);
+                    functions.Add(function);
+                    _logger.Debug($"Added function {function.Name} from MCP server at {url}");
+                }
+            }
+        }
+
+        return functions;
+    }
+
     /// <summary>
     /// Fetch tools from MCP servers if needed.
     /// 
     /// Checks if cached values have expired or if tools have never been fetched. Performs parallel fetching for efficiency.
     /// </summary>
-    private async Task FetchToolsIfNeeded()
+    internal async Task FetchToolsIfNeeded()
     {
         var fetchNeeded = new List<KeyValuePair<string, McpClientPluginParams>>();
 
@@ -152,7 +179,7 @@ public class McpClientPlugin : BaseChatPlugin
         }
     }
 
-    private async Task<List<McpToolDetails>> FetchToolsFromServer(Uri url, McpClientPluginParams pluginParams)
+    internal async Task<List<McpToolDetails>> FetchToolsFromServer(Uri url, McpClientPluginParams pluginParams)
     {
         IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.HeadersFactory());
         var client = await McpClientFactory.CreateAsync(transport);
@@ -169,7 +196,7 @@ public class McpClientPlugin : BaseChatPlugin
         return mappedTools;
     }
 
-    private IClientTransport CreateTransport(Uri url, McpClientTransport transport, IDictionary<string, string>? headers)
+    internal IClientTransport CreateTransport(Uri url, McpClientTransport transport, IDictionary<string, string>? headers)
     {
         var options = new SseClientTransportOptions() { Endpoint = url };
         switch (transport)
@@ -188,7 +215,7 @@ public class McpClientPlugin : BaseChatPlugin
         return new SseClientTransport(options);
     }
 
-    private AI.Function CreateFunctionFromTool(Uri url, McpToolDetails tool, McpClientPluginParams pluginParams)
+    internal AI.Function CreateFunctionFromTool(Uri url, McpToolDetails tool, McpClientPluginParams pluginParams)
     {
         return new AI.Function(
             tool.Name, 
@@ -212,7 +239,7 @@ public class McpClientPlugin : BaseChatPlugin
         );
     }
 
-    private async Task<string> CallMcpTool(Uri url, McpToolDetails tool, IReadOnlyDictionary<string, object?> args, McpClientPluginParams pluginParams)
+    internal async Task<string> CallMcpTool(Uri url, McpToolDetails tool, IReadOnlyDictionary<string, object?> args, McpClientPluginParams pluginParams)
     {
         IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.HeadersFactory());
         var client = await McpClientFactory.CreateAsync(transport);
@@ -224,32 +251,5 @@ public class McpClientPlugin : BaseChatPlugin
         }
 
         return response.Content.Select(c => c.Type == "text" ? ((TextContentBlock)c).Text : "").Aggregate((a, b) => $"{a},{b}");
-    }
-
-    public override async Task<FunctionCollection> OnBuildFunctions<TOptions>(IChatPrompt<TOptions> prompt, FunctionCollection functions, CancellationToken cancellationToken = default)
-    {
-        await FetchToolsIfNeeded();
-
-        foreach (var entry in _mcpServerParams)
-        {
-            string url = entry.Key;
-            McpClientPluginParams pluginParams = entry.Value;
-            if (Cache.TryGetValue(url, out McpCachedValue? value))
-            {
-                if (value?.AvailableTools == null)
-                {
-                    continue;
-                }
-
-                foreach (var tool in value.AvailableTools)
-                {
-                    var function = CreateFunctionFromTool(new Uri(url), tool, pluginParams);
-                    functions.Add(function);
-                    _logger.Debug($"Added function {function.Name} from MCP server at {url}");
-                }
-            }
-        }
-
-        return functions;
     }
 }
