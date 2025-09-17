@@ -46,7 +46,7 @@ public class Action : TaskModules.Request
     /// </summary>
     [JsonPropertyName("botMessagePreviewAction")]
     [JsonPropertyOrder(4)]
-    public required MessagePreviewAction BotMessagePreviewAction { get; set; }
+    public MessagePreviewAction? BotMessagePreviewAction { get; set; }
 
     /// <summary>
     /// the activities to preview
