@@ -7,10 +7,10 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class ApiClient : Client
 {
-    public readonly string ServiceUrl;
-    public readonly BotClient Bots;
-    public readonly ConversationClient Conversations;
-    public readonly UserClient Users;
+    public virtual string ServiceUrl { get; }
+    public virtual BotClient Bots { get; }
+    public virtual ConversationClient Conversations { get; }
+    public virtual UserClient Users { get; }
 
     public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {

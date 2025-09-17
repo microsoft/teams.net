@@ -56,4 +56,37 @@ public class UnionTests
         Assert.Equal("world", dict["hello"].ToString());
         Assert.Equal(123, ((System.Text.Json.JsonElement)dict["test"]).GetInt32());
     }
+
+    [Fact]
+    public void IUnion_JsonSerialize()
+    {
+        // Test that IUnion interface properties serialize correctly (not as {"Value":x})
+        IUnion<string, int> iUnionString = new Union<string, int>("test");
+        var json = JsonSerializer.Serialize(iUnionString);
+        Assert.Equal("\"test\"", json);
+
+        IUnion<string, int> iUnionInt = new Union<string, int>(200);
+        json = JsonSerializer.Serialize(iUnionInt);
+        Assert.Equal("200", json);
+
+        // Test in object context (like TaskInfo.Width)
+        var obj = new { width = (IUnion<int, string>)new Union<int, string>(500) };
+        json = JsonSerializer.Serialize(obj);
+        Assert.Equal("{\"width\":500}", json);
+    }
+
+    [Fact]
+    public void IUnion_JsonDeserialize()
+    {
+        // Test deserializing to IUnion interface
+        var stringJson = "\"test\"";
+        var stringResult = JsonSerializer.Deserialize<IUnion<string, int>>(stringJson);
+        Assert.NotNull(stringResult);
+        Assert.Equal("test", stringResult.Value);
+
+        var intJson = "200";
+        var intResult = JsonSerializer.Deserialize<IUnion<string, int>>(intJson);
+        Assert.NotNull(intResult);
+        Assert.Equal(200, intResult.Value);
+    }
 }

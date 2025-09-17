@@ -19,7 +19,7 @@ public static class TokenValidator
 
         options.TokenValidationParameters = new TokenValidationParameters
         {
-            ValidateIssuer = true,
+            ValidateIssuer = validIssuers.Any(),
             ValidateAudience = true,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,

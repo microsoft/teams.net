@@ -1,4 +1,3 @@
-using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Api.AdaptiveCards;
 using Microsoft.Teams.Apps;
@@ -39,13 +38,6 @@ public static partial class Program
     [TeamsController]
     public class Controller
     {
-        [Activity]
-        public async Task OnActivity(IContext<Activity> context, [Context] IContext.Next next)
-        {
-            context.Log.Info(context.AppId);
-            await next();
-        }
-
         [Message]
         public async Task OnMessage([Context] Microsoft.Teams.Api.Activities.MessageActivity activity, [Context] IContext.Client client, [Context] Microsoft.Teams.Common.Logging.ILogger log)
         {
@@ -476,11 +468,7 @@ public static partial class Program
             try
             {
                 // Deserialize the JSON into an AdaptiveCard object
-                var card = System.Text.Json.JsonSerializer.Deserialize<AdaptiveCard>(cardJson, new System.Text.Json.JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true,
-                    PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase
-                });
+                var card = System.Text.Json.JsonSerializer.Deserialize<AdaptiveCard>(cardJson, new System.Text.Json.JsonSerializerOptions());
 
                 return card ?? throw new InvalidOperationException("Failed to deserialize card");
             }

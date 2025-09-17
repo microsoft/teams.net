@@ -104,6 +104,12 @@ public static class HostApplicationBuilderExtensions
         public const string AuthorizationPolicy = "TeamsJWTPolicy";
     }
 
+    public static class EntraTokenAuthConstants
+    {
+        public const string AuthenticationScheme = "EntraTokenJWTScheme";
+        public const string AuthorizationPolicy = "EntraTokenJWTPolicy"; 
+    }
+
     /// <summary>
     /// adds authentication and authorization to validate incoming Teams tokens
     /// </summary>
@@ -112,26 +118,31 @@ public static class HostApplicationBuilderExtensions
     {
         var settings = builder.Configuration.GetTeams();
 
-        if (string.IsNullOrEmpty(settings.ClientId))
+        var teamsValidationSettings = new TeamsValidationSettings();
+        if (!string.IsNullOrEmpty(settings.ClientId))
         {
-            return builder;
+            teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
         }
 
-        var teamsValidationSettings = new TeamsValidationSettings();
-        teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
+        builder.Services.
+            AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(TeamsTokenAuthConstants.AuthenticationScheme, options =>
+            {
+                TokenValidator.ConfigureValidation(options, teamsValidationSettings.Issuers, teamsValidationSettings.Audiences, teamsValidationSettings.OpenIdMetadataUrl);
+            })
+            .AddJwtBearer(EntraTokenAuthConstants.AuthenticationScheme, options =>
+            {
+                TokenValidator.ConfigureValidation(options, teamsValidationSettings.GetValidIssuersForTenant(settings.TenantId), teamsValidationSettings.Audiences, teamsValidationSettings.GetTenantSpecificOpenIdMetadataUrl(settings.TenantId));
+            });
 
-        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-        .AddJwtBearer(TeamsTokenAuthConstants.AuthenticationScheme, options =>
-        {
-            TokenValidator.ConfigureValidation(options, teamsValidationSettings.Issuers, teamsValidationSettings.Audiences, teamsValidationSettings.OpenIdMetadataUrl);
-        });
 
         // add [Authorize(Policy="..")] support for endpoints
         builder.Services.AddAuthorization(options =>
         {
+            // token validation policy for SMBA tokens
             options.AddPolicy(TeamsTokenAuthConstants.AuthorizationPolicy, policy =>
             {
-                if (skipAuth)
+                if (skipAuth || string.IsNullOrEmpty(settings.ClientId))
                 {
                     // bypass authentication
                     policy.RequireAssertion(_ => true);
@@ -141,6 +152,13 @@ public static class HostApplicationBuilderExtensions
                     policy.AddAuthenticationSchemes(TeamsTokenAuthConstants.AuthenticationScheme);
                     policy.RequireAuthenticatedUser();
                 }
+            });
+
+            // token validation policy for Entra tokens, used when tab apps invoke remote functions
+            options.AddPolicy(EntraTokenAuthConstants.AuthorizationPolicy, policy =>
+            {
+                policy.AddAuthenticationSchemes(EntraTokenAuthConstants.AuthenticationScheme);
+                policy.RequireAuthenticatedUser();
             });
         });
 
