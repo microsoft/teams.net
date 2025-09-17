@@ -6,7 +6,7 @@ using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 using Samples.Lights;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddTransient<Controller>();
+builder.Services.AddTransient<Controller>().AddHttpContextAccessor();
 builder.AddTeams().AddTeamsDevTools().AddOpenAI<LightsPrompt>();
 
 var app = builder.Build();
