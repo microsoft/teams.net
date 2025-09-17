@@ -9,7 +9,7 @@ public class McpClientPluginOptions
     /// <summary>
     /// Plugin identifier
     /// </summary>
-    public string Name { get; set; } = "mcp_client";
+    public string Name { get; set; } = "McpClient";
 
     /// <summary>
     /// Plugin version

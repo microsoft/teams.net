@@ -109,27 +109,26 @@ public class McpClientPlugin : BaseChatPlugin
             }
             Task.WaitAll(tasks.ToArray());
 
-            int i = 0;
-            foreach (var entry in fetchNeeded)
+            var results = fetchNeeded.Zip(tasks);
+            foreach (var result in results)
             {
-                var result = tasks[i];
-                string url = entry.Key;
-                McpClientPluginParams pluginParams = entry.Value;
+                string url = result.First.Key;
+                McpClientPluginParams pluginParams = result.First.Value;
+                var fetchTask = result.Second;
                 
-                if (!result.IsCompletedSuccessfully)
+                if (!fetchTask.IsCompletedSuccessfully)
                 {
                     if (pluginParams.SkipIfUnavailable)
                     {
-                        i += 1;
-                        _logger.Error($"Failed to fetch tools from MCP server at {url}, but continuing as SkipIfUnavailable is set.", result.Exception);
+                        _logger.Error($"Failed to fetch tools from MCP server at {url}, but continuing as SkipIfUnavailable is set.", fetchTask.Exception);
                     }
                     else
                     {
-                        throw new Exception($"Failed to fetch tools from MCP server at {url}", result.Exception);
+                        throw new Exception($"Failed to fetch tools from MCP server at {url}", fetchTask.Exception);
                     }
                 }
 
-                var tools = result.Result;
+                var tools = fetchTask.Result;
                 if (!Cache.ContainsKey(url))
                 {
                     Cache[url] = new McpCachedValue();
@@ -140,7 +139,6 @@ public class McpClientPlugin : BaseChatPlugin
                 Cache[url].Transport = pluginParams.Transport;
 
                 _logger.Debug($"Cached {tools.Count} tools from MCP server at {url}");
-                i += 1;
             }
         }
     }
