@@ -9,9 +9,8 @@ using Microsoft.Teams.Apps.Annotations;
 namespace Samples.Lights;
 
 [TeamsController]
-public class Controller(IHttpContextAccessor httpContextAccessor)
+public class Controller(Func<OpenAIChatPrompt> _promptFactory)
 {
-    private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
     
     [Message("/history")]
     public async Task OnHistory(IContext<MessageActivity> context)
@@ -28,10 +27,7 @@ public class Controller(IHttpContextAccessor httpContextAccessor)
     {
         var state = State.From(context);
 
-        var httpContext = _httpContextAccessor.HttpContext 
-                  ?? throw new InvalidOperationException("No active HttpContext. Cannot resolve OpenAIChatPrompt.");
-
-        var prompt = httpContext.RequestServices.GetRequiredService<OpenAIChatPrompt>();
+        var prompt = _promptFactory();
         await prompt.Send(context.Activity.Text, new() { Messages = state.Messages }, (chunk) => Task.Run(() =>
         {
             context.Stream.Emit(chunk);

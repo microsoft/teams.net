@@ -4,6 +4,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.AI.Prompts;
 using Microsoft.Teams.Common.Logging;
+using Microsoft.AspNetCore.Http;
 
 using OpenAI.Chat;
 
@@ -71,6 +72,21 @@ public static class ServiceCollectionExtensions
             return OpenAIChatPrompt.From(model, value, (options ?? new()).WithLogger(logger));
         });
 
-        return collection.AddScoped<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
+        collection.AddScoped<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
+
+        // Add a factory for creating scoped prompts by accessing the HttpContext
+        collection.AddSingleton<Func<OpenAIChatPrompt>>(provider =>
+        {
+            return () =>
+            {
+                IHttpContextAccessor _httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
+                var httpContext = _httpContextAccessor.HttpContext
+                  ?? throw new InvalidOperationException("No active HttpContext. Cannot resolve OpenAIChatPrompt.");
+
+                return httpContext.RequestServices.GetRequiredService<OpenAIChatPrompt>();
+            };
+        });
+
+        return collection;
     }
 }
