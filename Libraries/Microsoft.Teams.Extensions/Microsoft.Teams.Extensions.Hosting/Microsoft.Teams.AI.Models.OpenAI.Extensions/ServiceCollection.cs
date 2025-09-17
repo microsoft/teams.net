@@ -55,7 +55,6 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddOpenAI<T>(this IServiceCollection collection, ChatPromptOptions? options = null) where T : class
     {
-        collection.AddScoped<T>();
         collection.AddScoped(provider =>
         {
             var logger = provider.GetRequiredService<ILogger>();
@@ -63,39 +62,23 @@ public static class ServiceCollectionExtensions
             return new OpenAIChatModel(settings.Model, settings.ApiKey, new() { Logger = logger });
         });
 
-        collection.AddScoped<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
-        collection.AddScoped(provider =>
-        {
-            var value = provider.GetRequiredService<T>();
-            var logger = provider.GetRequiredService<ILogger>();
-            var model = provider.GetRequiredService<OpenAIChatModel>();
-            return OpenAIChatPrompt.From(model, value, (options ?? new()).WithLogger(logger));
-        });
-
-        collection.AddScoped<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
-
-        // Add a factory for creating scoped prompts by accessing the HttpContext
-        collection.AddSingleton<Func<OpenAIChatPrompt>>(provider =>
-        {
-            return () =>
-            {
-                IHttpContextAccessor _httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
-                var httpContext = _httpContextAccessor.HttpContext
-                  ?? throw new InvalidOperationException("No active HttpContext. Cannot resolve OpenAIChatPrompt.");
-
-                return httpContext.RequestServices.GetRequiredService<OpenAIChatPrompt>();
-            };
-        });
-
-        return collection;
+        return collection.AddOpenAIHelper<T>(options);
+ 
     }
 
     public static IServiceCollection AddOpenAI<T>(this IServiceCollection collection, OpenAIChatModel model, ChatPromptOptions? options = null) where T : class
     {
-        collection.AddScoped<T>();
         collection.AddScoped(provider => model);
+        return collection.AddOpenAIHelper<T>(options);
+    }
 
-        collection.AddScoped<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
+    private static IServiceCollection AddOpenAIHelper<T>(this IServiceCollection collection, ChatPromptOptions? options) where T : class
+    {
+        collection.AddScoped<T>();
+        collection.AddScoped<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(
+            provider => provider.GetRequiredService<OpenAIChatModel>()
+        );
+
         collection.AddScoped(provider =>
         {
             var value = provider.GetRequiredService<T>();
@@ -104,16 +87,18 @@ public static class ServiceCollectionExtensions
             return OpenAIChatPrompt.From(model, value, (options ?? new()).WithLogger(logger));
         });
 
-        collection.AddScoped<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
+        collection.AddScoped<IChatPrompt>(
+            provider => provider.GetRequiredService<OpenAIChatPrompt>()
+        );
 
         // Add a factory for creating scoped prompts by accessing the HttpContext
         collection.AddSingleton<Func<OpenAIChatPrompt>>(provider =>
         {
             return () =>
             {
-                IHttpContextAccessor _httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
-                var httpContext = _httpContextAccessor.HttpContext
-                  ?? throw new InvalidOperationException("No active HttpContext. Cannot resolve OpenAIChatPrompt.");
+                var httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
+                var httpContext = httpContextAccessor.HttpContext
+                    ?? throw new InvalidOperationException("No active HttpContext. Cannot resolve OpenAIChatPrompt.");
 
                 return httpContext.RequestServices.GetRequiredService<OpenAIChatPrompt>();
             };
