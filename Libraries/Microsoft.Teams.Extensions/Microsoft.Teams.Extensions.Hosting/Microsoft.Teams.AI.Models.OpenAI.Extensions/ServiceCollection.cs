@@ -89,4 +89,36 @@ public static class ServiceCollectionExtensions
 
         return collection;
     }
+
+    public static IServiceCollection AddOpenAI<T>(this IServiceCollection collection, OpenAIChatModel model, ChatPromptOptions? options = null) where T : class
+    {
+        collection.AddScoped<T>();
+        collection.AddScoped(provider => model);
+
+        collection.AddScoped<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
+        collection.AddScoped(provider =>
+        {
+            var value = provider.GetRequiredService<T>();
+            var logger = provider.GetRequiredService<ILogger>();
+            var model = provider.GetRequiredService<OpenAIChatModel>();
+            return OpenAIChatPrompt.From(model, value, (options ?? new()).WithLogger(logger));
+        });
+
+        collection.AddScoped<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
+        collection.AddHttpContextAccessor();
+        // Add a factory for creating scoped prompts by accessing the HttpContext
+        collection.AddSingleton<Func<OpenAIChatPrompt>>(provider =>
+        {
+            return () =>
+            {
+                IHttpContextAccessor _httpContextAccessor = provider.GetRequiredService<IHttpContextAccessor>();
+                var httpContext = _httpContextAccessor.HttpContext
+                  ?? throw new InvalidOperationException("No active HttpContext. Cannot resolve OpenAIChatPrompt.");
+
+                return httpContext.RequestServices.GetRequiredService<OpenAIChatPrompt>();
+            };
+        });
+
+        return collection;
+    }
 }
