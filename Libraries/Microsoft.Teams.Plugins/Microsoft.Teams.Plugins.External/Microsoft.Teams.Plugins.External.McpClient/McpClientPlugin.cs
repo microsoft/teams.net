@@ -73,7 +73,7 @@ public class McpClientPlugin : BaseChatPlugin
     /// 
     /// Checks if cached values have expired or if tools have never been fetched. Performs parallel fetching for efficiency.
     /// </summary>
-    private void FetchToolsIfNeeded()
+    private async Task FetchToolsIfNeeded()
     {
         var fetchNeeded = new List<KeyValuePair<string, McpClientPluginParams>>();
 
@@ -107,7 +107,15 @@ public class McpClientPlugin : BaseChatPlugin
                 McpClientPluginParams pluginParams = entry.Value;
                 tasks.Add(FetchToolsFromServer(new Uri(url), pluginParams));
             }
-            Task.WaitAll(tasks.ToArray());
+            try
+            {
+                await Task.WhenAll(tasks);
+            }
+            catch
+            {
+                // Suppress all exceptions, but tasks are still awaited
+                // Individual task exceptions will be handled below
+            }
 
             var results = fetchNeeded.Zip(tasks);
             foreach (var result in results)
@@ -121,6 +129,7 @@ public class McpClientPlugin : BaseChatPlugin
                     if (pluginParams.SkipIfUnavailable)
                     {
                         _logger.Error($"Failed to fetch tools from MCP server at {url}, but continuing as SkipIfUnavailable is set.", fetchTask.Exception);
+                        continue;
                     }
                     else
                     {
@@ -145,7 +154,7 @@ public class McpClientPlugin : BaseChatPlugin
 
     private async Task<List<McpToolDetails>> FetchToolsFromServer(Uri url, McpClientPluginParams pluginParams)
     {
-        IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.Headers);
+        IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.HeadersFactory());
         var client = await McpClientFactory.CreateAsync(transport);
         var tools = await client.ListToolsAsync();
 
@@ -205,7 +214,7 @@ public class McpClientPlugin : BaseChatPlugin
 
     private async Task<string> CallMcpTool(Uri url, McpToolDetails tool, IReadOnlyDictionary<string, object?> args, McpClientPluginParams pluginParams)
     {
-        IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.Headers);
+        IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.HeadersFactory());
         var client = await McpClientFactory.CreateAsync(transport);
         var response = await client.CallToolAsync(tool.Name, args);
 
@@ -217,9 +226,9 @@ public class McpClientPlugin : BaseChatPlugin
         return response.Content.Select(c => c.Type == "text" ? ((TextContentBlock)c).Text : "").Aggregate((a, b) => $"{a},{b}");
     }
 
-    public override Task<FunctionCollection> OnBuildFunctions<TOptions>(IChatPrompt<TOptions> prompt, FunctionCollection functions, CancellationToken cancellationToken = default)
+    public override async Task<FunctionCollection> OnBuildFunctions<TOptions>(IChatPrompt<TOptions> prompt, FunctionCollection functions, CancellationToken cancellationToken = default)
     {
-        FetchToolsIfNeeded();
+        await FetchToolsIfNeeded();
 
         foreach (var entry in _mcpServerParams)
         {
@@ -241,6 +250,6 @@ public class McpClientPlugin : BaseChatPlugin
             }
         }
 
-        return Task.FromResult(functions);
+        return functions;
     }
 }

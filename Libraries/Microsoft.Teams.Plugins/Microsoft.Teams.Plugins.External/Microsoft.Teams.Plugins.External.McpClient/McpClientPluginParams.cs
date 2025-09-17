@@ -15,15 +15,15 @@ public class McpClientPluginParams
     /// <summary>
     /// Additional headers to include in the MCP requests
     /// </summary>
-    public IDictionary<string, string>? Headers { get; set; }
+    public Func<IDictionary<string, string>> HeadersFactory { get; set; } = () => new Dictionary<string, string>();
 
     /// <summary>
     /// Continue if server is unavailable
     /// </summary>
-    public bool SkipIfUnavailable { get; set; } = false;
+    public bool SkipIfUnavailable { get; set; } = true;
 
     /// <summary>
-    /// Override default cache timeout
+    /// Override default cache timeout of 1 day
     /// </summary>
     public int? RefetchTimeoutMs { get; set; }
 }
