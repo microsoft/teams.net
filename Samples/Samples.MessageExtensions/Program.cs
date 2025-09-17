@@ -484,7 +484,7 @@ public static partial class Program
             return null;
         }
 
-        private static async Task<Microsoft.Teams.Api.MessageExtensions.ActionResponse> CreateFetchTaskResponse(string? commandId, string conversationId, Microsoft.Teams.Api.Clients.ApiClient client, Microsoft.Teams.Common.Logging.ILogger log)
+        private static Task<Microsoft.Teams.Api.MessageExtensions.ActionResponse> CreateFetchTaskResponse(string? commandId, string conversationId, Microsoft.Teams.Api.Clients.ApiClient client, Microsoft.Teams.Common.Logging.ILogger log)
         {
             log.Info($"[CREATE_FETCH_TASK] Creating task for command: {commandId}");
             // Updated to use actual converation members
