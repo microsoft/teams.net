@@ -179,7 +179,6 @@ public static partial class Program
         [MessageExtension.FetchTask]
         public async Task<Microsoft.Teams.Api.MessageExtensions.ActionResponse> OnMessageExtensionFetchTask(
             [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.FetchTaskActivity activity,
-            [Context] ApiClient client,
             [Context] Microsoft.Teams.Common.Logging.ILogger log)
         {
             log.Info("[MESSAGE_EXT_FETCH_TASK] Fetch task received");
@@ -187,7 +186,7 @@ public static partial class Program
             var commandId = activity.Value?.CommandId;
             log.Info($"[MESSAGE_EXT_FETCH_TASK] Command: {commandId}");
 
-            return await CreateFetchTaskResponse(commandId, activity.Conversation.Id, client, log);
+            return CreateFetchTaskResponse(commandId, log);
         }
 
         [MessageExtension.Setting]
@@ -484,7 +483,7 @@ public static partial class Program
             return null;
         }
 
-        private static Task<Microsoft.Teams.Api.MessageExtensions.ActionResponse> CreateFetchTaskResponse(string? commandId, string conversationId, Microsoft.Teams.Api.Clients.ApiClient client, Microsoft.Teams.Common.Logging.ILogger log)
+        private static Microsoft.Teams.Api.MessageExtensions.ActionResponse CreateFetchTaskResponse(string? commandId, Microsoft.Teams.Common.Logging.ILogger log)
         {
             log.Info($"[CREATE_FETCH_TASK] Creating task for command: {commandId}");
             // Updated to use actual converation members
@@ -497,7 +496,6 @@ public static partial class Program
                     new TextBlock("Conversation Members is not implemented in C# yet :(")
                     {
                         Weight = TextWeight.Bolder,
-                        Size = TextSize.Large,
                         Color = TextColor.Accent
                     },
                 }
