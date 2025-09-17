@@ -2,13 +2,13 @@
   <Choose>
     <When Condition="$([System.String]::Copy('$(PackageId)').StartsWith('Microsoft.Teams.Plugins.External.Mcp'))">
       <PropertyGroup>
-        <!--- package version for `Microsoft.Teams.Plugins.External.Mcp` and `Microsoft.Teams.Plugins.External.McpClient` packages --->
+        <!-- package version for `Microsoft.Teams.Plugins.External.Mcp` and `Microsoft.Teams.Plugins.External.McpClient` packages -->
         <Version>2.0.0-preview.13</Version>
       </PropertyGroup>
     </When>
     <Otherwise>
       <PropertyGroup>
-        <!--- package version for all other packages --->
+        <!-- package version for all other packages -->
         <Version>2.0.0-preview.13</Version>
       </PropertyGroup>
     </Otherwise>
