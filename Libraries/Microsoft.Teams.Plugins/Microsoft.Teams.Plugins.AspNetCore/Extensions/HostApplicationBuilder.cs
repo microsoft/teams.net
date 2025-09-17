@@ -111,7 +111,9 @@ public static class HostApplicationBuilderExtensions
     }
 
     /// <summary>
-    /// adds authentication and authorization to validate incoming Teams tokens
+    /// add TeamsJWTScheme for validating incoming SMBA tokens and EntraTokenJWTScheme for validating incoming Entra tokens
+    /// provides Authorization policy TeamsJWTPolicy required by [Authorize(Policy="TeamsJWTPolicy")] in MessageController
+    /// provides Authorization policy EntraTokenJWTPolicy required when Tab invokes remote functions
     /// </summary>
     /// <returns></returns>
     public static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false)
@@ -124,8 +126,6 @@ public static class HostApplicationBuilderExtensions
             teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
         }
 
-        // add TeamsJWTScheme for validating incoming Teams tokens
-        // and EntraTokenJWTScheme for validating incoming Entra tokens
         builder.Services.
             AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(TeamsTokenAuthConstants.AuthenticationScheme, options =>
@@ -138,8 +138,6 @@ public static class HostApplicationBuilderExtensions
             });
 
 
-        // token validation policy for SMBA tokens
-        // required by [Authorize(Policy="TeamsJWTPolicy")] in MessageController
         builder.Services.AddAuthorization(options =>
         {
             options.AddPolicy(TeamsTokenAuthConstants.AuthorizationPolicy, policy =>
