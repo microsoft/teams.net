@@ -114,7 +114,7 @@ public static class HostApplicationBuilderExtensions
     /// adds authentication and authorization to validate incoming Teams tokens
     /// </summary>
     /// <returns></returns>
-    private static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false)
+    public static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false)
     {
         var settings = builder.Configuration.GetTeams();
 
@@ -124,6 +124,8 @@ public static class HostApplicationBuilderExtensions
             teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
         }
 
+        // add TeamsJWTScheme for validating incoming Teams tokens
+        // and EntraTokenJWTScheme for validating incoming Entra tokens
         builder.Services.
             AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(TeamsTokenAuthConstants.AuthenticationScheme, options =>
@@ -136,10 +138,10 @@ public static class HostApplicationBuilderExtensions
             });
 
 
-        // add [Authorize(Policy="..")] support for endpoints
+        // token validation policy for SMBA tokens
+        // required by [Authorize(Policy="TeamsJWTPolicy")] in MessageController
         builder.Services.AddAuthorization(options =>
         {
-            // token validation policy for SMBA tokens
             options.AddPolicy(TeamsTokenAuthConstants.AuthorizationPolicy, policy =>
             {
                 if (skipAuth || string.IsNullOrEmpty(settings.ClientId))
