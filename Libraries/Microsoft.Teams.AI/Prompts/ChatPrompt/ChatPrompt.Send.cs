@@ -10,16 +10,7 @@ public partial class ChatPrompt<TOptions>
 {
     public async Task<IMessage> Send(IMessage message, CancellationToken cancellationToken = default)
     {
-        var buffer = string.Empty;
-        var prompt = Template is not null ? await Template.Render() : null;
-        var res = await Model.Send(message, new(Invoke)
-        {
-            Functions = Functions.List,
-            Messages = Messages,
-            Prompt = prompt is null ? null : new DeveloperMessage(prompt),
-        }, cancellationToken);
-
-        return res;
+        return await Send(message, null, null, cancellationToken);
     }
 
     public Task<ModelMessage<string>> Send(string text, IChatPrompt<TOptions>.RequestOptions? options = null, OnStreamChunk? onChunk = null, CancellationToken cancellationToken = default)
@@ -63,11 +54,25 @@ public partial class ChatPrompt<TOptions>
             catch { return; }
         }
 
-        ChatModelOptions<TOptions> requestOptions = new(Invoke)
+        var functions = new FunctionCollection();
+        foreach (var kvp in Functions)
         {
-            Functions = Functions.List,
+            functions[kvp.Key] = kvp.Value;
+        }
+        var instructions = prompt is null ? null : new DeveloperMessage(prompt);
+
+        // allow plugins to modify functions and instructions before each send
+        foreach (var plugin in Plugins)
+        {
+            functions = await plugin.OnBuildFunctions(this, functions, cancellationToken);
+            instructions = await plugin.OnBuildInstructions(this, instructions);
+        }
+
+        ChatModelOptions<TOptions> requestOptions = new(Invoke(functions))
+        {
+            Functions = functions.List,
             Messages = messages,
-            Prompt = prompt is null ? null : new DeveloperMessage(prompt),
+            Prompt = instructions,
             Options = options is null ? default : options.Request,
         };
 
@@ -103,7 +108,7 @@ public partial class ChatPrompt<TOptions>
         catch (Exception ex)
         {
             ErrorEvent(Model, ex);
-            throw new Exception("an error occured while attempting to send the message", ex);
+            throw new Exception("An error occurred while attempting to send the message", ex);
         }
     }
 }

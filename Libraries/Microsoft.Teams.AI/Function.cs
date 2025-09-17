@@ -103,6 +103,12 @@ public class Function : IFunction
                 return element.Deserialize(param.ParameterType);
             }
 
+            // Special param type to get the arguments dictionary (IDictionary<string, object?> args)
+            if (value is null && name == "args" && param.ParameterType == typeof(IDictionary<string, object?>))
+            {
+                value = args;
+            }
+
             return value;
         }).ToArray();
 
