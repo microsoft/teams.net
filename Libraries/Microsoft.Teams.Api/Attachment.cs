@@ -123,12 +123,15 @@ public class Attachment
     /// <summary>
     /// Attachment Layout
     /// </summary>
+    [JsonConverter(typeof(StringEnum.JsonConverter<Layout>))]
     public class Layout(string value) : StringEnum(value)
     {
         public static readonly Layout List = new("list");
+        [JsonIgnore]
         public bool IsList => List.Equals(Value);
 
         public static readonly Layout Carousel = new("carousel");
+        [JsonIgnore]
         public bool IsCarousel => Carousel.Equals(Value);
     }
 }

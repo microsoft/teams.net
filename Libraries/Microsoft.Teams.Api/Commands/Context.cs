@@ -20,6 +20,6 @@ public class Context(string value) : StringEnum(value)
     public static readonly Context Compose = new("compose");
     public bool IsCompose => Compose.Equals(Value);
 
-    public static readonly Context CommandBox = new("commandBox");
+    public static readonly Context CommandBox = new("commandbox");
     public bool IsCommandBox => CommandBox.Equals(Value);
 }
