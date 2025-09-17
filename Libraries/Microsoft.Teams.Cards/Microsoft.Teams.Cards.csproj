@@ -2,9 +2,6 @@
 <!-- Licensed under the MIT License.-->
 
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\Directory.Build.props" Condition="'$(Version)' == ''" />
-
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Cards</PackageId>
     <PackageDescription>An Adaptive Cards implementation with support for Teams-specific Adaptive Card elements.</PackageDescription>

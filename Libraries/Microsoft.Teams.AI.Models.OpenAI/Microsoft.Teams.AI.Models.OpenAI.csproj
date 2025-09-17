@@ -2,9 +2,6 @@
 <!-- Licensed under the MIT License.-->
 
 <Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\Directory.Build.props" Condition="'$(Version)' == ''" />
-
   <PropertyGroup>
     <PackageId>Microsoft.Teams.AI.Models.OpenAI</PackageId>
     <PackageDescription>OpenAI model implementations to be used with `Microsoft.Teams.AI`. Supports all OpenAI-like API models.</PackageDescription>

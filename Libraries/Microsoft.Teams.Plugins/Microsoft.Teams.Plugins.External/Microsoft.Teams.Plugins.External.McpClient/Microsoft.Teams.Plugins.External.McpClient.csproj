@@ -2,9 +2,6 @@
 <!-- Licensed under the MIT License.-->
 
 <Project Sdk="Microsoft.NET.Sdk">
-
-    <Import Project="..\..\..\Libraries\Directory.Build.props" Condition="'$(Version)' == ''" />
-
     <PropertyGroup>
         <PackageId>Microsoft.Teams.Plugins.External.McpClient</PackageId>
         <PackageDescription>Teams MCP Client Plugin</PackageDescription>
