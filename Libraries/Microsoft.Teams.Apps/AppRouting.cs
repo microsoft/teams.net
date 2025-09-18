@@ -29,7 +29,7 @@ public partial class App
         foreach (var method in methods)
         {
             var attrs = method.GetCustomAttributes<ActivityAttribute>(true);
-             
+
             foreach (var attr in attrs)
             {
                 var route = new AttributeRoute() { Attr = attr, Method = method, Object = controller };
