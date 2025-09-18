@@ -56,7 +56,7 @@ public abstract class TaskActivity(Name.Tasks name) : InvokeActivity(new(name.Va
             {
                 "task/fetch" => JsonSerializer.Deserialize<Tasks.FetchActivity>(element.ToString(), options),
                 "task/submit" => JsonSerializer.Deserialize<Tasks.SubmitActivity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<TaskActivity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize task activity '{name}' doesn't match any known types.")
             };
         }
 

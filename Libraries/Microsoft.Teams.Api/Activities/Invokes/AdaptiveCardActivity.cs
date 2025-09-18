@@ -53,7 +53,7 @@ public class AdaptiveCardActivity(Name.AdaptiveCards name) : InvokeActivity(new(
             return name switch
             {
                 "adaptiveCard/action" => JsonSerializer.Deserialize<AdaptiveCards.ActionActivity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<AdaptiveCardActivity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize adaptive card activity '{name}' doesn't match any known types.")
             };
         }
 

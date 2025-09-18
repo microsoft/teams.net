@@ -56,7 +56,7 @@ public abstract class TabActivity(Name.Tabs name) : InvokeActivity(new(name.Valu
             {
                 "tab/fetch" => JsonSerializer.Deserialize<Tabs.FetchActivity>(element.ToString(), options),
                 "tab/submit" => JsonSerializer.Deserialize<Tabs.SubmitActivity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<TabActivity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize tab activity '{name}' doesn't match any known types.")
             };
         }
 

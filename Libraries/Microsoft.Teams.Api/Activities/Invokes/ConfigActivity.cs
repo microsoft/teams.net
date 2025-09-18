@@ -56,7 +56,7 @@ public abstract class ConfigActivity(Name.Configs name) : InvokeActivity(new(nam
             {
                 "config/fetch" => JsonSerializer.Deserialize<Configs.FetchActivity>(element.ToString(), options),
                 "config/submit" => JsonSerializer.Deserialize<Configs.SubmitActivity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<ConfigActivity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize config activity '{name}' doesn't match any known types.")
             };
         }
 

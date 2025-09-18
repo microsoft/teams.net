@@ -56,7 +56,7 @@ public abstract class SignInActivity(Name.SignIn name) : InvokeActivity(new(name
             {
                 "signin/tokenExchange" => JsonSerializer.Deserialize<SignIn.TokenExchangeActivity>(element.ToString(), options),
                 "signin/verifyState" => JsonSerializer.Deserialize<SignIn.VerifyStateActivity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<SignInActivity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize signin activity '{name}' doesn't match any known types.")
             };
         }
 
