@@ -74,7 +74,7 @@ public class QuerySettingsUrlMEActivityTests
         string expectedPath = "Activity.Invoke.ComposeExtension/querySettingUrl";
         Assert.Equal(expectedPath, activity.GetPath());
         Assert.Equal(File.ReadAllText(
-            @"../../../Json/Activity/Invokes/QuerySettingsUrlMEActivity.json"
+            @"../../../Json/Activity/Invokes/QuerySettingUrlMEActivity.json"
         ), json);
     }
 
@@ -93,7 +93,7 @@ public class QuerySettingsUrlMEActivityTests
         string expectedPath = "Activity.Invoke.ComposeExtension/querySettingUrl";
         Assert.Equal(expectedPath, activity.GetPath());
         Assert.Equal(File.ReadAllText(
-            @"../../../Json/Activity/Invokes/QuerySettingsUrlMEActivity.json"
+            @"../../../Json/Activity/Invokes/QuerySettingUrlMEActivity.json"
         ), json);
     }
 
