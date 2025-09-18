@@ -86,4 +86,82 @@ public class ChatPluginTests
         // injected function does not persist in the prompt's function collection
         Assert.False(prompt.Functions.Has("injected function"));
     }
+
+    [Fact]
+    public async Task Test_ChatPrompt_Send_StringWithStreaming()
+    {
+        // Arrange
+        var prompt = new TestChatPrompt();
+        var testText = "Hello, world!";
+        var onChunk = new OnStreamChunk(async (chunk) => { await Task.CompletedTask; });
+
+        // Act
+        var result = await prompt.Send(testText, onChunk);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<ModelMessage<string>>(result);
+    }
+
+    [Fact]
+    public async Task Test_ChatPrompt_Send_StringWithOptions()
+    {
+        // Arrange
+        var prompt = new TestChatPrompt();
+        var testText = "Hello, world!";
+        var testOptions = new IChatPrompt<TestModelOptions>.RequestOptions();
+
+        // Act
+        var result = await prompt.Send(testText, testOptions);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<ModelMessage<string>>(result);
+    }
+
+    [Fact]
+    public async Task Test_ChatPrompt_Send_ContentArray()
+    {
+        // Arrange
+        var prompt = new TestChatPrompt();
+        var testContent = new IContent[] { new TextContent { Text = "Test content" } };
+
+        // Act
+        var result = await prompt.Send(testContent);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<ModelMessage<string>>(result);
+    }
+
+    [Fact]
+    public async Task Test_ChatPrompt_Send_UserMessageString()
+    {
+        // Arrange
+        var prompt = new TestChatPrompt();
+        var testUserMessage = UserMessage.Text("Test user message");
+
+        // Act
+        var result = await prompt.Send(testUserMessage);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<ModelMessage<string>>(result);
+    }
+
+    [Fact]
+    public async Task Test_ChatPrompt_Send_UserMessageContent()
+    {
+        // Arrange
+        var prompt = new TestChatPrompt();
+        var testContent = new IContent[] { new TextContent { Text = "Test content" } };
+        var testUserMessage = UserMessage.Text(testContent);
+
+        // Act
+        var result = await prompt.Send(testUserMessage);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.IsType<ModelMessage<string>>(result);
+    }
 }
