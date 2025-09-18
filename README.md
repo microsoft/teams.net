@@ -48,6 +48,7 @@ $: dotnet test
 - [`Microsoft.Teams.Extensions.Configuration`](./Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Configuration/README.md)
 - [`Microsoft.Teams.Extensions.Hosting`](./Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Hosting/README.md)
 - [`Microsoft.Teams.Extensions.Logging`](./Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Logging/README.md)
+- [`Microsoft.Teams.Extensions.Graph`](./Libraries/Microsoft.Teams.Extensions/Microsoft.Teams.Extensions.Graph/README.md)
 - [`Microsoft.Teams.Plugins.AspNetCore`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore/README.md)
 - [`Microsoft.Teams.Plugins.AspNetCore.DevTools`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore.DevTools/README.md)
 - [`Microsoft.Teams.Plugins.AspNetCore.BotBuilder`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.AspNetCore.BotBuilder/README.md)
@@ -57,6 +58,7 @@ $: dotnet test
 > ℹ️ external packages (typically plugins) used to integrate with other platforms.
 
 - [`Microsoft.Teams.Plugins.External.Mcp`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.Mcp/README.md)
+- [`Microsoft.Teams.Plugins.External.McpClient`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.McpClient/README.md)
 
 ## Feedback and Support
 
