@@ -53,7 +53,7 @@ public abstract class MessageActivity(Name.Messages name) : InvokeActivity(new(n
             return name switch
             {
                 "message/submitAction" => JsonSerializer.Deserialize<Messages.SubmitActionActivity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<MessageActivity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize message activity '{name}' doesn't match any known types.")
             };
         }
 

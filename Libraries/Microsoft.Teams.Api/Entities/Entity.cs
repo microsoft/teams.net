@@ -53,7 +53,7 @@ public interface IEntity
                 "mention" => JsonSerializer.Deserialize<MentionEntity>(element.ToString(), options),
                 "message" or "https://schema.org/Message" => JsonSerializer.Deserialize<IMessageEntity>(element.ToString(), options),
                 "streaminfo" => JsonSerializer.Deserialize<StreamInfoEntity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<Entity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize entity '{type}' doesn't match any known types.")
             };
         }
 
@@ -147,7 +147,7 @@ public class Entity : IEntity
                 "mention" => JsonSerializer.Deserialize<MentionEntity>(element.ToString(), options),
                 "message" or "https://schema.org/Message" => (Entity?)JsonSerializer.Deserialize<IMessageEntity>(element.ToString(), options),
                 "streaminfo" => JsonSerializer.Deserialize<StreamInfoEntity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<Entity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize entity activity '{type}' doesn't match any known types.")
             };
         }
 

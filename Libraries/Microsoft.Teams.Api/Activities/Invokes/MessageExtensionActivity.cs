@@ -24,7 +24,7 @@ public abstract class MessageExtensionActivity(Name.MessageExtensions name) : In
     public MessageExtensions.FetchTaskActivity ToFetchTask() => (MessageExtensions.FetchTaskActivity)this;
     public MessageExtensions.QueryActivity ToQuery() => (MessageExtensions.QueryActivity)this;
     public MessageExtensions.QueryLinkActivity ToQueryLink() => (MessageExtensions.QueryLinkActivity)this;
-    public MessageExtensions.QuerySettingsUrlActivity ToQuerySettingsUrl() => (MessageExtensions.QuerySettingsUrlActivity)this;
+    public MessageExtensions.QuerySettingUrlActivity ToQuerySettingsUrl() => (MessageExtensions.QuerySettingUrlActivity)this;
     public MessageExtensions.SelectItemActivity ToSelectItem() => (MessageExtensions.SelectItemActivity)this;
     public MessageExtensions.SettingActivity ToSetting() => (MessageExtensions.SettingActivity)this;
     public MessageExtensions.SubmitActionActivity ToSubmitAction() => (MessageExtensions.SubmitActionActivity)this;
@@ -36,7 +36,7 @@ public abstract class MessageExtensionActivity(Name.MessageExtensions name) : In
         if (type == typeof(MessageExtensions.FetchTaskActivity)) return ToFetchTask();
         if (type == typeof(MessageExtensions.QueryActivity)) return ToQuery();
         if (type == typeof(MessageExtensions.QueryLinkActivity)) return ToQueryLink();
-        if (type == typeof(MessageExtensions.QuerySettingsUrlActivity)) return ToQuerySettingsUrl();
+        if (type == typeof(MessageExtensions.QuerySettingUrlActivity)) return ToQuerySettingsUrl();
         if (type == typeof(MessageExtensions.SelectItemActivity)) return ToSelectItem();
         if (type == typeof(MessageExtensions.SettingActivity)) return ToSetting();
         if (type == typeof(MessageExtensions.SubmitActionActivity)) return ToSubmitAction();
@@ -73,11 +73,11 @@ public abstract class MessageExtensionActivity(Name.MessageExtensions name) : In
                 "composeExtension/fetchTask" => JsonSerializer.Deserialize<MessageExtensions.FetchTaskActivity>(element.ToString(), options),
                 "composeExtension/query" => JsonSerializer.Deserialize<MessageExtensions.QueryActivity>(element.ToString(), options),
                 "composeExtension/queryLink" => JsonSerializer.Deserialize<MessageExtensions.QueryLinkActivity>(element.ToString(), options),
-                "composeExtension/querySettingsUrl" => JsonSerializer.Deserialize<MessageExtensions.QuerySettingsUrlActivity>(element.ToString(), options),
+                "composeExtension/querySettingUrl" => JsonSerializer.Deserialize<MessageExtensions.QuerySettingUrlActivity>(element.ToString(), options),
                 "composeExtension/selectItem" => JsonSerializer.Deserialize<MessageExtensions.SelectItemActivity>(element.ToString(), options),
                 "composeExtension/setting" => JsonSerializer.Deserialize<MessageExtensions.SettingActivity>(element.ToString(), options),
                 "composeExtension/submitAction" => JsonSerializer.Deserialize<MessageExtensions.SubmitActionActivity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<MessageExtensionActivity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize invoke activity '{name}' doesn't match any known types.")
             };
         }
 
@@ -113,7 +113,7 @@ public abstract class MessageExtensionActivity(Name.MessageExtensions name) : In
                 return;
             }
 
-            if (value is MessageExtensions.QuerySettingsUrlActivity querySettingsUrl)
+            if (value is MessageExtensions.QuerySettingUrlActivity querySettingsUrl)
             {
                 JsonSerializer.Serialize(writer, querySettingsUrl, options);
                 return;

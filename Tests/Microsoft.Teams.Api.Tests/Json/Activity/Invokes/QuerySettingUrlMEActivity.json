@@ -2,7 +2,7 @@
   "id": "id:data",
   "type": "invoke",
   "channelId": "msteams",
-  "name": "composeExtension/querySettingsUrl",
+  "name": "composeExtension/querySettingUrl",
   "value": {
     "commandId": "searchCmd",
     "parameters": [

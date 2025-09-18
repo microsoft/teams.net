@@ -159,7 +159,7 @@ public static partial class Program
 
         [MessageExtension.QuerySettingsUrl]
         public Microsoft.Teams.Api.MessageExtensions.Response OnMessageExtensionQuerySettingsUrl(
-            [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.QuerySettingsUrlActivity activity,
+            [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.QuerySettingUrlActivity activity,
             [Context] IContext.Client client,
             [Context] Microsoft.Teams.Common.Logging.ILogger log)
         {

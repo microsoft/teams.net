@@ -45,7 +45,7 @@ public partial interface IActivity
                 "commandResult" => JsonSerializer.Deserialize<CommandResultActivity>(element.ToString(), options),
                 "event" => JsonSerializer.Deserialize<EventActivity>(element.ToString(), options),
                 "invoke" => JsonSerializer.Deserialize<InvokeActivity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<Activity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize activity '{type}' doesn't match any known types.")
             };
         }
 
@@ -167,7 +167,7 @@ public partial class Activity
                 "commandResult" => JsonSerializer.Deserialize<CommandResultActivity>(element.ToString(), options),
                 "event" => JsonSerializer.Deserialize<EventActivity>(element.ToString(), options),
                 "invoke" => JsonSerializer.Deserialize<InvokeActivity>(element.ToString(), options),
-                _ => JsonSerializer.Deserialize<Activity>(element.ToString(), options)
+                _ => throw new JsonException($"failed to deserialize activity '{type}' doesn't match any known types.")
             };
         }
 
