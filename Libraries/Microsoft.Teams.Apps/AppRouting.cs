@@ -29,7 +29,7 @@ public partial class App
         foreach (var method in methods)
         {
             var attrs = method.GetCustomAttributes<ActivityAttribute>(true);
-
+             
             foreach (var attr in attrs)
             {
                 var route = new AttributeRoute() { Attr = attr, Method = method, Object = controller };
@@ -176,5 +176,16 @@ public partial class App
 
             return new Response(HttpStatusCode.PreconditionFailed);
         }
+    }
+
+    /// <summary>
+    /// Register a middleware.
+    /// </summary>
+    /// <param name="handler">Callback to invoke.</param>
+    /// <returns></returns>
+    public App Use(Func<IContext<IActivity>, Task<object?>> handler)
+    {
+        Router.Register(handler);
+        return this;
     }
 }
