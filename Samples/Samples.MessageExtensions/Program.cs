@@ -390,7 +390,16 @@ public static partial class Program
             var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
             {
                 ContentType = new Microsoft.Teams.Api.ContentType("application/vnd.microsoft.card.adaptive"),
-                Content = card
+                Content = card,
+                Preview = new Microsoft.Teams.Api.MessageExtensions.Attachment
+                {
+                    ContentType = Microsoft.Teams.Api.ContentType.ThumbnailCard,
+                    Content = new ThumbnailCard
+                    {
+                        Title = "Link Preview",
+                        Text = url
+                    }
+                }
             };
 
             return new Microsoft.Teams.Api.MessageExtensions.Response
