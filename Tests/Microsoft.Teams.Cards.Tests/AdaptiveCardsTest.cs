@@ -547,4 +547,21 @@ public class AdaptiveCardsTest
         // Verify msTeams property is completely absent, not just null
         Assert.False(action.TryGetProperty("msTeams", out _));
     }
+
+    [Fact]
+    public void Should_Serialize_Actions()
+    {
+        var actionJson = """
+            {
+            "type": "Action.OpenUrl",
+            "url": "https://adaptivecards.microsoft.com",
+            "title": "Learn More"
+            }
+        """;
+        var action = OpenUrlAction.Deserialize(actionJson);
+        Assert.NotNull(action);
+        Assert.IsType<OpenUrlAction>(action);
+        Assert.Equal("Learn More", action.Title);
+        Assert.Equal("https://adaptivecards.microsoft.com", action.Url);
+    }
 }
