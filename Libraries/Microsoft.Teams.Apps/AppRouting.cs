@@ -193,4 +193,18 @@ public partial class App
         });
         return this;
     }
+
+    /// <summary>
+    /// Register a middleware.
+    /// </summary>
+    /// <param name="handler">Callback to invoke.</param>
+    /// <returns></returns>
+    public App Use(Func<IContext<IActivity>, Task> handler)
+    {
+        return Use(async (context) =>
+        {
+            await handler(context);
+            return null;
+        });
+    }
 }
