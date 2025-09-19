@@ -467,8 +467,7 @@ public static partial class Program
 
             try
             {
-                // Deserialize the JSON into an AdaptiveCard object
-                var card = System.Text.Json.JsonSerializer.Deserialize<AdaptiveCard>(cardJson, new System.Text.Json.JsonSerializerOptions());
+                var card = AdaptiveCard.Deserialize(cardJson);
 
                 return card ?? throw new InvalidOperationException("Failed to deserialize card");
             }
