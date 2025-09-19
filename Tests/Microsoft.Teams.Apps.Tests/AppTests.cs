@@ -275,10 +275,10 @@ public class AppTests
 
             return null;
         });
-        app.Use(async (context) =>
+        app.Use((context) =>
         {
             secondMiddlewareCalled = true;
-            return "middleware2";
+            return Task.FromResult((object?)"middleware2");
         });
         await app.Process(sender.Object, token.Object, activity);
 
