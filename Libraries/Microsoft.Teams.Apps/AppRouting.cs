@@ -177,4 +177,20 @@ public partial class App
             return new Response(HttpStatusCode.PreconditionFailed);
         }
     }
+
+    /// <summary>
+    /// Register a middleware.
+    /// </summary>
+    /// <param name="handler">Callback to invoke.</param>
+    /// <returns></returns>
+    public App Use(Func<IContext<IActivity>, Task<object?>> handler)
+    {
+        Router.Register(new Route() {
+            Name = "middleware",
+            Type = RouteType.User,
+            Selector = _ => true,
+            Handler = handler
+        });
+        return this;
+    }
 }
