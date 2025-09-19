@@ -346,7 +346,7 @@ public class AdaptiveCardsTest
         Assert.Equal(2, columnSet.Columns!.Count);
 
         var firstColumn = columnSet.Columns[0];
-        Assert.Equal("auto", firstColumn.Width);
+        Assert.Equal("auto", firstColumn.Width!.ToString());
         Assert.Single(firstColumn.Items!);
 
         var image = firstColumn.Items[0] as Image;
@@ -512,10 +512,10 @@ public class AdaptiveCardsTest
         Assert.Single(card2.Body!);
 
         // Test 3: With CamelCase policy (what we had in docs)
-        var options3 = new JsonSerializerOptions 
-        { 
+        var options3 = new JsonSerializerOptions
+        {
             PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase 
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         };
         var card3 = JsonSerializer.Deserialize<AdaptiveCard>(json, options3);
         Assert.NotNull(card3);
@@ -525,7 +525,7 @@ public class AdaptiveCardsTest
         var textBlock1 = card1.Body![0] as TextBlock;
         var textBlock2 = card2.Body![0] as TextBlock;
         var textBlock3 = card3.Body![0] as TextBlock;
-        
+
         Assert.Equal("Hello World", textBlock1?.Text);
         Assert.Equal("Hello World", textBlock2?.Text);
         Assert.Equal("Hello World", textBlock3?.Text);
@@ -552,26 +552,39 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = JsonSerializer.Serialize(card, new JsonSerializerOptions
-        {
-            WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.Never // Explicitly don't ignore nulls globally
-        });
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         Assert.DoesNotContain("\"msTeams\":null", json);
         Assert.DoesNotContain("\"msTeams\": null", json);
-        
+
         // Verify the action is still properly serialized
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
-        
+
         Assert.True(root.TryGetProperty("actions", out var actionsElement));
         var action = actionsElement[0];
         Assert.Equal("Action.Submit", action.GetProperty("type").GetString());
         Assert.Equal("Submit", action.GetProperty("title").GetString());
-        
+
         // Verify msTeams property is completely absent, not just null
         Assert.False(action.TryGetProperty("msTeams", out _));
+    }
+
+    [Fact]
+    public void Should_Serialize_Actions()
+    {
+        var actionJson = """
+            {
+            "type": "Action.OpenUrl",
+            "url": "https://adaptivecards.microsoft.com",
+            "title": "Learn More"
+            }
+        """;
+        var action = JsonSerializer.Deserialize<OpenUrlAction>(actionJson);
+        Assert.NotNull(action);
+        Assert.IsType<OpenUrlAction>(action);
+        Assert.Equal("Learn More", action.Title);
+        Assert.Equal("https://adaptivecards.microsoft.com", action.Url);
     }
 }

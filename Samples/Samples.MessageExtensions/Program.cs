@@ -17,7 +17,23 @@ public static partial class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddTransient<Controller>();
+
+        // Use environment variable to choose between Controller and Minimal API approaches
+        var useMinimalApi = builder.Configuration.GetValue<bool>("USE_MINIMAL_API", false);
+        if (useMinimalApi)
+        {
+            Console.WriteLine("Using Minimal API approach");
+        }
+        else
+        {
+            Console.WriteLine("Using Controller approach");
+        }
+
+        if (!useMinimalApi)
+        {
+            builder.Services.AddTransient<Controller>();
+        }
+
         builder.AddTeams().AddTeamsDevTools();
 
         var app = builder.Build();
@@ -40,12 +56,508 @@ public static partial class Program
             await next();
         });
 
-        app.UseTeams();
+        var teams = app.UseTeams();
+
+        if (useMinimalApi)
+        {
+            RegisterMinimalApiHandlers(teams, app.Configuration);
+        }
 
         // Serve settings page
         app.MapGet("/settings", () => Results.Content(GetSettingsHtml(), "text/html"));
 
         app.Run();
+    }
+
+    private static void RegisterMinimalApiHandlers(Microsoft.Teams.Apps.App teams, IConfiguration configuration)
+    {
+        // Handle messages using minimal API
+        teams.OnMessage(async context =>
+        {
+            var activity = context.Activity;
+
+            context.Log.Info($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
+            context.Log.Info($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
+
+            await context.Send($"Echo: {activity.Text}\n\nThis is a message extension bot. Use the message extension commands in Teams to test functionality.");
+        });
+
+        // Handle message extension query using minimal API
+        teams.OnQuery(async context =>
+        {
+            var activity = context.Activity;
+
+            context.Log.Info("[MESSAGE_EXT_QUERY] Search query received");
+
+            var commandId = activity.Value?.CommandId;
+            var query = activity.Value?.Parameters?.FirstOrDefault(p => p.Name == "searchQuery")?.Value?.ToString() ?? "";
+
+            context.Log.Info($"[MESSAGE_EXT_QUERY] Command: {commandId}, Query: {query}");
+
+            if (commandId == "searchQuery")
+            {
+                return CreateSearchResults(query, context.Log);
+            }
+
+            return new Microsoft.Teams.Api.MessageExtensions.Response
+            {
+                ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+                {
+                    Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
+                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                    Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>()
+                }
+            };
+        });
+
+        // Handle message extension submit action using minimal API
+        teams.OnSubmitAction(async context =>
+        {
+            var activity = context.Activity;
+
+            context.Log.Info("[MESSAGE_EXT_SUBMIT] Action submit received");
+
+            var commandId = activity.Value?.CommandId;
+            var data = activity.Value?.Data as JsonElement?;
+
+            context.Log.Info($"[MESSAGE_EXT_SUBMIT] Command: {commandId}");
+            context.Log.Info($"[MESSAGE_EXT_SUBMIT] Data: {JsonSerializer.Serialize(data)}");
+
+            switch (commandId)
+            {
+                case "createCard":
+                    var cardResponse = HandleCreateCard(data, context.Log);
+                    return new Microsoft.Teams.Api.MessageExtensions.ActionResponse
+                    {
+                        ComposeExtension = cardResponse.ComposeExtension
+                    };
+
+                case "getMessageDetails":
+                    // Convert to the correct activity type for HandleGetMessageDetails
+                    var messageText = activity.Value?.MessagePayload?.Body?.Content ?? "No message content";
+                    var messageId = activity.Value?.MessagePayload?.Id ?? "Unknown";
+                    var detailsResponse = CreateMessageDetailsResponse(messageId, messageText, context.Log);
+                    return new Microsoft.Teams.Api.MessageExtensions.ActionResponse
+                    {
+                        ComposeExtension = detailsResponse.ComposeExtension
+                    };
+
+                default:
+                    context.Log.Error($"[MESSAGE_EXT_SUBMIT] Unknown command: {commandId}");
+                    return new Microsoft.Teams.Api.MessageExtensions.ActionResponse
+                    {
+                        ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+                        {
+                            Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Message,
+                            Text = "Unknown command"
+                        }
+                    };
+            }
+        });
+
+        // Handle message extension query link using minimal API
+        teams.OnQueryLink(async context =>
+        {
+            var activity = context.Activity;
+
+            context.Log.Info("[MESSAGE_EXT_QUERY_LINK] Link unfurling received");
+
+            var url = activity.Value?.Url;
+            context.Log.Info($"[MESSAGE_EXT_QUERY_LINK] URL: {url}");
+
+            if (string.IsNullOrEmpty(url))
+            {
+                return CreateErrorResponse("No URL provided");
+            }
+
+            return CreateLinkUnfurlResponse(url, context.Log);
+        });
+
+        // Handle message extension select item using minimal API
+        teams.OnSelectItem(async context =>
+        {
+            var activity = context.Activity;
+
+            context.Log.Info("[MESSAGE_EXT_SELECT_ITEM] Item selection received");
+
+            var selectedItem = activity.Value;
+            context.Log.Info($"[MESSAGE_EXT_SELECT_ITEM] Selected: {JsonSerializer.Serialize(selectedItem)}");
+
+            return CreateItemSelectionResponse(selectedItem, context.Log);
+        });
+
+        // Handle message extension query settings URL using minimal API
+        teams.OnQuerySettingsUrl(async context =>
+        {
+            context.Log.Info("[MESSAGE_EXT_QUERY_SETTINGS_URL] Settings URL requested");
+
+            return new Microsoft.Teams.Api.MessageExtensions.Response
+            {
+                ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+                {
+                    Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Config,
+                    Text = "Settings configuration would be handled here"
+                }
+            };
+        });
+
+        // Handle message extension fetch task using minimal API
+        teams.OnFetchTask(async context =>
+        {
+            var activity = context.Activity;
+
+            context.Log.Info("[MESSAGE_EXT_FETCH_TASK] Fetch task received");
+
+            var commandId = activity.Value?.CommandId;
+            context.Log.Info($"[MESSAGE_EXT_FETCH_TASK] Command: {commandId}");
+
+            return CreateFetchTaskResponse(commandId, context.Log);
+        });
+
+        // Handle message extension setting using minimal API
+        teams.OnSetting(async context =>
+        {
+            var activity = context.Activity;
+
+            context.Log.Info("[MESSAGE_EXT_SETTING] Settings received");
+
+            var state = activity.Value?.State;
+            context.Log.Info($"[MESSAGE_EXT_SETTING] State: {state}");
+
+            if (state == "cancel")
+            {
+                context.Log.Info("[MESSAGE_EXT_SETTING] Settings cancelled by user");
+                // OnSetting doesn't return a response, just handles the setting
+                return;
+            }
+
+            // Process settings data
+            // Note: Settings property may not be available in current API
+            context.Log.Info("[MESSAGE_EXT_SETTING] Settings processing completed");
+        });
+    }
+
+    // Helper method to sanitize user input for logging
+    private static string SanitizeForLog(string? input)
+    {
+        if (input == null) return "";
+        return input.Replace("\r", "").Replace("\n", "");
+    }
+
+    // Helper methods for creating responses
+    private static Microsoft.Teams.Api.MessageExtensions.Response CreateSearchResults(string query, Microsoft.Teams.Common.Logging.ILogger log)
+    {
+        var attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>();
+
+        // Create simple search results
+        for (int i = 1; i <= 5; i++)
+        {
+            var card = new Microsoft.Teams.Cards.AdaptiveCard
+            {
+                Body = new List<CardElement>
+                {
+                    new TextBlock($"Search Result {i}")
+                    {
+                        Weight = TextWeight.Bolder,
+                        Size = TextSize.Large
+                    },
+                    new TextBlock($"Query: '{query}' - Result description for item {i}")
+                    {
+                        Wrap = true,
+                        IsSubtle = true
+                    }
+                }
+            };
+
+            var previewCard = new ThumbnailCard()
+            {
+                Title = $"Result {i}",
+                Text = $"This is a preview of result {i} for query '{query}'."
+            };
+
+            var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
+            {
+                ContentType = Microsoft.Teams.Api.ContentType.AdaptiveCard,
+                Content = card,
+                Preview = new Microsoft.Teams.Api.MessageExtensions.Attachment
+                {
+                    ContentType = Microsoft.Teams.Api.ContentType.ThumbnailCard,
+                    Content = previewCard
+                }
+            };
+
+            attachments.Add(attachment);
+        }
+
+        return new Microsoft.Teams.Api.MessageExtensions.Response
+        {
+            ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+            {
+                Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
+                AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                Attachments = attachments
+            }
+        };
+    }
+
+    private static Microsoft.Teams.Api.MessageExtensions.Response HandleCreateCard(JsonElement? data, Microsoft.Teams.Common.Logging.ILogger log)
+    {
+        var title = GetJsonValue(data, "title") ?? "Default Title";
+        var description = GetJsonValue(data, "description") ?? "Default Description";
+
+        log.Info($"[CREATE_CARD] Title: {title}, Description: {description}");
+
+        var card = new Microsoft.Teams.Cards.AdaptiveCard
+        {
+            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+            Body = new List<CardElement>
+            {
+                new TextBlock("Custom Card Created")
+                {
+                    Weight = TextWeight.Bolder,
+                    Size = TextSize.Large,
+                    Color = TextColor.Good
+                },
+                new TextBlock(title)
+                {
+                    Weight = TextWeight.Bolder,
+                    Size = TextSize.Medium
+                },
+                new TextBlock(description)
+                {
+                    Wrap = true,
+                    IsSubtle = true
+                }
+            }
+        };
+
+        var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
+        {
+            ContentType = Microsoft.Teams.Api.ContentType.AdaptiveCard,
+            Content = card
+        };
+
+        return new Microsoft.Teams.Api.MessageExtensions.Response
+        {
+            ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+            {
+                Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
+                AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
+            }
+        };
+    }
+
+    private static Microsoft.Teams.Api.MessageExtensions.Response HandleGetMessageDetails(Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SubmitActionActivity activity, Microsoft.Teams.Common.Logging.ILogger log)
+    {
+        var messageText = activity.Value?.MessagePayload?.Body?.Content ?? "No message content";
+        var messageId = activity.Value?.MessagePayload?.Id ?? "Unknown";
+
+        log.Info($"[GET_MESSAGE_DETAILS] Message ID: {messageId}");
+
+        return CreateMessageDetailsResponse(messageId, messageText, log);
+    }
+
+    private static Microsoft.Teams.Api.MessageExtensions.Response CreateMessageDetailsResponse(string messageId, string messageText, Microsoft.Teams.Common.Logging.ILogger log)
+    {
+        log.Info($"[GET_MESSAGE_DETAILS] Message ID: {messageId}");
+
+        var card = new Microsoft.Teams.Cards.AdaptiveCard
+        {
+            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+            Body = new List<CardElement>
+            {
+                new TextBlock("Message Details")
+                {
+                    Weight = TextWeight.Bolder,
+                    Size = TextSize.Large,
+                    Color = TextColor.Accent
+                },
+                new TextBlock($"Message ID: {messageId}")
+                {
+                    Wrap = true
+                },
+                new TextBlock($"Content: {messageText}")
+                {
+                    Wrap = true
+                }
+            }
+        };
+
+        var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
+        {
+            ContentType = new Microsoft.Teams.Api.ContentType("application/vnd.microsoft.card.adaptive"),
+            Content = card
+        };
+
+        return new Microsoft.Teams.Api.MessageExtensions.Response
+        {
+            ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+            {
+                Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
+                AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
+            }
+        };
+    }
+
+    private static Microsoft.Teams.Api.MessageExtensions.Response CreateLinkUnfurlResponse(string url, Microsoft.Teams.Common.Logging.ILogger log)
+    {
+        var card = new Microsoft.Teams.Cards.AdaptiveCard
+        {
+            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+            Body = new List<CardElement>
+            {
+                new TextBlock("Link Preview")
+                {
+                    Weight = TextWeight.Bolder,
+                    Size = TextSize.Medium
+                },
+                new TextBlock($"URL: {url}")
+                {
+                    IsSubtle = true,
+                    Wrap = true
+                },
+                new TextBlock("This is a preview of the linked content generated by the message extension.")
+                {
+                    Wrap = true,
+                    Size = TextSize.Small
+                }
+            }
+        };
+
+        var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
+        {
+            ContentType = new Microsoft.Teams.Api.ContentType("application/vnd.microsoft.card.adaptive"),
+            Content = card,
+            Preview = new Microsoft.Teams.Api.MessageExtensions.Attachment
+            {
+                ContentType = new Microsoft.Teams.Api.ContentType("application/vnd.microsoft.card.thumbnail"),
+                Content = new ThumbnailCard
+                {
+                    Title = "Link Preview",
+                    Text = url
+                }
+            }
+        };
+
+        return new Microsoft.Teams.Api.MessageExtensions.Response
+        {
+            ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+            {
+                Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
+                AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
+            }
+        };
+    }
+
+    private static Microsoft.Teams.Api.MessageExtensions.Response CreateItemSelectionResponse(object? selectedItem, Microsoft.Teams.Common.Logging.ILogger log)
+    {
+        var itemJson = JsonSerializer.Serialize(selectedItem);
+
+        var card = new Microsoft.Teams.Cards.AdaptiveCard
+        {
+            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+            Body = new List<CardElement>
+            {
+                new TextBlock("Item Selected")
+                {
+                    Weight = TextWeight.Bolder,
+                    Size = TextSize.Large,
+                    Color = TextColor.Good
+                },
+                new TextBlock("You selected the following item:")
+                {
+                    Wrap = true
+                },
+                new TextBlock(itemJson)
+                {
+                    Wrap = true,
+                    FontType = FontType.Monospace,
+                    Separator = true
+                }
+            }
+        };
+
+        var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
+        {
+            ContentType = new Microsoft.Teams.Api.ContentType("application/vnd.microsoft.card.adaptive"),
+            Content = card
+        };
+
+        return new Microsoft.Teams.Api.MessageExtensions.Response
+        {
+            ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+            {
+                Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
+                AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
+            }
+        };
+    }
+
+    private static Microsoft.Teams.Api.MessageExtensions.Response CreateErrorResponse(string message)
+    {
+        return new Microsoft.Teams.Api.MessageExtensions.Response
+        {
+            ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+            {
+                Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Message,
+                Text = message
+            }
+        };
+    }
+
+    private static Microsoft.Teams.Api.MessageExtensions.Response CreateErrorActionResponse(string message)
+    {
+        return new Microsoft.Teams.Api.MessageExtensions.Response
+        {
+            ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
+            {
+                Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Message,
+                Text = message
+            }
+        };
+    }
+
+    private static string? GetJsonValue(JsonElement? data, string key)
+    {
+        if (data?.ValueKind == JsonValueKind.Object && data.Value.TryGetProperty(key, out var value))
+        {
+            return value.GetString();
+        }
+        return null;
+    }
+
+    private static Microsoft.Teams.Api.MessageExtensions.ActionResponse CreateFetchTaskResponse(string? commandId, Microsoft.Teams.Common.Logging.ILogger log)
+    {
+        log.Info($"[CREATE_FETCH_TASK] Creating task for command: {commandId}");
+        // Updated to use actual converation members
+
+        // Create an adaptive card for the task module
+        var card = new Microsoft.Teams.Cards.AdaptiveCard
+        {
+            Body = new List<CardElement>
+            {
+                new TextBlock("Conversation Members is not implemented in C# yet :(")
+                {
+                    Weight = TextWeight.Bolder,
+                    Color = TextColor.Accent
+                },
+            }
+        };
+
+        return new Microsoft.Teams.Api.MessageExtensions.ActionResponse
+        {
+            Task = new Microsoft.Teams.Api.TaskModules.ContinueTask(new Microsoft.Teams.Api.TaskModules.TaskInfo
+            {
+                Title = "Fetch Task Dialog",
+                Height = new Microsoft.Teams.Common.Union<int, Microsoft.Teams.Api.TaskModules.Size>(Microsoft.Teams.Api.TaskModules.Size.Small),
+                Width = new Microsoft.Teams.Common.Union<int, Microsoft.Teams.Api.TaskModules.Size>(Microsoft.Teams.Api.TaskModules.Size.Small),
+                Card = new Microsoft.Teams.Api.Attachment(card)
+            })
+        };
     }
 
     [TeamsController]
@@ -210,312 +722,6 @@ public static partial class Program
             log.Info("[MESSAGE_EXT_SETTING] Settings processing completed");
 
             return new Microsoft.Teams.Api.MessageExtensions.Response();
-        }
-
-        // Helper methods for creating responses
-        private static Microsoft.Teams.Api.MessageExtensions.Response CreateSearchResults(string query, Microsoft.Teams.Common.Logging.ILogger log)
-        {
-            var attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>();
-
-            // Create simple search results
-            for (int i = 1; i <= 5; i++)
-            {
-                var card = new Microsoft.Teams.Cards.AdaptiveCard
-                {
-                    Body = new List<CardElement>
-                    {
-                        new TextBlock($"Search Result {i}")
-                        {
-                            Weight = TextWeight.Bolder,
-                            Size = TextSize.Large
-                        },
-                        new TextBlock($"Query: '{query}' - Result description for item {i}")
-                        {
-                            Wrap = true,
-                            IsSubtle = true
-                        }
-                    }
-                };
-
-                var previewCard = new ThumbnailCard()
-                {
-                    Title = $"Result {i}",
-                    Text = $"This is a preview of result {i} for query '{query}'."
-                };
-
-                var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
-                {
-                    ContentType = Microsoft.Teams.Api.ContentType.AdaptiveCard,
-                    Content = card,
-                    Preview = new Microsoft.Teams.Api.MessageExtensions.Attachment
-                    {
-                        ContentType = Microsoft.Teams.Api.ContentType.ThumbnailCard,
-                        Content = previewCard
-                    }
-                };
-
-                attachments.Add(attachment);
-            }
-
-            return new Microsoft.Teams.Api.MessageExtensions.Response
-            {
-                ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
-                {
-                    Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
-                    Attachments = attachments
-                }
-            };
-        }
-
-        private static Microsoft.Teams.Api.MessageExtensions.Response HandleCreateCard(JsonElement? data, Microsoft.Teams.Common.Logging.ILogger log)
-        {
-            var title = GetJsonValue(data, "title") ?? "Default Title";
-            var description = GetJsonValue(data, "description") ?? "Default Description";
-
-            log.Info($"[CREATE_CARD] Title: {title}, Description: {description}");
-
-            var card = new Microsoft.Teams.Cards.AdaptiveCard
-            {
-                Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-                Body = new List<CardElement>
-                {
-                    new TextBlock("Custom Card Created")
-                    {
-                        Weight = TextWeight.Bolder,
-                        Size = TextSize.Large,
-                        Color = TextColor.Good
-                    },
-                    new TextBlock(title)
-                    {
-                        Weight = TextWeight.Bolder,
-                        Size = TextSize.Medium
-                    },
-                    new TextBlock(description)
-                    {
-                        Wrap = true,
-                        IsSubtle = true
-                    }
-                }
-            };
-
-            var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
-            {
-                ContentType = Microsoft.Teams.Api.ContentType.AdaptiveCard,
-                Content = card
-            };
-
-            return new Microsoft.Teams.Api.MessageExtensions.Response
-            {
-                ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
-                {
-                    Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
-                    Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
-                }
-            };
-        }
-
-        private static Microsoft.Teams.Api.MessageExtensions.Response HandleGetMessageDetails(Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SubmitActionActivity activity, Microsoft.Teams.Common.Logging.ILogger log)
-        {
-            var messageText = activity.Value?.MessagePayload?.Body?.Content ?? "No message content";
-            var messageId = activity.Value?.MessagePayload?.Id ?? "Unknown";
-
-            log.Info($"[GET_MESSAGE_DETAILS] Message ID: {messageId}");
-
-            var card = new Microsoft.Teams.Cards.AdaptiveCard
-            {
-                Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-                Body = new List<CardElement>
-                {
-                    new TextBlock("Message Details")
-                    {
-                        Weight = TextWeight.Bolder,
-                        Size = TextSize.Large,
-                        Color = TextColor.Accent
-                    },
-                    new TextBlock($"Message ID: {messageId}")
-                    {
-                        Wrap = true
-                    },
-                    new TextBlock($"Content: {messageText}")
-                    {
-                        Wrap = true
-                    }
-                }
-            };
-
-            var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
-            {
-                ContentType = new Microsoft.Teams.Api.ContentType("application/vnd.microsoft.card.adaptive"),
-                Content = card
-            };
-
-            return new Microsoft.Teams.Api.MessageExtensions.Response
-            {
-                ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
-                {
-                    Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
-                    Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
-                }
-            };
-        }
-
-        private static Microsoft.Teams.Api.MessageExtensions.Response CreateLinkUnfurlResponse(string url, Microsoft.Teams.Common.Logging.ILogger log)
-        {
-            var card = new Microsoft.Teams.Cards.AdaptiveCard
-            {
-                Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-                Body = new List<CardElement>
-                {
-                    new TextBlock("Link Preview")
-                    {
-                        Weight = TextWeight.Bolder,
-                        Size = TextSize.Medium
-                    },
-                    new TextBlock($"URL: {url}")
-                    {
-                        IsSubtle = true,
-                        Wrap = true
-                    },
-                    new TextBlock("This is a preview of the linked content generated by the message extension.")
-                    {
-                        Wrap = true,
-                        Size = TextSize.Small
-                    }
-                }
-            };
-
-            var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
-            {
-                ContentType = new Microsoft.Teams.Api.ContentType("application/vnd.microsoft.card.adaptive"),
-                Content = card
-            };
-
-            return new Microsoft.Teams.Api.MessageExtensions.Response
-            {
-                ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
-                {
-                    Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
-                    Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
-                }
-            };
-        }
-
-        private static Microsoft.Teams.Api.MessageExtensions.Response CreateItemSelectionResponse(object? selectedItem, Microsoft.Teams.Common.Logging.ILogger log)
-        {
-            var itemJson = JsonSerializer.Serialize(selectedItem);
-
-            var card = new Microsoft.Teams.Cards.AdaptiveCard
-            {
-                Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-                Body = new List<CardElement>
-                {
-                    new TextBlock("Item Selected")
-                    {
-                        Weight = TextWeight.Bolder,
-                        Size = TextSize.Large,
-                        Color = TextColor.Good
-                    },
-                    new TextBlock("You selected the following item:")
-                    {
-                        Wrap = true
-                    },
-                    new TextBlock(itemJson)
-                    {
-                        Wrap = true,
-                        FontType = FontType.Monospace,
-                        Separator = true
-                    }
-                }
-            };
-
-            var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
-            {
-                ContentType = new Microsoft.Teams.Api.ContentType("application/vnd.microsoft.card.adaptive"),
-                Content = card
-            };
-
-            return new Microsoft.Teams.Api.MessageExtensions.Response
-            {
-                ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
-                {
-                    Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
-                    Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
-                }
-            };
-        }
-
-        private static Microsoft.Teams.Api.MessageExtensions.Response CreateErrorResponse(string message)
-        {
-            return new Microsoft.Teams.Api.MessageExtensions.Response
-            {
-                ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
-                {
-                    Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Message,
-                    Text = message
-                }
-            };
-        }
-
-        private static Microsoft.Teams.Api.MessageExtensions.Response CreateErrorActionResponse(string message)
-        {
-            return new Microsoft.Teams.Api.MessageExtensions.Response
-            {
-                ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
-                {
-                    Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Message,
-                    Text = message
-                }
-            };
-        }
-
-        private static string? GetJsonValue(JsonElement? data, string key)
-        {
-            if (data?.ValueKind == JsonValueKind.Object && data.Value.TryGetProperty(key, out var value))
-            {
-                return value.GetString();
-            }
-            return null;
-        }
-
-        private static Microsoft.Teams.Api.MessageExtensions.ActionResponse CreateFetchTaskResponse(string? commandId, Microsoft.Teams.Common.Logging.ILogger log)
-        {
-            log.Info($"[CREATE_FETCH_TASK] Creating task for command: {commandId}");
-            // Updated to use actual converation members
-
-            // Create an adaptive card for the task module
-            var card = new Microsoft.Teams.Cards.AdaptiveCard
-            {
-                Body = new List<CardElement>
-                {
-                    new TextBlock("Conversation Members is not implemented in C# yet :(")
-                    {
-                        Weight = TextWeight.Bolder,
-                        Color = TextColor.Accent
-                    },
-                }
-            };
-
-            return new Microsoft.Teams.Api.MessageExtensions.ActionResponse
-            {
-                Task = new Microsoft.Teams.Api.TaskModules.ContinueTask(new Microsoft.Teams.Api.TaskModules.TaskInfo
-                {
-                    Title = "Fetch Task Dialog",
-                    Height = new Microsoft.Teams.Common.Union<int, Microsoft.Teams.Api.TaskModules.Size>(Microsoft.Teams.Api.TaskModules.Size.Small),
-                    Width = new Microsoft.Teams.Common.Union<int, Microsoft.Teams.Api.TaskModules.Size>(Microsoft.Teams.Api.TaskModules.Size.Small),
-                    Card = new Microsoft.Teams.Api.Attachment(card)
-                })
-            };
-        }
-
-        private static string SanitizeForLog(string? input)
-        {
-            if (input == null) return "";
-            return input.Replace("\r", "").Replace("\n", "");
         }
     }
 
