@@ -1,7 +1,9 @@
 ﻿using System.Text.Json;
-using Moq;
+
 using Microsoft.Teams.AI;
 using Microsoft.Teams.AI.Prompts;
+
+using Moq;
 
 namespace Microsoft.Teams.Plugins.External.McpClient.Tests;
 

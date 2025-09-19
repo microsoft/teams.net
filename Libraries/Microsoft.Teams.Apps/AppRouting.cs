@@ -185,7 +185,8 @@ public partial class App
     /// <returns></returns>
     public App Use(Func<IContext<IActivity>, Task<object?>> handler)
     {
-        Router.Register(new Route() {
+        Router.Register(new Route()
+        {
             Name = "middleware",
             Type = RouteType.User,
             Selector = _ => true,

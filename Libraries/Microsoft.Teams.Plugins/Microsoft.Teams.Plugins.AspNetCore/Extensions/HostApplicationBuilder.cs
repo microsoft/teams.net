@@ -107,7 +107,7 @@ public static class HostApplicationBuilderExtensions
     public static class EntraTokenAuthConstants
     {
         public const string AuthenticationScheme = "EntraTokenJWTScheme";
-        public const string AuthorizationPolicy = "EntraTokenJWTPolicy"; 
+        public const string AuthorizationPolicy = "EntraTokenJWTPolicy";
     }
 
     /// <summary>

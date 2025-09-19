@@ -24,7 +24,7 @@ public class TeamsValidationSettings
             Audiences.Add(apiAudience);
     }
 
-    public IEnumerable<string> GetValidIssuersForTenant(string? tenantId) 
+    public IEnumerable<string> GetValidIssuersForTenant(string? tenantId)
     {
         var validIssuers = new List<string>();
         if (!string.IsNullOrEmpty(tenantId))

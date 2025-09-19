@@ -18,7 +18,7 @@ public abstract class BaseChatPlugin : IChatPlugin
 
     public virtual Task<IMessage> OnAfterSend<TOptions>(IChatPrompt<TOptions> prompt, IMessage message, TOptions? options = default, CancellationToken cancellationToken = default)
     {
-         return Task.FromResult(message);
+        return Task.FromResult(message);
     }
 
     public virtual Task<FunctionCall> OnBeforeFunctionCall<TOptions>(IChatPrompt<TOptions> prompt, IFunction function, FunctionCall call, CancellationToken cancellationToken = default)

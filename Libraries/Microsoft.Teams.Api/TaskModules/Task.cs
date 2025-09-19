@@ -40,7 +40,7 @@ public class TaskJsonConverter : JsonConverter<Task>
     {
         using var doc = JsonDocument.ParseValue(ref reader);
         var root = doc.RootElement;
-        
+
         if (root.TryGetProperty("type", out var typeElement))
         {
             var typeValue = typeElement.GetString();
@@ -51,7 +51,7 @@ public class TaskJsonConverter : JsonConverter<Task>
                 _ => throw new JsonException($"Unknown task type: {typeValue}")
             };
         }
-        
+
         throw new JsonException("Task type property not found");
     }
 

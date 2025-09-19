@@ -1,6 +1,6 @@
 using System.Text.Json;
+
 using Microsoft.Teams.Api.Activities.Invokes;
-using static Microsoft.Teams.Api.Activities.Invokes.MessageExtensions;
 
 namespace Microsoft.Teams.Api.Tests.Activities.Invokes.MessageExtensions;
 

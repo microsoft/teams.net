@@ -1,5 +1,7 @@
 using System.Text.Json;
+
 using Microsoft.Teams.Api.Activities.Invokes;
+
 using static Microsoft.Teams.Api.Activities.Invokes.Configs;
 
 namespace Microsoft.Teams.Api.Tests.Activities.Invokes.Configs;
