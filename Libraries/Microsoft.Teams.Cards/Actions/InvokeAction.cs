@@ -18,7 +18,7 @@ public class InvokeAction : SubmitAction
     {
         Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
-            MsTeams = new InvokeSubmitActionData(value)
+            Msteams = new InvokeSubmitActionData(value)
         });
     }
 }

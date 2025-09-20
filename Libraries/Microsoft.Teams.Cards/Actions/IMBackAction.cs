@@ -15,7 +15,7 @@ public class IMBackAction : SubmitAction
     {
         Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
-            MsTeams = new ImBackSubmitActionData(value)
+            Msteams = new ImBackSubmitActionData(value)
         });
     }
 }

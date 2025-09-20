@@ -11,7 +11,7 @@ public class MessageBackAction : SubmitAction
     {
         Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
-            MsTeams = new MessageBackSubmitActionData()
+            Msteams = new MessageBackSubmitActionData()
             {
                 Text = text,
                 Value = value
@@ -23,7 +23,7 @@ public class MessageBackAction : SubmitAction
     {
         Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
-            MsTeams = new MessageBackSubmitActionData()
+            Msteams = new MessageBackSubmitActionData()
             {
                 Text = text,
                 DisplayText = displayText,
