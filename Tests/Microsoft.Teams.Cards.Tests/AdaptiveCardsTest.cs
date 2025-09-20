@@ -19,7 +19,7 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = card.Serialize();
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         using var doc = JsonDocument.Parse(json);
@@ -46,7 +46,7 @@ public class AdaptiveCardsTest
             ]
         }";
 
-        var card = AdaptiveCard.Deserialize(json);
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(json);
 
         Assert.NotNull(card);
         Assert.Single(card.Body!);
@@ -85,7 +85,7 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = card.Serialize();
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         using var doc = JsonDocument.Parse(json);
@@ -153,7 +153,7 @@ public class AdaptiveCardsTest
             ]
         }";
 
-        var card = AdaptiveCard.Deserialize(json);
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(cardJson);
 
         Assert.NotNull(card);
         // Note: Schema might be serialized as $schema in JSON but not always set on deserialized object
@@ -228,7 +228,7 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = card.Serialize();
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         using var doc = JsonDocument.Parse(json);
@@ -381,7 +381,7 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = card.Serialize();
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         using var doc = JsonDocument.Parse(json);
@@ -433,7 +433,7 @@ public class AdaptiveCardsTest
             ]
         }";
 
-        var card = AdaptiveCard.Deserialize(json);
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(cardJson);
 
         Assert.NotNull(card);
         Assert.Equal(3, card.Body!.Count);
@@ -529,7 +529,7 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = card.Serialize();
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         Assert.DoesNotContain("\"msTeams\":null", json);

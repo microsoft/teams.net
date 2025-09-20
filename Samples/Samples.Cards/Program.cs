@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Api.AdaptiveCards;
 using Microsoft.Teams.Apps;
@@ -467,7 +469,7 @@ public static partial class Program
 
             try
             {
-                var card = AdaptiveCard.Deserialize(cardJson);
+                var card = JsonSerializer.Deserialize<AdaptiveCard>(cardJson);
 
                 return card ?? throw new InvalidOperationException("Failed to deserialize card");
             }
