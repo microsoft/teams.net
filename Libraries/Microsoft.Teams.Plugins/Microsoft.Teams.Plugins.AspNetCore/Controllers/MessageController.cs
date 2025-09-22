@@ -60,6 +60,13 @@ public class MessageController : ControllerBase
             Response.Headers.Append($"X-Teams-{char.ToUpper(key[0]) + key[1..]}", str);
         }
 
-        return Results.Json(res.Body, statusCode: (int)res.Status);
+        return Results.Json(
+            res.Body,
+            new System.Text.Json.JsonSerializerOptions
+            {
+                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            },
+            contentType: null,
+            statusCode: (int)res.Status);
     }
 }

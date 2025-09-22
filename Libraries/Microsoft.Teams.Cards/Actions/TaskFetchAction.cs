@@ -11,7 +11,7 @@ public class TaskFetchAction : SubmitAction
     {
         var submitActionData = new SubmitActionData
         {
-            MsTeams = new TaskFetchSubmitActionData()
+            Msteams = new TaskFetchSubmitActionData()
         };
 
         if (value != null)
