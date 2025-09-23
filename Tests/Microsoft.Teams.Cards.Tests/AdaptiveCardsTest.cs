@@ -1,5 +1,4 @@
 ﻿using System.Text.Json;
-using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common;
 
@@ -7,12 +6,6 @@ namespace Microsoft.Teams.Cards.Tests;
 
 public class AdaptiveCardsTest
 {
-    private readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
-    {
-        PropertyNameCaseInsensitive = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
-
     [Fact]
     public void Should_Serialize_AdaptiveCard_Simple()
     {
@@ -26,11 +19,7 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = JsonSerializer.Serialize(card, card.GetType(), new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         using var doc = JsonDocument.Parse(json);
@@ -57,7 +46,7 @@ public class AdaptiveCardsTest
             ]
         }";
 
-        AdaptiveCard card = JsonSerializer.Deserialize<AdaptiveCard>(json, _jsonOptions)!;
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(json);
 
         Assert.NotNull(card);
         Assert.Single(card.Body!);
@@ -96,11 +85,7 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = JsonSerializer.Serialize(card, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         using var doc = JsonDocument.Parse(json);
@@ -168,7 +153,7 @@ public class AdaptiveCardsTest
             ]
         }";
 
-        var card = JsonSerializer.Deserialize<AdaptiveCard>(json, _jsonOptions)!;
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(cardJson);
 
         Assert.NotNull(card);
         // Note: Schema might be serialized as $schema in JSON but not always set on deserialized object
@@ -196,7 +181,7 @@ public class AdaptiveCardsTest
         Assert.Equal("Subscribe to newsletter", toggleInput.Title);
 
         Assert.Single(card.Actions!);
-        var executeAction = card.Actions[0] as ExecuteAction;
+        var executeAction = card!.Actions[0]! as ExecuteAction;
         Assert.NotNull(executeAction);
         Assert.Equal("Save", executeAction.Title);
     }
@@ -243,11 +228,7 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = JsonSerializer.Serialize(card, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         using var doc = JsonDocument.Parse(json);
@@ -334,7 +315,7 @@ public class AdaptiveCardsTest
             ""schema"": ""http://adaptivecards.io/schemas/adaptive-card.json""
         }";
 
-        var card = JsonSerializer.Deserialize<AdaptiveCard>(json, _jsonOptions)!;
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(json)!;
 
         Assert.NotNull(card);
         Assert.Equal("1.5", card.Version);
@@ -346,7 +327,7 @@ public class AdaptiveCardsTest
         Assert.Equal(2, columnSet.Columns!.Count);
 
         var firstColumn = columnSet.Columns[0];
-        Assert.Equal("auto", firstColumn.Width!.ToString());
+        Assert.Equal("auto", firstColumn!.Width.ToString());
         Assert.Single(firstColumn.Items!);
 
         var image = firstColumn.Items[0] as Image;
@@ -400,11 +381,7 @@ public class AdaptiveCardsTest
         };
 
         // act
-        var json = JsonSerializer.Serialize(card, new JsonSerializerOptions
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+        var json = JsonSerializer.Serialize(card);
 
         // assert
         using var doc = JsonDocument.Parse(json);
@@ -456,7 +433,7 @@ public class AdaptiveCardsTest
             ]
         }";
 
-        var card = JsonSerializer.Deserialize<AdaptiveCard>(json, _jsonOptions)!;
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(cardJson);
 
         Assert.NotNull(card);
         Assert.Equal(3, card.Body!.Count);
@@ -477,7 +454,7 @@ public class AdaptiveCardsTest
     }
 
     [Fact]
-    public void Should_Deserialize_With_Minimal_JsonOptions()
+    public void Should_Deserialize()
     {
         // Test what minimal JsonSerializerOptions are actually required
         string json = """
@@ -581,7 +558,7 @@ public class AdaptiveCardsTest
             "title": "Learn More"
             }
         """;
-        var action = JsonSerializer.Deserialize<OpenUrlAction>(actionJson);
+        var action = OpenUrlAction.Deserialize(actionJson);
         Assert.NotNull(action);
         Assert.IsType<OpenUrlAction>(action);
         Assert.Equal("Learn More", action.Title);

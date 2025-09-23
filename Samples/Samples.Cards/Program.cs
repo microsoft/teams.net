@@ -1,3 +1,5 @@
+using System.Text.Json;
+
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Api.AdaptiveCards;
 using Microsoft.Teams.Apps;

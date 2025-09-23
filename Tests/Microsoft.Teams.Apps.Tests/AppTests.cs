@@ -1,5 +1,8 @@
-﻿using Microsoft.Teams.Api.Auth;
+﻿using Microsoft.Teams.Api;
+using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
+using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
 
 using Moq;
@@ -213,5 +216,75 @@ public class AppTests
 
         // assert
         Assert.True(tokenFactoryInvoked);
+    }
+
+    [Fact]
+    public async Task Test_App_Process_Should_Call_Middleware()
+    {
+        // arrange
+        var client = new Mock<Common.Http.HttpClient>();
+        var app = new App();
+        var sender = new Mock<ISenderPlugin>();
+        sender.Setup(s => s.CreateStream(It.IsAny<ConversationReference>(), It.IsAny<CancellationToken>())).Returns(new Mock<IStreamer>().Object);
+        var token = new Mock<IToken>();
+        var activity = new MessageActivity()
+        {
+            From = new() { Id = "testId" }
+        };
+
+        // act
+        var middlewareCalled = false;
+        app.Use(async (context) =>
+        {
+            middlewareCalled = true;
+            await context.Next();
+            return null;
+        });
+        await app.Process(sender.Object, token.Object, activity);
+        
+        // assert
+        Assert.True(middlewareCalled);
+    }
+
+    [Fact]
+    public async Task Test_App_Process_Should_Call_Middlewares_In_Order()
+    {
+        // arrange
+        var client = new Mock<Common.Http.HttpClient>();
+        var app = new App();
+        var sender = new Mock<ISenderPlugin>();
+        sender.Setup(s => s.CreateStream(It.IsAny<ConversationReference>(), It.IsAny<CancellationToken>())).Returns(new Mock<IStreamer>().Object);
+        var token = new Mock<IToken>();
+        var activity = new MessageActivity()
+        {
+            From = new() { Id = "testId" }
+        };
+
+        // act
+        var firstMiddlewareCalled = false;
+        var secondMiddlewareCalled = false;
+        var middlewaresCalledInOrder = false;
+        app.Use(async (context) =>
+        {
+            firstMiddlewareCalled = true;
+            var middleware = await context.Next();
+            if ((string?)middleware == "middleware2" && secondMiddlewareCalled)
+            {
+                middlewaresCalledInOrder = true;
+            }
+
+            return null;
+        });
+        app.Use((context) =>
+        {
+            secondMiddlewareCalled = true;
+            return Task.FromResult((object?)"middleware2");
+        });
+        await app.Process(sender.Object, token.Object, activity);
+
+        // assert
+        Assert.True(middlewaresCalledInOrder);
+        Assert.True(secondMiddlewareCalled);
+        Assert.True(firstMiddlewareCalled);
     }
 }

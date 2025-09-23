@@ -11,7 +11,7 @@ public class SignInAction : SubmitAction
     {
         Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
-            MsTeams = new SigninSubmitActionData(value)
+            Msteams = new SigninSubmitActionData(value)
         });
     }
 }
