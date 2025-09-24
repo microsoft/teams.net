@@ -14,7 +14,7 @@ public class AppTests
     private readonly string _unexpiredJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxOTE2MjM5MDIyfQ.ZTe6TPjyWE8aMo-RAXX6aO1K5VkpMwyxofRQcndwYjQ";
     private readonly string _expiredJwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTUxNjIzOTAyMiwiZXhwIjoxNTE2MjM5MDIzfQ.6dB5kVQtR71r1JDYQqe5Aa1MQoEhCdK4b6ryseopAR0";
     private readonly string _serviceUrl = "https://test.net/";
-    
+
     [Fact]
     public async Task Test_App_Start_GetBotToken_Success()
     {
@@ -241,7 +241,7 @@ public class AppTests
             return null;
         });
         await app.Process(sender.Object, token.Object, activity);
-        
+
         // assert
         Assert.True(middlewareCalled);
     }

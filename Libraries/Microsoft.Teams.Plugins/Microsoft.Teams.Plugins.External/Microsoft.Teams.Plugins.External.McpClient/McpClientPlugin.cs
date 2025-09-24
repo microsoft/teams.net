@@ -14,11 +14,11 @@ public class McpClientPlugin : BaseChatPlugin
     public readonly string Version;
 
     public readonly string Name;
-    
+
     public readonly int RefetchTimeoutMs;
-    
+
     public readonly IDictionary<string, McpCachedValue> Cache;
-    
+
     private readonly ILogger _logger;
     private readonly IDictionary<string, McpClientPluginParams> _mcpServerParams;
 
@@ -108,7 +108,7 @@ public class McpClientPlugin : BaseChatPlugin
         {
             string url = entry.Key;
             McpClientPluginParams pluginParams = entry.Value;
-            
+
             // Skip if tools are explicitly provided
             if (pluginParams.AvailableTools is not null)
             {
@@ -118,7 +118,7 @@ public class McpClientPlugin : BaseChatPlugin
             McpCachedValue? cachedData = Cache.ContainsKey(url) ? Cache[url] : null;
             bool shouldFetch = (cachedData?.AvailableTools is null) || (cachedData?.LastFetched is null) ||
                 (DateTimeOffset.UtcNow - cachedData.LastFetched.Value).Milliseconds > (pluginParams.RefetchTimeoutMs ?? RefetchTimeoutMs);
-            
+
             if (shouldFetch)
             {
                 fetchNeeded.Add(new KeyValuePair<string, McpClientPluginParams>(url, pluginParams));
@@ -150,7 +150,7 @@ public class McpClientPlugin : BaseChatPlugin
                 string url = result.First.Key;
                 McpClientPluginParams pluginParams = result.First.Value;
                 var fetchTask = result.Second;
-                
+
                 if (!fetchTask.IsCompletedSuccessfully)
                 {
                     if (pluginParams.SkipIfUnavailable)
@@ -218,9 +218,9 @@ public class McpClientPlugin : BaseChatPlugin
     internal AI.Function CreateFunctionFromTool(Uri url, McpToolDetails tool, McpClientPluginParams pluginParams)
     {
         return new AI.Function(
-            tool.Name, 
-            tool.Description, 
-            JsonSchema.FromText(tool.InputSchema?.GetRawText() ?? "{}"), 
+            tool.Name,
+            tool.Description,
+            JsonSchema.FromText(tool.InputSchema?.GetRawText() ?? "{}"),
             async (IDictionary<string, object?> args) =>
             {
                 try

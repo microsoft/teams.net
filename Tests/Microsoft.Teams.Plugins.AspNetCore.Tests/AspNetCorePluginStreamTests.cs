@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
-using Microsoft.Teams.Plugins.AspNetCore;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Tests;
 
@@ -32,7 +30,7 @@ public class AspNetCorePluginStreamTests
         await Task.Delay(600); // Wait longer than 500ms timeout
 
         Assert.True(sendCallCount > 0, "Should have sent at least one message");
-        Assert.True(sendTimes.Any(t => t >= startTime.AddMilliseconds(450)), 
+        Assert.True(sendTimes.Any(t => t >= startTime.AddMilliseconds(450)),
             "Should have waited approximately 500ms before sending");
     }
 
@@ -52,14 +50,14 @@ public class AspNetCorePluginStreamTests
 
         stream.Emit("First message");
         await Task.Delay(300); // Wait less than 500ms
-        
+
         stream.Emit("Second message"); // This should reset the timer
         await Task.Delay(300); // Still less than 500ms from second emit
-        
+
         Assert.Equal(0, sendCallCount); // Should not have sent yet
-        
+
         await Task.Delay(300); // Now over 500ms from second emit
-        
+
         Assert.True(sendCallCount > 0, "Should have sent messages after timer expired");
     }
 
@@ -76,7 +74,7 @@ public class AspNetCorePluginStreamTests
                 {
                     throw new TimeoutException("Operation timed out");
                 }
-                
+
                 // Succeed on second attempt
                 activity.Id = $"success-after-timeout-{callCount}";
                 return Task.FromResult(activity);
@@ -85,14 +83,14 @@ public class AspNetCorePluginStreamTests
 
         stream.Emit("Test message with timeout");
         await Task.Delay(600); // Wait for flush and retries
-        
+
         var result = await stream.Close();
 
         Assert.True(callCount > 1, "Should have retried after timeout");
         Assert.NotNull(result);
         Assert.Contains("Test message with timeout", result.Text);
     }
-    
+
     [Fact]
     public async Task Stream_UpdateStatus_SendsTypingActivity()
     {
@@ -111,7 +109,7 @@ public class AspNetCorePluginStreamTests
 
         Assert.True(stream.Count > 0, "Should have processed the update");
         Assert.Equal(2, stream.Sequence); // Should increment sequence after sending
-        
+
         Assert.True(sentActivities.Count > 0, "Should have sent at least one activity");
         var sentActivity = sentActivities.First();
         Assert.IsType<TypingActivity>(sentActivity);

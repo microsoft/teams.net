@@ -17,9 +17,11 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <IsTestProject>false</IsTestProject>
   </PropertyGroup>
+
   <PropertyGroup>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>$([MSBuild]::GetPathOfFileAbove('key.snk'))</AssemblyOriginatorKeyFile>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>

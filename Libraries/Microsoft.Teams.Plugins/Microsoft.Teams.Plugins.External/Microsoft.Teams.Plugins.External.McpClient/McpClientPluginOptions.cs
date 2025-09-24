@@ -14,7 +14,7 @@ public class McpClientPluginOptions
     /// <summary>
     /// Plugin version
     /// </summary>
-    public string Version {  get; set; } = "0.0.0";
+    public string Version { get; set; } = "0.0.0";
 
     /// <summary>
     /// How long to cache tools before refetching (default: 1 day)

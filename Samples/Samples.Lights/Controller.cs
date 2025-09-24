@@ -11,7 +11,7 @@ namespace Samples.Lights;
 [TeamsController]
 public class Controller(Func<OpenAIChatPrompt> _promptFactory)
 {
-    
+
     [Message("/history")]
     public async Task OnHistory(IContext<MessageActivity> context)
     {
