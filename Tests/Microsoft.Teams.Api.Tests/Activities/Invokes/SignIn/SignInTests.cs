@@ -1,4 +1,5 @@
 using System.Text.Json;
+
 using Microsoft.Teams.Api.Activities.Invokes;
 
 namespace Microsoft.Teams.Api.Tests.Activities.Invokes.SignIn;

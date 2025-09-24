@@ -13,789 +13,789 @@ namespace Microsoft.Teams.Cards;
 [JsonConverter(typeof(JsonConverter<ActionStyle>))]
 public class ActionStyle(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ActionStyle Default = new("default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly ActionStyle Default = new("default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly ActionStyle Positive = new("positive");
-  public bool IsPositive => Positive.Equals(Value);
+    public static readonly ActionStyle Positive = new("positive");
+    public bool IsPositive => Positive.Equals(Value);
 
-  public static readonly ActionStyle Destructive = new("destructive");
-  public bool IsDestructive => Destructive.Equals(Value);
+    public static readonly ActionStyle Destructive = new("destructive");
+    public bool IsDestructive => Destructive.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<ActionMode>))]
 public class ActionMode(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ActionMode Primary = new("primary");
-  public bool IsPrimary => Primary.Equals(Value);
+    public static readonly ActionMode Primary = new("primary");
+    public bool IsPrimary => Primary.Equals(Value);
 
-  public static readonly ActionMode Secondary = new("secondary");
-  public bool IsSecondary => Secondary.Equals(Value);
+    public static readonly ActionMode Secondary = new("secondary");
+    public bool IsSecondary => Secondary.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<AssociatedInputs>))]
 public class AssociatedInputs(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly AssociatedInputs Auto = new("auto");
-  public bool IsAuto => Auto.Equals(Value);
+    public static readonly AssociatedInputs Auto = new("auto");
+    public bool IsAuto => Auto.Equals(Value);
 
-  public static readonly AssociatedInputs None = new("none");
-  public bool IsNone => None.Equals(Value);
+    public static readonly AssociatedInputs None = new("none");
+    public bool IsNone => None.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<ImageInsertPosition>))]
 public class ImageInsertPosition(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ImageInsertPosition Selection = new("Selection");
-  public bool IsSelection => Selection.Equals(Value);
+    public static readonly ImageInsertPosition Selection = new("Selection");
+    public bool IsSelection => Selection.Equals(Value);
 
-  public static readonly ImageInsertPosition Top = new("Top");
-  public bool IsTop => Top.Equals(Value);
+    public static readonly ImageInsertPosition Top = new("Top");
+    public bool IsTop => Top.Equals(Value);
 
-  public static readonly ImageInsertPosition Bottom = new("Bottom");
-  public bool IsBottom => Bottom.Equals(Value);
+    public static readonly ImageInsertPosition Bottom = new("Bottom");
+    public bool IsBottom => Bottom.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<FallbackAction>))]
 public class FallbackAction(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly FallbackAction Drop = new("drop");
-  public bool IsDrop => Drop.Equals(Value);
+    public static readonly FallbackAction Drop = new("drop");
+    public bool IsDrop => Drop.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<ContainerStyle>))]
 public class ContainerStyle(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ContainerStyle Default = new("default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly ContainerStyle Default = new("default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly ContainerStyle Emphasis = new("emphasis");
-  public bool IsEmphasis => Emphasis.Equals(Value);
+    public static readonly ContainerStyle Emphasis = new("emphasis");
+    public bool IsEmphasis => Emphasis.Equals(Value);
 
-  public static readonly ContainerStyle Accent = new("accent");
-  public bool IsAccent => Accent.Equals(Value);
+    public static readonly ContainerStyle Accent = new("accent");
+    public bool IsAccent => Accent.Equals(Value);
 
-  public static readonly ContainerStyle Good = new("good");
-  public bool IsGood => Good.Equals(Value);
+    public static readonly ContainerStyle Good = new("good");
+    public bool IsGood => Good.Equals(Value);
 
-  public static readonly ContainerStyle Attention = new("attention");
-  public bool IsAttention => Attention.Equals(Value);
+    public static readonly ContainerStyle Attention = new("attention");
+    public bool IsAttention => Attention.Equals(Value);
 
-  public static readonly ContainerStyle Warning = new("warning");
-  public bool IsWarning => Warning.Equals(Value);
+    public static readonly ContainerStyle Warning = new("warning");
+    public bool IsWarning => Warning.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<TargetWidth>))]
 public class TargetWidth(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly TargetWidth VeryNarrow = new("VeryNarrow");
-  public bool IsVeryNarrow => VeryNarrow.Equals(Value);
+    public static readonly TargetWidth VeryNarrow = new("VeryNarrow");
+    public bool IsVeryNarrow => VeryNarrow.Equals(Value);
 
-  public static readonly TargetWidth Narrow = new("Narrow");
-  public bool IsNarrow => Narrow.Equals(Value);
+    public static readonly TargetWidth Narrow = new("Narrow");
+    public bool IsNarrow => Narrow.Equals(Value);
 
-  public static readonly TargetWidth Standard = new("Standard");
-  public bool IsStandard => Standard.Equals(Value);
+    public static readonly TargetWidth Standard = new("Standard");
+    public bool IsStandard => Standard.Equals(Value);
 
-  public static readonly TargetWidth Wide = new("Wide");
-  public bool IsWide => Wide.Equals(Value);
+    public static readonly TargetWidth Wide = new("Wide");
+    public bool IsWide => Wide.Equals(Value);
 
-  public static readonly TargetWidth AtLeastVeryNarrow = new("atLeast:VeryNarrow");
-  public bool IsAtLeastVeryNarrow => AtLeastVeryNarrow.Equals(Value);
+    public static readonly TargetWidth AtLeastVeryNarrow = new("atLeast:VeryNarrow");
+    public bool IsAtLeastVeryNarrow => AtLeastVeryNarrow.Equals(Value);
 
-  public static readonly TargetWidth AtMostVeryNarrow = new("atMost:VeryNarrow");
-  public bool IsAtMostVeryNarrow => AtMostVeryNarrow.Equals(Value);
+    public static readonly TargetWidth AtMostVeryNarrow = new("atMost:VeryNarrow");
+    public bool IsAtMostVeryNarrow => AtMostVeryNarrow.Equals(Value);
 
-  public static readonly TargetWidth AtLeastNarrow = new("atLeast:Narrow");
-  public bool IsAtLeastNarrow => AtLeastNarrow.Equals(Value);
+    public static readonly TargetWidth AtLeastNarrow = new("atLeast:Narrow");
+    public bool IsAtLeastNarrow => AtLeastNarrow.Equals(Value);
 
-  public static readonly TargetWidth AtMostNarrow = new("atMost:Narrow");
-  public bool IsAtMostNarrow => AtMostNarrow.Equals(Value);
+    public static readonly TargetWidth AtMostNarrow = new("atMost:Narrow");
+    public bool IsAtMostNarrow => AtMostNarrow.Equals(Value);
 
-  public static readonly TargetWidth AtLeastStandard = new("atLeast:Standard");
-  public bool IsAtLeastStandard => AtLeastStandard.Equals(Value);
+    public static readonly TargetWidth AtLeastStandard = new("atLeast:Standard");
+    public bool IsAtLeastStandard => AtLeastStandard.Equals(Value);
 
-  public static readonly TargetWidth AtMostStandard = new("atMost:Standard");
-  public bool IsAtMostStandard => AtMostStandard.Equals(Value);
+    public static readonly TargetWidth AtMostStandard = new("atMost:Standard");
+    public bool IsAtMostStandard => AtMostStandard.Equals(Value);
 
-  public static readonly TargetWidth AtLeastWide = new("atLeast:Wide");
-  public bool IsAtLeastWide => AtLeastWide.Equals(Value);
+    public static readonly TargetWidth AtLeastWide = new("atLeast:Wide");
+    public bool IsAtLeastWide => AtLeastWide.Equals(Value);
 
-  public static readonly TargetWidth AtMostWide = new("atMost:Wide");
-  public bool IsAtMostWide => AtMostWide.Equals(Value);
+    public static readonly TargetWidth AtMostWide = new("atMost:Wide");
+    public bool IsAtMostWide => AtMostWide.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<HorizontalAlignment>))]
 public class HorizontalAlignment(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly HorizontalAlignment Left = new("Left");
-  public bool IsLeft => Left.Equals(Value);
+    public static readonly HorizontalAlignment Left = new("Left");
+    public bool IsLeft => Left.Equals(Value);
 
-  public static readonly HorizontalAlignment Center = new("Center");
-  public bool IsCenter => Center.Equals(Value);
+    public static readonly HorizontalAlignment Center = new("Center");
+    public bool IsCenter => Center.Equals(Value);
 
-  public static readonly HorizontalAlignment Right = new("Right");
-  public bool IsRight => Right.Equals(Value);
+    public static readonly HorizontalAlignment Right = new("Right");
+    public bool IsRight => Right.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<VerticalAlignment>))]
 public class VerticalAlignment(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly VerticalAlignment Top = new("Top");
-  public bool IsTop => Top.Equals(Value);
+    public static readonly VerticalAlignment Top = new("Top");
+    public bool IsTop => Top.Equals(Value);
 
-  public static readonly VerticalAlignment Center = new("Center");
-  public bool IsCenter => Center.Equals(Value);
+    public static readonly VerticalAlignment Center = new("Center");
+    public bool IsCenter => Center.Equals(Value);
 
-  public static readonly VerticalAlignment Bottom = new("Bottom");
-  public bool IsBottom => Bottom.Equals(Value);
+    public static readonly VerticalAlignment Bottom = new("Bottom");
+    public bool IsBottom => Bottom.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<FlowLayoutItemFit>))]
 public class FlowLayoutItemFit(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly FlowLayoutItemFit Fit = new("Fit");
-  public bool IsFit => Fit.Equals(Value);
+    public static readonly FlowLayoutItemFit Fit = new("Fit");
+    public bool IsFit => Fit.Equals(Value);
 
-  public static readonly FlowLayoutItemFit Fill = new("Fill");
-  public bool IsFill => Fill.Equals(Value);
+    public static readonly FlowLayoutItemFit Fill = new("Fill");
+    public bool IsFill => Fill.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<Spacing>))]
 public class Spacing(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly Spacing None = new("None");
-  public bool IsNone => None.Equals(Value);
+    public static readonly Spacing None = new("None");
+    public bool IsNone => None.Equals(Value);
 
-  public static readonly Spacing ExtraSmall = new("ExtraSmall");
-  public bool IsExtraSmall => ExtraSmall.Equals(Value);
+    public static readonly Spacing ExtraSmall = new("ExtraSmall");
+    public bool IsExtraSmall => ExtraSmall.Equals(Value);
 
-  public static readonly Spacing Small = new("Small");
-  public bool IsSmall => Small.Equals(Value);
+    public static readonly Spacing Small = new("Small");
+    public bool IsSmall => Small.Equals(Value);
 
-  public static readonly Spacing Default = new("Default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly Spacing Default = new("Default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly Spacing Medium = new("Medium");
-  public bool IsMedium => Medium.Equals(Value);
+    public static readonly Spacing Medium = new("Medium");
+    public bool IsMedium => Medium.Equals(Value);
 
-  public static readonly Spacing Large = new("Large");
-  public bool IsLarge => Large.Equals(Value);
+    public static readonly Spacing Large = new("Large");
+    public bool IsLarge => Large.Equals(Value);
 
-  public static readonly Spacing ExtraLarge = new("ExtraLarge");
-  public bool IsExtraLarge => ExtraLarge.Equals(Value);
+    public static readonly Spacing ExtraLarge = new("ExtraLarge");
+    public bool IsExtraLarge => ExtraLarge.Equals(Value);
 
-  public static readonly Spacing Padding = new("Padding");
-  public bool IsPadding => Padding.Equals(Value);
+    public static readonly Spacing Padding = new("Padding");
+    public bool IsPadding => Padding.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<FillMode>))]
 public class FillMode(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly FillMode Cover = new("Cover");
-  public bool IsCover => Cover.Equals(Value);
+    public static readonly FillMode Cover = new("Cover");
+    public bool IsCover => Cover.Equals(Value);
 
-  public static readonly FillMode RepeatHorizontally = new("RepeatHorizontally");
-  public bool IsRepeatHorizontally => RepeatHorizontally.Equals(Value);
+    public static readonly FillMode RepeatHorizontally = new("RepeatHorizontally");
+    public bool IsRepeatHorizontally => RepeatHorizontally.Equals(Value);
 
-  public static readonly FillMode RepeatVertically = new("RepeatVertically");
-  public bool IsRepeatVertically => RepeatVertically.Equals(Value);
+    public static readonly FillMode RepeatVertically = new("RepeatVertically");
+    public bool IsRepeatVertically => RepeatVertically.Equals(Value);
 
-  public static readonly FillMode Repeat = new("Repeat");
-  public bool IsRepeat => Repeat.Equals(Value);
+    public static readonly FillMode Repeat = new("Repeat");
+    public bool IsRepeat => Repeat.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<Version>))]
 public class Version(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly Version Version1_0 = new("1.0");
-  public bool IsVersion1_0 => Version1_0.Equals(Value);
+    public static readonly Version Version1_0 = new("1.0");
+    public bool IsVersion1_0 => Version1_0.Equals(Value);
 
-  public static readonly Version Version1_1 = new("1.1");
-  public bool IsVersion1_1 => Version1_1.Equals(Value);
+    public static readonly Version Version1_1 = new("1.1");
+    public bool IsVersion1_1 => Version1_1.Equals(Value);
 
-  public static readonly Version Version1_2 = new("1.2");
-  public bool IsVersion1_2 => Version1_2.Equals(Value);
+    public static readonly Version Version1_2 = new("1.2");
+    public bool IsVersion1_2 => Version1_2.Equals(Value);
 
-  public static readonly Version Version1_3 = new("1.3");
-  public bool IsVersion1_3 => Version1_3.Equals(Value);
+    public static readonly Version Version1_3 = new("1.3");
+    public bool IsVersion1_3 => Version1_3.Equals(Value);
 
-  public static readonly Version Version1_4 = new("1.4");
-  public bool IsVersion1_4 => Version1_4.Equals(Value);
+    public static readonly Version Version1_4 = new("1.4");
+    public bool IsVersion1_4 => Version1_4.Equals(Value);
 
-  public static readonly Version Version1_5 = new("1.5");
-  public bool IsVersion1_5 => Version1_5.Equals(Value);
+    public static readonly Version Version1_5 = new("1.5");
+    public bool IsVersion1_5 => Version1_5.Equals(Value);
 
-  public static readonly Version Version1_6 = new("1.6");
-  public bool IsVersion1_6 => Version1_6.Equals(Value);
+    public static readonly Version Version1_6 = new("1.6");
+    public bool IsVersion1_6 => Version1_6.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<TeamsCardWidth>))]
 public class TeamsCardWidth(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly TeamsCardWidth Full = new("full");
-  public bool IsFull => Full.Equals(Value);
+    public static readonly TeamsCardWidth Full = new("full");
+    public bool IsFull => Full.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<MentionType>))]
 public class MentionType(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly MentionType Person = new("Person");
-  public bool IsPerson => Person.Equals(Value);
+    public static readonly MentionType Person = new("Person");
+    public bool IsPerson => Person.Equals(Value);
 
-  public static readonly MentionType Tag = new("Tag");
-  public bool IsTag => Tag.Equals(Value);
+    public static readonly MentionType Tag = new("Tag");
+    public bool IsTag => Tag.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<ElementHeight>))]
 public class ElementHeight(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ElementHeight Auto = new("auto");
-  public bool IsAuto => Auto.Equals(Value);
+    public static readonly ElementHeight Auto = new("auto");
+    public bool IsAuto => Auto.Equals(Value);
 
-  public static readonly ElementHeight Stretch = new("stretch");
-  public bool IsStretch => Stretch.Equals(Value);
+    public static readonly ElementHeight Stretch = new("stretch");
+    public bool IsStretch => Stretch.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<TextSize>))]
 public class TextSize(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly TextSize Small = new("Small");
-  public bool IsSmall => Small.Equals(Value);
+    public static readonly TextSize Small = new("Small");
+    public bool IsSmall => Small.Equals(Value);
 
-  public static readonly TextSize Default = new("Default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly TextSize Default = new("Default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly TextSize Medium = new("Medium");
-  public bool IsMedium => Medium.Equals(Value);
+    public static readonly TextSize Medium = new("Medium");
+    public bool IsMedium => Medium.Equals(Value);
 
-  public static readonly TextSize Large = new("Large");
-  public bool IsLarge => Large.Equals(Value);
+    public static readonly TextSize Large = new("Large");
+    public bool IsLarge => Large.Equals(Value);
 
-  public static readonly TextSize ExtraLarge = new("ExtraLarge");
-  public bool IsExtraLarge => ExtraLarge.Equals(Value);
+    public static readonly TextSize ExtraLarge = new("ExtraLarge");
+    public bool IsExtraLarge => ExtraLarge.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<TextWeight>))]
 public class TextWeight(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly TextWeight Lighter = new("Lighter");
-  public bool IsLighter => Lighter.Equals(Value);
+    public static readonly TextWeight Lighter = new("Lighter");
+    public bool IsLighter => Lighter.Equals(Value);
 
-  public static readonly TextWeight Default = new("Default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly TextWeight Default = new("Default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly TextWeight Bolder = new("Bolder");
-  public bool IsBolder => Bolder.Equals(Value);
+    public static readonly TextWeight Bolder = new("Bolder");
+    public bool IsBolder => Bolder.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<TextColor>))]
 public class TextColor(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly TextColor Default = new("Default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly TextColor Default = new("Default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly TextColor Dark = new("Dark");
-  public bool IsDark => Dark.Equals(Value);
+    public static readonly TextColor Dark = new("Dark");
+    public bool IsDark => Dark.Equals(Value);
 
-  public static readonly TextColor Light = new("Light");
-  public bool IsLight => Light.Equals(Value);
+    public static readonly TextColor Light = new("Light");
+    public bool IsLight => Light.Equals(Value);
 
-  public static readonly TextColor Accent = new("Accent");
-  public bool IsAccent => Accent.Equals(Value);
+    public static readonly TextColor Accent = new("Accent");
+    public bool IsAccent => Accent.Equals(Value);
 
-  public static readonly TextColor Good = new("Good");
-  public bool IsGood => Good.Equals(Value);
+    public static readonly TextColor Good = new("Good");
+    public bool IsGood => Good.Equals(Value);
 
-  public static readonly TextColor Warning = new("Warning");
-  public bool IsWarning => Warning.Equals(Value);
+    public static readonly TextColor Warning = new("Warning");
+    public bool IsWarning => Warning.Equals(Value);
 
-  public static readonly TextColor Attention = new("Attention");
-  public bool IsAttention => Attention.Equals(Value);
+    public static readonly TextColor Attention = new("Attention");
+    public bool IsAttention => Attention.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<FontType>))]
 public class FontType(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly FontType Default = new("Default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly FontType Default = new("Default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly FontType Monospace = new("Monospace");
-  public bool IsMonospace => Monospace.Equals(Value);
+    public static readonly FontType Monospace = new("Monospace");
+    public bool IsMonospace => Monospace.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<StyleEnum>))]
 public class StyleEnum(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly StyleEnum Compact = new("compact");
-  public bool IsCompact => Compact.Equals(Value);
+    public static readonly StyleEnum Compact = new("compact");
+    public bool IsCompact => Compact.Equals(Value);
 
-  public static readonly StyleEnum Expanded = new("expanded");
-  public bool IsExpanded => Expanded.Equals(Value);
+    public static readonly StyleEnum Expanded = new("expanded");
+    public bool IsExpanded => Expanded.Equals(Value);
 
-  public static readonly StyleEnum Filtered = new("filtered");
-  public bool IsFiltered => Filtered.Equals(Value);
+    public static readonly StyleEnum Filtered = new("filtered");
+    public bool IsFiltered => Filtered.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<ImageStyle>))]
 public class ImageStyle(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ImageStyle Default = new("Default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly ImageStyle Default = new("Default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly ImageStyle Person = new("Person");
-  public bool IsPerson => Person.Equals(Value);
+    public static readonly ImageStyle Person = new("Person");
+    public bool IsPerson => Person.Equals(Value);
 
-  public static readonly ImageStyle RoundedCorners = new("RoundedCorners");
-  public bool IsRoundedCorners => RoundedCorners.Equals(Value);
+    public static readonly ImageStyle RoundedCorners = new("RoundedCorners");
+    public bool IsRoundedCorners => RoundedCorners.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<Size>))]
 public class Size(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly Size Auto = new("Auto");
-  public bool IsAuto => Auto.Equals(Value);
+    public static readonly Size Auto = new("Auto");
+    public bool IsAuto => Auto.Equals(Value);
 
-  public static readonly Size Stretch = new("Stretch");
-  public bool IsStretch => Stretch.Equals(Value);
+    public static readonly Size Stretch = new("Stretch");
+    public bool IsStretch => Stretch.Equals(Value);
 
-  public static readonly Size Small = new("Small");
-  public bool IsSmall => Small.Equals(Value);
+    public static readonly Size Small = new("Small");
+    public bool IsSmall => Small.Equals(Value);
 
-  public static readonly Size Medium = new("Medium");
-  public bool IsMedium => Medium.Equals(Value);
+    public static readonly Size Medium = new("Medium");
+    public bool IsMedium => Medium.Equals(Value);
 
-  public static readonly Size Large = new("Large");
-  public bool IsLarge => Large.Equals(Value);
+    public static readonly Size Large = new("Large");
+    public bool IsLarge => Large.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<InputTextStyle>))]
 public class InputTextStyle(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly InputTextStyle Text = new("Text");
-  public bool IsText => Text.Equals(Value);
+    public static readonly InputTextStyle Text = new("Text");
+    public bool IsText => Text.Equals(Value);
 
-  public static readonly InputTextStyle Tel = new("Tel");
-  public bool IsTel => Tel.Equals(Value);
+    public static readonly InputTextStyle Tel = new("Tel");
+    public bool IsTel => Tel.Equals(Value);
 
-  public static readonly InputTextStyle Url = new("Url");
-  public bool IsUrl => Url.Equals(Value);
+    public static readonly InputTextStyle Url = new("Url");
+    public bool IsUrl => Url.Equals(Value);
 
-  public static readonly InputTextStyle Email = new("Email");
-  public bool IsEmail => Email.Equals(Value);
+    public static readonly InputTextStyle Email = new("Email");
+    public bool IsEmail => Email.Equals(Value);
 
-  public static readonly InputTextStyle Password = new("Password");
-  public bool IsPassword => Password.Equals(Value);
+    public static readonly InputTextStyle Password = new("Password");
+    public bool IsPassword => Password.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<RatingSize>))]
 public class RatingSize(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly RatingSize Medium = new("Medium");
-  public bool IsMedium => Medium.Equals(Value);
+    public static readonly RatingSize Medium = new("Medium");
+    public bool IsMedium => Medium.Equals(Value);
 
-  public static readonly RatingSize Large = new("Large");
-  public bool IsLarge => Large.Equals(Value);
+    public static readonly RatingSize Large = new("Large");
+    public bool IsLarge => Large.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<RatingColor>))]
 public class RatingColor(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly RatingColor Neutral = new("Neutral");
-  public bool IsNeutral => Neutral.Equals(Value);
+    public static readonly RatingColor Neutral = new("Neutral");
+    public bool IsNeutral => Neutral.Equals(Value);
 
-  public static readonly RatingColor Marigold = new("Marigold");
-  public bool IsMarigold => Marigold.Equals(Value);
+    public static readonly RatingColor Marigold = new("Marigold");
+    public bool IsMarigold => Marigold.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<RatingStyle>))]
 public class RatingStyle(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly RatingStyle Default = new("Default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly RatingStyle Default = new("Default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly RatingStyle Compact = new("Compact");
-  public bool IsCompact => Compact.Equals(Value);
+    public static readonly RatingStyle Compact = new("Compact");
+    public bool IsCompact => Compact.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<IconSize>))]
 public class IconSize(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly IconSize XxSmall = new("xxSmall");
-  public bool IsXxSmall => XxSmall.Equals(Value);
+    public static readonly IconSize XxSmall = new("xxSmall");
+    public bool IsXxSmall => XxSmall.Equals(Value);
 
-  public static readonly IconSize XSmall = new("xSmall");
-  public bool IsXSmall => XSmall.Equals(Value);
+    public static readonly IconSize XSmall = new("xSmall");
+    public bool IsXSmall => XSmall.Equals(Value);
 
-  public static readonly IconSize Small = new("Small");
-  public bool IsSmall => Small.Equals(Value);
+    public static readonly IconSize Small = new("Small");
+    public bool IsSmall => Small.Equals(Value);
 
-  public static readonly IconSize Standard = new("Standard");
-  public bool IsStandard => Standard.Equals(Value);
+    public static readonly IconSize Standard = new("Standard");
+    public bool IsStandard => Standard.Equals(Value);
 
-  public static readonly IconSize Medium = new("Medium");
-  public bool IsMedium => Medium.Equals(Value);
+    public static readonly IconSize Medium = new("Medium");
+    public bool IsMedium => Medium.Equals(Value);
 
-  public static readonly IconSize Large = new("Large");
-  public bool IsLarge => Large.Equals(Value);
+    public static readonly IconSize Large = new("Large");
+    public bool IsLarge => Large.Equals(Value);
 
-  public static readonly IconSize XLarge = new("xLarge");
-  public bool IsXLarge => XLarge.Equals(Value);
+    public static readonly IconSize XLarge = new("xLarge");
+    public bool IsXLarge => XLarge.Equals(Value);
 
-  public static readonly IconSize XxLarge = new("xxLarge");
-  public bool IsXxLarge => XxLarge.Equals(Value);
+    public static readonly IconSize XxLarge = new("xxLarge");
+    public bool IsXxLarge => XxLarge.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<IconStyle>))]
 public class IconStyle(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly IconStyle Regular = new("Regular");
-  public bool IsRegular => Regular.Equals(Value);
+    public static readonly IconStyle Regular = new("Regular");
+    public bool IsRegular => Regular.Equals(Value);
 
-  public static readonly IconStyle Filled = new("Filled");
-  public bool IsFilled => Filled.Equals(Value);
+    public static readonly IconStyle Filled = new("Filled");
+    public bool IsFilled => Filled.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<CarouselPageAnimation>))]
 public class CarouselPageAnimation(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly CarouselPageAnimation Slide = new("Slide");
-  public bool IsSlide => Slide.Equals(Value);
+    public static readonly CarouselPageAnimation Slide = new("Slide");
+    public bool IsSlide => Slide.Equals(Value);
 
-  public static readonly CarouselPageAnimation CrossFade = new("CrossFade");
-  public bool IsCrossFade => CrossFade.Equals(Value);
+    public static readonly CarouselPageAnimation CrossFade = new("CrossFade");
+    public bool IsCrossFade => CrossFade.Equals(Value);
 
-  public static readonly CarouselPageAnimation None = new("None");
-  public bool IsNone => None.Equals(Value);
+    public static readonly CarouselPageAnimation None = new("None");
+    public bool IsNone => None.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<BadgeIconPosition>))]
 public class BadgeIconPosition(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly BadgeIconPosition Before = new("Before");
-  public bool IsBefore => Before.Equals(Value);
+    public static readonly BadgeIconPosition Before = new("Before");
+    public bool IsBefore => Before.Equals(Value);
 
-  public static readonly BadgeIconPosition After = new("After");
-  public bool IsAfter => After.Equals(Value);
+    public static readonly BadgeIconPosition After = new("After");
+    public bool IsAfter => After.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<BadgeAppearance>))]
 public class BadgeAppearance(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly BadgeAppearance Filled = new("Filled");
-  public bool IsFilled => Filled.Equals(Value);
+    public static readonly BadgeAppearance Filled = new("Filled");
+    public bool IsFilled => Filled.Equals(Value);
 
-  public static readonly BadgeAppearance Tint = new("Tint");
-  public bool IsTint => Tint.Equals(Value);
+    public static readonly BadgeAppearance Tint = new("Tint");
+    public bool IsTint => Tint.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<BadgeSize>))]
 public class BadgeSize(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly BadgeSize Medium = new("Medium");
-  public bool IsMedium => Medium.Equals(Value);
+    public static readonly BadgeSize Medium = new("Medium");
+    public bool IsMedium => Medium.Equals(Value);
 
-  public static readonly BadgeSize Large = new("Large");
-  public bool IsLarge => Large.Equals(Value);
+    public static readonly BadgeSize Large = new("Large");
+    public bool IsLarge => Large.Equals(Value);
 
-  public static readonly BadgeSize ExtraLarge = new("ExtraLarge");
-  public bool IsExtraLarge => ExtraLarge.Equals(Value);
+    public static readonly BadgeSize ExtraLarge = new("ExtraLarge");
+    public bool IsExtraLarge => ExtraLarge.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<BadgeShape>))]
 public class BadgeShape(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly BadgeShape Square = new("Square");
-  public bool IsSquare => Square.Equals(Value);
+    public static readonly BadgeShape Square = new("Square");
+    public bool IsSquare => Square.Equals(Value);
 
-  public static readonly BadgeShape Rounded = new("Rounded");
-  public bool IsRounded => Rounded.Equals(Value);
+    public static readonly BadgeShape Rounded = new("Rounded");
+    public bool IsRounded => Rounded.Equals(Value);
 
-  public static readonly BadgeShape Circular = new("Circular");
-  public bool IsCircular => Circular.Equals(Value);
+    public static readonly BadgeShape Circular = new("Circular");
+    public bool IsCircular => Circular.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<BadgeStyle>))]
 public class BadgeStyle(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly BadgeStyle Default = new("Default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly BadgeStyle Default = new("Default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly BadgeStyle Subtle = new("Subtle");
-  public bool IsSubtle => Subtle.Equals(Value);
+    public static readonly BadgeStyle Subtle = new("Subtle");
+    public bool IsSubtle => Subtle.Equals(Value);
 
-  public static readonly BadgeStyle Informative = new("Informative");
-  public bool IsInformative => Informative.Equals(Value);
+    public static readonly BadgeStyle Informative = new("Informative");
+    public bool IsInformative => Informative.Equals(Value);
 
-  public static readonly BadgeStyle Accent = new("Accent");
-  public bool IsAccent => Accent.Equals(Value);
+    public static readonly BadgeStyle Accent = new("Accent");
+    public bool IsAccent => Accent.Equals(Value);
 
-  public static readonly BadgeStyle Good = new("Good");
-  public bool IsGood => Good.Equals(Value);
+    public static readonly BadgeStyle Good = new("Good");
+    public bool IsGood => Good.Equals(Value);
 
-  public static readonly BadgeStyle Attention = new("Attention");
-  public bool IsAttention => Attention.Equals(Value);
+    public static readonly BadgeStyle Attention = new("Attention");
+    public bool IsAttention => Attention.Equals(Value);
 
-  public static readonly BadgeStyle Warning = new("Warning");
-  public bool IsWarning => Warning.Equals(Value);
+    public static readonly BadgeStyle Warning = new("Warning");
+    public bool IsWarning => Warning.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<ChartColorSet>))]
 public class ChartColorSet(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ChartColorSet Categorical = new("categorical");
-  public bool IsCategorical => Categorical.Equals(Value);
+    public static readonly ChartColorSet Categorical = new("categorical");
+    public bool IsCategorical => Categorical.Equals(Value);
 
-  public static readonly ChartColorSet Sequential = new("sequential");
-  public bool IsSequential => Sequential.Equals(Value);
+    public static readonly ChartColorSet Sequential = new("sequential");
+    public bool IsSequential => Sequential.Equals(Value);
 
-  public static readonly ChartColorSet Diverging = new("diverging");
-  public bool IsDiverging => Diverging.Equals(Value);
+    public static readonly ChartColorSet Diverging = new("diverging");
+    public bool IsDiverging => Diverging.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<ChartColor>))]
 public class ChartColor(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ChartColor Good = new("good");
-  public bool IsGood => Good.Equals(Value);
+    public static readonly ChartColor Good = new("good");
+    public bool IsGood => Good.Equals(Value);
 
-  public static readonly ChartColor Warning = new("warning");
-  public bool IsWarning => Warning.Equals(Value);
+    public static readonly ChartColor Warning = new("warning");
+    public bool IsWarning => Warning.Equals(Value);
 
-  public static readonly ChartColor Attention = new("attention");
-  public bool IsAttention => Attention.Equals(Value);
+    public static readonly ChartColor Attention = new("attention");
+    public bool IsAttention => Attention.Equals(Value);
 
-  public static readonly ChartColor Neutral = new("neutral");
-  public bool IsNeutral => Neutral.Equals(Value);
+    public static readonly ChartColor Neutral = new("neutral");
+    public bool IsNeutral => Neutral.Equals(Value);
 
-  public static readonly ChartColor CategoricalRed = new("categoricalRed");
-  public bool IsCategoricalRed => CategoricalRed.Equals(Value);
+    public static readonly ChartColor CategoricalRed = new("categoricalRed");
+    public bool IsCategoricalRed => CategoricalRed.Equals(Value);
 
-  public static readonly ChartColor CategoricalPurple = new("categoricalPurple");
-  public bool IsCategoricalPurple => CategoricalPurple.Equals(Value);
+    public static readonly ChartColor CategoricalPurple = new("categoricalPurple");
+    public bool IsCategoricalPurple => CategoricalPurple.Equals(Value);
 
-  public static readonly ChartColor CategoricalLavender = new("categoricalLavender");
-  public bool IsCategoricalLavender => CategoricalLavender.Equals(Value);
+    public static readonly ChartColor CategoricalLavender = new("categoricalLavender");
+    public bool IsCategoricalLavender => CategoricalLavender.Equals(Value);
 
-  public static readonly ChartColor CategoricalBlue = new("categoricalBlue");
-  public bool IsCategoricalBlue => CategoricalBlue.Equals(Value);
+    public static readonly ChartColor CategoricalBlue = new("categoricalBlue");
+    public bool IsCategoricalBlue => CategoricalBlue.Equals(Value);
 
-  public static readonly ChartColor CategoricalLightBlue = new("categoricalLightBlue");
-  public bool IsCategoricalLightBlue => CategoricalLightBlue.Equals(Value);
+    public static readonly ChartColor CategoricalLightBlue = new("categoricalLightBlue");
+    public bool IsCategoricalLightBlue => CategoricalLightBlue.Equals(Value);
 
-  public static readonly ChartColor CategoricalTeal = new("categoricalTeal");
-  public bool IsCategoricalTeal => CategoricalTeal.Equals(Value);
+    public static readonly ChartColor CategoricalTeal = new("categoricalTeal");
+    public bool IsCategoricalTeal => CategoricalTeal.Equals(Value);
 
-  public static readonly ChartColor CategoricalGreen = new("categoricalGreen");
-  public bool IsCategoricalGreen => CategoricalGreen.Equals(Value);
+    public static readonly ChartColor CategoricalGreen = new("categoricalGreen");
+    public bool IsCategoricalGreen => CategoricalGreen.Equals(Value);
 
-  public static readonly ChartColor CategoricalLime = new("categoricalLime");
-  public bool IsCategoricalLime => CategoricalLime.Equals(Value);
+    public static readonly ChartColor CategoricalLime = new("categoricalLime");
+    public bool IsCategoricalLime => CategoricalLime.Equals(Value);
 
-  public static readonly ChartColor CategoricalMarigold = new("categoricalMarigold");
-  public bool IsCategoricalMarigold => CategoricalMarigold.Equals(Value);
+    public static readonly ChartColor CategoricalMarigold = new("categoricalMarigold");
+    public bool IsCategoricalMarigold => CategoricalMarigold.Equals(Value);
 
-  public static readonly ChartColor Sequential1 = new("sequential1");
-  public bool IsSequential1 => Sequential1.Equals(Value);
+    public static readonly ChartColor Sequential1 = new("sequential1");
+    public bool IsSequential1 => Sequential1.Equals(Value);
 
-  public static readonly ChartColor Sequential2 = new("sequential2");
-  public bool IsSequential2 => Sequential2.Equals(Value);
+    public static readonly ChartColor Sequential2 = new("sequential2");
+    public bool IsSequential2 => Sequential2.Equals(Value);
 
-  public static readonly ChartColor Sequential3 = new("sequential3");
-  public bool IsSequential3 => Sequential3.Equals(Value);
+    public static readonly ChartColor Sequential3 = new("sequential3");
+    public bool IsSequential3 => Sequential3.Equals(Value);
 
-  public static readonly ChartColor Sequential4 = new("sequential4");
-  public bool IsSequential4 => Sequential4.Equals(Value);
+    public static readonly ChartColor Sequential4 = new("sequential4");
+    public bool IsSequential4 => Sequential4.Equals(Value);
 
-  public static readonly ChartColor Sequential5 = new("sequential5");
-  public bool IsSequential5 => Sequential5.Equals(Value);
+    public static readonly ChartColor Sequential5 = new("sequential5");
+    public bool IsSequential5 => Sequential5.Equals(Value);
 
-  public static readonly ChartColor Sequential6 = new("sequential6");
-  public bool IsSequential6 => Sequential6.Equals(Value);
+    public static readonly ChartColor Sequential6 = new("sequential6");
+    public bool IsSequential6 => Sequential6.Equals(Value);
 
-  public static readonly ChartColor Sequential7 = new("sequential7");
-  public bool IsSequential7 => Sequential7.Equals(Value);
+    public static readonly ChartColor Sequential7 = new("sequential7");
+    public bool IsSequential7 => Sequential7.Equals(Value);
 
-  public static readonly ChartColor Sequential8 = new("sequential8");
-  public bool IsSequential8 => Sequential8.Equals(Value);
+    public static readonly ChartColor Sequential8 = new("sequential8");
+    public bool IsSequential8 => Sequential8.Equals(Value);
 
-  public static readonly ChartColor DivergingBlue = new("divergingBlue");
-  public bool IsDivergingBlue => DivergingBlue.Equals(Value);
+    public static readonly ChartColor DivergingBlue = new("divergingBlue");
+    public bool IsDivergingBlue => DivergingBlue.Equals(Value);
 
-  public static readonly ChartColor DivergingLightBlue = new("divergingLightBlue");
-  public bool IsDivergingLightBlue => DivergingLightBlue.Equals(Value);
+    public static readonly ChartColor DivergingLightBlue = new("divergingLightBlue");
+    public bool IsDivergingLightBlue => DivergingLightBlue.Equals(Value);
 
-  public static readonly ChartColor DivergingCyan = new("divergingCyan");
-  public bool IsDivergingCyan => DivergingCyan.Equals(Value);
+    public static readonly ChartColor DivergingCyan = new("divergingCyan");
+    public bool IsDivergingCyan => DivergingCyan.Equals(Value);
 
-  public static readonly ChartColor DivergingTeal = new("divergingTeal");
-  public bool IsDivergingTeal => DivergingTeal.Equals(Value);
+    public static readonly ChartColor DivergingTeal = new("divergingTeal");
+    public bool IsDivergingTeal => DivergingTeal.Equals(Value);
 
-  public static readonly ChartColor DivergingYellow = new("divergingYellow");
-  public bool IsDivergingYellow => DivergingYellow.Equals(Value);
+    public static readonly ChartColor DivergingYellow = new("divergingYellow");
+    public bool IsDivergingYellow => DivergingYellow.Equals(Value);
 
-  public static readonly ChartColor DivergingPeach = new("divergingPeach");
-  public bool IsDivergingPeach => DivergingPeach.Equals(Value);
+    public static readonly ChartColor DivergingPeach = new("divergingPeach");
+    public bool IsDivergingPeach => DivergingPeach.Equals(Value);
 
-  public static readonly ChartColor DivergingLightRed = new("divergingLightRed");
-  public bool IsDivergingLightRed => DivergingLightRed.Equals(Value);
+    public static readonly ChartColor DivergingLightRed = new("divergingLightRed");
+    public bool IsDivergingLightRed => DivergingLightRed.Equals(Value);
 
-  public static readonly ChartColor DivergingRed = new("divergingRed");
-  public bool IsDivergingRed => DivergingRed.Equals(Value);
+    public static readonly ChartColor DivergingRed = new("divergingRed");
+    public bool IsDivergingRed => DivergingRed.Equals(Value);
 
-  public static readonly ChartColor DivergingMaroon = new("divergingMaroon");
-  public bool IsDivergingMaroon => DivergingMaroon.Equals(Value);
+    public static readonly ChartColor DivergingMaroon = new("divergingMaroon");
+    public bool IsDivergingMaroon => DivergingMaroon.Equals(Value);
 
-  public static readonly ChartColor DivergingGray = new("divergingGray");
-  public bool IsDivergingGray => DivergingGray.Equals(Value);
+    public static readonly ChartColor DivergingGray = new("divergingGray");
+    public bool IsDivergingGray => DivergingGray.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<HorizontalBarChartDisplayMode>))]
 public class HorizontalBarChartDisplayMode(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly HorizontalBarChartDisplayMode AbsoluteWithAxis = new("AbsoluteWithAxis");
-  public bool IsAbsoluteWithAxis => AbsoluteWithAxis.Equals(Value);
+    public static readonly HorizontalBarChartDisplayMode AbsoluteWithAxis = new("AbsoluteWithAxis");
+    public bool IsAbsoluteWithAxis => AbsoluteWithAxis.Equals(Value);
 
-  public static readonly HorizontalBarChartDisplayMode AbsoluteNoAxis = new("AbsoluteNoAxis");
-  public bool IsAbsoluteNoAxis => AbsoluteNoAxis.Equals(Value);
+    public static readonly HorizontalBarChartDisplayMode AbsoluteNoAxis = new("AbsoluteNoAxis");
+    public bool IsAbsoluteNoAxis => AbsoluteNoAxis.Equals(Value);
 
-  public static readonly HorizontalBarChartDisplayMode PartToWhole = new("PartToWhole");
-  public bool IsPartToWhole => PartToWhole.Equals(Value);
+    public static readonly HorizontalBarChartDisplayMode PartToWhole = new("PartToWhole");
+    public bool IsPartToWhole => PartToWhole.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<GaugeChartValueFormat>))]
 public class GaugeChartValueFormat(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly GaugeChartValueFormat Percentage = new("Percentage");
-  public bool IsPercentage => Percentage.Equals(Value);
+    public static readonly GaugeChartValueFormat Percentage = new("Percentage");
+    public bool IsPercentage => Percentage.Equals(Value);
 
-  public static readonly GaugeChartValueFormat Fraction = new("Fraction");
-  public bool IsFraction => Fraction.Equals(Value);
+    public static readonly GaugeChartValueFormat Fraction = new("Fraction");
+    public bool IsFraction => Fraction.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<CodeLanguage>))]
 public class CodeLanguage(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly CodeLanguage Bash = new("Bash");
-  public bool IsBash => Bash.Equals(Value);
+    public static readonly CodeLanguage Bash = new("Bash");
+    public bool IsBash => Bash.Equals(Value);
 
-  public static readonly CodeLanguage C = new("C");
-  public bool IsC => C.Equals(Value);
+    public static readonly CodeLanguage C = new("C");
+    public bool IsC => C.Equals(Value);
 
-  public static readonly CodeLanguage Cpp = new("Cpp");
-  public bool IsCpp => Cpp.Equals(Value);
+    public static readonly CodeLanguage Cpp = new("Cpp");
+    public bool IsCpp => Cpp.Equals(Value);
 
-  public static readonly CodeLanguage CSharp = new("CSharp");
-  public bool IsCSharp => CSharp.Equals(Value);
+    public static readonly CodeLanguage CSharp = new("CSharp");
+    public bool IsCSharp => CSharp.Equals(Value);
 
-  public static readonly CodeLanguage Css = new("Css");
-  public bool IsCss => Css.Equals(Value);
+    public static readonly CodeLanguage Css = new("Css");
+    public bool IsCss => Css.Equals(Value);
 
-  public static readonly CodeLanguage Dos = new("Dos");
-  public bool IsDos => Dos.Equals(Value);
+    public static readonly CodeLanguage Dos = new("Dos");
+    public bool IsDos => Dos.Equals(Value);
 
-  public static readonly CodeLanguage Go = new("Go");
-  public bool IsGo => Go.Equals(Value);
+    public static readonly CodeLanguage Go = new("Go");
+    public bool IsGo => Go.Equals(Value);
 
-  public static readonly CodeLanguage Graphql = new("Graphql");
-  public bool IsGraphql => Graphql.Equals(Value);
+    public static readonly CodeLanguage Graphql = new("Graphql");
+    public bool IsGraphql => Graphql.Equals(Value);
 
-  public static readonly CodeLanguage Html = new("Html");
-  public bool IsHtml => Html.Equals(Value);
+    public static readonly CodeLanguage Html = new("Html");
+    public bool IsHtml => Html.Equals(Value);
 
-  public static readonly CodeLanguage Java = new("Java");
-  public bool IsJava => Java.Equals(Value);
+    public static readonly CodeLanguage Java = new("Java");
+    public bool IsJava => Java.Equals(Value);
 
-  public static readonly CodeLanguage JavaScript = new("JavaScript");
-  public bool IsJavaScript => JavaScript.Equals(Value);
+    public static readonly CodeLanguage JavaScript = new("JavaScript");
+    public bool IsJavaScript => JavaScript.Equals(Value);
 
-  public static readonly CodeLanguage Json = new("Json");
-  public bool IsJson => Json.Equals(Value);
+    public static readonly CodeLanguage Json = new("Json");
+    public bool IsJson => Json.Equals(Value);
 
-  public static readonly CodeLanguage ObjectiveC = new("ObjectiveC");
-  public bool IsObjectiveC => ObjectiveC.Equals(Value);
+    public static readonly CodeLanguage ObjectiveC = new("ObjectiveC");
+    public bool IsObjectiveC => ObjectiveC.Equals(Value);
 
-  public static readonly CodeLanguage Perl = new("Perl");
-  public bool IsPerl => Perl.Equals(Value);
+    public static readonly CodeLanguage Perl = new("Perl");
+    public bool IsPerl => Perl.Equals(Value);
 
-  public static readonly CodeLanguage Php = new("Php");
-  public bool IsPhp => Php.Equals(Value);
+    public static readonly CodeLanguage Php = new("Php");
+    public bool IsPhp => Php.Equals(Value);
 
-  public static readonly CodeLanguage PlainText = new("PlainText");
-  public bool IsPlainText => PlainText.Equals(Value);
+    public static readonly CodeLanguage PlainText = new("PlainText");
+    public bool IsPlainText => PlainText.Equals(Value);
 
-  public static readonly CodeLanguage PowerShell = new("PowerShell");
-  public bool IsPowerShell => PowerShell.Equals(Value);
+    public static readonly CodeLanguage PowerShell = new("PowerShell");
+    public bool IsPowerShell => PowerShell.Equals(Value);
 
-  public static readonly CodeLanguage Python = new("Python");
-  public bool IsPython => Python.Equals(Value);
+    public static readonly CodeLanguage Python = new("Python");
+    public bool IsPython => Python.Equals(Value);
 
-  public static readonly CodeLanguage Sql = new("Sql");
-  public bool IsSql => Sql.Equals(Value);
+    public static readonly CodeLanguage Sql = new("Sql");
+    public bool IsSql => Sql.Equals(Value);
 
-  public static readonly CodeLanguage TypeScript = new("TypeScript");
-  public bool IsTypeScript => TypeScript.Equals(Value);
+    public static readonly CodeLanguage TypeScript = new("TypeScript");
+    public bool IsTypeScript => TypeScript.Equals(Value);
 
-  public static readonly CodeLanguage VbNet = new("VbNet");
-  public bool IsVbNet => VbNet.Equals(Value);
+    public static readonly CodeLanguage VbNet = new("VbNet");
+    public bool IsVbNet => VbNet.Equals(Value);
 
-  public static readonly CodeLanguage Verilog = new("Verilog");
-  public bool IsVerilog => Verilog.Equals(Value);
+    public static readonly CodeLanguage Verilog = new("Verilog");
+    public bool IsVerilog => Verilog.Equals(Value);
 
-  public static readonly CodeLanguage Vhdl = new("Vhdl");
-  public bool IsVhdl => Vhdl.Equals(Value);
+    public static readonly CodeLanguage Vhdl = new("Vhdl");
+    public bool IsVhdl => Vhdl.Equals(Value);
 
-  public static readonly CodeLanguage Xml = new("Xml");
-  public bool IsXml => Xml.Equals(Value);
+    public static readonly CodeLanguage Xml = new("Xml");
+    public bool IsXml => Xml.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<FallbackElement>))]
 public class FallbackElement(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly FallbackElement Drop = new("drop");
-  public bool IsDrop => Drop.Equals(Value);
+    public static readonly FallbackElement Drop = new("drop");
+    public bool IsDrop => Drop.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<ImageSize>))]
 public class ImageSize(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ImageSize Small = new("Small");
-  public bool IsSmall => Small.Equals(Value);
+    public static readonly ImageSize Small = new("Small");
+    public bool IsSmall => Small.Equals(Value);
 
-  public static readonly ImageSize Medium = new("Medium");
-  public bool IsMedium => Medium.Equals(Value);
+    public static readonly ImageSize Medium = new("Medium");
+    public bool IsMedium => Medium.Equals(Value);
 
-  public static readonly ImageSize Large = new("Large");
-  public bool IsLarge => Large.Equals(Value);
+    public static readonly ImageSize Large = new("Large");
+    public bool IsLarge => Large.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<SizeEnum>))]
 public class SizeEnum(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly SizeEnum Small = new("Small");
-  public bool IsSmall => Small.Equals(Value);
+    public static readonly SizeEnum Small = new("Small");
+    public bool IsSmall => Small.Equals(Value);
 
-  public static readonly SizeEnum Default = new("Default");
-  public bool IsDefault => Default.Equals(Value);
+    public static readonly SizeEnum Default = new("Default");
+    public bool IsDefault => Default.Equals(Value);
 
-  public static readonly SizeEnum Medium = new("Medium");
-  public bool IsMedium => Medium.Equals(Value);
+    public static readonly SizeEnum Medium = new("Medium");
+    public bool IsMedium => Medium.Equals(Value);
 
-  public static readonly SizeEnum Large = new("Large");
-  public bool IsLarge => Large.Equals(Value);
+    public static readonly SizeEnum Large = new("Large");
+    public bool IsLarge => Large.Equals(Value);
 
-  public static readonly SizeEnum ExtraLarge = new("ExtraLarge");
-  public bool IsExtraLarge => ExtraLarge.Equals(Value);
+    public static readonly SizeEnum ExtraLarge = new("ExtraLarge");
+    public bool IsExtraLarge => ExtraLarge.Equals(Value);
 }
 
 [JsonConverter(typeof(JsonConverter<ThemeName>))]
 public class ThemeName(string value) : StringEnum(value, caseSensitive: false)
 {
-  public static readonly ThemeName Light = new("Light");
-  public bool IsLight => Light.Equals(Value);
+    public static readonly ThemeName Light = new("Light");
+    public bool IsLight => Light.Equals(Value);
 
-  public static readonly ThemeName Dark = new("Dark");
-  public bool IsDark => Dark.Equals(Value);
+    public static readonly ThemeName Dark = new("Dark");
+    public bool IsDark => Dark.Equals(Value);
 }
 
 internal record ObjectType(string[] DiscriminatorPropertyNames, string DiscriminatorValue, Type Type) { }
@@ -804,7 +804,7 @@ public abstract class SerializableObject { }
 
 internal sealed class CardElementJsonConverter : JsonConverter<CardElement>
 {
-  private static readonly List<ObjectType> _typeMap = new()
+    private static readonly List<ObjectType> _typeMap = new()
   {
     new ObjectType(["type"], "AdaptiveCard", typeof(AdaptiveCard)),
     new ObjectType(["type"], "Container", typeof(Container)),
@@ -852,38 +852,38 @@ internal sealed class CardElementJsonConverter : JsonConverter<CardElement>
     new ObjectType(["type"], "Column", typeof(Column)),
   };
 
-  public override CardElement? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-  {
-    if (reader.TokenType == JsonTokenType.Null) return null;
-
-    using var doc = JsonDocument.ParseValue(ref reader);
-    var root = doc.RootElement;
-
-    foreach (var type in _typeMap)
+    public override CardElement? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-      var discriminatorPropertyValues = new List<string?>();
+        if (reader.TokenType == JsonTokenType.Null) return null;
 
-      foreach (var propName in type.DiscriminatorPropertyNames)
-      {
-        if (root.TryGetProperty(propName, out var prop) && prop.ValueKind == JsonValueKind.String)
+        using var doc = JsonDocument.ParseValue(ref reader);
+        var root = doc.RootElement;
+
+        foreach (var type in _typeMap)
         {
-          discriminatorPropertyValues.Insert(0, prop.GetString());
-        }
-      }
+            var discriminatorPropertyValues = new List<string?>();
 
-      if (string.Join("", discriminatorPropertyValues) == type.DiscriminatorValue)
-      {
-        return (CardElement?)JsonSerializer.Deserialize(root.GetRawText(), type.Type, options);
-      }
+            foreach (var propName in type.DiscriminatorPropertyNames)
+            {
+                if (root.TryGetProperty(propName, out var prop) && prop.ValueKind == JsonValueKind.String)
+                {
+                    discriminatorPropertyValues.Insert(0, prop.GetString());
+                }
+            }
+
+            if (string.Join("", discriminatorPropertyValues) == type.DiscriminatorValue)
+            {
+                return (CardElement?)JsonSerializer.Deserialize(root.GetRawText(), type.Type, options);
+            }
+        }
+
+        throw new NotSupportedException($"Unable to deserialize '{root.GetRawText()}'.");
     }
 
-    throw new NotSupportedException($"Unable to deserialize '{root.GetRawText()}'.");
-  }
-
-  public override void Write(Utf8JsonWriter writer, CardElement value, JsonSerializerOptions options)
-  {
-    JsonSerializer.Serialize(writer, (object)value, value.GetType(), options);
-  }
+    public override void Write(Utf8JsonWriter writer, CardElement value, JsonSerializerOptions options)
+    {
+        JsonSerializer.Serialize(writer, (object)value, value.GetType(), options);
+    }
 }
 
 [JsonConverter(typeof(CardElementJsonConverter))]
@@ -891,7 +891,7 @@ public abstract class CardElement : SerializableObject { }
 
 internal sealed class ActionJsonConverter : JsonConverter<Action>
 {
-  private static readonly List<ObjectType> _typeMap = new()
+    private static readonly List<ObjectType> _typeMap = new()
   {
     new ObjectType(["type"], "Action.Execute", typeof(ExecuteAction)),
     new ObjectType(["type"], "Action.Submit", typeof(SubmitAction)),
@@ -902,38 +902,38 @@ internal sealed class ActionJsonConverter : JsonConverter<Action>
     new ObjectType(["type"], "Action.InsertImage", typeof(InsertImageAction)),
   };
 
-  public override Action? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-  {
-    if (reader.TokenType == JsonTokenType.Null) return null;
-
-    using var doc = JsonDocument.ParseValue(ref reader);
-    var root = doc.RootElement;
-
-    foreach (var type in _typeMap)
+    public override Action? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-      var discriminatorPropertyValues = new List<string?>();
+        if (reader.TokenType == JsonTokenType.Null) return null;
 
-      foreach (var propName in type.DiscriminatorPropertyNames)
-      {
-        if (root.TryGetProperty(propName, out var prop) && prop.ValueKind == JsonValueKind.String)
+        using var doc = JsonDocument.ParseValue(ref reader);
+        var root = doc.RootElement;
+
+        foreach (var type in _typeMap)
         {
-          discriminatorPropertyValues.Insert(0, prop.GetString());
-        }
-      }
+            var discriminatorPropertyValues = new List<string?>();
 
-      if (string.Join("", discriminatorPropertyValues) == type.DiscriminatorValue)
-      {
-        return (Action?)JsonSerializer.Deserialize(root.GetRawText(), type.Type, options);
-      }
+            foreach (var propName in type.DiscriminatorPropertyNames)
+            {
+                if (root.TryGetProperty(propName, out var prop) && prop.ValueKind == JsonValueKind.String)
+                {
+                    discriminatorPropertyValues.Insert(0, prop.GetString());
+                }
+            }
+
+            if (string.Join("", discriminatorPropertyValues) == type.DiscriminatorValue)
+            {
+                return (Action?)JsonSerializer.Deserialize(root.GetRawText(), type.Type, options);
+            }
+        }
+
+        throw new NotSupportedException($"Unable to deserialize '{root.GetRawText()}'.");
     }
 
-    throw new NotSupportedException($"Unable to deserialize '{root.GetRawText()}'.");
-  }
-
-  public override void Write(Utf8JsonWriter writer, Action value, JsonSerializerOptions options)
-  {
-    JsonSerializer.Serialize(writer, (object)value, value.GetType(), options);
-  }
+    public override void Write(Utf8JsonWriter writer, Action value, JsonSerializerOptions options)
+    {
+        JsonSerializer.Serialize(writer, (object)value, value.GetType(), options);
+    }
 }
 
 [JsonConverter(typeof(ActionJsonConverter))]
@@ -941,45 +941,45 @@ public abstract class Action : SerializableObject { }
 
 internal sealed class ContainerLayoutJsonConverter : JsonConverter<ContainerLayout>
 {
-  private static readonly List<ObjectType> _typeMap = new()
+    private static readonly List<ObjectType> _typeMap = new()
   {
     new ObjectType(["type"], "Layout.Stack", typeof(StackLayout)),
     new ObjectType(["type"], "Layout.Flow", typeof(FlowLayout)),
     new ObjectType(["type"], "Layout.AreaGrid", typeof(AreaGridLayout)),
   };
 
-  public override ContainerLayout? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-  {
-    if (reader.TokenType == JsonTokenType.Null) return null;
-
-    using var doc = JsonDocument.ParseValue(ref reader);
-    var root = doc.RootElement;
-
-    foreach (var type in _typeMap)
+    public override ContainerLayout? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-      var discriminatorPropertyValues = new List<string?>();
+        if (reader.TokenType == JsonTokenType.Null) return null;
 
-      foreach (var propName in type.DiscriminatorPropertyNames)
-      {
-        if (root.TryGetProperty(propName, out var prop) && prop.ValueKind == JsonValueKind.String)
+        using var doc = JsonDocument.ParseValue(ref reader);
+        var root = doc.RootElement;
+
+        foreach (var type in _typeMap)
         {
-          discriminatorPropertyValues.Insert(0, prop.GetString());
-        }
-      }
+            var discriminatorPropertyValues = new List<string?>();
 
-      if (string.Join("", discriminatorPropertyValues) == type.DiscriminatorValue)
-      {
-        return (ContainerLayout?)JsonSerializer.Deserialize(root.GetRawText(), type.Type, options);
-      }
+            foreach (var propName in type.DiscriminatorPropertyNames)
+            {
+                if (root.TryGetProperty(propName, out var prop) && prop.ValueKind == JsonValueKind.String)
+                {
+                    discriminatorPropertyValues.Insert(0, prop.GetString());
+                }
+            }
+
+            if (string.Join("", discriminatorPropertyValues) == type.DiscriminatorValue)
+            {
+                return (ContainerLayout?)JsonSerializer.Deserialize(root.GetRawText(), type.Type, options);
+            }
+        }
+
+        throw new NotSupportedException($"Unable to deserialize '{root.GetRawText()}'.");
     }
 
-    throw new NotSupportedException($"Unable to deserialize '{root.GetRawText()}'.");
-  }
-
-  public override void Write(Utf8JsonWriter writer, ContainerLayout value, JsonSerializerOptions options)
-  {
-    JsonSerializer.Serialize(writer, (object)value, value.GetType(), options);
-  }
+    public override void Write(Utf8JsonWriter writer, ContainerLayout value, JsonSerializerOptions options)
+    {
+        JsonSerializer.Serialize(writer, (object)value, value.GetType(), options);
+    }
 }
 
 [JsonConverter(typeof(ContainerLayoutJsonConverter))]
@@ -990,312 +990,312 @@ public abstract class ContainerLayout : SerializableObject { }
 /// </summary>
 public class AdaptiveCard : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  AdaptiveCard.
-  /// </summary>
-  public static AdaptiveCard? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<AdaptiveCard>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  AdaptiveCard.
+    /// </summary>
+    public static AdaptiveCard? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<AdaptiveCard>(json);
+    }
 
-  /// <summary>
-  /// Must be **AdaptiveCard**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "AdaptiveCard";
+    /// <summary>
+    /// Must be **AdaptiveCard**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "AdaptiveCard";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ContainerStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ContainerStyle? Style { get; set; }
 
-  /// <summary>
-  /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
-  /// </summary>
-  [JsonPropertyName("layouts")]
-  public IList<ContainerLayout>? Layouts { get; set; }
+    /// <summary>
+    /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
+    /// </summary>
+    [JsonPropertyName("layouts")]
+    public IList<ContainerLayout>? Layouts { get; set; }
 
-  /// <summary>
-  /// The minimum height, in pixels, of the container, in the `<number>px` format.
-  /// </summary>
-  [JsonPropertyName("minHeight")]
-  public string? MinHeight { get; set; }
+    /// <summary>
+    /// The minimum height, in pixels, of the container, in the `<number>px` format.
+    /// </summary>
+    [JsonPropertyName("minHeight")]
+    public string? MinHeight { get; set; }
 
-  /// <summary>
-  /// Defines the container's background image.
-  /// </summary>
-  [JsonPropertyName("backgroundImage")]
-  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
+    /// <summary>
+    /// Defines the container's background image.
+    /// </summary>
+    [JsonPropertyName("backgroundImage")]
+    public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
-  /// <summary>
-  /// Controls how the container's content should be vertically aligned.
-  /// </summary>
-  [JsonPropertyName("verticalContentAlignment")]
-  public VerticalAlignment? VerticalContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the container's content should be vertically aligned.
+    /// </summary>
+    [JsonPropertyName("verticalContentAlignment")]
+    public VerticalAlignment? VerticalContentAlignment { get; set; }
 
-  /// <summary>
-  /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
-  /// </summary>
-  [JsonPropertyName("rtl")]
-  public bool? Rtl { get; set; }
+    /// <summary>
+    /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
+    /// </summary>
+    [JsonPropertyName("rtl")]
+    public bool? Rtl { get; set; }
 
-  /// <summary>
-  /// A URL to the Adaptive Card schema the card is authored against.
-  /// </summary>
-  [JsonPropertyName("$schema")]
-  public string? Schema { get; set; }
+    /// <summary>
+    /// A URL to the Adaptive Card schema the card is authored against.
+    /// </summary>
+    [JsonPropertyName("$schema")]
+    public string? Schema { get; set; }
 
-  /// <summary>
-  /// The Adaptive Card schema version the card is authored against.
-  /// </summary>
-  [JsonPropertyName("version")]
-  public Version? Version { get; set; }
+    /// <summary>
+    /// The Adaptive Card schema version the card is authored against.
+    /// </summary>
+    [JsonPropertyName("version")]
+    public Version? Version { get; set; }
 
-  /// <summary>
-  /// The text that should be displayed if the client is not able to render the card.
-  /// </summary>
-  [JsonPropertyName("fallbackText")]
-  public string? FallbackText { get; set; }
+    /// <summary>
+    /// The text that should be displayed if the client is not able to render the card.
+    /// </summary>
+    [JsonPropertyName("fallbackText")]
+    public string? FallbackText { get; set; }
 
-  /// <summary>
-  /// The text that should be spoken for the entire card.
-  /// </summary>
-  [JsonPropertyName("speak")]
-  public string? Speak { get; set; }
+    /// <summary>
+    /// The text that should be spoken for the entire card.
+    /// </summary>
+    [JsonPropertyName("speak")]
+    public string? Speak { get; set; }
 
-  /// <summary>
-  /// Defines how the card can be refreshed by making a request to the target Bot.
-  /// </summary>
-  [JsonPropertyName("refresh")]
-  public RefreshDefinition? Refresh { get; set; }
+    /// <summary>
+    /// Defines how the card can be refreshed by making a request to the target Bot.
+    /// </summary>
+    [JsonPropertyName("refresh")]
+    public RefreshDefinition? Refresh { get; set; }
 
-  /// <summary>
-  /// Defines authentication information to enable on-behalf-of single-sign-on or just-in-time OAuth. This information is used in conjunction with the refresh property and Action.Execute in general.
-  /// </summary>
-  [JsonPropertyName("authentication")]
-  public Authentication? Authentication { get; set; }
+    /// <summary>
+    /// Defines authentication information to enable on-behalf-of single-sign-on or just-in-time OAuth. This information is used in conjunction with the refresh property and Action.Execute in general.
+    /// </summary>
+    [JsonPropertyName("authentication")]
+    public Authentication? Authentication { get; set; }
 
-  [JsonPropertyName("msteams")]
-  public TeamsCardProperties? Msteams { get; set; }
+    [JsonPropertyName("msteams")]
+    public TeamsCardProperties? Msteams { get; set; }
 
-  /// <summary>
-  /// Metadata associated with the card.
-  /// </summary>
-  [JsonPropertyName("metadata")]
-  public CardMetadata? Metadata { get; set; }
+    /// <summary>
+    /// Metadata associated with the card.
+    /// </summary>
+    [JsonPropertyName("metadata")]
+    public CardMetadata? Metadata { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The body of the card, comprised of a list of elements displayed according to the layouts property. If the layouts property is not specified, a Layout.Stack is used.
-  /// </summary>
-  [JsonPropertyName("body")]
-  public IList<CardElement>? Body { get; set; }
+    /// <summary>
+    /// The body of the card, comprised of a list of elements displayed according to the layouts property. If the layouts property is not specified, a Layout.Stack is used.
+    /// </summary>
+    [JsonPropertyName("body")]
+    public IList<CardElement>? Body { get; set; }
 
-  /// <summary>
-  /// The card level actions, which always appear at the bottom of the card.
-  /// </summary>
-  [JsonPropertyName("actions")]
-  public IList<Action>? Actions { get; set; }
+    /// <summary>
+    /// The card level actions, which always appear at the bottom of the card.
+    /// </summary>
+    [JsonPropertyName("actions")]
+    public IList<Action>? Actions { get; set; }
 
-  public AdaptiveCard(params IList<CardElement> body)
-  {
-    this.Body = body;
-  }
+    public AdaptiveCard(params IList<CardElement> body)
+    {
+        this.Body = body;
+    }
 
-  /// <summary>
-  /// Serializes this AdaptiveCard into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this AdaptiveCard into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public AdaptiveCard WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public AdaptiveCard WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public AdaptiveCard WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public AdaptiveCard WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public AdaptiveCard WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public AdaptiveCard WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public AdaptiveCard WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public AdaptiveCard WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public AdaptiveCard WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public AdaptiveCard WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public AdaptiveCard WithStyle(ContainerStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public AdaptiveCard WithStyle(ContainerStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public AdaptiveCard WithLayouts(params IList<ContainerLayout> value)
-  {
-    this.Layouts = value;
-    return this;
-  }
+    public AdaptiveCard WithLayouts(params IList<ContainerLayout> value)
+    {
+        this.Layouts = value;
+        return this;
+    }
 
-  public AdaptiveCard WithMinHeight(string value)
-  {
-    this.MinHeight = value;
-    return this;
-  }
+    public AdaptiveCard WithMinHeight(string value)
+    {
+        this.MinHeight = value;
+        return this;
+    }
 
-  public AdaptiveCard WithBackgroundImage(IUnion<string, BackgroundImage> value)
-  {
-    this.BackgroundImage = value;
-    return this;
-  }
+    public AdaptiveCard WithBackgroundImage(IUnion<string, BackgroundImage> value)
+    {
+        this.BackgroundImage = value;
+        return this;
+    }
 
-  public AdaptiveCard WithVerticalContentAlignment(VerticalAlignment value)
-  {
-    this.VerticalContentAlignment = value;
-    return this;
-  }
+    public AdaptiveCard WithVerticalContentAlignment(VerticalAlignment value)
+    {
+        this.VerticalContentAlignment = value;
+        return this;
+    }
 
-  public AdaptiveCard WithRtl(bool value)
-  {
-    this.Rtl = value;
-    return this;
-  }
+    public AdaptiveCard WithRtl(bool value)
+    {
+        this.Rtl = value;
+        return this;
+    }
 
-  public AdaptiveCard WithSchema(string value)
-  {
-    this.Schema = value;
-    return this;
-  }
+    public AdaptiveCard WithSchema(string value)
+    {
+        this.Schema = value;
+        return this;
+    }
 
-  public AdaptiveCard WithVersion(Version value)
-  {
-    this.Version = value;
-    return this;
-  }
+    public AdaptiveCard WithVersion(Version value)
+    {
+        this.Version = value;
+        return this;
+    }
 
-  public AdaptiveCard WithFallbackText(string value)
-  {
-    this.FallbackText = value;
-    return this;
-  }
+    public AdaptiveCard WithFallbackText(string value)
+    {
+        this.FallbackText = value;
+        return this;
+    }
 
-  public AdaptiveCard WithSpeak(string value)
-  {
-    this.Speak = value;
-    return this;
-  }
+    public AdaptiveCard WithSpeak(string value)
+    {
+        this.Speak = value;
+        return this;
+    }
 
-  public AdaptiveCard WithRefresh(RefreshDefinition value)
-  {
-    this.Refresh = value;
-    return this;
-  }
+    public AdaptiveCard WithRefresh(RefreshDefinition value)
+    {
+        this.Refresh = value;
+        return this;
+    }
 
-  public AdaptiveCard WithAuthentication(Authentication value)
-  {
-    this.Authentication = value;
-    return this;
-  }
+    public AdaptiveCard WithAuthentication(Authentication value)
+    {
+        this.Authentication = value;
+        return this;
+    }
 
-  public AdaptiveCard WithMsteams(TeamsCardProperties value)
-  {
-    this.Msteams = value;
-    return this;
-  }
+    public AdaptiveCard WithMsteams(TeamsCardProperties value)
+    {
+        this.Msteams = value;
+        return this;
+    }
 
-  public AdaptiveCard WithMetadata(CardMetadata value)
-  {
-    this.Metadata = value;
-    return this;
-  }
+    public AdaptiveCard WithMetadata(CardMetadata value)
+    {
+        this.Metadata = value;
+        return this;
+    }
 
-  public AdaptiveCard WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public AdaptiveCard WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public AdaptiveCard WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public AdaptiveCard WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public AdaptiveCard WithBody(params IList<CardElement> value)
-  {
-    this.Body = value;
-    return this;
-  }
+    public AdaptiveCard WithBody(params IList<CardElement> value)
+    {
+        this.Body = value;
+        return this;
+    }
 
-  public AdaptiveCard WithActions(params IList<Action> value)
-  {
-    this.Actions = value;
-    return this;
-  }
+    public AdaptiveCard WithActions(params IList<Action> value)
+    {
+        this.Actions = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -1303,31 +1303,31 @@ public class AdaptiveCard : CardElement
 /// </summary>
 public class HostCapabilities : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  HostCapabilities.
-  /// </summary>
-  public static HostCapabilities? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<HostCapabilities>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  HostCapabilities.
+    /// </summary>
+    public static HostCapabilities? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<HostCapabilities>(json);
+    }
 
 
-  /// <summary>
-  /// Serializes this HostCapabilities into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
-  [JsonExtensionData]
-  public IDictionary<string, object?> NonSchemaProperties { get; set; } = new Dictionary<string, object?>();
+    /// <summary>
+    /// Serializes this HostCapabilities into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
+    [JsonExtensionData]
+    public IDictionary<string, object?> NonSchemaProperties { get; set; } = new Dictionary<string, object?>();
 }
 
 /// <summary>
@@ -1335,192 +1335,192 @@ public class HostCapabilities : SerializableObject
 /// </summary>
 public class ExecuteAction : Action
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ExecuteAction.
-  /// </summary>
-  public static ExecuteAction? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ExecuteAction>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ExecuteAction.
+    /// </summary>
+    public static ExecuteAction? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ExecuteAction>(json);
+    }
 
-  /// <summary>
-  /// Must be **Action.Execute**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Action.Execute";
+    /// <summary>
+    /// Must be **Action.Execute**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Action.Execute";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The title of the action, as it appears on buttons.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the action, as it appears on buttons.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
-  /// 
-  /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
-  /// </summary>
-  [JsonPropertyName("iconUrl")]
-  public string? IconUrl { get; set; }
+    /// <summary>
+    /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
+    /// 
+    /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
+    /// </summary>
+    [JsonPropertyName("iconUrl")]
+    public string? IconUrl { get; set; }
 
-  /// <summary>
-  /// Control the style of the action, affecting its visual and spoken representations.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ActionStyle? Style { get; set; }
+    /// <summary>
+    /// Control the style of the action, affecting its visual and spoken representations.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ActionStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
-  /// </summary>
-  [JsonPropertyName("mode")]
-  public ActionMode? Mode { get; set; }
+    /// <summary>
+    /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
+    /// </summary>
+    [JsonPropertyName("mode")]
+    public ActionMode? Mode { get; set; }
 
-  /// <summary>
-  /// The tooltip text to display when the action is hovered over.
-  /// </summary>
-  [JsonPropertyName("tooltip")]
-  public string? Tooltip { get; set; }
+    /// <summary>
+    /// The tooltip text to display when the action is hovered over.
+    /// </summary>
+    [JsonPropertyName("tooltip")]
+    public string? Tooltip { get; set; }
 
-  /// <summary>
-  /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
-  /// </summary>
-  [JsonPropertyName("isEnabled")]
-  public bool? IsEnabled { get; set; }
+    /// <summary>
+    /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
+    /// </summary>
+    [JsonPropertyName("isEnabled")]
+    public bool? IsEnabled { get; set; }
 
-  /// <summary>
-  /// The data to send to the Bot when the action is executed. When expressed as an object, `data` is sent back to the Bot when the action is executed, adorned with the values of the inputs expressed as key/value pairs, where the key is the Id of the input. If `data` is expressed as a string, input values are not sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IUnion<string, SubmitActionData>? Data { get; set; }
+    /// <summary>
+    /// The data to send to the Bot when the action is executed. When expressed as an object, `data` is sent back to the Bot when the action is executed, adorned with the values of the inputs expressed as key/value pairs, where the key is the Id of the input. If `data` is expressed as a string, input values are not sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IUnion<string, SubmitActionData>? Data { get; set; }
 
-  /// <summary>
-  /// The Ids of the inputs associated with the Action.Submit. When the action is executed, the values of the associated inputs are sent to the Bot. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("associatedInputs")]
-  public AssociatedInputs? AssociatedInputs { get; set; }
+    /// <summary>
+    /// The Ids of the inputs associated with the Action.Submit. When the action is executed, the values of the associated inputs are sent to the Bot. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("associatedInputs")]
+    public AssociatedInputs? AssociatedInputs { get; set; }
 
-  /// <summary>
-  /// Controls if the action is enabled only if at least one required input has been filled by the user.
-  /// </summary>
-  [JsonPropertyName("conditionallyEnabled")]
-  public bool? ConditionallyEnabled { get; set; }
+    /// <summary>
+    /// Controls if the action is enabled only if at least one required input has been filled by the user.
+    /// </summary>
+    [JsonPropertyName("conditionallyEnabled")]
+    public bool? ConditionallyEnabled { get; set; }
 
-  /// <summary>
-  /// The verb of the action.
-  /// </summary>
-  [JsonPropertyName("verb")]
-  public string? Verb { get; set; }
+    /// <summary>
+    /// The verb of the action.
+    /// </summary>
+    [JsonPropertyName("verb")]
+    public string? Verb { get; set; }
 
-  /// <summary>
-  /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<Action, FallbackAction>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this ExecuteAction into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ExecuteAction into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ExecuteAction WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ExecuteAction WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ExecuteAction WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ExecuteAction WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ExecuteAction WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public ExecuteAction WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public ExecuteAction WithIconUrl(string value)
-  {
-    this.IconUrl = value;
-    return this;
-  }
+    public ExecuteAction WithIconUrl(string value)
+    {
+        this.IconUrl = value;
+        return this;
+    }
 
-  public ExecuteAction WithStyle(ActionStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public ExecuteAction WithStyle(ActionStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public ExecuteAction WithMode(ActionMode value)
-  {
-    this.Mode = value;
-    return this;
-  }
+    public ExecuteAction WithMode(ActionMode value)
+    {
+        this.Mode = value;
+        return this;
+    }
 
-  public ExecuteAction WithTooltip(string value)
-  {
-    this.Tooltip = value;
-    return this;
-  }
+    public ExecuteAction WithTooltip(string value)
+    {
+        this.Tooltip = value;
+        return this;
+    }
 
-  public ExecuteAction WithIsEnabled(bool value)
-  {
-    this.IsEnabled = value;
-    return this;
-  }
+    public ExecuteAction WithIsEnabled(bool value)
+    {
+        this.IsEnabled = value;
+        return this;
+    }
 
-  public ExecuteAction WithData(IUnion<string, SubmitActionData> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public ExecuteAction WithData(IUnion<string, SubmitActionData> value)
+    {
+        this.Data = value;
+        return this;
+    }
 
-  public ExecuteAction WithAssociatedInputs(AssociatedInputs value)
-  {
-    this.AssociatedInputs = value;
-    return this;
-  }
+    public ExecuteAction WithAssociatedInputs(AssociatedInputs value)
+    {
+        this.AssociatedInputs = value;
+        return this;
+    }
 
-  public ExecuteAction WithConditionallyEnabled(bool value)
-  {
-    this.ConditionallyEnabled = value;
-    return this;
-  }
+    public ExecuteAction WithConditionallyEnabled(bool value)
+    {
+        this.ConditionallyEnabled = value;
+        return this;
+    }
 
-  public ExecuteAction WithVerb(string value)
-  {
-    this.Verb = value;
-    return this;
-  }
+    public ExecuteAction WithVerb(string value)
+    {
+        this.Verb = value;
+        return this;
+    }
 
-  public ExecuteAction WithFallback(IUnion<Action, FallbackAction> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ExecuteAction WithFallback(IUnion<Action, FallbackAction> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -1528,39 +1528,39 @@ public class ExecuteAction : Action
 /// </summary>
 public class SubmitActionData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  SubmitActionData.
-  /// </summary>
-  public static SubmitActionData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<SubmitActionData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  SubmitActionData.
+    /// </summary>
+    public static SubmitActionData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<SubmitActionData>(json);
+    }
 
-  [JsonPropertyName("msteams")]
-  public object? Msteams { get; set; }
+    [JsonPropertyName("msteams")]
+    public object? Msteams { get; set; }
 
-  /// <summary>
-  /// Serializes this SubmitActionData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this SubmitActionData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public SubmitActionData WithMsteams(object value)
-  {
-    this.Msteams = value;
-    return this;
-  }
-  [JsonExtensionData]
-  public IDictionary<string, object?> NonSchemaProperties { get; set; } = new Dictionary<string, object?>();
+    public SubmitActionData WithMsteams(object value)
+    {
+        this.Msteams = value;
+        return this;
+    }
+    [JsonExtensionData]
+    public IDictionary<string, object?> NonSchemaProperties { get; set; } = new Dictionary<string, object?>();
 }
 
 /// <summary>
@@ -1568,51 +1568,51 @@ public class SubmitActionData : SerializableObject
 /// </summary>
 public class ImBackSubmitActionData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ImBackSubmitActionData.
-  /// </summary>
-  public static ImBackSubmitActionData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ImBackSubmitActionData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ImBackSubmitActionData.
+    /// </summary>
+    public static ImBackSubmitActionData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ImBackSubmitActionData>(json);
+    }
 
-  /// <summary>
-  /// Must be **imBack**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "imBack";
+    /// <summary>
+    /// Must be **imBack**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "imBack";
 
-  /// <summary>
-  /// The value that will be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The value that will be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  public ImBackSubmitActionData(string value)
-  {
-    this.Value = value;
-  }
+    public ImBackSubmitActionData(string value)
+    {
+        this.Value = value;
+    }
 
-  /// <summary>
-  /// Serializes this ImBackSubmitActionData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ImBackSubmitActionData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ImBackSubmitActionData WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public ImBackSubmitActionData WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -1620,51 +1620,51 @@ public class ImBackSubmitActionData : SerializableObject
 /// </summary>
 public class InvokeSubmitActionData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  InvokeSubmitActionData.
-  /// </summary>
-  public static InvokeSubmitActionData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<InvokeSubmitActionData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  InvokeSubmitActionData.
+    /// </summary>
+    public static InvokeSubmitActionData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<InvokeSubmitActionData>(json);
+    }
 
-  /// <summary>
-  /// Must be **invoke**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "invoke";
+    /// <summary>
+    /// Must be **invoke**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "invoke";
 
-  /// <summary>
-  /// The object to send to the Bot with the Invoke request.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public object? Value { get; set; }
+    /// <summary>
+    /// The object to send to the Bot with the Invoke request.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public object? Value { get; set; }
 
-  public InvokeSubmitActionData(object value)
-  {
-    this.Value = value;
-  }
+    public InvokeSubmitActionData(object value)
+    {
+        this.Value = value;
+    }
 
-  /// <summary>
-  /// Serializes this InvokeSubmitActionData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this InvokeSubmitActionData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public InvokeSubmitActionData WithValue(object value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public InvokeSubmitActionData WithValue(object value)
+    {
+        this.Value = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -1672,70 +1672,70 @@ public class InvokeSubmitActionData : SerializableObject
 /// </summary>
 public class MessageBackSubmitActionData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  MessageBackSubmitActionData.
-  /// </summary>
-  public static MessageBackSubmitActionData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<MessageBackSubmitActionData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  MessageBackSubmitActionData.
+    /// </summary>
+    public static MessageBackSubmitActionData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<MessageBackSubmitActionData>(json);
+    }
 
-  /// <summary>
-  /// Must be **messageBack**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "messageBack";
+    /// <summary>
+    /// Must be **messageBack**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "messageBack";
 
-  /// <summary>
-  /// The text that will be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("text")]
-  public string? Text { get; set; }
+    /// <summary>
+    /// The text that will be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("text")]
+    public string? Text { get; set; }
 
-  /// <summary>
-  /// The optional text that will be displayed as a new message in the conversation, as if the end-user sent it. `displayText` is not sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("displayText")]
-  public string? DisplayText { get; set; }
+    /// <summary>
+    /// The optional text that will be displayed as a new message in the conversation, as if the end-user sent it. `displayText` is not sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("displayText")]
+    public string? DisplayText { get; set; }
 
-  /// <summary>
-  /// Optional additional value that will be sent to the Bot. For instance, `value` can encode specific context for the action, such as unique identifiers or a JSON object.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// Optional additional value that will be sent to the Bot. For instance, `value` can encode specific context for the action, such as unique identifiers or a JSON object.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  /// <summary>
-  /// Serializes this MessageBackSubmitActionData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this MessageBackSubmitActionData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public MessageBackSubmitActionData WithText(string value)
-  {
-    this.Text = value;
-    return this;
-  }
+    public MessageBackSubmitActionData WithText(string value)
+    {
+        this.Text = value;
+        return this;
+    }
 
-  public MessageBackSubmitActionData WithDisplayText(string value)
-  {
-    this.DisplayText = value;
-    return this;
-  }
+    public MessageBackSubmitActionData WithDisplayText(string value)
+    {
+        this.DisplayText = value;
+        return this;
+    }
 
-  public MessageBackSubmitActionData WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public MessageBackSubmitActionData WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -1743,51 +1743,51 @@ public class MessageBackSubmitActionData : SerializableObject
 /// </summary>
 public class SigninSubmitActionData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  SigninSubmitActionData.
-  /// </summary>
-  public static SigninSubmitActionData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<SigninSubmitActionData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  SigninSubmitActionData.
+    /// </summary>
+    public static SigninSubmitActionData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<SigninSubmitActionData>(json);
+    }
 
-  /// <summary>
-  /// Must be **signin**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "signin";
+    /// <summary>
+    /// Must be **signin**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "signin";
 
-  /// <summary>
-  /// The URL to redirect the end-user for signing in.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The URL to redirect the end-user for signing in.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  public SigninSubmitActionData(string value)
-  {
-    this.Value = value;
-  }
+    public SigninSubmitActionData(string value)
+    {
+        this.Value = value;
+    }
 
-  /// <summary>
-  /// Serializes this SigninSubmitActionData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this SigninSubmitActionData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public SigninSubmitActionData WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public SigninSubmitActionData WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -1795,34 +1795,34 @@ public class SigninSubmitActionData : SerializableObject
 /// </summary>
 public class TaskFetchSubmitActionData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TaskFetchSubmitActionData.
-  /// </summary>
-  public static TaskFetchSubmitActionData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TaskFetchSubmitActionData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TaskFetchSubmitActionData.
+    /// </summary>
+    public static TaskFetchSubmitActionData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TaskFetchSubmitActionData>(json);
+    }
 
-  /// <summary>
-  /// Must be **task/fetch**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "task/fetch";
+    /// <summary>
+    /// Must be **task/fetch**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "task/fetch";
 
-  /// <summary>
-  /// Serializes this TaskFetchSubmitActionData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TaskFetchSubmitActionData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 }
 
 /// <summary>
@@ -1830,189 +1830,189 @@ public class TaskFetchSubmitActionData : SerializableObject
 /// </summary>
 public class SubmitAction : Action
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  SubmitAction.
-  /// </summary>
-  public static SubmitAction? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<SubmitAction>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  SubmitAction.
+    /// </summary>
+    public static SubmitAction? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<SubmitAction>(json);
+    }
 
-  /// <summary>
-  /// Must be **Action.Submit**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Action.Submit";
+    /// <summary>
+    /// Must be **Action.Submit**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Action.Submit";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The title of the action, as it appears on buttons.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the action, as it appears on buttons.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
-  /// 
-  /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
-  /// </summary>
-  [JsonPropertyName("iconUrl")]
-  public string? IconUrl { get; set; }
+    /// <summary>
+    /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
+    /// 
+    /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
+    /// </summary>
+    [JsonPropertyName("iconUrl")]
+    public string? IconUrl { get; set; }
 
-  /// <summary>
-  /// Control the style of the action, affecting its visual and spoken representations.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ActionStyle? Style { get; set; }
+    /// <summary>
+    /// Control the style of the action, affecting its visual and spoken representations.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ActionStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
-  /// </summary>
-  [JsonPropertyName("mode")]
-  public ActionMode? Mode { get; set; }
+    /// <summary>
+    /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
+    /// </summary>
+    [JsonPropertyName("mode")]
+    public ActionMode? Mode { get; set; }
 
-  /// <summary>
-  /// The tooltip text to display when the action is hovered over.
-  /// </summary>
-  [JsonPropertyName("tooltip")]
-  public string? Tooltip { get; set; }
+    /// <summary>
+    /// The tooltip text to display when the action is hovered over.
+    /// </summary>
+    [JsonPropertyName("tooltip")]
+    public string? Tooltip { get; set; }
 
-  /// <summary>
-  /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
-  /// </summary>
-  [JsonPropertyName("isEnabled")]
-  public bool? IsEnabled { get; set; }
+    /// <summary>
+    /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
+    /// </summary>
+    [JsonPropertyName("isEnabled")]
+    public bool? IsEnabled { get; set; }
 
-  /// <summary>
-  /// The data to send to the Bot when the action is executed. When expressed as an object, `data` is sent back to the Bot when the action is executed, adorned with the values of the inputs expressed as key/value pairs, where the key is the Id of the input. If `data` is expressed as a string, input values are not sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IUnion<string, SubmitActionData>? Data { get; set; }
+    /// <summary>
+    /// The data to send to the Bot when the action is executed. When expressed as an object, `data` is sent back to the Bot when the action is executed, adorned with the values of the inputs expressed as key/value pairs, where the key is the Id of the input. If `data` is expressed as a string, input values are not sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IUnion<string, SubmitActionData>? Data { get; set; }
 
-  /// <summary>
-  /// The Ids of the inputs associated with the Action.Submit. When the action is executed, the values of the associated inputs are sent to the Bot. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("associatedInputs")]
-  public AssociatedInputs? AssociatedInputs { get; set; }
+    /// <summary>
+    /// The Ids of the inputs associated with the Action.Submit. When the action is executed, the values of the associated inputs are sent to the Bot. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("associatedInputs")]
+    public AssociatedInputs? AssociatedInputs { get; set; }
 
-  /// <summary>
-  /// Controls if the action is enabled only if at least one required input has been filled by the user.
-  /// </summary>
-  [JsonPropertyName("conditionallyEnabled")]
-  public bool? ConditionallyEnabled { get; set; }
+    /// <summary>
+    /// Controls if the action is enabled only if at least one required input has been filled by the user.
+    /// </summary>
+    [JsonPropertyName("conditionallyEnabled")]
+    public bool? ConditionallyEnabled { get; set; }
 
-  [JsonPropertyName("msteams")]
-  public TeamsSubmitActionProperties? Msteams { get; set; }
+    [JsonPropertyName("msteams")]
+    public TeamsSubmitActionProperties? Msteams { get; set; }
 
-  /// <summary>
-  /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<Action, FallbackAction>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this SubmitAction into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this SubmitAction into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public SubmitAction WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public SubmitAction WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public SubmitAction WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public SubmitAction WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public SubmitAction WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public SubmitAction WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public SubmitAction WithIconUrl(string value)
-  {
-    this.IconUrl = value;
-    return this;
-  }
+    public SubmitAction WithIconUrl(string value)
+    {
+        this.IconUrl = value;
+        return this;
+    }
 
-  public SubmitAction WithStyle(ActionStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public SubmitAction WithStyle(ActionStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public SubmitAction WithMode(ActionMode value)
-  {
-    this.Mode = value;
-    return this;
-  }
+    public SubmitAction WithMode(ActionMode value)
+    {
+        this.Mode = value;
+        return this;
+    }
 
-  public SubmitAction WithTooltip(string value)
-  {
-    this.Tooltip = value;
-    return this;
-  }
+    public SubmitAction WithTooltip(string value)
+    {
+        this.Tooltip = value;
+        return this;
+    }
 
-  public SubmitAction WithIsEnabled(bool value)
-  {
-    this.IsEnabled = value;
-    return this;
-  }
+    public SubmitAction WithIsEnabled(bool value)
+    {
+        this.IsEnabled = value;
+        return this;
+    }
 
-  public SubmitAction WithData(IUnion<string, SubmitActionData> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public SubmitAction WithData(IUnion<string, SubmitActionData> value)
+    {
+        this.Data = value;
+        return this;
+    }
 
-  public SubmitAction WithAssociatedInputs(AssociatedInputs value)
-  {
-    this.AssociatedInputs = value;
-    return this;
-  }
+    public SubmitAction WithAssociatedInputs(AssociatedInputs value)
+    {
+        this.AssociatedInputs = value;
+        return this;
+    }
 
-  public SubmitAction WithConditionallyEnabled(bool value)
-  {
-    this.ConditionallyEnabled = value;
-    return this;
-  }
+    public SubmitAction WithConditionallyEnabled(bool value)
+    {
+        this.ConditionallyEnabled = value;
+        return this;
+    }
 
-  public SubmitAction WithMsteams(TeamsSubmitActionProperties value)
-  {
-    this.Msteams = value;
-    return this;
-  }
+    public SubmitAction WithMsteams(TeamsSubmitActionProperties value)
+    {
+        this.Msteams = value;
+        return this;
+    }
 
-  public SubmitAction WithFallback(IUnion<Action, FallbackAction> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public SubmitAction WithFallback(IUnion<Action, FallbackAction> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -2020,40 +2020,40 @@ public class SubmitAction : Action
 /// </summary>
 public class TeamsSubmitActionProperties : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TeamsSubmitActionProperties.
-  /// </summary>
-  public static TeamsSubmitActionProperties? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TeamsSubmitActionProperties>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TeamsSubmitActionProperties.
+    /// </summary>
+    public static TeamsSubmitActionProperties? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TeamsSubmitActionProperties>(json);
+    }
 
-  /// <summary>
-  /// Defines how feedback is provided to the end-user when the action is executed.
-  /// </summary>
-  [JsonPropertyName("feedback")]
-  public TeamsSubmitActionFeedback? Feedback { get; set; }
+    /// <summary>
+    /// Defines how feedback is provided to the end-user when the action is executed.
+    /// </summary>
+    [JsonPropertyName("feedback")]
+    public TeamsSubmitActionFeedback? Feedback { get; set; }
 
-  /// <summary>
-  /// Serializes this TeamsSubmitActionProperties into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TeamsSubmitActionProperties into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TeamsSubmitActionProperties WithFeedback(TeamsSubmitActionFeedback value)
-  {
-    this.Feedback = value;
-    return this;
-  }
+    public TeamsSubmitActionProperties WithFeedback(TeamsSubmitActionFeedback value)
+    {
+        this.Feedback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -2061,40 +2061,40 @@ public class TeamsSubmitActionProperties : SerializableObject
 /// </summary>
 public class TeamsSubmitActionFeedback : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TeamsSubmitActionFeedback.
-  /// </summary>
-  public static TeamsSubmitActionFeedback? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TeamsSubmitActionFeedback>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TeamsSubmitActionFeedback.
+    /// </summary>
+    public static TeamsSubmitActionFeedback? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TeamsSubmitActionFeedback>(json);
+    }
 
-  /// <summary>
-  /// Defines if a feedback message should be displayed after the action is executed.
-  /// </summary>
-  [JsonPropertyName("hide")]
-  public bool? Hide { get; set; }
+    /// <summary>
+    /// Defines if a feedback message should be displayed after the action is executed.
+    /// </summary>
+    [JsonPropertyName("hide")]
+    public bool? Hide { get; set; }
 
-  /// <summary>
-  /// Serializes this TeamsSubmitActionFeedback into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TeamsSubmitActionFeedback into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TeamsSubmitActionFeedback WithHide(bool value)
-  {
-    this.Hide = value;
-    return this;
-  }
+    public TeamsSubmitActionFeedback WithHide(bool value)
+    {
+        this.Hide = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -2102,161 +2102,161 @@ public class TeamsSubmitActionFeedback : SerializableObject
 /// </summary>
 public class OpenUrlAction : Action
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  OpenUrlAction.
-  /// </summary>
-  public static OpenUrlAction? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<OpenUrlAction>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  OpenUrlAction.
+    /// </summary>
+    public static OpenUrlAction? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<OpenUrlAction>(json);
+    }
 
-  /// <summary>
-  /// Must be **Action.OpenUrl**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Action.OpenUrl";
+    /// <summary>
+    /// Must be **Action.OpenUrl**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Action.OpenUrl";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The title of the action, as it appears on buttons.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the action, as it appears on buttons.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
-  /// 
-  /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
-  /// </summary>
-  [JsonPropertyName("iconUrl")]
-  public string? IconUrl { get; set; }
+    /// <summary>
+    /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
+    /// 
+    /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
+    /// </summary>
+    [JsonPropertyName("iconUrl")]
+    public string? IconUrl { get; set; }
 
-  /// <summary>
-  /// Control the style of the action, affecting its visual and spoken representations.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ActionStyle? Style { get; set; }
+    /// <summary>
+    /// Control the style of the action, affecting its visual and spoken representations.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ActionStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
-  /// </summary>
-  [JsonPropertyName("mode")]
-  public ActionMode? Mode { get; set; }
+    /// <summary>
+    /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
+    /// </summary>
+    [JsonPropertyName("mode")]
+    public ActionMode? Mode { get; set; }
 
-  /// <summary>
-  /// The tooltip text to display when the action is hovered over.
-  /// </summary>
-  [JsonPropertyName("tooltip")]
-  public string? Tooltip { get; set; }
+    /// <summary>
+    /// The tooltip text to display when the action is hovered over.
+    /// </summary>
+    [JsonPropertyName("tooltip")]
+    public string? Tooltip { get; set; }
 
-  /// <summary>
-  /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
-  /// </summary>
-  [JsonPropertyName("isEnabled")]
-  public bool? IsEnabled { get; set; }
+    /// <summary>
+    /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
+    /// </summary>
+    [JsonPropertyName("isEnabled")]
+    public bool? IsEnabled { get; set; }
 
-  /// <summary>
-  /// The URL to open.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL to open.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<Action, FallbackAction>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
-  public OpenUrlAction(string url)
-  {
-    this.Url = url;
-  }
+    public OpenUrlAction(string url)
+    {
+        this.Url = url;
+    }
 
-  /// <summary>
-  /// Serializes this OpenUrlAction into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this OpenUrlAction into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public OpenUrlAction WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public OpenUrlAction WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public OpenUrlAction WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public OpenUrlAction WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public OpenUrlAction WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public OpenUrlAction WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public OpenUrlAction WithIconUrl(string value)
-  {
-    this.IconUrl = value;
-    return this;
-  }
+    public OpenUrlAction WithIconUrl(string value)
+    {
+        this.IconUrl = value;
+        return this;
+    }
 
-  public OpenUrlAction WithStyle(ActionStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public OpenUrlAction WithStyle(ActionStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public OpenUrlAction WithMode(ActionMode value)
-  {
-    this.Mode = value;
-    return this;
-  }
+    public OpenUrlAction WithMode(ActionMode value)
+    {
+        this.Mode = value;
+        return this;
+    }
 
-  public OpenUrlAction WithTooltip(string value)
-  {
-    this.Tooltip = value;
-    return this;
-  }
+    public OpenUrlAction WithTooltip(string value)
+    {
+        this.Tooltip = value;
+        return this;
+    }
 
-  public OpenUrlAction WithIsEnabled(bool value)
-  {
-    this.IsEnabled = value;
-    return this;
-  }
+    public OpenUrlAction WithIsEnabled(bool value)
+    {
+        this.IsEnabled = value;
+        return this;
+    }
 
-  public OpenUrlAction WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public OpenUrlAction WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 
-  public OpenUrlAction WithFallback(IUnion<Action, FallbackAction> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public OpenUrlAction WithFallback(IUnion<Action, FallbackAction> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -2264,156 +2264,156 @@ public class OpenUrlAction : Action
 /// </summary>
 public class ToggleVisibilityAction : Action
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ToggleVisibilityAction.
-  /// </summary>
-  public static ToggleVisibilityAction? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ToggleVisibilityAction>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ToggleVisibilityAction.
+    /// </summary>
+    public static ToggleVisibilityAction? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ToggleVisibilityAction>(json);
+    }
 
-  /// <summary>
-  /// Must be **Action.ToggleVisibility**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Action.ToggleVisibility";
+    /// <summary>
+    /// Must be **Action.ToggleVisibility**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Action.ToggleVisibility";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The title of the action, as it appears on buttons.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the action, as it appears on buttons.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
-  /// 
-  /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
-  /// </summary>
-  [JsonPropertyName("iconUrl")]
-  public string? IconUrl { get; set; }
+    /// <summary>
+    /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
+    /// 
+    /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
+    /// </summary>
+    [JsonPropertyName("iconUrl")]
+    public string? IconUrl { get; set; }
 
-  /// <summary>
-  /// Control the style of the action, affecting its visual and spoken representations.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ActionStyle? Style { get; set; }
+    /// <summary>
+    /// Control the style of the action, affecting its visual and spoken representations.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ActionStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
-  /// </summary>
-  [JsonPropertyName("mode")]
-  public ActionMode? Mode { get; set; }
+    /// <summary>
+    /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
+    /// </summary>
+    [JsonPropertyName("mode")]
+    public ActionMode? Mode { get; set; }
 
-  /// <summary>
-  /// The tooltip text to display when the action is hovered over.
-  /// </summary>
-  [JsonPropertyName("tooltip")]
-  public string? Tooltip { get; set; }
+    /// <summary>
+    /// The tooltip text to display when the action is hovered over.
+    /// </summary>
+    [JsonPropertyName("tooltip")]
+    public string? Tooltip { get; set; }
 
-  /// <summary>
-  /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
-  /// </summary>
-  [JsonPropertyName("isEnabled")]
-  public bool? IsEnabled { get; set; }
+    /// <summary>
+    /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
+    /// </summary>
+    [JsonPropertyName("isEnabled")]
+    public bool? IsEnabled { get; set; }
 
-  /// <summary>
-  /// The Ids of the elements to toggle the visibility of.
-  /// </summary>
-  [JsonPropertyName("targetElements")]
-  public IUnion<IList<string>, IList<TargetElement>>? TargetElements { get; set; }
+    /// <summary>
+    /// The Ids of the elements to toggle the visibility of.
+    /// </summary>
+    [JsonPropertyName("targetElements")]
+    public IUnion<IList<string>, IList<TargetElement>>? TargetElements { get; set; }
 
-  /// <summary>
-  /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<Action, FallbackAction>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this ToggleVisibilityAction into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ToggleVisibilityAction into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ToggleVisibilityAction WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ToggleVisibilityAction WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ToggleVisibilityAction WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public ToggleVisibilityAction WithIconUrl(string value)
-  {
-    this.IconUrl = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithIconUrl(string value)
+    {
+        this.IconUrl = value;
+        return this;
+    }
 
-  public ToggleVisibilityAction WithStyle(ActionStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithStyle(ActionStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public ToggleVisibilityAction WithMode(ActionMode value)
-  {
-    this.Mode = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithMode(ActionMode value)
+    {
+        this.Mode = value;
+        return this;
+    }
 
-  public ToggleVisibilityAction WithTooltip(string value)
-  {
-    this.Tooltip = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithTooltip(string value)
+    {
+        this.Tooltip = value;
+        return this;
+    }
 
-  public ToggleVisibilityAction WithIsEnabled(bool value)
-  {
-    this.IsEnabled = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithIsEnabled(bool value)
+    {
+        this.IsEnabled = value;
+        return this;
+    }
 
-  public ToggleVisibilityAction WithTargetElements(IUnion<IList<string>, IList<TargetElement>> value)
-  {
-    this.TargetElements = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithTargetElements(IUnion<IList<string>, IList<TargetElement>> value)
+    {
+        this.TargetElements = value;
+        return this;
+    }
 
-  public ToggleVisibilityAction WithFallback(IUnion<Action, FallbackAction> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ToggleVisibilityAction WithFallback(IUnion<Action, FallbackAction> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -2421,52 +2421,52 @@ public class ToggleVisibilityAction : Action
 /// </summary>
 public class TargetElement : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TargetElement.
-  /// </summary>
-  public static TargetElement? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TargetElement>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TargetElement.
+    /// </summary>
+    public static TargetElement? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TargetElement>(json);
+    }
 
-  /// <summary>
-  /// The Id of the element to change the visibility of.
-  /// </summary>
-  [JsonPropertyName("elementId")]
-  public string? ElementId { get; set; }
+    /// <summary>
+    /// The Id of the element to change the visibility of.
+    /// </summary>
+    [JsonPropertyName("elementId")]
+    public string? ElementId { get; set; }
 
-  /// <summary>
-  /// The new visibility state of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// The new visibility state of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Serializes this TargetElement into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TargetElement into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TargetElement WithElementId(string value)
-  {
-    this.ElementId = value;
-    return this;
-  }
+    public TargetElement WithElementId(string value)
+    {
+        this.ElementId = value;
+        return this;
+    }
 
-  public TargetElement WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public TargetElement WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -2474,156 +2474,156 @@ public class TargetElement : SerializableObject
 /// </summary>
 public class ShowCardAction : Action
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ShowCardAction.
-  /// </summary>
-  public static ShowCardAction? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ShowCardAction>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ShowCardAction.
+    /// </summary>
+    public static ShowCardAction? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ShowCardAction>(json);
+    }
 
-  /// <summary>
-  /// Must be **Action.ShowCard**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Action.ShowCard";
+    /// <summary>
+    /// Must be **Action.ShowCard**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Action.ShowCard";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The title of the action, as it appears on buttons.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the action, as it appears on buttons.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
-  /// 
-  /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
-  /// </summary>
-  [JsonPropertyName("iconUrl")]
-  public string? IconUrl { get; set; }
+    /// <summary>
+    /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
+    /// 
+    /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
+    /// </summary>
+    [JsonPropertyName("iconUrl")]
+    public string? IconUrl { get; set; }
 
-  /// <summary>
-  /// Control the style of the action, affecting its visual and spoken representations.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ActionStyle? Style { get; set; }
+    /// <summary>
+    /// Control the style of the action, affecting its visual and spoken representations.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ActionStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
-  /// </summary>
-  [JsonPropertyName("mode")]
-  public ActionMode? Mode { get; set; }
+    /// <summary>
+    /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
+    /// </summary>
+    [JsonPropertyName("mode")]
+    public ActionMode? Mode { get; set; }
 
-  /// <summary>
-  /// The tooltip text to display when the action is hovered over.
-  /// </summary>
-  [JsonPropertyName("tooltip")]
-  public string? Tooltip { get; set; }
+    /// <summary>
+    /// The tooltip text to display when the action is hovered over.
+    /// </summary>
+    [JsonPropertyName("tooltip")]
+    public string? Tooltip { get; set; }
 
-  /// <summary>
-  /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
-  /// </summary>
-  [JsonPropertyName("isEnabled")]
-  public bool? IsEnabled { get; set; }
+    /// <summary>
+    /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
+    /// </summary>
+    [JsonPropertyName("isEnabled")]
+    public bool? IsEnabled { get; set; }
 
-  /// <summary>
-  /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<Action, FallbackAction>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
-  /// <summary>
-  /// The card that should be displayed when the action is executed.
-  /// </summary>
-  [JsonPropertyName("card")]
-  public AdaptiveCard? Card { get; set; }
+    /// <summary>
+    /// The card that should be displayed when the action is executed.
+    /// </summary>
+    [JsonPropertyName("card")]
+    public AdaptiveCard? Card { get; set; }
 
-  /// <summary>
-  /// Serializes this ShowCardAction into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ShowCardAction into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ShowCardAction WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ShowCardAction WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ShowCardAction WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ShowCardAction WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ShowCardAction WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public ShowCardAction WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public ShowCardAction WithIconUrl(string value)
-  {
-    this.IconUrl = value;
-    return this;
-  }
+    public ShowCardAction WithIconUrl(string value)
+    {
+        this.IconUrl = value;
+        return this;
+    }
 
-  public ShowCardAction WithStyle(ActionStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public ShowCardAction WithStyle(ActionStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public ShowCardAction WithMode(ActionMode value)
-  {
-    this.Mode = value;
-    return this;
-  }
+    public ShowCardAction WithMode(ActionMode value)
+    {
+        this.Mode = value;
+        return this;
+    }
 
-  public ShowCardAction WithTooltip(string value)
-  {
-    this.Tooltip = value;
-    return this;
-  }
+    public ShowCardAction WithTooltip(string value)
+    {
+        this.Tooltip = value;
+        return this;
+    }
 
-  public ShowCardAction WithIsEnabled(bool value)
-  {
-    this.IsEnabled = value;
-    return this;
-  }
+    public ShowCardAction WithIsEnabled(bool value)
+    {
+        this.IsEnabled = value;
+        return this;
+    }
 
-  public ShowCardAction WithFallback(IUnion<Action, FallbackAction> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ShowCardAction WithFallback(IUnion<Action, FallbackAction> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public ShowCardAction WithCard(AdaptiveCard value)
-  {
-    this.Card = value;
-    return this;
-  }
+    public ShowCardAction WithCard(AdaptiveCard value)
+    {
+        this.Card = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -2631,156 +2631,156 @@ public class ShowCardAction : Action
 /// </summary>
 public class ResetInputsAction : Action
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ResetInputsAction.
-  /// </summary>
-  public static ResetInputsAction? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ResetInputsAction>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ResetInputsAction.
+    /// </summary>
+    public static ResetInputsAction? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ResetInputsAction>(json);
+    }
 
-  /// <summary>
-  /// Must be **Action.ResetInputs**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Action.ResetInputs";
+    /// <summary>
+    /// Must be **Action.ResetInputs**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Action.ResetInputs";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The title of the action, as it appears on buttons.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the action, as it appears on buttons.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
-  /// 
-  /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
-  /// </summary>
-  [JsonPropertyName("iconUrl")]
-  public string? IconUrl { get; set; }
+    /// <summary>
+    /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
+    /// 
+    /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
+    /// </summary>
+    [JsonPropertyName("iconUrl")]
+    public string? IconUrl { get; set; }
 
-  /// <summary>
-  /// Control the style of the action, affecting its visual and spoken representations.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ActionStyle? Style { get; set; }
+    /// <summary>
+    /// Control the style of the action, affecting its visual and spoken representations.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ActionStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
-  /// </summary>
-  [JsonPropertyName("mode")]
-  public ActionMode? Mode { get; set; }
+    /// <summary>
+    /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
+    /// </summary>
+    [JsonPropertyName("mode")]
+    public ActionMode? Mode { get; set; }
 
-  /// <summary>
-  /// The tooltip text to display when the action is hovered over.
-  /// </summary>
-  [JsonPropertyName("tooltip")]
-  public string? Tooltip { get; set; }
+    /// <summary>
+    /// The tooltip text to display when the action is hovered over.
+    /// </summary>
+    [JsonPropertyName("tooltip")]
+    public string? Tooltip { get; set; }
 
-  /// <summary>
-  /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
-  /// </summary>
-  [JsonPropertyName("isEnabled")]
-  public bool? IsEnabled { get; set; }
+    /// <summary>
+    /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
+    /// </summary>
+    [JsonPropertyName("isEnabled")]
+    public bool? IsEnabled { get; set; }
 
-  /// <summary>
-  /// The Ids of the inputs that should be reset.
-  /// </summary>
-  [JsonPropertyName("targetInputIds")]
-  public IList<string>? TargetInputIds { get; set; }
+    /// <summary>
+    /// The Ids of the inputs that should be reset.
+    /// </summary>
+    [JsonPropertyName("targetInputIds")]
+    public IList<string>? TargetInputIds { get; set; }
 
-  /// <summary>
-  /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<Action, FallbackAction>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this ResetInputsAction into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ResetInputsAction into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ResetInputsAction WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ResetInputsAction WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ResetInputsAction WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ResetInputsAction WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ResetInputsAction WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public ResetInputsAction WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public ResetInputsAction WithIconUrl(string value)
-  {
-    this.IconUrl = value;
-    return this;
-  }
+    public ResetInputsAction WithIconUrl(string value)
+    {
+        this.IconUrl = value;
+        return this;
+    }
 
-  public ResetInputsAction WithStyle(ActionStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public ResetInputsAction WithStyle(ActionStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public ResetInputsAction WithMode(ActionMode value)
-  {
-    this.Mode = value;
-    return this;
-  }
+    public ResetInputsAction WithMode(ActionMode value)
+    {
+        this.Mode = value;
+        return this;
+    }
 
-  public ResetInputsAction WithTooltip(string value)
-  {
-    this.Tooltip = value;
-    return this;
-  }
+    public ResetInputsAction WithTooltip(string value)
+    {
+        this.Tooltip = value;
+        return this;
+    }
 
-  public ResetInputsAction WithIsEnabled(bool value)
-  {
-    this.IsEnabled = value;
-    return this;
-  }
+    public ResetInputsAction WithIsEnabled(bool value)
+    {
+        this.IsEnabled = value;
+        return this;
+    }
 
-  public ResetInputsAction WithTargetInputIds(params IList<string> value)
-  {
-    this.TargetInputIds = value;
-    return this;
-  }
+    public ResetInputsAction WithTargetInputIds(params IList<string> value)
+    {
+        this.TargetInputIds = value;
+        return this;
+    }
 
-  public ResetInputsAction WithFallback(IUnion<Action, FallbackAction> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ResetInputsAction WithFallback(IUnion<Action, FallbackAction> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -2788,180 +2788,180 @@ public class ResetInputsAction : Action
 /// </summary>
 public class InsertImageAction : Action
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  InsertImageAction.
-  /// </summary>
-  public static InsertImageAction? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<InsertImageAction>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  InsertImageAction.
+    /// </summary>
+    public static InsertImageAction? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<InsertImageAction>(json);
+    }
 
-  /// <summary>
-  /// Must be **Action.InsertImage**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Action.InsertImage";
+    /// <summary>
+    /// Must be **Action.InsertImage**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Action.InsertImage";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The title of the action, as it appears on buttons.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the action, as it appears on buttons.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
-  /// 
-  /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
-  /// </summary>
-  [JsonPropertyName("iconUrl")]
-  public string? IconUrl { get; set; }
+    /// <summary>
+    /// A URL (or Base64-encoded Data URI) to a PNG, GIF, JPEG or SVG image to be displayed on the left of the action's title.
+    /// 
+    /// `iconUrl` also accepts the `<icon-name>[,regular|filled]` format to display an icon from the vast [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) instead of an image.
+    /// </summary>
+    [JsonPropertyName("iconUrl")]
+    public string? IconUrl { get; set; }
 
-  /// <summary>
-  /// Control the style of the action, affecting its visual and spoken representations.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ActionStyle? Style { get; set; }
+    /// <summary>
+    /// Control the style of the action, affecting its visual and spoken representations.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ActionStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
-  /// </summary>
-  [JsonPropertyName("mode")]
-  public ActionMode? Mode { get; set; }
+    /// <summary>
+    /// Controls if the action is primary or secondary. Secondary actions appear in an overflow menu.
+    /// </summary>
+    [JsonPropertyName("mode")]
+    public ActionMode? Mode { get; set; }
 
-  /// <summary>
-  /// The tooltip text to display when the action is hovered over.
-  /// </summary>
-  [JsonPropertyName("tooltip")]
-  public string? Tooltip { get; set; }
+    /// <summary>
+    /// The tooltip text to display when the action is hovered over.
+    /// </summary>
+    [JsonPropertyName("tooltip")]
+    public string? Tooltip { get; set; }
 
-  /// <summary>
-  /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
-  /// </summary>
-  [JsonPropertyName("isEnabled")]
-  public bool? IsEnabled { get; set; }
+    /// <summary>
+    /// Controls the enabled state of the action. A disabled action cannot be clicked. If the action is represented as a button, the button's style will reflect this state.
+    /// </summary>
+    [JsonPropertyName("isEnabled")]
+    public bool? IsEnabled { get; set; }
 
-  /// <summary>
-  /// The URL of the image to insert.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL of the image to insert.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// The alternate text for the image.
-  /// </summary>
-  [JsonPropertyName("altText")]
-  public string? AltText { get; set; }
+    /// <summary>
+    /// The alternate text for the image.
+    /// </summary>
+    [JsonPropertyName("altText")]
+    public string? AltText { get; set; }
 
-  /// <summary>
-  /// The position at which to insert the image.
-  /// </summary>
-  [JsonPropertyName("insertPosition")]
-  public ImageInsertPosition? InsertPosition { get; set; }
+    /// <summary>
+    /// The position at which to insert the image.
+    /// </summary>
+    [JsonPropertyName("insertPosition")]
+    public ImageInsertPosition? InsertPosition { get; set; }
 
-  /// <summary>
-  /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<Action, FallbackAction>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate action to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<Action, FallbackAction>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this InsertImageAction into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this InsertImageAction into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public InsertImageAction WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public InsertImageAction WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public InsertImageAction WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public InsertImageAction WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public InsertImageAction WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public InsertImageAction WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public InsertImageAction WithIconUrl(string value)
-  {
-    this.IconUrl = value;
-    return this;
-  }
+    public InsertImageAction WithIconUrl(string value)
+    {
+        this.IconUrl = value;
+        return this;
+    }
 
-  public InsertImageAction WithStyle(ActionStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public InsertImageAction WithStyle(ActionStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public InsertImageAction WithMode(ActionMode value)
-  {
-    this.Mode = value;
-    return this;
-  }
+    public InsertImageAction WithMode(ActionMode value)
+    {
+        this.Mode = value;
+        return this;
+    }
 
-  public InsertImageAction WithTooltip(string value)
-  {
-    this.Tooltip = value;
-    return this;
-  }
+    public InsertImageAction WithTooltip(string value)
+    {
+        this.Tooltip = value;
+        return this;
+    }
 
-  public InsertImageAction WithIsEnabled(bool value)
-  {
-    this.IsEnabled = value;
-    return this;
-  }
+    public InsertImageAction WithIsEnabled(bool value)
+    {
+        this.IsEnabled = value;
+        return this;
+    }
 
-  public InsertImageAction WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public InsertImageAction WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 
-  public InsertImageAction WithAltText(string value)
-  {
-    this.AltText = value;
-    return this;
-  }
+    public InsertImageAction WithAltText(string value)
+    {
+        this.AltText = value;
+        return this;
+    }
 
-  public InsertImageAction WithInsertPosition(ImageInsertPosition value)
-  {
-    this.InsertPosition = value;
-    return this;
-  }
+    public InsertImageAction WithInsertPosition(ImageInsertPosition value)
+    {
+        this.InsertPosition = value;
+        return this;
+    }
 
-  public InsertImageAction WithFallback(IUnion<Action, FallbackAction> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public InsertImageAction WithFallback(IUnion<Action, FallbackAction> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -2969,46 +2969,46 @@ public class InsertImageAction : Action
 /// </summary>
 public class StackLayout : ContainerLayout
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  StackLayout.
-  /// </summary>
-  public static StackLayout? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<StackLayout>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  StackLayout.
+    /// </summary>
+    public static StackLayout? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<StackLayout>(json);
+    }
 
-  /// <summary>
-  /// Must be **Layout.Stack**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Layout.Stack";
+    /// <summary>
+    /// Must be **Layout.Stack**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Layout.Stack";
 
-  /// <summary>
-  /// Controls for which card width the layout should be used.
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the layout should be used.
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Serializes this StackLayout into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this StackLayout into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public StackLayout WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public StackLayout WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3016,142 +3016,142 @@ public class StackLayout : ContainerLayout
 /// </summary>
 public class FlowLayout : ContainerLayout
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  FlowLayout.
-  /// </summary>
-  public static FlowLayout? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<FlowLayout>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  FlowLayout.
+    /// </summary>
+    public static FlowLayout? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<FlowLayout>(json);
+    }
 
-  /// <summary>
-  /// Must be **Layout.Flow**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Layout.Flow";
+    /// <summary>
+    /// Must be **Layout.Flow**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Layout.Flow";
 
-  /// <summary>
-  /// Controls for which card width the layout should be used.
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the layout should be used.
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls how the content of the container should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalItemsAlignment")]
-  public HorizontalAlignment? HorizontalItemsAlignment { get; set; }
+    /// <summary>
+    /// Controls how the content of the container should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalItemsAlignment")]
+    public HorizontalAlignment? HorizontalItemsAlignment { get; set; }
 
-  /// <summary>
-  /// Controls how the content of the container should be vertically aligned.
-  /// </summary>
-  [JsonPropertyName("verticalItemsAlignment")]
-  public VerticalAlignment? VerticalItemsAlignment { get; set; }
+    /// <summary>
+    /// Controls how the content of the container should be vertically aligned.
+    /// </summary>
+    [JsonPropertyName("verticalItemsAlignment")]
+    public VerticalAlignment? VerticalItemsAlignment { get; set; }
 
-  /// <summary>
-  /// Controls how item should fit inside the container.
-  /// </summary>
-  [JsonPropertyName("itemFit")]
-  public FlowLayoutItemFit? ItemFit { get; set; }
+    /// <summary>
+    /// Controls how item should fit inside the container.
+    /// </summary>
+    [JsonPropertyName("itemFit")]
+    public FlowLayoutItemFit? ItemFit { get; set; }
 
-  /// <summary>
-  /// The minimum width, in pixels, of each item, in the `<number>px` format. Should not be used if itemWidth is set.
-  /// </summary>
-  [JsonPropertyName("minItemWidth")]
-  public string? MinItemWidth { get; set; }
+    /// <summary>
+    /// The minimum width, in pixels, of each item, in the `<number>px` format. Should not be used if itemWidth is set.
+    /// </summary>
+    [JsonPropertyName("minItemWidth")]
+    public string? MinItemWidth { get; set; }
 
-  /// <summary>
-  /// The maximum width, in pixels, of each item, in the `<number>px` format. Should not be used if itemWidth is set.
-  /// </summary>
-  [JsonPropertyName("maxItemWidth")]
-  public string? MaxItemWidth { get; set; }
+    /// <summary>
+    /// The maximum width, in pixels, of each item, in the `<number>px` format. Should not be used if itemWidth is set.
+    /// </summary>
+    [JsonPropertyName("maxItemWidth")]
+    public string? MaxItemWidth { get; set; }
 
-  /// <summary>
-  /// The width, in pixels, of each item, in the `<number>px` format. Should not be used if maxItemWidth and/or minItemWidth are set.
-  /// </summary>
-  [JsonPropertyName("itemWidth")]
-  public string? ItemWidth { get; set; }
+    /// <summary>
+    /// The width, in pixels, of each item, in the `<number>px` format. Should not be used if maxItemWidth and/or minItemWidth are set.
+    /// </summary>
+    [JsonPropertyName("itemWidth")]
+    public string? ItemWidth { get; set; }
 
-  /// <summary>
-  /// The space between items.
-  /// </summary>
-  [JsonPropertyName("columnSpacing")]
-  public Spacing? ColumnSpacing { get; set; }
+    /// <summary>
+    /// The space between items.
+    /// </summary>
+    [JsonPropertyName("columnSpacing")]
+    public Spacing? ColumnSpacing { get; set; }
 
-  /// <summary>
-  /// The space between rows of items.
-  /// </summary>
-  [JsonPropertyName("rowSpacing")]
-  public Spacing? RowSpacing { get; set; }
+    /// <summary>
+    /// The space between rows of items.
+    /// </summary>
+    [JsonPropertyName("rowSpacing")]
+    public Spacing? RowSpacing { get; set; }
 
-  /// <summary>
-  /// Serializes this FlowLayout into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this FlowLayout into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public FlowLayout WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public FlowLayout WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public FlowLayout WithHorizontalItemsAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalItemsAlignment = value;
-    return this;
-  }
+    public FlowLayout WithHorizontalItemsAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalItemsAlignment = value;
+        return this;
+    }
 
-  public FlowLayout WithVerticalItemsAlignment(VerticalAlignment value)
-  {
-    this.VerticalItemsAlignment = value;
-    return this;
-  }
+    public FlowLayout WithVerticalItemsAlignment(VerticalAlignment value)
+    {
+        this.VerticalItemsAlignment = value;
+        return this;
+    }
 
-  public FlowLayout WithItemFit(FlowLayoutItemFit value)
-  {
-    this.ItemFit = value;
-    return this;
-  }
+    public FlowLayout WithItemFit(FlowLayoutItemFit value)
+    {
+        this.ItemFit = value;
+        return this;
+    }
 
-  public FlowLayout WithMinItemWidth(string value)
-  {
-    this.MinItemWidth = value;
-    return this;
-  }
+    public FlowLayout WithMinItemWidth(string value)
+    {
+        this.MinItemWidth = value;
+        return this;
+    }
 
-  public FlowLayout WithMaxItemWidth(string value)
-  {
-    this.MaxItemWidth = value;
-    return this;
-  }
+    public FlowLayout WithMaxItemWidth(string value)
+    {
+        this.MaxItemWidth = value;
+        return this;
+    }
 
-  public FlowLayout WithItemWidth(string value)
-  {
-    this.ItemWidth = value;
-    return this;
-  }
+    public FlowLayout WithItemWidth(string value)
+    {
+        this.ItemWidth = value;
+        return this;
+    }
 
-  public FlowLayout WithColumnSpacing(Spacing value)
-  {
-    this.ColumnSpacing = value;
-    return this;
-  }
+    public FlowLayout WithColumnSpacing(Spacing value)
+    {
+        this.ColumnSpacing = value;
+        return this;
+    }
 
-  public FlowLayout WithRowSpacing(Spacing value)
-  {
-    this.RowSpacing = value;
-    return this;
-  }
+    public FlowLayout WithRowSpacing(Spacing value)
+    {
+        this.RowSpacing = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3159,94 +3159,94 @@ public class FlowLayout : ContainerLayout
 /// </summary>
 public class AreaGridLayout : ContainerLayout
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  AreaGridLayout.
-  /// </summary>
-  public static AreaGridLayout? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<AreaGridLayout>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  AreaGridLayout.
+    /// </summary>
+    public static AreaGridLayout? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<AreaGridLayout>(json);
+    }
 
-  /// <summary>
-  /// Must be **Layout.AreaGrid**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Layout.AreaGrid";
+    /// <summary>
+    /// Must be **Layout.AreaGrid**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Layout.AreaGrid";
 
-  /// <summary>
-  /// Controls for which card width the layout should be used.
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the layout should be used.
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// The columns in the grid layout, defined as a percentage of the available width or in pixels using the `<number>px` format.
-  /// </summary>
-  [JsonPropertyName("columns")]
-  public IUnion<IList<float>, IList<string>>? Columns { get; set; }
+    /// <summary>
+    /// The columns in the grid layout, defined as a percentage of the available width or in pixels using the `<number>px` format.
+    /// </summary>
+    [JsonPropertyName("columns")]
+    public IUnion<IList<float>, IList<string>>? Columns { get; set; }
 
-  /// <summary>
-  /// The areas in the grid layout.
-  /// </summary>
-  [JsonPropertyName("areas")]
-  public IList<GridArea>? Areas { get; set; }
+    /// <summary>
+    /// The areas in the grid layout.
+    /// </summary>
+    [JsonPropertyName("areas")]
+    public IList<GridArea>? Areas { get; set; }
 
-  /// <summary>
-  /// The space between columns.
-  /// </summary>
-  [JsonPropertyName("columnSpacing")]
-  public Spacing? ColumnSpacing { get; set; }
+    /// <summary>
+    /// The space between columns.
+    /// </summary>
+    [JsonPropertyName("columnSpacing")]
+    public Spacing? ColumnSpacing { get; set; }
 
-  /// <summary>
-  /// The space between rows.
-  /// </summary>
-  [JsonPropertyName("rowSpacing")]
-  public Spacing? RowSpacing { get; set; }
+    /// <summary>
+    /// The space between rows.
+    /// </summary>
+    [JsonPropertyName("rowSpacing")]
+    public Spacing? RowSpacing { get; set; }
 
-  /// <summary>
-  /// Serializes this AreaGridLayout into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this AreaGridLayout into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public AreaGridLayout WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public AreaGridLayout WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public AreaGridLayout WithColumns(IUnion<IList<float>, IList<string>> value)
-  {
-    this.Columns = value;
-    return this;
-  }
+    public AreaGridLayout WithColumns(IUnion<IList<float>, IList<string>> value)
+    {
+        this.Columns = value;
+        return this;
+    }
 
-  public AreaGridLayout WithAreas(params IList<GridArea> value)
-  {
-    this.Areas = value;
-    return this;
-  }
+    public AreaGridLayout WithAreas(params IList<GridArea> value)
+    {
+        this.Areas = value;
+        return this;
+    }
 
-  public AreaGridLayout WithColumnSpacing(Spacing value)
-  {
-    this.ColumnSpacing = value;
-    return this;
-  }
+    public AreaGridLayout WithColumnSpacing(Spacing value)
+    {
+        this.ColumnSpacing = value;
+        return this;
+    }
 
-  public AreaGridLayout WithRowSpacing(Spacing value)
-  {
-    this.RowSpacing = value;
-    return this;
-  }
+    public AreaGridLayout WithRowSpacing(Spacing value)
+    {
+        this.RowSpacing = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3254,88 +3254,88 @@ public class AreaGridLayout : ContainerLayout
 /// </summary>
 public class GridArea : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  GridArea.
-  /// </summary>
-  public static GridArea? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<GridArea>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  GridArea.
+    /// </summary>
+    public static GridArea? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<GridArea>(json);
+    }
 
-  /// <summary>
-  /// The name of the area. To place an element in this area, set its `grid.area` property to match the name of the area.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string? Name { get; set; }
+    /// <summary>
+    /// The name of the area. To place an element in this area, set its `grid.area` property to match the name of the area.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
 
-  /// <summary>
-  /// The start column index of the area. Column indices start at 1.
-  /// </summary>
-  [JsonPropertyName("column")]
-  public float? Column { get; set; }
+    /// <summary>
+    /// The start column index of the area. Column indices start at 1.
+    /// </summary>
+    [JsonPropertyName("column")]
+    public float? Column { get; set; }
 
-  /// <summary>
-  /// Defines how many columns the area should span.
-  /// </summary>
-  [JsonPropertyName("columnSpan")]
-  public float? ColumnSpan { get; set; }
+    /// <summary>
+    /// Defines how many columns the area should span.
+    /// </summary>
+    [JsonPropertyName("columnSpan")]
+    public float? ColumnSpan { get; set; }
 
-  /// <summary>
-  /// The start row index of the area. Row indices start at 1.
-  /// </summary>
-  [JsonPropertyName("row")]
-  public float? Row { get; set; }
+    /// <summary>
+    /// The start row index of the area. Row indices start at 1.
+    /// </summary>
+    [JsonPropertyName("row")]
+    public float? Row { get; set; }
 
-  /// <summary>
-  /// Defines how many rows the area should span.
-  /// </summary>
-  [JsonPropertyName("rowSpan")]
-  public float? RowSpan { get; set; }
+    /// <summary>
+    /// Defines how many rows the area should span.
+    /// </summary>
+    [JsonPropertyName("rowSpan")]
+    public float? RowSpan { get; set; }
 
-  /// <summary>
-  /// Serializes this GridArea into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this GridArea into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public GridArea WithName(string value)
-  {
-    this.Name = value;
-    return this;
-  }
+    public GridArea WithName(string value)
+    {
+        this.Name = value;
+        return this;
+    }
 
-  public GridArea WithColumn(float value)
-  {
-    this.Column = value;
-    return this;
-  }
+    public GridArea WithColumn(float value)
+    {
+        this.Column = value;
+        return this;
+    }
 
-  public GridArea WithColumnSpan(float value)
-  {
-    this.ColumnSpan = value;
-    return this;
-  }
+    public GridArea WithColumnSpan(float value)
+    {
+        this.ColumnSpan = value;
+        return this;
+    }
 
-  public GridArea WithRow(float value)
-  {
-    this.Row = value;
-    return this;
-  }
+    public GridArea WithRow(float value)
+    {
+        this.Row = value;
+        return this;
+    }
 
-  public GridArea WithRowSpan(float value)
-  {
-    this.RowSpan = value;
-    return this;
-  }
+    public GridArea WithRowSpan(float value)
+    {
+        this.RowSpan = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3343,76 +3343,76 @@ public class GridArea : SerializableObject
 /// </summary>
 public class BackgroundImage : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  BackgroundImage.
-  /// </summary>
-  public static BackgroundImage? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<BackgroundImage>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  BackgroundImage.
+    /// </summary>
+    public static BackgroundImage? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<BackgroundImage>(json);
+    }
 
-  /// <summary>
-  /// The URL (or Base64-encoded Data URI) of the image. Acceptable formats are PNG, JPEG, GIF and SVG.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL (or Base64-encoded Data URI) of the image. Acceptable formats are PNG, JPEG, GIF and SVG.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// Controls how the image should fill the area.
-  /// </summary>
-  [JsonPropertyName("fillMode")]
-  public FillMode? FillMode { get; set; }
+    /// <summary>
+    /// Controls how the image should fill the area.
+    /// </summary>
+    [JsonPropertyName("fillMode")]
+    public FillMode? FillMode { get; set; }
 
-  /// <summary>
-  /// Controls how the image should be aligned if it must be cropped or if using repeat fill mode.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the image should be aligned if it must be cropped or if using repeat fill mode.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls how the image should be aligned if it must be cropped or if using repeat fill mode.
-  /// </summary>
-  [JsonPropertyName("verticalAlignment")]
-  public VerticalAlignment? VerticalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the image should be aligned if it must be cropped or if using repeat fill mode.
+    /// </summary>
+    [JsonPropertyName("verticalAlignment")]
+    public VerticalAlignment? VerticalAlignment { get; set; }
 
-  /// <summary>
-  /// Serializes this BackgroundImage into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this BackgroundImage into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public BackgroundImage WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public BackgroundImage WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 
-  public BackgroundImage WithFillMode(FillMode value)
-  {
-    this.FillMode = value;
-    return this;
-  }
+    public BackgroundImage WithFillMode(FillMode value)
+    {
+        this.FillMode = value;
+        return this;
+    }
 
-  public BackgroundImage WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public BackgroundImage WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public BackgroundImage WithVerticalAlignment(VerticalAlignment value)
-  {
-    this.VerticalAlignment = value;
-    return this;
-  }
+    public BackgroundImage WithVerticalAlignment(VerticalAlignment value)
+    {
+        this.VerticalAlignment = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3420,52 +3420,52 @@ public class BackgroundImage : SerializableObject
 /// </summary>
 public class RefreshDefinition : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  RefreshDefinition.
-  /// </summary>
-  public static RefreshDefinition? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<RefreshDefinition>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  RefreshDefinition.
+    /// </summary>
+    public static RefreshDefinition? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<RefreshDefinition>(json);
+    }
 
-  /// <summary>
-  /// The Action.Execute action to invoke to refresh the card.
-  /// </summary>
-  [JsonPropertyName("action")]
-  public ExecuteAction? Action { get; set; }
+    /// <summary>
+    /// The Action.Execute action to invoke to refresh the card.
+    /// </summary>
+    [JsonPropertyName("action")]
+    public ExecuteAction? Action { get; set; }
 
-  /// <summary>
-  /// The list of user Ids for which the card will be automatically refreshed. In Teams, in chats or channels with more than 60 users, the card will automatically refresh only for users specified in the userIds list. Other users will have to manually click on a "refresh" button. In contexts with fewer than 60 users, the card will automatically refresh for all users.
-  /// </summary>
-  [JsonPropertyName("userIds")]
-  public IList<string>? UserIds { get; set; }
+    /// <summary>
+    /// The list of user Ids for which the card will be automatically refreshed. In Teams, in chats or channels with more than 60 users, the card will automatically refresh only for users specified in the userIds list. Other users will have to manually click on a "refresh" button. In contexts with fewer than 60 users, the card will automatically refresh for all users.
+    /// </summary>
+    [JsonPropertyName("userIds")]
+    public IList<string>? UserIds { get; set; }
 
-  /// <summary>
-  /// Serializes this RefreshDefinition into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this RefreshDefinition into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public RefreshDefinition WithAction(ExecuteAction value)
-  {
-    this.Action = value;
-    return this;
-  }
+    public RefreshDefinition WithAction(ExecuteAction value)
+    {
+        this.Action = value;
+        return this;
+    }
 
-  public RefreshDefinition WithUserIds(params IList<string> value)
-  {
-    this.UserIds = value;
-    return this;
-  }
+    public RefreshDefinition WithUserIds(params IList<string> value)
+    {
+        this.UserIds = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3473,76 +3473,76 @@ public class RefreshDefinition : SerializableObject
 /// </summary>
 public class Authentication : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Authentication.
-  /// </summary>
-  public static Authentication? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Authentication>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Authentication.
+    /// </summary>
+    public static Authentication? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Authentication>(json);
+    }
 
-  /// <summary>
-  /// The text that can be displayed to the end user when prompting them to authenticate.
-  /// </summary>
-  [JsonPropertyName("text")]
-  public string? Text { get; set; }
+    /// <summary>
+    /// The text that can be displayed to the end user when prompting them to authenticate.
+    /// </summary>
+    [JsonPropertyName("text")]
+    public string? Text { get; set; }
 
-  /// <summary>
-  /// The identifier for registered OAuth connection setting information.
-  /// </summary>
-  [JsonPropertyName("connectionName")]
-  public string? ConnectionName { get; set; }
+    /// <summary>
+    /// The identifier for registered OAuth connection setting information.
+    /// </summary>
+    [JsonPropertyName("connectionName")]
+    public string? ConnectionName { get; set; }
 
-  /// <summary>
-  /// The buttons that should be displayed to the user when prompting for authentication. The array MUST contain one button of type “signin”. Other button types are not currently supported.
-  /// </summary>
-  [JsonPropertyName("buttons")]
-  public IList<AuthCardButton>? Buttons { get; set; }
+    /// <summary>
+    /// The buttons that should be displayed to the user when prompting for authentication. The array MUST contain one button of type “signin”. Other button types are not currently supported.
+    /// </summary>
+    [JsonPropertyName("buttons")]
+    public IList<AuthCardButton>? Buttons { get; set; }
 
-  /// <summary>
-  /// Provides information required to enable on-behalf-of single sign-on user authentication.
-  /// </summary>
-  [JsonPropertyName("tokenExchangeResource")]
-  public TokenExchangeResource? TokenExchangeResource { get; set; }
+    /// <summary>
+    /// Provides information required to enable on-behalf-of single sign-on user authentication.
+    /// </summary>
+    [JsonPropertyName("tokenExchangeResource")]
+    public TokenExchangeResource? TokenExchangeResource { get; set; }
 
-  /// <summary>
-  /// Serializes this Authentication into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Authentication into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Authentication WithText(string value)
-  {
-    this.Text = value;
-    return this;
-  }
+    public Authentication WithText(string value)
+    {
+        this.Text = value;
+        return this;
+    }
 
-  public Authentication WithConnectionName(string value)
-  {
-    this.ConnectionName = value;
-    return this;
-  }
+    public Authentication WithConnectionName(string value)
+    {
+        this.ConnectionName = value;
+        return this;
+    }
 
-  public Authentication WithButtons(params IList<AuthCardButton> value)
-  {
-    this.Buttons = value;
-    return this;
-  }
+    public Authentication WithButtons(params IList<AuthCardButton> value)
+    {
+        this.Buttons = value;
+        return this;
+    }
 
-  public Authentication WithTokenExchangeResource(TokenExchangeResource value)
-  {
-    this.TokenExchangeResource = value;
-    return this;
-  }
+    public Authentication WithTokenExchangeResource(TokenExchangeResource value)
+    {
+        this.TokenExchangeResource = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3550,76 +3550,76 @@ public class Authentication : SerializableObject
 /// </summary>
 public class AuthCardButton : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  AuthCardButton.
-  /// </summary>
-  public static AuthCardButton? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<AuthCardButton>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  AuthCardButton.
+    /// </summary>
+    public static AuthCardButton? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<AuthCardButton>(json);
+    }
 
-  /// <summary>
-  /// Must be **signin**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string? Type { get; set; }
+    /// <summary>
+    /// Must be **signin**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
 
-  /// <summary>
-  /// The caption of the button.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The caption of the button.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// A URL to an image to display alongside the button’s caption.
-  /// </summary>
-  [JsonPropertyName("image")]
-  public string? Image { get; set; }
+    /// <summary>
+    /// A URL to an image to display alongside the button’s caption.
+    /// </summary>
+    [JsonPropertyName("image")]
+    public string? Image { get; set; }
 
-  /// <summary>
-  /// The value associated with the button. The meaning of value depends on the button’s type.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The value associated with the button. The meaning of value depends on the button’s type.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  /// <summary>
-  /// Serializes this AuthCardButton into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this AuthCardButton into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public AuthCardButton WithType(string value)
-  {
-    this.Type = value;
-    return this;
-  }
+    public AuthCardButton WithType(string value)
+    {
+        this.Type = value;
+        return this;
+    }
 
-  public AuthCardButton WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public AuthCardButton WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public AuthCardButton WithImage(string value)
-  {
-    this.Image = value;
-    return this;
-  }
+    public AuthCardButton WithImage(string value)
+    {
+        this.Image = value;
+        return this;
+    }
 
-  public AuthCardButton WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public AuthCardButton WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3627,64 +3627,64 @@ public class AuthCardButton : SerializableObject
 /// </summary>
 public class TokenExchangeResource : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TokenExchangeResource.
-  /// </summary>
-  public static TokenExchangeResource? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TokenExchangeResource>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TokenExchangeResource.
+    /// </summary>
+    public static TokenExchangeResource? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TokenExchangeResource>(json);
+    }
 
-  /// <summary>
-  /// The unique identified of this token exchange instance.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// The unique identified of this token exchange instance.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// An application ID or resource identifier with which to exchange a token on behalf of. This property is identity provider- and application-specific.
-  /// </summary>
-  [JsonPropertyName("uri")]
-  public string? Uri { get; set; }
+    /// <summary>
+    /// An application ID or resource identifier with which to exchange a token on behalf of. This property is identity provider- and application-specific.
+    /// </summary>
+    [JsonPropertyName("uri")]
+    public string? Uri { get; set; }
 
-  /// <summary>
-  /// An identifier for the identity provider with which to attempt a token exchange.
-  /// </summary>
-  [JsonPropertyName("providerId")]
-  public string? ProviderId { get; set; }
+    /// <summary>
+    /// An identifier for the identity provider with which to attempt a token exchange.
+    /// </summary>
+    [JsonPropertyName("providerId")]
+    public string? ProviderId { get; set; }
 
-  /// <summary>
-  /// Serializes this TokenExchangeResource into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TokenExchangeResource into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TokenExchangeResource WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public TokenExchangeResource WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public TokenExchangeResource WithUri(string value)
-  {
-    this.Uri = value;
-    return this;
-  }
+    public TokenExchangeResource WithUri(string value)
+    {
+        this.Uri = value;
+        return this;
+    }
 
-  public TokenExchangeResource WithProviderId(string value)
-  {
-    this.ProviderId = value;
-    return this;
-  }
+    public TokenExchangeResource WithProviderId(string value)
+    {
+        this.ProviderId = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3692,54 +3692,54 @@ public class TokenExchangeResource : SerializableObject
 /// </summary>
 public class TeamsCardProperties : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TeamsCardProperties.
-  /// </summary>
-  public static TeamsCardProperties? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TeamsCardProperties>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TeamsCardProperties.
+    /// </summary>
+    public static TeamsCardProperties? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TeamsCardProperties>(json);
+    }
 
-  /// <summary>
-  /// Controls the width of the card in a Teams chat.
-  /// 
-  /// Note that setting `width` to "full" will not actually stretch the card to the "full width" of the chat pane. It will only make the card wider than when the `width` property isn't set.
-  /// </summary>
-  [JsonPropertyName("width")]
-  public TeamsCardWidth? Width { get; set; }
+    /// <summary>
+    /// Controls the width of the card in a Teams chat.
+    /// 
+    /// Note that setting `width` to "full" will not actually stretch the card to the "full width" of the chat pane. It will only make the card wider than when the `width` property isn't set.
+    /// </summary>
+    [JsonPropertyName("width")]
+    public TeamsCardWidth? Width { get; set; }
 
-  /// <summary>
-  /// The Teams-specific entities associated with the card.
-  /// </summary>
-  [JsonPropertyName("entities")]
-  public IList<Mention>? Entities { get; set; }
+    /// <summary>
+    /// The Teams-specific entities associated with the card.
+    /// </summary>
+    [JsonPropertyName("entities")]
+    public IList<Mention>? Entities { get; set; }
 
-  /// <summary>
-  /// Serializes this TeamsCardProperties into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TeamsCardProperties into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TeamsCardProperties WithWidth(TeamsCardWidth value)
-  {
-    this.Width = value;
-    return this;
-  }
+    public TeamsCardProperties WithWidth(TeamsCardWidth value)
+    {
+        this.Width = value;
+        return this;
+    }
 
-  public TeamsCardProperties WithEntities(params IList<Mention> value)
-  {
-    this.Entities = value;
-    return this;
-  }
+    public TeamsCardProperties WithEntities(params IList<Mention> value)
+    {
+        this.Entities = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3747,58 +3747,58 @@ public class TeamsCardProperties : SerializableObject
 /// </summary>
 public class Mention : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Mention.
-  /// </summary>
-  public static Mention? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Mention>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Mention.
+    /// </summary>
+    public static Mention? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Mention>(json);
+    }
 
-  /// <summary>
-  /// Must be **mention**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "mention";
+    /// <summary>
+    /// Must be **mention**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "mention";
 
-  /// <summary>
-  /// The text that will be substituted with the mention.
-  /// </summary>
-  [JsonPropertyName("text")]
-  public string? Text { get; set; }
+    /// <summary>
+    /// The text that will be substituted with the mention.
+    /// </summary>
+    [JsonPropertyName("text")]
+    public string? Text { get; set; }
 
-  /// <summary>
-  /// Defines the entity being mentioned.
-  /// </summary>
-  [JsonPropertyName("mentioned")]
-  public MentionedEntity? Mentioned { get; set; }
+    /// <summary>
+    /// Defines the entity being mentioned.
+    /// </summary>
+    [JsonPropertyName("mentioned")]
+    public MentionedEntity? Mentioned { get; set; }
 
-  /// <summary>
-  /// Serializes this Mention into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Mention into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Mention WithText(string value)
-  {
-    this.Text = value;
-    return this;
-  }
+    public Mention WithText(string value)
+    {
+        this.Text = value;
+        return this;
+    }
 
-  public Mention WithMentioned(MentionedEntity value)
-  {
-    this.Mentioned = value;
-    return this;
-  }
+    public Mention WithMentioned(MentionedEntity value)
+    {
+        this.Mentioned = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3806,64 +3806,64 @@ public class Mention : SerializableObject
 /// </summary>
 public class MentionedEntity : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  MentionedEntity.
-  /// </summary>
-  public static MentionedEntity? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<MentionedEntity>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  MentionedEntity.
+    /// </summary>
+    public static MentionedEntity? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<MentionedEntity>(json);
+    }
 
-  /// <summary>
-  /// The Id of a person (typically a Microsoft Entra user Id) or tag.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// The Id of a person (typically a Microsoft Entra user Id) or tag.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// The name of the mentioned entity.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string? Name { get; set; }
+    /// <summary>
+    /// The name of the mentioned entity.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
 
-  /// <summary>
-  /// The type of the mentioned entity.
-  /// </summary>
-  [JsonPropertyName("mentionType")]
-  public MentionType? MentionType { get; set; }
+    /// <summary>
+    /// The type of the mentioned entity.
+    /// </summary>
+    [JsonPropertyName("mentionType")]
+    public MentionType? MentionType { get; set; }
 
-  /// <summary>
-  /// Serializes this MentionedEntity into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this MentionedEntity into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public MentionedEntity WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public MentionedEntity WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public MentionedEntity WithName(string value)
-  {
-    this.Name = value;
-    return this;
-  }
+    public MentionedEntity WithName(string value)
+    {
+        this.Name = value;
+        return this;
+    }
 
-  public MentionedEntity WithMentionType(MentionType value)
-  {
-    this.MentionType = value;
-    return this;
-  }
+    public MentionedEntity WithMentionType(MentionType value)
+    {
+        this.MentionType = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3871,40 +3871,40 @@ public class MentionedEntity : SerializableObject
 /// </summary>
 public class CardMetadata : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  CardMetadata.
-  /// </summary>
-  public static CardMetadata? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<CardMetadata>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  CardMetadata.
+    /// </summary>
+    public static CardMetadata? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<CardMetadata>(json);
+    }
 
-  /// <summary>
-  /// The URL the card originates from. When `webUrl` is set, the card is dubbed an **Adaptive Card-based Loop Component** and, when pasted in Teams or other Loop Component-capable host applications, the URL will unfurl to the same exact card.
-  /// </summary>
-  [JsonPropertyName("webUrl")]
-  public string? WebUrl { get; set; }
+    /// <summary>
+    /// The URL the card originates from. When `webUrl` is set, the card is dubbed an **Adaptive Card-based Loop Component** and, when pasted in Teams or other Loop Component-capable host applications, the URL will unfurl to the same exact card.
+    /// </summary>
+    [JsonPropertyName("webUrl")]
+    public string? WebUrl { get; set; }
 
-  /// <summary>
-  /// Serializes this CardMetadata into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this CardMetadata into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public CardMetadata WithWebUrl(string value)
-  {
-    this.WebUrl = value;
-    return this;
-  }
+    public CardMetadata WithWebUrl(string value)
+    {
+        this.WebUrl = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -3912,327 +3912,327 @@ public class CardMetadata : SerializableObject
 /// </summary>
 public class Container : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Container.
-  /// </summary>
-  public static Container? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Container>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Container.
+    /// </summary>
+    public static Container? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Container>(json);
+    }
 
-  /// <summary>
-  /// Must be **Container**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Container";
+    /// <summary>
+    /// Must be **Container**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Container";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ContainerStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ContainerStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if a border should be displayed around the container.
-  /// </summary>
-  [JsonPropertyName("showBorder")]
-  public bool? ShowBorder { get; set; }
+    /// <summary>
+    /// Controls if a border should be displayed around the container.
+    /// </summary>
+    [JsonPropertyName("showBorder")]
+    public bool? ShowBorder { get; set; }
 
-  /// <summary>
-  /// Controls if the container should have rounded corners.
-  /// </summary>
-  [JsonPropertyName("roundedCorners")]
-  public bool? RoundedCorners { get; set; }
+    /// <summary>
+    /// Controls if the container should have rounded corners.
+    /// </summary>
+    [JsonPropertyName("roundedCorners")]
+    public bool? RoundedCorners { get; set; }
 
-  /// <summary>
-  /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
-  /// </summary>
-  [JsonPropertyName("layouts")]
-  public IList<ContainerLayout>? Layouts { get; set; }
+    /// <summary>
+    /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
+    /// </summary>
+    [JsonPropertyName("layouts")]
+    public IList<ContainerLayout>? Layouts { get; set; }
 
-  /// <summary>
-  /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
-  /// </summary>
-  [JsonPropertyName("bleed")]
-  public bool? Bleed { get; set; }
+    /// <summary>
+    /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
+    /// </summary>
+    [JsonPropertyName("bleed")]
+    public bool? Bleed { get; set; }
 
-  /// <summary>
-  /// The minimum height, in pixels, of the container, in the `<number>px` format.
-  /// </summary>
-  [JsonPropertyName("minHeight")]
-  public string? MinHeight { get; set; }
+    /// <summary>
+    /// The minimum height, in pixels, of the container, in the `<number>px` format.
+    /// </summary>
+    [JsonPropertyName("minHeight")]
+    public string? MinHeight { get; set; }
 
-  /// <summary>
-  /// Defines the container's background image.
-  /// </summary>
-  [JsonPropertyName("backgroundImage")]
-  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
+    /// <summary>
+    /// Defines the container's background image.
+    /// </summary>
+    [JsonPropertyName("backgroundImage")]
+    public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
-  /// <summary>
-  /// Controls how the container's content should be vertically aligned.
-  /// </summary>
-  [JsonPropertyName("verticalContentAlignment")]
-  public VerticalAlignment? VerticalContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the container's content should be vertically aligned.
+    /// </summary>
+    [JsonPropertyName("verticalContentAlignment")]
+    public VerticalAlignment? VerticalContentAlignment { get; set; }
 
-  /// <summary>
-  /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
-  /// </summary>
-  [JsonPropertyName("rtl")]
-  public bool? Rtl { get; set; }
+    /// <summary>
+    /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
+    /// </summary>
+    [JsonPropertyName("rtl")]
+    public bool? Rtl { get; set; }
 
-  /// <summary>
-  /// The maximum height, in pixels, of the container, in the `<number>px` format. When the content of a container exceeds the container's maximum height, a vertical scrollbar is displayed.
-  /// </summary>
-  [JsonPropertyName("maxHeight")]
-  public string? MaxHeight { get; set; }
+    /// <summary>
+    /// The maximum height, in pixels, of the container, in the `<number>px` format. When the content of a container exceeds the container's maximum height, a vertical scrollbar is displayed.
+    /// </summary>
+    [JsonPropertyName("maxHeight")]
+    public string? MaxHeight { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The elements in the container.
-  /// </summary>
-  [JsonPropertyName("items")]
-  public IList<CardElement>? Items { get; set; }
+    /// <summary>
+    /// The elements in the container.
+    /// </summary>
+    [JsonPropertyName("items")]
+    public IList<CardElement>? Items { get; set; }
 
-  public Container(params IList<CardElement> items)
-  {
-    this.Items = items;
-  }
+    public Container(params IList<CardElement> items)
+    {
+        this.Items = items;
+    }
 
-  /// <summary>
-  /// Serializes this Container into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Container into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Container WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public Container WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public Container WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public Container WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public Container WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public Container WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public Container WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public Container WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public Container WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public Container WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public Container WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public Container WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public Container WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public Container WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public Container WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public Container WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public Container WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public Container WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public Container WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public Container WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public Container WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public Container WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public Container WithStyle(ContainerStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public Container WithStyle(ContainerStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public Container WithShowBorder(bool value)
-  {
-    this.ShowBorder = value;
-    return this;
-  }
+    public Container WithShowBorder(bool value)
+    {
+        this.ShowBorder = value;
+        return this;
+    }
 
-  public Container WithRoundedCorners(bool value)
-  {
-    this.RoundedCorners = value;
-    return this;
-  }
+    public Container WithRoundedCorners(bool value)
+    {
+        this.RoundedCorners = value;
+        return this;
+    }
 
-  public Container WithLayouts(params IList<ContainerLayout> value)
-  {
-    this.Layouts = value;
-    return this;
-  }
+    public Container WithLayouts(params IList<ContainerLayout> value)
+    {
+        this.Layouts = value;
+        return this;
+    }
 
-  public Container WithBleed(bool value)
-  {
-    this.Bleed = value;
-    return this;
-  }
+    public Container WithBleed(bool value)
+    {
+        this.Bleed = value;
+        return this;
+    }
 
-  public Container WithMinHeight(string value)
-  {
-    this.MinHeight = value;
-    return this;
-  }
+    public Container WithMinHeight(string value)
+    {
+        this.MinHeight = value;
+        return this;
+    }
 
-  public Container WithBackgroundImage(IUnion<string, BackgroundImage> value)
-  {
-    this.BackgroundImage = value;
-    return this;
-  }
+    public Container WithBackgroundImage(IUnion<string, BackgroundImage> value)
+    {
+        this.BackgroundImage = value;
+        return this;
+    }
 
-  public Container WithVerticalContentAlignment(VerticalAlignment value)
-  {
-    this.VerticalContentAlignment = value;
-    return this;
-  }
+    public Container WithVerticalContentAlignment(VerticalAlignment value)
+    {
+        this.VerticalContentAlignment = value;
+        return this;
+    }
 
-  public Container WithRtl(bool value)
-  {
-    this.Rtl = value;
-    return this;
-  }
+    public Container WithRtl(bool value)
+    {
+        this.Rtl = value;
+        return this;
+    }
 
-  public Container WithMaxHeight(string value)
-  {
-    this.MaxHeight = value;
-    return this;
-  }
+    public Container WithMaxHeight(string value)
+    {
+        this.MaxHeight = value;
+        return this;
+    }
 
-  public Container WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public Container WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public Container WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public Container WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public Container WithItems(params IList<CardElement> value)
-  {
-    this.Items = value;
-    return this;
-  }
+    public Container WithItems(params IList<CardElement> value)
+    {
+        this.Items = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -4240,195 +4240,195 @@ public class Container : CardElement
 /// </summary>
 public class ActionSet : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ActionSet.
-  /// </summary>
-  public static ActionSet? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ActionSet>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ActionSet.
+    /// </summary>
+    public static ActionSet? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ActionSet>(json);
+    }
 
-  /// <summary>
-  /// Must be **ActionSet**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "ActionSet";
+    /// <summary>
+    /// Must be **ActionSet**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "ActionSet";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The actions in the set.
-  /// </summary>
-  [JsonPropertyName("actions")]
-  public IList<Action>? Actions { get; set; }
+    /// <summary>
+    /// The actions in the set.
+    /// </summary>
+    [JsonPropertyName("actions")]
+    public IList<Action>? Actions { get; set; }
 
-  public ActionSet(params IList<Action> actions)
-  {
-    this.Actions = actions;
-  }
+    public ActionSet(params IList<Action> actions)
+    {
+        this.Actions = actions;
+    }
 
-  /// <summary>
-  /// Serializes this ActionSet into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ActionSet into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ActionSet WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ActionSet WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ActionSet WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ActionSet WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ActionSet WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ActionSet WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ActionSet WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ActionSet WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ActionSet WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ActionSet WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ActionSet WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ActionSet WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ActionSet WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public ActionSet WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public ActionSet WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ActionSet WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ActionSet WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ActionSet WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ActionSet WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ActionSet WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ActionSet WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ActionSet WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ActionSet WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ActionSet WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public ActionSet WithActions(params IList<Action> value)
-  {
-    this.Actions = value;
-    return this;
-  }
+    public ActionSet WithActions(params IList<Action> value)
+    {
+        this.Actions = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -4436,262 +4436,262 @@ public class ActionSet : CardElement
 /// </summary>
 public class ColumnSet : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ColumnSet.
-  /// </summary>
-  public static ColumnSet? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ColumnSet>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ColumnSet.
+    /// </summary>
+    public static ColumnSet? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ColumnSet>(json);
+    }
 
-  /// <summary>
-  /// Must be **ColumnSet**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "ColumnSet";
+    /// <summary>
+    /// Must be **ColumnSet**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "ColumnSet";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ContainerStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ContainerStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if a border should be displayed around the container.
-  /// </summary>
-  [JsonPropertyName("showBorder")]
-  public bool? ShowBorder { get; set; }
+    /// <summary>
+    /// Controls if a border should be displayed around the container.
+    /// </summary>
+    [JsonPropertyName("showBorder")]
+    public bool? ShowBorder { get; set; }
 
-  /// <summary>
-  /// Controls if the container should have rounded corners.
-  /// </summary>
-  [JsonPropertyName("roundedCorners")]
-  public bool? RoundedCorners { get; set; }
+    /// <summary>
+    /// Controls if the container should have rounded corners.
+    /// </summary>
+    [JsonPropertyName("roundedCorners")]
+    public bool? RoundedCorners { get; set; }
 
-  /// <summary>
-  /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
-  /// </summary>
-  [JsonPropertyName("bleed")]
-  public bool? Bleed { get; set; }
+    /// <summary>
+    /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
+    /// </summary>
+    [JsonPropertyName("bleed")]
+    public bool? Bleed { get; set; }
 
-  /// <summary>
-  /// The minimum height, in pixels, of the container, in the `<number>px` format.
-  /// </summary>
-  [JsonPropertyName("minHeight")]
-  public string? MinHeight { get; set; }
+    /// <summary>
+    /// The minimum height, in pixels, of the container, in the `<number>px` format.
+    /// </summary>
+    [JsonPropertyName("minHeight")]
+    public string? MinHeight { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The columns in the set.
-  /// </summary>
-  [JsonPropertyName("columns")]
-  public IList<Column>? Columns { get; set; }
+    /// <summary>
+    /// The columns in the set.
+    /// </summary>
+    [JsonPropertyName("columns")]
+    public IList<Column>? Columns { get; set; }
 
-  /// <summary>
-  /// Serializes this ColumnSet into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ColumnSet into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ColumnSet WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ColumnSet WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ColumnSet WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ColumnSet WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ColumnSet WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ColumnSet WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ColumnSet WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ColumnSet WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ColumnSet WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ColumnSet WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ColumnSet WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ColumnSet WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ColumnSet WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public ColumnSet WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public ColumnSet WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ColumnSet WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ColumnSet WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ColumnSet WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ColumnSet WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ColumnSet WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ColumnSet WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public ColumnSet WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public ColumnSet WithStyle(ContainerStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public ColumnSet WithStyle(ContainerStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public ColumnSet WithShowBorder(bool value)
-  {
-    this.ShowBorder = value;
-    return this;
-  }
+    public ColumnSet WithShowBorder(bool value)
+    {
+        this.ShowBorder = value;
+        return this;
+    }
 
-  public ColumnSet WithRoundedCorners(bool value)
-  {
-    this.RoundedCorners = value;
-    return this;
-  }
+    public ColumnSet WithRoundedCorners(bool value)
+    {
+        this.RoundedCorners = value;
+        return this;
+    }
 
-  public ColumnSet WithBleed(bool value)
-  {
-    this.Bleed = value;
-    return this;
-  }
+    public ColumnSet WithBleed(bool value)
+    {
+        this.Bleed = value;
+        return this;
+    }
 
-  public ColumnSet WithMinHeight(string value)
-  {
-    this.MinHeight = value;
-    return this;
-  }
+    public ColumnSet WithMinHeight(string value)
+    {
+        this.MinHeight = value;
+        return this;
+    }
 
-  public ColumnSet WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ColumnSet WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ColumnSet WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ColumnSet WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public ColumnSet WithColumns(params IList<Column> value)
-  {
-    this.Columns = value;
-    return this;
-  }
+    public ColumnSet WithColumns(params IList<Column> value)
+    {
+        this.Columns = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -4699,214 +4699,214 @@ public class ColumnSet : CardElement
 /// </summary>
 public class Media : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Media.
-  /// </summary>
-  public static Media? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Media>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Media.
+    /// </summary>
+    public static Media? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Media>(json);
+    }
 
-  /// <summary>
-  /// Must be **Media**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Media";
+    /// <summary>
+    /// Must be **Media**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Media";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The sources for the media. For YouTube, Dailymotion and Vimeo, only one source can be specified.
-  /// </summary>
-  [JsonPropertyName("sources")]
-  public IList<MediaSource>? Sources { get; set; }
+    /// <summary>
+    /// The sources for the media. For YouTube, Dailymotion and Vimeo, only one source can be specified.
+    /// </summary>
+    [JsonPropertyName("sources")]
+    public IList<MediaSource>? Sources { get; set; }
 
-  /// <summary>
-  /// The caption sources for the media. Caption sources are not used for YouTube, Dailymotion or Vimeo sources.
-  /// </summary>
-  [JsonPropertyName("captionSources")]
-  public IList<CaptionSource>? CaptionSources { get; set; }
+    /// <summary>
+    /// The caption sources for the media. Caption sources are not used for YouTube, Dailymotion or Vimeo sources.
+    /// </summary>
+    [JsonPropertyName("captionSources")]
+    public IList<CaptionSource>? CaptionSources { get; set; }
 
-  /// <summary>
-  /// The URL of the poster image to display.
-  /// </summary>
-  [JsonPropertyName("poster")]
-  public string? Poster { get; set; }
+    /// <summary>
+    /// The URL of the poster image to display.
+    /// </summary>
+    [JsonPropertyName("poster")]
+    public string? Poster { get; set; }
 
-  /// <summary>
-  /// The alternate text for the media, used for accessibility purposes.
-  /// </summary>
-  [JsonPropertyName("altText")]
-  public string? AltText { get; set; }
+    /// <summary>
+    /// The alternate text for the media, used for accessibility purposes.
+    /// </summary>
+    [JsonPropertyName("altText")]
+    public string? AltText { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this Media into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Media into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Media WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public Media WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public Media WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public Media WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public Media WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public Media WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public Media WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public Media WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public Media WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public Media WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public Media WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public Media WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public Media WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public Media WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public Media WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public Media WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public Media WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public Media WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public Media WithSources(params IList<MediaSource> value)
-  {
-    this.Sources = value;
-    return this;
-  }
+    public Media WithSources(params IList<MediaSource> value)
+    {
+        this.Sources = value;
+        return this;
+    }
 
-  public Media WithCaptionSources(params IList<CaptionSource> value)
-  {
-    this.CaptionSources = value;
-    return this;
-  }
+    public Media WithCaptionSources(params IList<CaptionSource> value)
+    {
+        this.CaptionSources = value;
+        return this;
+    }
 
-  public Media WithPoster(string value)
-  {
-    this.Poster = value;
-    return this;
-  }
+    public Media WithPoster(string value)
+    {
+        this.Poster = value;
+        return this;
+    }
 
-  public Media WithAltText(string value)
-  {
-    this.AltText = value;
-    return this;
-  }
+    public Media WithAltText(string value)
+    {
+        this.AltText = value;
+        return this;
+    }
 
-  public Media WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public Media WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public Media WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public Media WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -4914,52 +4914,52 @@ public class Media : CardElement
 /// </summary>
 public class MediaSource : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  MediaSource.
-  /// </summary>
-  public static MediaSource? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<MediaSource>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  MediaSource.
+    /// </summary>
+    public static MediaSource? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<MediaSource>(json);
+    }
 
-  /// <summary>
-  /// The MIME type of the source.
-  /// </summary>
-  [JsonPropertyName("mimeType")]
-  public string? MimeType { get; set; }
+    /// <summary>
+    /// The MIME type of the source.
+    /// </summary>
+    [JsonPropertyName("mimeType")]
+    public string? MimeType { get; set; }
 
-  /// <summary>
-  /// The URL of the source.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL of the source.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// Serializes this MediaSource into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this MediaSource into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public MediaSource WithMimeType(string value)
-  {
-    this.MimeType = value;
-    return this;
-  }
+    public MediaSource WithMimeType(string value)
+    {
+        this.MimeType = value;
+        return this;
+    }
 
-  public MediaSource WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public MediaSource WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -4967,64 +4967,64 @@ public class MediaSource : SerializableObject
 /// </summary>
 public class CaptionSource : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  CaptionSource.
-  /// </summary>
-  public static CaptionSource? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<CaptionSource>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  CaptionSource.
+    /// </summary>
+    public static CaptionSource? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<CaptionSource>(json);
+    }
 
-  /// <summary>
-  /// The MIME type of the source.
-  /// </summary>
-  [JsonPropertyName("mimeType")]
-  public string? MimeType { get; set; }
+    /// <summary>
+    /// The MIME type of the source.
+    /// </summary>
+    [JsonPropertyName("mimeType")]
+    public string? MimeType { get; set; }
 
-  /// <summary>
-  /// The URL of the source.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL of the source.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// The label of this caption source.
-  /// </summary>
-  [JsonPropertyName("label")]
-  public string? Label { get; set; }
+    /// <summary>
+    /// The label of this caption source.
+    /// </summary>
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
 
-  /// <summary>
-  /// Serializes this CaptionSource into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this CaptionSource into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public CaptionSource WithMimeType(string value)
-  {
-    this.MimeType = value;
-    return this;
-  }
+    public CaptionSource WithMimeType(string value)
+    {
+        this.MimeType = value;
+        return this;
+    }
 
-  public CaptionSource WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public CaptionSource WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 
-  public CaptionSource WithLabel(string value)
-  {
-    this.Label = value;
-    return this;
-  }
+    public CaptionSource WithLabel(string value)
+    {
+        this.Label = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -5032,190 +5032,190 @@ public class CaptionSource : SerializableObject
 /// </summary>
 public class RichTextBlock : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  RichTextBlock.
-  /// </summary>
-  public static RichTextBlock? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<RichTextBlock>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  RichTextBlock.
+    /// </summary>
+    public static RichTextBlock? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<RichTextBlock>(json);
+    }
 
-  /// <summary>
-  /// Must be **RichTextBlock**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "RichTextBlock";
+    /// <summary>
+    /// Must be **RichTextBlock**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "RichTextBlock";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The inlines making up the rich text block.
-  /// </summary>
-  [JsonPropertyName("inlines")]
-  public IUnion<IList<CardElement>, IList<string>>? Inlines { get; set; }
+    /// <summary>
+    /// The inlines making up the rich text block.
+    /// </summary>
+    [JsonPropertyName("inlines")]
+    public IUnion<IList<CardElement>, IList<string>>? Inlines { get; set; }
 
-  /// <summary>
-  /// Serializes this RichTextBlock into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this RichTextBlock into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public RichTextBlock WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public RichTextBlock WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public RichTextBlock WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public RichTextBlock WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public RichTextBlock WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public RichTextBlock WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public RichTextBlock WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public RichTextBlock WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public RichTextBlock WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public RichTextBlock WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public RichTextBlock WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public RichTextBlock WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public RichTextBlock WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public RichTextBlock WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public RichTextBlock WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public RichTextBlock WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public RichTextBlock WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public RichTextBlock WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public RichTextBlock WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public RichTextBlock WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public RichTextBlock WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public RichTextBlock WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public RichTextBlock WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public RichTextBlock WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public RichTextBlock WithInlines(IUnion<IList<CardElement>, IList<string>> value)
-  {
-    this.Inlines = value;
-    return this;
-  }
+    public RichTextBlock WithInlines(IUnion<IList<CardElement>, IList<string>> value)
+    {
+        this.Inlines = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -5223,298 +5223,298 @@ public class RichTextBlock : CardElement
 /// </summary>
 public class Table : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Table.
-  /// </summary>
-  public static Table? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Table>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Table.
+    /// </summary>
+    public static Table? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Table>(json);
+    }
 
-  /// <summary>
-  /// Must be **Table**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Table";
+    /// <summary>
+    /// Must be **Table**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Table";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ContainerStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ContainerStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if a border should be displayed around the container.
-  /// </summary>
-  [JsonPropertyName("showBorder")]
-  public bool? ShowBorder { get; set; }
+    /// <summary>
+    /// Controls if a border should be displayed around the container.
+    /// </summary>
+    [JsonPropertyName("showBorder")]
+    public bool? ShowBorder { get; set; }
 
-  /// <summary>
-  /// Controls if the container should have rounded corners.
-  /// </summary>
-  [JsonPropertyName("roundedCorners")]
-  public bool? RoundedCorners { get; set; }
+    /// <summary>
+    /// Controls if the container should have rounded corners.
+    /// </summary>
+    [JsonPropertyName("roundedCorners")]
+    public bool? RoundedCorners { get; set; }
 
-  /// <summary>
-  /// The columns in the table.
-  /// </summary>
-  [JsonPropertyName("columns")]
-  public IList<ColumnDefinition>? Columns { get; set; }
+    /// <summary>
+    /// The columns in the table.
+    /// </summary>
+    [JsonPropertyName("columns")]
+    public IList<ColumnDefinition>? Columns { get; set; }
 
-  /// <summary>
-  /// Controls whether the first row of the table should be treated as a header.
-  /// </summary>
-  [JsonPropertyName("firstRowAsHeaders")]
-  public bool? FirstRowAsHeaders { get; set; }
+    /// <summary>
+    /// Controls whether the first row of the table should be treated as a header.
+    /// </summary>
+    [JsonPropertyName("firstRowAsHeaders")]
+    public bool? FirstRowAsHeaders { get; set; }
 
-  /// <summary>
-  /// Controls if grid lines should be displayed.
-  /// </summary>
-  [JsonPropertyName("showGridLines")]
-  public bool? ShowGridLines { get; set; }
+    /// <summary>
+    /// Controls if grid lines should be displayed.
+    /// </summary>
+    [JsonPropertyName("showGridLines")]
+    public bool? ShowGridLines { get; set; }
 
-  /// <summary>
-  /// The style of the grid lines between cells.
-  /// </summary>
-  [JsonPropertyName("gridStyle")]
-  public ContainerStyle? GridStyle { get; set; }
+    /// <summary>
+    /// The style of the grid lines between cells.
+    /// </summary>
+    [JsonPropertyName("gridStyle")]
+    public ContainerStyle? GridStyle { get; set; }
 
-  /// <summary>
-  /// Controls how the content of every cell in the table should be horizontally aligned by default.
-  /// </summary>
-  [JsonPropertyName("horizontalCellContentAlignment")]
-  public HorizontalAlignment? HorizontalCellContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the content of every cell in the table should be horizontally aligned by default.
+    /// </summary>
+    [JsonPropertyName("horizontalCellContentAlignment")]
+    public HorizontalAlignment? HorizontalCellContentAlignment { get; set; }
 
-  /// <summary>
-  /// Controls how the content of every cell in the table should be vertically aligned by default.
-  /// </summary>
-  [JsonPropertyName("verticalCellContentAlignment")]
-  public VerticalAlignment? VerticalCellContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the content of every cell in the table should be vertically aligned by default.
+    /// </summary>
+    [JsonPropertyName("verticalCellContentAlignment")]
+    public VerticalAlignment? VerticalCellContentAlignment { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The rows of the table.
-  /// </summary>
-  [JsonPropertyName("rows")]
-  public IList<TableRow>? Rows { get; set; }
+    /// <summary>
+    /// The rows of the table.
+    /// </summary>
+    [JsonPropertyName("rows")]
+    public IList<TableRow>? Rows { get; set; }
 
-  /// <summary>
-  /// Serializes this Table into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Table into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Table WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public Table WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public Table WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public Table WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public Table WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public Table WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public Table WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public Table WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public Table WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public Table WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public Table WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public Table WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public Table WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public Table WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public Table WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public Table WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public Table WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public Table WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public Table WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public Table WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public Table WithStyle(ContainerStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public Table WithStyle(ContainerStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public Table WithShowBorder(bool value)
-  {
-    this.ShowBorder = value;
-    return this;
-  }
+    public Table WithShowBorder(bool value)
+    {
+        this.ShowBorder = value;
+        return this;
+    }
 
-  public Table WithRoundedCorners(bool value)
-  {
-    this.RoundedCorners = value;
-    return this;
-  }
+    public Table WithRoundedCorners(bool value)
+    {
+        this.RoundedCorners = value;
+        return this;
+    }
 
-  public Table WithColumns(params IList<ColumnDefinition> value)
-  {
-    this.Columns = value;
-    return this;
-  }
+    public Table WithColumns(params IList<ColumnDefinition> value)
+    {
+        this.Columns = value;
+        return this;
+    }
 
-  public Table WithFirstRowAsHeaders(bool value)
-  {
-    this.FirstRowAsHeaders = value;
-    return this;
-  }
+    public Table WithFirstRowAsHeaders(bool value)
+    {
+        this.FirstRowAsHeaders = value;
+        return this;
+    }
 
-  public Table WithShowGridLines(bool value)
-  {
-    this.ShowGridLines = value;
-    return this;
-  }
+    public Table WithShowGridLines(bool value)
+    {
+        this.ShowGridLines = value;
+        return this;
+    }
 
-  public Table WithGridStyle(ContainerStyle value)
-  {
-    this.GridStyle = value;
-    return this;
-  }
+    public Table WithGridStyle(ContainerStyle value)
+    {
+        this.GridStyle = value;
+        return this;
+    }
 
-  public Table WithHorizontalCellContentAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalCellContentAlignment = value;
-    return this;
-  }
+    public Table WithHorizontalCellContentAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalCellContentAlignment = value;
+        return this;
+    }
 
-  public Table WithVerticalCellContentAlignment(VerticalAlignment value)
-  {
-    this.VerticalCellContentAlignment = value;
-    return this;
-  }
+    public Table WithVerticalCellContentAlignment(VerticalAlignment value)
+    {
+        this.VerticalCellContentAlignment = value;
+        return this;
+    }
 
-  public Table WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public Table WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public Table WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public Table WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public Table WithRows(params IList<TableRow> value)
-  {
-    this.Rows = value;
-    return this;
-  }
+    public Table WithRows(params IList<TableRow> value)
+    {
+        this.Rows = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -5522,64 +5522,64 @@ public class Table : CardElement
 /// </summary>
 public class ColumnDefinition : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ColumnDefinition.
-  /// </summary>
-  public static ColumnDefinition? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ColumnDefinition>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ColumnDefinition.
+    /// </summary>
+    public static ColumnDefinition? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ColumnDefinition>(json);
+    }
 
-  /// <summary>
-  /// Controls how the content of every cell in the table should be horizontally aligned by default. This property overrides the horizontalCellContentAlignment property of the table.
-  /// </summary>
-  [JsonPropertyName("horizontalCellContentAlignment")]
-  public HorizontalAlignment? HorizontalCellContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the content of every cell in the table should be horizontally aligned by default. This property overrides the horizontalCellContentAlignment property of the table.
+    /// </summary>
+    [JsonPropertyName("horizontalCellContentAlignment")]
+    public HorizontalAlignment? HorizontalCellContentAlignment { get; set; }
 
-  /// <summary>
-  /// Controls how the content of every cell in the column should be vertically aligned by default. This property overrides the verticalCellContentAlignment property of the table.
-  /// </summary>
-  [JsonPropertyName("verticalCellContentAlignment")]
-  public VerticalAlignment? VerticalCellContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the content of every cell in the column should be vertically aligned by default. This property overrides the verticalCellContentAlignment property of the table.
+    /// </summary>
+    [JsonPropertyName("verticalCellContentAlignment")]
+    public VerticalAlignment? VerticalCellContentAlignment { get; set; }
 
-  /// <summary>
-  /// The width of the column in the table, expressed as either a percentage of the available width or in pixels, using the `<number>px` format.
-  /// </summary>
-  [JsonPropertyName("width")]
-  public IUnion<string, float>? Width { get; set; }
+    /// <summary>
+    /// The width of the column in the table, expressed as either a percentage of the available width or in pixels, using the `<number>px` format.
+    /// </summary>
+    [JsonPropertyName("width")]
+    public IUnion<string, float>? Width { get; set; }
 
-  /// <summary>
-  /// Serializes this ColumnDefinition into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ColumnDefinition into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ColumnDefinition WithHorizontalCellContentAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalCellContentAlignment = value;
-    return this;
-  }
+    public ColumnDefinition WithHorizontalCellContentAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalCellContentAlignment = value;
+        return this;
+    }
 
-  public ColumnDefinition WithVerticalCellContentAlignment(VerticalAlignment value)
-  {
-    this.VerticalCellContentAlignment = value;
-    return this;
-  }
+    public ColumnDefinition WithVerticalCellContentAlignment(VerticalAlignment value)
+    {
+        this.VerticalCellContentAlignment = value;
+        return this;
+    }
 
-  public ColumnDefinition WithWidth(IUnion<string, float> value)
-  {
-    this.Width = value;
-    return this;
-  }
+    public ColumnDefinition WithWidth(IUnion<string, float> value)
+    {
+        this.Width = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -5587,291 +5587,291 @@ public class ColumnDefinition : SerializableObject
 /// </summary>
 public class TextBlock : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TextBlock.
-  /// </summary>
-  public static TextBlock? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TextBlock>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TextBlock.
+    /// </summary>
+    public static TextBlock? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TextBlock>(json);
+    }
 
-  /// <summary>
-  /// Must be **TextBlock**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "TextBlock";
+    /// <summary>
+    /// Must be **TextBlock**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "TextBlock";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The text to display. A subset of markdown is supported.
-  /// </summary>
-  [JsonPropertyName("text")]
-  public string? Text { get; set; }
+    /// <summary>
+    /// The text to display. A subset of markdown is supported.
+    /// </summary>
+    [JsonPropertyName("text")]
+    public string? Text { get; set; }
 
-  /// <summary>
-  /// The size of the text.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public TextSize? Size { get; set; }
+    /// <summary>
+    /// The size of the text.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public TextSize? Size { get; set; }
 
-  /// <summary>
-  /// The weight of the text.
-  /// </summary>
-  [JsonPropertyName("weight")]
-  public TextWeight? Weight { get; set; }
+    /// <summary>
+    /// The weight of the text.
+    /// </summary>
+    [JsonPropertyName("weight")]
+    public TextWeight? Weight { get; set; }
 
-  /// <summary>
-  /// The color of the text.
-  /// </summary>
-  [JsonPropertyName("color")]
-  public TextColor? Color { get; set; }
+    /// <summary>
+    /// The color of the text.
+    /// </summary>
+    [JsonPropertyName("color")]
+    public TextColor? Color { get; set; }
 
-  /// <summary>
-  /// Controls whether the text should be renderer using a subtler variant of the select color.
-  /// </summary>
-  [JsonPropertyName("isSubtle")]
-  public bool? IsSubtle { get; set; }
+    /// <summary>
+    /// Controls whether the text should be renderer using a subtler variant of the select color.
+    /// </summary>
+    [JsonPropertyName("isSubtle")]
+    public bool? IsSubtle { get; set; }
 
-  /// <summary>
-  /// The type of font to use for rendering.
-  /// </summary>
-  [JsonPropertyName("fontType")]
-  public FontType? FontType { get; set; }
+    /// <summary>
+    /// The type of font to use for rendering.
+    /// </summary>
+    [JsonPropertyName("fontType")]
+    public FontType? FontType { get; set; }
 
-  /// <summary>
-  /// Controls if the text should wrap.
-  /// </summary>
-  [JsonPropertyName("wrap")]
-  public bool? Wrap { get; set; }
+    /// <summary>
+    /// Controls if the text should wrap.
+    /// </summary>
+    [JsonPropertyName("wrap")]
+    public bool? Wrap { get; set; }
 
-  /// <summary>
-  /// The maximum number of lines to display.
-  /// </summary>
-  [JsonPropertyName("maxLines")]
-  public float? MaxLines { get; set; }
+    /// <summary>
+    /// The maximum number of lines to display.
+    /// </summary>
+    [JsonPropertyName("maxLines")]
+    public float? MaxLines { get; set; }
 
-  /// <summary>
-  /// The style of the text.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public StyleEnum? Style { get; set; }
+    /// <summary>
+    /// The style of the text.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public StyleEnum? Style { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  public TextBlock(string text)
-  {
-    this.Text = text;
-  }
+    public TextBlock(string text)
+    {
+        this.Text = text;
+    }
 
-  /// <summary>
-  /// Serializes this TextBlock into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TextBlock into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TextBlock WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public TextBlock WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public TextBlock WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public TextBlock WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public TextBlock WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public TextBlock WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public TextBlock WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public TextBlock WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public TextBlock WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public TextBlock WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public TextBlock WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public TextBlock WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public TextBlock WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public TextBlock WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public TextBlock WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public TextBlock WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public TextBlock WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public TextBlock WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public TextBlock WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public TextBlock WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public TextBlock WithText(string value)
-  {
-    this.Text = value;
-    return this;
-  }
+    public TextBlock WithText(string value)
+    {
+        this.Text = value;
+        return this;
+    }
 
-  public TextBlock WithSize(TextSize value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public TextBlock WithSize(TextSize value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public TextBlock WithWeight(TextWeight value)
-  {
-    this.Weight = value;
-    return this;
-  }
+    public TextBlock WithWeight(TextWeight value)
+    {
+        this.Weight = value;
+        return this;
+    }
 
-  public TextBlock WithColor(TextColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public TextBlock WithColor(TextColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public TextBlock WithIsSubtle(bool value)
-  {
-    this.IsSubtle = value;
-    return this;
-  }
+    public TextBlock WithIsSubtle(bool value)
+    {
+        this.IsSubtle = value;
+        return this;
+    }
 
-  public TextBlock WithFontType(FontType value)
-  {
-    this.FontType = value;
-    return this;
-  }
+    public TextBlock WithFontType(FontType value)
+    {
+        this.FontType = value;
+        return this;
+    }
 
-  public TextBlock WithWrap(bool value)
-  {
-    this.Wrap = value;
-    return this;
-  }
+    public TextBlock WithWrap(bool value)
+    {
+        this.Wrap = value;
+        return this;
+    }
 
-  public TextBlock WithMaxLines(float value)
-  {
-    this.MaxLines = value;
-    return this;
-  }
+    public TextBlock WithMaxLines(float value)
+    {
+        this.MaxLines = value;
+        return this;
+    }
 
-  public TextBlock WithStyle(StyleEnum value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public TextBlock WithStyle(StyleEnum value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public TextBlock WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public TextBlock WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public TextBlock WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public TextBlock WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -5879,183 +5879,183 @@ public class TextBlock : CardElement
 /// </summary>
 public class FactSet : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  FactSet.
-  /// </summary>
-  public static FactSet? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<FactSet>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  FactSet.
+    /// </summary>
+    public static FactSet? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<FactSet>(json);
+    }
 
-  /// <summary>
-  /// Must be **FactSet**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "FactSet";
+    /// <summary>
+    /// Must be **FactSet**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "FactSet";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The facts in the set.
-  /// </summary>
-  [JsonPropertyName("facts")]
-  public IList<Fact>? Facts { get; set; }
+    /// <summary>
+    /// The facts in the set.
+    /// </summary>
+    [JsonPropertyName("facts")]
+    public IList<Fact>? Facts { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  public FactSet(params IList<Fact> facts)
-  {
-    this.Facts = facts;
-  }
+    public FactSet(params IList<Fact> facts)
+    {
+        this.Facts = facts;
+    }
 
-  /// <summary>
-  /// Serializes this FactSet into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this FactSet into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public FactSet WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public FactSet WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public FactSet WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public FactSet WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public FactSet WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public FactSet WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public FactSet WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public FactSet WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public FactSet WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public FactSet WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public FactSet WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public FactSet WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public FactSet WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public FactSet WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public FactSet WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public FactSet WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public FactSet WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public FactSet WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public FactSet WithFacts(params IList<Fact> value)
-  {
-    this.Facts = value;
-    return this;
-  }
+    public FactSet WithFacts(params IList<Fact> value)
+    {
+        this.Facts = value;
+        return this;
+    }
 
-  public FactSet WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public FactSet WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public FactSet WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public FactSet WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -6063,58 +6063,58 @@ public class FactSet : CardElement
 /// </summary>
 public class Fact : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Fact.
-  /// </summary>
-  public static Fact? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Fact>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Fact.
+    /// </summary>
+    public static Fact? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Fact>(json);
+    }
 
-  /// <summary>
-  /// The fact's title.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The fact's title.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The fact's value.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The fact's value.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  public Fact(string title, string value)
-  {
-    this.Title = title;
-    this.Value = value;
-  }
+    public Fact(string title, string value)
+    {
+        this.Title = title;
+        this.Value = value;
+    }
 
-  /// <summary>
-  /// Serializes this Fact into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Fact into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Fact WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public Fact WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public Fact WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public Fact WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -6122,207 +6122,207 @@ public class Fact : SerializableObject
 /// </summary>
 public class ImageSet : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ImageSet.
-  /// </summary>
-  public static ImageSet? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ImageSet>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ImageSet.
+    /// </summary>
+    public static ImageSet? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ImageSet>(json);
+    }
 
-  /// <summary>
-  /// Must be **ImageSet**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "ImageSet";
+    /// <summary>
+    /// Must be **ImageSet**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "ImageSet";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The images in the set.
-  /// </summary>
-  [JsonPropertyName("images")]
-  public IList<Image>? Images { get; set; }
+    /// <summary>
+    /// The images in the set.
+    /// </summary>
+    [JsonPropertyName("images")]
+    public IList<Image>? Images { get; set; }
 
-  /// <summary>
-  /// The size to use to render all images in the set.
-  /// </summary>
-  [JsonPropertyName("imageSize")]
-  public ImageSize? ImageSize { get; set; }
+    /// <summary>
+    /// The size to use to render all images in the set.
+    /// </summary>
+    [JsonPropertyName("imageSize")]
+    public ImageSize? ImageSize { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  public ImageSet(params IList<Image> images)
-  {
-    this.Images = images;
-  }
+    public ImageSet(params IList<Image> images)
+    {
+        this.Images = images;
+    }
 
-  /// <summary>
-  /// Serializes this ImageSet into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ImageSet into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ImageSet WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ImageSet WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ImageSet WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ImageSet WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ImageSet WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ImageSet WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ImageSet WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ImageSet WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ImageSet WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ImageSet WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ImageSet WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ImageSet WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ImageSet WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public ImageSet WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public ImageSet WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ImageSet WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ImageSet WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ImageSet WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ImageSet WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ImageSet WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ImageSet WithImages(params IList<Image> value)
-  {
-    this.Images = value;
-    return this;
-  }
+    public ImageSet WithImages(params IList<Image> value)
+    {
+        this.Images = value;
+        return this;
+    }
 
-  public ImageSet WithImageSize(ImageSize value)
-  {
-    this.ImageSize = value;
-    return this;
-  }
+    public ImageSet WithImageSize(ImageSize value)
+    {
+        this.ImageSize = value;
+        return this;
+    }
 
-  public ImageSet WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ImageSet WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ImageSet WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ImageSet WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -6330,288 +6330,288 @@ public class ImageSet : CardElement
 /// </summary>
 public class Image : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Image.
-  /// </summary>
-  public static Image? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Image>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Image.
+    /// </summary>
+    public static Image? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Image>(json);
+    }
 
-  /// <summary>
-  /// Must be **Image**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Image";
+    /// <summary>
+    /// Must be **Image**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Image";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The URL (or Base64-encoded Data URI) of the image. Acceptable formats are PNG, JPEG, GIF and SVG.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL (or Base64-encoded Data URI) of the image. Acceptable formats are PNG, JPEG, GIF and SVG.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// The alternate text for the image, used for accessibility purposes.
-  /// </summary>
-  [JsonPropertyName("altText")]
-  public string? AltText { get; set; }
+    /// <summary>
+    /// The alternate text for the image, used for accessibility purposes.
+    /// </summary>
+    [JsonPropertyName("altText")]
+    public string? AltText { get; set; }
 
-  /// <summary>
-  /// The background color of the image.
-  /// </summary>
-  [JsonPropertyName("backgroundColor")]
-  public string? BackgroundColor { get; set; }
+    /// <summary>
+    /// The background color of the image.
+    /// </summary>
+    [JsonPropertyName("backgroundColor")]
+    public string? BackgroundColor { get; set; }
 
-  /// <summary>
-  /// The style of the image.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ImageStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the image.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ImageStyle? Style { get; set; }
 
-  /// <summary>
-  /// The size of the image.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public Size? Size { get; set; }
+    /// <summary>
+    /// The size of the image.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public Size? Size { get; set; }
 
-  /// <summary>
-  /// The width of the image.
-  /// </summary>
-  [JsonPropertyName("width")]
-  public string? Width { get; set; }
+    /// <summary>
+    /// The width of the image.
+    /// </summary>
+    [JsonPropertyName("width")]
+    public string? Width { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the image is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the image is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// Controls if the image can be expanded to full screen.
-  /// </summary>
-  [JsonPropertyName("allowExpand")]
-  public bool? AllowExpand { get; set; }
+    /// <summary>
+    /// Controls if the image can be expanded to full screen.
+    /// </summary>
+    [JsonPropertyName("allowExpand")]
+    public bool? AllowExpand { get; set; }
 
-  [JsonPropertyName("msteams")]
-  public TeamsImageProperties? Msteams { get; set; }
+    [JsonPropertyName("msteams")]
+    public TeamsImageProperties? Msteams { get; set; }
 
-  /// <summary>
-  /// The height of the image.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public string? Height { get; set; }
+    /// <summary>
+    /// The height of the image.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public string? Height { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  public Image(string url)
-  {
-    this.Url = url;
-  }
+    public Image(string url)
+    {
+        this.Url = url;
+    }
 
-  /// <summary>
-  /// Serializes this Image into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Image into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Image WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public Image WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public Image WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public Image WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public Image WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public Image WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public Image WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public Image WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public Image WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public Image WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public Image WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public Image WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public Image WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public Image WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public Image WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public Image WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public Image WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public Image WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public Image WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public Image WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 
-  public Image WithAltText(string value)
-  {
-    this.AltText = value;
-    return this;
-  }
+    public Image WithAltText(string value)
+    {
+        this.AltText = value;
+        return this;
+    }
 
-  public Image WithBackgroundColor(string value)
-  {
-    this.BackgroundColor = value;
-    return this;
-  }
+    public Image WithBackgroundColor(string value)
+    {
+        this.BackgroundColor = value;
+        return this;
+    }
 
-  public Image WithStyle(ImageStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public Image WithStyle(ImageStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public Image WithSize(Size value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public Image WithSize(Size value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public Image WithWidth(string value)
-  {
-    this.Width = value;
-    return this;
-  }
+    public Image WithWidth(string value)
+    {
+        this.Width = value;
+        return this;
+    }
 
-  public Image WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public Image WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public Image WithAllowExpand(bool value)
-  {
-    this.AllowExpand = value;
-    return this;
-  }
+    public Image WithAllowExpand(bool value)
+    {
+        this.AllowExpand = value;
+        return this;
+    }
 
-  public Image WithMsteams(TeamsImageProperties value)
-  {
-    this.Msteams = value;
-    return this;
-  }
+    public Image WithMsteams(TeamsImageProperties value)
+    {
+        this.Msteams = value;
+        return this;
+    }
 
-  public Image WithHeight(string value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public Image WithHeight(string value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public Image WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public Image WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public Image WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public Image WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -6619,40 +6619,40 @@ public class Image : CardElement
 /// </summary>
 public class TeamsImageProperties : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TeamsImageProperties.
-  /// </summary>
-  public static TeamsImageProperties? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TeamsImageProperties>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TeamsImageProperties.
+    /// </summary>
+    public static TeamsImageProperties? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TeamsImageProperties>(json);
+    }
 
-  /// <summary>
-  /// Controls if the image is expandable in Teams. This property is equivalent to the Image.allowExpand property.
-  /// </summary>
-  [JsonPropertyName("allowExpand")]
-  public bool? AllowExpand { get; set; }
+    /// <summary>
+    /// Controls if the image is expandable in Teams. This property is equivalent to the Image.allowExpand property.
+    /// </summary>
+    [JsonPropertyName("allowExpand")]
+    public bool? AllowExpand { get; set; }
 
-  /// <summary>
-  /// Serializes this TeamsImageProperties into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TeamsImageProperties into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TeamsImageProperties WithAllowExpand(bool value)
-  {
-    this.AllowExpand = value;
-    return this;
-  }
+    public TeamsImageProperties WithAllowExpand(bool value)
+    {
+        this.AllowExpand = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -6660,300 +6660,300 @@ public class TeamsImageProperties : SerializableObject
 /// </summary>
 public class TextInput : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TextInput.
-  /// </summary>
-  public static TextInput? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TextInput>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TextInput.
+    /// </summary>
+    public static TextInput? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TextInput>(json);
+    }
 
-  /// <summary>
-  /// Must be **Input.Text**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Input.Text";
+    /// <summary>
+    /// Must be **Input.Text**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Input.Text";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The label of the input.
-  /// 
-  /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
-  /// </summary>
-  [JsonPropertyName("label")]
-  public string? Label { get; set; }
+    /// <summary>
+    /// The label of the input.
+    /// 
+    /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
+    /// </summary>
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
 
-  /// <summary>
-  /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("isRequired")]
-  public bool? IsRequired { get; set; }
+    /// <summary>
+    /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("isRequired")]
+    public bool? IsRequired { get; set; }
 
-  /// <summary>
-  /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("errorMessage")]
-  public string? ErrorMessage { get; set; }
+    /// <summary>
+    /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; set; }
 
-  /// <summary>
-  /// An Action.ResetInputs action that will be executed when the value of the input changes.
-  /// </summary>
-  [JsonPropertyName("valueChangedAction")]
-  public ResetInputsAction? ValueChangedAction { get; set; }
+    /// <summary>
+    /// An Action.ResetInputs action that will be executed when the value of the input changes.
+    /// </summary>
+    [JsonPropertyName("valueChangedAction")]
+    public ResetInputsAction? ValueChangedAction { get; set; }
 
-  /// <summary>
-  /// The default value of the input.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The default value of the input.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  /// <summary>
-  /// The maximum length of the text in the input.
-  /// </summary>
-  [JsonPropertyName("maxLength")]
-  public float? MaxLength { get; set; }
+    /// <summary>
+    /// The maximum length of the text in the input.
+    /// </summary>
+    [JsonPropertyName("maxLength")]
+    public float? MaxLength { get; set; }
 
-  /// <summary>
-  /// Controls if the input should allow multiple lines of text.
-  /// </summary>
-  [JsonPropertyName("isMultiline")]
-  public bool? IsMultiline { get; set; }
+    /// <summary>
+    /// Controls if the input should allow multiple lines of text.
+    /// </summary>
+    [JsonPropertyName("isMultiline")]
+    public bool? IsMultiline { get; set; }
 
-  /// <summary>
-  /// The text to display as a placeholder when the user hasn't entered a value.
-  /// </summary>
-  [JsonPropertyName("placeholder")]
-  public string? Placeholder { get; set; }
+    /// <summary>
+    /// The text to display as a placeholder when the user hasn't entered a value.
+    /// </summary>
+    [JsonPropertyName("placeholder")]
+    public string? Placeholder { get; set; }
 
-  /// <summary>
-  /// The style of the input.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public InputTextStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the input.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public InputTextStyle? Style { get; set; }
 
-  /// <summary>
-  /// The action that should be displayed as a button alongside the input. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("inlineAction")]
-  public Action? InlineAction { get; set; }
+    /// <summary>
+    /// The action that should be displayed as a button alongside the input. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("inlineAction")]
+    public Action? InlineAction { get; set; }
 
-  /// <summary>
-  /// The regular expression to validate the input.
-  /// </summary>
-  [JsonPropertyName("regex")]
-  public string? Regex { get; set; }
+    /// <summary>
+    /// The regular expression to validate the input.
+    /// </summary>
+    [JsonPropertyName("regex")]
+    public string? Regex { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this TextInput into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TextInput into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TextInput WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public TextInput WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public TextInput WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public TextInput WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public TextInput WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public TextInput WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public TextInput WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public TextInput WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public TextInput WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public TextInput WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public TextInput WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public TextInput WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public TextInput WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public TextInput WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public TextInput WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public TextInput WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public TextInput WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public TextInput WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public TextInput WithLabel(string value)
-  {
-    this.Label = value;
-    return this;
-  }
+    public TextInput WithLabel(string value)
+    {
+        this.Label = value;
+        return this;
+    }
 
-  public TextInput WithIsRequired(bool value)
-  {
-    this.IsRequired = value;
-    return this;
-  }
+    public TextInput WithIsRequired(bool value)
+    {
+        this.IsRequired = value;
+        return this;
+    }
 
-  public TextInput WithErrorMessage(string value)
-  {
-    this.ErrorMessage = value;
-    return this;
-  }
+    public TextInput WithErrorMessage(string value)
+    {
+        this.ErrorMessage = value;
+        return this;
+    }
 
-  public TextInput WithValueChangedAction(ResetInputsAction value)
-  {
-    this.ValueChangedAction = value;
-    return this;
-  }
+    public TextInput WithValueChangedAction(ResetInputsAction value)
+    {
+        this.ValueChangedAction = value;
+        return this;
+    }
 
-  public TextInput WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public TextInput WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public TextInput WithMaxLength(float value)
-  {
-    this.MaxLength = value;
-    return this;
-  }
+    public TextInput WithMaxLength(float value)
+    {
+        this.MaxLength = value;
+        return this;
+    }
 
-  public TextInput WithIsMultiline(bool value)
-  {
-    this.IsMultiline = value;
-    return this;
-  }
+    public TextInput WithIsMultiline(bool value)
+    {
+        this.IsMultiline = value;
+        return this;
+    }
 
-  public TextInput WithPlaceholder(string value)
-  {
-    this.Placeholder = value;
-    return this;
-  }
+    public TextInput WithPlaceholder(string value)
+    {
+        this.Placeholder = value;
+        return this;
+    }
 
-  public TextInput WithStyle(InputTextStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public TextInput WithStyle(InputTextStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public TextInput WithInlineAction(Action value)
-  {
-    this.InlineAction = value;
-    return this;
-  }
+    public TextInput WithInlineAction(Action value)
+    {
+        this.InlineAction = value;
+        return this;
+    }
 
-  public TextInput WithRegex(string value)
-  {
-    this.Regex = value;
-    return this;
-  }
+    public TextInput WithRegex(string value)
+    {
+        this.Regex = value;
+        return this;
+    }
 
-  public TextInput WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public TextInput WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public TextInput WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public TextInput WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -6961,264 +6961,264 @@ public class TextInput : CardElement
 /// </summary>
 public class DateInput : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  DateInput.
-  /// </summary>
-  public static DateInput? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<DateInput>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  DateInput.
+    /// </summary>
+    public static DateInput? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<DateInput>(json);
+    }
 
-  /// <summary>
-  /// Must be **Input.Date**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Input.Date";
+    /// <summary>
+    /// Must be **Input.Date**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Input.Date";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The label of the input.
-  /// 
-  /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
-  /// </summary>
-  [JsonPropertyName("label")]
-  public string? Label { get; set; }
+    /// <summary>
+    /// The label of the input.
+    /// 
+    /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
+    /// </summary>
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
 
-  /// <summary>
-  /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("isRequired")]
-  public bool? IsRequired { get; set; }
+    /// <summary>
+    /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("isRequired")]
+    public bool? IsRequired { get; set; }
 
-  /// <summary>
-  /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("errorMessage")]
-  public string? ErrorMessage { get; set; }
+    /// <summary>
+    /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; set; }
 
-  /// <summary>
-  /// An Action.ResetInputs action that will be executed when the value of the input changes.
-  /// </summary>
-  [JsonPropertyName("valueChangedAction")]
-  public ResetInputsAction? ValueChangedAction { get; set; }
+    /// <summary>
+    /// An Action.ResetInputs action that will be executed when the value of the input changes.
+    /// </summary>
+    [JsonPropertyName("valueChangedAction")]
+    public ResetInputsAction? ValueChangedAction { get; set; }
 
-  /// <summary>
-  /// The default value of the input, in the `YYYY-MM-DD` format.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The default value of the input, in the `YYYY-MM-DD` format.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  /// <summary>
-  /// The text to display as a placeholder when the user has not selected a date.
-  /// </summary>
-  [JsonPropertyName("placeholder")]
-  public string? Placeholder { get; set; }
+    /// <summary>
+    /// The text to display as a placeholder when the user has not selected a date.
+    /// </summary>
+    [JsonPropertyName("placeholder")]
+    public string? Placeholder { get; set; }
 
-  /// <summary>
-  /// The minimum date that can be selected.
-  /// </summary>
-  [JsonPropertyName("min")]
-  public string? Min { get; set; }
+    /// <summary>
+    /// The minimum date that can be selected.
+    /// </summary>
+    [JsonPropertyName("min")]
+    public string? Min { get; set; }
 
-  /// <summary>
-  /// The maximum date that can be selected.
-  /// </summary>
-  [JsonPropertyName("max")]
-  public string? Max { get; set; }
+    /// <summary>
+    /// The maximum date that can be selected.
+    /// </summary>
+    [JsonPropertyName("max")]
+    public string? Max { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this DateInput into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this DateInput into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public DateInput WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public DateInput WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public DateInput WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public DateInput WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public DateInput WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public DateInput WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public DateInput WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public DateInput WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public DateInput WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public DateInput WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public DateInput WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public DateInput WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public DateInput WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public DateInput WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public DateInput WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public DateInput WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public DateInput WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public DateInput WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public DateInput WithLabel(string value)
-  {
-    this.Label = value;
-    return this;
-  }
+    public DateInput WithLabel(string value)
+    {
+        this.Label = value;
+        return this;
+    }
 
-  public DateInput WithIsRequired(bool value)
-  {
-    this.IsRequired = value;
-    return this;
-  }
+    public DateInput WithIsRequired(bool value)
+    {
+        this.IsRequired = value;
+        return this;
+    }
 
-  public DateInput WithErrorMessage(string value)
-  {
-    this.ErrorMessage = value;
-    return this;
-  }
+    public DateInput WithErrorMessage(string value)
+    {
+        this.ErrorMessage = value;
+        return this;
+    }
 
-  public DateInput WithValueChangedAction(ResetInputsAction value)
-  {
-    this.ValueChangedAction = value;
-    return this;
-  }
+    public DateInput WithValueChangedAction(ResetInputsAction value)
+    {
+        this.ValueChangedAction = value;
+        return this;
+    }
 
-  public DateInput WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public DateInput WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public DateInput WithPlaceholder(string value)
-  {
-    this.Placeholder = value;
-    return this;
-  }
+    public DateInput WithPlaceholder(string value)
+    {
+        this.Placeholder = value;
+        return this;
+    }
 
-  public DateInput WithMin(string value)
-  {
-    this.Min = value;
-    return this;
-  }
+    public DateInput WithMin(string value)
+    {
+        this.Min = value;
+        return this;
+    }
 
-  public DateInput WithMax(string value)
-  {
-    this.Max = value;
-    return this;
-  }
+    public DateInput WithMax(string value)
+    {
+        this.Max = value;
+        return this;
+    }
 
-  public DateInput WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public DateInput WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public DateInput WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public DateInput WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -7226,264 +7226,264 @@ public class DateInput : CardElement
 /// </summary>
 public class TimeInput : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TimeInput.
-  /// </summary>
-  public static TimeInput? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TimeInput>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TimeInput.
+    /// </summary>
+    public static TimeInput? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TimeInput>(json);
+    }
 
-  /// <summary>
-  /// Must be **Input.Time**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Input.Time";
+    /// <summary>
+    /// Must be **Input.Time**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Input.Time";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The label of the input.
-  /// 
-  /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
-  /// </summary>
-  [JsonPropertyName("label")]
-  public string? Label { get; set; }
+    /// <summary>
+    /// The label of the input.
+    /// 
+    /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
+    /// </summary>
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
 
-  /// <summary>
-  /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("isRequired")]
-  public bool? IsRequired { get; set; }
+    /// <summary>
+    /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("isRequired")]
+    public bool? IsRequired { get; set; }
 
-  /// <summary>
-  /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("errorMessage")]
-  public string? ErrorMessage { get; set; }
+    /// <summary>
+    /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; set; }
 
-  /// <summary>
-  /// An Action.ResetInputs action that will be executed when the value of the input changes.
-  /// </summary>
-  [JsonPropertyName("valueChangedAction")]
-  public ResetInputsAction? ValueChangedAction { get; set; }
+    /// <summary>
+    /// An Action.ResetInputs action that will be executed when the value of the input changes.
+    /// </summary>
+    [JsonPropertyName("valueChangedAction")]
+    public ResetInputsAction? ValueChangedAction { get; set; }
 
-  /// <summary>
-  /// The default value of the input, in the `HH:MM` format.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The default value of the input, in the `HH:MM` format.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  /// <summary>
-  /// The text to display as a placeholder when the user hasn't entered a value.
-  /// </summary>
-  [JsonPropertyName("placeholder")]
-  public string? Placeholder { get; set; }
+    /// <summary>
+    /// The text to display as a placeholder when the user hasn't entered a value.
+    /// </summary>
+    [JsonPropertyName("placeholder")]
+    public string? Placeholder { get; set; }
 
-  /// <summary>
-  /// The minimum time that can be selected, in the `HH:MM` format.
-  /// </summary>
-  [JsonPropertyName("min")]
-  public string? Min { get; set; }
+    /// <summary>
+    /// The minimum time that can be selected, in the `HH:MM` format.
+    /// </summary>
+    [JsonPropertyName("min")]
+    public string? Min { get; set; }
 
-  /// <summary>
-  /// The maximum time that can be selected, in the `HH:MM` format.
-  /// </summary>
-  [JsonPropertyName("max")]
-  public string? Max { get; set; }
+    /// <summary>
+    /// The maximum time that can be selected, in the `HH:MM` format.
+    /// </summary>
+    [JsonPropertyName("max")]
+    public string? Max { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this TimeInput into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TimeInput into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TimeInput WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public TimeInput WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public TimeInput WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public TimeInput WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public TimeInput WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public TimeInput WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public TimeInput WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public TimeInput WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public TimeInput WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public TimeInput WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public TimeInput WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public TimeInput WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public TimeInput WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public TimeInput WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public TimeInput WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public TimeInput WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public TimeInput WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public TimeInput WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public TimeInput WithLabel(string value)
-  {
-    this.Label = value;
-    return this;
-  }
+    public TimeInput WithLabel(string value)
+    {
+        this.Label = value;
+        return this;
+    }
 
-  public TimeInput WithIsRequired(bool value)
-  {
-    this.IsRequired = value;
-    return this;
-  }
+    public TimeInput WithIsRequired(bool value)
+    {
+        this.IsRequired = value;
+        return this;
+    }
 
-  public TimeInput WithErrorMessage(string value)
-  {
-    this.ErrorMessage = value;
-    return this;
-  }
+    public TimeInput WithErrorMessage(string value)
+    {
+        this.ErrorMessage = value;
+        return this;
+    }
 
-  public TimeInput WithValueChangedAction(ResetInputsAction value)
-  {
-    this.ValueChangedAction = value;
-    return this;
-  }
+    public TimeInput WithValueChangedAction(ResetInputsAction value)
+    {
+        this.ValueChangedAction = value;
+        return this;
+    }
 
-  public TimeInput WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public TimeInput WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public TimeInput WithPlaceholder(string value)
-  {
-    this.Placeholder = value;
-    return this;
-  }
+    public TimeInput WithPlaceholder(string value)
+    {
+        this.Placeholder = value;
+        return this;
+    }
 
-  public TimeInput WithMin(string value)
-  {
-    this.Min = value;
-    return this;
-  }
+    public TimeInput WithMin(string value)
+    {
+        this.Min = value;
+        return this;
+    }
 
-  public TimeInput WithMax(string value)
-  {
-    this.Max = value;
-    return this;
-  }
+    public TimeInput WithMax(string value)
+    {
+        this.Max = value;
+        return this;
+    }
 
-  public TimeInput WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public TimeInput WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public TimeInput WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public TimeInput WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -7491,264 +7491,264 @@ public class TimeInput : CardElement
 /// </summary>
 public class NumberInput : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  NumberInput.
-  /// </summary>
-  public static NumberInput? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<NumberInput>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  NumberInput.
+    /// </summary>
+    public static NumberInput? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<NumberInput>(json);
+    }
 
-  /// <summary>
-  /// Must be **Input.Number**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Input.Number";
+    /// <summary>
+    /// Must be **Input.Number**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Input.Number";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The label of the input.
-  /// 
-  /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
-  /// </summary>
-  [JsonPropertyName("label")]
-  public string? Label { get; set; }
+    /// <summary>
+    /// The label of the input.
+    /// 
+    /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
+    /// </summary>
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
 
-  /// <summary>
-  /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("isRequired")]
-  public bool? IsRequired { get; set; }
+    /// <summary>
+    /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("isRequired")]
+    public bool? IsRequired { get; set; }
 
-  /// <summary>
-  /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("errorMessage")]
-  public string? ErrorMessage { get; set; }
+    /// <summary>
+    /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; set; }
 
-  /// <summary>
-  /// An Action.ResetInputs action that will be executed when the value of the input changes.
-  /// </summary>
-  [JsonPropertyName("valueChangedAction")]
-  public ResetInputsAction? ValueChangedAction { get; set; }
+    /// <summary>
+    /// An Action.ResetInputs action that will be executed when the value of the input changes.
+    /// </summary>
+    [JsonPropertyName("valueChangedAction")]
+    public ResetInputsAction? ValueChangedAction { get; set; }
 
-  /// <summary>
-  /// The default value of the input.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public float? Value { get; set; }
+    /// <summary>
+    /// The default value of the input.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public float? Value { get; set; }
 
-  /// <summary>
-  /// The text to display as a placeholder when the user hasn't entered a value.
-  /// </summary>
-  [JsonPropertyName("placeholder")]
-  public string? Placeholder { get; set; }
+    /// <summary>
+    /// The text to display as a placeholder when the user hasn't entered a value.
+    /// </summary>
+    [JsonPropertyName("placeholder")]
+    public string? Placeholder { get; set; }
 
-  /// <summary>
-  /// The minimum value that can be entered.
-  /// </summary>
-  [JsonPropertyName("min")]
-  public float? Min { get; set; }
+    /// <summary>
+    /// The minimum value that can be entered.
+    /// </summary>
+    [JsonPropertyName("min")]
+    public float? Min { get; set; }
 
-  /// <summary>
-  /// The maximum value that can be entered.
-  /// </summary>
-  [JsonPropertyName("max")]
-  public float? Max { get; set; }
+    /// <summary>
+    /// The maximum value that can be entered.
+    /// </summary>
+    [JsonPropertyName("max")]
+    public float? Max { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this NumberInput into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this NumberInput into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public NumberInput WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public NumberInput WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public NumberInput WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public NumberInput WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public NumberInput WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public NumberInput WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public NumberInput WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public NumberInput WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public NumberInput WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public NumberInput WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public NumberInput WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public NumberInput WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public NumberInput WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public NumberInput WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public NumberInput WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public NumberInput WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public NumberInput WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public NumberInput WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public NumberInput WithLabel(string value)
-  {
-    this.Label = value;
-    return this;
-  }
+    public NumberInput WithLabel(string value)
+    {
+        this.Label = value;
+        return this;
+    }
 
-  public NumberInput WithIsRequired(bool value)
-  {
-    this.IsRequired = value;
-    return this;
-  }
+    public NumberInput WithIsRequired(bool value)
+    {
+        this.IsRequired = value;
+        return this;
+    }
 
-  public NumberInput WithErrorMessage(string value)
-  {
-    this.ErrorMessage = value;
-    return this;
-  }
+    public NumberInput WithErrorMessage(string value)
+    {
+        this.ErrorMessage = value;
+        return this;
+    }
 
-  public NumberInput WithValueChangedAction(ResetInputsAction value)
-  {
-    this.ValueChangedAction = value;
-    return this;
-  }
+    public NumberInput WithValueChangedAction(ResetInputsAction value)
+    {
+        this.ValueChangedAction = value;
+        return this;
+    }
 
-  public NumberInput WithValue(float value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public NumberInput WithValue(float value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public NumberInput WithPlaceholder(string value)
-  {
-    this.Placeholder = value;
-    return this;
-  }
+    public NumberInput WithPlaceholder(string value)
+    {
+        this.Placeholder = value;
+        return this;
+    }
 
-  public NumberInput WithMin(float value)
-  {
-    this.Min = value;
-    return this;
-  }
+    public NumberInput WithMin(float value)
+    {
+        this.Min = value;
+        return this;
+    }
 
-  public NumberInput WithMax(float value)
-  {
-    this.Max = value;
-    return this;
-  }
+    public NumberInput WithMax(float value)
+    {
+        this.Max = value;
+        return this;
+    }
 
-  public NumberInput WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public NumberInput WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public NumberInput WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public NumberInput WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -7756,281 +7756,281 @@ public class NumberInput : CardElement
 /// </summary>
 public class ToggleInput : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ToggleInput.
-  /// </summary>
-  public static ToggleInput? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ToggleInput>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ToggleInput.
+    /// </summary>
+    public static ToggleInput? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ToggleInput>(json);
+    }
 
-  /// <summary>
-  /// Must be **Input.Toggle**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Input.Toggle";
+    /// <summary>
+    /// Must be **Input.Toggle**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Input.Toggle";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The label of the input.
-  /// 
-  /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
-  /// </summary>
-  [JsonPropertyName("label")]
-  public string? Label { get; set; }
+    /// <summary>
+    /// The label of the input.
+    /// 
+    /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
+    /// </summary>
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
 
-  /// <summary>
-  /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("isRequired")]
-  public bool? IsRequired { get; set; }
+    /// <summary>
+    /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("isRequired")]
+    public bool? IsRequired { get; set; }
 
-  /// <summary>
-  /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("errorMessage")]
-  public string? ErrorMessage { get; set; }
+    /// <summary>
+    /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; set; }
 
-  /// <summary>
-  /// An Action.ResetInputs action that will be executed when the value of the input changes.
-  /// </summary>
-  [JsonPropertyName("valueChangedAction")]
-  public ResetInputsAction? ValueChangedAction { get; set; }
+    /// <summary>
+    /// An Action.ResetInputs action that will be executed when the value of the input changes.
+    /// </summary>
+    [JsonPropertyName("valueChangedAction")]
+    public ResetInputsAction? ValueChangedAction { get; set; }
 
-  /// <summary>
-  /// The default value of the input.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The default value of the input.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  /// <summary>
-  /// The title (caption) to display next to the toggle.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title (caption) to display next to the toggle.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The value to send to the Bot when the toggle is on.
-  /// </summary>
-  [JsonPropertyName("valueOn")]
-  public string? ValueOn { get; set; }
+    /// <summary>
+    /// The value to send to the Bot when the toggle is on.
+    /// </summary>
+    [JsonPropertyName("valueOn")]
+    public string? ValueOn { get; set; }
 
-  /// <summary>
-  /// The value to send to the Bot when the toggle is off.
-  /// </summary>
-  [JsonPropertyName("valueOff")]
-  public string? ValueOff { get; set; }
+    /// <summary>
+    /// The value to send to the Bot when the toggle is off.
+    /// </summary>
+    [JsonPropertyName("valueOff")]
+    public string? ValueOff { get; set; }
 
-  /// <summary>
-  /// Controls if the title should wrap.
-  /// </summary>
-  [JsonPropertyName("wrap")]
-  public bool? Wrap { get; set; }
+    /// <summary>
+    /// Controls if the title should wrap.
+    /// </summary>
+    [JsonPropertyName("wrap")]
+    public bool? Wrap { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  public ToggleInput(string title)
-  {
-    this.Title = title;
-  }
+    public ToggleInput(string title)
+    {
+        this.Title = title;
+    }
 
-  /// <summary>
-  /// Serializes this ToggleInput into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ToggleInput into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ToggleInput WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ToggleInput WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ToggleInput WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ToggleInput WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ToggleInput WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ToggleInput WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ToggleInput WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ToggleInput WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ToggleInput WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ToggleInput WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ToggleInput WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ToggleInput WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ToggleInput WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ToggleInput WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ToggleInput WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ToggleInput WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ToggleInput WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ToggleInput WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ToggleInput WithLabel(string value)
-  {
-    this.Label = value;
-    return this;
-  }
+    public ToggleInput WithLabel(string value)
+    {
+        this.Label = value;
+        return this;
+    }
 
-  public ToggleInput WithIsRequired(bool value)
-  {
-    this.IsRequired = value;
-    return this;
-  }
+    public ToggleInput WithIsRequired(bool value)
+    {
+        this.IsRequired = value;
+        return this;
+    }
 
-  public ToggleInput WithErrorMessage(string value)
-  {
-    this.ErrorMessage = value;
-    return this;
-  }
+    public ToggleInput WithErrorMessage(string value)
+    {
+        this.ErrorMessage = value;
+        return this;
+    }
 
-  public ToggleInput WithValueChangedAction(ResetInputsAction value)
-  {
-    this.ValueChangedAction = value;
-    return this;
-  }
+    public ToggleInput WithValueChangedAction(ResetInputsAction value)
+    {
+        this.ValueChangedAction = value;
+        return this;
+    }
 
-  public ToggleInput WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public ToggleInput WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public ToggleInput WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public ToggleInput WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public ToggleInput WithValueOn(string value)
-  {
-    this.ValueOn = value;
-    return this;
-  }
+    public ToggleInput WithValueOn(string value)
+    {
+        this.ValueOn = value;
+        return this;
+    }
 
-  public ToggleInput WithValueOff(string value)
-  {
-    this.ValueOff = value;
-    return this;
-  }
+    public ToggleInput WithValueOff(string value)
+    {
+        this.ValueOff = value;
+        return this;
+    }
 
-  public ToggleInput WithWrap(bool value)
-  {
-    this.Wrap = value;
-    return this;
-  }
+    public ToggleInput WithWrap(bool value)
+    {
+        this.Wrap = value;
+        return this;
+    }
 
-  public ToggleInput WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ToggleInput WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ToggleInput WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ToggleInput WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -8038,329 +8038,329 @@ public class ToggleInput : CardElement
 /// </summary>
 public class ChoiceSetInput : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ChoiceSetInput.
-  /// </summary>
-  public static ChoiceSetInput? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ChoiceSetInput>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ChoiceSetInput.
+    /// </summary>
+    public static ChoiceSetInput? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ChoiceSetInput>(json);
+    }
 
-  /// <summary>
-  /// Must be **Input.ChoiceSet**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Input.ChoiceSet";
+    /// <summary>
+    /// Must be **Input.ChoiceSet**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Input.ChoiceSet";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The label of the input.
-  /// 
-  /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
-  /// </summary>
-  [JsonPropertyName("label")]
-  public string? Label { get; set; }
+    /// <summary>
+    /// The label of the input.
+    /// 
+    /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
+    /// </summary>
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
 
-  /// <summary>
-  /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("isRequired")]
-  public bool? IsRequired { get; set; }
+    /// <summary>
+    /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("isRequired")]
+    public bool? IsRequired { get; set; }
 
-  /// <summary>
-  /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("errorMessage")]
-  public string? ErrorMessage { get; set; }
+    /// <summary>
+    /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; set; }
 
-  /// <summary>
-  /// An Action.ResetInputs action that will be executed when the value of the input changes.
-  /// </summary>
-  [JsonPropertyName("valueChangedAction")]
-  public ResetInputsAction? ValueChangedAction { get; set; }
+    /// <summary>
+    /// An Action.ResetInputs action that will be executed when the value of the input changes.
+    /// </summary>
+    [JsonPropertyName("valueChangedAction")]
+    public ResetInputsAction? ValueChangedAction { get; set; }
 
-  /// <summary>
-  /// The default value of the input.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The default value of the input.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  /// <summary>
-  /// The choices associated with the input.
-  /// </summary>
-  [JsonPropertyName("choices")]
-  public IList<Choice>? Choices { get; set; }
+    /// <summary>
+    /// The choices associated with the input.
+    /// </summary>
+    [JsonPropertyName("choices")]
+    public IList<Choice>? Choices { get; set; }
 
-  /// <summary>
-  /// A Data.Query object that defines the dataset from which to dynamically fetch the choices for the input.
-  /// </summary>
-  [JsonPropertyName("choices.data")]
-  public QueryData? ChoicesData { get; set; }
+    /// <summary>
+    /// A Data.Query object that defines the dataset from which to dynamically fetch the choices for the input.
+    /// </summary>
+    [JsonPropertyName("choices.data")]
+    public QueryData? ChoicesData { get; set; }
 
-  /// <summary>
-  /// Controls whether the input should be displayed as a dropdown (compact) or a list of radio buttons or checkboxes (expanded).
-  /// </summary>
-  [JsonPropertyName("style")]
-  public StyleEnum? Style { get; set; }
+    /// <summary>
+    /// Controls whether the input should be displayed as a dropdown (compact) or a list of radio buttons or checkboxes (expanded).
+    /// </summary>
+    [JsonPropertyName("style")]
+    public StyleEnum? Style { get; set; }
 
-  /// <summary>
-  /// Controls whether multiple choices can be selected.
-  /// </summary>
-  [JsonPropertyName("isMultiSelect")]
-  public bool? IsMultiSelect { get; set; }
+    /// <summary>
+    /// Controls whether multiple choices can be selected.
+    /// </summary>
+    [JsonPropertyName("isMultiSelect")]
+    public bool? IsMultiSelect { get; set; }
 
-  /// <summary>
-  /// The text to display as a placeholder when the user has not entered any value.
-  /// </summary>
-  [JsonPropertyName("placeholder")]
-  public string? Placeholder { get; set; }
+    /// <summary>
+    /// The text to display as a placeholder when the user has not entered any value.
+    /// </summary>
+    [JsonPropertyName("placeholder")]
+    public string? Placeholder { get; set; }
 
-  /// <summary>
-  /// Controls if choice titles should wrap.
-  /// </summary>
-  [JsonPropertyName("wrap")]
-  public bool? Wrap { get; set; }
+    /// <summary>
+    /// Controls if choice titles should wrap.
+    /// </summary>
+    [JsonPropertyName("wrap")]
+    public bool? Wrap { get; set; }
 
-  /// <summary>
-  /// Controls whether choice items are arranged in multiple columns in expanded mode, or in a single column. Default is false.
-  /// </summary>
-  [JsonPropertyName("useMultipleColumns")]
-  public bool? UseMultipleColumns { get; set; }
+    /// <summary>
+    /// Controls whether choice items are arranged in multiple columns in expanded mode, or in a single column. Default is false.
+    /// </summary>
+    [JsonPropertyName("useMultipleColumns")]
+    public bool? UseMultipleColumns { get; set; }
 
-  /// <summary>
-  /// The minimum width, in pixels, for each column when using a multi-column layout. This ensures that choice items remain readable even when horizontal space is limited. Default is 100 pixels.
-  /// </summary>
-  [JsonPropertyName("minColumnWidth")]
-  public string? MinColumnWidth { get; set; }
+    /// <summary>
+    /// The minimum width, in pixels, for each column when using a multi-column layout. This ensures that choice items remain readable even when horizontal space is limited. Default is 100 pixels.
+    /// </summary>
+    [JsonPropertyName("minColumnWidth")]
+    public string? MinColumnWidth { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  public ChoiceSetInput(params IList<Choice> choices)
-  {
-    this.Choices = choices;
-  }
+    public ChoiceSetInput(params IList<Choice> choices)
+    {
+        this.Choices = choices;
+    }
 
-  /// <summary>
-  /// Serializes this ChoiceSetInput into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ChoiceSetInput into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ChoiceSetInput WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ChoiceSetInput WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ChoiceSetInput WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ChoiceSetInput WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ChoiceSetInput WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ChoiceSetInput WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ChoiceSetInput WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ChoiceSetInput WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ChoiceSetInput WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ChoiceSetInput WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithLabel(string value)
-  {
-    this.Label = value;
-    return this;
-  }
+    public ChoiceSetInput WithLabel(string value)
+    {
+        this.Label = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithIsRequired(bool value)
-  {
-    this.IsRequired = value;
-    return this;
-  }
+    public ChoiceSetInput WithIsRequired(bool value)
+    {
+        this.IsRequired = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithErrorMessage(string value)
-  {
-    this.ErrorMessage = value;
-    return this;
-  }
+    public ChoiceSetInput WithErrorMessage(string value)
+    {
+        this.ErrorMessage = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithValueChangedAction(ResetInputsAction value)
-  {
-    this.ValueChangedAction = value;
-    return this;
-  }
+    public ChoiceSetInput WithValueChangedAction(ResetInputsAction value)
+    {
+        this.ValueChangedAction = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public ChoiceSetInput WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithChoices(params IList<Choice> value)
-  {
-    this.Choices = value;
-    return this;
-  }
+    public ChoiceSetInput WithChoices(params IList<Choice> value)
+    {
+        this.Choices = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithChoicesData(QueryData value)
-  {
-    this.ChoicesData = value;
-    return this;
-  }
+    public ChoiceSetInput WithChoicesData(QueryData value)
+    {
+        this.ChoicesData = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithStyle(StyleEnum value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public ChoiceSetInput WithStyle(StyleEnum value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithIsMultiSelect(bool value)
-  {
-    this.IsMultiSelect = value;
-    return this;
-  }
+    public ChoiceSetInput WithIsMultiSelect(bool value)
+    {
+        this.IsMultiSelect = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithPlaceholder(string value)
-  {
-    this.Placeholder = value;
-    return this;
-  }
+    public ChoiceSetInput WithPlaceholder(string value)
+    {
+        this.Placeholder = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithWrap(bool value)
-  {
-    this.Wrap = value;
-    return this;
-  }
+    public ChoiceSetInput WithWrap(bool value)
+    {
+        this.Wrap = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithUseMultipleColumns(bool value)
-  {
-    this.UseMultipleColumns = value;
-    return this;
-  }
+    public ChoiceSetInput WithUseMultipleColumns(bool value)
+    {
+        this.UseMultipleColumns = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithMinColumnWidth(string value)
-  {
-    this.MinColumnWidth = value;
-    return this;
-  }
+    public ChoiceSetInput WithMinColumnWidth(string value)
+    {
+        this.MinColumnWidth = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ChoiceSetInput WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ChoiceSetInput WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ChoiceSetInput WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -8368,52 +8368,52 @@ public class ChoiceSetInput : CardElement
 /// </summary>
 public class Choice : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Choice.
-  /// </summary>
-  public static Choice? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Choice>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Choice.
+    /// </summary>
+    public static Choice? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Choice>(json);
+    }
 
-  /// <summary>
-  /// The text to display for the choice.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The text to display for the choice.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The value associated with the choice, as sent to the Bot when an Action.Submit or Action.Execute is invoked
-  /// </summary>
-  [JsonPropertyName("value")]
-  public string? Value { get; set; }
+    /// <summary>
+    /// The value associated with the choice, as sent to the Bot when an Action.Submit or Action.Execute is invoked
+    /// </summary>
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
 
-  /// <summary>
-  /// Serializes this Choice into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Choice into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Choice WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public Choice WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public Choice WithValue(string value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public Choice WithValue(string value)
+    {
+        this.Value = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -8421,82 +8421,82 @@ public class Choice : SerializableObject
 /// </summary>
 public class QueryData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  QueryData.
-  /// </summary>
-  public static QueryData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<QueryData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  QueryData.
+    /// </summary>
+    public static QueryData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<QueryData>(json);
+    }
 
-  /// <summary>
-  /// Must be **Data.Query**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Data.Query";
+    /// <summary>
+    /// Must be **Data.Query**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Data.Query";
 
-  /// <summary>
-  /// The dataset from which to fetch the data.
-  /// </summary>
-  [JsonPropertyName("dataset")]
-  public string? Dataset { get; set; }
+    /// <summary>
+    /// The dataset from which to fetch the data.
+    /// </summary>
+    [JsonPropertyName("dataset")]
+    public string? Dataset { get; set; }
 
-  /// <summary>
-  /// Controls which inputs are associated with the Data.Query. When a Data.Query is executed, the values of the associated inputs are sent to the Bot, allowing it to perform filtering operations based on the user's input.
-  /// </summary>
-  [JsonPropertyName("associatedInputs")]
-  public AssociatedInputs? AssociatedInputs { get; set; }
+    /// <summary>
+    /// Controls which inputs are associated with the Data.Query. When a Data.Query is executed, the values of the associated inputs are sent to the Bot, allowing it to perform filtering operations based on the user's input.
+    /// </summary>
+    [JsonPropertyName("associatedInputs")]
+    public AssociatedInputs? AssociatedInputs { get; set; }
 
-  /// <summary>
-  /// The maximum number of data items that should be returned by the query. Card authors should not specify this property in their card payload. It is determined by the client and sent to the Bot to enable pagination.
-  /// </summary>
-  [JsonPropertyName("count")]
-  public float? Count { get; set; }
+    /// <summary>
+    /// The maximum number of data items that should be returned by the query. Card authors should not specify this property in their card payload. It is determined by the client and sent to the Bot to enable pagination.
+    /// </summary>
+    [JsonPropertyName("count")]
+    public float? Count { get; set; }
 
-  /// <summary>
-  /// The number of data items to be skipped by the query. Card authors should not specify this property in their card payload. It is determined by the client and sent to the Bot to enable pagination.
-  /// </summary>
-  [JsonPropertyName("skip")]
-  public float? Skip { get; set; }
+    /// <summary>
+    /// The number of data items to be skipped by the query. Card authors should not specify this property in their card payload. It is determined by the client and sent to the Bot to enable pagination.
+    /// </summary>
+    [JsonPropertyName("skip")]
+    public float? Skip { get; set; }
 
-  /// <summary>
-  /// Serializes this QueryData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this QueryData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public QueryData WithDataset(string value)
-  {
-    this.Dataset = value;
-    return this;
-  }
+    public QueryData WithDataset(string value)
+    {
+        this.Dataset = value;
+        return this;
+    }
 
-  public QueryData WithAssociatedInputs(AssociatedInputs value)
-  {
-    this.AssociatedInputs = value;
-    return this;
-  }
+    public QueryData WithAssociatedInputs(AssociatedInputs value)
+    {
+        this.AssociatedInputs = value;
+        return this;
+    }
 
-  public QueryData WithCount(float value)
-  {
-    this.Count = value;
-    return this;
-  }
+    public QueryData WithCount(float value)
+    {
+        this.Count = value;
+        return this;
+    }
 
-  public QueryData WithSkip(float value)
-  {
-    this.Skip = value;
-    return this;
-  }
+    public QueryData WithSkip(float value)
+    {
+        this.Skip = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -8504,276 +8504,276 @@ public class QueryData : SerializableObject
 /// </summary>
 public class RatingInput : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  RatingInput.
-  /// </summary>
-  public static RatingInput? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<RatingInput>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  RatingInput.
+    /// </summary>
+    public static RatingInput? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<RatingInput>(json);
+    }
 
-  /// <summary>
-  /// Must be **Input.Rating**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Input.Rating";
+    /// <summary>
+    /// Must be **Input.Rating**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Input.Rating";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The label of the input.
-  /// 
-  /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
-  /// </summary>
-  [JsonPropertyName("label")]
-  public string? Label { get; set; }
+    /// <summary>
+    /// The label of the input.
+    /// 
+    /// A label should **always** be provided to ensure the best user experience especially for users of assistive technology.
+    /// </summary>
+    [JsonPropertyName("label")]
+    public string? Label { get; set; }
 
-  /// <summary>
-  /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("isRequired")]
-  public bool? IsRequired { get; set; }
+    /// <summary>
+    /// Controls whether the input is required. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("isRequired")]
+    public bool? IsRequired { get; set; }
 
-  /// <summary>
-  /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
-  /// </summary>
-  [JsonPropertyName("errorMessage")]
-  public string? ErrorMessage { get; set; }
+    /// <summary>
+    /// The error message to display when the input fails validation. See [Input validation](https://adaptivecards.microsoft.com/?topic=input-validation) for more details.
+    /// </summary>
+    [JsonPropertyName("errorMessage")]
+    public string? ErrorMessage { get; set; }
 
-  /// <summary>
-  /// An Action.ResetInputs action that will be executed when the value of the input changes.
-  /// </summary>
-  [JsonPropertyName("valueChangedAction")]
-  public ResetInputsAction? ValueChangedAction { get; set; }
+    /// <summary>
+    /// An Action.ResetInputs action that will be executed when the value of the input changes.
+    /// </summary>
+    [JsonPropertyName("valueChangedAction")]
+    public ResetInputsAction? ValueChangedAction { get; set; }
 
-  /// <summary>
-  /// The default value of the input.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public float? Value { get; set; }
+    /// <summary>
+    /// The default value of the input.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public float? Value { get; set; }
 
-  /// <summary>
-  /// The number of stars to display.
-  /// </summary>
-  [JsonPropertyName("max")]
-  public float? Max { get; set; }
+    /// <summary>
+    /// The number of stars to display.
+    /// </summary>
+    [JsonPropertyName("max")]
+    public float? Max { get; set; }
 
-  /// <summary>
-  /// Controls if the user can select half stars.
-  /// </summary>
-  [JsonPropertyName("allowHalfSteps")]
-  public bool? AllowHalfSteps { get; set; }
+    /// <summary>
+    /// Controls if the user can select half stars.
+    /// </summary>
+    [JsonPropertyName("allowHalfSteps")]
+    public bool? AllowHalfSteps { get; set; }
 
-  /// <summary>
-  /// The size of the stars.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public RatingSize? Size { get; set; }
+    /// <summary>
+    /// The size of the stars.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public RatingSize? Size { get; set; }
 
-  /// <summary>
-  /// The color of the stars.
-  /// </summary>
-  [JsonPropertyName("color")]
-  public RatingColor? Color { get; set; }
+    /// <summary>
+    /// The color of the stars.
+    /// </summary>
+    [JsonPropertyName("color")]
+    public RatingColor? Color { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this RatingInput into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this RatingInput into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public RatingInput WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public RatingInput WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public RatingInput WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public RatingInput WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public RatingInput WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public RatingInput WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public RatingInput WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public RatingInput WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public RatingInput WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public RatingInput WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public RatingInput WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public RatingInput WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public RatingInput WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public RatingInput WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public RatingInput WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public RatingInput WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public RatingInput WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public RatingInput WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public RatingInput WithLabel(string value)
-  {
-    this.Label = value;
-    return this;
-  }
+    public RatingInput WithLabel(string value)
+    {
+        this.Label = value;
+        return this;
+    }
 
-  public RatingInput WithIsRequired(bool value)
-  {
-    this.IsRequired = value;
-    return this;
-  }
+    public RatingInput WithIsRequired(bool value)
+    {
+        this.IsRequired = value;
+        return this;
+    }
 
-  public RatingInput WithErrorMessage(string value)
-  {
-    this.ErrorMessage = value;
-    return this;
-  }
+    public RatingInput WithErrorMessage(string value)
+    {
+        this.ErrorMessage = value;
+        return this;
+    }
 
-  public RatingInput WithValueChangedAction(ResetInputsAction value)
-  {
-    this.ValueChangedAction = value;
-    return this;
-  }
+    public RatingInput WithValueChangedAction(ResetInputsAction value)
+    {
+        this.ValueChangedAction = value;
+        return this;
+    }
 
-  public RatingInput WithValue(float value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public RatingInput WithValue(float value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public RatingInput WithMax(float value)
-  {
-    this.Max = value;
-    return this;
-  }
+    public RatingInput WithMax(float value)
+    {
+        this.Max = value;
+        return this;
+    }
 
-  public RatingInput WithAllowHalfSteps(bool value)
-  {
-    this.AllowHalfSteps = value;
-    return this;
-  }
+    public RatingInput WithAllowHalfSteps(bool value)
+    {
+        this.AllowHalfSteps = value;
+        return this;
+    }
 
-  public RatingInput WithSize(RatingSize value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public RatingInput WithSize(RatingSize value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public RatingInput WithColor(RatingColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public RatingInput WithColor(RatingColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public RatingInput WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public RatingInput WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public RatingInput WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public RatingInput WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -8781,250 +8781,250 @@ public class RatingInput : CardElement
 /// </summary>
 public class Rating : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Rating.
-  /// </summary>
-  public static Rating? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Rating>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Rating.
+    /// </summary>
+    public static Rating? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Rating>(json);
+    }
 
-  /// <summary>
-  /// Must be **Rating**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Rating";
+    /// <summary>
+    /// Must be **Rating**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Rating";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The value of the rating. Must be between 0 and max.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public float? Value { get; set; }
+    /// <summary>
+    /// The value of the rating. Must be between 0 and max.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public float? Value { get; set; }
 
-  /// <summary>
-  /// The number of "votes" associated with the rating.
-  /// </summary>
-  [JsonPropertyName("count")]
-  public float? Count { get; set; }
+    /// <summary>
+    /// The number of "votes" associated with the rating.
+    /// </summary>
+    [JsonPropertyName("count")]
+    public float? Count { get; set; }
 
-  /// <summary>
-  /// The number of stars to display.
-  /// </summary>
-  [JsonPropertyName("max")]
-  public float? Max { get; set; }
+    /// <summary>
+    /// The number of stars to display.
+    /// </summary>
+    [JsonPropertyName("max")]
+    public float? Max { get; set; }
 
-  /// <summary>
-  /// The size of the stars.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public RatingSize? Size { get; set; }
+    /// <summary>
+    /// The size of the stars.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public RatingSize? Size { get; set; }
 
-  /// <summary>
-  /// The color of the stars.
-  /// </summary>
-  [JsonPropertyName("color")]
-  public RatingColor? Color { get; set; }
+    /// <summary>
+    /// The color of the stars.
+    /// </summary>
+    [JsonPropertyName("color")]
+    public RatingColor? Color { get; set; }
 
-  /// <summary>
-  /// The style of the stars.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public RatingStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the stars.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public RatingStyle? Style { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this Rating into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Rating into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Rating WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public Rating WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public Rating WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public Rating WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public Rating WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public Rating WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public Rating WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public Rating WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public Rating WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public Rating WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public Rating WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public Rating WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public Rating WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public Rating WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public Rating WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public Rating WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public Rating WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public Rating WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public Rating WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public Rating WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public Rating WithValue(float value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public Rating WithValue(float value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public Rating WithCount(float value)
-  {
-    this.Count = value;
-    return this;
-  }
+    public Rating WithCount(float value)
+    {
+        this.Count = value;
+        return this;
+    }
 
-  public Rating WithMax(float value)
-  {
-    this.Max = value;
-    return this;
-  }
+    public Rating WithMax(float value)
+    {
+        this.Max = value;
+        return this;
+    }
 
-  public Rating WithSize(RatingSize value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public Rating WithSize(RatingSize value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public Rating WithColor(RatingColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public Rating WithColor(RatingColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public Rating WithStyle(RatingStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public Rating WithStyle(RatingStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public Rating WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public Rating WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public Rating WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public Rating WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -9032,238 +9032,238 @@ public class Rating : CardElement
 /// </summary>
 public class CompoundButton : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  CompoundButton.
-  /// </summary>
-  public static CompoundButton? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<CompoundButton>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  CompoundButton.
+    /// </summary>
+    public static CompoundButton? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<CompoundButton>(json);
+    }
 
-  /// <summary>
-  /// Must be **CompoundButton**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "CompoundButton";
+    /// <summary>
+    /// Must be **CompoundButton**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "CompoundButton";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The icon to show on the button.
-  /// </summary>
-  [JsonPropertyName("icon")]
-  public IconInfo? Icon { get; set; }
+    /// <summary>
+    /// The icon to show on the button.
+    /// </summary>
+    [JsonPropertyName("icon")]
+    public IconInfo? Icon { get; set; }
 
-  /// <summary>
-  /// The badge to show on the button.
-  /// </summary>
-  [JsonPropertyName("badge")]
-  public string? Badge { get; set; }
+    /// <summary>
+    /// The badge to show on the button.
+    /// </summary>
+    [JsonPropertyName("badge")]
+    public string? Badge { get; set; }
 
-  /// <summary>
-  /// The title of the button.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the button.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The description text of the button.
-  /// </summary>
-  [JsonPropertyName("description")]
-  public string? Description { get; set; }
+    /// <summary>
+    /// The description text of the button.
+    /// </summary>
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the button is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the button is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this CompoundButton into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this CompoundButton into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public CompoundButton WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public CompoundButton WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public CompoundButton WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public CompoundButton WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public CompoundButton WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public CompoundButton WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public CompoundButton WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public CompoundButton WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public CompoundButton WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public CompoundButton WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public CompoundButton WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public CompoundButton WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public CompoundButton WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public CompoundButton WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public CompoundButton WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public CompoundButton WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public CompoundButton WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public CompoundButton WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public CompoundButton WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public CompoundButton WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public CompoundButton WithIcon(IconInfo value)
-  {
-    this.Icon = value;
-    return this;
-  }
+    public CompoundButton WithIcon(IconInfo value)
+    {
+        this.Icon = value;
+        return this;
+    }
 
-  public CompoundButton WithBadge(string value)
-  {
-    this.Badge = value;
-    return this;
-  }
+    public CompoundButton WithBadge(string value)
+    {
+        this.Badge = value;
+        return this;
+    }
 
-  public CompoundButton WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public CompoundButton WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public CompoundButton WithDescription(string value)
-  {
-    this.Description = value;
-    return this;
-  }
+    public CompoundButton WithDescription(string value)
+    {
+        this.Description = value;
+        return this;
+    }
 
-  public CompoundButton WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public CompoundButton WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public CompoundButton WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public CompoundButton WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public CompoundButton WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public CompoundButton WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -9271,76 +9271,76 @@ public class CompoundButton : CardElement
 /// </summary>
 public class IconInfo : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  IconInfo.
-  /// </summary>
-  public static IconInfo? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<IconInfo>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  IconInfo.
+    /// </summary>
+    public static IconInfo? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<IconInfo>(json);
+    }
 
-  /// <summary>
-  /// The name of the icon to display.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string? Name { get; set; }
+    /// <summary>
+    /// The name of the icon to display.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
 
-  /// <summary>
-  /// The size of the icon.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public IconSize? Size { get; set; }
+    /// <summary>
+    /// The size of the icon.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public IconSize? Size { get; set; }
 
-  /// <summary>
-  /// The style of the icon.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public IconStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the icon.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public IconStyle? Style { get; set; }
 
-  /// <summary>
-  /// The color of the icon.
-  /// </summary>
-  [JsonPropertyName("color")]
-  public TextColor? Color { get; set; }
+    /// <summary>
+    /// The color of the icon.
+    /// </summary>
+    [JsonPropertyName("color")]
+    public TextColor? Color { get; set; }
 
-  /// <summary>
-  /// Serializes this IconInfo into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this IconInfo into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public IconInfo WithName(string value)
-  {
-    this.Name = value;
-    return this;
-  }
+    public IconInfo WithName(string value)
+    {
+        this.Name = value;
+        return this;
+    }
 
-  public IconInfo WithSize(IconSize value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public IconInfo WithSize(IconSize value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public IconInfo WithStyle(IconStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public IconInfo WithStyle(IconStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public IconInfo WithColor(TextColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public IconInfo WithColor(TextColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -9348,231 +9348,231 @@ public class IconInfo : SerializableObject
 /// </summary>
 public class Icon : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Icon.
-  /// </summary>
-  public static Icon? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Icon>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Icon.
+    /// </summary>
+    public static Icon? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Icon>(json);
+    }
 
-  /// <summary>
-  /// Must be **Icon**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Icon";
+    /// <summary>
+    /// Must be **Icon**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Icon";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The name of the icon to display.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string? Name { get; set; }
+    /// <summary>
+    /// The name of the icon to display.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
 
-  /// <summary>
-  /// The size of the icon.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public IconSize? Size { get; set; }
+    /// <summary>
+    /// The size of the icon.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public IconSize? Size { get; set; }
 
-  /// <summary>
-  /// The style of the icon.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public IconStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the icon.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public IconStyle? Style { get; set; }
 
-  /// <summary>
-  /// The color of the icon.
-  /// </summary>
-  [JsonPropertyName("color")]
-  public TextColor? Color { get; set; }
+    /// <summary>
+    /// The color of the icon.
+    /// </summary>
+    [JsonPropertyName("color")]
+    public TextColor? Color { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the icon is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the icon is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  public Icon(string name)
-  {
-    this.Name = name;
-  }
+    public Icon(string name)
+    {
+        this.Name = name;
+    }
 
-  /// <summary>
-  /// Serializes this Icon into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Icon into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Icon WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public Icon WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public Icon WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public Icon WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public Icon WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public Icon WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public Icon WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public Icon WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public Icon WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public Icon WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public Icon WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public Icon WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public Icon WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public Icon WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public Icon WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public Icon WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public Icon WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public Icon WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public Icon WithName(string value)
-  {
-    this.Name = value;
-    return this;
-  }
+    public Icon WithName(string value)
+    {
+        this.Name = value;
+        return this;
+    }
 
-  public Icon WithSize(IconSize value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public Icon WithSize(IconSize value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public Icon WithStyle(IconStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public Icon WithStyle(IconStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public Icon WithColor(TextColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public Icon WithColor(TextColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public Icon WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public Icon WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public Icon WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public Icon WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public Icon WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public Icon WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -9580,214 +9580,214 @@ public class Icon : CardElement
 /// </summary>
 public class Carousel : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Carousel.
-  /// </summary>
-  public static Carousel? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Carousel>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Carousel.
+    /// </summary>
+    public static Carousel? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Carousel>(json);
+    }
 
-  /// <summary>
-  /// Must be **Carousel**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Carousel";
+    /// <summary>
+    /// Must be **Carousel**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Carousel";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
-  /// </summary>
-  [JsonPropertyName("bleed")]
-  public bool? Bleed { get; set; }
+    /// <summary>
+    /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
+    /// </summary>
+    [JsonPropertyName("bleed")]
+    public bool? Bleed { get; set; }
 
-  /// <summary>
-  /// The minimum height, in pixels, of the container, in the `<number>px` format.
-  /// </summary>
-  [JsonPropertyName("minHeight")]
-  public string? MinHeight { get; set; }
+    /// <summary>
+    /// The minimum height, in pixels, of the container, in the `<number>px` format.
+    /// </summary>
+    [JsonPropertyName("minHeight")]
+    public string? MinHeight { get; set; }
 
-  /// <summary>
-  /// Controls the type of animation to use to navigate between pages.
-  /// </summary>
-  [JsonPropertyName("pageAnimation")]
-  public CarouselPageAnimation? PageAnimation { get; set; }
+    /// <summary>
+    /// Controls the type of animation to use to navigate between pages.
+    /// </summary>
+    [JsonPropertyName("pageAnimation")]
+    public CarouselPageAnimation? PageAnimation { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The pages in the carousel.
-  /// </summary>
-  [JsonPropertyName("pages")]
-  public IList<CarouselPage>? Pages { get; set; }
+    /// <summary>
+    /// The pages in the carousel.
+    /// </summary>
+    [JsonPropertyName("pages")]
+    public IList<CarouselPage>? Pages { get; set; }
 
-  /// <summary>
-  /// Serializes this Carousel into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Carousel into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Carousel WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public Carousel WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public Carousel WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public Carousel WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public Carousel WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public Carousel WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public Carousel WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public Carousel WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public Carousel WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public Carousel WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public Carousel WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public Carousel WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public Carousel WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public Carousel WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public Carousel WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public Carousel WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public Carousel WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public Carousel WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public Carousel WithBleed(bool value)
-  {
-    this.Bleed = value;
-    return this;
-  }
+    public Carousel WithBleed(bool value)
+    {
+        this.Bleed = value;
+        return this;
+    }
 
-  public Carousel WithMinHeight(string value)
-  {
-    this.MinHeight = value;
-    return this;
-  }
+    public Carousel WithMinHeight(string value)
+    {
+        this.MinHeight = value;
+        return this;
+    }
 
-  public Carousel WithPageAnimation(CarouselPageAnimation value)
-  {
-    this.PageAnimation = value;
-    return this;
-  }
+    public Carousel WithPageAnimation(CarouselPageAnimation value)
+    {
+        this.PageAnimation = value;
+        return this;
+    }
 
-  public Carousel WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public Carousel WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public Carousel WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public Carousel WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public Carousel WithPages(params IList<CarouselPage> value)
-  {
-    this.Pages = value;
-    return this;
-  }
+    public Carousel WithPages(params IList<CarouselPage> value)
+    {
+        this.Pages = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -9795,274 +9795,274 @@ public class Carousel : CardElement
 /// </summary>
 public class Badge : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Badge.
-  /// </summary>
-  public static Badge? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Badge>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Badge.
+    /// </summary>
+    public static Badge? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Badge>(json);
+    }
 
-  /// <summary>
-  /// Must be **Badge**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Badge";
+    /// <summary>
+    /// Must be **Badge**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Badge";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The text to display.
-  /// </summary>
-  [JsonPropertyName("text")]
-  public string? Text { get; set; }
+    /// <summary>
+    /// The text to display.
+    /// </summary>
+    [JsonPropertyName("text")]
+    public string? Text { get; set; }
 
-  /// <summary>
-  /// The name of an icon from the [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) to display, in the `<icon-name>[,regular|filled]` format. If the style is not specified, the regular style is used.
-  /// </summary>
-  [JsonPropertyName("icon")]
-  public string? Icon { get; set; }
+    /// <summary>
+    /// The name of an icon from the [Adaptive Card icon catalog](https://adaptivecards.microsoft.com/?topic=icon-catalog) to display, in the `<icon-name>[,regular|filled]` format. If the style is not specified, the regular style is used.
+    /// </summary>
+    [JsonPropertyName("icon")]
+    public string? Icon { get; set; }
 
-  /// <summary>
-  /// Controls the position of the icon.
-  /// </summary>
-  [JsonPropertyName("iconPosition")]
-  public BadgeIconPosition? IconPosition { get; set; }
+    /// <summary>
+    /// Controls the position of the icon.
+    /// </summary>
+    [JsonPropertyName("iconPosition")]
+    public BadgeIconPosition? IconPosition { get; set; }
 
-  /// <summary>
-  /// Controls the strength of the background color.
-  /// </summary>
-  [JsonPropertyName("appearance")]
-  public BadgeAppearance? Appearance { get; set; }
+    /// <summary>
+    /// Controls the strength of the background color.
+    /// </summary>
+    [JsonPropertyName("appearance")]
+    public BadgeAppearance? Appearance { get; set; }
 
-  /// <summary>
-  /// The size of the badge.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public BadgeSize? Size { get; set; }
+    /// <summary>
+    /// The size of the badge.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public BadgeSize? Size { get; set; }
 
-  /// <summary>
-  /// Controls the shape of the badge.
-  /// </summary>
-  [JsonPropertyName("shape")]
-  public BadgeShape? Shape { get; set; }
+    /// <summary>
+    /// Controls the shape of the badge.
+    /// </summary>
+    [JsonPropertyName("shape")]
+    public BadgeShape? Shape { get; set; }
 
-  /// <summary>
-  /// The style of the badge.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public BadgeStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the badge.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public BadgeStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls the tooltip text to display when the badge is hovered over.
-  /// </summary>
-  [JsonPropertyName("tooltip")]
-  public string? Tooltip { get; set; }
+    /// <summary>
+    /// Controls the tooltip text to display when the badge is hovered over.
+    /// </summary>
+    [JsonPropertyName("tooltip")]
+    public string? Tooltip { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this Badge into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Badge into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Badge WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public Badge WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public Badge WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public Badge WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public Badge WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public Badge WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public Badge WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public Badge WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public Badge WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public Badge WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public Badge WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public Badge WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public Badge WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public Badge WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public Badge WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public Badge WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public Badge WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public Badge WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public Badge WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public Badge WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public Badge WithText(string value)
-  {
-    this.Text = value;
-    return this;
-  }
+    public Badge WithText(string value)
+    {
+        this.Text = value;
+        return this;
+    }
 
-  public Badge WithIcon(string value)
-  {
-    this.Icon = value;
-    return this;
-  }
+    public Badge WithIcon(string value)
+    {
+        this.Icon = value;
+        return this;
+    }
 
-  public Badge WithIconPosition(BadgeIconPosition value)
-  {
-    this.IconPosition = value;
-    return this;
-  }
+    public Badge WithIconPosition(BadgeIconPosition value)
+    {
+        this.IconPosition = value;
+        return this;
+    }
 
-  public Badge WithAppearance(BadgeAppearance value)
-  {
-    this.Appearance = value;
-    return this;
-  }
+    public Badge WithAppearance(BadgeAppearance value)
+    {
+        this.Appearance = value;
+        return this;
+    }
 
-  public Badge WithSize(BadgeSize value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public Badge WithSize(BadgeSize value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public Badge WithShape(BadgeShape value)
-  {
-    this.Shape = value;
-    return this;
-  }
+    public Badge WithShape(BadgeShape value)
+    {
+        this.Shape = value;
+        return this;
+    }
 
-  public Badge WithStyle(BadgeStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public Badge WithStyle(BadgeStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public Badge WithTooltip(string value)
-  {
-    this.Tooltip = value;
-    return this;
-  }
+    public Badge WithTooltip(string value)
+    {
+        this.Tooltip = value;
+        return this;
+    }
 
-  public Badge WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public Badge WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public Badge WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public Badge WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -10070,214 +10070,214 @@ public class Badge : CardElement
 /// </summary>
 public class DonutChart : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  DonutChart.
-  /// </summary>
-  public static DonutChart? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<DonutChart>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  DonutChart.
+    /// </summary>
+    public static DonutChart? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<DonutChart>(json);
+    }
 
-  /// <summary>
-  /// Must be **Chart.Donut**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Chart.Donut";
+    /// <summary>
+    /// Must be **Chart.Donut**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Chart.Donut";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The title of the chart.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the chart.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("colorSet")]
-  public ChartColorSet? ColorSet { get; set; }
+    /// <summary>
+    /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("colorSet")]
+    public ChartColorSet? ColorSet { get; set; }
 
-  /// <summary>
-  /// The data to display in the chart.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IList<DonutChartData>? Data { get; set; }
+    /// <summary>
+    /// The data to display in the chart.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IList<DonutChartData>? Data { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this DonutChart into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this DonutChart into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public DonutChart WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public DonutChart WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public DonutChart WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public DonutChart WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public DonutChart WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public DonutChart WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public DonutChart WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public DonutChart WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public DonutChart WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public DonutChart WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public DonutChart WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public DonutChart WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public DonutChart WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public DonutChart WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public DonutChart WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public DonutChart WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public DonutChart WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public DonutChart WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public DonutChart WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public DonutChart WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public DonutChart WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public DonutChart WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public DonutChart WithColorSet(ChartColorSet value)
-  {
-    this.ColorSet = value;
-    return this;
-  }
+    public DonutChart WithColorSet(ChartColorSet value)
+    {
+        this.ColorSet = value;
+        return this;
+    }
 
-  public DonutChart WithData(params IList<DonutChartData> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public DonutChart WithData(params IList<DonutChartData> value)
+    {
+        this.Data = value;
+        return this;
+    }
 
-  public DonutChart WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public DonutChart WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public DonutChart WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public DonutChart WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -10285,64 +10285,64 @@ public class DonutChart : CardElement
 /// </summary>
 public class DonutChartData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  DonutChartData.
-  /// </summary>
-  public static DonutChartData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<DonutChartData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  DonutChartData.
+    /// </summary>
+    public static DonutChartData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<DonutChartData>(json);
+    }
 
-  /// <summary>
-  /// The legend of the chart.
-  /// </summary>
-  [JsonPropertyName("legend")]
-  public string? Legend { get; set; }
+    /// <summary>
+    /// The legend of the chart.
+    /// </summary>
+    [JsonPropertyName("legend")]
+    public string? Legend { get; set; }
 
-  /// <summary>
-  /// The value associated with the data point.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public float? Value { get; set; }
+    /// <summary>
+    /// The value associated with the data point.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public float? Value { get; set; }
 
-  /// <summary>
-  /// The color to use for the data point. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use for the data point. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// Serializes this DonutChartData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this DonutChartData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public DonutChartData WithLegend(string value)
-  {
-    this.Legend = value;
-    return this;
-  }
+    public DonutChartData WithLegend(string value)
+    {
+        this.Legend = value;
+        return this;
+    }
 
-  public DonutChartData WithValue(float value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public DonutChartData WithValue(float value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public DonutChartData WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public DonutChartData WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -10350,214 +10350,214 @@ public class DonutChartData : SerializableObject
 /// </summary>
 public class PieChart : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  PieChart.
-  /// </summary>
-  public static PieChart? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<PieChart>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  PieChart.
+    /// </summary>
+    public static PieChart? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<PieChart>(json);
+    }
 
-  /// <summary>
-  /// Must be **Chart.Pie**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Chart.Pie";
+    /// <summary>
+    /// Must be **Chart.Pie**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Chart.Pie";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The title of the chart.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the chart.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("colorSet")]
-  public ChartColorSet? ColorSet { get; set; }
+    /// <summary>
+    /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("colorSet")]
+    public ChartColorSet? ColorSet { get; set; }
 
-  /// <summary>
-  /// The data to display in the chart.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IList<DonutChartData>? Data { get; set; }
+    /// <summary>
+    /// The data to display in the chart.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IList<DonutChartData>? Data { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this PieChart into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this PieChart into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public PieChart WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public PieChart WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public PieChart WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public PieChart WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public PieChart WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public PieChart WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public PieChart WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public PieChart WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public PieChart WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public PieChart WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public PieChart WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public PieChart WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public PieChart WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public PieChart WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public PieChart WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public PieChart WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public PieChart WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public PieChart WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public PieChart WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public PieChart WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public PieChart WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public PieChart WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public PieChart WithColorSet(ChartColorSet value)
-  {
-    this.ColorSet = value;
-    return this;
-  }
+    public PieChart WithColorSet(ChartColorSet value)
+    {
+        this.ColorSet = value;
+        return this;
+    }
 
-  public PieChart WithData(params IList<DonutChartData> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public PieChart WithData(params IList<DonutChartData> value)
+    {
+        this.Data = value;
+        return this;
+    }
 
-  public PieChart WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public PieChart WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public PieChart WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public PieChart WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -10565,304 +10565,304 @@ public class PieChart : CardElement
 /// </summary>
 public class GroupedVerticalBarChart : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  GroupedVerticalBarChart.
-  /// </summary>
-  public static GroupedVerticalBarChart? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<GroupedVerticalBarChart>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  GroupedVerticalBarChart.
+    /// </summary>
+    public static GroupedVerticalBarChart? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<GroupedVerticalBarChart>(json);
+    }
 
-  /// <summary>
-  /// Must be **Chart.VerticalBar.Grouped**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Chart.VerticalBar.Grouped";
+    /// <summary>
+    /// Must be **Chart.VerticalBar.Grouped**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Chart.VerticalBar.Grouped";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The title of the chart.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the chart.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("colorSet")]
-  public ChartColorSet? ColorSet { get; set; }
+    /// <summary>
+    /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("colorSet")]
+    public ChartColorSet? ColorSet { get; set; }
 
-  /// <summary>
-  /// The title of the x axis.
-  /// </summary>
-  [JsonPropertyName("xAxisTitle")]
-  public string? XAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the x axis.
+    /// </summary>
+    [JsonPropertyName("xAxisTitle")]
+    public string? XAxisTitle { get; set; }
 
-  /// <summary>
-  /// The title of the y axis.
-  /// </summary>
-  [JsonPropertyName("yAxisTitle")]
-  public string? YAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the y axis.
+    /// </summary>
+    [JsonPropertyName("yAxisTitle")]
+    public string? YAxisTitle { get; set; }
 
-  /// <summary>
-  /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// Controls if bars in the chart should  be displayed as stacks instead of groups.
-  /// 
-  /// **Note:** stacked vertical bar charts do not support custom Y ranges nor negative Y values.
-  /// </summary>
-  [JsonPropertyName("stacked")]
-  public bool? Stacked { get; set; }
+    /// <summary>
+    /// Controls if bars in the chart should  be displayed as stacks instead of groups.
+    /// 
+    /// **Note:** stacked vertical bar charts do not support custom Y ranges nor negative Y values.
+    /// </summary>
+    [JsonPropertyName("stacked")]
+    public bool? Stacked { get; set; }
 
-  /// <summary>
-  /// The data points in a series.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IList<GroupedVerticalBarChartData>? Data { get; set; }
+    /// <summary>
+    /// The data points in a series.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IList<GroupedVerticalBarChartData>? Data { get; set; }
 
-  /// <summary>
-  /// Controls if values should be displayed on each bar.
-  /// </summary>
-  [JsonPropertyName("showBarValues")]
-  public bool? ShowBarValues { get; set; }
+    /// <summary>
+    /// Controls if values should be displayed on each bar.
+    /// </summary>
+    [JsonPropertyName("showBarValues")]
+    public bool? ShowBarValues { get; set; }
 
-  /// <summary>
-  /// The requested minimum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
-  /// 
-  /// `yMin` is ignored if `stacked` is set to `true`.
-  /// </summary>
-  [JsonPropertyName("yMin")]
-  public float? YMin { get; set; }
+    /// <summary>
+    /// The requested minimum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
+    /// 
+    /// `yMin` is ignored if `stacked` is set to `true`.
+    /// </summary>
+    [JsonPropertyName("yMin")]
+    public float? YMin { get; set; }
 
-  /// <summary>
-  /// The requested maximum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
-  /// 
-  /// `yMax` is ignored if `stacked` is set to `true`.
-  /// </summary>
-  [JsonPropertyName("yMax")]
-  public float? YMax { get; set; }
+    /// <summary>
+    /// The requested maximum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
+    /// 
+    /// `yMax` is ignored if `stacked` is set to `true`.
+    /// </summary>
+    [JsonPropertyName("yMax")]
+    public float? YMax { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this GroupedVerticalBarChart into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this GroupedVerticalBarChart into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public GroupedVerticalBarChart WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithColorSet(ChartColorSet value)
-  {
-    this.ColorSet = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithColorSet(ChartColorSet value)
+    {
+        this.ColorSet = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithXAxisTitle(string value)
-  {
-    this.XAxisTitle = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithXAxisTitle(string value)
+    {
+        this.XAxisTitle = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithYAxisTitle(string value)
-  {
-    this.YAxisTitle = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithYAxisTitle(string value)
+    {
+        this.YAxisTitle = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithStacked(bool value)
-  {
-    this.Stacked = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithStacked(bool value)
+    {
+        this.Stacked = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithData(params IList<GroupedVerticalBarChartData> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithData(params IList<GroupedVerticalBarChartData> value)
+    {
+        this.Data = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithShowBarValues(bool value)
-  {
-    this.ShowBarValues = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithShowBarValues(bool value)
+    {
+        this.ShowBarValues = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithYMin(float value)
-  {
-    this.YMin = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithYMin(float value)
+    {
+        this.YMin = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithYMax(float value)
-  {
-    this.YMax = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithYMax(float value)
+    {
+        this.YMax = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public GroupedVerticalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -10870,64 +10870,64 @@ public class GroupedVerticalBarChart : CardElement
 /// </summary>
 public class GroupedVerticalBarChartData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  GroupedVerticalBarChartData.
-  /// </summary>
-  public static GroupedVerticalBarChartData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<GroupedVerticalBarChartData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  GroupedVerticalBarChartData.
+    /// </summary>
+    public static GroupedVerticalBarChartData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<GroupedVerticalBarChartData>(json);
+    }
 
-  /// <summary>
-  /// The legend of the chart.
-  /// </summary>
-  [JsonPropertyName("legend")]
-  public string? Legend { get; set; }
+    /// <summary>
+    /// The legend of the chart.
+    /// </summary>
+    [JsonPropertyName("legend")]
+    public string? Legend { get; set; }
 
-  /// <summary>
-  /// The data points in the series.
-  /// </summary>
-  [JsonPropertyName("values")]
-  public IList<BarChartDataValue>? Values { get; set; }
+    /// <summary>
+    /// The data points in the series.
+    /// </summary>
+    [JsonPropertyName("values")]
+    public IList<BarChartDataValue>? Values { get; set; }
 
-  /// <summary>
-  /// The color to use for all data points in the series. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use for all data points in the series. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// Serializes this GroupedVerticalBarChartData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this GroupedVerticalBarChartData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public GroupedVerticalBarChartData WithLegend(string value)
-  {
-    this.Legend = value;
-    return this;
-  }
+    public GroupedVerticalBarChartData WithLegend(string value)
+    {
+        this.Legend = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChartData WithValues(params IList<BarChartDataValue> value)
-  {
-    this.Values = value;
-    return this;
-  }
+    public GroupedVerticalBarChartData WithValues(params IList<BarChartDataValue> value)
+    {
+        this.Values = value;
+        return this;
+    }
 
-  public GroupedVerticalBarChartData WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public GroupedVerticalBarChartData WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -10935,52 +10935,52 @@ public class GroupedVerticalBarChartData : SerializableObject
 /// </summary>
 public class BarChartDataValue : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  BarChartDataValue.
-  /// </summary>
-  public static BarChartDataValue? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<BarChartDataValue>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  BarChartDataValue.
+    /// </summary>
+    public static BarChartDataValue? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<BarChartDataValue>(json);
+    }
 
-  /// <summary>
-  /// The x axis value of the data point.
-  /// </summary>
-  [JsonPropertyName("x")]
-  public string? X { get; set; }
+    /// <summary>
+    /// The x axis value of the data point.
+    /// </summary>
+    [JsonPropertyName("x")]
+    public string? X { get; set; }
 
-  /// <summary>
-  /// The y axis value of the data point.
-  /// </summary>
-  [JsonPropertyName("y")]
-  public float? Y { get; set; }
+    /// <summary>
+    /// The y axis value of the data point.
+    /// </summary>
+    [JsonPropertyName("y")]
+    public float? Y { get; set; }
 
-  /// <summary>
-  /// Serializes this BarChartDataValue into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this BarChartDataValue into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public BarChartDataValue WithX(string value)
-  {
-    this.X = value;
-    return this;
-  }
+    public BarChartDataValue WithX(string value)
+    {
+        this.X = value;
+        return this;
+    }
 
-  public BarChartDataValue WithY(float value)
-  {
-    this.Y = value;
-    return this;
-  }
+    public BarChartDataValue WithY(float value)
+    {
+        this.Y = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -10988,286 +10988,286 @@ public class BarChartDataValue : SerializableObject
 /// </summary>
 public class VerticalBarChart : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  VerticalBarChart.
-  /// </summary>
-  public static VerticalBarChart? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<VerticalBarChart>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  VerticalBarChart.
+    /// </summary>
+    public static VerticalBarChart? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<VerticalBarChart>(json);
+    }
 
-  /// <summary>
-  /// Must be **Chart.VerticalBar**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Chart.VerticalBar";
+    /// <summary>
+    /// Must be **Chart.VerticalBar**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Chart.VerticalBar";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The title of the chart.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the chart.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("colorSet")]
-  public ChartColorSet? ColorSet { get; set; }
+    /// <summary>
+    /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("colorSet")]
+    public ChartColorSet? ColorSet { get; set; }
 
-  /// <summary>
-  /// The title of the x axis.
-  /// </summary>
-  [JsonPropertyName("xAxisTitle")]
-  public string? XAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the x axis.
+    /// </summary>
+    [JsonPropertyName("xAxisTitle")]
+    public string? XAxisTitle { get; set; }
 
-  /// <summary>
-  /// The title of the y axis.
-  /// </summary>
-  [JsonPropertyName("yAxisTitle")]
-  public string? YAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the y axis.
+    /// </summary>
+    [JsonPropertyName("yAxisTitle")]
+    public string? YAxisTitle { get; set; }
 
-  /// <summary>
-  /// The data to display in the chart.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IList<VerticalBarChartDataValue>? Data { get; set; }
+    /// <summary>
+    /// The data to display in the chart.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IList<VerticalBarChartDataValue>? Data { get; set; }
 
-  /// <summary>
-  /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// Controls if the bar values should be displayed.
-  /// </summary>
-  [JsonPropertyName("showBarValues")]
-  public bool? ShowBarValues { get; set; }
+    /// <summary>
+    /// Controls if the bar values should be displayed.
+    /// </summary>
+    [JsonPropertyName("showBarValues")]
+    public bool? ShowBarValues { get; set; }
 
-  /// <summary>
-  /// The requested minimum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
-  /// </summary>
-  [JsonPropertyName("yMin")]
-  public float? YMin { get; set; }
+    /// <summary>
+    /// The requested minimum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
+    /// </summary>
+    [JsonPropertyName("yMin")]
+    public float? YMin { get; set; }
 
-  /// <summary>
-  /// The requested maximum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
-  /// </summary>
-  [JsonPropertyName("yMax")]
-  public float? YMax { get; set; }
+    /// <summary>
+    /// The requested maximum for the Y axis range. The value used at runtime may be different to optimize visual presentation.
+    /// </summary>
+    [JsonPropertyName("yMax")]
+    public float? YMax { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this VerticalBarChart into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this VerticalBarChart into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public VerticalBarChart WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public VerticalBarChart WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public VerticalBarChart WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public VerticalBarChart WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public VerticalBarChart WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public VerticalBarChart WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public VerticalBarChart WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public VerticalBarChart WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public VerticalBarChart WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public VerticalBarChart WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public VerticalBarChart WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public VerticalBarChart WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public VerticalBarChart WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public VerticalBarChart WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public VerticalBarChart WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public VerticalBarChart WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public VerticalBarChart WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public VerticalBarChart WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public VerticalBarChart WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public VerticalBarChart WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public VerticalBarChart WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public VerticalBarChart WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public VerticalBarChart WithColorSet(ChartColorSet value)
-  {
-    this.ColorSet = value;
-    return this;
-  }
+    public VerticalBarChart WithColorSet(ChartColorSet value)
+    {
+        this.ColorSet = value;
+        return this;
+    }
 
-  public VerticalBarChart WithXAxisTitle(string value)
-  {
-    this.XAxisTitle = value;
-    return this;
-  }
+    public VerticalBarChart WithXAxisTitle(string value)
+    {
+        this.XAxisTitle = value;
+        return this;
+    }
 
-  public VerticalBarChart WithYAxisTitle(string value)
-  {
-    this.YAxisTitle = value;
-    return this;
-  }
+    public VerticalBarChart WithYAxisTitle(string value)
+    {
+        this.YAxisTitle = value;
+        return this;
+    }
 
-  public VerticalBarChart WithData(params IList<VerticalBarChartDataValue> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public VerticalBarChart WithData(params IList<VerticalBarChartDataValue> value)
+    {
+        this.Data = value;
+        return this;
+    }
 
-  public VerticalBarChart WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public VerticalBarChart WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public VerticalBarChart WithShowBarValues(bool value)
-  {
-    this.ShowBarValues = value;
-    return this;
-  }
+    public VerticalBarChart WithShowBarValues(bool value)
+    {
+        this.ShowBarValues = value;
+        return this;
+    }
 
-  public VerticalBarChart WithYMin(float value)
-  {
-    this.YMin = value;
-    return this;
-  }
+    public VerticalBarChart WithYMin(float value)
+    {
+        this.YMin = value;
+        return this;
+    }
 
-  public VerticalBarChart WithYMax(float value)
-  {
-    this.YMax = value;
-    return this;
-  }
+    public VerticalBarChart WithYMax(float value)
+    {
+        this.YMax = value;
+        return this;
+    }
 
-  public VerticalBarChart WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public VerticalBarChart WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public VerticalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public VerticalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -11275,64 +11275,64 @@ public class VerticalBarChart : CardElement
 /// </summary>
 public class VerticalBarChartDataValue : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  VerticalBarChartDataValue.
-  /// </summary>
-  public static VerticalBarChartDataValue? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<VerticalBarChartDataValue>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  VerticalBarChartDataValue.
+    /// </summary>
+    public static VerticalBarChartDataValue? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<VerticalBarChartDataValue>(json);
+    }
 
-  /// <summary>
-  /// The x axis value of the data point.
-  /// </summary>
-  [JsonPropertyName("x")]
-  public IUnion<string, float>? X { get; set; }
+    /// <summary>
+    /// The x axis value of the data point.
+    /// </summary>
+    [JsonPropertyName("x")]
+    public IUnion<string, float>? X { get; set; }
 
-  /// <summary>
-  /// The y axis value of the data point.
-  /// </summary>
-  [JsonPropertyName("y")]
-  public float? Y { get; set; }
+    /// <summary>
+    /// The y axis value of the data point.
+    /// </summary>
+    [JsonPropertyName("y")]
+    public float? Y { get; set; }
 
-  /// <summary>
-  /// The color to use for the bar associated with the data point. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use for the bar associated with the data point. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// Serializes this VerticalBarChartDataValue into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this VerticalBarChartDataValue into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public VerticalBarChartDataValue WithX(IUnion<string, float> value)
-  {
-    this.X = value;
-    return this;
-  }
+    public VerticalBarChartDataValue WithX(IUnion<string, float> value)
+    {
+        this.X = value;
+        return this;
+    }
 
-  public VerticalBarChartDataValue WithY(float value)
-  {
-    this.Y = value;
-    return this;
-  }
+    public VerticalBarChartDataValue WithY(float value)
+    {
+        this.Y = value;
+        return this;
+    }
 
-  public VerticalBarChartDataValue WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public VerticalBarChartDataValue WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -11340,262 +11340,262 @@ public class VerticalBarChartDataValue : SerializableObject
 /// </summary>
 public class HorizontalBarChart : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  HorizontalBarChart.
-  /// </summary>
-  public static HorizontalBarChart? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<HorizontalBarChart>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  HorizontalBarChart.
+    /// </summary>
+    public static HorizontalBarChart? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<HorizontalBarChart>(json);
+    }
 
-  /// <summary>
-  /// Must be **Chart.HorizontalBar**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Chart.HorizontalBar";
+    /// <summary>
+    /// Must be **Chart.HorizontalBar**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Chart.HorizontalBar";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The title of the chart.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the chart.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("colorSet")]
-  public ChartColorSet? ColorSet { get; set; }
+    /// <summary>
+    /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("colorSet")]
+    public ChartColorSet? ColorSet { get; set; }
 
-  /// <summary>
-  /// The title of the x axis.
-  /// </summary>
-  [JsonPropertyName("xAxisTitle")]
-  public string? XAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the x axis.
+    /// </summary>
+    [JsonPropertyName("xAxisTitle")]
+    public string? XAxisTitle { get; set; }
 
-  /// <summary>
-  /// The title of the y axis.
-  /// </summary>
-  [JsonPropertyName("yAxisTitle")]
-  public string? YAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the y axis.
+    /// </summary>
+    [JsonPropertyName("yAxisTitle")]
+    public string? YAxisTitle { get; set; }
 
-  /// <summary>
-  /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// The data points in the chart.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IList<HorizontalBarChartDataValue>? Data { get; set; }
+    /// <summary>
+    /// The data points in the chart.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IList<HorizontalBarChartDataValue>? Data { get; set; }
 
-  /// <summary>
-  /// Controls how the chart should be visually laid out.
-  /// </summary>
-  [JsonPropertyName("displayMode")]
-  public HorizontalBarChartDisplayMode? DisplayMode { get; set; }
+    /// <summary>
+    /// Controls how the chart should be visually laid out.
+    /// </summary>
+    [JsonPropertyName("displayMode")]
+    public HorizontalBarChartDisplayMode? DisplayMode { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this HorizontalBarChart into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this HorizontalBarChart into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public HorizontalBarChart WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public HorizontalBarChart WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public HorizontalBarChart WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public HorizontalBarChart WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public HorizontalBarChart WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public HorizontalBarChart WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public HorizontalBarChart WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public HorizontalBarChart WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public HorizontalBarChart WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public HorizontalBarChart WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public HorizontalBarChart WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public HorizontalBarChart WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithColorSet(ChartColorSet value)
-  {
-    this.ColorSet = value;
-    return this;
-  }
+    public HorizontalBarChart WithColorSet(ChartColorSet value)
+    {
+        this.ColorSet = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithXAxisTitle(string value)
-  {
-    this.XAxisTitle = value;
-    return this;
-  }
+    public HorizontalBarChart WithXAxisTitle(string value)
+    {
+        this.XAxisTitle = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithYAxisTitle(string value)
-  {
-    this.YAxisTitle = value;
-    return this;
-  }
+    public HorizontalBarChart WithYAxisTitle(string value)
+    {
+        this.YAxisTitle = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public HorizontalBarChart WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithData(params IList<HorizontalBarChartDataValue> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public HorizontalBarChart WithData(params IList<HorizontalBarChartDataValue> value)
+    {
+        this.Data = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithDisplayMode(HorizontalBarChartDisplayMode value)
-  {
-    this.DisplayMode = value;
-    return this;
-  }
+    public HorizontalBarChart WithDisplayMode(HorizontalBarChartDisplayMode value)
+    {
+        this.DisplayMode = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public HorizontalBarChart WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public HorizontalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public HorizontalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -11603,64 +11603,64 @@ public class HorizontalBarChart : CardElement
 /// </summary>
 public class HorizontalBarChartDataValue : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  HorizontalBarChartDataValue.
-  /// </summary>
-  public static HorizontalBarChartDataValue? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<HorizontalBarChartDataValue>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  HorizontalBarChartDataValue.
+    /// </summary>
+    public static HorizontalBarChartDataValue? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<HorizontalBarChartDataValue>(json);
+    }
 
-  /// <summary>
-  /// The x axis value of the data point.
-  /// </summary>
-  [JsonPropertyName("x")]
-  public string? X { get; set; }
+    /// <summary>
+    /// The x axis value of the data point.
+    /// </summary>
+    [JsonPropertyName("x")]
+    public string? X { get; set; }
 
-  /// <summary>
-  /// The y axis value of the data point.
-  /// </summary>
-  [JsonPropertyName("y")]
-  public float? Y { get; set; }
+    /// <summary>
+    /// The y axis value of the data point.
+    /// </summary>
+    [JsonPropertyName("y")]
+    public float? Y { get; set; }
 
-  /// <summary>
-  /// The color of the bar associated with the data point. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color of the bar associated with the data point. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// Serializes this HorizontalBarChartDataValue into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this HorizontalBarChartDataValue into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public HorizontalBarChartDataValue WithX(string value)
-  {
-    this.X = value;
-    return this;
-  }
+    public HorizontalBarChartDataValue WithX(string value)
+    {
+        this.X = value;
+        return this;
+    }
 
-  public HorizontalBarChartDataValue WithY(float value)
-  {
-    this.Y = value;
-    return this;
-  }
+    public HorizontalBarChartDataValue WithY(float value)
+    {
+        this.Y = value;
+        return this;
+    }
 
-  public HorizontalBarChartDataValue WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public HorizontalBarChartDataValue WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -11668,250 +11668,250 @@ public class HorizontalBarChartDataValue : SerializableObject
 /// </summary>
 public class StackedHorizontalBarChart : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  StackedHorizontalBarChart.
-  /// </summary>
-  public static StackedHorizontalBarChart? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<StackedHorizontalBarChart>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  StackedHorizontalBarChart.
+    /// </summary>
+    public static StackedHorizontalBarChart? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<StackedHorizontalBarChart>(json);
+    }
 
-  /// <summary>
-  /// Must be **Chart.HorizontalBar.Stacked**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Chart.HorizontalBar.Stacked";
+    /// <summary>
+    /// Must be **Chart.HorizontalBar.Stacked**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Chart.HorizontalBar.Stacked";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The title of the chart.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the chart.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("colorSet")]
-  public ChartColorSet? ColorSet { get; set; }
+    /// <summary>
+    /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("colorSet")]
+    public ChartColorSet? ColorSet { get; set; }
 
-  /// <summary>
-  /// The title of the x axis.
-  /// </summary>
-  [JsonPropertyName("xAxisTitle")]
-  public string? XAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the x axis.
+    /// </summary>
+    [JsonPropertyName("xAxisTitle")]
+    public string? XAxisTitle { get; set; }
 
-  /// <summary>
-  /// The title of the y axis.
-  /// </summary>
-  [JsonPropertyName("yAxisTitle")]
-  public string? YAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the y axis.
+    /// </summary>
+    [JsonPropertyName("yAxisTitle")]
+    public string? YAxisTitle { get; set; }
 
-  /// <summary>
-  /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// The data to display in the chart.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IList<StackedHorizontalBarChartData>? Data { get; set; }
+    /// <summary>
+    /// The data to display in the chart.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IList<StackedHorizontalBarChartData>? Data { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this StackedHorizontalBarChart into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this StackedHorizontalBarChart into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public StackedHorizontalBarChart WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithColorSet(ChartColorSet value)
-  {
-    this.ColorSet = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithColorSet(ChartColorSet value)
+    {
+        this.ColorSet = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithXAxisTitle(string value)
-  {
-    this.XAxisTitle = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithXAxisTitle(string value)
+    {
+        this.XAxisTitle = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithYAxisTitle(string value)
-  {
-    this.YAxisTitle = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithYAxisTitle(string value)
+    {
+        this.YAxisTitle = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithData(params IList<StackedHorizontalBarChartData> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithData(params IList<StackedHorizontalBarChartData> value)
+    {
+        this.Data = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public StackedHorizontalBarChart WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -11919,52 +11919,52 @@ public class StackedHorizontalBarChart : CardElement
 /// </summary>
 public class StackedHorizontalBarChartData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  StackedHorizontalBarChartData.
-  /// </summary>
-  public static StackedHorizontalBarChartData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<StackedHorizontalBarChartData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  StackedHorizontalBarChartData.
+    /// </summary>
+    public static StackedHorizontalBarChartData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<StackedHorizontalBarChartData>(json);
+    }
 
-  /// <summary>
-  /// The title of the series.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the series.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The data points in the series.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IList<StackedHorizontalBarChartDataPoint>? Data { get; set; }
+    /// <summary>
+    /// The data points in the series.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IList<StackedHorizontalBarChartDataPoint>? Data { get; set; }
 
-  /// <summary>
-  /// Serializes this StackedHorizontalBarChartData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this StackedHorizontalBarChartData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public StackedHorizontalBarChartData WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public StackedHorizontalBarChartData WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChartData WithData(params IList<StackedHorizontalBarChartDataPoint> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public StackedHorizontalBarChartData WithData(params IList<StackedHorizontalBarChartDataPoint> value)
+    {
+        this.Data = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -11972,64 +11972,64 @@ public class StackedHorizontalBarChartData : SerializableObject
 /// </summary>
 public class StackedHorizontalBarChartDataPoint : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  StackedHorizontalBarChartDataPoint.
-  /// </summary>
-  public static StackedHorizontalBarChartDataPoint? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<StackedHorizontalBarChartDataPoint>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  StackedHorizontalBarChartDataPoint.
+    /// </summary>
+    public static StackedHorizontalBarChartDataPoint? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<StackedHorizontalBarChartDataPoint>(json);
+    }
 
-  /// <summary>
-  /// The legend associated with the data point.
-  /// </summary>
-  [JsonPropertyName("legend")]
-  public string? Legend { get; set; }
+    /// <summary>
+    /// The legend associated with the data point.
+    /// </summary>
+    [JsonPropertyName("legend")]
+    public string? Legend { get; set; }
 
-  /// <summary>
-  /// The value of the data point.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public float? Value { get; set; }
+    /// <summary>
+    /// The value of the data point.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public float? Value { get; set; }
 
-  /// <summary>
-  /// The color to use to render the bar associated with the data point. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use to render the bar associated with the data point. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// Serializes this StackedHorizontalBarChartDataPoint into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this StackedHorizontalBarChartDataPoint into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public StackedHorizontalBarChartDataPoint WithLegend(string value)
-  {
-    this.Legend = value;
-    return this;
-  }
+    public StackedHorizontalBarChartDataPoint WithLegend(string value)
+    {
+        this.Legend = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChartDataPoint WithValue(float value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public StackedHorizontalBarChartDataPoint WithValue(float value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public StackedHorizontalBarChartDataPoint WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public StackedHorizontalBarChartDataPoint WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -12037,274 +12037,274 @@ public class StackedHorizontalBarChartDataPoint : SerializableObject
 /// </summary>
 public class LineChart : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  LineChart.
-  /// </summary>
-  public static LineChart? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<LineChart>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  LineChart.
+    /// </summary>
+    public static LineChart? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<LineChart>(json);
+    }
 
-  /// <summary>
-  /// Must be **Chart.Line**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Chart.Line";
+    /// <summary>
+    /// Must be **Chart.Line**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Chart.Line";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The title of the chart.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the chart.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("colorSet")]
-  public ChartColorSet? ColorSet { get; set; }
+    /// <summary>
+    /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("colorSet")]
+    public ChartColorSet? ColorSet { get; set; }
 
-  /// <summary>
-  /// The title of the x axis.
-  /// </summary>
-  [JsonPropertyName("xAxisTitle")]
-  public string? XAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the x axis.
+    /// </summary>
+    [JsonPropertyName("xAxisTitle")]
+    public string? XAxisTitle { get; set; }
 
-  /// <summary>
-  /// The title of the y axis.
-  /// </summary>
-  [JsonPropertyName("yAxisTitle")]
-  public string? YAxisTitle { get; set; }
+    /// <summary>
+    /// The title of the y axis.
+    /// </summary>
+    [JsonPropertyName("yAxisTitle")]
+    public string? YAxisTitle { get; set; }
 
-  /// <summary>
-  /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use for all data points. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// The data point series in the line chart.
-  /// </summary>
-  [JsonPropertyName("data")]
-  public IList<LineChartData>? Data { get; set; }
+    /// <summary>
+    /// The data point series in the line chart.
+    /// </summary>
+    [JsonPropertyName("data")]
+    public IList<LineChartData>? Data { get; set; }
 
-  /// <summary>
-  /// The maximum y range.
-  /// </summary>
-  [JsonPropertyName("yMin")]
-  public float? YMin { get; set; }
+    /// <summary>
+    /// The maximum y range.
+    /// </summary>
+    [JsonPropertyName("yMin")]
+    public float? YMin { get; set; }
 
-  /// <summary>
-  /// The minimum y range.
-  /// </summary>
-  [JsonPropertyName("yMax")]
-  public float? YMax { get; set; }
+    /// <summary>
+    /// The minimum y range.
+    /// </summary>
+    [JsonPropertyName("yMax")]
+    public float? YMax { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this LineChart into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this LineChart into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public LineChart WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public LineChart WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public LineChart WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public LineChart WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public LineChart WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public LineChart WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public LineChart WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public LineChart WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public LineChart WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public LineChart WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public LineChart WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public LineChart WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public LineChart WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public LineChart WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public LineChart WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public LineChart WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public LineChart WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public LineChart WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public LineChart WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public LineChart WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public LineChart WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public LineChart WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public LineChart WithColorSet(ChartColorSet value)
-  {
-    this.ColorSet = value;
-    return this;
-  }
+    public LineChart WithColorSet(ChartColorSet value)
+    {
+        this.ColorSet = value;
+        return this;
+    }
 
-  public LineChart WithXAxisTitle(string value)
-  {
-    this.XAxisTitle = value;
-    return this;
-  }
+    public LineChart WithXAxisTitle(string value)
+    {
+        this.XAxisTitle = value;
+        return this;
+    }
 
-  public LineChart WithYAxisTitle(string value)
-  {
-    this.YAxisTitle = value;
-    return this;
-  }
+    public LineChart WithYAxisTitle(string value)
+    {
+        this.YAxisTitle = value;
+        return this;
+    }
 
-  public LineChart WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public LineChart WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public LineChart WithData(params IList<LineChartData> value)
-  {
-    this.Data = value;
-    return this;
-  }
+    public LineChart WithData(params IList<LineChartData> value)
+    {
+        this.Data = value;
+        return this;
+    }
 
-  public LineChart WithYMin(float value)
-  {
-    this.YMin = value;
-    return this;
-  }
+    public LineChart WithYMin(float value)
+    {
+        this.YMin = value;
+        return this;
+    }
 
-  public LineChart WithYMax(float value)
-  {
-    this.YMax = value;
-    return this;
-  }
+    public LineChart WithYMax(float value)
+    {
+        this.YMax = value;
+        return this;
+    }
 
-  public LineChart WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public LineChart WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public LineChart WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public LineChart WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -12312,64 +12312,64 @@ public class LineChart : CardElement
 /// </summary>
 public class LineChartData : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  LineChartData.
-  /// </summary>
-  public static LineChartData? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<LineChartData>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  LineChartData.
+    /// </summary>
+    public static LineChartData? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<LineChartData>(json);
+    }
 
-  /// <summary>
-  /// The legend of the chart.
-  /// </summary>
-  [JsonPropertyName("legend")]
-  public string? Legend { get; set; }
+    /// <summary>
+    /// The legend of the chart.
+    /// </summary>
+    [JsonPropertyName("legend")]
+    public string? Legend { get; set; }
 
-  /// <summary>
-  /// The data points in the series.
-  /// </summary>
-  [JsonPropertyName("values")]
-  public IList<LineChartValue>? Values { get; set; }
+    /// <summary>
+    /// The data points in the series.
+    /// </summary>
+    [JsonPropertyName("values")]
+    public IList<LineChartValue>? Values { get; set; }
 
-  /// <summary>
-  /// The color all data points in the series. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color all data points in the series. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// Serializes this LineChartData into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this LineChartData into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public LineChartData WithLegend(string value)
-  {
-    this.Legend = value;
-    return this;
-  }
+    public LineChartData WithLegend(string value)
+    {
+        this.Legend = value;
+        return this;
+    }
 
-  public LineChartData WithValues(params IList<LineChartValue> value)
-  {
-    this.Values = value;
-    return this;
-  }
+    public LineChartData WithValues(params IList<LineChartValue> value)
+    {
+        this.Values = value;
+        return this;
+    }
 
-  public LineChartData WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public LineChartData WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -12377,56 +12377,56 @@ public class LineChartData : SerializableObject
 /// </summary>
 public class LineChartValue : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  LineChartValue.
-  /// </summary>
-  public static LineChartValue? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<LineChartValue>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  LineChartValue.
+    /// </summary>
+    public static LineChartValue? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<LineChartValue>(json);
+    }
 
-  /// <summary>
-  /// The x axis value of the data point.
-  /// 
-  /// If all x values of the x [Chart.Line](https://adaptivecards.microsoft.com/?topic=Chart.Line) are expressed as a number, or if all x values are expressed as a date string in the `YYYY-MM-DD` format, the chart will be rendered as a time series chart, i.e. x axis values will span across the minimum x value to maximum x value range.
-  /// 
-  /// Otherwise, if x values are represented as a mix of numbers and strings or if at least one x value isn't in the `YYYY-MM-DD` format, the chart will be rendered as a categorical chart, i.e. x axis values will be displayed as categories.
-  /// </summary>
-  [JsonPropertyName("x")]
-  public IUnion<float, string>? X { get; set; }
+    /// <summary>
+    /// The x axis value of the data point.
+    /// 
+    /// If all x values of the x [Chart.Line](https://adaptivecards.microsoft.com/?topic=Chart.Line) are expressed as a number, or if all x values are expressed as a date string in the `YYYY-MM-DD` format, the chart will be rendered as a time series chart, i.e. x axis values will span across the minimum x value to maximum x value range.
+    /// 
+    /// Otherwise, if x values are represented as a mix of numbers and strings or if at least one x value isn't in the `YYYY-MM-DD` format, the chart will be rendered as a categorical chart, i.e. x axis values will be displayed as categories.
+    /// </summary>
+    [JsonPropertyName("x")]
+    public IUnion<float, string>? X { get; set; }
 
-  /// <summary>
-  /// The y axis value of the data point.
-  /// </summary>
-  [JsonPropertyName("y")]
-  public float? Y { get; set; }
+    /// <summary>
+    /// The y axis value of the data point.
+    /// </summary>
+    [JsonPropertyName("y")]
+    public float? Y { get; set; }
 
-  /// <summary>
-  /// Serializes this LineChartValue into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this LineChartValue into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public LineChartValue WithX(IUnion<float, string> value)
-  {
-    this.X = value;
-    return this;
-  }
+    public LineChartValue WithX(IUnion<float, string> value)
+    {
+        this.X = value;
+        return this;
+    }
 
-  public LineChartValue WithY(float value)
-  {
-    this.Y = value;
-    return this;
-  }
+    public LineChartValue WithY(float value)
+    {
+        this.Y = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -12434,286 +12434,286 @@ public class LineChartValue : SerializableObject
 /// </summary>
 public class GaugeChart : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  GaugeChart.
-  /// </summary>
-  public static GaugeChart? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<GaugeChart>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  GaugeChart.
+    /// </summary>
+    public static GaugeChart? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<GaugeChart>(json);
+    }
 
-  /// <summary>
-  /// Must be **Chart.Gauge**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Chart.Gauge";
+    /// <summary>
+    /// Must be **Chart.Gauge**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Chart.Gauge";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The title of the chart.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the chart.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("colorSet")]
-  public ChartColorSet? ColorSet { get; set; }
+    /// <summary>
+    /// The name of the set of colors to use to render the chart. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("colorSet")]
+    public ChartColorSet? ColorSet { get; set; }
 
-  /// <summary>
-  /// The minimum value of the gauge.
-  /// </summary>
-  [JsonPropertyName("min")]
-  public float? Min { get; set; }
+    /// <summary>
+    /// The minimum value of the gauge.
+    /// </summary>
+    [JsonPropertyName("min")]
+    public float? Min { get; set; }
 
-  /// <summary>
-  /// The maximum value of the gauge.
-  /// </summary>
-  [JsonPropertyName("max")]
-  public float? Max { get; set; }
+    /// <summary>
+    /// The maximum value of the gauge.
+    /// </summary>
+    [JsonPropertyName("max")]
+    public float? Max { get; set; }
 
-  /// <summary>
-  /// The sub-label of the gauge.
-  /// </summary>
-  [JsonPropertyName("subLabel")]
-  public string? SubLabel { get; set; }
+    /// <summary>
+    /// The sub-label of the gauge.
+    /// </summary>
+    [JsonPropertyName("subLabel")]
+    public string? SubLabel { get; set; }
 
-  /// <summary>
-  /// Controls whether the min/max values should be displayed.
-  /// </summary>
-  [JsonPropertyName("showMinMax")]
-  public bool? ShowMinMax { get; set; }
+    /// <summary>
+    /// Controls whether the min/max values should be displayed.
+    /// </summary>
+    [JsonPropertyName("showMinMax")]
+    public bool? ShowMinMax { get; set; }
 
-  /// <summary>
-  /// The segments to display in the gauge.
-  /// </summary>
-  [JsonPropertyName("segments")]
-  public IList<GaugeChartLegend>? Segments { get; set; }
+    /// <summary>
+    /// The segments to display in the gauge.
+    /// </summary>
+    [JsonPropertyName("segments")]
+    public IList<GaugeChartLegend>? Segments { get; set; }
 
-  /// <summary>
-  /// The value of the gauge.
-  /// </summary>
-  [JsonPropertyName("value")]
-  public float? Value { get; set; }
+    /// <summary>
+    /// The value of the gauge.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public float? Value { get; set; }
 
-  /// <summary>
-  /// The format used to display the gauge's value.
-  /// </summary>
-  [JsonPropertyName("valueFormat")]
-  public GaugeChartValueFormat? ValueFormat { get; set; }
+    /// <summary>
+    /// The format used to display the gauge's value.
+    /// </summary>
+    [JsonPropertyName("valueFormat")]
+    public GaugeChartValueFormat? ValueFormat { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this GaugeChart into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this GaugeChart into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public GaugeChart WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public GaugeChart WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public GaugeChart WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public GaugeChart WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public GaugeChart WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public GaugeChart WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public GaugeChart WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public GaugeChart WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public GaugeChart WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public GaugeChart WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public GaugeChart WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public GaugeChart WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public GaugeChart WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public GaugeChart WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public GaugeChart WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public GaugeChart WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public GaugeChart WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public GaugeChart WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public GaugeChart WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public GaugeChart WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public GaugeChart WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public GaugeChart WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public GaugeChart WithColorSet(ChartColorSet value)
-  {
-    this.ColorSet = value;
-    return this;
-  }
+    public GaugeChart WithColorSet(ChartColorSet value)
+    {
+        this.ColorSet = value;
+        return this;
+    }
 
-  public GaugeChart WithMin(float value)
-  {
-    this.Min = value;
-    return this;
-  }
+    public GaugeChart WithMin(float value)
+    {
+        this.Min = value;
+        return this;
+    }
 
-  public GaugeChart WithMax(float value)
-  {
-    this.Max = value;
-    return this;
-  }
+    public GaugeChart WithMax(float value)
+    {
+        this.Max = value;
+        return this;
+    }
 
-  public GaugeChart WithSubLabel(string value)
-  {
-    this.SubLabel = value;
-    return this;
-  }
+    public GaugeChart WithSubLabel(string value)
+    {
+        this.SubLabel = value;
+        return this;
+    }
 
-  public GaugeChart WithShowMinMax(bool value)
-  {
-    this.ShowMinMax = value;
-    return this;
-  }
+    public GaugeChart WithShowMinMax(bool value)
+    {
+        this.ShowMinMax = value;
+        return this;
+    }
 
-  public GaugeChart WithSegments(params IList<GaugeChartLegend> value)
-  {
-    this.Segments = value;
-    return this;
-  }
+    public GaugeChart WithSegments(params IList<GaugeChartLegend> value)
+    {
+        this.Segments = value;
+        return this;
+    }
 
-  public GaugeChart WithValue(float value)
-  {
-    this.Value = value;
-    return this;
-  }
+    public GaugeChart WithValue(float value)
+    {
+        this.Value = value;
+        return this;
+    }
 
-  public GaugeChart WithValueFormat(GaugeChartValueFormat value)
-  {
-    this.ValueFormat = value;
-    return this;
-  }
+    public GaugeChart WithValueFormat(GaugeChartValueFormat value)
+    {
+        this.ValueFormat = value;
+        return this;
+    }
 
-  public GaugeChart WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public GaugeChart WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public GaugeChart WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public GaugeChart WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -12721,64 +12721,64 @@ public class GaugeChart : CardElement
 /// </summary>
 public class GaugeChartLegend : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  GaugeChartLegend.
-  /// </summary>
-  public static GaugeChartLegend? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<GaugeChartLegend>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  GaugeChartLegend.
+    /// </summary>
+    public static GaugeChartLegend? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<GaugeChartLegend>(json);
+    }
 
-  /// <summary>
-  /// The size of the segment.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public float? Size { get; set; }
+    /// <summary>
+    /// The size of the segment.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public float? Size { get; set; }
 
-  /// <summary>
-  /// The legend text associated with the segment.
-  /// </summary>
-  [JsonPropertyName("legend")]
-  public string? Legend { get; set; }
+    /// <summary>
+    /// The legend text associated with the segment.
+    /// </summary>
+    [JsonPropertyName("legend")]
+    public string? Legend { get; set; }
 
-  /// <summary>
-  /// The color to use for the segment. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
-  /// </summary>
-  [JsonPropertyName("color")]
-  public ChartColor? Color { get; set; }
+    /// <summary>
+    /// The color to use for the segment. See [Chart colors reference](https://adaptivecards.microsoft.com/?topic=chart-colors-reference).
+    /// </summary>
+    [JsonPropertyName("color")]
+    public ChartColor? Color { get; set; }
 
-  /// <summary>
-  /// Serializes this GaugeChartLegend into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this GaugeChartLegend into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public GaugeChartLegend WithSize(float value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public GaugeChartLegend WithSize(float value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public GaugeChartLegend WithLegend(string value)
-  {
-    this.Legend = value;
-    return this;
-  }
+    public GaugeChartLegend WithLegend(string value)
+    {
+        this.Legend = value;
+        return this;
+    }
 
-  public GaugeChartLegend WithColor(ChartColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public GaugeChartLegend WithColor(ChartColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -12786,214 +12786,214 @@ public class GaugeChartLegend : SerializableObject
 /// </summary>
 public class CodeBlock : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  CodeBlock.
-  /// </summary>
-  public static CodeBlock? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<CodeBlock>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  CodeBlock.
+    /// </summary>
+    public static CodeBlock? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<CodeBlock>(json);
+    }
 
-  /// <summary>
-  /// Must be **CodeBlock**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "CodeBlock";
+    /// <summary>
+    /// Must be **CodeBlock**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "CodeBlock";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The code snippet to display.
-  /// </summary>
-  [JsonPropertyName("codeSnippet")]
-  public string? CodeSnippet { get; set; }
+    /// <summary>
+    /// The code snippet to display.
+    /// </summary>
+    [JsonPropertyName("codeSnippet")]
+    public string? CodeSnippet { get; set; }
 
-  /// <summary>
-  /// The language the code snippet is expressed in.
-  /// </summary>
-  [JsonPropertyName("language")]
-  public CodeLanguage? Language { get; set; }
+    /// <summary>
+    /// The language the code snippet is expressed in.
+    /// </summary>
+    [JsonPropertyName("language")]
+    public CodeLanguage? Language { get; set; }
 
-  /// <summary>
-  /// A number that represents the line in the file from where the code snippet was extracted.
-  /// </summary>
-  [JsonPropertyName("startLineNumber")]
-  public float? StartLineNumber { get; set; }
+    /// <summary>
+    /// A number that represents the line in the file from where the code snippet was extracted.
+    /// </summary>
+    [JsonPropertyName("startLineNumber")]
+    public float? StartLineNumber { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this CodeBlock into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this CodeBlock into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public CodeBlock WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public CodeBlock WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public CodeBlock WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public CodeBlock WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public CodeBlock WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public CodeBlock WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public CodeBlock WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public CodeBlock WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public CodeBlock WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public CodeBlock WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public CodeBlock WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public CodeBlock WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public CodeBlock WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public CodeBlock WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public CodeBlock WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public CodeBlock WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public CodeBlock WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public CodeBlock WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public CodeBlock WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public CodeBlock WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public CodeBlock WithCodeSnippet(string value)
-  {
-    this.CodeSnippet = value;
-    return this;
-  }
+    public CodeBlock WithCodeSnippet(string value)
+    {
+        this.CodeSnippet = value;
+        return this;
+    }
 
-  public CodeBlock WithLanguage(CodeLanguage value)
-  {
-    this.Language = value;
-    return this;
-  }
+    public CodeBlock WithLanguage(CodeLanguage value)
+    {
+        this.Language = value;
+        return this;
+    }
 
-  public CodeBlock WithStartLineNumber(float value)
-  {
-    this.StartLineNumber = value;
-    return this;
-  }
+    public CodeBlock WithStartLineNumber(float value)
+    {
+        this.StartLineNumber = value;
+        return this;
+    }
 
-  public CodeBlock WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public CodeBlock WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public CodeBlock WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public CodeBlock WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -13001,196 +13001,196 @@ public class CodeBlock : CardElement
 /// </summary>
 public class ComUserMicrosoftGraphComponent : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ComUserMicrosoftGraphComponent.
-  /// </summary>
-  public static ComUserMicrosoftGraphComponent? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ComUserMicrosoftGraphComponent>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ComUserMicrosoftGraphComponent.
+    /// </summary>
+    public static ComUserMicrosoftGraphComponent? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ComUserMicrosoftGraphComponent>(json);
+    }
 
-  /// <summary>
-  /// Must be **Component**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Component";
+    /// <summary>
+    /// Must be **Component**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Component";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// Must be **graph.microsoft.com/user**.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string Name { get; } = "graph.microsoft.com/user";
+    /// <summary>
+    /// Must be **graph.microsoft.com/user**.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string Name { get; } = "graph.microsoft.com/user";
 
-  /// <summary>
-  /// The properties of the user.
-  /// </summary>
-  [JsonPropertyName("properties")]
-  public PersonaProperties? Properties { get; set; }
+    /// <summary>
+    /// The properties of the user.
+    /// </summary>
+    [JsonPropertyName("properties")]
+    public PersonaProperties? Properties { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this ComUserMicrosoftGraphComponent into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ComUserMicrosoftGraphComponent into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ComUserMicrosoftGraphComponent WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithProperties(PersonaProperties value)
-  {
-    this.Properties = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithProperties(PersonaProperties value)
+    {
+        this.Properties = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ComUserMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ComUserMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -13198,52 +13198,52 @@ public class ComUserMicrosoftGraphComponent : CardElement
 /// </summary>
 public class PersonaProperties : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  PersonaProperties.
-  /// </summary>
-  public static PersonaProperties? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<PersonaProperties>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  PersonaProperties.
+    /// </summary>
+    public static PersonaProperties? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<PersonaProperties>(json);
+    }
 
-  /// <summary>
-  /// The UPN of the persona.
-  /// </summary>
-  [JsonPropertyName("userPrincipalName")]
-  public string? UserPrincipalName { get; set; }
+    /// <summary>
+    /// The UPN of the persona.
+    /// </summary>
+    [JsonPropertyName("userPrincipalName")]
+    public string? UserPrincipalName { get; set; }
 
-  /// <summary>
-  /// The display name of the persona.
-  /// </summary>
-  [JsonPropertyName("displayName")]
-  public string? DisplayName { get; set; }
+    /// <summary>
+    /// The display name of the persona.
+    /// </summary>
+    [JsonPropertyName("displayName")]
+    public string? DisplayName { get; set; }
 
-  /// <summary>
-  /// Serializes this PersonaProperties into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this PersonaProperties into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public PersonaProperties WithUserPrincipalName(string value)
-  {
-    this.UserPrincipalName = value;
-    return this;
-  }
+    public PersonaProperties WithUserPrincipalName(string value)
+    {
+        this.UserPrincipalName = value;
+        return this;
+    }
 
-  public PersonaProperties WithDisplayName(string value)
-  {
-    this.DisplayName = value;
-    return this;
-  }
+    public PersonaProperties WithDisplayName(string value)
+    {
+        this.DisplayName = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -13251,196 +13251,196 @@ public class PersonaProperties : SerializableObject
 /// </summary>
 public class ComUsersMicrosoftGraphComponent : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ComUsersMicrosoftGraphComponent.
-  /// </summary>
-  public static ComUsersMicrosoftGraphComponent? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ComUsersMicrosoftGraphComponent>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ComUsersMicrosoftGraphComponent.
+    /// </summary>
+    public static ComUsersMicrosoftGraphComponent? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ComUsersMicrosoftGraphComponent>(json);
+    }
 
-  /// <summary>
-  /// Must be **Component**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Component";
+    /// <summary>
+    /// Must be **Component**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Component";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// Must be **graph.microsoft.com/users**.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string Name { get; } = "graph.microsoft.com/users";
+    /// <summary>
+    /// Must be **graph.microsoft.com/users**.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string Name { get; } = "graph.microsoft.com/users";
 
-  /// <summary>
-  /// The properties of the set.
-  /// </summary>
-  [JsonPropertyName("properties")]
-  public PersonaSetProperties? Properties { get; set; }
+    /// <summary>
+    /// The properties of the set.
+    /// </summary>
+    [JsonPropertyName("properties")]
+    public PersonaSetProperties? Properties { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this ComUsersMicrosoftGraphComponent into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ComUsersMicrosoftGraphComponent into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ComUsersMicrosoftGraphComponent WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithProperties(PersonaSetProperties value)
-  {
-    this.Properties = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithProperties(PersonaSetProperties value)
+    {
+        this.Properties = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ComUsersMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ComUsersMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -13448,40 +13448,40 @@ public class ComUsersMicrosoftGraphComponent : CardElement
 /// </summary>
 public class PersonaSetProperties : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  PersonaSetProperties.
-  /// </summary>
-  public static PersonaSetProperties? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<PersonaSetProperties>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  PersonaSetProperties.
+    /// </summary>
+    public static PersonaSetProperties? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<PersonaSetProperties>(json);
+    }
 
-  /// <summary>
-  /// The users a PersonaSet component should display.
-  /// </summary>
-  [JsonPropertyName("users")]
-  public IList<PersonaProperties>? Users { get; set; }
+    /// <summary>
+    /// The users a PersonaSet component should display.
+    /// </summary>
+    [JsonPropertyName("users")]
+    public IList<PersonaProperties>? Users { get; set; }
 
-  /// <summary>
-  /// Serializes this PersonaSetProperties into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this PersonaSetProperties into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public PersonaSetProperties WithUsers(params IList<PersonaProperties> value)
-  {
-    this.Users = value;
-    return this;
-  }
+    public PersonaSetProperties WithUsers(params IList<PersonaProperties> value)
+    {
+        this.Users = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -13489,196 +13489,196 @@ public class PersonaSetProperties : SerializableObject
 /// </summary>
 public class ComResourceMicrosoftGraphComponent : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ComResourceMicrosoftGraphComponent.
-  /// </summary>
-  public static ComResourceMicrosoftGraphComponent? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ComResourceMicrosoftGraphComponent>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ComResourceMicrosoftGraphComponent.
+    /// </summary>
+    public static ComResourceMicrosoftGraphComponent? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ComResourceMicrosoftGraphComponent>(json);
+    }
 
-  /// <summary>
-  /// Must be **Component**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Component";
+    /// <summary>
+    /// Must be **Component**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Component";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// Must be **graph.microsoft.com/resource**.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string Name { get; } = "graph.microsoft.com/resource";
+    /// <summary>
+    /// Must be **graph.microsoft.com/resource**.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string Name { get; } = "graph.microsoft.com/resource";
 
-  /// <summary>
-  /// The properties of the resource.
-  /// </summary>
-  [JsonPropertyName("properties")]
-  public ResourceProperties? Properties { get; set; }
+    /// <summary>
+    /// The properties of the resource.
+    /// </summary>
+    [JsonPropertyName("properties")]
+    public ResourceProperties? Properties { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this ComResourceMicrosoftGraphComponent into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ComResourceMicrosoftGraphComponent into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ComResourceMicrosoftGraphComponent WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithProperties(ResourceProperties value)
-  {
-    this.Properties = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithProperties(ResourceProperties value)
+    {
+        this.Properties = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ComResourceMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ComResourceMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -13686,64 +13686,64 @@ public class ComResourceMicrosoftGraphComponent : CardElement
 /// </summary>
 public class ResourceProperties : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ResourceProperties.
-  /// </summary>
-  public static ResourceProperties? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ResourceProperties>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ResourceProperties.
+    /// </summary>
+    public static ResourceProperties? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ResourceProperties>(json);
+    }
 
-  /// <summary>
-  /// The Id of the resource.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// The Id of the resource.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// The reference to the resource.
-  /// </summary>
-  [JsonPropertyName("resourceReference")]
-  public IDictionary<string, string>? ResourceReference { get; set; }
+    /// <summary>
+    /// The reference to the resource.
+    /// </summary>
+    [JsonPropertyName("resourceReference")]
+    public IDictionary<string, string>? ResourceReference { get; set; }
 
-  /// <summary>
-  /// The visualization of the resource.
-  /// </summary>
-  [JsonPropertyName("resourceVisualization")]
-  public ResourceVisualization? ResourceVisualization { get; set; }
+    /// <summary>
+    /// The visualization of the resource.
+    /// </summary>
+    [JsonPropertyName("resourceVisualization")]
+    public ResourceVisualization? ResourceVisualization { get; set; }
 
-  /// <summary>
-  /// Serializes this ResourceProperties into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ResourceProperties into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ResourceProperties WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ResourceProperties WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ResourceProperties WithResourceReference(IDictionary<string, string> value)
-  {
-    this.ResourceReference = value;
-    return this;
-  }
+    public ResourceProperties WithResourceReference(IDictionary<string, string> value)
+    {
+        this.ResourceReference = value;
+        return this;
+    }
 
-  public ResourceProperties WithResourceVisualization(ResourceVisualization value)
-  {
-    this.ResourceVisualization = value;
-    return this;
-  }
+    public ResourceProperties WithResourceVisualization(ResourceVisualization value)
+    {
+        this.ResourceVisualization = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -13751,40 +13751,40 @@ public class ResourceProperties : SerializableObject
 /// </summary>
 public class ResourceVisualization : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ResourceVisualization.
-  /// </summary>
-  public static ResourceVisualization? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ResourceVisualization>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ResourceVisualization.
+    /// </summary>
+    public static ResourceVisualization? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ResourceVisualization>(json);
+    }
 
-  /// <summary>
-  /// The media associated with the resource.
-  /// </summary>
-  [JsonPropertyName("media")]
-  public string? Media { get; set; }
+    /// <summary>
+    /// The media associated with the resource.
+    /// </summary>
+    [JsonPropertyName("media")]
+    public string? Media { get; set; }
 
-  /// <summary>
-  /// Serializes this ResourceVisualization into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ResourceVisualization into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ResourceVisualization WithMedia(string value)
-  {
-    this.Media = value;
-    return this;
-  }
+    public ResourceVisualization WithMedia(string value)
+    {
+        this.Media = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -13792,196 +13792,196 @@ public class ResourceVisualization : SerializableObject
 /// </summary>
 public class ComFileMicrosoftGraphComponent : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ComFileMicrosoftGraphComponent.
-  /// </summary>
-  public static ComFileMicrosoftGraphComponent? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ComFileMicrosoftGraphComponent>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ComFileMicrosoftGraphComponent.
+    /// </summary>
+    public static ComFileMicrosoftGraphComponent? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ComFileMicrosoftGraphComponent>(json);
+    }
 
-  /// <summary>
-  /// Must be **Component**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Component";
+    /// <summary>
+    /// Must be **Component**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Component";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// Must be **graph.microsoft.com/file**.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string Name { get; } = "graph.microsoft.com/file";
+    /// <summary>
+    /// Must be **graph.microsoft.com/file**.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string Name { get; } = "graph.microsoft.com/file";
 
-  /// <summary>
-  /// The properties of the file.
-  /// </summary>
-  [JsonPropertyName("properties")]
-  public FileProperties? Properties { get; set; }
+    /// <summary>
+    /// The properties of the file.
+    /// </summary>
+    [JsonPropertyName("properties")]
+    public FileProperties? Properties { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this ComFileMicrosoftGraphComponent into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ComFileMicrosoftGraphComponent into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ComFileMicrosoftGraphComponent WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithProperties(FileProperties value)
-  {
-    this.Properties = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithProperties(FileProperties value)
+    {
+        this.Properties = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ComFileMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ComFileMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -13989,64 +13989,64 @@ public class ComFileMicrosoftGraphComponent : CardElement
 /// </summary>
 public class FileProperties : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  FileProperties.
-  /// </summary>
-  public static FileProperties? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<FileProperties>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  FileProperties.
+    /// </summary>
+    public static FileProperties? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<FileProperties>(json);
+    }
 
-  /// <summary>
-  /// The name of the file.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string? Name { get; set; }
+    /// <summary>
+    /// The name of the file.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
 
-  /// <summary>
-  /// The file extension.
-  /// </summary>
-  [JsonPropertyName("extension")]
-  public string? Extension { get; set; }
+    /// <summary>
+    /// The file extension.
+    /// </summary>
+    [JsonPropertyName("extension")]
+    public string? Extension { get; set; }
 
-  /// <summary>
-  /// The URL of the file.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL of the file.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// Serializes this FileProperties into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this FileProperties into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public FileProperties WithName(string value)
-  {
-    this.Name = value;
-    return this;
-  }
+    public FileProperties WithName(string value)
+    {
+        this.Name = value;
+        return this;
+    }
 
-  public FileProperties WithExtension(string value)
-  {
-    this.Extension = value;
-    return this;
-  }
+    public FileProperties WithExtension(string value)
+    {
+        this.Extension = value;
+        return this;
+    }
 
-  public FileProperties WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public FileProperties WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -14054,196 +14054,196 @@ public class FileProperties : SerializableObject
 /// </summary>
 public class ComEventMicrosoftGraphComponent : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ComEventMicrosoftGraphComponent.
-  /// </summary>
-  public static ComEventMicrosoftGraphComponent? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ComEventMicrosoftGraphComponent>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ComEventMicrosoftGraphComponent.
+    /// </summary>
+    public static ComEventMicrosoftGraphComponent? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ComEventMicrosoftGraphComponent>(json);
+    }
 
-  /// <summary>
-  /// Must be **Component**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Component";
+    /// <summary>
+    /// Must be **Component**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Component";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// Must be **graph.microsoft.com/event**.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string Name { get; } = "graph.microsoft.com/event";
+    /// <summary>
+    /// Must be **graph.microsoft.com/event**.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string Name { get; } = "graph.microsoft.com/event";
 
-  /// <summary>
-  /// The properties of the event.
-  /// </summary>
-  [JsonPropertyName("properties")]
-  public CalendarEventProperties? Properties { get; set; }
+    /// <summary>
+    /// The properties of the event.
+    /// </summary>
+    [JsonPropertyName("properties")]
+    public CalendarEventProperties? Properties { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this ComEventMicrosoftGraphComponent into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ComEventMicrosoftGraphComponent into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ComEventMicrosoftGraphComponent WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithProperties(CalendarEventProperties value)
-  {
-    this.Properties = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithProperties(CalendarEventProperties value)
+    {
+        this.Properties = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ComEventMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ComEventMicrosoftGraphComponent WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -14251,172 +14251,172 @@ public class ComEventMicrosoftGraphComponent : CardElement
 /// </summary>
 public class CalendarEventProperties : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  CalendarEventProperties.
-  /// </summary>
-  public static CalendarEventProperties? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<CalendarEventProperties>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  CalendarEventProperties.
+    /// </summary>
+    public static CalendarEventProperties? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<CalendarEventProperties>(json);
+    }
 
-  /// <summary>
-  /// The ID of the event.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// The ID of the event.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// The title of the event.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the event.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The start date and time of the event.
-  /// </summary>
-  [JsonPropertyName("start")]
-  public string? Start { get; set; }
+    /// <summary>
+    /// The start date and time of the event.
+    /// </summary>
+    [JsonPropertyName("start")]
+    public string? Start { get; set; }
 
-  /// <summary>
-  /// The end date and time of the event.
-  /// </summary>
-  [JsonPropertyName("end")]
-  public string? End { get; set; }
+    /// <summary>
+    /// The end date and time of the event.
+    /// </summary>
+    [JsonPropertyName("end")]
+    public string? End { get; set; }
 
-  /// <summary>
-  /// The status of the event.
-  /// </summary>
-  [JsonPropertyName("status")]
-  public string? Status { get; set; }
+    /// <summary>
+    /// The status of the event.
+    /// </summary>
+    [JsonPropertyName("status")]
+    public string? Status { get; set; }
 
-  /// <summary>
-  /// The locations of the event.
-  /// </summary>
-  [JsonPropertyName("locations")]
-  public IList<string>? Locations { get; set; }
+    /// <summary>
+    /// The locations of the event.
+    /// </summary>
+    [JsonPropertyName("locations")]
+    public IList<string>? Locations { get; set; }
 
-  /// <summary>
-  /// The URL of the online meeting.
-  /// </summary>
-  [JsonPropertyName("onlineMeetingUrl")]
-  public string? OnlineMeetingUrl { get; set; }
+    /// <summary>
+    /// The URL of the online meeting.
+    /// </summary>
+    [JsonPropertyName("onlineMeetingUrl")]
+    public string? OnlineMeetingUrl { get; set; }
 
-  /// <summary>
-  /// Indicates if the event is all day.
-  /// </summary>
-  [JsonPropertyName("isAllDay")]
-  public bool? IsAllDay { get; set; }
+    /// <summary>
+    /// Indicates if the event is all day.
+    /// </summary>
+    [JsonPropertyName("isAllDay")]
+    public bool? IsAllDay { get; set; }
 
-  /// <summary>
-  /// The extension of the event.
-  /// </summary>
-  [JsonPropertyName("extension")]
-  public string? Extension { get; set; }
+    /// <summary>
+    /// The extension of the event.
+    /// </summary>
+    [JsonPropertyName("extension")]
+    public string? Extension { get; set; }
 
-  /// <summary>
-  /// The URL of the event.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL of the event.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// The attendees of the event.
-  /// </summary>
-  [JsonPropertyName("attendees")]
-  public IList<CalendarEventAttendee>? Attendees { get; set; }
+    /// <summary>
+    /// The attendees of the event.
+    /// </summary>
+    [JsonPropertyName("attendees")]
+    public IList<CalendarEventAttendee>? Attendees { get; set; }
 
-  /// <summary>
-  /// The organizer of the event.
-  /// </summary>
-  [JsonPropertyName("organizer")]
-  public CalendarEventAttendee? Organizer { get; set; }
+    /// <summary>
+    /// The organizer of the event.
+    /// </summary>
+    [JsonPropertyName("organizer")]
+    public CalendarEventAttendee? Organizer { get; set; }
 
-  /// <summary>
-  /// Serializes this CalendarEventProperties into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this CalendarEventProperties into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public CalendarEventProperties WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public CalendarEventProperties WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public CalendarEventProperties WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithStart(string value)
-  {
-    this.Start = value;
-    return this;
-  }
+    public CalendarEventProperties WithStart(string value)
+    {
+        this.Start = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithEnd(string value)
-  {
-    this.End = value;
-    return this;
-  }
+    public CalendarEventProperties WithEnd(string value)
+    {
+        this.End = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithStatus(string value)
-  {
-    this.Status = value;
-    return this;
-  }
+    public CalendarEventProperties WithStatus(string value)
+    {
+        this.Status = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithLocations(params IList<string> value)
-  {
-    this.Locations = value;
-    return this;
-  }
+    public CalendarEventProperties WithLocations(params IList<string> value)
+    {
+        this.Locations = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithOnlineMeetingUrl(string value)
-  {
-    this.OnlineMeetingUrl = value;
-    return this;
-  }
+    public CalendarEventProperties WithOnlineMeetingUrl(string value)
+    {
+        this.OnlineMeetingUrl = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithIsAllDay(bool value)
-  {
-    this.IsAllDay = value;
-    return this;
-  }
+    public CalendarEventProperties WithIsAllDay(bool value)
+    {
+        this.IsAllDay = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithExtension(string value)
-  {
-    this.Extension = value;
-    return this;
-  }
+    public CalendarEventProperties WithExtension(string value)
+    {
+        this.Extension = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public CalendarEventProperties WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithAttendees(params IList<CalendarEventAttendee> value)
-  {
-    this.Attendees = value;
-    return this;
-  }
+    public CalendarEventProperties WithAttendees(params IList<CalendarEventAttendee> value)
+    {
+        this.Attendees = value;
+        return this;
+    }
 
-  public CalendarEventProperties WithOrganizer(CalendarEventAttendee value)
-  {
-    this.Organizer = value;
-    return this;
-  }
+    public CalendarEventProperties WithOrganizer(CalendarEventAttendee value)
+    {
+        this.Organizer = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -14424,88 +14424,88 @@ public class CalendarEventProperties : SerializableObject
 /// </summary>
 public class CalendarEventAttendee : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  CalendarEventAttendee.
-  /// </summary>
-  public static CalendarEventAttendee? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<CalendarEventAttendee>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  CalendarEventAttendee.
+    /// </summary>
+    public static CalendarEventAttendee? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<CalendarEventAttendee>(json);
+    }
 
-  /// <summary>
-  /// The name of the attendee.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string? Name { get; set; }
+    /// <summary>
+    /// The name of the attendee.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
 
-  /// <summary>
-  /// The email address of the attendee.
-  /// </summary>
-  [JsonPropertyName("email")]
-  public string? Email { get; set; }
+    /// <summary>
+    /// The email address of the attendee.
+    /// </summary>
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
 
-  /// <summary>
-  /// The title of the attendee.
-  /// </summary>
-  [JsonPropertyName("title")]
-  public string? Title { get; set; }
+    /// <summary>
+    /// The title of the attendee.
+    /// </summary>
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
-  /// <summary>
-  /// The type of the attendee.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string? Type { get; set; }
+    /// <summary>
+    /// The type of the attendee.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
 
-  /// <summary>
-  /// The status of the attendee.
-  /// </summary>
-  [JsonPropertyName("status")]
-  public string? Status { get; set; }
+    /// <summary>
+    /// The status of the attendee.
+    /// </summary>
+    [JsonPropertyName("status")]
+    public string? Status { get; set; }
 
-  /// <summary>
-  /// Serializes this CalendarEventAttendee into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this CalendarEventAttendee into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public CalendarEventAttendee WithName(string value)
-  {
-    this.Name = value;
-    return this;
-  }
+    public CalendarEventAttendee WithName(string value)
+    {
+        this.Name = value;
+        return this;
+    }
 
-  public CalendarEventAttendee WithEmail(string value)
-  {
-    this.Email = value;
-    return this;
-  }
+    public CalendarEventAttendee WithEmail(string value)
+    {
+        this.Email = value;
+        return this;
+    }
 
-  public CalendarEventAttendee WithTitle(string value)
-  {
-    this.Title = value;
-    return this;
-  }
+    public CalendarEventAttendee WithTitle(string value)
+    {
+        this.Title = value;
+        return this;
+    }
 
-  public CalendarEventAttendee WithType(string value)
-  {
-    this.Type = value;
-    return this;
-  }
+    public CalendarEventAttendee WithType(string value)
+    {
+        this.Type = value;
+        return this;
+    }
 
-  public CalendarEventAttendee WithStatus(string value)
-  {
-    this.Status = value;
-    return this;
-  }
+    public CalendarEventAttendee WithStatus(string value)
+    {
+        this.Status = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -14513,279 +14513,279 @@ public class CalendarEventAttendee : SerializableObject
 /// </summary>
 public class CarouselPage : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  CarouselPage.
-  /// </summary>
-  public static CarouselPage? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<CarouselPage>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  CarouselPage.
+    /// </summary>
+    public static CarouselPage? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<CarouselPage>(json);
+    }
 
-  /// <summary>
-  /// Must be **CarouselPage**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "CarouselPage";
+    /// <summary>
+    /// Must be **CarouselPage**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "CarouselPage";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ContainerStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ContainerStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if a border should be displayed around the container.
-  /// </summary>
-  [JsonPropertyName("showBorder")]
-  public bool? ShowBorder { get; set; }
+    /// <summary>
+    /// Controls if a border should be displayed around the container.
+    /// </summary>
+    [JsonPropertyName("showBorder")]
+    public bool? ShowBorder { get; set; }
 
-  /// <summary>
-  /// Controls if the container should have rounded corners.
-  /// </summary>
-  [JsonPropertyName("roundedCorners")]
-  public bool? RoundedCorners { get; set; }
+    /// <summary>
+    /// Controls if the container should have rounded corners.
+    /// </summary>
+    [JsonPropertyName("roundedCorners")]
+    public bool? RoundedCorners { get; set; }
 
-  /// <summary>
-  /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
-  /// </summary>
-  [JsonPropertyName("layouts")]
-  public IList<ContainerLayout>? Layouts { get; set; }
+    /// <summary>
+    /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
+    /// </summary>
+    [JsonPropertyName("layouts")]
+    public IList<ContainerLayout>? Layouts { get; set; }
 
-  /// <summary>
-  /// The minimum height, in pixels, of the container, in the `<number>px` format.
-  /// </summary>
-  [JsonPropertyName("minHeight")]
-  public string? MinHeight { get; set; }
+    /// <summary>
+    /// The minimum height, in pixels, of the container, in the `<number>px` format.
+    /// </summary>
+    [JsonPropertyName("minHeight")]
+    public string? MinHeight { get; set; }
 
-  /// <summary>
-  /// Defines the container's background image.
-  /// </summary>
-  [JsonPropertyName("backgroundImage")]
-  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
+    /// <summary>
+    /// Defines the container's background image.
+    /// </summary>
+    [JsonPropertyName("backgroundImage")]
+    public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
-  /// <summary>
-  /// Controls how the container's content should be vertically aligned.
-  /// </summary>
-  [JsonPropertyName("verticalContentAlignment")]
-  public VerticalAlignment? VerticalContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the container's content should be vertically aligned.
+    /// </summary>
+    [JsonPropertyName("verticalContentAlignment")]
+    public VerticalAlignment? VerticalContentAlignment { get; set; }
 
-  /// <summary>
-  /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
-  /// </summary>
-  [JsonPropertyName("rtl")]
-  public bool? Rtl { get; set; }
+    /// <summary>
+    /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
+    /// </summary>
+    [JsonPropertyName("rtl")]
+    public bool? Rtl { get; set; }
 
-  /// <summary>
-  /// The maximum height, in pixels, of the container, in the `<number>px` format. When the content of a container exceeds the container's maximum height, a vertical scrollbar is displayed.
-  /// </summary>
-  [JsonPropertyName("maxHeight")]
-  public string? MaxHeight { get; set; }
+    /// <summary>
+    /// The maximum height, in pixels, of the container, in the `<number>px` format. When the content of a container exceeds the container's maximum height, a vertical scrollbar is displayed.
+    /// </summary>
+    [JsonPropertyName("maxHeight")]
+    public string? MaxHeight { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The elements in the page.
-  /// </summary>
-  [JsonPropertyName("items")]
-  public IList<CardElement>? Items { get; set; }
+    /// <summary>
+    /// The elements in the page.
+    /// </summary>
+    [JsonPropertyName("items")]
+    public IList<CardElement>? Items { get; set; }
 
-  public CarouselPage(params IList<CardElement> items)
-  {
-    this.Items = items;
-  }
+    public CarouselPage(params IList<CardElement> items)
+    {
+        this.Items = items;
+    }
 
-  /// <summary>
-  /// Serializes this CarouselPage into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this CarouselPage into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public CarouselPage WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public CarouselPage WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public CarouselPage WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public CarouselPage WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public CarouselPage WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public CarouselPage WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public CarouselPage WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public CarouselPage WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public CarouselPage WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public CarouselPage WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public CarouselPage WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public CarouselPage WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public CarouselPage WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public CarouselPage WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public CarouselPage WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public CarouselPage WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public CarouselPage WithStyle(ContainerStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public CarouselPage WithStyle(ContainerStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public CarouselPage WithShowBorder(bool value)
-  {
-    this.ShowBorder = value;
-    return this;
-  }
+    public CarouselPage WithShowBorder(bool value)
+    {
+        this.ShowBorder = value;
+        return this;
+    }
 
-  public CarouselPage WithRoundedCorners(bool value)
-  {
-    this.RoundedCorners = value;
-    return this;
-  }
+    public CarouselPage WithRoundedCorners(bool value)
+    {
+        this.RoundedCorners = value;
+        return this;
+    }
 
-  public CarouselPage WithLayouts(params IList<ContainerLayout> value)
-  {
-    this.Layouts = value;
-    return this;
-  }
+    public CarouselPage WithLayouts(params IList<ContainerLayout> value)
+    {
+        this.Layouts = value;
+        return this;
+    }
 
-  public CarouselPage WithMinHeight(string value)
-  {
-    this.MinHeight = value;
-    return this;
-  }
+    public CarouselPage WithMinHeight(string value)
+    {
+        this.MinHeight = value;
+        return this;
+    }
 
-  public CarouselPage WithBackgroundImage(IUnion<string, BackgroundImage> value)
-  {
-    this.BackgroundImage = value;
-    return this;
-  }
+    public CarouselPage WithBackgroundImage(IUnion<string, BackgroundImage> value)
+    {
+        this.BackgroundImage = value;
+        return this;
+    }
 
-  public CarouselPage WithVerticalContentAlignment(VerticalAlignment value)
-  {
-    this.VerticalContentAlignment = value;
-    return this;
-  }
+    public CarouselPage WithVerticalContentAlignment(VerticalAlignment value)
+    {
+        this.VerticalContentAlignment = value;
+        return this;
+    }
 
-  public CarouselPage WithRtl(bool value)
-  {
-    this.Rtl = value;
-    return this;
-  }
+    public CarouselPage WithRtl(bool value)
+    {
+        this.Rtl = value;
+        return this;
+    }
 
-  public CarouselPage WithMaxHeight(string value)
-  {
-    this.MaxHeight = value;
-    return this;
-  }
+    public CarouselPage WithMaxHeight(string value)
+    {
+        this.MaxHeight = value;
+        return this;
+    }
 
-  public CarouselPage WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public CarouselPage WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public CarouselPage WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public CarouselPage WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public CarouselPage WithItems(params IList<CardElement> value)
-  {
-    this.Items = value;
-    return this;
-  }
+    public CarouselPage WithItems(params IList<CardElement> value)
+    {
+        this.Items = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -14793,250 +14793,250 @@ public class CarouselPage : CardElement
 /// </summary>
 public class TableRow : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TableRow.
-  /// </summary>
-  public static TableRow? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TableRow>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TableRow.
+    /// </summary>
+    public static TableRow? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TableRow>(json);
+    }
 
-  /// <summary>
-  /// Must be **TableRow**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "TableRow";
+    /// <summary>
+    /// Must be **TableRow**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "TableRow";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// Controls if a border should be displayed around the container.
-  /// </summary>
-  [JsonPropertyName("showBorder")]
-  public bool? ShowBorder { get; set; }
+    /// <summary>
+    /// Controls if a border should be displayed around the container.
+    /// </summary>
+    [JsonPropertyName("showBorder")]
+    public bool? ShowBorder { get; set; }
 
-  /// <summary>
-  /// Controls if the container should have rounded corners.
-  /// </summary>
-  [JsonPropertyName("roundedCorners")]
-  public bool? RoundedCorners { get; set; }
+    /// <summary>
+    /// Controls if the container should have rounded corners.
+    /// </summary>
+    [JsonPropertyName("roundedCorners")]
+    public bool? RoundedCorners { get; set; }
 
-  /// <summary>
-  /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ContainerStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ContainerStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls how the content of every cell in the row should be horizontally aligned by default. This property overrides the horizontalCellContentAlignment property of the table and columns.
-  /// </summary>
-  [JsonPropertyName("horizontalCellContentAlignment")]
-  public HorizontalAlignment? HorizontalCellContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the content of every cell in the row should be horizontally aligned by default. This property overrides the horizontalCellContentAlignment property of the table and columns.
+    /// </summary>
+    [JsonPropertyName("horizontalCellContentAlignment")]
+    public HorizontalAlignment? HorizontalCellContentAlignment { get; set; }
 
-  /// <summary>
-  /// Controls how the content of every cell in the row should be vertically aligned by default. This property overrides the verticalCellContentAlignment property of the table and columns.
-  /// </summary>
-  [JsonPropertyName("verticalCellContentAlignment")]
-  public VerticalAlignment? VerticalCellContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the content of every cell in the row should be vertically aligned by default. This property overrides the verticalCellContentAlignment property of the table and columns.
+    /// </summary>
+    [JsonPropertyName("verticalCellContentAlignment")]
+    public VerticalAlignment? VerticalCellContentAlignment { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The cells in the row.
-  /// </summary>
-  [JsonPropertyName("cells")]
-  public IList<TableCell>? Cells { get; set; }
+    /// <summary>
+    /// The cells in the row.
+    /// </summary>
+    [JsonPropertyName("cells")]
+    public IList<TableCell>? Cells { get; set; }
 
-  /// <summary>
-  /// Serializes this TableRow into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TableRow into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TableRow WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public TableRow WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public TableRow WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public TableRow WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public TableRow WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public TableRow WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public TableRow WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public TableRow WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public TableRow WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public TableRow WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public TableRow WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public TableRow WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public TableRow WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public TableRow WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public TableRow WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public TableRow WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public TableRow WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public TableRow WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public TableRow WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public TableRow WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public TableRow WithShowBorder(bool value)
-  {
-    this.ShowBorder = value;
-    return this;
-  }
+    public TableRow WithShowBorder(bool value)
+    {
+        this.ShowBorder = value;
+        return this;
+    }
 
-  public TableRow WithRoundedCorners(bool value)
-  {
-    this.RoundedCorners = value;
-    return this;
-  }
+    public TableRow WithRoundedCorners(bool value)
+    {
+        this.RoundedCorners = value;
+        return this;
+    }
 
-  public TableRow WithStyle(ContainerStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public TableRow WithStyle(ContainerStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public TableRow WithHorizontalCellContentAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalCellContentAlignment = value;
-    return this;
-  }
+    public TableRow WithHorizontalCellContentAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalCellContentAlignment = value;
+        return this;
+    }
 
-  public TableRow WithVerticalCellContentAlignment(VerticalAlignment value)
-  {
-    this.VerticalCellContentAlignment = value;
-    return this;
-  }
+    public TableRow WithVerticalCellContentAlignment(VerticalAlignment value)
+    {
+        this.VerticalCellContentAlignment = value;
+        return this;
+    }
 
-  public TableRow WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public TableRow WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public TableRow WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public TableRow WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public TableRow WithCells(params IList<TableCell> value)
-  {
-    this.Cells = value;
-    return this;
-  }
+    public TableRow WithCells(params IList<TableCell> value)
+    {
+        this.Cells = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -15044,291 +15044,291 @@ public class TableRow : CardElement
 /// </summary>
 public class TableCell : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TableCell.
-  /// </summary>
-  public static TableCell? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TableCell>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TableCell.
+    /// </summary>
+    public static TableCell? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TableCell>(json);
+    }
 
-  /// <summary>
-  /// Must be **TableCell**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "TableCell";
+    /// <summary>
+    /// Must be **TableCell**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "TableCell";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ContainerStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ContainerStyle? Style { get; set; }
 
-  /// <summary>
-  /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
-  /// </summary>
-  [JsonPropertyName("layouts")]
-  public IList<ContainerLayout>? Layouts { get; set; }
+    /// <summary>
+    /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
+    /// </summary>
+    [JsonPropertyName("layouts")]
+    public IList<ContainerLayout>? Layouts { get; set; }
 
-  /// <summary>
-  /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
-  /// </summary>
-  [JsonPropertyName("bleed")]
-  public bool? Bleed { get; set; }
+    /// <summary>
+    /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
+    /// </summary>
+    [JsonPropertyName("bleed")]
+    public bool? Bleed { get; set; }
 
-  /// <summary>
-  /// The minimum height, in pixels, of the container, in the `<number>px` format.
-  /// </summary>
-  [JsonPropertyName("minHeight")]
-  public string? MinHeight { get; set; }
+    /// <summary>
+    /// The minimum height, in pixels, of the container, in the `<number>px` format.
+    /// </summary>
+    [JsonPropertyName("minHeight")]
+    public string? MinHeight { get; set; }
 
-  /// <summary>
-  /// Defines the container's background image.
-  /// </summary>
-  [JsonPropertyName("backgroundImage")]
-  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
+    /// <summary>
+    /// Defines the container's background image.
+    /// </summary>
+    [JsonPropertyName("backgroundImage")]
+    public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
-  /// <summary>
-  /// Controls how the container's content should be vertically aligned.
-  /// </summary>
-  [JsonPropertyName("verticalContentAlignment")]
-  public VerticalAlignment? VerticalContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the container's content should be vertically aligned.
+    /// </summary>
+    [JsonPropertyName("verticalContentAlignment")]
+    public VerticalAlignment? VerticalContentAlignment { get; set; }
 
-  /// <summary>
-  /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
-  /// </summary>
-  [JsonPropertyName("rtl")]
-  public bool? Rtl { get; set; }
+    /// <summary>
+    /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
+    /// </summary>
+    [JsonPropertyName("rtl")]
+    public bool? Rtl { get; set; }
 
-  /// <summary>
-  /// The maximum height, in pixels, of the container, in the `<number>px` format. When the content of a container exceeds the container's maximum height, a vertical scrollbar is displayed.
-  /// </summary>
-  [JsonPropertyName("maxHeight")]
-  public string? MaxHeight { get; set; }
+    /// <summary>
+    /// The maximum height, in pixels, of the container, in the `<number>px` format. When the content of a container exceeds the container's maximum height, a vertical scrollbar is displayed.
+    /// </summary>
+    [JsonPropertyName("maxHeight")]
+    public string? MaxHeight { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The items (elements) in the cell.
-  /// </summary>
-  [JsonPropertyName("items")]
-  public IList<CardElement>? Items { get; set; }
+    /// <summary>
+    /// The items (elements) in the cell.
+    /// </summary>
+    [JsonPropertyName("items")]
+    public IList<CardElement>? Items { get; set; }
 
-  public TableCell(params IList<CardElement> items)
-  {
-    this.Items = items;
-  }
+    public TableCell(params IList<CardElement> items)
+    {
+        this.Items = items;
+    }
 
-  /// <summary>
-  /// Serializes this TableCell into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TableCell into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TableCell WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public TableCell WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public TableCell WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public TableCell WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public TableCell WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public TableCell WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public TableCell WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public TableCell WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public TableCell WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public TableCell WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public TableCell WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public TableCell WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public TableCell WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public TableCell WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public TableCell WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public TableCell WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public TableCell WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public TableCell WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public TableCell WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public TableCell WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public TableCell WithStyle(ContainerStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public TableCell WithStyle(ContainerStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public TableCell WithLayouts(params IList<ContainerLayout> value)
-  {
-    this.Layouts = value;
-    return this;
-  }
+    public TableCell WithLayouts(params IList<ContainerLayout> value)
+    {
+        this.Layouts = value;
+        return this;
+    }
 
-  public TableCell WithBleed(bool value)
-  {
-    this.Bleed = value;
-    return this;
-  }
+    public TableCell WithBleed(bool value)
+    {
+        this.Bleed = value;
+        return this;
+    }
 
-  public TableCell WithMinHeight(string value)
-  {
-    this.MinHeight = value;
-    return this;
-  }
+    public TableCell WithMinHeight(string value)
+    {
+        this.MinHeight = value;
+        return this;
+    }
 
-  public TableCell WithBackgroundImage(IUnion<string, BackgroundImage> value)
-  {
-    this.BackgroundImage = value;
-    return this;
-  }
+    public TableCell WithBackgroundImage(IUnion<string, BackgroundImage> value)
+    {
+        this.BackgroundImage = value;
+        return this;
+    }
 
-  public TableCell WithVerticalContentAlignment(VerticalAlignment value)
-  {
-    this.VerticalContentAlignment = value;
-    return this;
-  }
+    public TableCell WithVerticalContentAlignment(VerticalAlignment value)
+    {
+        this.VerticalContentAlignment = value;
+        return this;
+    }
 
-  public TableCell WithRtl(bool value)
-  {
-    this.Rtl = value;
-    return this;
-  }
+    public TableCell WithRtl(bool value)
+    {
+        this.Rtl = value;
+        return this;
+    }
 
-  public TableCell WithMaxHeight(string value)
-  {
-    this.MaxHeight = value;
-    return this;
-  }
+    public TableCell WithMaxHeight(string value)
+    {
+        this.MaxHeight = value;
+        return this;
+    }
 
-  public TableCell WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public TableCell WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public TableCell WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public TableCell WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public TableCell WithItems(params IList<CardElement> value)
-  {
-    this.Items = value;
-    return this;
-  }
+    public TableCell WithItems(params IList<CardElement> value)
+    {
+        this.Items = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -15336,243 +15336,243 @@ public class TableCell : CardElement
 /// </summary>
 public class TextRun : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  TextRun.
-  /// </summary>
-  public static TextRun? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<TextRun>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  TextRun.
+    /// </summary>
+    public static TextRun? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<TextRun>(json);
+    }
 
-  /// <summary>
-  /// Must be **TextRun**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "TextRun";
+    /// <summary>
+    /// Must be **TextRun**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "TextRun";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The text to display. A subset of markdown is supported.
-  /// </summary>
-  [JsonPropertyName("text")]
-  public string? Text { get; set; }
+    /// <summary>
+    /// The text to display. A subset of markdown is supported.
+    /// </summary>
+    [JsonPropertyName("text")]
+    public string? Text { get; set; }
 
-  /// <summary>
-  /// The size of the text.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public TextSize? Size { get; set; }
+    /// <summary>
+    /// The size of the text.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public TextSize? Size { get; set; }
 
-  /// <summary>
-  /// The weight of the text.
-  /// </summary>
-  [JsonPropertyName("weight")]
-  public TextWeight? Weight { get; set; }
+    /// <summary>
+    /// The weight of the text.
+    /// </summary>
+    [JsonPropertyName("weight")]
+    public TextWeight? Weight { get; set; }
 
-  /// <summary>
-  /// The color of the text.
-  /// </summary>
-  [JsonPropertyName("color")]
-  public TextColor? Color { get; set; }
+    /// <summary>
+    /// The color of the text.
+    /// </summary>
+    [JsonPropertyName("color")]
+    public TextColor? Color { get; set; }
 
-  /// <summary>
-  /// Controls whether the text should be renderer using a subtler variant of the select color.
-  /// </summary>
-  [JsonPropertyName("isSubtle")]
-  public bool? IsSubtle { get; set; }
+    /// <summary>
+    /// Controls whether the text should be renderer using a subtler variant of the select color.
+    /// </summary>
+    [JsonPropertyName("isSubtle")]
+    public bool? IsSubtle { get; set; }
 
-  /// <summary>
-  /// The type of font to use for rendering.
-  /// </summary>
-  [JsonPropertyName("fontType")]
-  public FontType? FontType { get; set; }
+    /// <summary>
+    /// The type of font to use for rendering.
+    /// </summary>
+    [JsonPropertyName("fontType")]
+    public FontType? FontType { get; set; }
 
-  /// <summary>
-  /// Controls if the text should be italicized.
-  /// </summary>
-  [JsonPropertyName("italic")]
-  public bool? Italic { get; set; }
+    /// <summary>
+    /// Controls if the text should be italicized.
+    /// </summary>
+    [JsonPropertyName("italic")]
+    public bool? Italic { get; set; }
 
-  /// <summary>
-  /// Controls if the text should be struck through.
-  /// </summary>
-  [JsonPropertyName("strikethrough")]
-  public bool? Strikethrough { get; set; }
+    /// <summary>
+    /// Controls if the text should be struck through.
+    /// </summary>
+    [JsonPropertyName("strikethrough")]
+    public bool? Strikethrough { get; set; }
 
-  /// <summary>
-  /// Controls if the text should be highlighted.
-  /// </summary>
-  [JsonPropertyName("highlight")]
-  public bool? Highlight { get; set; }
+    /// <summary>
+    /// Controls if the text should be highlighted.
+    /// </summary>
+    [JsonPropertyName("highlight")]
+    public bool? Highlight { get; set; }
 
-  /// <summary>
-  /// Controls if the text should be underlined.
-  /// </summary>
-  [JsonPropertyName("underline")]
-  public bool? Underline { get; set; }
+    /// <summary>
+    /// Controls if the text should be underlined.
+    /// </summary>
+    [JsonPropertyName("underline")]
+    public bool? Underline { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the text is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the text is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  public TextRun(string text)
-  {
-    this.Text = text;
-  }
+    public TextRun(string text)
+    {
+        this.Text = text;
+    }
 
-  /// <summary>
-  /// Serializes this TextRun into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this TextRun into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public TextRun WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public TextRun WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public TextRun WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public TextRun WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public TextRun WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public TextRun WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public TextRun WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public TextRun WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public TextRun WithText(string value)
-  {
-    this.Text = value;
-    return this;
-  }
+    public TextRun WithText(string value)
+    {
+        this.Text = value;
+        return this;
+    }
 
-  public TextRun WithSize(TextSize value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public TextRun WithSize(TextSize value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public TextRun WithWeight(TextWeight value)
-  {
-    this.Weight = value;
-    return this;
-  }
+    public TextRun WithWeight(TextWeight value)
+    {
+        this.Weight = value;
+        return this;
+    }
 
-  public TextRun WithColor(TextColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public TextRun WithColor(TextColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public TextRun WithIsSubtle(bool value)
-  {
-    this.IsSubtle = value;
-    return this;
-  }
+    public TextRun WithIsSubtle(bool value)
+    {
+        this.IsSubtle = value;
+        return this;
+    }
 
-  public TextRun WithFontType(FontType value)
-  {
-    this.FontType = value;
-    return this;
-  }
+    public TextRun WithFontType(FontType value)
+    {
+        this.FontType = value;
+        return this;
+    }
 
-  public TextRun WithItalic(bool value)
-  {
-    this.Italic = value;
-    return this;
-  }
+    public TextRun WithItalic(bool value)
+    {
+        this.Italic = value;
+        return this;
+    }
 
-  public TextRun WithStrikethrough(bool value)
-  {
-    this.Strikethrough = value;
-    return this;
-  }
+    public TextRun WithStrikethrough(bool value)
+    {
+        this.Strikethrough = value;
+        return this;
+    }
 
-  public TextRun WithHighlight(bool value)
-  {
-    this.Highlight = value;
-    return this;
-  }
+    public TextRun WithHighlight(bool value)
+    {
+        this.Highlight = value;
+        return this;
+    }
 
-  public TextRun WithUnderline(bool value)
-  {
-    this.Underline = value;
-    return this;
-  }
+    public TextRun WithUnderline(bool value)
+    {
+        this.Underline = value;
+        return this;
+    }
 
-  public TextRun WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public TextRun WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public TextRun WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public TextRun WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public TextRun WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public TextRun WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -15580,166 +15580,166 @@ public class TextRun : CardElement
 /// </summary>
 public class IconRun : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  IconRun.
-  /// </summary>
-  public static IconRun? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<IconRun>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  IconRun.
+    /// </summary>
+    public static IconRun? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<IconRun>(json);
+    }
 
-  /// <summary>
-  /// Must be **IconRun**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "IconRun";
+    /// <summary>
+    /// Must be **IconRun**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "IconRun";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The name of the inline icon to display.
-  /// </summary>
-  [JsonPropertyName("name")]
-  public string? Name { get; set; }
+    /// <summary>
+    /// The name of the inline icon to display.
+    /// </summary>
+    [JsonPropertyName("name")]
+    public string? Name { get; set; }
 
-  /// <summary>
-  /// The size of the inline icon.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public SizeEnum? Size { get; set; }
+    /// <summary>
+    /// The size of the inline icon.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public SizeEnum? Size { get; set; }
 
-  /// <summary>
-  /// The style of the inline icon.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public IconStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the inline icon.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public IconStyle? Style { get; set; }
 
-  /// <summary>
-  /// The color of the inline icon.
-  /// </summary>
-  [JsonPropertyName("color")]
-  public TextColor? Color { get; set; }
+    /// <summary>
+    /// The color of the inline icon.
+    /// </summary>
+    [JsonPropertyName("color")]
+    public TextColor? Color { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the inline icon is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the inline icon is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this IconRun into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this IconRun into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public IconRun WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public IconRun WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public IconRun WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public IconRun WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public IconRun WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public IconRun WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public IconRun WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public IconRun WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public IconRun WithName(string value)
-  {
-    this.Name = value;
-    return this;
-  }
+    public IconRun WithName(string value)
+    {
+        this.Name = value;
+        return this;
+    }
 
-  public IconRun WithSize(SizeEnum value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public IconRun WithSize(SizeEnum value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public IconRun WithStyle(IconStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public IconRun WithStyle(IconStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public IconRun WithColor(TextColor value)
-  {
-    this.Color = value;
-    return this;
-  }
+    public IconRun WithColor(TextColor value)
+    {
+        this.Color = value;
+        return this;
+    }
 
-  public IconRun WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public IconRun WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public IconRun WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public IconRun WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public IconRun WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public IconRun WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -15747,166 +15747,166 @@ public class IconRun : CardElement
 /// </summary>
 public class ImageRun : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ImageRun.
-  /// </summary>
-  public static ImageRun? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ImageRun>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ImageRun.
+    /// </summary>
+    public static ImageRun? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ImageRun>(json);
+    }
 
-  /// <summary>
-  /// Must be **ImageRun**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "ImageRun";
+    /// <summary>
+    /// Must be **ImageRun**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "ImageRun";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// The URL (or Base64-encoded Data URI) of the image. Acceptable formats are PNG, JPEG, GIF and SVG.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL (or Base64-encoded Data URI) of the image. Acceptable formats are PNG, JPEG, GIF and SVG.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// The size of the inline image.
-  /// </summary>
-  [JsonPropertyName("size")]
-  public SizeEnum? Size { get; set; }
+    /// <summary>
+    /// The size of the inline image.
+    /// </summary>
+    [JsonPropertyName("size")]
+    public SizeEnum? Size { get; set; }
 
-  /// <summary>
-  /// The style of the inline image.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ImageStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the inline image.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ImageStyle? Style { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the image is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the image is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// A set of theme-specific image URLs.
-  /// </summary>
-  [JsonPropertyName("themedUrls")]
-  public IList<ThemedUrl>? ThemedUrls { get; set; }
+    /// <summary>
+    /// A set of theme-specific image URLs.
+    /// </summary>
+    [JsonPropertyName("themedUrls")]
+    public IList<ThemedUrl>? ThemedUrls { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// Serializes this ImageRun into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ImageRun into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ImageRun WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public ImageRun WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public ImageRun WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public ImageRun WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public ImageRun WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public ImageRun WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public ImageRun WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public ImageRun WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public ImageRun WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public ImageRun WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 
-  public ImageRun WithSize(SizeEnum value)
-  {
-    this.Size = value;
-    return this;
-  }
+    public ImageRun WithSize(SizeEnum value)
+    {
+        this.Size = value;
+        return this;
+    }
 
-  public ImageRun WithStyle(ImageStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public ImageRun WithStyle(ImageStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public ImageRun WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public ImageRun WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public ImageRun WithThemedUrls(params IList<ThemedUrl> value)
-  {
-    this.ThemedUrls = value;
-    return this;
-  }
+    public ImageRun WithThemedUrls(params IList<ThemedUrl> value)
+    {
+        this.ThemedUrls = value;
+        return this;
+    }
 
-  public ImageRun WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public ImageRun WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public ImageRun WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public ImageRun WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -15914,52 +15914,52 @@ public class ImageRun : CardElement
 /// </summary>
 public class ThemedUrl : SerializableObject
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  ThemedUrl.
-  /// </summary>
-  public static ThemedUrl? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<ThemedUrl>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  ThemedUrl.
+    /// </summary>
+    public static ThemedUrl? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<ThemedUrl>(json);
+    }
 
-  /// <summary>
-  /// The theme this URL applies to.
-  /// </summary>
-  [JsonPropertyName("theme")]
-  public ThemeName? Theme { get; set; }
+    /// <summary>
+    /// The theme this URL applies to.
+    /// </summary>
+    [JsonPropertyName("theme")]
+    public ThemeName? Theme { get; set; }
 
-  /// <summary>
-  /// The URL to use for the associated theme.
-  /// </summary>
-  [JsonPropertyName("url")]
-  public string? Url { get; set; }
+    /// <summary>
+    /// The URL to use for the associated theme.
+    /// </summary>
+    [JsonPropertyName("url")]
+    public string? Url { get; set; }
 
-  /// <summary>
-  /// Serializes this ThemedUrl into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this ThemedUrl into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public ThemedUrl WithTheme(ThemeName value)
-  {
-    this.Theme = value;
-    return this;
-  }
+    public ThemedUrl WithTheme(ThemeName value)
+    {
+        this.Theme = value;
+        return this;
+    }
 
-  public ThemedUrl WithUrl(string value)
-  {
-    this.Url = value;
-    return this;
-  }
+    public ThemedUrl WithUrl(string value)
+    {
+        this.Url = value;
+        return this;
+    }
 }
 
 /// <summary>
@@ -15967,337 +15967,337 @@ public class ThemedUrl : SerializableObject
 /// </summary>
 public class Column : CardElement
 {
-  /// <summary>
-  /// Deserializes a JSON string into an object of type  Column.
-  /// </summary>
-  public static Column? Deserialize(string json)
-  {
-    return JsonSerializer.Deserialize<Column>(json);
-  }
+    /// <summary>
+    /// Deserializes a JSON string into an object of type  Column.
+    /// </summary>
+    public static Column? Deserialize(string json)
+    {
+        return JsonSerializer.Deserialize<Column>(json);
+    }
 
-  /// <summary>
-  /// Optional. If specified, must be **Column**.
-  /// </summary>
-  [JsonPropertyName("type")]
-  public string Type { get; } = "Column";
+    /// <summary>
+    /// Optional. If specified, must be **Column**.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string Type { get; } = "Column";
 
-  /// <summary>
-  /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
-  /// </summary>
-  [JsonPropertyName("id")]
-  public string? Id { get; set; }
+    /// <summary>
+    /// A unique identifier for the element or action. Input elements must have an id, otherwise they will not be validated and their values will not be sent to the Bot.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 
-  /// <summary>
-  /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
-  /// </summary>
-  [JsonPropertyName("requires")]
-  public HostCapabilities? Requires { get; set; }
+    /// <summary>
+    /// A list of capabilities the element requires the host application to support. If the host application doesn't support at least one of the listed capabilities, the element is not rendered (or its fallback is rendered if provided).
+    /// </summary>
+    [JsonPropertyName("requires")]
+    public HostCapabilities? Requires { get; set; }
 
-  /// <summary>
-  /// The locale associated with the element.
-  /// </summary>
-  [JsonPropertyName("lang")]
-  public string? Lang { get; set; }
+    /// <summary>
+    /// The locale associated with the element.
+    /// </summary>
+    [JsonPropertyName("lang")]
+    public string? Lang { get; set; }
 
-  /// <summary>
-  /// Controls the visibility of the element.
-  /// </summary>
-  [JsonPropertyName("isVisible")]
-  public bool? IsVisible { get; set; }
+    /// <summary>
+    /// Controls the visibility of the element.
+    /// </summary>
+    [JsonPropertyName("isVisible")]
+    public bool? IsVisible { get; set; }
 
-  /// <summary>
-  /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
-  /// </summary>
-  [JsonPropertyName("separator")]
-  public bool? Separator { get; set; }
+    /// <summary>
+    /// Controls whether a separator line should be displayed above the element to visually separate it from the previous element. No separator will be displayed for the first element in a container, even if this property is set to true.
+    /// </summary>
+    [JsonPropertyName("separator")]
+    public bool? Separator { get; set; }
 
-  /// <summary>
-  /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
-  /// </summary>
-  [JsonPropertyName("height")]
-  public ElementHeight? Height { get; set; }
+    /// <summary>
+    /// The height of the element. When set to stretch, the element will use the remaining vertical space in its container.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public ElementHeight? Height { get; set; }
 
-  /// <summary>
-  /// Controls how the element should be horizontally aligned.
-  /// </summary>
-  [JsonPropertyName("horizontalAlignment")]
-  public HorizontalAlignment? HorizontalAlignment { get; set; }
+    /// <summary>
+    /// Controls how the element should be horizontally aligned.
+    /// </summary>
+    [JsonPropertyName("horizontalAlignment")]
+    public HorizontalAlignment? HorizontalAlignment { get; set; }
 
-  /// <summary>
-  /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
-  /// </summary>
-  [JsonPropertyName("spacing")]
-  public Spacing? Spacing { get; set; }
+    /// <summary>
+    /// Controls the amount of space between this element and the previous one. No space will be added for the first element in a container.
+    /// </summary>
+    [JsonPropertyName("spacing")]
+    public Spacing? Spacing { get; set; }
 
-  /// <summary>
-  /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
-  /// </summary>
-  [JsonPropertyName("targetWidth")]
-  public TargetWidth? TargetWidth { get; set; }
+    /// <summary>
+    /// Controls for which card width the element should be displayed. If targetWidth isn't specified, the element is rendered at all card widths. Using targetWidth makes it possible to author responsive cards that adapt their layout to the available horizontal space. For more details, see [Responsive layout](https://adaptivecards.microsoft.com/?topic=responsive-layout).
+    /// </summary>
+    [JsonPropertyName("targetWidth")]
+    public TargetWidth? TargetWidth { get; set; }
 
-  /// <summary>
-  /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
-  /// </summary>
-  [JsonPropertyName("isSortKey")]
-  public bool? IsSortKey { get; set; }
+    /// <summary>
+    /// Controls whether the element should be used as a sort key by elements that allow sorting across a collection of elements.
+    /// </summary>
+    [JsonPropertyName("isSortKey")]
+    public bool? IsSortKey { get; set; }
 
-  /// <summary>
-  /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
-  /// </summary>
-  [JsonPropertyName("selectAction")]
-  public Action? SelectAction { get; set; }
+    /// <summary>
+    /// An Action that will be invoked when the element is tapped or clicked. Action.ShowCard is not supported.
+    /// </summary>
+    [JsonPropertyName("selectAction")]
+    public Action? SelectAction { get; set; }
 
-  /// <summary>
-  /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
-  /// </summary>
-  [JsonPropertyName("style")]
-  public ContainerStyle? Style { get; set; }
+    /// <summary>
+    /// The style of the container. Container styles control the colors of the background, border and text inside the container, in such a way that contrast requirements are always met.
+    /// </summary>
+    [JsonPropertyName("style")]
+    public ContainerStyle? Style { get; set; }
 
-  /// <summary>
-  /// Controls if a border should be displayed around the container.
-  /// </summary>
-  [JsonPropertyName("showBorder")]
-  public bool? ShowBorder { get; set; }
+    /// <summary>
+    /// Controls if a border should be displayed around the container.
+    /// </summary>
+    [JsonPropertyName("showBorder")]
+    public bool? ShowBorder { get; set; }
 
-  /// <summary>
-  /// Controls if the container should have rounded corners.
-  /// </summary>
-  [JsonPropertyName("roundedCorners")]
-  public bool? RoundedCorners { get; set; }
+    /// <summary>
+    /// Controls if the container should have rounded corners.
+    /// </summary>
+    [JsonPropertyName("roundedCorners")]
+    public bool? RoundedCorners { get; set; }
 
-  /// <summary>
-  /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
-  /// </summary>
-  [JsonPropertyName("layouts")]
-  public IList<ContainerLayout>? Layouts { get; set; }
+    /// <summary>
+    /// The layouts associated with the container. The container can dynamically switch from one layout to another as the card's width changes. See [Container layouts](https://adaptivecards.microsoft.com/?topic=container-layouts) for more details.
+    /// </summary>
+    [JsonPropertyName("layouts")]
+    public IList<ContainerLayout>? Layouts { get; set; }
 
-  /// <summary>
-  /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
-  /// </summary>
-  [JsonPropertyName("bleed")]
-  public bool? Bleed { get; set; }
+    /// <summary>
+    /// Controls if the container should bleed into its parent. A bleeding container extends into its parent's padding.
+    /// </summary>
+    [JsonPropertyName("bleed")]
+    public bool? Bleed { get; set; }
 
-  /// <summary>
-  /// The minimum height, in pixels, of the container, in the `<number>px` format.
-  /// </summary>
-  [JsonPropertyName("minHeight")]
-  public string? MinHeight { get; set; }
+    /// <summary>
+    /// The minimum height, in pixels, of the container, in the `<number>px` format.
+    /// </summary>
+    [JsonPropertyName("minHeight")]
+    public string? MinHeight { get; set; }
 
-  /// <summary>
-  /// Defines the container's background image.
-  /// </summary>
-  [JsonPropertyName("backgroundImage")]
-  public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
+    /// <summary>
+    /// Defines the container's background image.
+    /// </summary>
+    [JsonPropertyName("backgroundImage")]
+    public IUnion<string, BackgroundImage>? BackgroundImage { get; set; }
 
-  /// <summary>
-  /// Controls how the container's content should be vertically aligned.
-  /// </summary>
-  [JsonPropertyName("verticalContentAlignment")]
-  public VerticalAlignment? VerticalContentAlignment { get; set; }
+    /// <summary>
+    /// Controls how the container's content should be vertically aligned.
+    /// </summary>
+    [JsonPropertyName("verticalContentAlignment")]
+    public VerticalAlignment? VerticalContentAlignment { get; set; }
 
-  /// <summary>
-  /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
-  /// </summary>
-  [JsonPropertyName("rtl")]
-  public bool? Rtl { get; set; }
+    /// <summary>
+    /// Controls if the content of the card is to be rendered left-to-right or right-to-left.
+    /// </summary>
+    [JsonPropertyName("rtl")]
+    public bool? Rtl { get; set; }
 
-  /// <summary>
-  /// The maximum height, in pixels, of the container, in the `<number>px` format. When the content of a container exceeds the container's maximum height, a vertical scrollbar is displayed.
-  /// </summary>
-  [JsonPropertyName("maxHeight")]
-  public string? MaxHeight { get; set; }
+    /// <summary>
+    /// The maximum height, in pixels, of the container, in the `<number>px` format. When the content of a container exceeds the container's maximum height, a vertical scrollbar is displayed.
+    /// </summary>
+    [JsonPropertyName("maxHeight")]
+    public string? MaxHeight { get; set; }
 
-  /// <summary>
-  /// The width of the column. If expressed as a number, represents the relative weight of the column in the set. If expressed as a string, `auto` will automatically adjust the column's width according to its content, `stretch` will make the column use the remaining horizontal space (shared with other columns with width set to `stretch`) and using the `<number>px` format will give the column an explicit width in pixels.
-  /// </summary>
-  [JsonPropertyName("width")]
-  public IUnion<string, float>? Width { get; set; }
+    /// <summary>
+    /// The width of the column. If expressed as a number, represents the relative weight of the column in the set. If expressed as a string, `auto` will automatically adjust the column's width according to its content, `stretch` will make the column use the remaining horizontal space (shared with other columns with width set to `stretch`) and using the `<number>px` format will give the column an explicit width in pixels.
+    /// </summary>
+    [JsonPropertyName("width")]
+    public IUnion<string, float>? Width { get; set; }
 
-  /// <summary>
-  /// The area of a Layout.AreaGrid layout in which an element should be displayed.
-  /// </summary>
-  [JsonPropertyName("grid.area")]
-  public string? GridArea { get; set; }
+    /// <summary>
+    /// The area of a Layout.AreaGrid layout in which an element should be displayed.
+    /// </summary>
+    [JsonPropertyName("grid.area")]
+    public string? GridArea { get; set; }
 
-  /// <summary>
-  /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
-  /// </summary>
-  [JsonPropertyName("fallback")]
-  public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
+    /// <summary>
+    /// An alternate element to render if the type of this one is unsupported or if the host application doesn't support all the capabilities specified in the requires property.
+    /// </summary>
+    [JsonPropertyName("fallback")]
+    public IUnion<CardElement, FallbackElement>? Fallback { get; set; }
 
-  /// <summary>
-  /// The elements in the column.
-  /// </summary>
-  [JsonPropertyName("items")]
-  public IList<CardElement>? Items { get; set; }
+    /// <summary>
+    /// The elements in the column.
+    /// </summary>
+    [JsonPropertyName("items")]
+    public IList<CardElement>? Items { get; set; }
 
-  public Column(params IList<CardElement> items)
-  {
-    this.Items = items;
-  }
+    public Column(params IList<CardElement> items)
+    {
+        this.Items = items;
+    }
 
-  /// <summary>
-  /// Serializes this Column into a JSON string.
-  /// </summary>
-  public string Serialize()
-  {
-    return JsonSerializer.Serialize(
-      this,
-      new JsonSerializerOptions
-      {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-      }
-    );
-  }
+    /// <summary>
+    /// Serializes this Column into a JSON string.
+    /// </summary>
+    public string Serialize()
+    {
+        return JsonSerializer.Serialize(
+          this,
+          new JsonSerializerOptions
+          {
+              WriteIndented = true,
+              DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+          }
+        );
+    }
 
-  public Column WithId(string value)
-  {
-    this.Id = value;
-    return this;
-  }
+    public Column WithId(string value)
+    {
+        this.Id = value;
+        return this;
+    }
 
-  public Column WithRequires(HostCapabilities value)
-  {
-    this.Requires = value;
-    return this;
-  }
+    public Column WithRequires(HostCapabilities value)
+    {
+        this.Requires = value;
+        return this;
+    }
 
-  public Column WithLang(string value)
-  {
-    this.Lang = value;
-    return this;
-  }
+    public Column WithLang(string value)
+    {
+        this.Lang = value;
+        return this;
+    }
 
-  public Column WithIsVisible(bool value)
-  {
-    this.IsVisible = value;
-    return this;
-  }
+    public Column WithIsVisible(bool value)
+    {
+        this.IsVisible = value;
+        return this;
+    }
 
-  public Column WithSeparator(bool value)
-  {
-    this.Separator = value;
-    return this;
-  }
+    public Column WithSeparator(bool value)
+    {
+        this.Separator = value;
+        return this;
+    }
 
-  public Column WithHeight(ElementHeight value)
-  {
-    this.Height = value;
-    return this;
-  }
+    public Column WithHeight(ElementHeight value)
+    {
+        this.Height = value;
+        return this;
+    }
 
-  public Column WithHorizontalAlignment(HorizontalAlignment value)
-  {
-    this.HorizontalAlignment = value;
-    return this;
-  }
+    public Column WithHorizontalAlignment(HorizontalAlignment value)
+    {
+        this.HorizontalAlignment = value;
+        return this;
+    }
 
-  public Column WithSpacing(Spacing value)
-  {
-    this.Spacing = value;
-    return this;
-  }
+    public Column WithSpacing(Spacing value)
+    {
+        this.Spacing = value;
+        return this;
+    }
 
-  public Column WithTargetWidth(TargetWidth value)
-  {
-    this.TargetWidth = value;
-    return this;
-  }
+    public Column WithTargetWidth(TargetWidth value)
+    {
+        this.TargetWidth = value;
+        return this;
+    }
 
-  public Column WithIsSortKey(bool value)
-  {
-    this.IsSortKey = value;
-    return this;
-  }
+    public Column WithIsSortKey(bool value)
+    {
+        this.IsSortKey = value;
+        return this;
+    }
 
-  public Column WithSelectAction(Action value)
-  {
-    this.SelectAction = value;
-    return this;
-  }
+    public Column WithSelectAction(Action value)
+    {
+        this.SelectAction = value;
+        return this;
+    }
 
-  public Column WithStyle(ContainerStyle value)
-  {
-    this.Style = value;
-    return this;
-  }
+    public Column WithStyle(ContainerStyle value)
+    {
+        this.Style = value;
+        return this;
+    }
 
-  public Column WithShowBorder(bool value)
-  {
-    this.ShowBorder = value;
-    return this;
-  }
+    public Column WithShowBorder(bool value)
+    {
+        this.ShowBorder = value;
+        return this;
+    }
 
-  public Column WithRoundedCorners(bool value)
-  {
-    this.RoundedCorners = value;
-    return this;
-  }
+    public Column WithRoundedCorners(bool value)
+    {
+        this.RoundedCorners = value;
+        return this;
+    }
 
-  public Column WithLayouts(params IList<ContainerLayout> value)
-  {
-    this.Layouts = value;
-    return this;
-  }
+    public Column WithLayouts(params IList<ContainerLayout> value)
+    {
+        this.Layouts = value;
+        return this;
+    }
 
-  public Column WithBleed(bool value)
-  {
-    this.Bleed = value;
-    return this;
-  }
+    public Column WithBleed(bool value)
+    {
+        this.Bleed = value;
+        return this;
+    }
 
-  public Column WithMinHeight(string value)
-  {
-    this.MinHeight = value;
-    return this;
-  }
+    public Column WithMinHeight(string value)
+    {
+        this.MinHeight = value;
+        return this;
+    }
 
-  public Column WithBackgroundImage(IUnion<string, BackgroundImage> value)
-  {
-    this.BackgroundImage = value;
-    return this;
-  }
+    public Column WithBackgroundImage(IUnion<string, BackgroundImage> value)
+    {
+        this.BackgroundImage = value;
+        return this;
+    }
 
-  public Column WithVerticalContentAlignment(VerticalAlignment value)
-  {
-    this.VerticalContentAlignment = value;
-    return this;
-  }
+    public Column WithVerticalContentAlignment(VerticalAlignment value)
+    {
+        this.VerticalContentAlignment = value;
+        return this;
+    }
 
-  public Column WithRtl(bool value)
-  {
-    this.Rtl = value;
-    return this;
-  }
+    public Column WithRtl(bool value)
+    {
+        this.Rtl = value;
+        return this;
+    }
 
-  public Column WithMaxHeight(string value)
-  {
-    this.MaxHeight = value;
-    return this;
-  }
+    public Column WithMaxHeight(string value)
+    {
+        this.MaxHeight = value;
+        return this;
+    }
 
-  public Column WithWidth(IUnion<string, float> value)
-  {
-    this.Width = value;
-    return this;
-  }
+    public Column WithWidth(IUnion<string, float> value)
+    {
+        this.Width = value;
+        return this;
+    }
 
-  public Column WithGridArea(string value)
-  {
-    this.GridArea = value;
-    return this;
-  }
+    public Column WithGridArea(string value)
+    {
+        this.GridArea = value;
+        return this;
+    }
 
-  public Column WithFallback(IUnion<CardElement, FallbackElement> value)
-  {
-    this.Fallback = value;
-    return this;
-  }
+    public Column WithFallback(IUnion<CardElement, FallbackElement> value)
+    {
+        this.Fallback = value;
+        return this;
+    }
 
-  public Column WithItems(params IList<CardElement> value)
-  {
-    this.Items = value;
-    return this;
-  }
+    public Column WithItems(params IList<CardElement> value)
+    {
+        this.Items = value;
+        return this;
+    }
 }

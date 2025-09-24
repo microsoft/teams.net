@@ -176,7 +176,7 @@ public static partial class Program
         }
 
         [MessageExtension.FetchTask]
-        public async Task<Microsoft.Teams.Api.MessageExtensions.ActionResponse> OnMessageExtensionFetchTask(
+        public Microsoft.Teams.Api.MessageExtensions.ActionResponse OnMessageExtensionFetchTask(
             [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.FetchTaskActivity activity,
             [Context] Microsoft.Teams.Common.Logging.ILogger log)
         {

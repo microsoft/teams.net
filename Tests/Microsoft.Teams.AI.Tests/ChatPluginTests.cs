@@ -30,7 +30,7 @@ public class ChatPluginTests
 
         // Assert
         Assert.NotNull(result);
-        
+
         switch (hookName)
         {
             case "OnBeforeSend":
@@ -82,7 +82,7 @@ public class ChatPluginTests
         Assert.NotNull(result);
         chatPlugin.Verify(p => p.OnBuildFunctions(It.IsAny<IChatPrompt<TestModelOptions>>(), It.IsAny<FunctionCollection>(), It.IsAny<CancellationToken>()), Times.Once);
         Assert.True(testFunctionInvoked, "The injected function should have been invoked.");
-        
+
         // injected function does not persist in the prompt's function collection
         Assert.False(prompt.Functions.Has("injected function"));
     }

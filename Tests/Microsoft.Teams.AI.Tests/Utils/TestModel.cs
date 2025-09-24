@@ -38,4 +38,4 @@ internal class TestModel : IChatModel<TestModelOptions>
     }
 }
 
-internal class TestModelOptions {}
+internal class TestModelOptions { }

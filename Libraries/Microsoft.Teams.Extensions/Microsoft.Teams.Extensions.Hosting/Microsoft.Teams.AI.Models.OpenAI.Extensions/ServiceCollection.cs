@@ -1,10 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.AI.Prompts;
 using Microsoft.Teams.Common.Logging;
-using Microsoft.AspNetCore.Http;
 
 using OpenAI.Chat;
 
@@ -63,7 +63,7 @@ public static class ServiceCollectionExtensions
         });
 
         return collection.AddOpenAIHelper<T>(options);
- 
+
     }
 
     public static IServiceCollection AddOpenAI<T>(this IServiceCollection collection, OpenAIChatModel model, ChatPromptOptions? options = null) where T : class
