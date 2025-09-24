@@ -11,6 +11,8 @@ public class ApiClient : Client
     public virtual BotClient Bots { get; }
     public virtual ConversationClient Conversations { get; }
     public virtual UserClient Users { get; }
+    public virtual TeamClient Teams { get; }
+    public virtual MeetingClient Meetings { get; }
 
     public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
@@ -18,6 +20,8 @@ public class ApiClient : Client
         Bots = new BotClient(_http, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
@@ -26,6 +30,8 @@ public class ApiClient : Client
         Bots = new BotClient(_http, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
@@ -34,6 +40,8 @@ public class ApiClient : Client
         Bots = new BotClient(_http, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
@@ -42,6 +50,8 @@ public class ApiClient : Client
         Bots = new BotClient(_http, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
     }
 
     public ApiClient(ApiClient client) : base()
@@ -50,6 +60,8 @@ public class ApiClient : Client
         Bots = client.Bots;
         Conversations = client.Conversations;
         Users = client.Users;
+        Teams = client.Teams;
+        Meetings = client.Meetings;
         _cancellationToken = client._cancellationToken;
     }
 }

@@ -12,29 +12,34 @@ public class ConversationClient : Client
 {
     public readonly string ServiceUrl;
     public readonly ActivityClient Activities;
+    public readonly MemberClient Members;
 
     public ConversationClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
+        Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
 
     public ConversationClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
+        Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
 
     public ConversationClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
+        Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
 
     public ConversationClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
+        Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
 
     public async Task<ConversationResource> CreateAsync(CreateRequest request)
