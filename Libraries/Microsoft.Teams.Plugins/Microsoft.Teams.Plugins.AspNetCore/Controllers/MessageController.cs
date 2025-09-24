@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
 
 using static Microsoft.Teams.Plugins.AspNetCore.Extensions.HostApplicationBuilderExtensions;
 
@@ -26,47 +24,8 @@ public class MessageController : ControllerBase
 
     [HttpPost("/api/messages")]
     [Authorize(Policy = TeamsTokenAuthConstants.AuthorizationPolicy)]
-    public async Task<IResult> OnMessage([FromBody] Activity activity)
+    public async Task<IResult> OnMessage()
     {
-        var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
-        var token = new JsonWebToken(authHeader.Replace("Bearer ", ""));
-        var data = new Dictionary<string, object?>
-        {
-            ["Request.TraceId"] = HttpContext.TraceIdentifier
-        };
-
-        foreach (var pair in HttpContext.Items)
-        {
-            var key = pair.Key.ToString();
-
-            if (key is null) continue;
-
-            data[key] = pair.Value;
-        }
-
-        var res = await _plugin.Do(new()
-        {
-            Token = token,
-            Activity = activity,
-            Extra = data,
-            Services = HttpContext.RequestServices
-        }, _lifetime.ApplicationStopping);
-
-        // convert response metadata to headers
-        foreach (var (key, value) in res.Meta)
-        {
-            var str = value?.ToString();
-            if (string.IsNullOrEmpty(str)) continue;
-            Response.Headers.Append($"X-Teams-{char.ToUpper(key[0]) + key[1..]}", str);
-        }
-
-        return Results.Json(
-            res.Body,
-            new System.Text.Json.JsonSerializerOptions
-            {
-                DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-            },
-            contentType: null,
-            statusCode: (int)res.Status);
+        return await _plugin.Do(HttpContext, _lifetime.ApplicationStopping);
     }
 }
