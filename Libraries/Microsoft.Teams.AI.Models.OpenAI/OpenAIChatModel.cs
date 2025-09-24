@@ -13,13 +13,7 @@ namespace Microsoft.Teams.AI.Models.OpenAI;
 
 public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
 {
-    public string Name => throw new NotImplementedException();
-
-    /// <summary>
-    /// the OpenAI client used to
-    /// make requests
-    /// </summary>
-    public OpenAIClient Client { get; set; }
+    public string Name => Model;
 
     /// <summary>
     /// the OpenAI chat client used to
@@ -37,14 +31,21 @@ public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
     /// </summary>
     protected ILogger Logger { get; set; }
 
+    public OpenAIChatModel(string model, OpenAIClient client)
+    {
+        Model = model;
+        ChatClient = client.GetChatClient(model);
+        Logger = new ConsoleLogger(model);
+    }
+
     public OpenAIChatModel(string model, string apiKey, Options? options = null)
     {
         options ??= new();
         options.NetworkTimeout ??= TimeSpan.FromSeconds(60);
 
+        var client = new OpenAIClient(new ApiKeyCredential(apiKey), options);
         Model = model;
-        Client = new(new ApiKeyCredential(apiKey), options);
-        ChatClient = Client.GetChatClient(model);
+        ChatClient = client.GetChatClient(model);
         Logger = (options?.Logger ?? new ConsoleLogger()).Child(model);
     }
 
@@ -53,9 +54,9 @@ public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
         options ??= new();
         options.NetworkTimeout ??= TimeSpan.FromSeconds(60);
 
+        var client = new OpenAIClient(apiKey, options);
         Model = model;
-        Client = new(apiKey, options);
-        ChatClient = Client.GetChatClient(model);
+        ChatClient = client.GetChatClient(model);
         Logger = (options?.Logger ?? new ConsoleLogger()).Child(model);
     }
 }
