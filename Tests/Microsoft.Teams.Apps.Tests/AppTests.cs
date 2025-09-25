@@ -238,7 +238,6 @@ public class AppTests
         {
             middlewareCalled = true;
             await context.Next();
-            return null;
         });
         await app.Process(sender.Object, token.Object, activity);
 

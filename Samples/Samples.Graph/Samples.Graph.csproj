@@ -14,6 +14,7 @@
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Graph\Microsoft.Teams.Extensions.Graph.csproj" />
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
   </ItemGroup>
 
 </Project>
