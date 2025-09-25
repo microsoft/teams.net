@@ -3,8 +3,6 @@
 
 # Teams: API
 
-<a href="https://microsoft.github.io/teams-ai" target="_blank">
-    <img src="https://img.shields.io/badge/📖 Getting Started-blue?style=for-the-badge" />
-</a>
+[![📖 Getting Started](https://img.shields.io/badge/📖%20Getting%20Started-blue?style=for-the-badge)](https://microsoft.github.io/teams-ai)
 
 Model and client implementations used to send and receive requests from Teams.
