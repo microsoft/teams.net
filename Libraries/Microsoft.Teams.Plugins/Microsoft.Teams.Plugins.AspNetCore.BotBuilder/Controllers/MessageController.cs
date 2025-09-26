@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Text.Json;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
+using Microsoft.Teams.Apps.Events;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
 {
@@ -34,11 +32,10 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
         [HttpPost("/api/messages")]
         public async Task<IResult> PostAsync()
         {
-            HttpContext.Request.EnableBuffering();
-            var body = await new StreamReader(Request.Body).ReadToEndAsync();
-            Activity? activity = JsonSerializer.Deserialize<Activity>(body);
-            HttpContext.Request.Body.Position = 0;
-
+            // Extract the activity from the incoming request
+            // Activity has to be extracted before calling ProcessAsync
+            // because ProcessAsync will consume the request body stream
+            Activity? activity = await _plugin.ExtractActivity(HttpContext.Request);
             if (activity == null)
             {
                 return Results.BadRequest("Missing activity");
@@ -53,10 +50,9 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
                 return Results.Empty;
             }
 
-            // Fallback logic
-            var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
-            var token = new JsonWebToken(authHeader.Replace("Bearer ", ""));
-            var res = await _plugin.Do(new()
+            // Fallback logic use the plugin to process the activity
+            var token = _plugin.ExtractToken(HttpContext.Request);
+            var res = await _plugin.Do(new ActivityEvent()
             {
                 Token = token,
                 Activity = activity,

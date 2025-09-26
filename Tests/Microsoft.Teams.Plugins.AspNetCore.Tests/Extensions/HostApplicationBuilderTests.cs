@@ -8,6 +8,8 @@ using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
 using static Microsoft.Teams.Plugins.AspNetCore.Extensions.HostApplicationBuilderExtensions;
 
+namespace Microsoft.Teams.Plugins.AspNetCore.Tests;
+
 public class HostApplicationBuilderTests
 {
     [Fact]

@@ -1,7 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Text.Json;
+
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
@@ -26,6 +29,11 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
     public IHttpClient Client { get; set; }
 
     public event EventFunction Events;
+
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+    };
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {
@@ -138,5 +146,86 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
             return new Response(System.Net.HttpStatusCode.InternalServerError, ex.ToString());
         }
+    }
+
+    public async Task<IResult> Do(HttpContext httpContext, CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var request = httpContext.Request;
+            var token = ExtractToken(request);
+            var activity = await ExtractActivity(request);
+
+            if (activity is null)
+            {
+                return Results.BadRequest("Missing activity");
+            }
+
+            var data = new Dictionary<string, object?>
+            {
+                ["Request.TraceId"] = httpContext.TraceIdentifier
+            };
+
+            foreach (var pair in httpContext.Items)
+            {
+                var key = pair.Key.ToString();
+
+                if (key is null) continue;
+
+                data[key] = pair.Value;
+            }
+
+            var res = await Do(new ActivityEvent()
+            {
+                Token = token,
+                Activity = activity,
+                Extra = data,
+                Services = httpContext.RequestServices
+            }, cancellationToken);
+
+            // convert response metadata to headers
+            foreach (var (key, value) in res.Meta)
+            {
+                var str = value?.ToString();
+                if (string.IsNullOrEmpty(str)) continue;
+                httpContext.Response.Headers.Append($"X-Teams-{char.ToUpper(key[0]) + key[1..]}", str);
+            }
+
+            return Results.Json(
+                res.Body,
+                _jsonSerializerOptions,
+                contentType: null,
+                statusCode: (int)res.Status
+            );
+        }
+        catch (Exception ex)
+        {
+            Logger.Error(ex);
+            await Events(
+                this,
+                "error",
+                new ErrorEvent() { Exception = ex },
+                cancellationToken
+            );
+
+            return Results.Problem(detail: ex.Message, statusCode: 500);
+        }
+    }
+
+    public JsonWebToken ExtractToken(Microsoft.AspNetCore.Http.HttpRequest httpRequest)
+    {
+        var authHeader = httpRequest.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
+        return new JsonWebToken(authHeader.Replace("Bearer ", ""));
+    }
+
+    public async Task<Activity?> ExtractActivity(Microsoft.AspNetCore.Http.HttpRequest httpRequest)
+    {
+        // Fallback logic
+        httpRequest.EnableBuffering();
+        var body = await new StreamReader(httpRequest.Body).ReadToEndAsync();
+        Activity? activity = JsonSerializer.Deserialize<Activity>(body);
+        httpRequest.Body.Position = 0;
+
+        return activity;
     }
 }
