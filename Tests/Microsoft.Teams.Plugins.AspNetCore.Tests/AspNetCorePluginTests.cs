@@ -63,11 +63,11 @@ public class AspNetCorePluginTests
         var coreResponse = new Response(HttpStatusCode.Accepted, new { ok = true });
         var eventsCalled = new List<string>();
 
-        EventFunction events = async (plugin, name, payload, ct) =>
+        EventFunction events = (plugin, name, payload, ct) =>
         {
             eventsCalled.Add(name);
-            if (name == "activity") return coreResponse; // returned directly by core Do
-            return null;
+            if (name == "activity") return Task.FromResult<object?>(coreResponse); // returned directly by core Do
+            return Task.FromResult<object?>(null);
         };
 
         var logger = new Mock<ILogger>();
