@@ -160,6 +160,20 @@ public class AspNetCorePluginTests
     }
 
     [Fact]
+    public async Task Test_ExtractActivity_HttpRequestBodyAlreadyRead_ReturnsActivity()
+    {
+        var plugin = CreatePlugin();
+        var activity = CreateMessageActivity();
+        var ctx = CreateHttpContext(activity);
+        // simulate body already read by setting position to end
+        ctx.Request.Body.Position = ctx.Request.Body.Length;
+
+        var extracted = await plugin.ExtractActivity(ctx.Request);
+        Assert.NotNull(extracted);
+        Assert.True(activity.Type.Equals(extracted.Type));
+    }
+
+    [Fact]
     public async Task Test_Do_Core_ReturnsResponseAndLogs()
     {
         // Arrange core path tests the ActivityEvent Do(ActivityEvent)

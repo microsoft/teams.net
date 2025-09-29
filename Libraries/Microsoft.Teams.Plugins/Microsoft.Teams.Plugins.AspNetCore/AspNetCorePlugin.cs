@@ -220,8 +220,14 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public async Task<Activity?> ExtractActivity(Microsoft.AspNetCore.Http.HttpRequest httpRequest)
     {
-        // Fallback logic
         httpRequest.EnableBuffering();
+
+        if (httpRequest.Body.CanSeek)
+        {
+            // reset the stream position to the beginning in case it was read before
+            httpRequest.Body.Position = 0;
+        }
+
         var body = await new StreamReader(httpRequest.Body).ReadToEndAsync();
         Activity? activity = JsonSerializer.Deserialize<Activity>(body);
         httpRequest.Body.Position = 0;

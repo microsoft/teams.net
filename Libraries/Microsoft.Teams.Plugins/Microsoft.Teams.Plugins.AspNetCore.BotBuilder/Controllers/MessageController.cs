@@ -6,8 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Apps.Events;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
 {
@@ -32,14 +30,8 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
         [HttpPost("/api/messages")]
         public async Task<IResult> PostAsync()
         {
-            // Extract the activity from the incoming request
-            // Activity has to be extracted before calling ProcessAsync
-            // because ProcessAsync will consume the request body stream
-            Activity? activity = await _plugin.ExtractActivity(HttpContext.Request);
-            if (activity == null)
-            {
-                return Results.BadRequest("Missing activity");
-            }
+            // Enable buffering so that the request can be read by the adapter and the plugin
+            HttpContext.Request.EnableBuffering();
 
             // Delegate the processing of the HTTP POST to the adapter.
             // The adapter will invoke the bot.
@@ -51,15 +43,7 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
             }
 
             // Fallback logic use the plugin to process the activity
-            var token = _plugin.ExtractToken(HttpContext.Request);
-            var res = await _plugin.Do(new ActivityEvent()
-            {
-                Token = token,
-                Activity = activity,
-                Services = HttpContext.RequestServices
-            }, _lifetime.ApplicationStopping);
-
-            return Results.Json(res.Body, statusCode: (int)res.Status);
+            return await _plugin.Do(HttpContext, _lifetime.ApplicationStopping);
         }
     }
 }
