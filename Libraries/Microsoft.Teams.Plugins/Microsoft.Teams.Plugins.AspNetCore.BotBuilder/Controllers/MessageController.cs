@@ -1,15 +1,11 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Text.Json;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
 {
@@ -34,15 +30,8 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
         [HttpPost("/api/messages")]
         public async Task<IResult> PostAsync()
         {
+            // Enable buffering so that the request can be read by the adapter and the plugin
             HttpContext.Request.EnableBuffering();
-            var body = await new StreamReader(Request.Body).ReadToEndAsync();
-            Activity? activity = JsonSerializer.Deserialize<Activity>(body);
-            HttpContext.Request.Body.Position = 0;
-
-            if (activity == null)
-            {
-                return Results.BadRequest("Missing activity");
-            }
 
             // Delegate the processing of the HTTP POST to the adapter.
             // The adapter will invoke the bot.
@@ -53,17 +42,8 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
                 return Results.Empty;
             }
 
-            // Fallback logic
-            var authHeader = HttpContext.Request.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
-            var token = new JsonWebToken(authHeader.Replace("Bearer ", ""));
-            var res = await _plugin.Do(new()
-            {
-                Token = token,
-                Activity = activity,
-                Services = HttpContext.RequestServices
-            }, _lifetime.ApplicationStopping);
-
-            return Results.Json(res.Body, statusCode: (int)res.Status);
+            // Fallback logic use the plugin to process the activity
+            return await _plugin.Do(HttpContext, _lifetime.ApplicationStopping);
         }
     }
 }
