@@ -9,17 +9,40 @@ namespace Microsoft.Teams.Api.Entities;
 
 public class CitationEntity : OMessageEntity, IMessageEntity
 {
-    [JsonPropertyName("position")]
-    [JsonPropertyOrder(3)]
-    public required int Position { get; set; }
+    [JsonPropertyName("citation")]
+    [JsonPropertyOrder(20)]
+    public IList<CitationEntity.Claim>? Citation { get; set; }
 
-    [JsonPropertyName("appearance")]
-    [JsonPropertyOrder(4)]
-    public required AppearanceDocument Appearance { get; set; }
-
-    public CitationEntity() : base()
+    public CitationEntity(IMessageEntity entity)
+        : base()
     {
-        OType = "Claim";
+        OType = entity.OType;
+        OContext = entity.OContext;
+        Type = entity.Type;
+        AdditionalType = entity.AdditionalType != null
+            ? new List<string>(entity.AdditionalType)
+            : null;
+        if (entity is CitationEntity citationEntity)
+        {
+            Citation = citationEntity.Citation != null
+                ? new List<CitationEntity.Claim>(citationEntity.Citation)
+                : null;
+        }
+    }
+
+    public class Claim
+    {
+        [JsonPropertyName("@type")]
+        [JsonPropertyOrder(0)]
+        public string Type { get; set; } = "Claim";
+
+        [JsonPropertyName("position")]
+        [JsonPropertyOrder(1)]
+        public required int Position { get; set; }
+
+        [JsonPropertyName("appearance")]
+        [JsonPropertyOrder(2)]
+        public required AppearanceDocument Appearance { get; set; }
     }
 
     public class AppearanceDocument

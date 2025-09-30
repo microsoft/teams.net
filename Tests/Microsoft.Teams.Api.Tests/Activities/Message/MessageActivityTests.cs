@@ -220,4 +220,96 @@ public class MessageActivityTests
 
         Assert.Equivalent(expected, activity);
     }
+
+    [Fact]
+    public void MultipleAddAIGenerated_DoesNotCreateDuplicateMessageEntities()
+    {
+        var activity = new MessageActivity("test");
+
+        activity.AddAIGenerated();
+        activity.AddAIGenerated();
+        activity.AddAIGenerated();
+
+        var messageEntities = activity.Entities?.Where(e =>
+            e.Type == "https://schema.org/Message" && e.OType == "Message"
+        ).ToList();
+
+        Assert.NotNull(messageEntities);
+        Assert.Single(messageEntities);
+    }
+
+    [Fact]
+    public void MultipleAddCitation_DoesNotCreateDuplicateMessageEntities()
+    {
+        var activity = new MessageActivity("test");
+
+        var appearance1 = new Microsoft.Teams.Api.Entities.CitationAppearance
+        {
+            Name = "Doc 1",
+            Abstract = "Abstract 1"
+        };
+
+        var appearance2 = new Microsoft.Teams.Api.Entities.CitationAppearance
+        {
+            Name = "Doc 2",
+            Abstract = "Abstract 2"
+        };
+
+        var appearance3 = new Microsoft.Teams.Api.Entities.CitationAppearance
+        {
+            Name = "Doc 3",
+            Abstract = "Abstract 3"
+        };
+
+        activity.AddCitation(1, appearance1);
+        activity.AddCitation(2, appearance2);
+        activity.AddCitation(3, appearance3);
+
+        var messageEntities = activity.Entities?.Where(e =>
+            e.Type == "https://schema.org/Message" && e.OType == "Message"
+        ).ToList();
+
+        Assert.NotNull(messageEntities);
+        Assert.Single(messageEntities);
+
+        // Verify all citations are in the single message entity
+        var citationEntity = messageEntities[0] as Microsoft.Teams.Api.Entities.CitationEntity;
+        Assert.NotNull(citationEntity);
+        Assert.NotNull(citationEntity.Citation);
+        Assert.Equal(3, citationEntity.Citation.Count);
+    }
+
+    [Fact]
+    public void MixedAddAIGeneratedAndAddCitation_DoesNotCreateDuplicateMessageEntities()
+    {
+        var activity = new MessageActivity("test");
+
+        activity.AddAIGenerated();
+
+        var appearance = new Microsoft.Teams.Api.Entities.CitationAppearance
+        {
+            Name = "Doc 1",
+            Abstract = "Abstract 1"
+        };
+
+        activity.AddCitation(1, appearance);
+        activity.AddAIGenerated();
+
+        var messageEntities = activity.Entities?.Where(e =>
+            e.Type == "https://schema.org/Message" && e.OType == "Message"
+        ).ToList();
+
+        Assert.NotNull(messageEntities);
+        Assert.Single(messageEntities);
+
+        // Verify it has both AI generated flag and citation
+        var entity = messageEntities[0] as Microsoft.Teams.Api.Entities.IMessageEntity;
+        Assert.NotNull(entity);
+        Assert.Contains("AIGeneratedContent", entity.AdditionalType);
+
+        var citationEntity = messageEntities[0] as Microsoft.Teams.Api.Entities.CitationEntity;
+        Assert.NotNull(citationEntity);
+        Assert.NotNull(citationEntity.Citation);
+        Assert.Single(citationEntity.Citation);
+    }
 }

@@ -16,11 +16,20 @@ public class CitationEntityTests
             Keywords = ["sample", "doc"],
             Text = "full citation text"
         };
-        var entity = new CitationEntity()
+        var messageEntity = new MessageEntity()
         {
-            Appearance = appearance.ToDocument(),
-            Position = 2,
+            Type = "https://schema.org/Message",
+            OType = "Message",
+            OContext = "https://schema.org",
             AdditionalType = ["some", "string"]
+        };
+        var entity = new CitationEntity(messageEntity)
+        {
+            Citation = [new CitationEntity.Claim()
+            {
+                Position = 2,
+                Appearance = appearance.ToDocument()
+            }]
         };
 
         var json = JsonSerializer.Serialize(entity, new JsonSerializerOptions()
@@ -46,11 +55,20 @@ public class CitationEntityTests
             Keywords = ["sample", "doc"],
             Text = "full citation text"
         };
-        CitationEntity entity = new CitationEntity()
+        var messageEntity = new MessageEntity()
         {
-            Appearance = appearance.ToDocument(),
-            Position = 2,
+            Type = "https://schema.org/Message",
+            OType = "Message",
+            OContext = "https://schema.org",
             AdditionalType = ["some", "string"]
+        };
+        CitationEntity entity = new CitationEntity(messageEntity)
+        {
+            Citation = [new CitationEntity.Claim()
+            {
+                Position = 2,
+                Appearance = appearance.ToDocument()
+            }]
         };
 
         var json = JsonSerializer.Serialize(entity, new JsonSerializerOptions()
@@ -75,11 +93,20 @@ public class CitationEntityTests
             Keywords = ["sample", "doc"],
             Text = "full citation text"
         };
-        Entity entity = new CitationEntity()
+        var messageEntity = new MessageEntity()
         {
-            Appearance = appearance.ToDocument(),
-            Position = 2,
+            Type = "https://schema.org/Message",
+            OType = "Message",
+            OContext = "https://schema.org",
             AdditionalType = ["some", "string"]
+        };
+        Entity entity = new CitationEntity(messageEntity)
+        {
+            Citation = [new CitationEntity.Claim()
+            {
+                Position = 2,
+                Appearance = appearance.ToDocument()
+            }]
         };
 
         var json = JsonSerializer.Serialize(entity, new JsonSerializerOptions()
@@ -107,11 +134,20 @@ public class CitationEntityTests
             Keywords = ["sample", "doc"],
             Text = "full citation text"
         };
-        var expected = new CitationEntity()
+        var messageEntity = new MessageEntity()
         {
-            Appearance = appearance.ToDocument(),
-            Position = 2,
+            Type = "https://schema.org/Message",
+            OType = "Message",
+            OContext = "https://schema.org",
             AdditionalType = ["some", "string"]
+        };
+        var expected = new CitationEntity(messageEntity)
+        {
+            Citation = [new CitationEntity.Claim()
+            {
+                Position = 2,
+                Appearance = appearance.ToDocument()
+            }]
         };
 
         Assert.Equivalent(expected, entity);
@@ -129,11 +165,20 @@ public class CitationEntityTests
             Keywords = ["sample", "doc"],
             Text = "full citation text"
         };
-        var expected = new CitationEntity()
+        var messageEntity = new MessageEntity()
         {
-            Appearance = appearance.ToDocument(),
-            Position = 2,
+            Type = "https://schema.org/Message",
+            OType = "Message",
+            OContext = "https://schema.org",
             AdditionalType = ["some", "string"]
+        };
+        var expected = new CitationEntity(messageEntity)
+        {
+            Citation = [new CitationEntity.Claim()
+            {
+                Position = 2,
+                Appearance = appearance.ToDocument()
+            }]
         };
 
         Assert.Equivalent(expected, entity);
