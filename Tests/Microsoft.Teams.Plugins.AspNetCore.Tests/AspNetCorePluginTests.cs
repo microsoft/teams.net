@@ -154,7 +154,7 @@ public class AspNetCorePluginTests
         var activity = CreateMessageActivity();
         var ctx = CreateHttpContext(activity);
 
-        var extracted = await plugin.ExtractActivity(ctx.Request);
+        var extracted = await plugin.ParseActivity(ctx.Request);
         Assert.NotNull(extracted);
         Assert.True(activity.Type.Equals(extracted.Type));
     }
@@ -168,7 +168,7 @@ public class AspNetCorePluginTests
         // simulate body already read by setting position to end
         ctx.Request.Body.Position = ctx.Request.Body.Length;
 
-        var extracted = await plugin.ExtractActivity(ctx.Request);
+        var extracted = await plugin.ParseActivity(ctx.Request);
         Assert.NotNull(extracted);
         Assert.True(activity.Type.Equals(extracted.Type));
     }

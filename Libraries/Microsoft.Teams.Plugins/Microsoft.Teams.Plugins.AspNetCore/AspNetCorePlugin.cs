@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -13,6 +14,8 @@ using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
 using Microsoft.Teams.Common.Logging;
+
+using HttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
 
 namespace Microsoft.Teams.Plugins.AspNetCore;
 
@@ -32,7 +35,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
@@ -154,7 +157,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         {
             var request = httpContext.Request;
             var token = ExtractToken(request);
-            var activity = await ExtractActivity(request);
+            var activity = await ParseActivity(request);
 
             if (activity is null)
             {
@@ -212,13 +215,13 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         }
     }
 
-    public JsonWebToken ExtractToken(Microsoft.AspNetCore.Http.HttpRequest httpRequest)
+    public JsonWebToken ExtractToken(HttpRequest httpRequest)
     {
         var authHeader = httpRequest.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
         return new JsonWebToken(authHeader.Replace("Bearer ", ""));
     }
 
-    public async Task<Activity?> ExtractActivity(Microsoft.AspNetCore.Http.HttpRequest httpRequest)
+    public async Task<Activity?> ParseActivity(HttpRequest httpRequest)
     {
         httpRequest.EnableBuffering();
 
@@ -228,9 +231,9 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
             httpRequest.Body.Position = 0;
         }
 
-        var body = await new StreamReader(httpRequest.Body).ReadToEndAsync();
+        using StreamReader sr = new(httpRequest.Body);
+        var body = await sr.ReadToEndAsync();
         Activity? activity = JsonSerializer.Deserialize<Activity>(body);
-        httpRequest.Body.Position = 0;
 
         return activity;
     }
