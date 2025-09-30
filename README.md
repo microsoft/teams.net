@@ -1,14 +1,11 @@
-# <img src="./Assets/icon.png" width="50px" /> Teams SDK: DotNet
+# ![Teams SDK Icon](./Assets/icon.png)
+# Teams SDK: DotNet
 
-<a href="#">
-    <img src="https://img.shields.io/github/v/release/microsoft/teams.net?label=version" />
-</a>
+[![Version](https://img.shields.io/github/v/release/microsoft/teams.net?label=version)](#)
 
 a suite of packages used to build on the Teams Platform.
 
-<a href="https://microsoft.github.io/teams-ai" target="_blank">
-    <img src="https://img.shields.io/badge/📖 Getting Started-blue?style=for-the-badge" />
-</a>
+[![📖 Getting Started](https://img.shields.io/badge/📖%20Getting%20Started-blue?style=for-the-badge)](https://microsoft.github.io/teams-ai)
 
 ### Build
 

@@ -3,8 +3,6 @@
 
 # Teams: Configuration Extensions
 
-<a href="https://microsoft.github.io/teams-ai" target="_blank">
-    <img src="https://img.shields.io/badge/📖 Getting Started-blue?style=for-the-badge" />
-</a>
+[![📖 Getting Started](https://img.shields.io/badge/📖%20Getting%20Started-blue?style=for-the-badge)](https://microsoft.github.io/teams-ai)
 
 Teams Configuration Extensions.
