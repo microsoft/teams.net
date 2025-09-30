@@ -3,9 +3,6 @@
 
 using System.Reflection;
 
-using Json.Schema;
-using Json.Schema.Generation;
-
 using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.AI.Models;
@@ -213,23 +210,9 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
 
             if (functionAttribute is null) continue;
 
-            var parameters = method.GetParameters().Select(p =>
-            {
-                var name = p.GetCustomAttribute<ParamAttribute>()?.Name ?? p.Name ?? p.Position.ToString();
-                var schema = new JsonSchemaBuilder().FromType(p.ParameterType).Build();
-                var required = !p.IsOptional;
-                return (name, schema, required);
-            });
-
-            var schema = new JsonSchemaBuilder()
-                .Type(SchemaValueType.Object)
-                .Properties(parameters.Select(item => (item.name, item.schema)).ToArray())
-                .Required(parameters.Where(item => item.required).Select(item => item.name));
-
             var function = new Function(
                 functionAttribute.Name ?? method.Name,
                 functionAttribute.Description ?? functionDescriptionAttribute?.Description,
-                parameters.Count() > 0 ? schema.Build() : null,
                 method.CreateDelegate(value)
             );
 
