@@ -247,8 +247,8 @@ public class MessageActivityTests
             }
         };
         string json = JsonSerializer.Serialize(activity, new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
-        string exptected = File.ReadAllText(@"../../../Json/Activity/Message/MessageActivity_webChat.json");
-        Assert.Equal(exptected, json);
+        string expected = File.ReadAllText(@"../../../Json/Activity/Message/MessageActivity_webChat.json");
+        Assert.Equal(expected, json);
     }
 
     [Fact]
