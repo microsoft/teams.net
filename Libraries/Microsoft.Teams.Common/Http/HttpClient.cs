@@ -89,10 +89,11 @@ public class HttpClient : IHttpClient
             }
             else
             {
-                httpRequest.Content = JsonContent.Create(request.Body, options: new JsonSerializerOptions()
+                string body = JsonSerializer.Serialize(request.Body, new JsonSerializerOptions()
                 {
                     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
                 });
+                httpRequest.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
             }
         }
 
@@ -172,7 +173,7 @@ public class HttpClient : IHttpClient
 
         try
         {
-            var bodyAsJson = JsonSerializer.Deserialize<Dictionary<string, object>>(content);
+            var bodyAsJson = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(content);
 
             if (bodyAsJson is not null)
             {

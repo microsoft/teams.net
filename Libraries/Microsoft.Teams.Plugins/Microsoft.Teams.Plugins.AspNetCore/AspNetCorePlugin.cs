@@ -90,6 +90,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         activity.Conversation = reference.Conversation;
         activity.From = reference.Bot;
         activity.Recipient = reference.User;
+        activity.ChannelId = reference.ChannelId;
 
         if (activity.Id is not null && !activity.IsStreaming)
         {
