@@ -11,7 +11,11 @@ public class CitationEntity : OMessageEntity, IMessageEntity
 {
     [JsonPropertyName("citation")]
     [JsonPropertyOrder(20)]
-    public IList<CitationEntity.Claim>? Citation { get; set; }
+    public IList<Claim>? Citation { get; set; }
+
+    public CitationEntity() : base()
+    {
+    }
 
     public CitationEntity(IMessageEntity entity)
         : base()
