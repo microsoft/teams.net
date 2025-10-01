@@ -1,0 +1,125 @@
+using System.Text.RegularExpressions;
+using Microsoft.Teams.Apps.Extensions;
+using Microsoft.Teams.Apps.Activities;
+using Microsoft.Teams.Plugins.AspNetCore.Extensions;
+using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
+using Microsoft.Teams.AI.Models.OpenAI;
+using Microsoft.Teams.AI.Prompts;
+using Microsoft.Teams.AI.Templates;
+using Azure.AI.OpenAI;
+using System.ClientModel;
+using Microsoft.Teams.Api.Activities;
+using Samples.AI.Handlers;
+
+var builder = WebApplication.CreateBuilder(args);
+builder.AddTeams().AddTeamsDevTools();
+var app = builder.Build();
+builder.WebHost.UseUrls("http://localhost:3978");
+
+var teamsApp = app.UseTeams();
+var configuration = app.Configuration;
+
+// Configuration
+var azureOpenAIModel = configuration["AzureOpenAIModel"] ?? throw new InvalidOperationException("AzureOpenAIModel not configured");
+var azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"] ?? throw new InvalidOperationException("AzureOpenAIEndpoint not configured");
+var azureOpenAIKey = configuration["AzureOpenAIKey"] ?? throw new InvalidOperationException("AzureOpenAIKey not configured");
+
+var azureOpenAI = new AzureOpenAIClient(
+    new Uri(azureOpenAIEndpoint),
+    new ApiKeyCredential(azureOpenAIKey)
+);
+
+// AI Model
+var aiModel = new OpenAIChatModel(azureOpenAIModel, azureOpenAI);
+
+// Simple chat handler - "hi" command
+teamsApp.OnMessage(@"^hi$", async (context) =>
+{
+    Console.WriteLine($"[COMMAND] 'hi' command invoked by user: {context.Activity.From.Name}");
+
+    var prompt = new OpenAIChatPrompt(aiModel, new ChatPromptOptions
+    {
+        Instructions = new StringTemplate("You are a friendly assistant who talks like a pirate")
+    });
+
+    Console.WriteLine("[COMMAND] Sending 'hi' message to AI with pirate personality...");
+    var result = await prompt.Send(context.Activity.Text);
+    if (result.Content != null)
+    {
+        Console.WriteLine($"[COMMAND] AI response: {result.Content}");
+        var messageActivity = new MessageActivity
+        {
+            Text = result.Content,
+        }.AddAIGenerated();
+        await context.Send(messageActivity);
+    }
+});
+
+// Pokemon command handler
+teamsApp.OnMessage(@"^pokemon\s+(.+)", async (context) =>
+{
+    Console.WriteLine($"[COMMAND] 'pokemon' command invoked: {context.Activity.Text}");
+    var match = Regex.Match(context.Activity.Text ?? "", @"^pokemon\s+(.+)", RegexOptions.IgnoreCase);
+    if (match.Success)
+    {
+        var pokemonName = match.Groups[1].Value.Trim();
+        Console.WriteLine($"[COMMAND] Extracted pokemon name: '{pokemonName}'");
+        context.Activity.Text = pokemonName;
+        await FunctionCallingHandler.HandlePokemonSearch(aiModel, context);
+    }
+});
+
+// Weather command handler
+teamsApp.OnMessage(@"^weather\b", async (context) =>
+{
+    Console.WriteLine($"[COMMAND] 'weather' command invoked: {context.Activity.Text}");
+    await FunctionCallingHandler.HandleMultipleFunctions(aiModel, context);
+});
+
+// Streaming handler
+teamsApp.OnMessage(@"^stream\s+(.+)", async (context) =>
+{
+    Console.WriteLine($"[COMMAND] 'stream' command invoked: {context.Activity.Text}");
+    var match = Regex.Match(context.Activity.Text ?? "", @"^stream\s+(.+)", RegexOptions.IgnoreCase);
+    if (match.Success)
+    {
+        var query = match.Groups[1].Value.Trim();
+        Console.WriteLine($"[COMMAND] Extracted query for streaming: '{query}'");
+        var prompt = new OpenAIChatPrompt(aiModel, new ChatPromptOptions
+        {
+            Instructions = new StringTemplate("You are a friendly assistant who responds in extremely verbose language")
+        });
+
+        Console.WriteLine("[COMMAND] Sending streaming request to AI...");
+        var result = await prompt.Send(query, (chunk) =>
+        {
+            Console.WriteLine($"[STREAM] Chunk received: {chunk}");
+            context.Stream.Emit(chunk);
+            return Task.CompletedTask;
+        });
+    }
+});
+
+// Citations handler
+teamsApp.OnMessage(@"^citations?\b", async (context) =>
+{
+    Console.WriteLine($"[COMMAND] 'citations' command invoked: {context.Activity.Text}");
+    await CitationsHandler.HandleCitationsDemo(context);
+});
+
+// Memory clear handler
+teamsApp.OnMessage(@"^memory\s+clear\b", async (context) =>
+{
+    Console.WriteLine($"[COMMAND] 'memory clear' command invoked for conversation: {context.Activity.Conversation.Id}");
+    await MemoryManagementHandler.ClearConversationMemory(context.Activity.Conversation.Id);
+    await context.Reply("🧠 Memory cleared!");
+});
+
+// Fallback stateful conversation handler
+teamsApp.OnMessage(async (context) =>
+{
+    Console.WriteLine($"[FALLBACK] Fallback handler invoked (no command matched): {context.Activity.Text}");
+    await MemoryManagementHandler.HandleStatefulConversation(aiModel, context);
+});
+
+app.Run();
