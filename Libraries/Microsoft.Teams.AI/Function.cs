@@ -57,7 +57,7 @@ public class Function : IFunction
 
     [JsonPropertyName("parameters")]
     [JsonPropertyOrder(2)]
-    public JsonSchema Parameters { get; set; }
+    public JsonSchema? Parameters { get; set; }
 
     [JsonIgnore]
     public Delegate Handler { get; set; }
@@ -80,7 +80,7 @@ public class Function : IFunction
 
     internal Task<object?> Invoke(FunctionCall call)
     {
-        if (call.Arguments is not null)
+        if (call.Arguments is not null && Parameters is not null)
         {
             var valid = Parameters.Evaluate(JsonNode.Parse(call.Arguments), new() { EvaluateAs = SpecVersion.DraftNext });
 
@@ -128,14 +128,14 @@ public class Function : IFunction
     /// <summary>
     /// Generates a JsonSchema for the parameters of a delegate handler using reflection
     /// </summary>
-    private static JsonSchema GenerateParametersSchema(Delegate handler)
+    private static JsonSchema? GenerateParametersSchema(Delegate handler)
     {
         var method = handler.GetMethodInfo();
         var methodParams = method.GetParameters();
 
         if (methodParams.Length == 0)
         {
-            return new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
+            return null;
         }
 
         var parameters = methodParams.Select(p =>
