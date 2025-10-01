@@ -57,7 +57,7 @@ public class Function : IFunction
 
     [JsonPropertyName("parameters")]
     [JsonPropertyOrder(2)]
-    public JsonSchema? Parameters { get; set; }
+    public JsonSchema Parameters { get; set; }
 
     [JsonIgnore]
     public Delegate Handler { get; set; }
@@ -70,7 +70,7 @@ public class Function : IFunction
         Parameters = GenerateParametersSchema(handler);
     }
 
-    public Function(string name, string? description, JsonSchema? parameters, Delegate handler)
+    public Function(string name, string? description, JsonSchema parameters, Delegate handler)
     {
         Name = name;
         Description = description;
@@ -78,37 +78,9 @@ public class Function : IFunction
         Handler = handler;
     }
 
-    /// <summary>
-    /// Generates a JsonSchema for the parameters of a delegate handler using reflection
-    /// </summary>
-    private static JsonSchema? GenerateParametersSchema(Delegate handler)
-    {
-        var method = handler.GetMethodInfo();
-        var methodParams = method.GetParameters();
-
-        if (methodParams.Length == 0)
-        {
-            return null;
-        }
-
-        var parameters = methodParams.Select(p =>
-        {
-            var paramName = p.GetCustomAttribute<ParamAttribute>()?.Name ?? p.Name ?? p.Position.ToString();
-            var schema = new JsonSchemaBuilder().FromType(p.ParameterType).Build();
-            var required = !p.IsOptional;
-            return (paramName, schema, required);
-        });
-
-        return new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Properties(parameters.Select(item => (item.paramName, item.schema)).ToArray())
-            .Required(parameters.Where(item => item.required).Select(item => item.paramName))
-            .Build();
-    }
-
     internal Task<object?> Invoke(FunctionCall call)
     {
-        if (call.Arguments is not null && Parameters is not null)
+        if (call.Arguments is not null)
         {
             var valid = Parameters.Evaluate(JsonNode.Parse(call.Arguments), new() { EvaluateAs = SpecVersion.DraftNext });
 
@@ -151,5 +123,33 @@ public class Function : IFunction
         {
             WriteIndented = true
         });
+    }
+
+    /// <summary>
+    /// Generates a JsonSchema for the parameters of a delegate handler using reflection
+    /// </summary>
+    private static JsonSchema GenerateParametersSchema(Delegate handler)
+    {
+        var method = handler.GetMethodInfo();
+        var methodParams = method.GetParameters();
+
+        if (methodParams.Length == 0)
+        {
+            return new JsonSchemaBuilder().Type(SchemaValueType.Object).Build();
+        }
+
+        var parameters = methodParams.Select(p =>
+        {
+            var paramName = p.GetCustomAttribute<ParamAttribute>()?.Name ?? p.Name ?? p.Position.ToString();
+            var schema = new JsonSchemaBuilder().FromType(p.ParameterType).Build();
+            var required = !p.IsOptional;
+            return (paramName, schema, required);
+        });
+
+        return new JsonSchemaBuilder()
+            .Type(SchemaValueType.Object)
+            .Properties(parameters.Select(item => (item.paramName, item.schema)).ToArray())
+            .Required(parameters.Where(item => item.required).Select(item => item.paramName))
+            .Build();
     }
 }
