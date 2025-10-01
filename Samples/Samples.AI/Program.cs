@@ -12,25 +12,26 @@ using Microsoft.Teams.Api.Activities;
 using Samples.AI.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddTeams().AddTeamsDevTools();
-var app = builder.Build();
-builder.WebHost.UseUrls("http://localhost:3978");
-
-var teamsApp = app.UseTeams();
-var configuration = app.Configuration;
 
 // Configuration
-var azureOpenAIModel = configuration["AzureOpenAIModel"] ?? throw new InvalidOperationException("AzureOpenAIModel not configured");
-var azureOpenAIEndpoint = configuration["AzureOpenAIEndpoint"] ?? throw new InvalidOperationException("AzureOpenAIEndpoint not configured");
-var azureOpenAIKey = configuration["AzureOpenAIKey"] ?? throw new InvalidOperationException("AzureOpenAIKey not configured");
+var azureOpenAIModel = builder.Configuration["AzureOpenAIModel"] ?? throw new InvalidOperationException("AzureOpenAIModel not configured");
+var azureOpenAIEndpoint = builder.Configuration["AzureOpenAIEndpoint"] ?? throw new InvalidOperationException("AzureOpenAIEndpoint not configured");
+var azureOpenAIKey = builder.Configuration["AzureOpenAIKey"] ?? throw new InvalidOperationException("AzureOpenAIKey not configured");
 
 var azureOpenAI = new AzureOpenAIClient(
     new Uri(azureOpenAIEndpoint),
     new ApiKeyCredential(azureOpenAIKey)
 );
 
-// AI Model
+// Register AI Model as singleton
 var aiModel = new OpenAIChatModel(azureOpenAIModel, azureOpenAI);
+
+builder.AddTeams().AddTeamsDevTools();
+var app = builder.Build();
+builder.WebHost.UseUrls("http://localhost:3978");
+
+var teamsApp = app.UseTeams();
+var configuration = app.Configuration;
 
 // Simple chat handler - "hi" command
 teamsApp.OnMessage(@"^hi$", async (context) =>
@@ -69,12 +70,6 @@ teamsApp.OnMessage(@"^pokemon\s+(.+)", async (context) =>
     }
 });
 
-// Weather command handler
-teamsApp.OnMessage(@"^weather\b", async (context) =>
-{
-    Console.WriteLine($"[COMMAND] 'weather' command invoked: {context.Activity.Text}");
-    await FunctionCallingHandler.HandleMultipleFunctions(aiModel, context);
-});
 
 // Streaming handler
 teamsApp.OnMessage(@"^stream\s+(.+)", async (context) =>
@@ -113,6 +108,24 @@ teamsApp.OnMessage(@"^memory\s+clear\b", async (context) =>
     Console.WriteLine($"[COMMAND] 'memory clear' command invoked for conversation: {context.Activity.Conversation.Id}");
     await MemoryManagementHandler.ClearConversationMemory(context.Activity.Conversation.Id);
     await context.Reply("🧠 Memory cleared!");
+});
+
+// Prompt-based handler (declarative style)
+teamsApp.OnMessage(@"^/weather\b", async (context) =>
+{
+    Console.WriteLine($"[COMMAND] '/weather' command invoked: {context.Activity.Text}");
+    var prompt = OpenAIChatPrompt.From(aiModel, new Samples.AI.Prompts.WeatherPrompt());
+    var result = await prompt.Send(context.Activity.Text);
+    if (!string.IsNullOrEmpty(result.Content))
+    {
+        Console.WriteLine($"[COMMAND] AI response: {result.Content}");
+        var messageActivity = new MessageActivity { Text = result.Content }.AddAIGenerated();
+        await context.Send(messageActivity);
+    }
+    else
+    {
+        await context.Reply("Sorry I could not figure it out");
+    }
 });
 
 // Fallback stateful conversation handler
