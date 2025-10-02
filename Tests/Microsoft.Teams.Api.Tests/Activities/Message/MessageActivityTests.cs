@@ -304,7 +304,7 @@ public class MessageActivityTests
 
         // Verify it has both AI generated flag and citation
         var entity = messageEntities[0] as Microsoft.Teams.Api.Entities.IMessageEntity;
-        Assert.NotNull(entity);
+        Assert.NotNull(entity?.AdditionalType);
         Assert.Contains("AIGeneratedContent", entity.AdditionalType);
 
         var citationEntity = messageEntities[0] as Microsoft.Teams.Api.Entities.CitationEntity;
