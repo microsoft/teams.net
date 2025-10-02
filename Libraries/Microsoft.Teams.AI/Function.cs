@@ -7,6 +7,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 using Json.Schema;
+using Json.Schema.Generation;
 
 using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Messages;
@@ -66,9 +67,10 @@ public class Function : IFunction
         Name = name;
         Description = description;
         Handler = handler;
+        Parameters = GenerateParametersSchema(handler);
     }
 
-    public Function(string name, string? description, JsonSchema? parameters, Delegate handler)
+    public Function(string name, string? description, JsonSchema parameters, Delegate handler)
     {
         Name = name;
         Description = description;
@@ -121,5 +123,33 @@ public class Function : IFunction
         {
             WriteIndented = true
         });
+    }
+
+    /// <summary>
+    /// Generates a JsonSchema for the parameters of a delegate handler using reflection
+    /// </summary>
+    private static JsonSchema? GenerateParametersSchema(Delegate handler)
+    {
+        var method = handler.GetMethodInfo();
+        var methodParams = method.GetParameters();
+
+        if (methodParams.Length == 0)
+        {
+            return null;
+        }
+
+        var parameters = methodParams.Select(p =>
+        {
+            var paramName = p.GetCustomAttribute<ParamAttribute>()?.Name ?? p.Name ?? p.Position.ToString();
+            var schema = new JsonSchemaBuilder().FromType(p.ParameterType).Build();
+            var required = !p.IsOptional;
+            return (paramName, schema, required);
+        });
+
+        return new JsonSchemaBuilder()
+            .Type(SchemaValueType.Object)
+            .Properties(parameters.Select(item => (item.paramName, item.schema)).ToArray())
+            .Required(parameters.Where(item => item.required).Select(item => item.paramName))
+            .Build();
     }
 }

@@ -1,20 +1,25 @@
 {
   "type": "https://schema.org/Message",
-  "@type": "Claim",
+  "@type": "Message",
   "@context": "https://schema.org",
-  "position": 2,
-  "appearance": {
-    "@type": "DigitalDocument",
-    "name": "doc",
-    "text": "full citation text",
-    "abstract": "document abstract",
-    "keywords": [
-      "sample",
-      "doc"
-    ]
-  },
   "additionalType": [
     "some",
     "string"
+  ],
+  "citation": [
+    {
+      "@type": "Claim",
+      "position": 2,
+      "appearance": {
+        "@type": "DigitalDocument",
+        "name": "doc",
+        "text": "full citation text",
+        "abstract": "document abstract",
+        "keywords": [
+          "sample",
+          "doc"
+        ]
+      }
+    }
   ]
 }

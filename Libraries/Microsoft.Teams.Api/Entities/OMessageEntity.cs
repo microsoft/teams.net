@@ -44,7 +44,7 @@ public class OMessageEntity : Entity, IMessageEntity
 
             return oType switch
             {
-                "Claim" => JsonSerializer.Deserialize<CitationEntity>(element.ToString(), options),
+                "Message" => JsonSerializer.Deserialize<CitationEntity>(element.ToString(), options),
                 "CreativeWork" => JsonSerializer.Deserialize<SensitiveUsageEntity>(element.ToString(), options),
                 _ => throw new JsonException($"failed to deserialize omessage entity '{oType}' doesn't match any known types.")
             };
