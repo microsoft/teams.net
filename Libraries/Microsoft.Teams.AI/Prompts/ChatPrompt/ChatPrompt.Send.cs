@@ -13,12 +13,17 @@ public partial class ChatPrompt<TOptions>
         return await Send(message, null, null, cancellationToken);
     }
 
-    public async Task<ModelMessage<string>> Send(string text, OnStreamChunk? onChunk = null, CancellationToken cancellationToken = default)
+    public async Task<ModelMessage<string>> Send(string text, CancellationToken cancellationToken = default)
+    {
+        return await Send(text, null, null, cancellationToken);
+    }
+
+    public async Task<ModelMessage<string>> Send(string text, OnStreamChunk? onChunk, CancellationToken cancellationToken = default)
     {
         return await Send(text, null, onChunk, cancellationToken);
     }
 
-    public Task<ModelMessage<string>> Send(string text, IChatPrompt<TOptions>.RequestOptions? options = null, OnStreamChunk? onChunk = null, CancellationToken cancellationToken = default)
+    public Task<ModelMessage<string>> Send(string text, IChatPrompt<TOptions>.RequestOptions? options, OnStreamChunk? onChunk = null, CancellationToken cancellationToken = default)
     {
         var message = UserMessage.Text(text);
         return Send((IMessage)message, options, onChunk, cancellationToken);
