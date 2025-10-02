@@ -305,7 +305,7 @@ public partial class Activity : IActivity
     /// <summary>
     /// ensures a single root level message entity exists
     /// </summary>
-    private IMessageEntity EnsureSingleRootLevelMessageEntity()
+    private IMessageEntity GetRootLevelMessageEntity()
     {
         var messageEntity = Entities?.FirstOrDefault(
             e => e.Type == "https://schema.org/Message" && e.OType == "Message"
@@ -330,7 +330,7 @@ public partial class Activity : IActivity
     /// </summary>
     public virtual Activity AddAIGenerated()
     {
-        var messageEntity = EnsureSingleRootLevelMessageEntity();
+        var messageEntity = GetRootLevelMessageEntity();
         messageEntity.AdditionalType ??= [];
 
         if (!messageEntity.AdditionalType.Contains("AIGeneratedContent"))
@@ -372,7 +372,7 @@ public partial class Activity : IActivity
     /// </summary>
     public virtual Activity AddCitation(int position, CitationAppearance appearance)
     {
-        var messageEntity = EnsureSingleRootLevelMessageEntity();
+        var messageEntity = GetRootLevelMessageEntity();
         var citationEntity = new CitationEntity(messageEntity);
         citationEntity.Citation ??= [];
         citationEntity.Citation.Add(new CitationEntity.Claim()
