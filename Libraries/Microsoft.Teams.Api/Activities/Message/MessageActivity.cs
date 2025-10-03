@@ -107,12 +107,19 @@ public class MessageActivity : Activity
         return AddAttachment(new Attachment(card));
     }
 
-    public MessageActivity AddMention(Account account)
+    public MessageActivity AddMention(Account account, string? text = null, bool addText = true)
     {
+        var mentionText = text ?? account.Name;
+
+        if (addText)
+        {
+            Text += $"<at>{mentionText}</at>";
+        }
+
         AddEntity(new MentionEntity()
         {
             Mentioned = account,
-            Text = $"<at>{account.Name}</at>"
+            Text = $"<at>{mentionText}</at>"
         });
 
         return this;
