@@ -24,22 +24,13 @@ jobs:
             console.log(`PR #${prNumber} created by: ${prCreator}`);
             console.log(`Event triggered by: ${context.payload.sender.login}`);
 
-            // Try to get timeline events to find original requestor
-            const timeline = await github.rest.issues.listEventsForTimeline({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: prNumber
-            });
-
-            console.log('=== TIMELINE EVENTS ===');
-            console.log(JSON.stringify(timeline.data.slice(0, 5), null, 2));
-            console.log('=== END TIMELINE ===');
-
-            // For now, use the first assignee as the original requestor
+            // Get all assignees excluding Copilot (these should be human requestors)
             const assignees = context.payload.pull_request.assignees || [];
-            const originalRequestor = assignees.length > 0 ? assignees[0].login : null;
+            const humanAssignees = assignees
+              .filter(a => a.login !== prCreator)
+              .map(a => a.login);
 
-            console.log(`Original requestor (first assignee): ${originalRequestor}`);
+            console.log(`Human assignees (potential requestors): ${humanAssignees.join(', ')}`);
 
             // Get all comments on the PR
             const comments = await github.rest.issues.listComments({
@@ -50,29 +41,29 @@ jobs:
 
             console.log(`Found ${comments.data.length} comments`);
 
-            // Check if any comment from the original requestor contains attestation
+            // Check if any comment from human assignees contains attestation
             const attestationPhrases = [
               'I attest that I have verified',
               'I attest that no verification is required'
             ];
 
-            const hasAttestation = comments.data.some(comment => {
-              const isFromRequestor = comment.user.login === originalRequestor;
+            const attestations = comments.data.filter(comment => {
+              const isFromHumanAssignee = humanAssignees.includes(comment.user.login);
               const containsAttestation = attestationPhrases.some(phrase =>
                 comment.body.includes(phrase)
               );
 
-              if (isFromRequestor && containsAttestation) {
+              if (isFromHumanAssignee && containsAttestation) {
                 console.log(`✓ Found attestation in comment #${comment.id} from ${comment.user.login}`);
                 console.log(`Comment: ${comment.body.substring(0, 100)}...`);
               }
 
-              return isFromRequestor && containsAttestation;
+              return isFromHumanAssignee && containsAttestation;
             });
 
-            if (hasAttestation) {
-              console.log('✓ Attestation found!');
+            if (attestations.length > 0) {
+              console.log(`✓ Attestation found from: ${attestations.map(a => a.user.login).join(', ')}`);
             } else {
-              console.log(`✗ No attestation found from original requestor (${originalRequestor})`);
-              core.setFailed(`Original requestor (${originalRequestor}) must attest with either "I attest that I have verified" or "I attest that no verification is required"`);
+              console.log(`✗ No attestation found from any human assignee`);
+              core.setFailed(`At least one human assignee (${humanAssignees.join(', ')}) must attest with either "I attest that I have verified" or "I attest that no verification is required"`);
             }
