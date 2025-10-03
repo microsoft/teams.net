@@ -113,7 +113,7 @@ public class MessageActivity : Activity
 
         if (addText)
         {
-            Text += $"<at>{mentionText}</at>";
+            Text = $"<at>{mentionText}</at> {Text}";
         }
 
         AddEntity(new MentionEntity()

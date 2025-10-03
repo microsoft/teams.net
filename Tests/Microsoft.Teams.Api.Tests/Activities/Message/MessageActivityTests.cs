@@ -376,8 +376,8 @@ public class MessageActivityTests
             Recipient = bot
         }.AddMention(bot, text: "Custom Name");
 
-        // Text should include custom mention text
-        Assert.Equal("Hello <at>Custom Name</at>", activity.Text);
+        // Text should include custom mention text at the beginning
+        Assert.Equal("<at>Custom Name</at> Hello ", activity.Text);
 
         // Mention entity should use custom text
         var mention = activity.GetAccountMention("2");
