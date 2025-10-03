@@ -18,12 +18,17 @@ public interface IHttpClient : IDisposable
     public Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(IHttpRequest request, CancellationToken cancellationToken = default);
 }
 
-public class HttpClient : IHttpClient
+public class HttpClient : IHttpClient       
 {
     public IHttpClientOptions Options { get; }
 
     protected System.Net.Http.HttpClient _client;
     protected ILogger _logger;
+
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
 
     public HttpClient()
     {
@@ -89,10 +94,7 @@ public class HttpClient : IHttpClient
             }
             else
             {
-                string body = JsonSerializer.Serialize(request.Body, new JsonSerializerOptions()
-                {
-                    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-                });
+                string body = JsonSerializer.Serialize(request.Body, _jsonSerializerOptions);
                 httpRequest.Content = new StringContent(body, System.Text.Encoding.UTF8, "application/json");
             }
         }
