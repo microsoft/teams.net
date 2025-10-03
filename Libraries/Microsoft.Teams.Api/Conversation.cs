@@ -28,7 +28,7 @@ public class Conversation
     /// </summary>
     [JsonPropertyName("conversationType")]
     [JsonPropertyOrder(2)]
-    public required ConversationType Type { get; set; }
+    public ConversationType? Type { get; set; }
 
     /// <summary>
     /// The Conversations Name

@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Api.Activities;
 
@@ -219,6 +220,58 @@ public class MessageActivityTests
         };
 
         Assert.Equivalent(expected, activity);
+    }
+
+    [Fact]
+    public void JsonSerialize_WebChat_AllowsEmptyConversationType()
+    {
+        MessageActivity activity = new MessageActivity()
+        {
+            Id = "1",
+            ChannelId = new ChannelId("webchat"),
+            From = new Account()
+            {
+                Id = "1",
+                Name = "test",
+                Role = Role.User
+            },
+            Conversation = new Api.Conversation()
+            {
+                Id = "1"
+            },
+            Recipient = new Account
+            {
+                Id = "2",
+                Name = "test-bot",
+                Role = Role.Bot
+            }
+        };
+        string json = JsonSerializer.Serialize(activity, new JsonSerializerOptions { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull });
+        string expected = File.ReadAllText(@"../../../Json/Activity/Message/MessageActivity_webChat.json");
+        Assert.Equal(expected, json);
+    }
+
+    [Fact]
+    public void JsonDeserialize_WebChat_AllowsEmptyConversationType()
+    {
+        var json = File.ReadAllText(@"../../../Json/Activity/Message/MessageActivity_webChat.json");
+        var activity = JsonSerializer.Deserialize<MessageActivity>(json);
+        Assert.NotNull(activity);
+        Assert.Equal("1", activity.Id);
+        Assert.Equal("webchat", activity.ChannelId);
+        Assert.NotNull(activity.From);
+        Assert.Equal("1", activity.From.Id);
+        Assert.Equal("test", activity.From.Name);
+        Assert.NotNull(activity.From.Role);
+        Assert.Equal(Role.User, activity.From.Role.Value);
+        Assert.NotNull(activity.Conversation);
+        Assert.Equal("1", activity.Conversation.Id);
+        Assert.Null(activity.Conversation.Type);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("2", activity.Recipient.Id);
+        Assert.Equal("test-bot", activity.Recipient.Name);
+        Assert.NotNull(activity.Recipient.Role);
+        Assert.Equal(Role.Bot, activity.Recipient.Role.Value);
     }
 
     [Fact]

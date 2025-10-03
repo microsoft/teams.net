@@ -53,10 +53,6 @@ public partial class Context<TActivity> : IContext<TActivity>
 {
     public async Task<T> Send<T>(T activity) where T : IActivity
     {
-        activity.From ??= Ref.Bot;
-        activity.Recipient ??= Ref.User;
-        activity.Conversation ??= Ref.Conversation;
-
         var res = await Sender.Send(activity, Ref, CancellationToken);
         await OnActivitySent(res, ToActivityType<IActivity>());
         return res;
