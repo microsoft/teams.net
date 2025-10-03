@@ -3,6 +3,7 @@ name: Copilot PR Attestation Check
 on:
   pull_request:
     branches: ['main']
+    types: [opened, synchronize, reopened]
   issue_comment:
     types: [created]
 
@@ -16,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     if: |
       (github.event_name == 'pull_request' && github.event.pull_request.user.login == 'Copilot') ||
-      (github.event_name == 'issue_comment' && github.event.issue.pull_request)
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request != null)
     steps:
       - name: Check for attestation comment
         uses: actions/github-script@v7
@@ -24,7 +25,6 @@ jobs:
           script: |
             // Handle both pull_request and issue_comment events
             const prNumber = context.payload.pull_request?.number || context.payload.issue?.number;
-            const prCreator = context.payload.pull_request?.user?.login || 'Copilot';
 
             // For issue_comment events, we need to fetch the PR details
             let pullRequest;
@@ -37,6 +37,14 @@ jobs:
                 pull_number: prNumber
               });
               pullRequest = pr.data;
+            }
+
+            const prCreator = pullRequest.user.login;
+
+            // Skip if not a Copilot PR
+            if (prCreator !== 'Copilot') {
+              console.log(`Skipping - PR not created by Copilot (creator: ${prCreator})`);
+              return;
             }
 
             console.log(`PR #${prNumber} created by: ${prCreator}`);
