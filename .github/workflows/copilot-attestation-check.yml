@@ -43,7 +43,7 @@ jobs:
             console.log(`Event triggered by: ${context.payload.sender.login}`);
 
             // Get all assignees excluding Copilot (these should be human requestors)
-            const assignees = context.payload.pull_request.assignees || [];
+            const assignees = pullRequest.assignees || [];
             const humanAssignees = assignees
               .filter(a => a.login !== prCreator)
               .map(a => a.login);
