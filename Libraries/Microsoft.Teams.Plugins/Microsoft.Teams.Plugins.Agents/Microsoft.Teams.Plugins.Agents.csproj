@@ -1,0 +1,35 @@
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+<!-- Licensed under the MIT License.-->
+
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageId>Microsoft.Teams.Plugins.Agents</PackageId>
+    <PackageDescription>Teams Agents Plugin</PackageDescription>
+    <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
+    <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore;agents</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <NoWarn>CS8618,CS8601</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Agents.Builder" Version="1.*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
+
+    <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Logging\Microsoft.Teams.Extensions.Logging.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Configuration\Microsoft.Teams.Extensions.Configuration.csproj" />
+    <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />
+  </ItemGroup>
+
+</Project>

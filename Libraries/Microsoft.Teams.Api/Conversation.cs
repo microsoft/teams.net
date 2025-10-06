@@ -17,38 +17,45 @@ public class Conversation
     public required string Id { get; set; }
 
     /// <summary>
+    /// This account's object ID within Azure Active Directory (AAD).
+    /// </summary>
+    [JsonPropertyName("aadObjectId")]
+    [JsonPropertyOrder(1)]
+    public string? AadObjectId { get; set; }
+
+    /// <summary>
     /// Conversation Tenant ID
     /// </summary>
     [JsonPropertyName("tenantId")]
-    [JsonPropertyOrder(1)]
+    [JsonPropertyOrder(2)]
     public string? TenantId { get; set; }
 
     /// <summary>
     /// The Conversations Type
     /// </summary>
     [JsonPropertyName("conversationType")]
-    [JsonPropertyOrder(2)]
+    [JsonPropertyOrder(3)]
     public required ConversationType Type { get; set; }
 
     /// <summary>
     /// The Conversations Name
     /// </summary>
     [JsonPropertyName("name")]
-    [JsonPropertyOrder(3)]
+    [JsonPropertyOrder(4)]
     public string? Name { get; set; }
 
     /// <summary>
     /// If the Conversation supports multiple participants
     /// </summary>
     [JsonPropertyName("isGroup")]
-    [JsonPropertyOrder(4)]
+    [JsonPropertyOrder(5)]
     public bool? IsGroup { get; set; }
 
     /// <summary>
     /// List of members in this conversation
     /// </summary>
     [JsonPropertyName("members")]
-    [JsonPropertyOrder(5)]
+    [JsonPropertyOrder(6)]
     public IList<Account>? Members { get; set; }
 
     /// <summary>

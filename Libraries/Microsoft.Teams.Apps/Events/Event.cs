@@ -13,6 +13,9 @@ namespace Microsoft.Teams.Apps.Events;
 /// </summary>
 public class Event : Dictionary<string, object>
 {
+    public IServiceProvider? Services { get; set; }
+    public IDictionary<string, object?>? Extra { get; set; }
+
     public object? GetOrDefault(string key) => ContainsKey(key) ? this[key] : null;
     public T? GetOrDefault<T>(string key) => (T?)GetOrDefault(key);
 

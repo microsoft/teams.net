@@ -13,6 +13,7 @@ public interface IRouter
     public IRouter Register(IRoute route);
     public IRouter Register(Func<IContext<IActivity>, Task<object?>> handler);
     public IRouter Register(string name, Func<IContext<IActivity>, Task<object?>> handler);
+    public IList<IRoute> ToList();
 }
 
 public class Router : IRouter
@@ -67,5 +68,10 @@ public class Router : IRouter
                 return false;
             }
         });
+    }
+
+    public IList<IRoute> ToList()
+    {
+        return _routes;
     }
 }

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Api.Auth;
@@ -88,6 +89,12 @@ public class JsonWebToken : IToken
         var handler = new JwtSecurityTokenHandler();
         Token = handler.ReadJwtToken(response.Token);
         _tokenAsString = response.Token;
+    }
+
+    public JsonWebToken(ClaimsIdentity identity)
+    {
+        Token = new JwtSecurityToken(claims: identity.Claims);
+        _tokenAsString = Token.ToString();
     }
 
     public override string ToString() => _tokenAsString;

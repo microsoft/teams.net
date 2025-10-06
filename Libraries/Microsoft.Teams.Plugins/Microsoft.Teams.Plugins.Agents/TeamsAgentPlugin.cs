@@ -1,39 +1,28 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
-
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
-using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Http;
 using Microsoft.Teams.Common.Logging;
+using Microsoft.Teams.Plugins.Agents.Models;
 
-namespace Microsoft.Teams.Plugins.AspNetCore;
+namespace Microsoft.Teams.Plugins.Agents;
 
 [Plugin]
-public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
+public partial class TeamsAgentPlugin : ISenderPlugin
 {
     [Dependency]
     public ILogger Logger { get; set; }
-
-    [Dependency("Token", optional: true)]
-    public IToken? Token { get; set; }
-
-    [Dependency]
-    public IHttpClient Client { get; set; }
-
+    public TeamsAgentPluginOptions Options { get; }
     public event EventFunction Events;
 
-    public IApplicationBuilder Configure(IApplicationBuilder builder)
+    public TeamsAgentPlugin(TeamsAgentPluginOptions options)
     {
-        return builder;
+        Options = options;
     }
 
     public Task OnInit(App app, CancellationToken cancellationToken = default)
     {
+        Logger.Debug("OnInit");
         return Task.CompletedTask;
     }
 
@@ -67,48 +56,35 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         return Task.CompletedTask;
     }
 
-    public Task<IActivity> Send(IActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default)
+    public IStreamer CreateStream(Api.ConversationReference reference, CancellationToken cancellationToken = default)
     {
-        return Send<IActivity>(activity, reference, cancellationToken);
+        return new Stream(Options.Context);
+    }
+
+    public async Task<IActivity> Send(IActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default)
+    {
+        activity.ServiceUrl = reference.ServiceUrl;
+        activity.Conversation = reference.Conversation;
+        activity.From = reference.Bot;
+        activity.Recipient = reference.User;
+        activity.ChannelId = reference.ChannelId;
+
+        var res = await Options.Context.SendActivityAsync(activity.ToAgentEntity(), cancellationToken);
+        activity.Id = res.Id;
+        return activity;
     }
 
     public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
-        var client = new ApiClient(reference.ServiceUrl, Client, cancellationToken);
-
+        activity.ServiceUrl = reference.ServiceUrl;
         activity.Conversation = reference.Conversation;
         activity.From = reference.Bot;
         activity.Recipient = reference.User;
+        activity.ChannelId = reference.ChannelId;
 
-        if (activity.Id is not null && !activity.IsStreaming)
-        {
-            await client
-                .Conversations
-                .Activities
-                .UpdateAsync(reference.Conversation.Id, activity.Id, activity);
-
-            return activity;
-        }
-
-        var res = await client
-            .Conversations
-            .Activities
-            .CreateAsync(reference.Conversation.Id, activity);
-
-        activity.Id = res?.Id;
+        var res = await Options.Context.SendActivityAsync(activity.ToAgentEntity(), cancellationToken);
+        activity.Id = res.Id;
         return activity;
-    }
-
-    public IStreamer CreateStream(Api.ConversationReference reference, CancellationToken cancellationToken = default)
-    {
-        return new Stream()
-        {
-            Send = async activity =>
-            {
-                var res = await Send(activity, reference, cancellationToken);
-                return res;
-            }
-        };
     }
 
     public async Task<Response> Do(ActivityEvent @event, CancellationToken cancellationToken = default)

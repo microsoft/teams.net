@@ -9,13 +9,16 @@ namespace Microsoft.Teams.Apps.Extensions;
 
 public class TeamsPluginService<TPlugin> : IHostedLifecycleService where TPlugin : IPlugin
 {
+    protected App _app;
     protected TPlugin _plugin;
     protected ILogger<TPlugin> _logger;
 
-    public TeamsPluginService(TPlugin plugin, ILogger<TPlugin> logger)
+    public TeamsPluginService(App app, TPlugin plugin, ILogger<TPlugin> logger)
     {
+        _app = app;
         _plugin = plugin;
         _logger = logger;
+        _app.AddPlugin(plugin);
     }
 
     public Task StartingAsync(CancellationToken cancellationToken)

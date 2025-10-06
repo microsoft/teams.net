@@ -17,6 +17,8 @@ public interface IRoute
 
     public bool Select(IActivity activity);
     public Task<object?> Invoke(IContext<IActivity> context);
+    public ActivityType GetActivityType();
+    public string GetActivityName();
 }
 
 public class Route : IRoute
@@ -28,6 +30,8 @@ public class Route : IRoute
 
     public bool Select(IActivity activity) => Selector(activity);
     public async Task<object?> Invoke(IContext<IActivity> context) => await Handler(context);
+    public ActivityType GetActivityType() => new(Name.Split(['/'], count: 2)[0]);
+    public string GetActivityName() => Name.Split(['/'], count: 2)[1];
 }
 
 public class AttributeRoute : IRoute
@@ -67,6 +71,18 @@ public class AttributeRoute : IRoute
         });
 
         return Method.InvokeAsync(Object, args?.ToArray());
+    }
+
+    public ActivityType GetActivityType()
+    {
+        if (Name is null) throw new Exception("invalid route name");
+        return new(Name.Split(['/'])[0]);
+    }
+
+    public string GetActivityName()
+    {
+        if (Name is null) throw new Exception("invalid route name");
+        return new(Name.Split(['/'])[1]);
     }
 
     public class ValidationResult

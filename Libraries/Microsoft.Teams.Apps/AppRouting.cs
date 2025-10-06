@@ -17,7 +17,7 @@ namespace Microsoft.Teams.Apps;
 
 public partial class App
 {
-    internal IRouter Router { get; } = new Router();
+    public IRouter Router { get; } = new Router();
 
     public App AddController<T>(T controller) where T : class
     {

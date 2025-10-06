@@ -9,11 +9,11 @@ namespace Microsoft.Teams.Apps.Events;
 /// a function for emitting events
 /// </summary>
 /// <param name="plugin">the plugin</param>
-/// <param name="name">the event name</param>
+/// <param name="@type">the event type</param>
 /// <param name="payload">the event payload</param>
 public delegate Task<object?> EventFunction(
     IPlugin plugin,
-    string name,
+    EventType @type,
     Event? payload = null,
     CancellationToken cancellationToken = default
 );

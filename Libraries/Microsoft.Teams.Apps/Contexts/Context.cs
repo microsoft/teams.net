@@ -74,6 +74,11 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     public IDictionary<string, object?> Extra { get; set; }
 
     /// <summary>
+    /// the service collection provider
+    /// </summary>
+    public IServiceProvider Services { get; set; }
+
+    /// <summary>
     /// the cancellation token
     /// </summary>
     public CancellationToken CancellationToken { get; }
@@ -137,6 +142,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     public required ConversationReference Ref { get; set; }
     public required JsonWebToken? UserGraphToken { get; set; }
     public IDictionary<string, object?> Extra { get; set; } = new Dictionary<string, object?>();
+    public required IServiceProvider Services { get; set; }
     public CancellationToken CancellationToken { get; set; }
 
     internal Func<IContext<IActivity>, Task<object?>> OnNext { get; set; } = (_) => Task.FromResult<object?>(null);
@@ -185,6 +191,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
             IsSignedIn = IsSignedIn,
             ConnectionName = ConnectionName,
             Extra = Extra,
+            Services = Services,
             CancellationToken = CancellationToken,
             OnNext = OnNext,
             OnActivitySent = OnActivitySent

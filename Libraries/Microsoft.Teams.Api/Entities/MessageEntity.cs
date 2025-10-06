@@ -40,7 +40,7 @@ public interface IMessageEntity : IEntity
             {
                 "message" => JsonSerializer.Deserialize<MessageEntity>(element.ToString(), options),
                 "https://schema.org/Message" => JsonSerializer.Deserialize<OMessageEntity>(element.ToString(), options),
-                _ => throw new JsonException($"entity type '{type}' is not supported")
+                _ => JsonSerializer.Deserialize<MessageEntity>(element.ToString(), options)
             };
         }
 

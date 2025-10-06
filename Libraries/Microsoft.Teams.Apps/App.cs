@@ -71,9 +71,9 @@ public partial class App
                 if (Token is null)
                 {
                     var res = Api!.Bots.Token.GetAsync(Credentials, TokenClient)
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
 
                     Token = new JsonWebToken(res.AccessToken);
                 }
@@ -81,9 +81,9 @@ public partial class App
                 if (Token.IsExpired)
                 {
                     var res = Credentials.Resolve(TokenClient, [.. Token.Scopes])
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
 
                     Token = new JsonWebToken(res.AccessToken);
                 }
@@ -142,8 +142,8 @@ public partial class App
                 }
             }
 
-            Logger.Debug(Id);
-            Logger.Debug(Name);
+            Logger.Debug($"App Id => {Id}");
+            Logger.Debug($"App Name => {Name}");
 
             foreach (var plugin in Plugins)
             {
@@ -345,6 +345,7 @@ public partial class App
             IsSignedIn = userToken is not null,
             OnNext = Next,
             Extra = @event.Extra ?? new Dictionary<string, object?>(),
+            Services = @event.Services,
             UserGraphToken = userToken,
             CancellationToken = cancellationToken,
             ConnectionName = OAuth.DefaultConnectionName,
@@ -364,7 +365,12 @@ public partial class App
             await Events.Emit(
                 sender,
                 EventType.ActivitySent,
-                new ActivitySentEvent() { Activity = activity },
+                new ActivitySentEvent()
+                {
+                    Activity = activity,
+                    Services = @event.Services,
+                    Extra = @event.Extra
+                },
                 cancellationToken
             );
         };
@@ -399,7 +405,12 @@ public partial class App
             await Events.Emit(
                 sender,
                 EventType.ActivityResponse,
-                new ActivityResponseEvent() { Response = response },
+                new ActivityResponseEvent()
+                {
+                    Response = response,
+                    Services = @event.Services,
+                    Extra = @event.Extra
+                },
                 cancellationToken
             );
 
@@ -410,7 +421,13 @@ public partial class App
             await Events.Emit(
                 sender,
                 EventType.Error,
-                new ErrorEvent() { Exception = ex, Context = context.ToActivityType<IActivity>() },
+                new ErrorEvent()
+                {
+                    Exception = ex,
+                    Context = context.ToActivityType<IActivity>(),
+                    Services = @event.Services,
+                    Extra = @event.Extra
+                },
                 cancellationToken
             );
 

@@ -18,17 +18,24 @@ public class Channel
     public required string Id { get; set; }
 
     /// <summary>
+    /// This account's object ID within Azure Active Directory (AAD).
+    /// </summary>
+    [JsonPropertyName("aadObjectId")]
+    [JsonPropertyOrder(1)]
+    public string? AadObjectId { get; set; }
+
+    /// <summary>
     /// The type of the channel. Valid values are standard, shared and private
     /// </summary>
     [JsonPropertyName("type")]
-    [JsonPropertyOrder(1)]
+    [JsonPropertyOrder(2)]
     public ChannelType? Type { get; set; }
 
     /// <summary>
     /// Name of the channel
     /// </summary>
     [JsonPropertyName("name")]
-    [JsonPropertyOrder(2)]
+    [JsonPropertyOrder(3)]
     public string? Name { get; set; }
 }
 

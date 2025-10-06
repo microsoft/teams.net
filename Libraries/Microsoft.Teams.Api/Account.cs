@@ -32,7 +32,7 @@ public class Account
 
     [JsonPropertyName("properties")]
     [JsonPropertyOrder(5)]
-    public Dictionary<string, object>? Properties { get; set; }
+    public Dictionary<string, object?>? Properties { get; set; }
 }
 
 [JsonConverter(typeof(JsonConverter<Role>))]

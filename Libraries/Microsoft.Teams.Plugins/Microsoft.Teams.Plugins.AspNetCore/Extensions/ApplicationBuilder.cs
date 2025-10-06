@@ -45,8 +45,6 @@ public static partial class ApplicationBuilderExtensions
 
         foreach (var plugin in plugins)
         {
-            app.AddPlugin(plugin);
-
             if (plugin is IAspNetCorePlugin aspNetCorePlugin)
             {
                 aspNetCorePlugin.Configure(builder);

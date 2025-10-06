@@ -261,7 +261,7 @@ public partial class Activity : IActivity
     public virtual Activity WithData(string key, object? value)
     {
         ChannelData ??= new();
-        ChannelData.Properties[key] = value;
+        ChannelData.Properties[key] = JsonSerializer.SerializeToElement(value);
         return this;
     }
 
