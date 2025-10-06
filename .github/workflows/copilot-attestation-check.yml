@@ -1,0 +1,99 @@
+name: Copilot PR Attestation Check
+
+on:
+  pull_request:
+    branches: ['main']
+    types: [opened, synchronize, reopened]
+  issue_comment:
+    types: [created, edited]
+  pull_request_review_comment:
+    types: [created, edited]
+
+permissions:
+  pull-requests: write
+  issues: write
+  contents: read
+
+jobs:
+  check-attestation:
+    name: Check Copilot Attestation
+    runs-on: ubuntu-latest
+    if: |
+      (github.event_name == 'pull_request' && github.event.pull_request.user.login == 'Copilot') ||
+      (github.event_name == 'issue_comment' && contains(github.event.comment.html_url, '/pull/')) ||
+      (github.event_name == 'pull_request_review_comment')
+    steps:
+      - name: Check for attestation comment
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Handle both pull_request and issue_comment events
+            const prNumber = context.payload.pull_request?.number || context.payload.issue?.number;
+
+            // For issue_comment events, we need to fetch the PR details
+            let pullRequest;
+            if (context.payload.pull_request) {
+              pullRequest = context.payload.pull_request;
+            } else {
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+              pullRequest = pr.data;
+            }
+
+            const prCreator = pullRequest.user.login;
+
+            // Skip if not a Copilot PR
+            if (prCreator !== 'Copilot') {
+              console.log(`Skipping - PR not created by Copilot (creator: ${prCreator})`);
+              return;
+            }
+
+            console.log(`PR #${prNumber} created by: ${prCreator}`);
+            console.log(`Event triggered by: ${context.payload.sender.login}`);
+
+            // Get all assignees excluding Copilot (these should be human requestors)
+            const assignees = pullRequest.assignees || [];
+            const humanAssignees = assignees
+              .filter(a => a.login !== prCreator)
+              .map(a => a.login);
+
+            console.log(`Human assignees (potential requestors): ${humanAssignees.join(', ')}`);
+
+            // Get all comments on the PR
+            const comments = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber
+            });
+
+            console.log(`Found ${comments.data.length} comments`);
+
+            // Check if any comment from human assignees contains attestation
+            const attestationPhrases = [
+              'I attest that I have verified',
+              'I attest that no verification is required'
+            ];
+
+            const attestations = comments.data.filter(comment => {
+              const isFromHumanAssignee = humanAssignees.includes(comment.user.login);
+              const containsAttestation = attestationPhrases.some(phrase =>
+                comment.body.includes(phrase)
+              );
+
+              if (isFromHumanAssignee && containsAttestation) {
+                console.log(`✓ Found attestation in comment #${comment.id} from ${comment.user.login}`);
+                console.log(`Comment: ${comment.body.substring(0, 100)}...`);
+              }
+
+              return isFromHumanAssignee && containsAttestation;
+            });
+
+            if (attestations.length > 0) {
+              console.log(`✓ Attestation found from: ${attestations.map(a => a.user.login).join(', ')}`);
+            } else {
+              console.log(`✗ No attestation found from any human assignee`);
+              core.setFailed(`At least one human assignee (${humanAssignees.join(', ')}) must attest with either "I attest that I have verified" or "I attest that no verification is required"`);
+            }

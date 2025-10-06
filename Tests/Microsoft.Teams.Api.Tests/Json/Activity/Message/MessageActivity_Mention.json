@@ -2,7 +2,7 @@
     "id": "1",
     "type": "message",
     "channelId": "msteams",
-    "text": "testing123",
+    "text": "<at>test-bot</at> testing123",
     "from": {
         "id": "1",
         "role": "user",

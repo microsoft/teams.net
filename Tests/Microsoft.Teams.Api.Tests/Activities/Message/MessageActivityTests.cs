@@ -365,4 +365,112 @@ public class MessageActivityTests
         Assert.NotNull(citationEntity.Citation);
         Assert.Single(citationEntity.Citation);
     }
+
+    [Fact]
+    public void AddMention_WithAddTextFalse_DoesNotAddTextToActivity()
+    {
+        Account bot = new()
+        {
+            Id = "2",
+            Name = "test-bot",
+            Role = Role.Bot
+        };
+
+        var activity = new MessageActivity("testing123")
+        {
+            Id = "1",
+            From = new()
+            {
+                Id = "1",
+                Name = "test",
+                Role = Role.User
+            },
+            Conversation = new()
+            {
+                Id = "1",
+                Type = ConversationType.Personal
+            },
+            Recipient = bot
+        }.AddMention(bot, addText: false);
+
+        // Text should remain unchanged
+        Assert.Equal("testing123", activity.Text);
+
+        // But mention entity should still be added
+        var mention = activity.GetAccountMention("2");
+        Assert.NotNull(mention);
+        Assert.Equal("<at>test-bot</at>", mention.Text);
+    }
+
+    [Fact]
+    public void AddMention_WithCustomText_UsesCustomText()
+    {
+        Account bot = new()
+        {
+            Id = "2",
+            Name = "test-bot",
+            Role = Role.Bot
+        };
+
+        var activity = new MessageActivity("Hello ")
+        {
+            Id = "1",
+            From = new()
+            {
+                Id = "1",
+                Name = "test",
+                Role = Role.User
+            },
+            Conversation = new()
+            {
+                Id = "1",
+                Type = ConversationType.Personal
+            },
+            Recipient = bot
+        }.AddMention(bot, text: "Custom Name");
+
+        // Text should include custom mention text at the beginning
+        Assert.Equal("<at>Custom Name</at> Hello ", activity.Text);
+
+        // Mention entity should use custom text
+        var mention = activity.GetAccountMention("2");
+        Assert.NotNull(mention);
+        Assert.Equal("<at>Custom Name</at>", mention.Text);
+    }
+
+    [Fact]
+    public void AddMention_WithCustomTextAndAddTextFalse_DoesNotAddText()
+    {
+        Account bot = new()
+        {
+            Id = "2",
+            Name = "test-bot",
+            Role = Role.Bot
+        };
+
+        var activity = new MessageActivity("Hello")
+        {
+            Id = "1",
+            From = new()
+            {
+                Id = "1",
+                Name = "test",
+                Role = Role.User
+            },
+            Conversation = new()
+            {
+                Id = "1",
+                Type = ConversationType.Personal
+            },
+            Recipient = bot
+        }.AddMention(bot, text: "Custom Name", addText: false);
+
+        // Text should remain unchanged
+        Assert.Equal("Hello", activity.Text);
+
+        // But mention entity should use custom text
+        var mention = activity.GetAccountMention("2");
+        Assert.NotNull(mention);
+        Assert.Equal("<at>Custom Name</at>", mention.Text);
+    }
 }
