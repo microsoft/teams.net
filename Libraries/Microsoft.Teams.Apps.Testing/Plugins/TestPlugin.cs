@@ -146,7 +146,7 @@ public partial class TestPlugin : ISenderPlugin
         {
             await Events(
                 this,
-                "message",
+                new("message"),
                 new TestMessageEvent() { Message = message.Text },
                 cancellationToken
             );
@@ -154,7 +154,7 @@ public partial class TestPlugin : ISenderPlugin
 
         var @out = await Events(
             this,
-            "activity",
+            EventType.Activity,
             @event,
             cancellationToken
         );
