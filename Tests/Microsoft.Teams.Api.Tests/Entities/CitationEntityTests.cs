@@ -75,7 +75,7 @@ public class CitationEntityTests
             Keywords = ["sample", "doc"],
             Text = "full citation text"
         };
-        Entity entity = new CitationEntity()
+        IEntity entity = new CitationEntity()
         {
             Appearance = appearance.ToDocument(),
             Position = 2,
@@ -121,7 +121,7 @@ public class CitationEntityTests
     public void CitationEntity_JsonDeserialize_Derived()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/CitationEntity.json");
-        var entity = JsonSerializer.Deserialize<Entity>(json);
+        var entity = JsonSerializer.Deserialize<IEntity>(json);
         var appearance = new CitationAppearance()
         {
             Name = "doc",

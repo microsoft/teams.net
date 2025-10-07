@@ -82,7 +82,7 @@ public class AttributeRoute : IRoute
     public string GetActivityName()
     {
         if (Name is null) throw new Exception("invalid route name");
-        return new(Name.Split(['/'])[1]);
+        return Name.Split(['/'])[1];
     }
 
     public class ValidationResult

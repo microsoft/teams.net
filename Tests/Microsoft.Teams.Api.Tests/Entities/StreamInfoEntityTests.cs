@@ -89,7 +89,7 @@ public class StreamInfoEntityTests
     [Fact]
     public void StreamInfoEntity_JsonSerialize_Interface_Derived()
     {
-        Entity entity = new StreamInfoEntity()
+        IEntity entity = new StreamInfoEntity()
         {
             StreamId = "strId",
             StreamSequence = 3,
@@ -129,7 +129,7 @@ public class StreamInfoEntityTests
     public void StreamInfoEntity_JsonDeserialize_Derived()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/StreamInfoEntity.json");
-        var entity = JsonSerializer.Deserialize<Entity>(json);
+        var entity = JsonSerializer.Deserialize<IEntity>(json);
         var expected = new StreamInfoEntity()
         {
             StreamId = "strId",

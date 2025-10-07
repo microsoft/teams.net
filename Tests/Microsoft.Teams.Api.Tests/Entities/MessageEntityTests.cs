@@ -51,7 +51,7 @@ public class MessageEntityTests
     [Fact]
     public void MessageEntity_JsonSerialize_Interface_Derived()
     {
-        Entity entity = new MessageEntity()
+        IEntity entity = new MessageEntity()
         {
             AdditionalType = ["test", "valid"]
         };
@@ -73,7 +73,7 @@ public class MessageEntityTests
     public void MessageEntity_JsonDeserialize()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/MessageEntity.json");
-        var entity = JsonSerializer.Deserialize<MessageEntity>(json);
+        var entity = JsonSerializer.Deserialize<IMessageEntity>(json);
         var expected = new MessageEntity()
         {
             AdditionalType = ["test", "valid"]
@@ -86,7 +86,7 @@ public class MessageEntityTests
     public void MessageEntity_JsonDeserialize_Derived()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/MessageEntity.json");
-        var entity = JsonSerializer.Deserialize<Entity>(json);
+        var entity = JsonSerializer.Deserialize<IEntity>(json);
 
         var expected = new MessageEntity()
         {

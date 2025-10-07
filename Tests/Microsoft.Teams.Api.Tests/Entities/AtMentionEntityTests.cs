@@ -55,7 +55,7 @@ public class AtMentionEntityTests
     public void AtMentionEntity_JsonSerialize_Interface_Derived()
     {
         var account = new Account() { Id = "accountId", Name = "acctName" };
-        Entity entity = new MentionEntity()
+        IEntity entity = new MentionEntity()
         {
             Mentioned = account,
             Text = $"<at>{account.Name}</at>"
@@ -93,7 +93,7 @@ public class AtMentionEntityTests
     public void AtMentionEntity_JsonDeserialize_Derived()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/AtMentionEntity.json");
-        var entity = JsonSerializer.Deserialize<Entity>(json);
+        var entity = JsonSerializer.Deserialize<IEntity>(json);
         var account = new Account() { Id = "accountId", Name = "acctName" };
         var expected = new MentionEntity()
         {

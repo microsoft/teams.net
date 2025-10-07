@@ -54,7 +54,7 @@ public class SensitiveUsageEntityTests
     [Fact]
     public void SensitiveUsageEntity_JsonSerialize_Interface_Derived()
     {
-        Entity entity = new SensitiveUsageEntity()
+        IEntity entity = new SensitiveUsageEntity()
         {
             Name = "A1",
             Description = "desc valid",
@@ -94,7 +94,7 @@ public class SensitiveUsageEntityTests
     public void SensitiveUsageEntity_JsonDeserialize_Derived()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/SensitiveUsageEntity.json");
-        var entity = JsonSerializer.Deserialize<Entity>(json);
+        var entity = JsonSerializer.Deserialize<IEntity>(json);
         var expected = new SensitiveUsageEntity()
         {
             Name = "A1",

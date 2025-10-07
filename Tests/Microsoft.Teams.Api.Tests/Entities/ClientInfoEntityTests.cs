@@ -56,7 +56,7 @@ public class ClientInfoEntityTests
     [Fact]
     public void ClientInfoEntity_JsonSerialize_Interface_Derived()
     {
-        Entity entity = new ClientInfoEntity()
+        IEntity entity = new ClientInfoEntity()
         {
             Platform = "fakePlatform",
             Locale = "en-US",
@@ -98,7 +98,7 @@ public class ClientInfoEntityTests
     public void ClientInfoEntity_JsonDeserialize_Derived()
     {
         var json = File.ReadAllText(@"../../../Json/Entities/ClientInfoEntity.json");
-        var entity = JsonSerializer.Deserialize<Entity>(json);
+        var entity = JsonSerializer.Deserialize<IEntity>(json);
         var expected = new ClientInfoEntity()
         {
             Platform = "fakePlatform",

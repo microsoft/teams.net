@@ -29,7 +29,7 @@ public class CommandResultActivityTests
                 Name = "Bot user",
                 Role = new Role("bot"),
                 AadObjectId = "aadObjectId",
-                Properties = new Dictionary<string, object>()
+                Properties = new Dictionary<string, object?>()
                 {
                     { "key1", "value1" },
                     { "key2", "value2" },
