@@ -80,6 +80,72 @@ public class MessageActivity : Activity
         Text = text;
     }
 
+    public MessageActivity WithText(string text)
+    {
+        Text = text;
+        return this;
+    }
+
+    public MessageActivity WithSpeak(string speak)
+    {
+        Speak = speak;
+        return this;
+    }
+
+    public MessageActivity WithInputHint(InputHint inputHint)
+    {
+        InputHint = inputHint;
+        return this;
+    }
+
+    public MessageActivity WithSummary(string summary)
+    {
+        Summary = summary;
+        return this;
+    }
+
+    public MessageActivity WithTextFormat(TextFormat textFormat)
+    {
+        TextFormat = textFormat;
+        return this;
+    }
+
+    public MessageActivity WithAttachmentLayout(Attachment.Layout attachmentLayout)
+    {
+        AttachmentLayout = attachmentLayout;
+        return this;
+    }
+
+    public MessageActivity WithSuggestedActions(SuggestedActions suggestedActions)
+    {
+        SuggestedActions = suggestedActions;
+        return this;
+    }
+
+    public MessageActivity WithImportance(Importance importance)
+    {
+        Importance = importance;
+        return this;
+    }
+
+    public MessageActivity WithDeliveryMode(DeliveryMode deliveryMode)
+    {
+        DeliveryMode = deliveryMode;
+        return this;
+    }
+
+    public MessageActivity WithExpiration(DateTime expiration)
+    {
+        Expiration = expiration;
+        return this;
+    }
+
+    public MessageActivity AddText(string text)
+    {
+        Text += text;
+        return this;
+    }
+
     public MessageActivity AddAttachment(params Attachment[] value)
     {
         Attachments ??= [];
