@@ -80,7 +80,7 @@ public partial class App
 
                 if (Token.IsExpired)
                 {
-                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes])
+                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(BotTokenClient.BotScope)])
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
