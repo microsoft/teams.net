@@ -26,14 +26,6 @@ public class EntitiesTests
         Assert.Contains("failed to deserialize entity 'type' property", ex.Message);
     }
 
-    [Fact]
-    public void Entity_UnknownType_Throws()
-    {
-        var json = "{\"type\":\"other\"}";
-        var ex = Assert.Throws<JsonException>(() => DeserializeEntity(json));
-        Assert.Contains("doesn't match any known types", ex.Message);
-    }
-
     // Base Entity converter path
     [Fact]
     public void BaseEntity_Message_DispatchesToMessageEntity()
@@ -65,5 +57,13 @@ public class EntitiesTests
         var json = "{\"type\":\"https://schema.org/Message\",\"@type\":\"Other\"}";
         var ex = Assert.Throws<JsonException>(() => DeserializeOMessage(json));
         Assert.Contains("doesn't match any known types", ex.Message);
+    }
+
+    [Fact]
+    public void Entity_JsonSerialize_Class()
+    {
+        var a = JsonSerializer.Deserialize<Entity>(@"{ ""type"": ""unknown"", ""hello"": ""world"" }");
+        var b = JsonSerializer.Deserialize<IEntity>(@"{ ""type"": ""unknown"", ""hello"": ""world"" }");
+        Assert.Equal(a?.ToString(), b?.ToString());
     }
 }

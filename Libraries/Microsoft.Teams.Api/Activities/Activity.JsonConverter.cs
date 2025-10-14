@@ -1,10 +1,11 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Collections.Specialized;
-using System.Reflection;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+
+using Microsoft.Teams.Common.Json;
 
 namespace Microsoft.Teams.Api.Activities;
 
@@ -41,14 +42,14 @@ public partial class Activity
 
         public override Activity? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var element = JsonSerializer.Deserialize<JsonElement>(ref reader, options);
+            var element = JsonSerializer.Deserialize<JsonObject>(ref reader, options) ?? throw new Exception("expected json object");
 
-            if (!element.TryGetProperty("type", out JsonElement typeProperty))
+            if (!element.TryGetPropertyValue("type", out var typeNode))
             {
                 throw new JsonException("activity must have a 'type' property");
             }
 
-            var type = typeProperty.Deserialize<string>(options);
+            var type = typeNode.Deserialize<string>(options);
 
             if (type is null)
             {
@@ -75,27 +76,7 @@ public partial class Activity
             if (activity is null)
             {
                 activity = new(type);
-                var properties = activity.GetType().GetProperties();
-
-                foreach (var item in element.EnumerateObject())
-                {
-                    var property = properties.FirstOrDefault(f =>
-                        item.Name == (f.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? f.Name)
-                    );
-
-                    if (property is null)
-                    {
-                        activity.Properties[item.Name] = item.Value.Deserialize<object>(options);
-                        continue;
-                    }
-
-                    if (property.GetCustomAttribute<JsonIgnoreAttribute>() is not null)
-                    {
-                        continue;
-                    }
-
-                    property.SetValue(activity, item.Value.Deserialize(property.PropertyType, options));
-                }
+                activity.Properties = activity.FromJsonObject(element, options);
             }
 
             return activity;
@@ -169,35 +150,7 @@ public partial class Activity
                 return;
             }
 
-            var json = new OrderedDictionary();
-            var properties = value
-                .GetType()
-                .GetProperties()
-                .OrderBy(p => p.GetCustomAttribute<JsonPropertyOrderAttribute>()?.Order ?? p.MetadataToken);
-
-            foreach (var property in properties)
-            {
-                var propertyName = property.GetCustomAttribute<JsonPropertyNameAttribute>()?.Name ?? property.Name;
-                var propertyValue = property.GetValue(value);
-
-                if (property.GetCustomAttribute<JsonIgnoreAttribute>() is not null) continue;
-                if (propertyValue is null) continue;
-                if (property.GetCustomAttribute<JsonExtensionDataAttribute>() is not null)
-                {
-                    var jsonObject = JsonSerializer.SerializeToElement(propertyValue, propertyValue.GetType(), options);
-
-                    foreach (var item in jsonObject.EnumerateObject())
-                    {
-                        json.Add(item.Name, item.Value);
-                    }
-
-                    continue;
-                }
-
-                json.Add(propertyName, propertyValue);
-            }
-
-            JsonSerializer.Serialize(writer, json, options);
+            JsonSerializer.Serialize(writer, value.ToJsonObject(options), options);
         }
     }
 }
