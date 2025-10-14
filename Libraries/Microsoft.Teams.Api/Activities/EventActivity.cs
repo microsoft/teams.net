@@ -13,7 +13,8 @@ public partial class ActivityType : StringEnum
     public bool IsEvent => Event.Equals(Value);
 }
 
-public interface IEventActivity
+[JsonConverter(typeof(JsonConverter))]
+public interface IEventActivity : IActivity
 {
     /// <summary>
     /// The name of the operation associated with an invoke or event activity.

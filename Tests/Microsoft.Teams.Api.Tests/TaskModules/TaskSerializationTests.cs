@@ -164,9 +164,6 @@ public class TaskSerializationTests
         // act
         var json = JsonSerializer.Serialize(action, _jsonOptions);
 
-        // Debug: Print actual JSON to see structure
-        System.Console.WriteLine($"Actual JSON: {json}");
-
         // assert
         using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
