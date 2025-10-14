@@ -319,7 +319,7 @@ public partial class Activity : IActivity
                 OType = "Message",
                 OContext = "https://schema.org"
             };
-            
+
             AddEntity(messageEntity);
         }
 

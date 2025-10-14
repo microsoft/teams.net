@@ -1,6 +1,7 @@
 using System.Net;
 using System.Text;
 using System.Text.Json;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
@@ -8,6 +9,7 @@ using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Common.Logging;
+
 using Moq;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Tests;
