@@ -64,6 +64,12 @@ public class Entity : IEntity
     [JsonExtensionData]
     public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
 
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     [JsonConstructor]
     public Entity(string type)
     {
@@ -78,11 +84,7 @@ public class Entity : IEntity
 
     public override string ToString()
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+        return JsonSerializer.Serialize(this, JsonOptions);
     }
 
     public class JsonConverter : JsonConverter<Entity>
