@@ -2,11 +2,14 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+
+using Microsoft.Teams.Common.Json;
 
 namespace Microsoft.Teams.Api.Entities;
 
-[JsonConverter(typeof(JsonConverter))]
+[JsonConverter(typeof(EntityJsonConverter))]
 public interface IEntity
 {
     [JsonPropertyName("type")]
@@ -33,62 +36,17 @@ public interface IEntity
 
         public override IEntity? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var element = JsonSerializer.Deserialize<JsonElement>(ref reader, options);
-
-            if (!element.TryGetProperty("type", out JsonElement property))
-            {
-                throw new JsonException("entity must have a 'type' property");
-            }
-
-            var type = property.Deserialize<string>(options);
-
-            if (type is null)
-            {
-                throw new JsonException("failed to deserialize entity 'type' property");
-            }
-
-            return type switch
-            {
-                "clientInfo" => JsonSerializer.Deserialize<ClientInfoEntity>(element.ToString(), options),
-                "mention" => JsonSerializer.Deserialize<MentionEntity>(element.ToString(), options),
-                "message" or "https://schema.org/Message" => JsonSerializer.Deserialize<IMessageEntity>(element.ToString(), options),
-                "streaminfo" => JsonSerializer.Deserialize<StreamInfoEntity>(element.ToString(), options),
-                _ => throw new JsonException($"failed to deserialize entity '{type}' doesn't match any known types.")
-            };
+            return JsonSerializer.Deserialize<Entity>(ref reader, options);
         }
 
         public override void Write(Utf8JsonWriter writer, IEntity value, JsonSerializerOptions options)
         {
-            if (value is ClientInfoEntity clientInfo)
-            {
-                JsonSerializer.Serialize(writer, clientInfo, options);
-                return;
-            }
-
-            if (value is MentionEntity mention)
-            {
-                JsonSerializer.Serialize(writer, mention, options);
-                return;
-            }
-
-            if (value is IMessageEntity message)
-            {
-                JsonSerializer.Serialize(writer, message, options);
-                return;
-            }
-
-            if (value is StreamInfoEntity streamInfo)
-            {
-                JsonSerializer.Serialize(writer, streamInfo, options);
-                return;
-            }
-
-            JsonSerializer.Serialize(writer, value, options);
+            JsonSerializer.Serialize(writer, value, value.GetType(), options);
         }
     }
 }
 
-[JsonConverter(typeof(JsonConverter))]
+[JsonConverter(typeof(EntityJsonConverter))]
 public class Entity : IEntity
 {
     [JsonPropertyName("type")]
@@ -106,6 +64,12 @@ public class Entity : IEntity
     [JsonExtensionData]
     public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
 
+    private static readonly JsonSerializerOptions JsonOptions = new()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     [JsonConstructor]
     public Entity(string type)
     {
@@ -118,6 +82,11 @@ public class Entity : IEntity
         OType = otype;
     }
 
+    public override string ToString()
+    {
+        return JsonSerializer.Serialize(this, JsonOptions);
+    }
+
     public class JsonConverter : JsonConverter<Entity>
     {
         public override bool CanConvert(Type typeToConvert)
@@ -127,28 +96,36 @@ public class Entity : IEntity
 
         public override Entity? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            var element = JsonSerializer.Deserialize<JsonElement>(ref reader, options);
+            var element = JsonSerializer.Deserialize<JsonObject>(ref reader, options) ?? throw new Exception("expected json object");
 
-            if (!element.TryGetProperty("type", out JsonElement property))
+            if (!element.TryGetPropertyValue("type", out var typeNode))
             {
                 throw new JsonException("entity must have a 'type' property");
             }
 
-            var type = property.Deserialize<string>(options);
+            var type = typeNode.Deserialize<string>(options);
 
             if (type is null)
             {
                 throw new JsonException("failed to deserialize entity 'type' property");
             }
 
-            return type switch
+            Entity? entity = type switch
             {
-                "clientInfo" => JsonSerializer.Deserialize<ClientInfoEntity>(element.ToString(), options),
-                "mention" => JsonSerializer.Deserialize<MentionEntity>(element.ToString(), options),
-                "message" or "https://schema.org/Message" => (Entity?)JsonSerializer.Deserialize<IMessageEntity>(element.ToString(), options),
-                "streaminfo" => JsonSerializer.Deserialize<StreamInfoEntity>(element.ToString(), options),
-                _ => throw new JsonException($"failed to deserialize entity activity '{type}' doesn't match any known types.")
+                "clientInfo" => element.Deserialize<ClientInfoEntity>(options),
+                "mention" => element.Deserialize<MentionEntity>(options),
+                "message" or "https://schema.org/Message" => (Entity?)element.Deserialize<IMessageEntity>(options),
+                "streaminfo" => element.Deserialize<StreamInfoEntity>(options),
+                _ => null
             };
+
+            if (entity is null)
+            {
+                entity = new(type);
+                entity.Properties = entity.FromJsonObject(element, options);
+            }
+
+            return entity;
         }
 
         public override void Write(Utf8JsonWriter writer, Entity value, JsonSerializerOptions options)
@@ -177,7 +154,20 @@ public class Entity : IEntity
                 return;
             }
 
-            JsonSerializer.Serialize(writer, value, options);
+            JsonSerializer.Serialize(writer, value.ToJsonObject(options), options);
         }
+    }
+}
+
+public class EntityJsonConverter : JsonConverterFactory
+{
+    public override bool CanConvert(Type type)
+    {
+        return typeof(IEntity).IsAssignableFrom(type);
+    }
+
+    public override JsonConverter? CreateConverter(Type type, JsonSerializerOptions options)
+    {
+        return type == typeof(Entity) ? new Entity.JsonConverter() : new IEntity.JsonConverter();
     }
 }

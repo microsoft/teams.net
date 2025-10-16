@@ -36,7 +36,7 @@ public partial class ActivityType(string value) : StringEnum(value)
     }
 }
 
-[JsonConverter(typeof(JsonConverter))]
+[JsonConverter(typeof(ActivityJsonConverter))]
 public partial interface IActivity : IConvertible, ICloneable
 {
     public string Id { get; set; }
@@ -86,7 +86,7 @@ public partial interface IActivity : IConvertible, ICloneable
     public string ToQuoteReply();
 }
 
-[JsonConverter(typeof(JsonConverter))]
+[JsonConverter(typeof(ActivityJsonConverter))]
 public partial class Activity : IActivity
 {
     [JsonPropertyName("id")]
@@ -319,6 +319,7 @@ public partial class Activity : IActivity
                 OType = "Message",
                 OContext = "https://schema.org"
             };
+
             AddEntity(messageEntity);
         }
 
@@ -382,7 +383,6 @@ public partial class Activity : IActivity
         });
 
         UpdateEntity(messageEntity, citationEntity);
-
         return this;
     }
 

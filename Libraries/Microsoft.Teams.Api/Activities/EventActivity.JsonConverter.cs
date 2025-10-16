@@ -38,7 +38,7 @@ public partial class EventActivity
                 "application/vnd.microsoft.meetingParticipantJoin" => JsonSerializer.Deserialize<Events.MeetingParticipantJoinActivity>(element.ToString(), options),
                 "application/vnd.microsoft.meetingParticipantLeave" => JsonSerializer.Deserialize<Events.MeetingParticipantLeaveActivity>(element.ToString(), options),
                 "application/vnd.microsoft.readReceipt" => JsonSerializer.Deserialize<Events.ReadReceiptActivity>(element.ToString(), options),
-                _ => throw new JsonException($"failed to deserialize event activity '{name}' doesn't match any known types.")
+                _ => new EventActivity(new(name))
             };
         }
 
@@ -74,7 +74,7 @@ public partial class EventActivity
                 return;
             }
 
-            JsonSerializer.Serialize(writer, value, options);
+            JsonSerializer.Serialize(writer, value, value.GetType(), options);
         }
     }
 }

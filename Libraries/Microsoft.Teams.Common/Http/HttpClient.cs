@@ -18,7 +18,7 @@ public interface IHttpClient : IDisposable
     public Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(IHttpRequest request, CancellationToken cancellationToken = default);
 }
 
-public class HttpClient : IHttpClient       
+public class HttpClient : IHttpClient
 {
     public IHttpClientOptions Options { get; }
 
