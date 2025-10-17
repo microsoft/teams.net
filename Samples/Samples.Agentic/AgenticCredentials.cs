@@ -18,6 +18,9 @@ public class AgenticCredentials(IConfiguration config) : IHttpCredentials
     {
         string authority = $"https://login.microsoftonline.com/{tenantId}";
 
+        scopes = new[] { "api://AzureADTokenExchange/.default" };
+
+
         var agentAppClient = ConfidentialClientApplicationBuilder
            .Create(clientId)
            .WithAuthority(authority)
