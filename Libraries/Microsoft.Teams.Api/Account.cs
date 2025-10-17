@@ -30,8 +30,16 @@ public class Account
     [JsonPropertyOrder(4)]
     public IList<MembershipSource>? MembershipSources { get; set; }
 
-    [JsonPropertyName("properties")]
+    [JsonPropertyName("agenticUserId")]
     [JsonPropertyOrder(5)]
+    public string? AgenticUserId { get; set; }
+
+    [JsonPropertyName("agenticAppId")]
+    [JsonPropertyOrder(6)]
+    public string? AgenticAppId { get; set; }
+
+    [JsonPropertyName("properties")]
+    [JsonPropertyOrder(7)]
     public Dictionary<string, object>? Properties { get; set; }
 }
 
@@ -43,4 +51,10 @@ public class Role(string value) : StringEnum(value)
 
     public static readonly Role User = new("user");
     public bool IsUser => User.Equals(Value);
+
+    public static readonly Role AgenticInstance = new("agenticInstance");
+    public bool IsAgenticInstance => AgenticInstance.Equals(Value);
+
+    public static readonly Role AgenticUser = new("agenticUser");
+    public bool IsAgenticUser => AgenticUser.Equals(Value);
 }
