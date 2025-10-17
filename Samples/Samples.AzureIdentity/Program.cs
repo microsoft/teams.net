@@ -1,6 +1,5 @@
-using Azure.Core;
-using Azure.Identity;
-
+using Microsoft.Identity.Client;
+using Microsoft.Identity.Client.AppConfig;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
@@ -16,19 +15,20 @@ builder.Services.AddTransient<Controller>();
 
 var botClientId = builder.Configuration["AzureIdentity:BotClientId"] ?? "";
 var managedIdentityClientId = builder.Configuration["AzureIdentity:ManagedIdentityClientId"];
-var useDefaultAzureCredential = builder.Configuration.GetValue<bool>("AzureIdentity:UseDefaultAzureCredential");
 
-TokenCredential credential = useDefaultAzureCredential ? new DefaultAzureCredential() :
-    !string.IsNullOrEmpty(managedIdentityClientId) ? new ManagedIdentityCredential(managedIdentityClientId) :
-    new ManagedIdentityCredential();
+var managedIdentityId = string.IsNullOrEmpty(managedIdentityClientId)
+    ? ManagedIdentityId.SystemAssigned
+    : ManagedIdentityId.WithUserAssignedClientId(managedIdentityClientId);
+
+var msalApp = ManagedIdentityApplicationBuilder.Create(managedIdentityId).Build();
 
 var appOptions = new AppOptions
 {
     Credentials = new TokenCredentials(botClientId, async (_, scopes) =>
     {
         var scopesToUse = scopes.Length > 0 ? scopes : new[] { "https://api.botframework.com/.default" };
-        var token = await credential.GetTokenAsync(new TokenRequestContext(scopesToUse), CancellationToken.None);
-        return new TokenResponse { TokenType = "Bearer", AccessToken = token.Token };
+        var result = await msalApp.AcquireTokenForManagedIdentity(scopesToUse[0]).ExecuteAsync();
+        return new TokenResponse { TokenType = "Bearer", AccessToken = result.AccessToken };
     })
 };
 
