@@ -1,6 +1,6 @@
 # Azure Identity Sample
 
-This sample demonstrates how to authenticate a Teams bot using **Azure Managed Identity** instead of the traditional client ID and client secret approach. This is a more secure authentication method that eliminates the need to store sensitive credentials in your configuration.
+This sample demonstrates how to authenticate a Teams bot using **Azure Managed Identity** with the existing `TokenCredentials` class and the **Azure.Identity** SDK. This is a more secure authentication method than traditional client ID and client secret, eliminating the need to store sensitive credentials in your configuration.
 
 ## Features
 
@@ -112,6 +112,7 @@ Update `appsettings.json` based on your authentication method:
 ```json
 {
   "AzureIdentity": {
+    "BotClientId": "your-bot-application-id",
     "UseDefaultAzureCredential": false,
     "ManagedIdentityClientId": ""
   }
@@ -122,6 +123,7 @@ Update `appsettings.json` based on your authentication method:
 ```json
 {
   "AzureIdentity": {
+    "BotClientId": "your-bot-application-id",
     "UseDefaultAzureCredential": false,
     "ManagedIdentityClientId": "your-managed-identity-client-id"
   }
@@ -132,6 +134,7 @@ Update `appsettings.json` based on your authentication method:
 ```json
 {
   "AzureIdentity": {
+    "BotClientId": "your-bot-application-id",
     "UseDefaultAzureCredential": true,
     "ManagedIdentityClientId": ""
   }
@@ -229,55 +232,59 @@ This bot is authenticated using Azure Managed Identity instead of client secret!
 The key authentication setup happens in `Program.cs`:
 
 ```csharp
-var appOptions = new AppOptions();
+// Create the appropriate TokenCredential based on configuration
+TokenCredential credential;
 
 if (useDefaultAzureCredential)
 {
-    // Use DefaultAzureCredential for flexible authentication
-    appOptions.Credentials = new ManagedIdentityCredentials(new DefaultAzureCredential());
+    credential = new DefaultAzureCredential();
 }
 else if (!string.IsNullOrEmpty(managedIdentityClientId))
 {
-    // Use User-Assigned Managed Identity
-    appOptions.Credentials = new ManagedIdentityCredentials(managedIdentityClientId);
+    credential = new ManagedIdentityCredential(managedIdentityClientId);
 }
 else
 {
-    // Use System-Assigned Managed Identity
-    appOptions.Credentials = new ManagedIdentityCredentials();
+    credential = new ManagedIdentityCredential();
 }
+
+// Use TokenCredentials with Azure.Identity
+appOptions.Credentials = new TokenCredentials(
+    botClientId,
+    async (tenantId, scopes) =>
+    {
+        var scopesToUse = scopes.Length > 0 ? scopes : new[] { "https://api.botframework.com/.default" };
+        var tokenRequestContext = new TokenRequestContext(scopesToUse);
+        var accessToken = await credential.GetTokenAsync(tokenRequestContext);
+        
+        return new AzureIdentityTokenResponse(accessToken);
+    });
 
 builder.AddTeams(appOptions);
 ```
 
-### Custom Credential Implementation
+### Using TokenCredentials with Azure.Identity
 
-The `ManagedIdentityCredentials` class implements the `IHttpCredentials` interface:
+This sample demonstrates how to use the existing `TokenCredentials` class with the Azure.Identity SDK. The `TokenCredentials` class accepts a `TokenFactory` delegate that allows you to provide custom token acquisition logic:
 
 ```csharp
-public class ManagedIdentityCredentials : IHttpCredentials
-{
-    private readonly TokenCredential _credential;
-    
-    public ManagedIdentityCredentials(string clientId)
+// Create the Azure.Identity credential
+TokenCredential credential = new ManagedIdentityCredential(managedIdentityClientId);
+
+// Use TokenCredentials with a factory that calls Azure.Identity
+appOptions.Credentials = new TokenCredentials(
+    botClientId,
+    async (tenantId, scopes) =>
     {
-        _credential = new ManagedIdentityCredential(clientId);
-    }
-    
-    public async Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, CancellationToken cancellationToken = default)
-    {
-        var tokenRequestContext = new TokenRequestContext(scopes);
-        var accessToken = await _credential.GetTokenAsync(tokenRequestContext, cancellationToken);
+        var scopesToUse = scopes.Length > 0 ? scopes : new[] { "https://api.botframework.com/.default" };
+        var tokenRequestContext = new TokenRequestContext(scopesToUse);
+        var accessToken = await credential.GetTokenAsync(tokenRequestContext);
         
-        return new TokenResponse
-        {
-            TokenType = "Bearer",
-            AccessToken = accessToken.Token,
-            ExpiresIn = (int)(accessToken.ExpiresOn - DateTimeOffset.UtcNow).TotalSeconds
-        };
-    }
-}
+        return new AzureIdentityTokenResponse(accessToken);
+    });
 ```
+
+The `AzureIdentityTokenResponse` helper class adapts the `AccessToken` from Azure.Identity to the `ITokenResponse` interface expected by the Teams SDK.
 
 ## Comparison: Client Secret vs Managed Identity
 
@@ -295,6 +302,7 @@ public class ManagedIdentityCredentials : IHttpCredentials
 ```json
 {
   "AzureIdentity": {
+    "BotClientId": "your-bot-application-id",
     "UseDefaultAzureCredential": false,
     "ManagedIdentityClientId": "your-managed-identity-client-id"
   }
@@ -302,6 +310,8 @@ public class ManagedIdentityCredentials : IHttpCredentials
 ```
 
 No client secret is stored in your configuration!
+
+**Note:** The `BotClientId` is the Application (Client) ID of your bot registration, which is not a secret and can be safely stored in configuration.
 
 ## Troubleshooting
 
