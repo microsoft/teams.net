@@ -1,6 +1,7 @@
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Apps.Extensions;
 using Microsoft.Teams.Apps.Activities;
+using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.AI.Models.OpenAI;
@@ -100,6 +101,20 @@ teamsApp.OnMessage(@"^citations?\b", async (context) =>
     await CitationsHandler.HandleCitationsDemo(context);
 });
 
+// Feedback loop handler
+teamsApp.OnMessage(@"^feedback\s+(.+)", async (context) =>
+{
+    context.Log.Info($"[COMMAND] 'feedback' command invoked: {context.Activity.Text}");
+    var match = Regex.Match(context.Activity.Text ?? "", @"^feedback\s+(.+)", RegexOptions.IgnoreCase);
+    if (match.Success)
+    {
+        var query = match.Groups[1].Value.Trim();
+        context.Log.Info($"[COMMAND] Extracted query for feedback: '{query}'");
+        context.Activity.Text = query;
+        await FeedbackHandler.HandleFeedbackLoop(aiModel, context);
+    }
+});
+
 // Memory clear handler
 teamsApp.OnMessage(@"^memory\s+clear\b", async (context) =>
 {
@@ -124,6 +139,14 @@ teamsApp.OnMessage(@"^/weather\b", async (context) =>
     {
         await context.Reply("Sorry I could not figure it out");
     }
+});
+
+// Feedback submission handler
+teamsApp.OnFeedback((context) =>
+{
+    context.Log.Info($"[HANDLER] Feedback submission received");
+    FeedbackHandler.HandleFeedbackSubmission(context);
+    return Task.CompletedTask;
 });
 
 // Fallback stateful conversation handler
