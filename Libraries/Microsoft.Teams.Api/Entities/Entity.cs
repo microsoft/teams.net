@@ -115,6 +115,7 @@ public class Entity : IEntity
                 "clientInfo" => element.Deserialize<ClientInfoEntity>(options),
                 "mention" => element.Deserialize<MentionEntity>(options),
                 "message" or "https://schema.org/Message" => (Entity?)element.Deserialize<IMessageEntity>(options),
+                "ProductInfo" => element.Deserialize<ProductInfoEntity>(options),
                 "streaminfo" => element.Deserialize<StreamInfoEntity>(options),
                 _ => null
             };
@@ -145,6 +146,12 @@ public class Entity : IEntity
             if (value is IMessageEntity message)
             {
                 JsonSerializer.Serialize(writer, message, options);
+                return;
+            }
+
+            if (value is ProductInfoEntity productInfo)
+            {
+                JsonSerializer.Serialize(writer, productInfo, options);
                 return;
             }
 
