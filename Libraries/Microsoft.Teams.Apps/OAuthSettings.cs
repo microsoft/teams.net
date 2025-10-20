@@ -14,7 +14,7 @@ public class OAuthSettings
     public string DefaultConnectionName { get; set; } = "graph";
 
     /// <summary>
-    /// URL used for client side combined authentication flow.
+    /// Url used for client to perform tab auth and link the NAA account to the bot login account.
     /// </summary>
     public string? AccountLinkingUrl { get; set; }
 }
