@@ -32,7 +32,7 @@ public class ActivityClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public async Task<Resource?> CreateAsync(string conversationId, IActivity activity, bool isTargeted = false)
+    public virtual async Task<Resource?> CreateAsync(string conversationId, IActivity activity, bool isTargeted = false)
     {
         var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities";
         if (isTargeted)
@@ -50,7 +50,7 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task<Resource?> UpdateAsync(string conversationId, string id, IActivity activity, bool isTargeted = false)
+    public virtual async Task<Resource?> UpdateAsync(string conversationId, string id, IActivity activity, bool isTargeted = false)
     {
         var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
         if (isTargeted)
@@ -68,7 +68,7 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task<Resource?> ReplyAsync(string conversationId, string id, IActivity activity, bool isTargeted = false)
+    public virtual async Task<Resource?> ReplyAsync(string conversationId, string id, IActivity activity, bool isTargeted = false)
     {
         activity.ReplyToId = id;
 
@@ -88,7 +88,7 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task DeleteAsync(string conversationId, string id, bool isTargeted = false)
+    public virtual async Task DeleteAsync(string conversationId, string id, bool isTargeted = false)
     {
         var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
         if (isTargeted)

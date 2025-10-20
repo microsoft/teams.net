@@ -15,6 +15,11 @@ public class UserTokenClient : Client
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
+    public UserTokenClient() : base()
+    {
+        
+    }
+
     public UserTokenClient(CancellationToken cancellationToken = default) : base(cancellationToken)
     {
 
@@ -35,7 +40,7 @@ public class UserTokenClient : Client
 
     }
 
-    public async Task<Token.Response> GetAsync(GetTokenRequest request)
+    public virtual async Task<Token.Response> GetAsync(GetTokenRequest request)
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetToken?{query}");
@@ -43,7 +48,7 @@ public class UserTokenClient : Client
         return res.Body;
     }
 
-    public async Task<IDictionary<string, Token.Response>> GetAadAsync(GetAadTokenRequest request)
+    public virtual async Task<IDictionary<string, Token.Response>> GetAadAsync(GetAadTokenRequest request)
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/GetAadTokens?{query}", body: request);
@@ -51,7 +56,7 @@ public class UserTokenClient : Client
         return res.Body;
     }
 
-    public async Task<IList<Token.Status>> GetStatusAsync(GetTokenStatusRequest request)
+    public virtual async Task<IList<Token.Status>> GetStatusAsync(GetTokenStatusRequest request)
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetTokenStatus?{query}");
@@ -59,14 +64,14 @@ public class UserTokenClient : Client
         return res.Body;
     }
 
-    public async Task SignOutAsync(SignOutRequest request)
+    public virtual async Task SignOutAsync(SignOutRequest request)
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Delete($"https://token.botframework.com/api/usertoken/SignOut?{query}");
         await _http.SendAsync(req, _cancellationToken);
     }
 
-    public async Task<Token.Response> ExchangeAsync(ExchangeTokenRequest request)
+    public virtual async Task<Token.Response> ExchangeAsync(ExchangeTokenRequest request)
     {
         var query = QueryString.Serialize(new
         {

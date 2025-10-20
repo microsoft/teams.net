@@ -7,6 +7,12 @@ namespace Microsoft.Teams.Api.Auth;
 
 public delegate Task<ITokenResponse> TokenFactory(string? tenantId, params string[] scopes);
 
+/// <summary>
+/// Provide a <code>TokenFactory</code> that will be invoked whenever
+/// the application needs a token.
+/// TokenCredentials should be used with 3rd party packages like MSAL/Azure.Identity
+/// to authenticate for any Federated/Managed Identity scenarios.
+/// </summary>
 public class TokenCredentials : IHttpCredentials
 {
     public string ClientId { get; set; }
@@ -26,7 +32,7 @@ public class TokenCredentials : IHttpCredentials
         Token = token;
     }
 
-    public async Task<ITokenResponse> Resolve(IHttpClient _client, string[] scopes, CancellationToken cancellationToken = default)
+    public async Task<ITokenResponse> Resolve(IHttpClient _, string[] scopes, CancellationToken cancellationToken = default)
     {
         return await Token(TenantId, scopes);
     }
