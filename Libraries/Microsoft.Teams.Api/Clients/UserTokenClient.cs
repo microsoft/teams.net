@@ -17,7 +17,7 @@ public class UserTokenClient : Client
 
     public UserTokenClient() : base()
     {
-        
+
     }
 
     public UserTokenClient(CancellationToken cancellationToken = default) : base(cancellationToken)

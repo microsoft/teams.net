@@ -24,7 +24,7 @@ public class VerifyStateActivityTests
             AccountLinkingUrl = "https://my-website.com/accounts/link"
         }
     });
-    
+
     private readonly IToken _token = Globals.Token;
 
     public VerifyStateActivityTests()
@@ -58,7 +58,7 @@ public class VerifyStateActivityTests
             ConnectionName = "graph",
             Token = tokenHandler.WriteToken(new JwtSecurityTokenHandler().CreateToken(tokenDescriptor))
         });
-        
+
         _app.Api = api.Object;
         _app.OnActivity(context =>
         {
@@ -108,7 +108,7 @@ public class VerifyStateActivityTests
             ConnectionName = "test",
             Token = tokenHandler.WriteToken(new JwtSecurityTokenHandler().CreateToken(tokenDescriptor))
         }));
-        
+
         _app.Api = api.Object;
         _app.OnActivity(context =>
         {
