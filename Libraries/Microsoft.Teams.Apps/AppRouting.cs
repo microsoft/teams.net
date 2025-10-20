@@ -154,7 +154,11 @@ public partial class App
                     Token = res
                 }
             );
-            return new Response(HttpStatusCode.OK);
+
+            return new Response(HttpStatusCode.OK, OAuth.AccountLinkingUrl is null ? null : new
+            {
+                accountLinkingUrl = OAuth.AccountLinkingUrl
+            });
         }
         catch (HttpException ex)
         {

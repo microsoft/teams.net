@@ -8,7 +8,7 @@ namespace Microsoft.Teams.Api.Clients;
 public class BotClient : Client
 {
     public virtual BotTokenClient Token { get; }
-    public BotSignInClient SignIn { get; }
+    public virtual BotSignInClient SignIn { get; }
 
     public BotClient() : this(default)
     {

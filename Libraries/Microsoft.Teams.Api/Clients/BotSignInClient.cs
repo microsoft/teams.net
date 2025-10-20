@@ -27,7 +27,7 @@ public class BotSignInClient : Client
 
     }
 
-    public async Task<string> GetUrlAsync(GetUrlRequest request)
+    public virtual async Task<string> GetUrlAsync(GetUrlRequest request)
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(
@@ -38,7 +38,7 @@ public class BotSignInClient : Client
         return res.Body;
     }
 
-    public async Task<SignIn.UrlResponse> GetResourceAsync(GetResourceRequest request)
+    public virtual async Task<SignIn.UrlResponse> GetResourceAsync(GetResourceRequest request)
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(

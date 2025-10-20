@@ -113,6 +113,12 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     public Task<object?> Next();
 
     /// <summary>
+    /// called to continue the chain of route handlers,
+    /// if not called no other handlers in the sequence will be executed
+    /// </summary>
+    public Task<object?> Next(IContext<TActivity> context);
+
+    /// <summary>
     /// convert the context to that of another activity type
     /// </summary>
     public IContext<IActivity> ToActivityType();
@@ -168,6 +174,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     }
 
     public Task<object?> Next() => OnNext(ToActivityType());
+    public Task<object?> Next(IContext<TActivity> context) => OnNext(context.ToActivityType());
     public IContext<IActivity> ToActivityType() => ToActivityType<IActivity>();
     public IContext<TToActivity> ToActivityType<TToActivity>() where TToActivity : IActivity
     {
