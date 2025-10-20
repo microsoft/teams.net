@@ -18,6 +18,13 @@ public class App
     public required string Id { get; set; }
 
     /// <summary>
+    /// The version of the app manifest
+    /// </summary>
+    [JsonPropertyName("version")]
+    [JsonPropertyOrder(1)]
+    public string Version { get; set; }
+
+    /// <summary>
     /// All extra data present
     /// </summary>
     [JsonExtensionData]
