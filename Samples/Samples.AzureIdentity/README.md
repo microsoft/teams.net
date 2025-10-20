@@ -1,6 +1,8 @@
-# Azure Identity Sample
+# Azure Managed Identity Sample
 
-This sample demonstrates how to authenticate a Teams bot using **Azure Managed Identity** with the **Microsoft.Identity.Client (MSAL)** library and the existing `TokenCredentials` class. This is a more secure authentication method than traditional client ID and client secret, eliminating the need to store sensitive credentials in your configuration.
+> **Note:** This sample demonstrates **ONLY** managed identity authentication. It does NOT use or require client secrets. All authentication is handled through Azure Managed Identity.
+
+This sample demonstrates how to authenticate a Teams bot using **Azure Managed Identity** with the **Microsoft.Identity.Client (MSAL)** library and the existing `TokenCredentials` class. This eliminates the need to store any credentials in your configuration.
 
 ## Features
 
@@ -13,10 +15,10 @@ This sample demonstrates how to authenticate a Teams bot using **Azure Managed I
 Azure Managed Identity provides Azure services with an automatically managed identity in Microsoft Entra ID (formerly Azure AD). This identity can be used to authenticate to any service that supports Microsoft Entra authentication without storing credentials in your code.
 
 ### Benefits:
-- **No credentials in code**: Eliminates the need to store client secrets in configuration files
+- **No credentials in code**: This sample uses ONLY managed identity - no client secrets required
 - **Automatic credential rotation**: Azure handles credential management automatically
-- **Simplified deployment**: No need to manage and distribute secrets across environments
-- **Enhanced security**: Reduces the risk of credential leaks
+- **Simplified deployment**: No secrets to manage or distribute
+- **Enhanced security**: Zero risk of credential leaks since no credentials are stored
 
 ## Prerequisites
 
@@ -257,9 +259,11 @@ var appOptions = new AppOptions
 
 The code uses MSAL's `ManagedIdentityApplicationBuilder` to create a managed identity application and acquire tokens.
 
-## Comparison: Client Secret vs Managed Identity
+## Comparison: Managed Identity vs Client Secret
 
-### Traditional Approach (Client Secret)
+> **Important:** This sample demonstrates ONLY the managed identity approach. The client secret approach is shown below for comparison purposes only to illustrate the security benefits of managed identity.
+
+### Traditional Approach (Client Secret) - NOT USED IN THIS SAMPLE
 ```json
 {
   "Teams": {
@@ -269,7 +273,7 @@ The code uses MSAL's `ManagedIdentityApplicationBuilder` to create a managed ide
 }
 ```
 
-### Managed Identity Approach
+### Managed Identity Approach - USED IN THIS SAMPLE
 ```json
 {
   "AzureIdentity": {
@@ -281,7 +285,7 @@ The code uses MSAL's `ManagedIdentityApplicationBuilder` to create a managed ide
 
 No client secret is stored in your configuration!
 
-**Note:** The `BotClientId` is the Application (Client) ID of your bot registration, which is not a secret and can be safely stored in configuration.
+**Note:** The `BotClientId` is the Application (Client) ID of your bot registration, which is not a secret and can be safely stored in configuration. This is NOT a client secret - it's a public identifier.
 
 ## Troubleshooting
 
