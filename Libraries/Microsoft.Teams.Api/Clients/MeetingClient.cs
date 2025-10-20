@@ -32,14 +32,14 @@ public class MeetingClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public async Task<Meeting> GetByIdAsync(string id)
+    public virtual async Task<Meeting> GetByIdAsync(string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{id}");
         var response = await _http.SendAsync<Meeting>(request, _cancellationToken);
         return response.Body;
     }
 
-    public async Task<MeetingParticipant> GetParticipantAsync(string meetingId, string id)
+    public virtual async Task<MeetingParticipant> GetParticipantAsync(string meetingId, string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{meetingId}/participants/{id}");
         var response = await _http.SendAsync<MeetingParticipant>(request, _cancellationToken);

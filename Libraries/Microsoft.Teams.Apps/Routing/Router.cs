@@ -24,6 +24,7 @@ public class Router : IRouter
     public IList<IRoute> Select(IActivity activity)
     {
         return _routes
+            .OrderBy(route => route.Type == RouteType.User ? 0 : 1)
             .Where(route => route.Select(activity))
             .ToList();
     }

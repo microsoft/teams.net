@@ -5,6 +5,10 @@ using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Api.Auth;
 
+/// <summary>
+/// ClientId / ClientSecret based credentials
+/// https://learn.microsoft.com/en-us/microsoft-365/agents-sdk/azure-bot-create-single-secret
+/// </summary>
 public class ClientCredentials : IHttpCredentials
 {
     public string ClientId { get; set; }

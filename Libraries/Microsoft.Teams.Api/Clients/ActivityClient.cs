@@ -32,7 +32,7 @@ public class ActivityClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public async Task<Resource?> CreateAsync(string conversationId, IActivity activity)
+    public virtual async Task<Resource?> CreateAsync(string conversationId, IActivity activity)
     {
         var req = HttpRequest.Post(
             $"{ServiceUrl}v3/conversations/{conversationId}/activities",
@@ -47,7 +47,7 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task<Resource?> UpdateAsync(string conversationId, string id, IActivity activity)
+    public virtual async Task<Resource?> UpdateAsync(string conversationId, string id, IActivity activity)
     {
         var req = HttpRequest.Put(
             $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}",
@@ -62,7 +62,7 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task<Resource?> ReplyAsync(string conversationId, string id, IActivity activity)
+    public virtual async Task<Resource?> ReplyAsync(string conversationId, string id, IActivity activity)
     {
         activity.ReplyToId = id;
         var req = HttpRequest.Post(
@@ -78,7 +78,7 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task DeleteAsync(string conversationId, string id)
+    public virtual async Task DeleteAsync(string conversationId, string id)
     {
         var req = HttpRequest.Delete(
             $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}"
