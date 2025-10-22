@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Plugins.AspNetCore.Tests;
 public class AspNetCorePluginStreamTests
 {
     [Fact]
-    public async Task Stream_EmitMessage_FlushesAfter500ms()
+    public void Stream_EmitMessage_FlushesImmediately()
     {
         var sendCallCount = 0;
         var sendTimes = new List<DateTime>();
@@ -27,42 +27,53 @@ public class AspNetCorePluginStreamTests
         var startTime = DateTime.Now;
 
         stream.Emit("Test message");
-        await Task.Delay(600); // Wait longer than 500ms timeout
 
         Assert.True(sendCallCount > 0, "Should have sent at least one message");
-        Assert.True(sendTimes.Any(t => t >= startTime.AddMilliseconds(450)),
-            "Should have waited approximately 500ms before sending");
     }
 
     [Fact]
-    public async Task Stream_MultipleEmits_RestartsTimer()
+    public async Task Stream_MultipleEmits_TimerCheck()
     {
         var sendCallCount = 0;
         var stream = new AspNetCorePlugin.Stream
         {
-            Send = activity =>
+            Send = async activity =>
             {
+                await Task.Delay(50); 
                 sendCallCount++;
                 activity.Id = $"test-id-{sendCallCount}";
-                return Task.FromResult(activity);
+                return activity;
             }
         };
 
         stream.Emit("First message");
-        await Task.Delay(300); // Wait less than 500ms
+        stream.Emit("Second message");
+        stream.Emit("Third message");
+        stream.Emit("Fourth message");
+        stream.Emit("Fifth message");
+        stream.Emit("Sixth message");
+        stream.Emit("Seventh message");
+        stream.Emit("Eighth message");
+        stream.Emit("Ninth message");
+        stream.Emit("Tenth message");
+        stream.Emit("Eleventh message");
+        stream.Emit("Twelfth message");
 
-        stream.Emit("Second message"); // This should reset the timer
-        await Task.Delay(300); // Still less than 500ms from second emit
+        await Task.Delay(60);  // for send to run
 
-        Assert.Equal(0, sendCallCount); // Should not have sent yet
+        Assert.Equal(1, sendCallCount); // First message should trigger flush immediately
 
-        await Task.Delay(300); // Now over 500ms from second emit
+        stream.Emit("Thirteenth message");
 
-        Assert.True(sendCallCount > 0, "Should have sent messages after timer expired");
+        await Task.Delay(300); // Less than 500ms from first flush
+        Assert.True(sendCallCount == 1, "Should have sent only 1 message so far");
+
+        await Task.Delay(300); // Now more than 500ms from first flush
+        Assert.True(sendCallCount == 2, "Should have sent 2 messages by now");
     }
 
     [Fact]
-    public async Task Stream_SendTimeout_HandledGracefully()
+    public async Task Stream_ErrorHandledGracefully()
     {
         var callCount = 0;
         var stream = new AspNetCorePlugin.Stream
@@ -82,7 +93,7 @@ public class AspNetCorePluginStreamTests
         };
 
         stream.Emit("Test message with timeout");
-        await Task.Delay(600); // Wait for flush and retries
+        await Task.Delay(600); // Wait for flush and 1 retry
 
         var result = await stream.Close();
 
@@ -92,7 +103,7 @@ public class AspNetCorePluginStreamTests
     }
 
     [Fact]
-    public async Task Stream_UpdateStatus_SendsTypingActivity()
+    public void Stream_UpdateStatus_SendsTypingActivity()
     {
         var sentActivities = new List<IActivity>();
         var stream = new AspNetCorePlugin.Stream
@@ -105,12 +116,11 @@ public class AspNetCorePluginStreamTests
         };
 
         stream.Update("Thinking...");
-        await Task.Delay(600); // Wait for the flush task to complete
 
         Assert.True(stream.Count > 0, "Should have processed the update");
         Assert.Equal(2, stream.Sequence); // Should increment sequence after sending
-
         Assert.True(sentActivities.Count > 0, "Should have sent at least one activity");
+
         var sentActivity = sentActivities.First();
         Assert.IsType<TypingActivity>(sentActivity);
         Assert.Equal("Thinking...", ((TypingActivity)sentActivity).Text);
