@@ -12,6 +12,20 @@ using static Microsoft.Teams.Common.Extensions.TaskExtensions;
 
 namespace Microsoft.Teams.Plugins.AspNetCore;
 
+/// <summary>
+/// Streaming implementation for Microsoft Teams activities.
+///
+/// Queues message and typing activities and flushes them in chunks
+/// to avoid rate limits and preserve message order.
+///
+/// Flow:
+/// 1. <see cref="Emit(IActivity)"/> adds activities to the queue.
+/// 2. <see cref="Flush"/> processes up to 10 queued items under a lock.
+/// 3. Informative typing updates are sent immediately if no message started.
+/// 4. Message text are combined into a typing chunk.
+/// 5. Another flush is scheduled if more items remain.
+/// 6. <see cref="Close"/> waits for the queue to empty and sends the final message.
+/// </summary>
 public partial class AspNetCorePlugin
 {
     public class Stream : IStreamer
@@ -34,44 +48,44 @@ public partial class AspNetCorePlugin
         private DateTime? _closedAt;
         private int _count = 0;
         private MessageActivity? _result;
-        private readonly SemaphoreSlim _lock = new(1, 1);
+        private bool _flushing = false;
         private Timer? _timeout;
 
+        /// <summary>
+        /// Enqueues a message activity for streaming.
+        /// </summary>
         public void Emit(MessageActivity activity)
         {
-            if (_timeout != null)
-            {
-                _timeout.Dispose();
-                _timeout = null;
-            }
-
             _queue.Enqueue(activity);
-            _timeout = new Timer(_ =>
+            if (_timeout == null)
             {
                 _ = Flush();
-            }, null, 500, Timeout.Infinite);
+            }
         }
 
+        /// <summary>
+        /// Enqueues a typing activity for streaming.
+        /// </summary>
         public void Emit(TypingActivity activity)
         {
-            if (_timeout != null)
-            {
-                _timeout.Dispose();
-                _timeout = null;
-            }
-
             _queue.Enqueue(activity);
-            _timeout = new Timer(_ =>
+            if (_timeout == null)
             {
                 _ = Flush();
-            }, null, 500, Timeout.Infinite);
+            }
         }
 
+        /// <summary>
+        /// Emits plain text as a message activity.
+        /// </summary>
         public void Emit(string text)
         {
             Emit(new MessageActivity(text));
         }
 
+        /// <summary>
+        /// Sends an informative typing update (e.g., "Thinking...").
+        /// </summary>
         public void Update(string text)
         {
             Emit(new TypingActivity(text)
@@ -83,9 +97,13 @@ public partial class AspNetCorePlugin
             });
         }
 
+        /// <summary>
+        /// Closes the stream after all queued activities have been sent.
+        /// Returns the final message activity.
+        /// </summary>
         public async Task<MessageActivity?> Close()
         {
-            if (_index == 1 && _queue.Count == 0 && _lock.CurrentCount > 0) return null;
+            if (_index == 1 && _queue.Count == 0 && !_flushing) return null;
             if (_result is not null) return _result;
             while (_id is null || _queue.Count > 0)
             {
@@ -120,11 +138,16 @@ public partial class AspNetCorePlugin
             return (MessageActivity)res;
         }
 
+        /// <summary>
+        /// Flushes up to 10 queued activities.
+        /// Combines message chunks and sends informative updates.
+        /// Reschedules itself if more items remain.
+        /// </summary>
         protected async Task Flush()
         {
-            if (_queue.Count == 0) return;
+            if (_queue.Count == 0 || _flushing) return;
 
-            await _lock.WaitAsync();
+            _flushing = true;
 
             try
             {
@@ -195,8 +218,9 @@ public partial class AspNetCorePlugin
                     {
                         toSend.WithId(_id);
                     }
-
+                    
                     toSend.AddStreamUpdate(_index);
+
                     var res = await Retry(() => Send(toSend)).ConfigureAwait(false);
                     OnChunk(res);
                     _id ??= res.Id;
@@ -205,7 +229,7 @@ public partial class AspNetCorePlugin
             }
             finally
             {
-                _lock.Release();
+                _flushing = false;
             }
         }
     }
