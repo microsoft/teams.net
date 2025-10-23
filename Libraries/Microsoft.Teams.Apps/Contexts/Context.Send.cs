@@ -47,6 +47,35 @@ public partial interface IContext<TActivity>
     /// send a typing activity
     /// </summary>
     public Task<TypingActivity> Typing(string? text = null);
+
+    /// <summary>
+    /// Send a targeted activity to a specific user in the conversation
+    /// </summary>
+    /// <param name="userId">The user MRI of the targeted message recipient</param>
+    /// <param name="activity">The activity to send as a targeted message</param>
+    public Task<T> SendTargeted<T>(string userId, T activity) where T : IActivity;
+
+    /// <summary>
+    /// Send a targeted message to a specific user in the conversation
+    /// </summary>
+    /// <param name="userId">The user MRI of the targeted message recipient</param>
+    /// <param name="text">The text to send</param>
+    public Task<MessageActivity> SendTargeted(string userId, string text);
+
+    /// <summary>
+    /// Send a targeted message with a card attachment to a specific user
+    /// </summary>
+    /// <param name="userId">The user MRI of the targeted message recipient</param>
+    /// <param name="card">The card to send as an attachment</param>
+    public Task<MessageActivity> SendTargeted(string userId, Cards.AdaptiveCard card);
+
+    /// <summary>
+    /// Update a previously sent targeted message
+    /// </summary>
+    /// <param name="userId">The user MRI of the targeted message recipient</param>
+    /// <param name="activityId">The targeted message ID to update</param>
+    /// <param name="activity">The updated activity</param>
+    public Task<T> UpdateTargeted<T>(string userId, string activityId, T activity) where T : IActivity;
 }
 
 public partial class Context<TActivity> : IContext<TActivity>
@@ -104,5 +133,35 @@ public partial class Context<TActivity> : IContext<TActivity>
         }
 
         return Send(activity);
+    }
+
+    public async Task<T> SendTargeted<T>(string userId, T activity) where T : IActivity
+    {   
+        var res = await Api.Conversations.Activities.SendTargetedAsync(userId, Ref.Conversation.Id, activity);
+        
+        activity.Id = res?.Id;
+        
+        await OnActivitySent(activity, ToActivityType<IActivity>());
+        return activity;
+    }
+
+    public Task<MessageActivity> SendTargeted(string userId, string text)
+    {
+        return SendTargeted(userId, new MessageActivity(text));
+    }
+
+    public Task<MessageActivity> SendTargeted(string userId, Cards.AdaptiveCard card)
+    {
+        return SendTargeted(userId, new MessageActivity().AddAttachment(card));
+    }
+
+    public async Task<T> UpdateTargeted<T>(string userId, string activityId, T activity) where T : IActivity
+    {        
+        var res = await Api.Conversations.Activities.UpdateTargetedAsync(userId, Ref.Conversation.Id, activityId, activity);
+        
+        activity.Id = res?.Id;
+        
+        await OnActivitySent(activity, ToActivityType<IActivity>());
+        return activity;
     }
 }

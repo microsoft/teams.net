@@ -72,6 +72,35 @@ public partial interface IContext
         /// </summary>
         /// <param name="connectionName">the connection name</param>
         public Task SignOut(string? connectionName = null) => context.SignOut(connectionName);
+
+        /// <summary>
+        /// Send a targeted activity to a specific user in the conversation
+        /// </summary>
+        /// <param name="userId">The user MRI of the targeted message recipient</param>
+        /// <param name="activity">The activity to send as a targeted message</param>
+        public Task<T> SendTargeted<T>(string userId, T activity) where T : IActivity => context.SendTargeted(userId, activity);
+
+        /// <summary>
+        /// Send a targeted message to a specific user in the conversation
+        /// </summary>
+        /// <param name="userId">The user MRI of the targeted message recipient</param>
+        /// <param name="text">The text to send</param>
+        public Task<MessageActivity> SendTargeted(string userId, string text) => context.SendTargeted(userId, text);
+
+        /// <summary>
+        /// Send a targeted message with a card attachment to a specific user
+        /// </summary>
+        /// <param name="userId">The user MRI of the targeted message recipient</param>
+        /// <param name="card">The card to send as an attachment</param>
+        public Task<MessageActivity> SendTargeted(string userId, Cards.AdaptiveCard card) => context.SendTargeted(userId, card);
+
+        /// <summary>
+        /// Update a previously sent targeted message
+        /// </summary>
+        /// <param name="userId">The user MRI of the targeted message recipient</param>
+        /// <param name="activityId">The targeted message ID to update</param>
+        /// <param name="activity">The updated activity</param>
+        public Task<T> UpdateTargeted<T>(string userId, string activityId, T activity) where T : IActivity => context.UpdateTargeted(userId, activityId, activity);
     }
 
     /// <summary>

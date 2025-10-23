@@ -86,4 +86,33 @@ public class ActivityClient : Client
 
         await _http.SendAsync(req, _cancellationToken);
     }
+    public async Task<Resource?> SendTargetedAsync(string userId, string conversationId, IActivity activity)
+    {
+        var url = !string.IsNullOrEmpty(activity.ReplyToId)
+                ? $"{ServiceUrl}v3/users/{userId}/conversations/{conversationId}/targetedactivities/{activity.ReplyToId}"
+                : $"{ServiceUrl}v3/users/{userId}/conversations/{conversationId}/targetedactivities";
+
+        var req = HttpRequest.Post(url, body: activity);
+        var res = await _http.SendAsync(req, _cancellationToken);
+
+        if (res.Body == string.Empty) return null;
+        
+        var body = JsonSerializer.Deserialize<Resource>(res.Body);
+        return body;
+    }
+    
+    public async Task<Resource?> UpdateTargetedAsync(string userId, string conversationId, string activityId, IActivity activity)
+    {
+        var req = HttpRequest.Put(
+            $"{ServiceUrl}v3/users/{userId}/conversations/{conversationId}/targetedactivities/{activityId}",
+            body: activity
+        );
+
+        var res = await _http.SendAsync(req, _cancellationToken);
+
+        if (res.Body == string.Empty) return null;
+        
+        var body = JsonSerializer.Deserialize<Resource>(res.Body);
+        return body;
+    }
 }
