@@ -130,8 +130,8 @@ public class Attachment
         [JsonIgnore]
         public bool IsList => List.Equals(Value);
 
-        public static readonly Layout Carousel = new("carousel");
+        public static readonly Layout Grid = new("grid");
         [JsonIgnore]
-        public bool IsCarousel => Carousel.Equals(Value);
+        public bool IsGrid => Grid.Equals(Value);
     }
 }
