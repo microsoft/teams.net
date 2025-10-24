@@ -9,7 +9,7 @@ public class AttachmentTests
     {
         var layout = Attachment.Layout.List;
         var json = JsonSerializer.Serialize(layout);
-        
+
         Assert.Equal("\"list\"", json);
     }
 
@@ -18,7 +18,7 @@ public class AttachmentTests
     {
         var layout = Attachment.Layout.Grid;
         var json = JsonSerializer.Serialize(layout);
-        
+
         Assert.Equal("\"grid\"", json);
     }
 
@@ -27,7 +27,7 @@ public class AttachmentTests
     {
         var json = "\"list\"";
         var layout = JsonSerializer.Deserialize<Attachment.Layout>(json);
-        
+
         Assert.NotNull(layout);
         Assert.True(layout.IsList);
         Assert.False(layout.IsGrid);
@@ -38,7 +38,7 @@ public class AttachmentTests
     {
         var json = "\"grid\"";
         var layout = JsonSerializer.Deserialize<Attachment.Layout>(json);
-        
+
         Assert.NotNull(layout);
         Assert.True(layout.IsGrid);
         Assert.False(layout.IsList);
@@ -58,4 +58,3 @@ public class AttachmentTests
         Assert.Equal("grid", layout.Value);
     }
 }
-
