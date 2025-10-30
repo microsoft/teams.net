@@ -9,25 +9,22 @@ namespace Microsoft.Teams.Plugins.AspNetCore.Tests;
 public class AspNetCorePluginStreamTests
 {
     [Fact]
-    public void Stream_EmitMessage_FlushesImmediately()
+    public async Task Stream_EmitMessage_FlushesImmediately()
     {
         var sendCallCount = 0;
-        var sendTimes = new List<DateTime>();
         var stream = new AspNetCorePlugin.Stream
         {
-            Send = activity =>
+            Send = async activity =>
             {
                 sendCallCount++;
-                sendTimes.Add(DateTime.Now);
                 activity.Id = $"test-id-{sendCallCount}";
-                return Task.FromResult(activity);
+                await Task.Delay(50); // Simulate some delay
+                return activity;
             }
         };
 
-        var startTime = DateTime.Now;
-
         stream.Emit("Test message");
-
+        await Task.Delay(60); // Wait for flush to complete
         Assert.True(sendCallCount > 0, "Should have sent at least one message");
     }
 
@@ -39,9 +36,9 @@ public class AspNetCorePluginStreamTests
         {
             Send = async activity =>
             {
-                await Task.Delay(50); 
                 sendCallCount++;
                 activity.Id = $"test-id-{sendCallCount}";
+                await Task.Delay(50); // Simulate some delay
                 return activity;
             }
         };
@@ -59,7 +56,7 @@ public class AspNetCorePluginStreamTests
         stream.Emit("Eleventh message");
         stream.Emit("Twelfth message");
 
-        await Task.Delay(60);  // for send to run
+        await Task.Delay(70); // Wait for initial flush
 
         Assert.Equal(1, sendCallCount); // First message should trigger flush immediately
 
@@ -78,7 +75,7 @@ public class AspNetCorePluginStreamTests
         var callCount = 0;
         var stream = new AspNetCorePlugin.Stream
         {
-            Send = activity =>
+            Send = async activity =>
             {
                 callCount++;
                 if (callCount == 1) // Fail first attempt
@@ -88,7 +85,8 @@ public class AspNetCorePluginStreamTests
 
                 // Succeed on second attempt
                 activity.Id = $"success-after-timeout-{callCount}";
-                return Task.FromResult(activity);
+                await Task.Delay(50); // Simulate some delay
+                return activity;
             }
         };
 
@@ -103,19 +101,22 @@ public class AspNetCorePluginStreamTests
     }
 
     [Fact]
-    public void Stream_UpdateStatus_SendsTypingActivity()
+    public async Task Stream_UpdateStatus_SendsTypingActivity()
     {
         var sentActivities = new List<IActivity>();
         var stream = new AspNetCorePlugin.Stream
         {
-            Send = activity =>
+            Send = async activity =>
             {
                 sentActivities.Add(activity);
-                return Task.FromResult(activity);
+                await Task.Delay(50); // Simulate some delay
+                return activity;
             }
         };
 
         stream.Update("Thinking...");
+
+        await Task.Delay(70); // Wait for flush to complete
 
         Assert.True(stream.Count > 0, "Should have processed the update");
         Assert.Equal(2, stream.Sequence); // Should increment sequence after sending
@@ -125,6 +126,44 @@ public class AspNetCorePluginStreamTests
         Assert.IsType<TypingActivity>(sentActivity);
         Assert.Equal("Thinking...", ((TypingActivity)sentActivity).Text);
         Assert.Equal(StreamType.Informative, ((TypingActivity)sentActivity).ChannelData?.StreamType);
+    }
+
+    [Fact]
+    public async Task Stream_ConcurrentEmits_DoNotFlushSimultaneously()
+    {
+        var concurrentEntries = 0;
+        var maxConcurrentEntries = 0;
+
+        var stream = new AspNetCorePlugin.Stream
+        {
+            Send = async activity =>
+            {
+                // Track concurrent entries to the Send method (simulates Flush execution)
+                Interlocked.Increment(ref concurrentEntries);
+                Console.WriteLine($"Concurrent entries: {concurrentEntries}");
+                maxConcurrentEntries = Math.Max(maxConcurrentEntries, concurrentEntries);
+                Interlocked.Decrement(ref concurrentEntries);
+
+                activity.Id = "test-id";
+                await Task.Delay(50); // Simulate some delay
+                return activity;
+            }
+        };
+
+        // Emit from multiple threads simultaneously
+        var barrier = new Barrier(10);
+        var tasks = Enumerable.Range(0, 10).Select(_ => Task.Run(() =>
+        {
+            barrier.SignalAndWait(); // 10 threads must arrive before any can continue
+            stream.Emit("Concurrent message");
+        })).ToArray();
+
+        await Task.WhenAll(tasks);
+
+        await Task.Delay(70); // Wait for all flushes to complete
+
+        Assert.True(maxConcurrentEntries == 1, 
+            $"Flush entered concurrently {maxConcurrentEntries} times, expected 1");
     }
 
 }

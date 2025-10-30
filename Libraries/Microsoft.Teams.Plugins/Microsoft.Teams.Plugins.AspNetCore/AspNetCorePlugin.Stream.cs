@@ -48,7 +48,8 @@ public partial class AspNetCorePlugin
         private DateTime? _closedAt;
         private int _count = 0;
         private MessageActivity? _result;
-        private bool _flushing = false;
+        readonly SemaphoreSlim _lock = new(1, 1);
+
         private Timer? _timeout;
 
         /// <summary>
@@ -103,7 +104,8 @@ public partial class AspNetCorePlugin
         /// </summary>
         public async Task<MessageActivity?> Close()
         {
-            if (_index == 1 && _queue.Count == 0 && !_flushing) return null;
+            if (_index == 1 && _queue.Count == 0 && _lock.CurrentCount > 0) return null;
+            
             if (_result is not null) return _result;
             while (_id is null || _queue.Count > 0)
             {
@@ -145,9 +147,13 @@ public partial class AspNetCorePlugin
         /// </summary>
         protected async Task Flush()
         {
-            if (_queue.Count == 0 || _flushing) return;
+            if (_queue.Count == 0) return;
 
-            _flushing = true;
+
+            if (!await _lock.WaitAsync(0))
+            {
+                return; // another flush is running, exit
+            }
 
             try
             {
@@ -229,7 +235,7 @@ public partial class AspNetCorePlugin
             }
             finally
             {
-                _flushing = false;
+                _lock.Release();
             }
         }
     }
