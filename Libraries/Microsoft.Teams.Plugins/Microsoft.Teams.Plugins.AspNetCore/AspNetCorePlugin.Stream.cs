@@ -51,6 +51,7 @@ public partial class AspNetCorePlugin
         readonly SemaphoreSlim _lock = new(1, 1);
 
         private Timer? _timeout;
+        private const int _timeoutMs = 5000;
 
         /// <summary>
         /// Enqueues a message activity for streaming.
@@ -98,6 +99,23 @@ public partial class AspNetCorePlugin
             });
         }
 
+        public async Task<bool> WaitForIdAndQueueAsync()
+        {
+            var start = DateTime.UtcNow;
+
+            while (_id == null || _queue.Count > 0)
+            {
+                if ((DateTime.UtcNow - start).TotalMilliseconds > _timeoutMs)
+                {
+                    return false; // timed out
+                }
+
+                await Task.Delay(50);
+            }
+
+            return true; // success
+        }
+
         /// <summary>
         /// Closes the stream after all queued activities have been sent.
         /// Returns the final message activity.
@@ -105,22 +123,26 @@ public partial class AspNetCorePlugin
         public async Task<MessageActivity?> Close()
         {
             if (_index == 1 && _queue.Count == 0 && _lock.CurrentCount > 0) return null;
-            
+
             if (_result is not null) return _result;
-            while (_id is null || _queue.Count > 0)
+            bool ready = await WaitForIdAndQueueAsync();
+            if (!ready)
             {
-                await Task.Delay(50);
+                return null; // timed out waiting for ID and queue to empty
             }
 
             if (_text == string.Empty && _attachments.Count == 0) // when only informative updates are present
             {
-                _text = "Streaming closed with no content";
+                return null;
             }
 
             var activity = new MessageActivity(_text)
                 .AddAttachment(_attachments.ToArray());
 
-            activity.WithId(_id);
+            if (_id is not null)
+            {
+                activity.WithId(_id);
+            }
             activity.WithData(_channelData);
             activity.AddEntity(_entities.ToArray());
             activity.AddStreamFinal();
