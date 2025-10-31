@@ -115,12 +115,12 @@ public partial class TestPlugin : ISenderPlugin
         return Task.CompletedTask;
     }
 
-    public Task<IActivity> Send(IActivity activity, ConversationReference reference, CancellationToken cancellationToken = default)
+    public Task<IActivity> Send(IActivity activity, ConversationReference reference, bool isTargeted = false, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(activity);
     }
 
-    public Task<TActivity> Send<TActivity>(TActivity activity, ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
+    public Task<TActivity> Send<TActivity>(TActivity activity, ConversationReference reference, bool isTargeted = false, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
         return Task.FromResult(activity);
     }

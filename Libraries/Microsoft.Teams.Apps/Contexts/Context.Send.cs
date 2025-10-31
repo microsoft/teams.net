@@ -11,37 +11,42 @@ public partial interface IContext<TActivity>
     /// send an activity to the conversation
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    public Task<T> Send<T>(T activity) where T : IActivity;
+    /// <param name="isTargeted">whether the activity is targeted</param>
+    public Task<T> Send<T>(T activity, bool isTargeted = false) where T : IActivity;
 
     /// <summary>
     /// send a message activity to the conversation
     /// </summary>
     /// <param name="text">the text to send</param>
-    public Task<MessageActivity> Send(string text);
+    /// <param name="isTargeted">whether the activity is targeted</param>
+    public Task<MessageActivity> Send(string text, bool isTargeted = false);
 
     /// <summary>
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public Task<MessageActivity> Send(Cards.AdaptiveCard card);
+    /// <param name="isTargeted">whether the activity is targeted</param>
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card, bool isTargeted = false);
 
     /// <summary>
     /// send an activity to the conversation as a reply
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    public Task<T> Reply<T>(T activity) where T : IActivity;
+    /// <param name="isTargeted">whether the activity is targeted</param>
+    public Task<T> Reply<T>(T activity, bool isTargeted = false) where T : IActivity;
 
     /// <summary>
     /// send a message activity to the conversation as a reply
     /// </summary>
     /// <param name="text">the text to send</param>
-    public Task<MessageActivity> Reply(string text);
+    ///  <param name="isTargeted">whether the activity is targeted</param>
+    public Task<MessageActivity> Reply(string text, bool isTargeted = false);
 
     /// <summary>
     /// send a message activity with a card attachment as a reply
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public Task<MessageActivity> Reply(Cards.AdaptiveCard card);
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, bool isTargeted = false);
 
     /// <summary>
     /// send a typing activity
@@ -51,24 +56,24 @@ public partial interface IContext<TActivity>
 
 public partial class Context<TActivity> : IContext<TActivity>
 {
-    public async Task<T> Send<T>(T activity) where T : IActivity
+    public async Task<T> Send<T>(T activity, bool isTargeted = false) where T : IActivity
     {
-        var res = await Sender.Send(activity, Ref, CancellationToken);
+        var res = await Sender.Send(activity, Ref, isTargeted, CancellationToken);
         await OnActivitySent(res, ToActivityType<IActivity>());
         return res;
     }
 
-    public Task<MessageActivity> Send(string text)
+    public Task<MessageActivity> Send(string text, bool isTargeted = false)
     {
-        return Send(new MessageActivity(text));
+        return Send(new MessageActivity(text), isTargeted);
     }
 
-    public Task<MessageActivity> Send(Cards.AdaptiveCard card)
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card, bool isTargeted = false)
     {
-        return Send(new MessageActivity().AddAttachment(card));
+        return Send(new MessageActivity().AddAttachment(card), isTargeted);
     }
 
-    public Task<T> Reply<T>(T activity) where T : IActivity
+    public Task<T> Reply<T>(T activity, bool isTargeted = false) where T : IActivity
     {
         activity.Conversation = Ref.Conversation.Copy();
         activity.Conversation.Id = Ref.Conversation.ThreadId;
@@ -81,17 +86,17 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]);
         }
 
-        return Send(activity);
+        return Send(activity, isTargeted);
     }
 
-    public Task<MessageActivity> Reply(string text)
+    public Task<MessageActivity> Reply(string text, bool isTargeted = false)
     {
-        return Reply(new MessageActivity(text));
+        return Reply(new MessageActivity(text), isTargeted);
     }
 
-    public Task<MessageActivity> Reply(Cards.AdaptiveCard card)
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, bool isTargeted = false)
     {
-        return Reply(new MessageActivity().AddAttachment(card));
+        return Reply(new MessageActivity().AddAttachment(card), isTargeted);
     }
 
     public Task<TypingActivity> Typing(string? text = null)
