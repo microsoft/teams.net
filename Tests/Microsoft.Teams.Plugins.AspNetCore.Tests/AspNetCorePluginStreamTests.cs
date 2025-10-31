@@ -140,7 +140,6 @@ public class AspNetCorePluginStreamTests
             {
                 // Track concurrent entries to the Send method (simulates Flush execution)
                 Interlocked.Increment(ref concurrentEntries);
-                Console.WriteLine($"Concurrent entries: {concurrentEntries}");
                 maxConcurrentEntries = Math.Max(maxConcurrentEntries, concurrentEntries);
                 Interlocked.Decrement(ref concurrentEntries);
 
