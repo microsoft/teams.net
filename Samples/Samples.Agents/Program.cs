@@ -3,7 +3,7 @@ using Microsoft.Agents.Hosting.AspNetCore;
 using Microsoft.Agents.Storage;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Extensions;
-using Microsoft.Teams.Plugins.Agents;
+using Microsoft.Teams.Plugins.Agents.Extensions;
 
 using Samples.Agents;
 
@@ -14,10 +14,7 @@ builder.Services.AddSingleton<IStorage, MemoryStorage>();
 builder.AddAgentApplicationOptions();
 builder.AddAgent<Agent>();
 builder.AddTeamsCore();
-builder.AddTeamsAgentPlugin(new()
-{
-    RoutingFactory = Task<RoutingStrategy> (ctx, _) => Task.FromResult(RoutingStrategy.Teams)
-});
+builder.AddTeamsAgentPlugin();
 
 var app = builder.Build();
 var teams = app.Services.GetRequiredService<App>();

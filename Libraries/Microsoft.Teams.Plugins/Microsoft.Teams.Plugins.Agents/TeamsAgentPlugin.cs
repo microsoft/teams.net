@@ -1,3 +1,4 @@
+using Microsoft.Agents.Builder;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
@@ -8,15 +9,16 @@ using Microsoft.Teams.Plugins.Agents.Models;
 namespace Microsoft.Teams.Plugins.Agents;
 
 [Plugin]
-public partial class TeamsAgentPlugin : ISenderPlugin
+public partial class TeamsAgentPlugin : AgentExtension, ISenderPlugin
 {
     [Dependency]
     public ILogger Logger { get; set; }
     public TeamsAgentPluginOptions Options { get; }
     public event EventFunction Events;
 
-    public TeamsAgentPlugin(TeamsAgentPluginOptions options)
+    public TeamsAgentPlugin(TeamsAgentPluginOptions options) : base()
     {
+        ChannelId = Microsoft.Agents.Core.Models.Channels.Msteams;
         Options = options;
     }
 
