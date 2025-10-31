@@ -141,10 +141,10 @@ public class AspNetCorePluginStreamTests
                 // Track concurrent entries to the Send method (simulates Flush execution)
                 Interlocked.Increment(ref concurrentEntries);
                 maxConcurrentEntries = Math.Max(maxConcurrentEntries, concurrentEntries);
-                Interlocked.Decrement(ref concurrentEntries);
-
                 activity.Id = "test-id";
                 await Task.Delay(50); // Simulate some delay
+                Interlocked.Decrement(ref concurrentEntries);
+
                 return activity;
             }
         };
