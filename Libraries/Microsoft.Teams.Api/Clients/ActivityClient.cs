@@ -88,11 +88,15 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task DeleteAsync(string conversationId, string id)
+    public async Task DeleteAsync(string conversationId, string id, bool isTargeted = false)
     {
-        var req = HttpRequest.Delete(
-            $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}"
-        );
+        var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
+        if (isTargeted)
+        {
+            url += "?isTargetedActivity=true";
+        }
+
+        var req = HttpRequest.Delete(url);
 
         await _http.SendAsync(req, _cancellationToken);
     }
