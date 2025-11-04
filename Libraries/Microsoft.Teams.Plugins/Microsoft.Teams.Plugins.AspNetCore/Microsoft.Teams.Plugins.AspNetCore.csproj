@@ -5,7 +5,7 @@
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Plugins.AspNetCore</PackageId>
     <PackageDescription>Teams AspNetCore Plugin</PackageDescription>
-    <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
+    <PackageProjectUrl>https://microsoft.github.io/teams-sdk</PackageProjectUrl>
     <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore</PackageTags>
   </PropertyGroup>
 
@@ -35,7 +35,7 @@
     <ProjectReference Include="..\..\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
     <ProjectReference Include="..\..\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
     <ProjectReference Include="..\..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
-    
+
     <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Logging\Microsoft.Teams.Extensions.Logging.csproj" />
     <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Configuration\Microsoft.Teams.Extensions.Configuration.csproj" />
     <ProjectReference Include="..\..\Microsoft.Teams.Extensions\Microsoft.Teams.Extensions.Hosting\Microsoft.Teams.Extensions.Hosting.csproj" />

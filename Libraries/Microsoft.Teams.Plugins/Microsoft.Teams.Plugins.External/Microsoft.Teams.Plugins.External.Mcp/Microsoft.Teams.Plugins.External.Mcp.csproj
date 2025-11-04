@@ -5,7 +5,7 @@
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Plugins.External.Mcp</PackageId>
     <PackageDescription>Teams MCP Plugin</PackageDescription>
-    <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
+    <PackageProjectUrl>https://microsoft.github.io/teams-sdk</PackageProjectUrl>
     <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore;mcp;modelcontextprotocol</PackageTags>
   </PropertyGroup>
 

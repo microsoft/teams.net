@@ -5,7 +5,7 @@
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Apps.Testing</PackageId>
     <PackageDescription>A package used to making testing apps easier.</PackageDescription>
-    <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
+    <PackageProjectUrl>https://microsoft.github.io/teams-sdk</PackageProjectUrl>
     <PackageTags>microsoft;teams;msteams;copilot;ai;adaptive-cards;apps;bots;testing</PackageTags>
   </PropertyGroup>
 
