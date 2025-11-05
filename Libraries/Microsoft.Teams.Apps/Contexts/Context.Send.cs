@@ -55,7 +55,7 @@ public partial interface IContext<TActivity>
     /// send a message activity to the conversation as a reply
     /// </summary>
     /// <param name="text">the text to send</param>
-    ///  <param name="isTargeted">whether the activity is targeted</param>
+    /// <param name="isTargeted">whether the activity is targeted</param>
     /// <remarks>
     /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
     /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
@@ -66,6 +66,7 @@ public partial interface IContext<TActivity>
     /// send a message activity with a card attachment as a reply
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
+    /// <param name="isTargeted">whether the activity is targeted</param>
     /// <remarks>
     /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
     /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
