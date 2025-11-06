@@ -1,6 +1,6 @@
 # Graph Sample
 
-This sample demonstrates how to implement OAuth authentication and Microsoft Graph integration in a Teams bot using the Teams AI SDK for .NET.
+This sample demonstrates how to implement OAuth authentication and Microsoft Graph integration in a Teams bot using the Teams SDK for .NET.
 
 ## Features
 
@@ -31,11 +31,13 @@ Samples.Graph/
 ## Setup
 
 ### 1. Azure Bot Registration
+
 1. Create an Azure Bot resource in the Azure Portal
 2. Configure the messaging endpoint: `https://your-tunnel-url/api/messages`
 3. Note the Application (Client) ID and create a Client Secret
 
 ### 2. OAuth Connection Setup
+
 1. In your Azure Bot resource, go to **Configuration** → **OAuth Connection Settings**
 2. Add new OAuth connection:
    - **Name**: `graph` (must match the code)
@@ -48,7 +50,9 @@ Samples.Graph/
    - **Scopes**: `User.Read`
 
 ### 3. Update Configuration
+
 Update `appsettings.json` with your bot credentials:
+
 ```json
 {
   "Teams": {
@@ -59,6 +63,7 @@ Update `appsettings.json` with your bot credentials:
 ```
 
 ### 4. Local Development Setup
+
 1. Install dev tunnels: `winget install Microsoft.DevTunnels`
 2. Create tunnel: `devtunnel create -a`
 3. Host tunnel: `devtunnel host <tunnel-id> -p 3978`
@@ -79,16 +84,19 @@ The bot will start on `http://localhost:3978` by default.
 ## Usage
 
 ### Authentication Flow
+
 1. **Initial Message**: Send any message to the bot to trigger sign-in
 2. **Sign-in Card**: Bot presents OAuth sign-in card with custom text
 3. **Authentication**: Complete OAuth flow with Microsoft Graph
 4. **Success Response**: Bot displays user's display name and access token
 
 ### Commands
+
 - **Any message**: Triggers sign-in flow if not authenticated, shows user info if authenticated
 - **`/signout`**: Signs out the current user and clears authentication
 
 ### Expected Responses
+
 - **Not signed in**: "Sign in to your account" OAuth card
 - **Already signed in**: "user 'DisplayName' is already signed in!"
 - **After sign-in**: "user \"DisplayName\" signed in. Here's the token: [token]"
@@ -104,7 +112,8 @@ The bot will start on `http://localhost:3978` by default.
 
 ## Dependencies
 
-The project references the following Teams AI SDK libraries:
+The project references the following Teams SDK libraries:
+
 - `Microsoft.Teams.Apps` - Core Teams bot functionality
 - `Microsoft.Teams.Api` - Teams API models and clients
 - `Microsoft.Teams.Common` - Common utilities and logging
