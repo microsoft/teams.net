@@ -18,9 +18,28 @@ public interface ISenderPlugin : IPlugin
     /// </summary>
     /// <param name="activity">the activity to send</param>
     /// <param name="reference">the conversation reference</param>
+    /// <returns>the sent activity</returns>
+    public Task<IActivity> Send(IActivity activity, ConversationReference reference, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// called by the `App`
+    /// to send an activity
+    /// </summary>
+    /// <param name="activity">the activity to send</param>
+    /// <param name="reference">the conversation reference</param>
     /// <param name="isTargeted">whether the activity is targeted</param>
     /// <returns>the sent activity</returns>
-    public Task<IActivity> Send(IActivity activity, ConversationReference reference, bool isTargeted = false, CancellationToken cancellationToken = default);
+    public Task<IActivity> Send(IActivity activity, ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// called by the `App`
+    /// to send an activity
+    /// </summary>
+    /// <typeparam name="TActivity">the activity type</typeparam>
+    /// <param name="activity">the activity to send</param>
+    /// <param name="reference">the conversation reference</param>
+    /// <returns>the sent activity</returns>
+    public Task<TActivity> Send<TActivity>(TActivity activity, ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity;
 
     /// <summary>
     /// called by the `App`
@@ -31,7 +50,7 @@ public interface ISenderPlugin : IPlugin
     /// <param name="reference">the conversation reference</param>
     /// <param name="isTargeted">whether the activity is targeted</param>
     /// <returns>the sent activity</returns>
-    public Task<TActivity> Send<TActivity>(TActivity activity, ConversationReference reference, bool isTargeted = false, CancellationToken cancellationToken = default) where TActivity : IActivity;
+    public Task<TActivity> Send<TActivity>(TActivity activity, ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default) where TActivity : IActivity;
 
     /// <summary>
     /// called by the `App`

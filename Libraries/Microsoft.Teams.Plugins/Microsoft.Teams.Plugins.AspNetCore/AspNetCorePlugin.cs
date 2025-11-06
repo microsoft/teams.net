@@ -78,12 +78,22 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         return Task.CompletedTask;
     }
 
-    public Task<IActivity> Send(IActivity activity, Api.ConversationReference reference, bool isTargeted = false, CancellationToken cancellationToken = default)
+    public Task<IActivity> Send(IActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default)
+    {
+        return Send<IActivity>(activity, reference, isTargeted: false, cancellationToken);
+    }
+
+    public Task<IActivity> Send(IActivity activity, Api.ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default)
     {
         return Send<IActivity>(activity, reference, isTargeted, cancellationToken);
     }
 
-    public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, bool isTargeted = false, CancellationToken cancellationToken = default) where TActivity : IActivity
+    public Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
+    {
+        return Send<TActivity>(activity, reference, isTargeted: false, cancellationToken);
+    }
+
+    public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
         var client = new ApiClient(reference.ServiceUrl, Client, cancellationToken);
 
