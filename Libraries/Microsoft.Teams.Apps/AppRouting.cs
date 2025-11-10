@@ -4,6 +4,7 @@
 using System.Net;
 using System.Reflection;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Activities;
@@ -42,7 +43,7 @@ public partial class App
                 }
 
                 Router.Register(route);
-                Logger.Debug($"'{activityType}' route '{name}.{method.Name}' registered");
+                Logger.LogDebug("'{ActivityType}' route '{ControllerName}.{MethodName}' registered", activityType, name, method.Name);
             }
         }
 
@@ -57,11 +58,11 @@ public partial class App
                     await method.InvokeAsync(controller, [plugin, @event]);
                 });
 
-                Logger.Debug($"'{attr.Name}' event route '{name}.{method.Name}' registered");
+                Logger.LogDebug("'{EventName}' event route '{ControllerName}.{MethodName}' registered", attr.Name, name, method.Name);
             }
         }
 
-        Logger.Debug($"controller '{name}' registered");
+        Logger.LogDebug("Controller '{ControllerName}' registered", name);
         return this;
     }
 
@@ -71,7 +72,7 @@ public partial class App
 
         if (OAuth.DefaultConnectionName != connectionName)
         {
-            Logger.Warn($"`default connection name \"{OAuth.DefaultConnectionName}\" does not match activity connection name \"{connectionName}\"");
+            Logger.LogWarning("Default connection name '{DefaultConnectionName}' does not match activity connection name '{ConnectionName}'", OAuth.DefaultConnectionName, connectionName);
         }
 
         try
@@ -131,7 +132,7 @@ public partial class App
         {
             if (context.Activity.Value.State is null)
             {
-                context.Log.Warn($"auth state not found for conversation '{context.Ref.Conversation.Id}' and user '{context.Activity.From.Id}'");
+                context.Log.LogWarning("Auth state not found for conversation '{ConversationId}' and user '{UserId}'", context.Ref.Conversation.Id, context.Activity.From.Id);
                 return new Response(HttpStatusCode.NotFound);
             }
 

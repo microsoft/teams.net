@@ -5,8 +5,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Teams.Common.Http;
 
@@ -33,7 +32,8 @@ public class HttpClient : IHttpClient
     public HttpClient()
     {
         _client = new System.Net.Http.HttpClient();
-        _logger = new ConsoleLogger().Child("Http.Client");
+        using var loggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+        _logger = loggerFactory.CreateLogger("Microsoft.Teams.Http.Client");
         Options = new HttpClientOptions();
         Options.Apply(_client);
     }
@@ -41,7 +41,15 @@ public class HttpClient : IHttpClient
     public HttpClient(IHttpClientOptions options)
     {
         _client = new System.Net.Http.HttpClient();
-        _logger = options.Logger?.Child("Http.Client") ?? new ConsoleLogger().Child("Http.Client");
+        if (options.Logger != null)
+        {
+            _logger = options.Logger;
+        }
+        else
+        {
+            using var loggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+            _logger = loggerFactory.CreateLogger("Microsoft.Teams.Http.Client");
+        }
         Options = options;
         Options.Apply(_client);
     }
@@ -49,7 +57,8 @@ public class HttpClient : IHttpClient
     public HttpClient(System.Net.Http.HttpClient client)
     {
         _client = client;
-        _logger = new ConsoleLogger().Child("Http.Client");
+        using var loggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
+        _logger = loggerFactory.CreateLogger("Microsoft.Teams.Http.Client");
         Options = new HttpClientOptions();
         Options.Apply(_client);
     }

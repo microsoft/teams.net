@@ -17,7 +17,7 @@ public class WeatherPrompt(IContext<IActivity> context)
         var random = new Random();
         var location = locations[random.Next(locations.Length)];
 
-        context.Log.Info($"[PROMPT-FUNCTION] get_user_location called, returning mock location: '{location}'");
+        context.Log.LogInformation($"[PROMPT-FUNCTION] get_user_location called, returning mock location: '{location}'");
         return location;
     }
 
@@ -25,7 +25,7 @@ public class WeatherPrompt(IContext<IActivity> context)
     [Function.Description("Search for weather at a specific location")]
     public string WeatherSearch([Param] string location)
     {
-        context.Log.Info($"[PROMPT-FUNCTION] weather_search called with location='{location}'");
+        context.Log.LogInformation($"[PROMPT-FUNCTION] weather_search called with location='{location}'");
 
         var weatherByLocation = new Dictionary<string, (int Temperature, string Condition)>
         {
@@ -36,12 +36,12 @@ public class WeatherPrompt(IContext<IActivity> context)
 
         if (!weatherByLocation.TryGetValue(location, out var weather))
         {
-            context.Log.Info($"[PROMPT-FUNCTION] Weather data not found for location '{location}'");
+            context.Log.LogInformation($"[PROMPT-FUNCTION] Weather data not found for location '{location}'");
             return "Sorry, I could not find the weather for that location";
         }
 
         var result = $"The weather in {location} is {weather.Condition} with a temperature of {weather.Temperature}°F";
-        context.Log.Info($"[PROMPT-FUNCTION] Returning weather data: {result}");
+        context.Log.LogInformation($"[PROMPT-FUNCTION] Returning weather data: {result}");
         return result;
     }
 }

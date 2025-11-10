@@ -3,12 +3,12 @@ using System.Text;
 using System.Text.Json;
 
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
-using Microsoft.Teams.Common.Logging;
 
 using Moq;
 
@@ -25,7 +25,7 @@ public class AspNetCorePluginTests
         }
         else
         {
-            plugin.Logger = new ConsoleLogger("Test", LogLevel.Debug);
+            plugin.Logger = new Mock<ILogger>().Object;
         }
         plugin.Client = new Mock<Microsoft.Teams.Common.Http.IHttpClient>().Object;
         if (events is not null)
@@ -135,7 +135,14 @@ public class AspNetCorePluginTests
         var problem = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<object>>(result);
         Assert.Equal(500, problem.StatusCode);
         Assert.Contains("boom", problem.Value!.ToString());
-        logger.Verify(l => l.Error(It.IsAny<object[]>()), Times.AtLeastOnce);
+        logger.Verify(
+            x => x.Log(
+                LogLevel.Error, 
+                It.IsAny<EventId>(), 
+                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Activity event error")), 
+                It.IsAny<Exception>(), 
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()), 
+            Times.AtLeastOnce);
     }
 
     [Fact]
@@ -194,6 +201,13 @@ public class AspNetCorePluginTests
 
         // Assert
         Assert.Same(response, res);
-        logger.Verify(l => l.Debug(It.IsAny<object[]>()), Times.AtLeastOnce);
+        logger.Verify(
+        x => x.Log(
+            LogLevel.Debug, 
+            It.IsAny<EventId>(), 
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("test")), 
+            It.IsAny<Exception>(), 
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()), 
+        Times.AtLeastOnce);
     }
 }

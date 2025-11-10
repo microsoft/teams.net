@@ -3,8 +3,8 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.AI.Prompts;
-using Microsoft.Teams.Common.Logging;
 
 using OpenAI.Chat;
 
@@ -24,12 +24,18 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddOpenAI(this IServiceCollection collection, string model, string apiKey, ChatPromptOptions? options = null)
     {
-        var chatModel = new OpenAIChatModel(model, apiKey);
-        var prompt = new OpenAIChatPrompt(chatModel, options);
-
-        collection.AddSingleton(chatModel);
+        collection.AddSingleton(provider =>
+        {
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            return new OpenAIChatModel(model, apiKey, new() { LoggerFactory = loggerFactory });
+        });
         collection.AddSingleton<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
-        collection.AddSingleton(prompt);
+        collection.AddSingleton(provider =>
+        {
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            var modelInstance = provider.GetRequiredService<OpenAIChatModel>();
+            return new OpenAIChatPrompt(modelInstance, (options ?? new()).WithLogger(loggerFactory));
+        });
         return collection.AddSingleton<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
     }
 
@@ -37,17 +43,17 @@ public static class ServiceCollectionExtensions
     {
         collection.AddSingleton(provider =>
         {
-            var logger = provider.GetRequiredService<ILogger>();
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
             var settings = provider.GetRequiredService<OpenAISettings>();
-            return new OpenAIChatModel(settings.Model, settings.ApiKey, new() { Logger = logger });
+            return new OpenAIChatModel(settings.Model, settings.ApiKey, new() { LoggerFactory = loggerFactory });
         });
 
         collection.AddSingleton<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
         collection.AddSingleton(provider =>
         {
-            var logger = provider.GetRequiredService<ILogger>();
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
             var model = provider.GetRequiredService<OpenAIChatModel>();
-            return new OpenAIChatPrompt(model, (options ?? new()).WithLogger(logger));
+            return new OpenAIChatPrompt(model, (options ?? new()).WithLogger(loggerFactory));
         });
 
         return collection.AddSingleton<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
@@ -57,9 +63,9 @@ public static class ServiceCollectionExtensions
     {
         collection.AddScoped(provider =>
         {
-            var logger = provider.GetRequiredService<ILogger>();
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
             var settings = provider.GetRequiredService<OpenAISettings>();
-            return new OpenAIChatModel(settings.Model, settings.ApiKey, new() { Logger = logger });
+            return new OpenAIChatModel(settings.Model, settings.ApiKey, new() { LoggerFactory = loggerFactory });
         });
 
         return collection.AddOpenAIHelper<T>(options);
@@ -82,9 +88,9 @@ public static class ServiceCollectionExtensions
         collection.AddScoped(provider =>
         {
             var value = provider.GetRequiredService<T>();
-            var logger = provider.GetRequiredService<ILogger>();
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
             var model = provider.GetRequiredService<OpenAIChatModel>();
-            return OpenAIChatPrompt.From(model, value, (options ?? new()).WithLogger(logger));
+            return OpenAIChatPrompt.From(model, value, (options ?? new()).WithLogger(loggerFactory));
         });
 
         collection.AddScoped<IChatPrompt>(

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 
 using static Microsoft.Teams.Plugins.AspNetCore.Extensions.HostApplicationBuilderExtensions;
@@ -118,7 +119,7 @@ public static partial class ApplicationBuilderExtensions
             {
                 context.Request.EnableBuffering();
                 var app = context.RequestServices.GetRequiredService<App>();
-                var log = app.Logger.Child("functions").Child(name);
+                var log = app.LoggerFactory.CreateLogger($"Microsoft.Teams.functions.{name}");
 
                 if (context.Request.Headers.Authorization.First() is null)
                 {
@@ -187,9 +188,9 @@ public static partial class ApplicationBuilderExtensions
                     ctx.TeamId = teamId;
                 }
 
-                log.Debug(ctx.Data?.ToString());
+                log.LogDebug("ctx.Data: {Data}", ctx.Data);
                 var res = handler(ctx);
-                log.Debug(res?.ToString());
+                log.LogDebug("res: {Response}", res);
                 await Results.Json(res).ExecuteAsync(context);
             }).RequireAuthorization(EntraTokenAuthConstants.AuthorizationPolicy);
         });

@@ -11,7 +11,7 @@ using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Common.Storage;
 
 namespace Microsoft.Teams.Apps;
@@ -32,6 +32,7 @@ public partial class App
 
     public Status? Status { get; internal set; }
     public ILogger Logger { get; }
+    public ILoggerFactory LoggerFactory { get; }
     public IStorage<string, object> Storage { get; }
     public ApiClient Api { get; internal set; }
     public IHttpClient Client { get; }
@@ -54,7 +55,9 @@ public partial class App
 
     public App(AppOptions? options = null)
     {
-        Logger = options?.Logger ?? new ConsoleLogger();
+        LoggerFactory = options?.LoggerFactory ?? Microsoft.Extensions.Logging.LoggerFactory.Create(builder => { builder.AddConsole(); });
+        Logger = LoggerFactory.CreateLogger($"Microsoft.Teams");
+
         Storage = options?.Storage ?? new LocalStorage<object>();
         Credentials = options?.Credentials;
         Plugins = options?.Plugins ?? [];
@@ -95,6 +98,7 @@ public partial class App
         Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Container = new Container();
         Container.Register(Logger);
+        Container.Register(LoggerFactory);
         Container.Register(Storage);
         Container.Register(Client);
         Container.Register(Api);
@@ -138,12 +142,12 @@ public partial class App
                 }
                 catch (Exception ex)
                 {
-                    Logger.Error("Failed to get bot token on app startup.", ex);
+                    Logger.LogError(ex, "Failed to get bot token on app startup");
                 }
             }
 
-            Logger.Debug(Id);
-            Logger.Debug(Name);
+            Logger.LogDebug("AppId: {Id}", Id);
+            Logger.LogDebug("AppName: {Name}", Name);
 
             foreach (var plugin in Plugins)
             {
@@ -347,7 +351,7 @@ public partial class App
         catch { }
 
         var path = @event.Activity.GetPath();
-        Logger.Debug(path);
+        Logger.LogDebug("Processing activity at path '{Path}' with {RouteCount} route(s)", path, routes.Count);
 
         var reference = new ConversationReference()
         {
@@ -379,7 +383,7 @@ public partial class App
         {
             AppId = @event.Token.AppId ?? Id ?? string.Empty,
             TenantId = @event.Token.TenantId ?? string.Empty,
-            Log = Logger.Child(path),
+            Log = LoggerFactory.CreateLogger($"Microsoft.Teams.{path}"),
             Storage = Storage,
             Api = api,
             Activity = @event.Activity,

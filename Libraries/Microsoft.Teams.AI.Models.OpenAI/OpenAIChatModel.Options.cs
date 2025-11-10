@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 using OpenAI;
 
@@ -17,6 +17,6 @@ public partial class OpenAIChatModel
         /// <summary>
         /// the logger instance
         /// </summary>
-        public ILogger? Logger { get; set; }
+        public ILoggerFactory? LoggerFactory { get; set; }
     }
 }

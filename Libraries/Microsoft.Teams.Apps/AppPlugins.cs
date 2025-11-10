@@ -5,7 +5,7 @@ using System.Reflection;
 
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Teams.Apps;
 
@@ -50,7 +50,7 @@ public partial class App
         Plugins.Add(plugin);
         Container.Register(attr.Name, new ValueProvider(plugin));
         Container.Register(plugin.GetType().Name, new ValueProvider(plugin));
-        Logger.Debug($"plugin {attr.Name} registered");
+        Logger.LogDebug("Plugin {PluginName} registered", attr.Name);
         return this;
     }
 
@@ -84,7 +84,7 @@ public partial class App
 
             if (dependency is ILogger logger)
             {
-                dependency = logger.Child(metadata.Name);
+                dependency = LoggerFactory.CreateLogger($"Microsoft.Teams.{metadata.Name}");
             }
 
             property.SetValue(plugin, dependency);

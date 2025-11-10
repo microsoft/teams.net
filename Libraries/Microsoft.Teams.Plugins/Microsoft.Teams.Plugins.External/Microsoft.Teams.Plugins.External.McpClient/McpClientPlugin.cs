@@ -2,7 +2,7 @@
 
 using Microsoft.Teams.AI;
 using Microsoft.Teams.AI.Prompts;
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
@@ -30,7 +30,9 @@ public class McpClientPlugin : BaseChatPlugin
         RefetchTimeoutMs = options.RefetchTimeoutMs;
         Cache = options.Cache ?? new Dictionary<string, McpCachedValue>();
 
-        _logger = options.Logger?.Child(Name) ?? new ConsoleLogger();
+        _logger = (options.LoggerFactory
+            ?? LoggerFactory.Create(builder => builder.AddConsole()))
+            .CreateLogger($"Microsoft.Teams.Plugins.External.McpClient.{Name}");
         _mcpServerParams = new Dictionary<string, McpClientPluginParams>();
 
         if (options.Cache != null)
@@ -87,7 +89,7 @@ public class McpClientPlugin : BaseChatPlugin
                 {
                     var function = CreateFunctionFromTool(new Uri(url), tool, pluginParams);
                     functions.Add(function);
-                    _logger.Debug($"Added function {function.Name} from MCP server at {url}");
+                    _logger.LogDebug($"Added function {function.Name} from MCP server at {url}");
                 }
             }
         }
@@ -155,7 +157,7 @@ public class McpClientPlugin : BaseChatPlugin
                 {
                     if (pluginParams.SkipIfUnavailable)
                     {
-                        _logger.Error($"Failed to fetch tools from MCP server at {url}, but continuing as SkipIfUnavailable is set.", fetchTask.Exception);
+                        _logger.LogError(fetchTask.Exception, $"Failed to fetch tools from MCP server at {url}, but continuing as SkipIfUnavailable is set.");
                         continue;
                     }
                     else
@@ -174,7 +176,7 @@ public class McpClientPlugin : BaseChatPlugin
                 Cache[url].LastFetched = DateTimeOffset.UtcNow;
                 Cache[url].Transport = pluginParams.Transport;
 
-                _logger.Debug($"Cached {tools.Count} tools from MCP server at {url}");
+                _logger.LogDebug($"Cached {tools.Count} tools from MCP server at {url}");
             }
         }
     }
@@ -225,14 +227,14 @@ public class McpClientPlugin : BaseChatPlugin
             {
                 try
                 {
-                    _logger.Debug($"Making call to {url} for tool {tool.Name}");
+                    _logger.LogDebug($"Making call to {url} for tool {tool.Name}");
                     string result = await CallMcpTool(url, tool, args.AsReadOnly(), pluginParams);
-                    _logger.Debug($"Received result from {tool.Name}: {result}");
+                    _logger.LogDebug($"Received result from {tool.Name}: {result}");
                     return result;
                 }
                 catch (Exception ex)
                 {
-                    _logger.Error($"Error calling MCP tool {tool.Name} at {url}", ex);
+                    _logger.LogError(ex, $"Error calling MCP tool {tool.Name} at {url}");
                     throw;
                 }
             }
@@ -247,7 +249,7 @@ public class McpClientPlugin : BaseChatPlugin
 
         if (response.IsError == true)
         {
-            _logger.Warn($"MCP tool call to {tool.Name} return error status");
+            _logger.LogWarning($"MCP tool call to {tool.Name} return error status");
         }
 
         return response.Content.Select(c => c.Type == "text" ? ((TextContentBlock)c).Text : "").Aggregate((a, b) => $"{a},{b}");

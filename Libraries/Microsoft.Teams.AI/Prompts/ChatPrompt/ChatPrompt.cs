@@ -7,7 +7,7 @@ using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.AI.Models;
 using Microsoft.Teams.Common.Extensions;
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Teams.AI.Prompts;
 
@@ -122,6 +122,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
     protected IChatModel<TOptions> Model { get; }
     protected ITemplate? Template { get; }
     protected ILogger Logger { get; }
+    protected ILoggerFactory LoggerFactory { get; }
     protected IList<IChatPlugin> Plugins { get; }
     protected event EventHandler<Exception> ErrorEvent;
 
@@ -134,9 +135,10 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         Template = options.Instructions;
         Messages = options.Messages ?? [];
         Functions = new();
-        Logger = (options.Logger ?? new ConsoleLogger()).Child($"AI.{Name}");
+        LoggerFactory = options?.LoggerFactory ?? Microsoft.Extensions.Logging.LoggerFactory.Create(builder => { builder.AddConsole(); });
+        Logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.{Name}");
         Plugins = [];
-        ErrorEvent = (_, ex) => Logger.Error(ex);
+        ErrorEvent = (_, ex) => Logger.LogError(ex, "An error occurred in ChatPrompt '{PromptName}'", Name);
     }
 
     public ChatPrompt(ChatPrompt<TOptions> prompt)
@@ -147,7 +149,8 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         Functions = prompt.Functions;
         Model = prompt.Model;
         Template = prompt.Template;
-        Logger = prompt.Logger;
+        LoggerFactory = prompt.LoggerFactory;
+        Logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.{Name}");
         Plugins = prompt.Plugins;
         ErrorEvent = prompt.ErrorEvent;
     }
@@ -160,7 +163,8 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         Functions = prompt.Functions;
         Model = prompt.Model;
         Template = prompt.Template;
-        Logger = prompt.Logger.Peer(name);
+        LoggerFactory = prompt.LoggerFactory;
+        Logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.{Name}");
         Plugins = prompt.Plugins;
         ErrorEvent = prompt.ErrorEvent;
     }

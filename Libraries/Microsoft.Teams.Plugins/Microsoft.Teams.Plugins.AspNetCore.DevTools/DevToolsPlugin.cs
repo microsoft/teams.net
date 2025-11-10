@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Text;
 
@@ -14,10 +13,11 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Common.Text;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Models;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.DevTools;
 
@@ -73,7 +73,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
             }
             catch (Exception ex)
             {
-                Logger.Error(ex, "http error");
+                Logger.LogError(ex, "http error");
                 throw new Exception(ex.Message, innerException: ex);
             }
         });
@@ -84,7 +84,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
     public DevToolsPlugin AddPage(Page page)
     {
         _pages.Add(page);
-        Logger.Debug($"page '{page.Name}' added at '{page.Url}'");
+        Logger.LogDebug($"page '{page.Name}' added at '{page.Url}'");
         return this;
     }
 
@@ -95,13 +95,13 @@ public class DevToolsPlugin : IAspNetCorePlugin
             AddPage(page);
         }
 
-        Logger.Warn(
+        Logger.LogWarning(
             new StringBuilder()
                 .Bold(
                     new StringBuilder()
                         .Yellow("⚠️  Devtools are not secure and should not be used production environments ⚠️")
                         .ToString()
-                )
+                ).ToString()
         );
 
         return Task.CompletedTask;
@@ -114,22 +114,22 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
         foreach (var address in addresses)
         {
-            Logger.Info($"Available at {address}/devtools");
+            Logger.LogInformation($"Available at {address}/devtools");
         }
 
-        Logger.Debug("OnStart");
+        Logger.LogDebug("OnStart");
         return Task.CompletedTask;
     }
 
     public Task OnError(App app, IPlugin plugin, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug("OnError");
+        Logger.LogDebug("OnError");
         return Task.CompletedTask;
     }
 
     public async Task OnActivity(App app, ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug("OnActivity");
+        Logger.LogDebug("OnActivity");
 
         await Sockets.Emit(
             DevTools.Events.ActivityEvent.Received(
@@ -142,7 +142,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
     public async Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug("OnActivitySent");
+        Logger.LogDebug("OnActivitySent");
 
         await Sockets.Emit(
             DevTools.Events.ActivityEvent.Sent(
@@ -155,7 +155,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
     public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug("OnActivityResponse");
+        Logger.LogDebug("OnActivityResponse");
         return Task.CompletedTask;
     }
 

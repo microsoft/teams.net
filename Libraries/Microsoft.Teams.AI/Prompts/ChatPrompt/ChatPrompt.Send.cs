@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.AI.Models;
 
@@ -90,7 +91,7 @@ public partial class ChatPrompt<TOptions>
 
         try
         {
-            Logger.Debug(message);
+            Logger.LogDebug("Sending message: {Message}", message);
 
             foreach (var plugin in Plugins)
             {
@@ -106,7 +107,7 @@ public partial class ChatPrompt<TOptions>
                 res = await Model.Send(message, requestOptions, new Stream(OnChunk), cancellationToken);
             }
 
-            Logger.Debug(res);
+            Logger.LogDebug("Received response: {Response}", res);
 
             foreach (var plugin in Plugins)
             {

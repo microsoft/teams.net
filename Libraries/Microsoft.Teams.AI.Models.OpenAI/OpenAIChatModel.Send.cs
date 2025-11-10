@@ -4,6 +4,7 @@
 using System.Text;
 using System.Text.Json;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.AI.Models.OpenAI.Builders;
 
@@ -63,7 +64,7 @@ public partial class OpenAIChatModel
         }
         catch (Exception ex)
         {
-            Logger.Error(ex.ToString());
+            Logger.LogError(ex, "An error occurred while sending a message");
             throw new Exception("chat completion error", ex);
         }
     }
@@ -131,7 +132,7 @@ public partial class OpenAIChatModel
         }
         catch (Exception ex)
         {
-            Logger.Error(ex.ToString());
+            Logger.LogError(ex, "An error occurred while sending a message");
             throw new Exception("chat completion error", ex);
         }
     }
@@ -145,8 +146,8 @@ public partial class OpenAIChatModel
         {
             foreach (var call in modelMessage.FunctionCalls ?? [])
             {
-                var logger = Logger.Child($"Tools.{call.Name}");
-                logger.Debug(call.Arguments);
+                var logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.Tools.{call.Name}");
+                logger.LogDebug("Invoking function '{FunctionName}' with arguments: {Arguments}", call.Name, call.Arguments);
                 string? content;
 
                 try
@@ -155,11 +156,11 @@ public partial class OpenAIChatModel
                     var res = await options.Invoke(call, cancellationToken);
 
                     content = res is string asString ? asString : JsonSerializer.Serialize(res);
-                    logger.Debug(content);
+                    logger.LogDebug("Function '{FunctionName}' returned: {Content}", call.Name, content);
                 }
                 catch (Exception ex)
                 {
-                    logger.Error(ex.ToString());
+                    logger.LogError(ex, "An error occurred while invoking function '{FunctionName}'", call.Name);
                     content = ex.Message;
                 }
 

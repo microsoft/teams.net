@@ -5,6 +5,7 @@ using Humanizer;
 
 using Json.Schema;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.AI.Messages;
 
 namespace Microsoft.Teams.AI.Prompts;
@@ -14,7 +15,7 @@ public partial class ChatPrompt<TOptions>
     public ChatPrompt<TOptions> Function(IFunction function)
     {
         Functions.Add(function);
-        Logger.Debug($"registered function '{function.Name}'", function.ToString());
+        Logger.LogDebug($"registered function '{function.Name}'", function.ToString());
         return this;
     }
 
@@ -22,7 +23,7 @@ public partial class ChatPrompt<TOptions>
     {
         var func = new Function(name, description, handler);
         Functions.Add(func);
-        Logger.Debug($"registered function '{func.Name}'", func.ToString());
+        Logger.LogDebug($"registered function '{func.Name}'", func.ToString());
         return this;
     }
 
@@ -30,7 +31,7 @@ public partial class ChatPrompt<TOptions>
     {
         var func = new Function(name, description, parameters, handler);
         Functions.Add(func);
-        Logger.Debug($"registered function '{func.Name}'", func.ToString());
+        Logger.LogDebug($"registered function '{func.Name}'", func.ToString());
         return this;
     }
 
@@ -42,8 +43,7 @@ public partial class ChatPrompt<TOptions>
     private async Task<object?> _Invoke(FunctionCall call, FunctionCollection functions, CancellationToken cancellationToken = default)
     {
         var function = functions.Get(call.Name) ?? throw new NotImplementedException();
-        var logger = Logger.Child($"functions.{call.Name}");
-
+        var logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.{Name}.Function.{call.Name}");
         if (function is Function func)
         {
             foreach (var plugin in Plugins)
@@ -52,13 +52,13 @@ public partial class ChatPrompt<TOptions>
             }
 
             var startedAt = DateTime.Now;
-            logger.Debug(call.Arguments);
+            logger.LogDebug(call.Arguments);
 
             var res = await func.Invoke(call);
             var endedAt = DateTime.Now;
 
-            logger.Debug(res);
-            logger.Debug($"elapse time: {(endedAt - startedAt).Humanize(3)}");
+            logger.LogDebug($"function result: {res}", res);
+            logger.LogDebug($"elapse time: {(endedAt - startedAt).Humanize(3)}");
 
             foreach (var plugin in Plugins)
             {

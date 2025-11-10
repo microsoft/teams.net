@@ -19,7 +19,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Teams.Extensions.Configuration\Microsoft.Teams.Extensions.Configuration.csproj" />
-    <ProjectReference Include="..\Microsoft.Teams.Extensions.Logging\Microsoft.Teams.Extensions.Logging.csproj" />
 
     <ProjectReference Include="..\..\Microsoft.Teams.AI.Models.OpenAI\Microsoft.Teams.AI.Models.OpenAI.csproj" />
     <ProjectReference Include="..\..\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />

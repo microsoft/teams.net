@@ -13,7 +13,7 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 using HttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
 
@@ -50,31 +50,31 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public Task OnStart(App app, CancellationToken cancellationToken = default)
     {
-        Logger.Debug("OnStart");
+        Logger.LogDebug("OnStart");
         return Task.CompletedTask;
     }
 
     public Task OnError(App app, IPlugin plugin, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug("OnError");
+        Logger.LogDebug("OnError");
         return Task.CompletedTask;
     }
 
     public Task OnActivity(App app, ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug("OnActivity");
+        Logger.LogDebug("OnActivity");
         return Task.CompletedTask;
     }
 
     public Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug("OnActivitySent");
+        Logger.LogDebug("OnActivitySent");
         return Task.CompletedTask;
     }
 
     public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug("OnActivityResponse");
+        Logger.LogDebug("OnActivityResponse");
         return Task.CompletedTask;
     }
 
@@ -145,12 +145,12 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
             );
 
             var res = (Response?)@out ?? throw new Exception("expected activity response");
-            Logger.Debug(res);
+            Logger.LogDebug("res: {Response}", res);
             return res;
         }
         catch (Exception ex)
         {
-            Logger.Error(ex);
+            Logger.LogError(ex, "Activity event error");
             await Events(
                 this,
                 "error",
@@ -214,7 +214,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         }
         catch (Exception ex)
         {
-            Logger.Error(ex);
+            Logger.LogError(ex, "HTTP activity error");
             await Events(
                 this,
                 "error",

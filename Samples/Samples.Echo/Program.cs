@@ -14,17 +14,10 @@ public static partial class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddOpenApi();
         builder.Services.AddTransient<Controller>();
         builder.AddTeams().AddTeamsDevTools();
 
         var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }
-
         app.UseHttpsRedirection();
         app.UseTeams();
         app.Run();
@@ -36,14 +29,14 @@ public static partial class Program
         [Activity]
         public async Task OnActivity(IContext<Activity> context, [Context] IContext.Next next)
         {
-            context.Log.Info(context.AppId);
+            context.Log.LogInformation(context.AppId);
             await next();
         }
 
         [Message]
-        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client, [Context] Microsoft.Teams.Common.Logging.ILogger log)
+        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client, [Context] ILogger log)
         {
-            log.Info("hit!");
+            log.LogInformation("hit!");
             await client.Typing();
             await client.Send($"you said '{activity.Text}'");
         }

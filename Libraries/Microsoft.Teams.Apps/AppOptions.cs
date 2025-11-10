@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Apps;
@@ -8,7 +9,9 @@ namespace Microsoft.Teams.Apps;
 public class AppOptions
 {
     public IServiceProvider? Provider { get; set; }
-    public Common.Logging.ILogger? Logger { get; set; }
+
+    public ILoggerFactory? LoggerFactory { get; set; }
+    
     public Common.Storage.IStorage<string, object>? Storage { get; set; }
     public Common.Http.IHttpClient? Client { get; set; }
     public Common.Http.IHttpClientFactory? ClientFactory { get; set; }

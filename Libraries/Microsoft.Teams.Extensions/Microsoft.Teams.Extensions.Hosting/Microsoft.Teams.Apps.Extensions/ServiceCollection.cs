@@ -4,7 +4,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Extensions.Logging;
 
 namespace Microsoft.Teams.Apps.Extensions;
 
@@ -12,25 +11,22 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddTeams(this IServiceCollection collection)
     {
-        collection.AddSingleton<Common.Logging.ConsoleLogger>();
-        collection.AddSingleton<Common.Logging.ILogger, Common.Logging.ConsoleLogger>(provider => provider.GetRequiredService<Common.Logging.ConsoleLogger>());
         collection.AddSingleton<Common.Storage.LocalStorage<object>>();
         collection.AddSingleton<Common.Storage.IStorage<string, object>>(provider => provider.GetRequiredService<Common.Storage.LocalStorage<object>>());
 
-        collection.AddSingleton<TeamsLogger>();
-        collection.AddSingleton<ILogger, TeamsLogger>(provider => provider.GetRequiredService<TeamsLogger>());
-        collection.AddSingleton<ILoggerFactory, LoggerFactory>(provider =>
+        collection.AddLogging(builder =>
         {
-            var logger = provider.GetRequiredService<TeamsLogger>();
-            return new LoggerFactory([new TeamsLoggerProvider(logger)]);
+            builder.AddConsole();
         });
-
         collection.AddSingleton(provider =>
         {
             var settings = provider.GetRequiredService<TeamsSettings>();
-            var logger = provider.GetRequiredService<Common.Logging.ILogger>();
-            return App.Builder(settings.Apply()).AddLogger(logger).Build();
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            return App.Builder(settings.Apply()).AddLoggerFactory(loggerFactory).Build();
         });
+
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
 
         collection.AddHostedService<TeamsService>();
         collection.AddSingleton<IContext.Accessor>();
@@ -39,14 +35,19 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddTeams(this IServiceCollection collection, AppOptions options)
     {
-        var app = new App(options);
-        var log = new TeamsLogger(app.Logger);
+        collection.AddLogging(builder =>
+        {
+            builder.AddConsole();
+        });
+        collection.AddSingleton(provider =>
+        {
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            options.LoggerFactory = loggerFactory;
+            return new App(options);
+        });
 
-        collection.AddSingleton(app.Logger);
-        collection.AddSingleton(app.Storage);
-        collection.AddSingleton<ILoggerFactory>(_ => new LoggerFactory([new TeamsLoggerProvider(log)]));
-        collection.AddSingleton<ILogger>(log);
-        collection.AddSingleton(app);
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
         collection.AddHostedService<TeamsService>();
         collection.AddSingleton<IContext.Accessor>();
         return collection;
@@ -54,14 +55,18 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddTeams(this IServiceCollection collection, AppBuilder builder)
     {
-        var app = builder.Build();
-        var log = new TeamsLogger(app.Logger);
+        collection.AddLogging(builder =>
+        {
+            builder.AddConsole();
+        });
+        collection.AddSingleton(provider =>
+        {
+            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            return builder.AddLoggerFactory(loggerFactory).Build();
+        });
 
-        collection.AddSingleton(app.Logger);
-        collection.AddSingleton(app.Storage);
-        collection.AddSingleton<ILoggerFactory, LoggerFactory>(_ => new LoggerFactory([new TeamsLoggerProvider(log)]));
-        collection.AddSingleton<ILogger>(log);
-        collection.AddSingleton(app);
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
         collection.AddHostedService<TeamsService>();
         collection.AddSingleton<IContext.Accessor>();
         return collection;
@@ -69,13 +74,13 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddTeams(this IServiceCollection collection, App app)
     {
-        var log = new TeamsLogger(app.Logger);
-
-        collection.AddSingleton(app.Logger);
-        collection.AddSingleton(app.Storage);
-        collection.AddSingleton<ILoggerFactory, LoggerFactory>(_ => new LoggerFactory([new TeamsLoggerProvider(log)]));
-        collection.AddSingleton<ILogger>(log);
+        collection.AddLogging(builder =>
+        {
+            builder.AddConsole();
+        });
         collection.AddSingleton(app);
+        collection.AddSingleton(app.Storage);
+        collection.AddSingleton(app.Logger);
         collection.AddHostedService<TeamsService>();
         collection.AddSingleton<IContext.Accessor>();
         return collection;
@@ -83,26 +88,28 @@ public static class ServiceCollectionExtensions
 
     public static IServiceCollection AddTeams(this IServiceCollection collection, Func<IServiceProvider, App> factory)
     {
-        collection.AddSingleton(provider => provider.GetRequiredService<Common.Logging.ILogger>());
-        collection.AddSingleton<ILoggerFactory, LoggerFactory>();
-        collection.AddHostedService<TeamsService>();
+        collection.AddLogging(builder =>
+        {
+            builder.AddConsole();
+        });
         collection.AddSingleton(factory);
-        collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
         collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);
-        collection.AddSingleton<ILogger, TeamsLogger>(provider => new TeamsLogger(provider.GetRequiredService<App>().Logger));
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
+        collection.AddHostedService<TeamsService>();
         collection.AddSingleton<IContext.Accessor>();
         return collection;
     }
 
     public static IServiceCollection AddTeams(this IServiceCollection collection, Func<IServiceProvider, Task<App>> factory)
     {
-        collection.AddSingleton(provider => provider.GetRequiredService<Common.Logging.ILogger>());
-        collection.AddSingleton<ILoggerFactory, LoggerFactory>();
-        collection.AddHostedService<TeamsService>();
+        collection.AddLogging(builder =>
+        {
+            builder.AddConsole();
+        });
         collection.AddSingleton(provider => factory(provider).GetAwaiter().GetResult());
-        collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
         collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);
-        collection.AddSingleton<ILogger, TeamsLogger>(provider => new TeamsLogger(provider.GetRequiredService<App>().Logger));
+        collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
+        collection.AddHostedService<TeamsService>();
         collection.AddSingleton<IContext.Accessor>();
         return collection;
     }

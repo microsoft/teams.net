@@ -59,10 +59,10 @@ public static partial class Program
         }
 
         [Message]
-        public async System.Threading.Tasks.Task OnMessage([Context] Microsoft.Teams.Api.Activities.MessageActivity activity, [Context] IContext.Client client, [Context] Microsoft.Teams.Common.Logging.ILogger log)
+        public async System.Threading.Tasks.Task OnMessage([Context] Microsoft.Teams.Api.Activities.MessageActivity activity, [Context] IContext.Client client, [Context] ILogger log)
         {
-            log.Info($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
-            log.Info($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
+            log.LogInformation($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
+            log.LogInformation($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
 
             await client.Send($"Echo: {activity.Text}\n\nThis is a message extension bot. Use the message extension commands in Teams to test functionality.");
         }
@@ -71,14 +71,14 @@ public static partial class Program
         public Microsoft.Teams.Api.MessageExtensions.Response OnMessageExtensionQuery(
             [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.QueryActivity activity,
             [Context] IContext.Client client,
-            [Context] Microsoft.Teams.Common.Logging.ILogger log)
+            [Context] ILogger log)
         {
-            log.Info("[MESSAGE_EXT_QUERY] Search query received");
+            log.LogInformation("[MESSAGE_EXT_QUERY] Search query received");
 
             var commandId = activity.Value?.CommandId;
             var query = activity.Value?.Parameters?.FirstOrDefault(p => p.Name == "searchQuery")?.Value?.ToString() ?? "";
 
-            log.Info($"[MESSAGE_EXT_QUERY] Command: {commandId}, Query: {query}");
+            log.LogInformation($"[MESSAGE_EXT_QUERY] Command: {commandId}, Query: {query}");
 
             if (commandId == "searchQuery")
             {
@@ -100,15 +100,15 @@ public static partial class Program
         public Microsoft.Teams.Api.MessageExtensions.Response OnMessageExtensionSubmit(
             [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SubmitActionActivity activity,
             [Context] IContext.Client client,
-            [Context] Microsoft.Teams.Common.Logging.ILogger log)
+            [Context] ILogger log)
         {
-            log.Info("[MESSAGE_EXT_SUBMIT] Action submit received");
+            log.LogInformation("[MESSAGE_EXT_SUBMIT] Action submit received");
 
             var commandId = activity.Value?.CommandId;
             var data = activity.Value?.Data as JsonElement?;
 
-            log.Info($"[MESSAGE_EXT_SUBMIT] Command: {commandId}");
-            log.Info($"[MESSAGE_EXT_SUBMIT] Data: {JsonSerializer.Serialize(data)}");
+            log.LogInformation($"[MESSAGE_EXT_SUBMIT] Command: {commandId}");
+            log.LogInformation($"[MESSAGE_EXT_SUBMIT] Data: {JsonSerializer.Serialize(data)}");
 
             switch (commandId)
             {
@@ -119,7 +119,7 @@ public static partial class Program
                     return HandleGetMessageDetails(activity, log);
 
                 default:
-                    log.Error($"[MESSAGE_EXT_SUBMIT] Unknown command: {commandId}");
+                    log.LogError($"[MESSAGE_EXT_SUBMIT] Unknown command: {commandId}");
                     return CreateErrorActionResponse("Unknown command");
             }
         }
@@ -128,12 +128,12 @@ public static partial class Program
         public Microsoft.Teams.Api.MessageExtensions.Response OnMessageExtensionQueryLink(
             [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.QueryLinkActivity activity,
             [Context] IContext.Client client,
-            [Context] Microsoft.Teams.Common.Logging.ILogger log)
+            [Context] ILogger log)
         {
-            log.Info("[MESSAGE_EXT_QUERY_LINK] Link unfurling received");
+            log.LogInformation("[MESSAGE_EXT_QUERY_LINK] Link unfurling received");
 
             var url = activity.Value?.Url;
-            log.Info($"[MESSAGE_EXT_QUERY_LINK] URL: {url}");
+            log.LogInformation($"[MESSAGE_EXT_QUERY_LINK] URL: {url}");
 
             if (string.IsNullOrEmpty(url))
             {
@@ -147,12 +147,12 @@ public static partial class Program
         public Microsoft.Teams.Api.MessageExtensions.Response OnMessageExtensionSelectItem(
             [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SelectItemActivity activity,
             [Context] IContext.Client client,
-            [Context] Microsoft.Teams.Common.Logging.ILogger log)
+            [Context] ILogger log)
         {
-            log.Info("[MESSAGE_EXT_SELECT_ITEM] Item selection received");
+            log.LogInformation("[MESSAGE_EXT_SELECT_ITEM] Item selection received");
 
             var selectedItem = activity.Value;
-            log.Info($"[MESSAGE_EXT_SELECT_ITEM] Selected: {JsonSerializer.Serialize(selectedItem)}");
+            log.LogInformation($"[MESSAGE_EXT_SELECT_ITEM] Selected: {JsonSerializer.Serialize(selectedItem)}");
 
             return CreateItemSelectionResponse(selectedItem, log);
         }
@@ -161,9 +161,9 @@ public static partial class Program
         public Microsoft.Teams.Api.MessageExtensions.Response OnMessageExtensionQuerySettingsUrl(
             [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.QuerySettingUrlActivity activity,
             [Context] IContext.Client client,
-            [Context] Microsoft.Teams.Common.Logging.ILogger log)
+            [Context] ILogger log)
         {
-            log.Info("[MESSAGE_EXT_QUERY_SETTINGS_URL] Settings URL requested");
+            log.LogInformation("[MESSAGE_EXT_QUERY_SETTINGS_URL] Settings URL requested");
 
             return new Microsoft.Teams.Api.MessageExtensions.Response
             {
@@ -178,12 +178,12 @@ public static partial class Program
         [MessageExtension.FetchTask]
         public Microsoft.Teams.Api.MessageExtensions.ActionResponse OnMessageExtensionFetchTask(
             [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.FetchTaskActivity activity,
-            [Context] Microsoft.Teams.Common.Logging.ILogger log)
+            [Context] ILogger log)
         {
-            log.Info("[MESSAGE_EXT_FETCH_TASK] Fetch task received");
+            log.LogInformation("[MESSAGE_EXT_FETCH_TASK] Fetch task received");
 
             var commandId = activity.Value?.CommandId;
-            log.Info($"[MESSAGE_EXT_FETCH_TASK] Command: {commandId}");
+            log.LogInformation($"[MESSAGE_EXT_FETCH_TASK] Command: {commandId}");
 
             return CreateFetchTaskResponse(commandId, log);
         }
@@ -192,28 +192,28 @@ public static partial class Program
         public Microsoft.Teams.Api.MessageExtensions.Response OnMessageExtensionSetting(
             [Context] Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SettingActivity activity,
             [Context] IContext.Client client,
-            [Context] Microsoft.Teams.Common.Logging.ILogger log)
+            [Context] ILogger log)
         {
-            log.Info("[MESSAGE_EXT_SETTING] Settings received");
+            log.LogInformation("[MESSAGE_EXT_SETTING] Settings received");
 
             var state = activity.Value?.State;
-            log.Info($"[MESSAGE_EXT_SETTING] State: {state}");
+            log.LogInformation($"[MESSAGE_EXT_SETTING] State: {state}");
 
             if (state == "cancel")
             {
-                log.Info("[MESSAGE_EXT_SETTING] Settings cancelled by user");
+                log.LogInformation("[MESSAGE_EXT_SETTING] Settings cancelled by user");
                 return new Microsoft.Teams.Api.MessageExtensions.Response();
             }
 
             // Process settings data
             // Note: Settings property may not be available in current API
-            log.Info("[MESSAGE_EXT_SETTING] Settings processing completed");
+            log.LogInformation("[MESSAGE_EXT_SETTING] Settings processing completed");
 
             return new Microsoft.Teams.Api.MessageExtensions.Response();
         }
 
         // Helper methods for creating responses
-        private static Microsoft.Teams.Api.MessageExtensions.Response CreateSearchResults(string query, Microsoft.Teams.Common.Logging.ILogger log)
+        private static Microsoft.Teams.Api.MessageExtensions.Response CreateSearchResults(string query, ILogger log)
         {
             var attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>();
 
@@ -268,12 +268,12 @@ public static partial class Program
             };
         }
 
-        private static Microsoft.Teams.Api.MessageExtensions.Response HandleCreateCard(JsonElement? data, Microsoft.Teams.Common.Logging.ILogger log)
+        private static Microsoft.Teams.Api.MessageExtensions.Response HandleCreateCard(JsonElement? data, ILogger log)
         {
             var title = GetJsonValue(data, "title") ?? "Default Title";
             var description = GetJsonValue(data, "description") ?? "Default Description";
 
-            log.Info($"[CREATE_CARD] Title: {title}, Description: {description}");
+            log.LogInformation($"[CREATE_CARD] Title: {title}, Description: {description}");
 
             var card = new Microsoft.Teams.Cards.AdaptiveCard
             {
@@ -316,12 +316,12 @@ public static partial class Program
             };
         }
 
-        private static Microsoft.Teams.Api.MessageExtensions.Response HandleGetMessageDetails(Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SubmitActionActivity activity, Microsoft.Teams.Common.Logging.ILogger log)
+        private static Microsoft.Teams.Api.MessageExtensions.Response HandleGetMessageDetails(Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SubmitActionActivity activity, ILogger log)
         {
             var messageText = activity.Value?.MessagePayload?.Body?.Content ?? "No message content";
             var messageId = activity.Value?.MessagePayload?.Id ?? "Unknown";
 
-            log.Info($"[GET_MESSAGE_DETAILS] Message ID: {messageId}");
+            log.LogInformation($"[GET_MESSAGE_DETAILS] Message ID: {messageId}");
 
             var card = new Microsoft.Teams.Cards.AdaptiveCard
             {
@@ -362,7 +362,7 @@ public static partial class Program
             };
         }
 
-        private static Microsoft.Teams.Api.MessageExtensions.Response CreateLinkUnfurlResponse(string url, Microsoft.Teams.Common.Logging.ILogger log)
+        private static Microsoft.Teams.Api.MessageExtensions.Response CreateLinkUnfurlResponse(string url, ILogger log)
         {
             var card = new Microsoft.Teams.Cards.AdaptiveCard
             {
@@ -413,7 +413,7 @@ public static partial class Program
             };
         }
 
-        private static Microsoft.Teams.Api.MessageExtensions.Response CreateItemSelectionResponse(object? selectedItem, Microsoft.Teams.Common.Logging.ILogger log)
+        private static Microsoft.Teams.Api.MessageExtensions.Response CreateItemSelectionResponse(object? selectedItem, ILogger log)
         {
             var itemJson = JsonSerializer.Serialize(selectedItem);
 
@@ -491,9 +491,9 @@ public static partial class Program
             return null;
         }
 
-        private static Microsoft.Teams.Api.MessageExtensions.ActionResponse CreateFetchTaskResponse(string? commandId, Microsoft.Teams.Common.Logging.ILogger log)
+        private static Microsoft.Teams.Api.MessageExtensions.ActionResponse CreateFetchTaskResponse(string? commandId, ILogger log)
         {
-            log.Info($"[CREATE_FETCH_TASK] Creating task for command: {commandId}");
+            log.LogInformation($"[CREATE_FETCH_TASK] Creating task for command: {commandId}");
             // Updated to use actual converation members
 
             // Create an adaptive card for the task module

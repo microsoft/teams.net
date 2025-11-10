@@ -9,7 +9,7 @@ using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Extensions;
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Common.Storage;
 
 namespace Microsoft.Teams.Apps.Annotations;
