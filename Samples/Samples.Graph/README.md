@@ -64,9 +64,9 @@ Update `appsettings.json` with your bot credentials:
 
 ### 4. Regional Bot Configuration (Optional)
 
-If you're deploying a regional bot, you can configure the OAuth endpoint to use a regional token service. This is done by setting the `ApiClientSettings` in your `AppOptions`:
+If you're deploying a regional bot, you can configure the OAuth endpoint to use a regional token service. This can be done in two ways:
 
-**Option 1: Using Code Configuration**
+**Option 1: Using AppOptions (Recommended)**
 
 ```csharp
 var appBuilder = App.Builder()
@@ -78,7 +78,18 @@ var appBuilder = App.Builder()
     });
 ```
 
-**Option 2: Using Environment Variable**
+**Option 2: Using OAuthSettings**
+
+```csharp
+var appBuilder = App.Builder()
+    .AddLogger(new ConsoleLogger(level: Microsoft.Teams.Common.Logging.LogLevel.Debug))
+    .AddOAuth(new OAuthSettings("graph")
+    {
+        ApiClientSettings = new ApiClientSettings("https://europe.token.botframework.com")
+    });
+```
+
+**Option 3: Using Environment Variable**
 
 Set the `OAUTH_URL` environment variable before running the bot:
 
@@ -100,7 +111,7 @@ dotnet run
 - **Default (Global)**: `https://token.botframework.com`
 - **Europe**: `https://europe.token.botframework.com`
 
-**Note**: When using a regional bot, ensure your Azure Bot resource is also configured for the same region.
+**Note**: When using a regional bot, ensure your Azure Bot resource is also configured for the same region. If `ApiClientSettings` is set in both `AppOptions` and `OAuthSettings`, the value in `AppOptions` takes precedence.
 
 ### 5. Local Development Setup
 

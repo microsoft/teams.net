@@ -18,8 +18,7 @@ public class AppOptions
     public OAuthSettings OAuth { get; set; } = new OAuthSettings();
 
     /// <summary>
-    /// API client settings used for overriding OAuth endpoint configuration.
-    /// This is important to configure for regional bots.
+    /// API client settings used for overriding.
     /// </summary>
     public ApiClientSettings? ApiClientSettings { get; set; }
 
