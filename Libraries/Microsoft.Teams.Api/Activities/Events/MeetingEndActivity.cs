@@ -31,35 +31,35 @@ public class MeetingEndActivityValue
     /// <summary>
     /// The meeting's Id, encoded as a BASE64 string.
     /// </summary>
-    [JsonPropertyName("id")]
+    [JsonPropertyName("Id")]
     [JsonPropertyOrder(0)]
     public required string Id { get; set; }
 
     /// <summary>
     /// The meeting's type.
     /// </summary>
-    [JsonPropertyName("meetingType")]
+    [JsonPropertyName("MeetingType")]
     [JsonPropertyOrder(1)]
     public required string MeetingType { get; set; }
 
     /// <summary>
     /// The URL used to join the meeting.
     /// </summary>
-    [JsonPropertyName("joinUrl")]
+    [JsonPropertyName("JoinUrl")]
     [JsonPropertyOrder(2)]
     public required string JoinUrl { get; set; }
 
     /// <summary>
     /// The title of the meeting.
     /// </summary>
-    [JsonPropertyName("title")]
+    [JsonPropertyName("Title")]
     [JsonPropertyOrder(3)]
     public required string Title { get; set; }
 
     /// <summary>
     /// Timestamp for meeting end, in UTC.
     /// </summary>
-    [JsonPropertyName("endTime")]
+    [JsonPropertyName("EndTime")]
     [JsonPropertyOrder(4)]
     public required DateTime EndTime { get; set; }
 }
