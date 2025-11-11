@@ -3,6 +3,8 @@ using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Testing.Events;
 using Microsoft.Teams.Apps.Testing.Plugins;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace Microsoft.Teams.Apps.Tests.Events;
 
@@ -14,7 +16,8 @@ public class CustomEventTests
 
     public CustomEventTests()
     {
-        _app = new App();
+        var logger = new Mock<ILogger<App>>();
+        _app = new App(logger.Object);
         _plugin = new TestPlugin();
         _app.AddPlugin(_plugin);
         _token = Globals.Token;

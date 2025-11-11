@@ -31,8 +31,7 @@ public partial class App
     public string? Name => Token?.AppDisplayName;
 
     public Status? Status { get; internal set; }
-    public ILogger Logger { get; }
-    public ILoggerFactory LoggerFactory { get; }
+    public ILogger<App> Logger { get; }
     public IStorage<string, object> Storage { get; }
     public ApiClient Api { get; internal set; }
     public IHttpClient Client { get; }
@@ -53,11 +52,9 @@ public partial class App
         }
     }
 
-    public App(AppOptions? options = null)
+    public App(ILogger<App> logger, AppOptions? options = null)
     {
-        LoggerFactory = options?.LoggerFactory ?? Microsoft.Extensions.Logging.LoggerFactory.Create(builder => { builder.AddConsole(); });
-        Logger = LoggerFactory.CreateLogger($"Microsoft.Teams");
-
+        Logger = logger;
         Storage = options?.Storage ?? new LocalStorage<object>();
         Credentials = options?.Credentials;
         Plugins = options?.Plugins ?? [];
@@ -97,8 +94,6 @@ public partial class App
 
         Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Container = new Container();
-        Container.Register(Logger);
-        Container.Register(LoggerFactory);
         Container.Register(Storage);
         Container.Register(Client);
         Container.Register(Api);
@@ -383,7 +378,7 @@ public partial class App
         {
             AppId = @event.Token.AppId ?? Id ?? string.Empty,
             TenantId = @event.Token.TenantId ?? string.Empty,
-            Log = LoggerFactory.CreateLogger($"Microsoft.Teams.{path}"),
+            Log = Logger,
             Storage = Storage,
             Api = api,
             Activity = @event.Activity,

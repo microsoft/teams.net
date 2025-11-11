@@ -22,8 +22,7 @@ namespace Microsoft.Teams.Plugins.AspNetCore;
 [Plugin]
 public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 {
-    [Dependency]
-    public ILogger Logger { get; set; }
+    private readonly ILogger<AspNetCorePlugin> Logger;
 
     [Dependency("Token", optional: true)]
     public IToken? Token { get; set; }
@@ -37,6 +36,11 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
+
+    public AspNetCorePlugin(ILogger<AspNetCorePlugin>? logger = null)
+    {
+        Logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<AspNetCorePlugin>();
+    }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {

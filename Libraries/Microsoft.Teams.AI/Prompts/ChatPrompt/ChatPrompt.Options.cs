@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.AI.Templates;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Teams.AI.Prompts;
 
@@ -34,11 +33,6 @@ public class ChatPromptOptions
     /// </summary>
     public IList<IMessage>? Messages { get; set; }
 
-    /// <summary>
-    /// the logger instance
-    /// </summary>
-    public ILoggerFactory? LoggerFactory { get; set; }
-
     public ChatPromptOptions WithName(string value)
     {
         Name = value;
@@ -66,12 +60,6 @@ public class ChatPromptOptions
     public ChatPromptOptions WithInstructions(ITemplate value)
     {
         Instructions = value;
-        return this;
-    }
-
-    public ChatPromptOptions WithLogger(ILoggerFactory value)
-    {
-        LoggerFactory = value;
         return this;
     }
 }

@@ -14,11 +14,13 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddOpenAI(this IServiceCollection collection, OpenAIChatModel model, ChatPromptOptions? options = null)
     {
-        var prompt = new OpenAIChatPrompt(model, options);
-
         collection.AddSingleton(model);
         collection.AddSingleton<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
-        collection.AddSingleton(prompt);
+        collection.AddSingleton(provider =>
+        {
+            var logger = provider.GetRequiredService<ILogger<OpenAIChatPrompt>>();
+            return new OpenAIChatPrompt(model, options, logger);
+        });
         return collection.AddSingleton<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
     }
 
@@ -26,15 +28,15 @@ public static class ServiceCollectionExtensions
     {
         collection.AddSingleton(provider =>
         {
-            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
-            return new OpenAIChatModel(model, apiKey, new() { LoggerFactory = loggerFactory });
+            var logger = provider.GetRequiredService<ILogger<OpenAIChatModel>>();
+            return new OpenAIChatModel(model, apiKey, logger);
         });
         collection.AddSingleton<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
         collection.AddSingleton(provider =>
         {
-            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
             var modelInstance = provider.GetRequiredService<OpenAIChatModel>();
-            return new OpenAIChatPrompt(modelInstance, (options ?? new()).WithLogger(loggerFactory));
+            var logger = provider.GetRequiredService<ILogger<OpenAIChatPrompt>>();
+            return new OpenAIChatPrompt(modelInstance, options, logger);
         });
         return collection.AddSingleton<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
     }
@@ -43,17 +45,17 @@ public static class ServiceCollectionExtensions
     {
         collection.AddSingleton(provider =>
         {
-            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            var logger = provider.GetRequiredService<ILogger<OpenAIChatModel>>();
             var settings = provider.GetRequiredService<OpenAISettings>();
-            return new OpenAIChatModel(settings.Model, settings.ApiKey, new() { LoggerFactory = loggerFactory });
+            return new OpenAIChatModel(settings.Model, settings.ApiKey, logger);
         });
 
         collection.AddSingleton<IChatModel<ChatCompletionOptions>, OpenAIChatModel>(provider => provider.GetRequiredService<OpenAIChatModel>());
         collection.AddSingleton(provider =>
         {
-            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            var logger = provider.GetRequiredService<ILogger<OpenAIChatPrompt>>();
             var model = provider.GetRequiredService<OpenAIChatModel>();
-            return new OpenAIChatPrompt(model, (options ?? new()).WithLogger(loggerFactory));
+            return new OpenAIChatPrompt(model, options, logger);
         });
 
         return collection.AddSingleton<IChatPrompt>(provider => provider.GetRequiredService<OpenAIChatPrompt>());
@@ -63,9 +65,9 @@ public static class ServiceCollectionExtensions
     {
         collection.AddScoped(provider =>
         {
-            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            var logger = provider.GetRequiredService<ILogger<OpenAIChatModel>>();
             var settings = provider.GetRequiredService<OpenAISettings>();
-            return new OpenAIChatModel(settings.Model, settings.ApiKey, new() { LoggerFactory = loggerFactory });
+            return new OpenAIChatModel(settings.Model, settings.ApiKey, logger);
         });
 
         return collection.AddOpenAIHelper<T>(options);
@@ -88,9 +90,9 @@ public static class ServiceCollectionExtensions
         collection.AddScoped(provider =>
         {
             var value = provider.GetRequiredService<T>();
-            var loggerFactory = provider.GetRequiredService<ILoggerFactory>();
+            var logger = provider.GetRequiredService<ILogger<OpenAIChatPrompt>>();
             var model = provider.GetRequiredService<OpenAIChatModel>();
-            return OpenAIChatPrompt.From(model, value, (options ?? new()).WithLogger(loggerFactory));
+            return OpenAIChatPrompt.From(model, value, options, logger);
         });
 
         collection.AddScoped<IChatPrompt>(

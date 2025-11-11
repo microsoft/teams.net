@@ -5,6 +5,7 @@ using System.Reflection;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Plugins;
@@ -22,7 +23,8 @@ public static partial class ApplicationBuilderExtensions
     public static App UseTeams(this IApplicationBuilder builder, bool routing = true)
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
-        var app = builder.ApplicationServices.GetService<App>() ?? new App(builder.ApplicationServices.GetService<AppOptions>());
+        var logger = builder.ApplicationServices.GetRequiredService<ILogger<App>>();
+        var app = builder.ApplicationServices.GetService<App>() ?? new App(logger, builder.ApplicationServices.GetService<AppOptions>());
         var plugins = builder.ApplicationServices.GetServices<IPlugin>();
         var types = assembly.GetTypes();
 

@@ -2,9 +2,7 @@
 // Licensed under the MIT License.
 
 using System.ClientModel;
-
 using Microsoft.Extensions.Logging;
-
 using OpenAI;
 using OpenAI.Chat;
 
@@ -29,22 +27,16 @@ public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
     /// <summary>
     /// the logger instance
     /// </summary>
-    protected ILogger Logger { get; }
+    protected ILogger<OpenAIChatModel> Logger { get; }
 
-    protected ILoggerFactory LoggerFactory { get; }
-
-    public OpenAIChatModel(string model, OpenAIClient client)
+    public OpenAIChatModel(string model, OpenAIClient client, ILogger<OpenAIChatModel>? logger = null)
     {
         Model = model;
         ChatClient = client.GetChatClient(model);
-        LoggerFactory = Extensions.Logging.LoggerFactory.Create(builder =>
-        {
-            builder.AddConsole();
-        });
-        Logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.{Model}");
+        Logger = logger ?? LoggerFactory.Create(builder => {}).CreateLogger<OpenAIChatModel>();
     }
 
-    public OpenAIChatModel(string model, string apiKey, Options? options = null)
+    public OpenAIChatModel(string model, string apiKey, ILogger<OpenAIChatModel>? logger = null, OpenAIClientOptions? options = null)
     {
         options ??= new();
         options.NetworkTimeout ??= TimeSpan.FromSeconds(60);
@@ -52,14 +44,10 @@ public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
         var client = new OpenAIClient(new ApiKeyCredential(apiKey), options);
         Model = model;
         ChatClient = client.GetChatClient(model);
-        LoggerFactory = options.LoggerFactory ?? Extensions.Logging.LoggerFactory.Create( builder => 
-        {
-            builder.AddConsole();
-        });
-        Logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.{Model}");
+        Logger = logger ?? LoggerFactory.Create(builder => {}).CreateLogger<OpenAIChatModel>();
     }
 
-    public OpenAIChatModel(string model, ApiKeyCredential apiKey, Options? options = null)
+    public OpenAIChatModel(string model, ApiKeyCredential apiKey, ILogger<OpenAIChatModel>? logger = null, OpenAIClientOptions? options = null)
     {
         options ??= new();
         options.NetworkTimeout ??= TimeSpan.FromSeconds(60);
@@ -67,10 +55,6 @@ public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
         var client = new OpenAIClient(apiKey, options);
         Model = model;
         ChatClient = client.GetChatClient(model);
-        LoggerFactory = options.LoggerFactory ?? Extensions.Logging.LoggerFactory.Create( builder => 
-        {
-            builder.AddConsole();
-        });
-        Logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.{Model}");
+        Logger = logger ?? LoggerFactory.Create(builder => {}).CreateLogger<OpenAIChatModel>();
     }
 }

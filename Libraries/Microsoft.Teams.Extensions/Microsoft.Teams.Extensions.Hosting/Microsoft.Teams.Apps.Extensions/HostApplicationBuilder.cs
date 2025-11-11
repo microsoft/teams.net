@@ -35,10 +35,8 @@ public static class HostApplicationBuilderExtensions
             );
         }
 
-        var app = new App(options);
-
         builder.Services.AddSingleton(settings);
-        builder.Services.AddTeams(app);
+        builder.Services.AddTeams(options);
         return builder;
     }
 
@@ -56,10 +54,8 @@ public static class HostApplicationBuilderExtensions
             ));
         }
 
-        var app = appBuilder.Build();
-
         builder.Services.AddSingleton(settings);
-        builder.Services.AddTeams(app);
+        builder.Services.AddTeams(appBuilder);
         return builder;
     }
 

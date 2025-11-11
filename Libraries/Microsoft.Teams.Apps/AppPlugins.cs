@@ -82,11 +82,6 @@ public partial class App
                 throw new InvalidOperationException($"dependency '{property.PropertyType.Name}' of property '{property.Name}' not found, but plugin '{metadata.Name}' depends on it");
             }
 
-            if (dependency is ILogger logger)
-            {
-                dependency = LoggerFactory.CreateLogger($"Microsoft.Teams.{metadata.Name}");
-            }
-
             property.SetValue(plugin, dependency);
         }
     }

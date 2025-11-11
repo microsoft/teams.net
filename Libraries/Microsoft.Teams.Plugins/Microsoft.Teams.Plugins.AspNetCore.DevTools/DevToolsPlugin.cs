@@ -17,17 +17,12 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Common.Text;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Models;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.DevTools;
 
 [Plugin]
 public class DevToolsPlugin : IAspNetCorePlugin
 {
-    [AllowNull]
-    [Dependency]
-    public ILogger Logger { get; set; }
-
     [Dependency("AppId", optional: true)]
     public string? AppId { get; set; }
 
@@ -43,12 +38,14 @@ public class DevToolsPlugin : IAspNetCorePlugin
     private readonly IServiceProvider _services;
     private readonly IList<Page> _pages = [];
     private readonly TeamsDevToolsSettings _settings;
+    private readonly ILogger<DevToolsPlugin> Logger;
 
-    public DevToolsPlugin(AspNetCorePlugin sender, IServiceProvider provider)
+    public DevToolsPlugin(AspNetCorePlugin sender, IServiceProvider provider, ILogger<DevToolsPlugin>? logger = null)
     {
         _sender = sender;
         _services = provider;
         _settings = provider.GetRequiredService<TeamsDevToolsSettings>();
+        Logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<DevToolsPlugin>();
     }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)

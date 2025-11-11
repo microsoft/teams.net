@@ -119,7 +119,7 @@ public static partial class ApplicationBuilderExtensions
             {
                 context.Request.EnableBuffering();
                 var app = context.RequestServices.GetRequiredService<App>();
-                var log = app.LoggerFactory.CreateLogger($"Microsoft.Teams.functions.{name}");
+                var log = context.RequestServices.GetRequiredService<ILogger<FunctionContext<TBody>>>();
 
                 if (context.Request.Headers.Authorization.First() is null)
                 {

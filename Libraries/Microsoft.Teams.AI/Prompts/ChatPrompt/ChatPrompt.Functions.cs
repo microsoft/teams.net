@@ -43,7 +43,6 @@ public partial class ChatPrompt<TOptions>
     private async Task<object?> _Invoke(FunctionCall call, FunctionCollection functions, CancellationToken cancellationToken = default)
     {
         var function = functions.Get(call.Name) ?? throw new NotImplementedException();
-        var logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.{Name}.Function.{call.Name}");
         if (function is Function func)
         {
             foreach (var plugin in Plugins)
@@ -52,13 +51,13 @@ public partial class ChatPrompt<TOptions>
             }
 
             var startedAt = DateTime.Now;
-            logger.LogDebug(call.Arguments);
+            Logger.LogDebug(call.Arguments);
 
             var res = await func.Invoke(call);
             var endedAt = DateTime.Now;
 
-            logger.LogDebug($"function result: {res}", res);
-            logger.LogDebug($"elapse time: {(endedAt - startedAt).Humanize(3)}");
+            Logger.LogDebug($"function result: {res}", res);
+            Logger.LogDebug($"elapse time: {(endedAt - startedAt).Humanize(3)}");
 
             foreach (var plugin in Plugins)
             {

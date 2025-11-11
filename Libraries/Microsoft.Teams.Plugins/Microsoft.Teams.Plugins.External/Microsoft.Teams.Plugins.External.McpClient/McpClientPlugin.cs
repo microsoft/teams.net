@@ -22,17 +22,15 @@ public class McpClientPlugin : BaseChatPlugin
     private readonly ILogger _logger;
     private readonly IDictionary<string, McpClientPluginParams> _mcpServerParams;
 
-    public McpClientPlugin(McpClientPluginOptions? options = null)
+    public McpClientPlugin(McpClientPluginOptions? options = null, ILogger<McpClientPlugin>? logger = null)
     {
         options ??= new McpClientPluginOptions();
         Name = options.Name;
         Version = options.Version;
         RefetchTimeoutMs = options.RefetchTimeoutMs;
         Cache = options.Cache ?? new Dictionary<string, McpCachedValue>();
+        _logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<McpClientPlugin>();
 
-        _logger = (options.LoggerFactory
-            ?? LoggerFactory.Create(builder => builder.AddConsole()))
-            .CreateLogger($"Microsoft.Teams.Plugins.External.McpClient.{Name}");
         _mcpServerParams = new Dictionary<string, McpClientPluginParams>();
 
         if (options.Cache != null)

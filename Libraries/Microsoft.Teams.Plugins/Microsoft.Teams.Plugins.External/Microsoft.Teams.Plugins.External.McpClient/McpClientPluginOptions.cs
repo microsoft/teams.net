@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
+﻿
 namespace Microsoft.Teams.Plugins.External.McpClient;
 
 public class McpClientPluginOptions
@@ -24,9 +23,4 @@ public class McpClientPluginOptions
     /// <summary>
     /// Cache for storing fetched tools
     public IDictionary<string, McpCachedValue>? Cache { get; set; }
-
-    /// <summary>
-    /// Logger instance
-    /// </summary>
-    public ILoggerFactory? LoggerFactory { get; set; }
 }

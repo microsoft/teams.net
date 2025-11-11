@@ -4,12 +4,15 @@ using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Testing.Plugins;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace Microsoft.Teams.Apps.Tests.Concurrency;
 
 public class AsynTests
 {
-    private readonly App _app = new();
+    private readonly Mock<ILogger<App>> _logger = new();
+    private readonly App _app;
     private readonly IToken _token = Globals.Token;
     private readonly TestPlugin _plugin = new();
     private readonly IServiceProvider _provider;
@@ -21,6 +24,7 @@ public class AsynTests
         services.AddSingleton<Controller>();
 
         _provider = services.BuildServiceProvider();
+        _app = new App(_logger.Object);
         _app.AddController(_provider.GetRequiredService<Controller>());
         _app.AddPlugin(_plugin);
     }

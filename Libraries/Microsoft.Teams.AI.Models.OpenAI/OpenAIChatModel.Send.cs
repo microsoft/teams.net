@@ -146,8 +146,7 @@ public partial class OpenAIChatModel
         {
             foreach (var call in modelMessage.FunctionCalls ?? [])
             {
-                var logger = LoggerFactory.CreateLogger($"Microsoft.Teams.AI.Tools.{call.Name}");
-                logger.LogDebug("Invoking function '{FunctionName}' with arguments: {Arguments}", call.Name, call.Arguments);
+                Logger.LogDebug("Invoking function '{FunctionName}' with arguments: {Arguments}", call.Name, call.Arguments);
                 string? content;
 
                 try
@@ -156,11 +155,11 @@ public partial class OpenAIChatModel
                     var res = await options.Invoke(call, cancellationToken);
 
                     content = res is string asString ? asString : JsonSerializer.Serialize(res);
-                    logger.LogDebug("Function '{FunctionName}' returned: {Content}", call.Name, content);
+                    Logger.LogDebug("Function '{FunctionName}' returned: {Content}", call.Name, content);
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError(ex, "An error occurred while invoking function '{FunctionName}'", call.Name);
+                    Logger.LogError(ex, "An error occurred while invoking function '{FunctionName}'", call.Name);
                     content = ex.Message;
                 }
 

@@ -19,9 +19,12 @@ namespace Microsoft.Teams.Plugins.External.Mcp;
 )]
 public class McpPlugin : IAspNetCorePlugin
 {
-    [AllowNull]
-    [Dependency]
-    public ILogger Logger { get; set; }
+    private readonly ILogger<McpPlugin> Logger;
+
+    public McpPlugin(ILogger<McpPlugin>? logger = null)
+    {
+        Logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<McpPlugin>();
+    }
 
     public event EventFunction Events;
 

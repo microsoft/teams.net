@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Plugins.External.McpClient.Tests;
 
 public class McpClientPluginTests
 {
-    /*
+    
     [Fact]
     public void Test_Constructor_SetsDefaults_AndInitializesCacheTimestamps()
     {
@@ -25,7 +25,7 @@ public class McpClientPluginTests
                 LastFetched = null
             }
         };
-        var logger = new Mock<ILogger>(MockBehavior.Strict);
+        var logger = new Mock<ILogger<McpClientPlugin>>();
 
         // Act
         var plugin = new McpClientPlugin(new McpClientPluginOptions
@@ -33,14 +33,13 @@ public class McpClientPluginTests
             Name = "TestPlugin",
             Version = "1.2.3",
             Cache = cache,
-            Logger = logger.Object
-        });
+        }, logger.Object);
 
         // Assert
         Assert.Equal("TestPlugin", plugin.Name);
         Assert.Equal("1.2.3", plugin.Version);
         Assert.True(cache["http://example.org"].LastFetched.HasValue);
-    }*/
+    }
 
     [Fact]
     public void Test_UseMcpServer_WithAvailableTools_PopulatesCache()

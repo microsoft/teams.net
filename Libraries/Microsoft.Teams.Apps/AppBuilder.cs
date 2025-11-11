@@ -15,15 +15,6 @@ public partial class AppBuilder
         _options = options ?? new AppOptions();
     }
 
-    /// <summary>
-    /// Adds an ILoggerFactory to the application.
-    /// </summary>
-    public AppBuilder AddLoggerFactory(ILoggerFactory loggerFactory)
-    {
-        _options.LoggerFactory = loggerFactory;
-        return this;
-    }
-
     public AppBuilder AddStorage<TStorage>(TStorage storage) where TStorage : Common.Storage.IStorage<string, object>
     {
         _options.Storage = storage;
@@ -96,8 +87,8 @@ public partial class AppBuilder
         return this;
     }
 
-    public App Build()
+    public App Build(ILogger<App> logger)
     {
-        return new App(_options);
+        return new App(logger, _options);
     }
 }

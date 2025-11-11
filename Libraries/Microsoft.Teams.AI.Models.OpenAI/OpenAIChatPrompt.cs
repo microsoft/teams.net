@@ -2,14 +2,14 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.AI.Prompts;
-
+using Microsoft.Extensions.Logging;
 using OpenAI.Chat;
 
 namespace Microsoft.Teams.AI.Models.OpenAI;
 
 public class OpenAIChatPrompt : ChatPrompt<ChatCompletionOptions>
 {
-    public OpenAIChatPrompt(OpenAIChatModel model, ChatPromptOptions? options = null) : base(model, options)
+    public OpenAIChatPrompt(OpenAIChatModel model, ChatPromptOptions? options = null, ILogger<OpenAIChatPrompt>? logger = null) : base(model, options, logger)
     {
 
     }
@@ -24,9 +24,9 @@ public class OpenAIChatPrompt : ChatPrompt<ChatCompletionOptions>
 
     }
 
-    public static OpenAIChatPrompt From<T>(OpenAIChatModel model, T value, ChatPromptOptions? options = null) where T : class
+    public static OpenAIChatPrompt From<T>(OpenAIChatModel model, T value, ChatPromptOptions? options = null, ILogger<OpenAIChatPrompt>? logger = null) where T : class
     {
-        var prompt = ChatPrompt<ChatCompletionOptions>.From(model, value, options);
+        var prompt = ChatPrompt<ChatCompletionOptions>.From(model, value, options, logger);
         return new OpenAIChatPrompt(prompt);
     }
 }
