@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Api.Clients;
-
 /// <summary>
 /// OAuth configuration settings for the application.
 /// </summary>
@@ -13,12 +11,6 @@ public class OAuthSettings
     /// Defaults to "graph".
     /// </summary>
     public string DefaultConnectionName { get; set; }
-
-    /// <summary>
-    /// API client settings for OAuth endpoint configuration.
-    /// Used to configure regional bot support.
-    /// </summary>
-    public ApiClientSettings? ApiClientSettings { get; set; }
 
     /// <summary>
     /// Creates a new instance of OAuthSettings with the specified connection name.

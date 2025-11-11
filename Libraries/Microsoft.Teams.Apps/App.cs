@@ -92,7 +92,7 @@ public partial class App
             return Token;
         };
 
-        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client, OAuth.ApiClientSettings);
+        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client, options?.ApiClientSettings);
         Container = new Container();
         Container.Register(Logger);
         Container.Register(Storage);
