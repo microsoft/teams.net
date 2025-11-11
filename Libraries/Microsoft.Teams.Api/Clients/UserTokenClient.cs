@@ -15,30 +15,54 @@ public class UserTokenClient : Client
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
+    private readonly ApiClientSettings _apiClientSettings;
+
+    // User token API endpoints
+    private const string USER_TOKEN_GET_TOKEN = "api/usertoken/GetToken";
+    private const string USER_TOKEN_GET_AAD_TOKENS = "api/usertoken/GetAadTokens";
+    private const string USER_TOKEN_GET_STATUS = "api/usertoken/GetTokenStatus";
+    private const string USER_TOKEN_SIGN_OUT = "api/usertoken/SignOut";
+    private const string USER_TOKEN_EXCHANGE = "api/usertoken/exchange";
+
     public UserTokenClient(CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-
+        _apiClientSettings = ApiClientSettings.Merge();
     }
 
     public UserTokenClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-
+        _apiClientSettings = ApiClientSettings.Merge();
     }
 
     public UserTokenClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-
+        _apiClientSettings = ApiClientSettings.Merge();
     }
 
     public UserTokenClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
+        _apiClientSettings = ApiClientSettings.Merge();
+    }
 
+    public UserTokenClient(IHttpClient client, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    {
+        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+    }
+
+    public UserTokenClient(IHttpClientOptions options, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    {
+        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+    }
+
+    public UserTokenClient(IHttpClientFactory factory, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    {
+        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
     }
 
     public async Task<Token.Response> GetAsync(GetTokenRequest request)
     {
         var query = QueryString.Serialize(request);
-        var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetToken?{query}");
+        var req = HttpRequest.Get($"{_apiClientSettings.OAuthUrl}/{USER_TOKEN_GET_TOKEN}?{query}");
         var res = await _http.SendAsync<Token.Response>(req, _cancellationToken);
         return res.Body;
     }
@@ -46,7 +70,7 @@ public class UserTokenClient : Client
     public async Task<IDictionary<string, Token.Response>> GetAadAsync(GetAadTokenRequest request)
     {
         var query = QueryString.Serialize(request);
-        var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/GetAadTokens?{query}", body: request);
+        var req = HttpRequest.Post($"{_apiClientSettings.OAuthUrl}/{USER_TOKEN_GET_AAD_TOKENS}?{query}", body: request);
         var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, _cancellationToken);
         return res.Body;
     }
@@ -54,7 +78,7 @@ public class UserTokenClient : Client
     public async Task<IList<Token.Status>> GetStatusAsync(GetTokenStatusRequest request)
     {
         var query = QueryString.Serialize(request);
-        var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetTokenStatus?{query}");
+        var req = HttpRequest.Get($"{_apiClientSettings.OAuthUrl}/{USER_TOKEN_GET_STATUS}?{query}");
         var res = await _http.SendAsync<IList<Token.Status>>(req, _cancellationToken);
         return res.Body;
     }
@@ -62,7 +86,7 @@ public class UserTokenClient : Client
     public async Task SignOutAsync(SignOutRequest request)
     {
         var query = QueryString.Serialize(request);
-        var req = HttpRequest.Delete($"https://token.botframework.com/api/usertoken/SignOut?{query}");
+        var req = HttpRequest.Delete($"{_apiClientSettings.OAuthUrl}/{USER_TOKEN_SIGN_OUT}?{query}");
         await _http.SendAsync(req, _cancellationToken);
     }
 
@@ -79,7 +103,7 @@ public class UserTokenClient : Client
         // This is required for the Bot Framework Token Service to process the request correctly.
         var body = JsonSerializer.Serialize(request.GetBody(), _jsonSerializerOptions);
 
-        var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/exchange?{query}", body);
+        var req = HttpRequest.Post($"{_apiClientSettings.OAuthUrl}/{USER_TOKEN_EXCHANGE}?{query}", body);
         req.Headers.Add("Content-Type", new List<string>() { "application/json" });
 
         var res = await _http.SendAsync<Token.Response>(req, _cancellationToken);

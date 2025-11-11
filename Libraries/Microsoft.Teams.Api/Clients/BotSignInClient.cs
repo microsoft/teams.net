@@ -7,31 +7,52 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class BotSignInClient : Client
 {
+    private readonly ApiClientSettings _apiClientSettings;
+
+    // Bot sign-in API endpoints
+    private const string BOT_SIGNIN_GET_URL = "api/botsignin/GetSignInUrl";
+    private const string BOT_SIGNIN_GET_RESOURCE = "api/botsignin/GetSignInResource";
+
     public BotSignInClient() : base()
     {
-
+        _apiClientSettings = ApiClientSettings.Merge();
     }
 
     public BotSignInClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-
+        _apiClientSettings = ApiClientSettings.Merge();
     }
 
     public BotSignInClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-
+        _apiClientSettings = ApiClientSettings.Merge();
     }
 
     public BotSignInClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
+        _apiClientSettings = ApiClientSettings.Merge();
+    }
 
+    public BotSignInClient(IHttpClient client, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    {
+        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+    }
+
+    public BotSignInClient(IHttpClientOptions options, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    {
+        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+    }
+
+    public BotSignInClient(IHttpClientFactory factory, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    {
+        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
     }
 
     public async Task<string> GetUrlAsync(GetUrlRequest request)
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(
-            $"https://token.botframework.com/api/botsignin/GetSignInUrl?{query}"
+            $"{_apiClientSettings.OAuthUrl}/{BOT_SIGNIN_GET_URL}?{query}"
         );
 
         var res = await _http.SendAsync(req, _cancellationToken);
@@ -42,7 +63,7 @@ public class BotSignInClient : Client
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(
-            $"https://token.botframework.com/api/botsignin/GetSignInResource?{query}"
+            $"{_apiClientSettings.OAuthUrl}/{BOT_SIGNIN_GET_RESOURCE}?{query}"
         );
 
         var res = await _http.SendAsync<SignIn.UrlResponse>(req, _cancellationToken);

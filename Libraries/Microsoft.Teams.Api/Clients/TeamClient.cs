@@ -8,25 +8,48 @@ namespace Microsoft.Teams.Api.Clients;
 public class TeamClient : Client
 {
     public readonly string ServiceUrl;
+    private readonly ApiClientSettings _apiClientSettings;
 
     public TeamClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
+        _apiClientSettings = ApiClientSettings.Merge();
     }
 
     public TeamClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
+        _apiClientSettings = ApiClientSettings.Merge();
     }
 
     public TeamClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
+        _apiClientSettings = ApiClientSettings.Merge();
     }
 
     public TeamClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
+        _apiClientSettings = ApiClientSettings.Merge();
+    }
+
+    public TeamClient(string serviceUrl, IHttpClient client, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    {
+        ServiceUrl = serviceUrl;
+        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+    }
+
+    public TeamClient(string serviceUrl, IHttpClientOptions options, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    {
+        ServiceUrl = serviceUrl;
+        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+    }
+
+    public TeamClient(string serviceUrl, IHttpClientFactory factory, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    {
+        ServiceUrl = serviceUrl;
+        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
     }
 
     public async Task<Team> GetByIdAsync(string id)
