@@ -24,7 +24,7 @@ public static partial class ApplicationBuilderExtensions
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
         var logger = builder.ApplicationServices.GetRequiredService<ILogger<App>>();
-        var app = builder.ApplicationServices.GetService<App>() ?? new App(logger, builder.ApplicationServices.GetService<AppOptions>());
+        var app = builder.ApplicationServices.GetService<App>();
         var plugins = builder.ApplicationServices.GetServices<IPlugin>();
         var types = assembly.GetTypes();
 
@@ -41,13 +41,13 @@ public static partial class ApplicationBuilderExtensions
 
             if (controller is not null)
             {
-                app.AddController(controller);
+                app?.AddController(controller);
             }
         }
 
         foreach (var plugin in plugins)
         {
-            app.AddPlugin(plugin);
+            app?.AddPlugin(plugin);
 
             if (plugin is IAspNetCorePlugin aspNetCorePlugin)
             {
@@ -62,7 +62,7 @@ public static partial class ApplicationBuilderExtensions
             builder.UseEndpoints(endpoints => endpoints.MapControllers());
         }
 
-        return app;
+        return app!;
     }
 
     /// <summary>

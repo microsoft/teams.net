@@ -92,7 +92,7 @@ public partial class App
             return Token;
         };
 
-        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
+        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client, Logger);
         Container = new Container();
         Container.Register(Storage);
         Container.Register(Client);
@@ -378,7 +378,6 @@ public partial class App
         {
             AppId = @event.Token.AppId ?? Id ?? string.Empty,
             TenantId = @event.Token.TenantId ?? string.Empty,
-            Log = Logger,
             Storage = Storage,
             Api = api,
             Activity = @event.Activity,

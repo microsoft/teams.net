@@ -8,8 +8,6 @@ using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Extensions;
-using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Common.Storage;
 
 namespace Microsoft.Teams.Apps.Annotations;
@@ -21,10 +19,11 @@ public class ContextAttribute : ContextAccessorAttribute
     {
         var type = parameter.ParameterType;
 
-        if (type == typeof(ILogger)) return context.Log;
         if (type == typeof(IStorage<string, object>)) return context.Storage;
         if (type == typeof(IStreamer)) return context.Stream;
+#if NET8_0_OR_GREATER
         if (type.IsAssignableTo(typeof(IActivity))) return context.Activity.ToType(parameter.ParameterType, null);
+#endif
         if (type == typeof(ApiClient)) return context.Api;
         if (type == typeof(CancellationToken)) return context.CancellationToken;
         if (type == typeof(ConversationReference)) return context.Ref;

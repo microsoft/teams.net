@@ -99,7 +99,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
-        var client = new ApiClient(reference.ServiceUrl, Client, cancellationToken);
+        var client = new ApiClient(reference.ServiceUrl, Client, Logger, cancellationToken);
 
         activity.Conversation = reference.Conversation;
         activity.From = reference.Bot;

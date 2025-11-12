@@ -24,19 +24,19 @@ public static partial class Program
     }
 
     [TeamsController]
-    public class Controller
+    public class Controller(ILogger<Controller> logger)
     {
         [Activity]
         public async Task OnActivity(IContext<Activity> context, [Context] IContext.Next next)
         {
-            context.Log.LogInformation(context.AppId);
+            logger.LogInformation(context.AppId);
             await next();
         }
 
         [Message]
-        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client, [Context] ILogger log)
+        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client)
         {
-            log.LogInformation("hit!");
+            logger.LogInformation("hit!");
             await client.Typing();
             await client.Send($"you said '{activity.Text}'");
         }

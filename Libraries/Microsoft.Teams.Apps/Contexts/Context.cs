@@ -9,7 +9,6 @@ using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Common.Storage;
 
 namespace Microsoft.Teams.Apps;
@@ -41,7 +40,7 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// <summary>
     /// the app logger instance
     /// </summary>
-    public ILogger<App> Log { get; set; }
+    //public ILogger<App> Log { get; set; }
 
     /// <summary>
     /// the app storage instance
@@ -84,7 +83,7 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// <param name="log">the ILogger instance</param>
     /// <param name="api">the api client</param>
     /// <param name="activity">the inbound activity</param>
-    public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity);
+    public void Deconstruct(out ApiClient api, out TActivity activity);
 
     /// <summary>
     /// destruct the context
@@ -93,7 +92,7 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// <param name="api">the api client</param>
     /// <param name="activity">the inbound activity</param>
     /// <param name="send">the methods to send activities</param>
-    public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity, out IContext.Client client);
+    public void Deconstruct(out ApiClient api, out TActivity activity, out IContext.Client client);
 
     /// <summary>
     /// destruct the context
@@ -104,7 +103,7 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// <param name="activity">the inbound activity</param>
     /// <param name="reference">the inbound conversation reference</param>
     /// <param name="send">the methods to send activities</param>
-    public void Deconstruct(out string appId, out ILogger log, out ApiClient api, out TActivity activity, out ConversationReference reference, out IContext.Client client);
+    public void Deconstruct(out string appId, out ApiClient api, out TActivity activity, out ConversationReference reference, out IContext.Client client);
 
     /// <summary>
     /// called to continue the chain of route handlers,
@@ -130,7 +129,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
 
     public required string AppId { get; set; }
     public required string TenantId { get; set; }
-    public required ILogger<App> Log { get; set; }
+    //public required ILogger<App> Log { get; set; }
     public required IStorage<string, object> Storage { get; set; }
     public required ApiClient Api { get; set; }
     public required TActivity Activity { get; set; }
@@ -142,25 +141,22 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     internal Func<IContext<IActivity>, Task<object?>> OnNext { get; set; } = (_) => Task.FromResult<object?>(null);
     internal ActivitySentHandler OnActivitySent { get; set; } = (_, _) => Task.Run(() => { });
 
-    public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity)
+    public void Deconstruct(out ApiClient api, out TActivity activity)
     {
-        log = Log;
         api = Api;
         activity = Activity;
     }
 
-    public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity, out IContext.Client client)
+    public void Deconstruct(out ApiClient api, out TActivity activity, out IContext.Client client)
     {
-        log = Log;
         api = Api;
         activity = Activity;
         client = new IContext.Client(ToActivityType());
     }
 
-    public void Deconstruct(out string appId, out ILogger log, out ApiClient api, out TActivity activity, out ConversationReference reference, out IContext.Client client)
+    public void Deconstruct(out string appId, out ApiClient api, out TActivity activity, out ConversationReference reference, out IContext.Client client)
     {
         appId = AppId;
-        log = Log;
         api = Api;
         activity = Activity;
         reference = Ref;
@@ -176,7 +172,6 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
             Sender = Sender,
             AppId = AppId,
             TenantId = TenantId,
-            Log = Log,
             Storage = Storage,
             Api = Api,
             Activity = (TToActivity)Activity.ToType(typeof(TToActivity), null),

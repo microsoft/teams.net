@@ -132,7 +132,8 @@ public partial class App
         {
             if (context.Activity.Value.State is null)
             {
-                context.Log.LogWarning("Auth state not found for conversation '{ConversationId}' and user '{UserId}'", context.Ref.Conversation.Id, context.Activity.From.Id);
+
+                Logger.LogWarning("Auth state not found for conversation '{ConversationId}' and user '{UserId}'", context.Ref.Conversation.Id, context.Activity.From.Id);
                 return new Response(HttpStatusCode.NotFound);
             }
 

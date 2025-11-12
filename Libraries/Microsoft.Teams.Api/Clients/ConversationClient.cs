@@ -3,6 +3,7 @@
 
 using System.Text.Json.Serialization;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Common.Http;
 
@@ -13,39 +14,44 @@ public class ConversationClient : Client
     public readonly string ServiceUrl;
     public readonly ActivityClient Activities;
     public readonly MemberClient Members;
+    private readonly ILogger _logger;
 
-    public ConversationClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
+    //public ConversationClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
+    //{
+    //    ServiceUrl = serviceUrl;
+    //    Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
+    //    Members = new MemberClient(serviceUrl, _http, cancellationToken);
+    //}
+
+    public ConversationClient(string serviceUrl, IHttpClient client, ILogger logger, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
+        _logger = logger;
     }
 
-    public ConversationClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
-    {
-        ServiceUrl = serviceUrl;
-        Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
-        Members = new MemberClient(serviceUrl, _http, cancellationToken);
-    }
+    //public ConversationClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    //{
+    //    ServiceUrl = serviceUrl;
+    //    Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
+    //    Members = new MemberClient(serviceUrl, _http, cancellationToken);
+    //}
 
-    public ConversationClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
-    {
-        ServiceUrl = serviceUrl;
-        Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
-        Members = new MemberClient(serviceUrl, _http, cancellationToken);
-    }
-
-    public ConversationClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
-    {
-        ServiceUrl = serviceUrl;
-        Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
-        Members = new MemberClient(serviceUrl, _http, cancellationToken);
-    }
+    //public ConversationClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    //{
+    //    ServiceUrl = serviceUrl;
+    //    Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
+    //    Members = new MemberClient(serviceUrl, _http, cancellationToken);
+    //}
 
     public async Task<ConversationResource> CreateAsync(CreateRequest request)
     {
-        var req = HttpRequest.Post($"{ServiceUrl}v3/conversations", body: request);
+        string url = $"{ServiceUrl}v3/conversations";
+        _logger.LogInformation("Sending POST to: {ServiceUrl}", url);
+        var req = HttpRequest.Post(url, body: request);
         var res = await _http.SendAsync<ConversationResource>(req, _cancellationToken);
+        _logger.LogInformation("POST sent with status: {Status}", res.StatusCode);
         return res.Body;
     }
 
