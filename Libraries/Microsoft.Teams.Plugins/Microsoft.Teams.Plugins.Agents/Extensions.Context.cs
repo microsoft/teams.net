@@ -1,9 +1,9 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps;
 
-namespace Microsoft.Teams.Plugins.Agents.Extensions;
+namespace Microsoft.Teams.Plugins.Agents;
 
-public static class ContextExtensions
+public static partial class Extensions
 {
     public static Microsoft.Agents.Builder.ITurnContext GetTurnContext<TActivity>(this IContext<TActivity> context) where TActivity : IActivity
     {

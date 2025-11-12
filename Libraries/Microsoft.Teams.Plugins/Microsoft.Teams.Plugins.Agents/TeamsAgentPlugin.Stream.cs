@@ -1,6 +1,5 @@
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Plugins.Agents.Models;
 
 namespace Microsoft.Teams.Plugins.Agents;
 
@@ -46,7 +45,7 @@ public partial class TeamsAgentPlugin
             _closedAt = new DateTime();
             if (!context.StreamingResponse.IsStreamStarted()) return null;
             await context.StreamingResponse.EndStreamAsync();
-            return ((Activity)context.StreamingResponse.FinalMessage.ToTeamsEntity()).ToMessage();
+            return ((Activity)context.StreamingResponse.FinalMessage.ToTeams()).ToMessage();
         }
     }
 }

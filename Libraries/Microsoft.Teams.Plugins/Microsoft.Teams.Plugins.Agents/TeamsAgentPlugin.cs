@@ -4,7 +4,6 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Logging;
-using Microsoft.Teams.Plugins.Agents.Models;
 
 namespace Microsoft.Teams.Plugins.Agents;
 
@@ -71,7 +70,7 @@ public partial class TeamsAgentPlugin : AgentExtension, ISenderPlugin
         activity.Recipient = reference.User;
         activity.ChannelId = reference.ChannelId;
 
-        var res = await Options.Context.SendActivityAsync(activity.ToAgentEntity(), cancellationToken);
+        var res = await Options.Context.SendActivityAsync(activity.ToAgents(), cancellationToken);
         activity.Id = res.Id;
         return activity;
     }
@@ -84,7 +83,7 @@ public partial class TeamsAgentPlugin : AgentExtension, ISenderPlugin
         activity.Recipient = reference.User;
         activity.ChannelId = reference.ChannelId;
 
-        var res = await Options.Context.SendActivityAsync(activity.ToAgentEntity(), cancellationToken);
+        var res = await Options.Context.SendActivityAsync(activity.ToAgents(), cancellationToken);
         activity.Id = res.Id;
         return activity;
     }

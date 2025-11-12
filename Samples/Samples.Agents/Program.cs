@@ -3,7 +3,7 @@ using Microsoft.Agents.Hosting.AspNetCore;
 using Microsoft.Agents.Storage;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Extensions;
-using Microsoft.Teams.Plugins.Agents.Extensions;
+using Microsoft.Teams.Plugins.Agents;
 
 using Samples.Agents;
 

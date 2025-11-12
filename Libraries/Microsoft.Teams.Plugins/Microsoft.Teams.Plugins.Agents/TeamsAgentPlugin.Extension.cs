@@ -2,7 +2,6 @@ using Microsoft.Agents.Builder.State;
 using Microsoft.Agents.Core.Models;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Api.Auth;
-using Microsoft.Teams.Plugins.Agents.Models;
 
 namespace Microsoft.Teams.Plugins.Agents;
 
@@ -30,7 +29,7 @@ public partial class TeamsAgentPlugin
         var res = await Do(new()
         {
             Token = new JsonWebToken(context.Identity),
-            Activity = context.Activity.ToTeamsEntity(),
+            Activity = context.Activity.ToTeams(),
             Services = services.BuildServiceProvider(),
             Extra = extra
         }, cancellationToken);
