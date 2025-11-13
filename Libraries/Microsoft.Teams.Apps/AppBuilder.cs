@@ -1,16 +1,26 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Plugins;
+using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Apps;
 
 public partial class AppBuilder
 {
+    private readonly IServiceProvider _serviceProvider;
     protected AppOptions _options;
+
+    public AppBuilder(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+        _options = serviceProvider.GetService(typeof(AppOptions)) as AppOptions ?? throw new InvalidOperationException("AppOptions not found in DI container");
+    }
 
     public AppBuilder(AppOptions? options = null)
     {
+        _serviceProvider = null!;
         _options = options ?? new AppOptions();
     }
 
@@ -100,6 +110,6 @@ public partial class AppBuilder
 
     public App Build()
     {
-        return new App(_options);
+        return new App(_serviceProvider.GetService<IHttpCredentials>()!, _options);
     }
 }

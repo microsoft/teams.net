@@ -52,11 +52,11 @@ public partial class App
         }
     }
 
-    public App(AppOptions? options = null)
+    public App(IHttpCredentials credentials, AppOptions? options = null)
     {
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
-        Credentials = options?.Credentials;
+        Credentials = credentials;
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
