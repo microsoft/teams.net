@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Common.Http;
+using IHttpClientFactory = Microsoft.Teams.Common.Http.IHttpClientFactory;
 
 namespace Microsoft.Teams.Api.Clients;
 

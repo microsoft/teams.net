@@ -6,6 +6,8 @@ using System.Text.Json;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Common.Http;
 
+using IHttpClientFactory = Microsoft.Teams.Common.Http.IHttpClientFactory;
+
 namespace Microsoft.Teams.Api.Clients;
 
 public class ActivityClient : Client
