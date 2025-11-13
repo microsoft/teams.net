@@ -4,9 +4,9 @@
 namespace Microsoft.Teams.Api.Clients;
 
 /// <summary>
-/// Settings for API clients.
+/// Options for API clients.
 /// </summary>
-public class ApiClientSettings
+public class ApiClientOptions
 {
     /// <summary>
     /// The URL to use for managing user OAuth tokens.
@@ -17,41 +17,41 @@ public class ApiClientSettings
     public string OAuthUrl { get; set; } = "https://token.botframework.com";
 
     /// <summary>
-    /// Creates a new instance of ApiClientSettings with default values.
+    /// Creates a new instance of ApiClientOptions with default values.
     /// </summary>
-    public ApiClientSettings()
+    public ApiClientOptions()
     {
     }
 
     /// <summary>
-    /// Creates a new instance of ApiClientSettings with the specified OAuth URL.
+    /// Creates a new instance of ApiClientOptions with the specified OAuth URL.
     /// </summary>
     /// <param name="oauthUrl">The OAuth URL to use.</param>
-    public ApiClientSettings(string oauthUrl)
+    public ApiClientOptions(string oauthUrl)
     {
         OAuthUrl = oauthUrl;
     }
 
     /// <summary>
-    /// Default API client settings.
+    /// Default API client options.
     /// </summary>
-    public static ApiClientSettings Default { get; } = new ApiClientSettings();
+    public static ApiClientOptions Default { get; } = new ApiClientOptions();
 
     /// <summary>
-    /// Merges API client settings with environment variables and defaults.
+    /// Merges API client options with environment variables and defaults.
     /// </summary>
-    /// <param name="settings">Optional API client settings to merge.</param>
-    /// <returns>Merged API client settings.</returns>
-    public static ApiClientSettings Merge(ApiClientSettings? settings = null)
+    /// <param name="options">Optional API client options to merge.</param>
+    /// <returns>Merged API client options.</returns>
+    public static ApiClientOptions Merge(ApiClientOptions? options = null)
     {
-        settings ??= new ApiClientSettings();
+        options ??= new ApiClientOptions();
 
         // Check for environment variable override
         var envOAuthUrl = Environment.GetEnvironmentVariable("OAUTH_URL");
 
-        return new ApiClientSettings
+        return new ApiClientOptions
         {
-            OAuthUrl = !string.IsNullOrEmpty(envOAuthUrl) ? envOAuthUrl : settings.OAuthUrl
+            OAuthUrl = !string.IsNullOrEmpty(envOAuthUrl) ? envOAuthUrl : options.OAuthUrl
         };
     }
 }

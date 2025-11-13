@@ -2,51 +2,51 @@ using Microsoft.Teams.Api.Clients;
 
 namespace Microsoft.Teams.Api.Tests.Clients;
 
-public class ApiClientSettingsTests
+public class ApiClientOptionsTests
 {
     [Fact]
-    public void ApiClientSettings_Default_UsesDefaultOAuthUrl()
+    public void ApiClientOptions_Default_UsesDefaultOAuthUrl()
     {
-        var settings = new ApiClientSettings();
+        var settings = new ApiClientOptions();
 
         Assert.Equal("https://token.botframework.com", settings.OAuthUrl);
     }
 
     [Fact]
-    public void ApiClientSettings_WithCustomOAuthUrl()
+    public void ApiClientOptions_WithCustomOAuthUrl()
     {
-        var settings = new ApiClientSettings("https://europe.token.botframework.com");
+        var settings = new ApiClientOptions("https://europe.token.botframework.com");
 
         Assert.Equal("https://europe.token.botframework.com", settings.OAuthUrl);
     }
 
     [Fact]
-    public void ApiClientSettings_Merge_WithNullSettings_ReturnsDefault()
+    public void ApiClientOptions_Merge_WithNullSettings_ReturnsDefault()
     {
-        var merged = ApiClientSettings.Merge(null);
+        var merged = ApiClientOptions.Merge(null);
 
         Assert.Equal("https://token.botframework.com", merged.OAuthUrl);
     }
 
     [Fact]
-    public void ApiClientSettings_Merge_WithCustomSettings_UsesCustomUrl()
+    public void ApiClientOptions_Merge_WithCustomSettings_UsesCustomUrl()
     {
-        var customSettings = new ApiClientSettings("https://europe.token.botframework.com");
-        var merged = ApiClientSettings.Merge(customSettings);
+        var customSettings = new ApiClientOptions("https://europe.token.botframework.com");
+        var merged = ApiClientOptions.Merge(customSettings);
 
         Assert.Equal("https://europe.token.botframework.com", merged.OAuthUrl);
     }
 
     [Fact]
-    public void ApiClientSettings_Merge_WithEnvironmentVariable_UsesEnvironmentUrl()
+    public void ApiClientOptions_Merge_WithEnvironmentVariable_UsesEnvironmentUrl()
     {
         // Set environment variable
         Environment.SetEnvironmentVariable("OAUTH_URL", "https://asia.token.botframework.com");
 
         try
         {
-            var customSettings = new ApiClientSettings("https://europe.token.botframework.com");
-            var merged = ApiClientSettings.Merge(customSettings);
+            var customSettings = new ApiClientOptions("https://europe.token.botframework.com");
+            var merged = ApiClientOptions.Merge(customSettings);
 
             Assert.Equal("https://asia.token.botframework.com", merged.OAuthUrl);
         }
@@ -58,9 +58,9 @@ public class ApiClientSettingsTests
     }
 
     [Fact]
-    public void ApiClientSettings_Default_Property()
+    public void ApiClientOptions_Default_Property()
     {
-        var defaultSettings = ApiClientSettings.Default;
+        var defaultSettings = ApiClientOptions.Default;
 
         Assert.NotNull(defaultSettings);
         Assert.Equal("https://token.botframework.com", defaultSettings.OAuthUrl);

@@ -15,7 +15,7 @@ public class UserTokenClient : Client
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    private readonly ApiClientSettings _apiClientSettings;
+    private readonly ApiClientOptions _apiClientSettings;
 
     // User token API endpoints
     private const string USER_TOKEN_GET_TOKEN = "api/usertoken/GetToken";
@@ -26,37 +26,37 @@ public class UserTokenClient : Client
 
     public UserTokenClient(CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
     }
 
     public UserTokenClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
     }
 
     public UserTokenClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
     }
 
     public UserTokenClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
     }
 
-    public UserTokenClient(IHttpClient client, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public UserTokenClient(IHttpClient client, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
     }
 
-    public UserTokenClient(IHttpClientOptions options, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public UserTokenClient(IHttpClientOptions options, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
     }
 
-    public UserTokenClient(IHttpClientFactory factory, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public UserTokenClient(IHttpClientFactory factory, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
     }
 
     public async Task<Token.Response> GetAsync(GetTokenRequest request)

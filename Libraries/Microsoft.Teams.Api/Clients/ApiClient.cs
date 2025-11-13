@@ -13,12 +13,12 @@ public class ApiClient : Client
     public virtual UserClient Users { get; }
     public virtual TeamClient Teams { get; }
     public virtual MeetingClient Meetings { get; }
-    private readonly ApiClientSettings _apiClientSettings;
+    private readonly ApiClientOptions _apiClientSettings;
 
     public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
         Bots = new BotClient(_http, _apiClientSettings, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
         Users = new UserClient(_http, _apiClientSettings, cancellationToken);
@@ -29,7 +29,7 @@ public class ApiClient : Client
     public ApiClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
         Bots = new BotClient(_http, _apiClientSettings, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
         Users = new UserClient(_http, _apiClientSettings, cancellationToken);
@@ -40,7 +40,7 @@ public class ApiClient : Client
     public ApiClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
         Bots = new BotClient(_http, _apiClientSettings, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
         Users = new UserClient(_http, _apiClientSettings, cancellationToken);
@@ -51,7 +51,7 @@ public class ApiClient : Client
     public ApiClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
         Bots = new BotClient(_http, _apiClientSettings, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
         Users = new UserClient(_http, _apiClientSettings, cancellationToken);
@@ -59,10 +59,10 @@ public class ApiClient : Client
         Meetings = new MeetingClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
     }
 
-    public ApiClient(string serviceUrl, IHttpClient client, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public ApiClient(string serviceUrl, IHttpClient client, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
         Bots = new BotClient(_http, _apiClientSettings, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
         Users = new UserClient(_http, _apiClientSettings, cancellationToken);
@@ -70,10 +70,10 @@ public class ApiClient : Client
         Meetings = new MeetingClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
     }
 
-    public ApiClient(string serviceUrl, IHttpClientOptions options, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public ApiClient(string serviceUrl, IHttpClientOptions options, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
         Bots = new BotClient(_http, _apiClientSettings, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
         Users = new UserClient(_http, _apiClientSettings, cancellationToken);
@@ -81,10 +81,10 @@ public class ApiClient : Client
         Meetings = new MeetingClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
     }
 
-    public ApiClient(string serviceUrl, IHttpClientFactory factory, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public ApiClient(string serviceUrl, IHttpClientFactory factory, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
         Bots = new BotClient(_http, _apiClientSettings, cancellationToken);
         Conversations = new ConversationClient(serviceUrl, _http, _apiClientSettings, cancellationToken);
         Users = new UserClient(_http, _apiClientSettings, cancellationToken);

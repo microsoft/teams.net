@@ -74,7 +74,7 @@ var appBuilder = App.Builder()
     .AddOAuth("graph")
     .AddOptions(new AppOptions
     {
-        ApiClientSettings = new ApiClientSettings("https://europe.token.botframework.com")
+        ApiClientOptions = new ApiClientOptions("https://europe.token.botframework.com")
     });
 ```
 

@@ -258,7 +258,7 @@ public class UserTokenClientTests
     [Fact]
     public async Task UserTokenClient_GetAsync_WithRegionalEndpoint()
     {
-        var apiClientSettings = new ApiClientSettings("https://europe.token.botframework.com");
+        var apiClientSettings = new ApiClientOptions("https://europe.token.botframework.com");
         var tokenRequest = new GetTokenRequest
         {
             UserId = "userId-aad",
@@ -299,7 +299,7 @@ public class UserTokenClientTests
     [Fact]
     public async Task UserTokenClient_GetAadAsync_WithRegionalEndpoint()
     {
-        var apiClientSettings = new ApiClientSettings("https://europe.token.botframework.com");
+        var apiClientSettings = new ApiClientOptions("https://europe.token.botframework.com");
         var aadTokenRequest = new GetAadTokenRequest
         {
             UserId = "userId-aad",
@@ -356,7 +356,7 @@ public class UserTokenClientTests
     [Fact]
     public async Task UserTokenClient_GetStatusAsync_WithRegionalEndpoint()
     {
-        var apiClientSettings = new ApiClientSettings("https://europe.token.botframework.com");
+        var apiClientSettings = new ApiClientOptions("https://europe.token.botframework.com");
         var tokenStatusRequest = new GetTokenStatusRequest
         {
             UserId = "userId-aad",
@@ -410,7 +410,7 @@ public class UserTokenClientTests
     [Fact]
     public async Task UserTokenClient_SignOutAsync_WithRegionalEndpoint()
     {
-        var apiClientSettings = new ApiClientSettings("https://europe.token.botframework.com");
+        var apiClientSettings = new ApiClientOptions("https://europe.token.botframework.com");
         var signOutRequest = new SignOutRequest
         {
             UserId = "userId-aad",
@@ -444,7 +444,7 @@ public class UserTokenClientTests
     [Fact]
     public async Task UserTokenClient_ExchangeAsync_WithRegionalEndpoint()
     {
-        var apiClientSettings = new ApiClientSettings("https://europe.token.botframework.com");
+        var apiClientSettings = new ApiClientOptions("https://europe.token.botframework.com");
         var tokenRequest = new ExchangeTokenRequest()
         {
             ChannelId = new ChannelId("msteams"),

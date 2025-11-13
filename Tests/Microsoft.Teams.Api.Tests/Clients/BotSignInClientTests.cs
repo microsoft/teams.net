@@ -148,7 +148,7 @@ public class BotSignInClientTests
     [Fact]
     public async Task BotSignInClient_GetUrlAsync_WithRegionalEndpoint()
     {
-        var apiClientSettings = new ApiClientSettings("https://europe.token.botframework.com");
+        var apiClientSettings = new ApiClientOptions("https://europe.token.botframework.com");
         var getUrlRequest = new BotSignInClient.GetUrlRequest()
         {
             State = "state",
@@ -178,7 +178,7 @@ public class BotSignInClientTests
     [Fact]
     public async Task BotSignInClient_GetResourceAsync_WithRegionalEndpoint()
     {
-        var apiClientSettings = new ApiClientSettings("https://europe.token.botframework.com");
+        var apiClientSettings = new ApiClientOptions("https://europe.token.botframework.com");
         var getUrlRequest = new BotSignInClient.GetResourceRequest()
         {
             State = "state",

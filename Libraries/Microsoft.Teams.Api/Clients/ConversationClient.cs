@@ -13,12 +13,12 @@ public class ConversationClient : Client
     public readonly string ServiceUrl;
     public readonly ActivityClient Activities;
     public readonly MemberClient Members;
-    private readonly ApiClientSettings _apiClientSettings;
+    private readonly ApiClientOptions _apiClientSettings;
 
     public ConversationClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
@@ -26,7 +26,7 @@ public class ConversationClient : Client
     public ConversationClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
@@ -34,7 +34,7 @@ public class ConversationClient : Client
     public ConversationClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
@@ -42,31 +42,31 @@ public class ConversationClient : Client
     public ConversationClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge();
+        _apiClientSettings = ApiClientOptions.Merge();
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
 
-    public ConversationClient(string serviceUrl, IHttpClient client, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public ConversationClient(string serviceUrl, IHttpClient client, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
 
-    public ConversationClient(string serviceUrl, IHttpClientOptions options, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public ConversationClient(string serviceUrl, IHttpClientOptions options, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
 
-    public ConversationClient(string serviceUrl, IHttpClientFactory factory, ApiClientSettings? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public ConversationClient(string serviceUrl, IHttpClientFactory factory, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientSettings.Merge(apiClientSettings);
+        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }

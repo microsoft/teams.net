@@ -20,7 +20,7 @@ public class AppOptions
     /// <summary>
     /// API client settings used for overriding.
     /// </summary>
-    public ApiClientSettings? ApiClientSettings { get; set; }
+    public ApiClientOptions? ApiClientOptions { get; set; }
 
     public AppOptions()
     {
