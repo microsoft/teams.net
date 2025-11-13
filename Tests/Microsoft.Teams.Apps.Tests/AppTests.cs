@@ -47,7 +47,14 @@ public class AppTests
         // arrange
         var logger = new Mock<ILogger<App>>();
         var exception = new Exception("failed to get token");
-        logger.Setup(logger => logger.LogError(It.IsAny<Exception>(), It.IsAny<string?>()));
+        logger.Setup(l => l.Log(
+                It.Is<LogLevel>(ll => ll == LogLevel.Error),
+                It.IsAny<EventId>(),
+                It.Is<It.IsAnyType>((v, t) => true),
+                It.IsAny<Exception>(),
+                It.Is<Func<It.IsAnyType, Exception?, string>>((v, t) => true)
+            )
+        );
         var credentials = new Mock<IHttpCredentials>();
         var options = new AppOptions()
         {
@@ -63,7 +70,13 @@ public class AppTests
         await app.Start();
 
         // assert
-        logger.Verify(logger => logger.LogError(exception, "Failed to get bot token on app startup."), Times.Once);
+        logger.Verify(l => l.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Failed to get bot token on app startup")),
+            It.Is<Exception>(ex => ex.Message.Contains("failed to get token")),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()
+        ), Times.Once);
         Assert.Null(app.Token);
     }
     
