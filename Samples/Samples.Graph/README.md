@@ -64,9 +64,23 @@ Update `appsettings.json` with your bot credentials:
 
 ### 4. Regional Bot Configuration (Optional)
 
-If you're deploying a regional bot, you can configure the OAuth endpoint to use a regional token service. This can be done in two ways:
+If you're deploying a regional bot, you need to configure several files to use regional endpoints. This example uses West Europe, but follow the equivalent for other locations.
 
-**Option 1: Using AppOptions**
+**Step 1: Update Azure Bot Configuration**
+
+In your `azurebot.bicep` file, replace all `global` occurrences with `westeurope`.
+
+**Step 2: Update Manifest**
+
+In `manifest.json`, in `validDomains`, replace `*.botframework.com` with `europe.token.botframework.com`.
+
+**Step 3: Update AAD Manifest**
+
+In `aad.manifest.json`, replace `https://token.botframework.com/.auth/web/redirect` with `https://europe.token.botframework.com/.auth/web/redirect`.
+
+**Step 4: Update Program.cs**
+
+Update `Program.cs` to include `ApiClientOptions`:
 
 ```csharp
 var appBuilder = App.Builder()
@@ -78,9 +92,9 @@ var appBuilder = App.Builder()
     });
 ```
 
-**Option 2: Using Environment Variable**
+**Alternative: Using Environment Variable**
 
-Set the `OAUTH_URL` environment variable before running the bot:
+Instead of hard-coding the OAuth URL in `Program.cs`, you can set the `OAUTH_URL` environment variable:
 
 ```bash
 # Windows (Command Prompt)
