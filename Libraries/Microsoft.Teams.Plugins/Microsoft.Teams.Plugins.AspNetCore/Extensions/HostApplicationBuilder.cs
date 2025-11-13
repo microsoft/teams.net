@@ -6,8 +6,13 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Identity.Abstractions;
+using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Extensions;
+using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
@@ -19,9 +24,20 @@ public static class HostApplicationBuilderExtensions
     /// </summary>
     /// <param name="routing">set to false to disable the plugins default http controller</param>
     /// <param name="skipAuth">set to true to disable token authentication</param>
-    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, bool routing = true, bool skipAuth = false)
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, bool routing = true, bool skipAuth = false, string authSectionName = "Teams")
     {
-        builder.AddTeamsCore();
+        builder.Services.AddHttpClient();
+        builder.Services.AddTokenAcquisition();
+        builder.Services.AddInMemoryTokenCaches();
+
+        builder.Services.AddScoped<IHttpCredentials, ClientCredentials>();
+        builder.Services.AddSingleton<AppOptions>();
+        builder.Services.Configure<MicrosoftIdentityApplicationOptions>(builder.Configuration.GetSection(authSectionName));
+#pragma warning disable ASP0000 // Use 'new(...)'
+        AppBuilder appBuilder = new AppBuilder(builder.Services.BuildServiceProvider());
+#pragma warning restore ASP0000
+
+        builder.AddTeamsCore(appBuilder);
         builder.AddTeamsPlugin<AspNetCorePlugin>();
         builder.AddTeamsTokenAuthentication(skipAuth);
 
