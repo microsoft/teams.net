@@ -22,7 +22,7 @@ namespace Microsoft.Teams.Plugins.AspNetCore;
 [Plugin]
 public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 {
-    private readonly ILogger<AspNetCorePlugin> Logger;
+    private readonly ILogger<AspNetCorePlugin> _logger;
 
     [Dependency("Token", optional: true)]
     public IToken? Token { get; set; }
@@ -39,7 +39,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public AspNetCorePlugin(ILogger<AspNetCorePlugin>? logger = null)
     {
-        Logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<AspNetCorePlugin>();
+        _logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<AspNetCorePlugin>();
     }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
@@ -54,31 +54,31 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public Task OnStart(App app, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("OnStart");
+        _logger.LogDebug("OnStart");
         return Task.CompletedTask;
     }
 
     public Task OnError(App app, IPlugin plugin, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("OnError");
+        _logger.LogDebug("OnError");
         return Task.CompletedTask;
     }
 
     public Task OnActivity(App app, ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("OnActivity");
+        _logger.LogDebug("OnActivity");
         return Task.CompletedTask;
     }
 
     public Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("OnActivitySent");
+        _logger.LogDebug("OnActivitySent");
         return Task.CompletedTask;
     }
 
     public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug("OnActivityResponse");
+        _logger.LogDebug("OnActivityResponse");
         return Task.CompletedTask;
     }
 
@@ -99,7 +99,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
-        var client = new ApiClient(reference.ServiceUrl, Client, Logger, cancellationToken);
+        var client = new ApiClient(reference.ServiceUrl, Client, cancellationToken);
 
         activity.Conversation = reference.Conversation;
         activity.From = reference.Bot;
@@ -149,12 +149,12 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
             );
 
             var res = (Response?)@out ?? throw new Exception("expected activity response");
-            Logger.LogDebug("res: {Response}", res);
+            _logger.LogDebug("res: {Response}", res);
             return res;
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Activity event error");
+            _logger.LogError(ex, "Activity event error");
             await Events(
                 this,
                 "error",
@@ -218,7 +218,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "HTTP activity error");
+            _logger.LogError(ex, "HTTP activity error");
             await Events(
                 this,
                 "error",

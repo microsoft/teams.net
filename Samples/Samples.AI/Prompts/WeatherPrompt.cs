@@ -7,7 +7,7 @@ namespace Samples.AI.Prompts;
 [Prompt]
 [Prompt.Description("Weather assistant")]
 [Prompt.Instructions("You are a helpful assistant that can help the user get the weather. First get their location, then get the weather for that location.")]
-public class WeatherPrompt(IContext<IActivity> context)
+public class WeatherPrompt(ILogger logger)
 {
     [Function]
     [Function.Description("Gets the location of the user")]
@@ -17,7 +17,7 @@ public class WeatherPrompt(IContext<IActivity> context)
         var random = new Random();
         var location = locations[random.Next(locations.Length)];
 
-        context.Log.LogInformation($"[PROMPT-FUNCTION] get_user_location called, returning mock location: '{location}'");
+        logger.LogInformation($"[PROMPT-FUNCTION] get_user_location called, returning mock location: '{location}'");
         return location;
     }
 
@@ -25,7 +25,7 @@ public class WeatherPrompt(IContext<IActivity> context)
     [Function.Description("Search for weather at a specific location")]
     public string WeatherSearch([Param] string location)
     {
-        context.Log.LogInformation($"[PROMPT-FUNCTION] weather_search called with location='{location}'");
+        logger.LogInformation($"[PROMPT-FUNCTION] weather_search called with location='{location}'");
 
         var weatherByLocation = new Dictionary<string, (int Temperature, string Condition)>
         {
@@ -36,12 +36,12 @@ public class WeatherPrompt(IContext<IActivity> context)
 
         if (!weatherByLocation.TryGetValue(location, out var weather))
         {
-            context.Log.LogInformation($"[PROMPT-FUNCTION] Weather data not found for location '{location}'");
+            logger.LogInformation($"[PROMPT-FUNCTION] Weather data not found for location '{location}'");
             return "Sorry, I could not find the weather for that location";
         }
 
         var result = $"The weather in {location} is {weather.Condition} with a temperature of {weather.Temperature}°F";
-        context.Log.LogInformation($"[PROMPT-FUNCTION] Returning weather data: {result}");
+        logger.LogInformation($"[PROMPT-FUNCTION] Returning weather data: {result}");
         return result;
     }
 }

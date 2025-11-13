@@ -16,17 +16,10 @@ namespace Microsoft.Teams.Plugins.AspNetCore.Tests;
 
 public class AspNetCorePluginTests
 {
-    private static AspNetCorePlugin CreatePlugin(Mock<ILogger>? loggerMock = null, EventFunction? events = null)
+    private static AspNetCorePlugin CreatePlugin(Mock<ILogger<AspNetCorePlugin>>? loggerMock = null, EventFunction? events = null)
     {
-        var plugin = new AspNetCorePlugin();
-        if (loggerMock is not null)
-        {
-            plugin.Logger = loggerMock.Object;
-        }
-        else
-        {
-            plugin.Logger = new Mock<ILogger>().Object;
-        }
+        var plugin = new AspNetCorePlugin(loggerMock?.Object);
+
         plugin.Client = new Mock<Microsoft.Teams.Common.Http.IHttpClient>().Object;
         if (events is not null)
         {
@@ -72,7 +65,7 @@ public class AspNetCorePluginTests
             return Task.FromResult<object?>(null);
         };
 
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILogger<AspNetCorePlugin>>();
         var plugin = CreatePlugin(logger, events);
         var ctx = CreateHttpContext(activity);
 
@@ -100,7 +93,7 @@ public class AspNetCorePluginTests
             return Task.FromResult<object?>(null);
         };
 
-        var plugin = CreatePlugin(new Mock<ILogger>(), events);
+        var plugin = CreatePlugin(new Mock<ILogger<AspNetCorePlugin>>(), events);
         var ctx = CreateHttpContext(activity);
 
         // Act
@@ -124,7 +117,7 @@ public class AspNetCorePluginTests
             return Task.FromResult<object?>(null);
         };
 
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILogger<AspNetCorePlugin>>();
         var plugin = CreatePlugin(logger, events);
         var ctx = CreateHttpContext(CreateMessageActivity());
 
@@ -192,7 +185,7 @@ public class AspNetCorePluginTests
             if (name == "activity") return Task.FromResult<object?>(response);
             return Task.FromResult<object?>(null);
         };
-        var logger = new Mock<ILogger>();
+        var logger = new Mock<ILogger<AspNetCorePlugin>>();
         var plugin = CreatePlugin(logger, events);
         var evt = new ActivityEvent() { Token = new JsonWebToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjQ3MDI1MTUyMDB9.signature"), Activity = CreateMessageActivity() };
 

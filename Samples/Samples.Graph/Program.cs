@@ -17,6 +17,7 @@ builder.AddTeams(appBuilder).AddTeamsDevTools();
 
 var app = builder.Build();
 var teams = app.UseTeams();
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 teams.Use(async context =>
 {
@@ -27,9 +28,9 @@ teams.Use(async context =>
     }
     catch
     {
-        context.Log.LogError("error occurred during activity processing");
+        logger.LogError("error occurred during activity processing");
     }
-    context.Log.LogDebug($"request took {(DateTime.UtcNow - start).TotalMilliseconds}ms");
+    logger.LogDebug($"request took {(DateTime.UtcNow - start).TotalMilliseconds}ms");
 });
 
 teams.OnMessage("/signout", async context =>

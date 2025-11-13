@@ -31,22 +31,23 @@ builder.AddTeams().AddTeamsDevTools();
 var app = builder.Build();
 
 var teamsApp = app.UseTeams();
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
 // Simple chat handler - "hi" command
 teamsApp.OnMessage(@"^hi$", async (context) =>
 {
-    context.Log.LogInformation($"[COMMAND] 'hi' command invoked by user: {context.Activity.From.Name}");
+    logger.LogInformation($"[COMMAND] 'hi' command invoked by user: {context.Activity.From.Name}");
 
     var prompt = new OpenAIChatPrompt(aiModel, new ChatPromptOptions
     {
         Instructions = new StringTemplate("You are a friendly assistant who talks like a pirate")
     });
 
-    context.Log.LogInformation("[COMMAND] Sending 'hi' message to AI with pirate personality...");
+    logger.LogInformation("[COMMAND] Sending 'hi' message to AI with pirate personality...");
     var result = await prompt.Send(context.Activity.Text);
     if (result.Content != null)
     {
-        context.Log.LogInformation($"[COMMAND] AI response: {result.Content}");
+        logger.LogInformation($"[COMMAND] AI response: {result.Content}");
         var messageActivity = new MessageActivity
         {
             Text = result.Content,
@@ -58,12 +59,12 @@ teamsApp.OnMessage(@"^hi$", async (context) =>
 // Pokemon command handler
 teamsApp.OnMessage(@"^pokemon\s+(.+)", async (context) =>
 {
-    context.Log.LogInformation($"[COMMAND] 'pokemon' command invoked: {context.Activity.Text}");
+    logger.LogInformation($"[COMMAND] 'pokemon' command invoked: {context.Activity.Text}");
     var match = Regex.Match(context.Activity.Text ?? "", @"^pokemon\s+(.+)", RegexOptions.IgnoreCase);
     if (match.Success)
     {
         var pokemonName = match.Groups[1].Value.Trim();
-        context.Log.LogInformation($"[COMMAND] Extracted pokemon name: '{pokemonName}'");
+        logger.LogInformation($"[COMMAND] Extracted pokemon name: '{pokemonName}'");
         context.Activity.Text = pokemonName;
         await FunctionCallingHandler.HandlePokemonSearch(aiModel, context);
     }
@@ -73,21 +74,21 @@ teamsApp.OnMessage(@"^pokemon\s+(.+)", async (context) =>
 // Streaming handler
 teamsApp.OnMessage(@"^stream\s+(.+)", async (context) =>
 {
-    context.Log.LogInformation($"[COMMAND] 'stream' command invoked: {context.Activity.Text}");
+    logger.LogInformation($"[COMMAND] 'stream' command invoked: {context.Activity.Text}");
     var match = Regex.Match(context.Activity.Text ?? "", @"^stream\s+(.+)", RegexOptions.IgnoreCase);
     if (match.Success)
     {
         var query = match.Groups[1].Value.Trim();
-        context.Log.LogInformation($"[COMMAND] Extracted query for streaming: '{query}'");
+        logger.LogInformation($"[COMMAND] Extracted query for streaming: '{query}'");
         var prompt = new OpenAIChatPrompt(aiModel, new ChatPromptOptions
         {
             Instructions = new StringTemplate("You are a friendly assistant who responds in extremely verbose language")
         });
 
-        context.Log.LogInformation("[COMMAND] Sending streaming request to AI...");
+        logger.LogInformation("[COMMAND] Sending streaming request to AI...");
         var result = await prompt.Send(query, (chunk) =>
         {
-            context.Log.LogInformation($"[STREAM] Chunk received: {chunk}");
+            logger.LogInformation($"[STREAM] Chunk received: {chunk}");
             context.Stream.Emit(chunk);
             return Task.CompletedTask;
         });
@@ -97,19 +98,19 @@ teamsApp.OnMessage(@"^stream\s+(.+)", async (context) =>
 // Citations handler
 teamsApp.OnMessage(@"^citations?\b", async (context) =>
 {
-    context.Log.LogInformation($"[COMMAND] 'citations' command invoked: {context.Activity.Text}");
+    logger.LogInformation($"[COMMAND] 'citations' command invoked: {context.Activity.Text}");
     await CitationsHandler.HandleCitationsDemo(context);
 });
 
 // Feedback loop handler
 teamsApp.OnMessage(@"^feedback\s+(.+)", async (context) =>
 {
-    context.Log.LogInformation($"[COMMAND] 'feedback' command invoked: {context.Activity.Text}");
+    logger.LogInformation($"[COMMAND] 'feedback' command invoked: {context.Activity.Text}");
     var match = Regex.Match(context.Activity.Text ?? "", @"^feedback\s+(.+)", RegexOptions.IgnoreCase);
     if (match.Success)
     {
         var query = match.Groups[1].Value.Trim();
-        context.Log.LogInformation($"[COMMAND] Extracted query for feedback: '{query}'");
+        logger.LogInformation($"[COMMAND] Extracted query for feedback: '{query}'");
         context.Activity.Text = query;
         await FeedbackHandler.HandleFeedbackLoop(aiModel, context);
     }
@@ -118,7 +119,7 @@ teamsApp.OnMessage(@"^feedback\s+(.+)", async (context) =>
 // Memory clear handler
 teamsApp.OnMessage(@"^memory\s+clear\b", async (context) =>
 {
-    context.Log.LogInformation($"[COMMAND] 'memory clear' command invoked for conversation: {context.Activity.Conversation.Id}");
+    logger.LogInformation($"[COMMAND] 'memory clear' command invoked for conversation: {context.Activity.Conversation.Id}");
     await MemoryManagementHandler.ClearConversationMemory(context.Activity.Conversation.Id);
     await context.Reply("🧠 Memory cleared!");
 });
@@ -126,12 +127,12 @@ teamsApp.OnMessage(@"^memory\s+clear\b", async (context) =>
 // Prompt-based handler (declarative style)
 teamsApp.OnMessage(@"^/weather\b", async (context) =>
 {
-    context.Log.LogInformation($"[COMMAND] '/weather' command invoked: {context.Activity.Text}");
-    var prompt = OpenAIChatPrompt.From(aiModel, new Samples.AI.Prompts.WeatherPrompt(context.ToActivityType()));
+    logger.LogInformation($"[COMMAND] '/weather' command invoked: {context.Activity.Text}");
+    var prompt = OpenAIChatPrompt.From(aiModel, new Samples.AI.Prompts.WeatherPrompt(logger));
     var result = await prompt.Send(context.Activity.Text);
     if (!string.IsNullOrEmpty(result.Content))
     {
-        context.Log.LogInformation($"[COMMAND] AI response: {result.Content}");
+        logger.LogInformation($"[COMMAND] AI response: {result.Content}");
         var messageActivity = new MessageActivity { Text = result.Content }.AddAIGenerated();
         await context.Send(messageActivity);
     }
@@ -144,7 +145,7 @@ teamsApp.OnMessage(@"^/weather\b", async (context) =>
 // Feedback submission handler
 teamsApp.OnFeedback((context) =>
 {
-    context.Log.LogInformation($"[HANDLER] Feedback submission received");
+    logger.LogInformation($"[HANDLER] Feedback submission received");
     FeedbackHandler.HandleFeedbackSubmission(context);
     return Task.CompletedTask;
 });
@@ -152,7 +153,7 @@ teamsApp.OnFeedback((context) =>
 // Fallback stateful conversation handler
 teamsApp.OnMessage(async (context) =>
 {
-    context.Log.LogInformation($"[FALLBACK] Fallback handler invoked (no command matched): {context.Activity.Text}");
+    logger.LogInformation($"[FALLBACK] Fallback handler invoked (no command matched): {context.Activity.Text}");
     await MemoryManagementHandler.HandleStatefulConversation(aiModel, context);
 });
 

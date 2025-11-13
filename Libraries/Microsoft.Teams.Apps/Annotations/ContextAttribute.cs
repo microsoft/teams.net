@@ -21,9 +21,7 @@ public class ContextAttribute : ContextAccessorAttribute
 
         if (type == typeof(IStorage<string, object>)) return context.Storage;
         if (type == typeof(IStreamer)) return context.Stream;
-#if NET8_0_OR_GREATER
-        if (type.IsAssignableTo(typeof(IActivity))) return context.Activity.ToType(parameter.ParameterType, null);
-#endif
+        if (typeof(IActivity).IsAssignableFrom(type)) return context.Activity.ToType(parameter.ParameterType, null);
         if (type == typeof(ApiClient)) return context.Api;
         if (type == typeof(CancellationToken)) return context.CancellationToken;
         if (type == typeof(ConversationReference)) return context.Ref;

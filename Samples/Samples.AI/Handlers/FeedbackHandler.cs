@@ -19,24 +19,27 @@ public static class FeedbackHandler
     /// </summary>
     public static readonly ConcurrentDictionary<string, FeedbackData> StoredFeedbackByMessageId = new();
 
+
+    public static ILogger? Logger { get; set; } 
+
     /// <summary>
     /// Handles the feedback loop command - sends an AI response with feedback buttons
     /// </summary>
     public static async Task HandleFeedbackLoop(OpenAIChatModel model, IContext<Microsoft.Teams.Api.Activities.MessageActivity> context)
     {
-        context.Log.LogInformation($"[HANDLER] Feedback loop handler invoked with query: {context.Activity.Text}");
+        Logger?.LogInformation($"[HANDLER] Feedback loop handler invoked with query: {context.Activity.Text}");
 
         var prompt = new OpenAIChatPrompt(model, new ChatPromptOptions
         {
             Instructions = new StringTemplate("You are a helpful assistant.")
         });
 
-        context.Log.LogInformation("[HANDLER] Sending query to AI model...");
+        Logger?.LogInformation("[HANDLER] Sending query to AI model...");
         var result = await prompt.Send(context.Activity.Text);
 
         if (result.Content != null)
         {
-            context.Log.LogInformation($"[HANDLER] AI response received: {result.Content}");
+            Logger?.LogInformation($"[HANDLER] AI response received: {result.Content}");
 
             // Create message with AI generated indicator and feedback buttons
             var messageActivity = new Microsoft.Teams.Api.Activities.MessageActivity
@@ -46,7 +49,7 @@ public static class FeedbackHandler
             .AddAIGenerated()
             .AddFeedback(); // This adds the thumbs up/down buttons
 
-            context.Log.LogInformation("[HANDLER] Sending message with feedback buttons");
+            Logger?.LogInformation("[HANDLER] Sending message with feedback buttons");
             var sentActivity = await context.Send(messageActivity);
 
             // Store the feedback data for later retrieval
@@ -60,12 +63,12 @@ public static class FeedbackHandler
                     Dislikes = 0,
                     Feedbacks = new List<string>()
                 };
-                context.Log.LogInformation($"[HANDLER] Stored feedback data for message ID: {sentActivity.Id}");
+                Logger?.LogInformation($"[HANDLER] Stored feedback data for message ID: {sentActivity.Id}");
             }
         }
         else
         {
-            context.Log.LogWarning("[HANDLER] AI did not generate a response");
+            Logger?.LogWarning("[HANDLER] AI did not generate a response");
             await context.Reply("I did not generate a response.");
         }
     }
@@ -75,23 +78,22 @@ public static class FeedbackHandler
     /// </summary>
     public static void HandleFeedbackSubmission(IContext<Messages.SubmitActionActivity> context)
     {
-        context.Log.LogInformation($"[HANDLER] Feedback submission received for activity ID: {context.Activity.Id}");
+        Logger?.LogInformation($"[HANDLER] Feedback submission received for activity ID: {context.Activity.Id}");
 
         if (context.Activity.Value?.ActionValue == null)
         {
-            context.Log.LogWarning("[HANDLER] No action value found in feedback submission");
+            Logger?.LogWarning("[HANDLER] No action value found in feedback submission");
             return;
         }
 
-        context.Log.LogInformation($"[HANDLER] Raw ActionValue: {System.Text.Json.JsonSerializer.Serialize(context.Activity.Value.ActionValue)}");
-
+        Logger?.LogInformation($"[HANDLER] Raw ActionValue: {System.Text.Json.JsonSerializer.Serialize(context.Activity.Value.ActionValue)}");
         // Deserialize ActionValue to a dictionary
         var actionValueJson = System.Text.Json.JsonSerializer.Serialize(context.Activity.Value.ActionValue);
         var actionValue = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(actionValueJson);
 
         if (actionValue == null)
         {
-            context.Log.LogWarning("[HANDLER] Could not parse action value");
+            Logger?.LogWarning("[HANDLER] Could not parse action value");
             return;
         }
 
@@ -110,15 +112,14 @@ public static class FeedbackHandler
             }
             catch (System.Text.Json.JsonException ex)
             {
-                context.Log.LogWarning($"[HANDLER] Failed to parse feedback JSON: {ex.Message}");
+                Logger?.LogWarning($"[HANDLER] Failed to parse feedback JSON: {ex.Message}");
             }
         }
 
-        context.Log.LogInformation($"[HANDLER] Reaction: {reaction}, Feedback Text: {feedbackText}");
-
+        Logger?.LogInformation($"[HANDLER] Reaction: {reaction}, Feedback Text: {feedbackText}");
         if (context.Activity.ReplyToId == null)
         {
-            context.Log.LogWarning($"[HANDLER] No replyToId found for message ID {context.Activity.Id}");
+            Logger?.LogWarning($"[HANDLER] No replyToId found for message ID {context.Activity.Id}");
             return;
         }
 
@@ -128,28 +129,28 @@ public static class FeedbackHandler
             if (reaction == "like")
             {
                 existingFeedback.Likes++;
-                context.Log.LogInformation($"[HANDLER] Incremented likes to {existingFeedback.Likes}");
+                Logger?.LogInformation($"[HANDLER] Incremented likes to {existingFeedback.Likes}");
             }
             else if (reaction == "dislike")
             {
                 existingFeedback.Dislikes++;
-                context.Log.LogInformation($"[HANDLER] Incremented dislikes to {existingFeedback.Dislikes}");
+                Logger?.LogInformation($"[HANDLER] Incremented dislikes to {existingFeedback.Dislikes}");
             }
 
             if (feedbackText != null)
             {
                 existingFeedback.Feedbacks.Add(feedbackText);
-                context.Log.LogInformation($"[HANDLER] Added feedback text: '{feedbackText}'. Total feedbacks: {existingFeedback.Feedbacks.Count}");
+                Logger?.LogInformation($"[HANDLER] Added feedback text: '{feedbackText}'. Total feedbacks: {existingFeedback.Feedbacks.Count}");
             }
 
             // Log feedback summary
-            context.Log.LogInformation($"[HANDLER] Feedback summary for message {context.Activity.ReplyToId}: " +
+            Logger?.LogInformation($"[HANDLER] Feedback summary for message {context.Activity.ReplyToId}: " +
                            $"Likes={existingFeedback.Likes}, Dislikes={existingFeedback.Dislikes}, " +
                            $"Feedbacks={existingFeedback.Feedbacks.Count}");
         }
         else
         {
-            context.Log.LogWarning($"[HANDLER] No feedback data found for message ID {context.Activity.ReplyToId}");
+            Logger?.LogWarning($"[HANDLER] No feedback data found for message ID {context.Activity.ReplyToId}");
         }
     }
 }
