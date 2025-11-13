@@ -11,48 +11,48 @@ namespace Microsoft.Teams.Api.Clients;
 public class MeetingClient : Client
 {
     public readonly string ServiceUrl;
-    private readonly ApiClientOptions _apiClientSettings;
+    private readonly ApiClientOptions _options;
 
     public MeetingClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientOptions.Merge();
+        _options = ApiClientOptions.Merge();
     }
 
     public MeetingClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientOptions.Merge();
+        _options = ApiClientOptions.Merge();
     }
 
     public MeetingClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientOptions.Merge();
+        _options = ApiClientOptions.Merge();
     }
 
     public MeetingClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientOptions.Merge();
+        _options = ApiClientOptions.Merge();
     }
 
-    public MeetingClient(string serviceUrl, IHttpClient client, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public MeetingClient(string serviceUrl, IHttpClient client, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
+        _options = ApiClientOptions.Merge(apiOptions);
     }
 
-    public MeetingClient(string serviceUrl, IHttpClientOptions options, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public MeetingClient(string serviceUrl, IHttpClientOptions options, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
+        _options = ApiClientOptions.Merge(apiOptions);
     }
 
-    public MeetingClient(string serviceUrl, IHttpClientFactory factory, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public MeetingClient(string serviceUrl, IHttpClientFactory factory, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
+        _options = ApiClientOptions.Merge(apiOptions);
     }
 
     public async Task<Meeting> GetByIdAsync(string id)

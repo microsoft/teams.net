@@ -7,7 +7,7 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class BotSignInClient : Client
 {
-    private readonly ApiClientOptions _apiClientSettings;
+    private readonly ApiClientOptions _options;
 
     // Bot sign-in API endpoints
     private const string BOT_SIGNIN_GET_URL = "api/botsignin/GetSignInUrl";
@@ -15,44 +15,44 @@ public class BotSignInClient : Client
 
     public BotSignInClient() : base()
     {
-        _apiClientSettings = ApiClientOptions.Merge();
+        _options = ApiClientOptions.Merge();
     }
 
     public BotSignInClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge();
+        _options = ApiClientOptions.Merge();
     }
 
     public BotSignInClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge();
+        _options = ApiClientOptions.Merge();
     }
 
     public BotSignInClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge();
+        _options = ApiClientOptions.Merge();
     }
 
-    public BotSignInClient(IHttpClient client, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public BotSignInClient(IHttpClient client, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
+        _options = ApiClientOptions.Merge(apiOptions);
     }
 
-    public BotSignInClient(IHttpClientOptions options, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public BotSignInClient(IHttpClientOptions options, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
+        _options = ApiClientOptions.Merge(apiOptions);
     }
 
-    public BotSignInClient(IHttpClientFactory factory, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public BotSignInClient(IHttpClientFactory factory, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
+        _options = ApiClientOptions.Merge(apiOptions);
     }
 
     public async Task<string> GetUrlAsync(GetUrlRequest request)
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(
-            $"{_apiClientSettings.OAuthUrl}/{BOT_SIGNIN_GET_URL}?{query}"
+            $"{_options.OAuthUrl}/{BOT_SIGNIN_GET_URL}?{query}"
         );
 
         var res = await _http.SendAsync(req, _cancellationToken);
@@ -63,7 +63,7 @@ public class BotSignInClient : Client
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(
-            $"{_apiClientSettings.OAuthUrl}/{BOT_SIGNIN_GET_RESOURCE}?{query}"
+            $"{_options.OAuthUrl}/{BOT_SIGNIN_GET_RESOURCE}?{query}"
         );
 
         var res = await _http.SendAsync<SignIn.UrlResponse>(req, _cancellationToken);

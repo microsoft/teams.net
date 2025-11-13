@@ -40,18 +40,18 @@ public class ApiClientOptions
     /// <summary>
     /// Merges API client options with environment variables and defaults.
     /// </summary>
-    /// <param name="options">Optional API client options to merge.</param>
+    /// <param name="apiOptions">Optional API client options to merge.</param>
     /// <returns>Merged API client options.</returns>
-    public static ApiClientOptions Merge(ApiClientOptions? options = null)
+    public static ApiClientOptions Merge(ApiClientOptions? apiOptions = null)
     {
-        options ??= new ApiClientOptions();
+        apiOptions ??= new ApiClientOptions();
 
         // Check for environment variable override
         var envOAuthUrl = Environment.GetEnvironmentVariable("OAUTH_URL");
 
         return new ApiClientOptions
         {
-            OAuthUrl = !string.IsNullOrEmpty(envOAuthUrl) ? envOAuthUrl : options.OAuthUrl
+            OAuthUrl = !string.IsNullOrEmpty(envOAuthUrl) ? envOAuthUrl : apiOptions.OAuthUrl
         };
     }
 }

@@ -9,7 +9,7 @@ public class BotClient : Client
 {
     public virtual BotTokenClient Token { get; }
     public BotSignInClient SignIn { get; }
-    private readonly ApiClientOptions _apiClientSettings;
+    private readonly ApiClientOptions _options;
 
     public BotClient() : this(default)
     {
@@ -18,50 +18,50 @@ public class BotClient : Client
 
     public BotClient(CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge();
-        Token = new BotTokenClient(_http, _apiClientSettings, cancellationToken);
-        SignIn = new BotSignInClient(_http, _apiClientSettings, cancellationToken);
+        _options = ApiClientOptions.Merge();
+        Token = new BotTokenClient(_http, _options, cancellationToken);
+        SignIn = new BotSignInClient(_http, _options, cancellationToken);
     }
 
     public BotClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge();
-        Token = new BotTokenClient(_http, _apiClientSettings, cancellationToken);
-        SignIn = new BotSignInClient(_http, _apiClientSettings, cancellationToken);
+        _options = ApiClientOptions.Merge();
+        Token = new BotTokenClient(_http, _options, cancellationToken);
+        SignIn = new BotSignInClient(_http, _options, cancellationToken);
     }
 
     public BotClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge();
-        Token = new BotTokenClient(_http, _apiClientSettings, cancellationToken);
-        SignIn = new BotSignInClient(_http, _apiClientSettings, cancellationToken);
+        _options = ApiClientOptions.Merge();
+        Token = new BotTokenClient(_http, _options, cancellationToken);
+        SignIn = new BotSignInClient(_http, _options, cancellationToken);
     }
 
     public BotClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge();
-        Token = new BotTokenClient(_http, _apiClientSettings, cancellationToken);
-        SignIn = new BotSignInClient(_http, _apiClientSettings, cancellationToken);
+        _options = ApiClientOptions.Merge();
+        Token = new BotTokenClient(_http, _options, cancellationToken);
+        SignIn = new BotSignInClient(_http, _options, cancellationToken);
     }
 
-    public BotClient(IHttpClient client, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public BotClient(IHttpClient client, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
-        Token = new BotTokenClient(_http, _apiClientSettings, cancellationToken);
-        SignIn = new BotSignInClient(_http, _apiClientSettings, cancellationToken);
+        _options = ApiClientOptions.Merge(apiOptions);
+        Token = new BotTokenClient(_http, _options, cancellationToken);
+        SignIn = new BotSignInClient(_http, _options, cancellationToken);
     }
 
-    public BotClient(IHttpClientOptions options, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public BotClient(IHttpClientOptions options, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
-        Token = new BotTokenClient(_http, _apiClientSettings, cancellationToken);
-        SignIn = new BotSignInClient(_http, _apiClientSettings, cancellationToken);
+        _options = ApiClientOptions.Merge(apiOptions);
+        Token = new BotTokenClient(_http, _options, cancellationToken);
+        SignIn = new BotSignInClient(_http, _options, cancellationToken);
     }
 
-    public BotClient(IHttpClientFactory factory, ApiClientOptions? apiClientSettings, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public BotClient(IHttpClientFactory factory, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        _apiClientSettings = ApiClientOptions.Merge(apiClientSettings);
-        Token = new BotTokenClient(_http, _apiClientSettings, cancellationToken);
-        SignIn = new BotSignInClient(_http, _apiClientSettings, cancellationToken);
+        _options = ApiClientOptions.Merge(apiOptions);
+        Token = new BotTokenClient(_http, _options, cancellationToken);
+        SignIn = new BotSignInClient(_http, _options, cancellationToken);
     }
 }
