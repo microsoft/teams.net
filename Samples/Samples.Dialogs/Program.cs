@@ -39,17 +39,20 @@ public static partial class Program
     public class Controller
     {
         private readonly IConfiguration _configuration;
+        private readonly ILogger<Controller> _logger;   
 
-        public Controller(IConfiguration configuration)
+        public Controller(IConfiguration configuration, ILogger<Controller> logger)
         {
             _configuration = configuration;
+            _logger = logger;
+
         }
 
         [Message]
-        public async Task OnMessage([Context] Microsoft.Teams.Api.Activities.MessageActivity activity, [Context] IContext.Client client, [Context] ILogger log)
+        public async Task OnMessage([Context] Microsoft.Teams.Api.Activities.MessageActivity activity, [Context] IContext.Client client)
         {
-            log.LogInformation($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
-            log.LogInformation($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
+            _logger.LogInformation($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
+            _logger.LogInformation($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
 
             // Create the launcher adaptive card
             var card = CreateDialogLauncherCard();
@@ -57,14 +60,14 @@ public static partial class Program
         }
 
         [TaskFetch]
-        public Microsoft.Teams.Api.TaskModules.Response OnTaskFetch([Context] Tasks.FetchActivity activity, [Context] IContext.Client client, [Context] ILogger log)
+        public Microsoft.Teams.Api.TaskModules.Response OnTaskFetch([Context] Tasks.FetchActivity activity, [Context] IContext.Client client)
         {
-            log.LogInformation("[TASK_FETCH] Task fetch request received");
+            _logger.LogInformation("[TASK_FETCH] Task fetch request received");
 
             var data = activity.Value?.Data as JsonElement?;
             if (data == null)
             {
-                log.LogInformation("[TASK_FETCH] No data found in the activity value");
+                _logger.LogInformation("[TASK_FETCH] No data found in the activity value");
                 return new Microsoft.Teams.Api.TaskModules.Response(new Microsoft.Teams.Api.TaskModules.MessageTask("No data found in the activity value"));
             }
 
@@ -72,12 +75,12 @@ public static partial class Program
                 ? dialogTypeElement.GetString()
                 : null;
 
-            log.LogInformation($"[TASK_FETCH] Dialog type: {dialogType}");
+            _logger.LogInformation($"[TASK_FETCH] Dialog type: {dialogType}");
 
             return dialogType switch
             {
                 "simple_form" => CreateSimpleFormDialog(),
-                "webpage_dialog" => CreateWebpageDialog(_configuration, log),
+                "webpage_dialog" => CreateWebpageDialog(_configuration, _logger),
                 "multi_step_form" => CreateMultiStepFormDialog(),
                 "mixed_example" => CreateMixedExampleDialog(),
                 _ => new Microsoft.Teams.Api.TaskModules.Response(new Microsoft.Teams.Api.TaskModules.MessageTask("Unknown dialog type"))
@@ -85,14 +88,14 @@ public static partial class Program
         }
 
         [TaskSubmit]
-        public async Task<Microsoft.Teams.Api.TaskModules.Response> OnTaskSubmit([Context] Tasks.SubmitActivity activity, [Context] IContext.Client client, [Context] ILogger log)
+        public async Task<Microsoft.Teams.Api.TaskModules.Response> OnTaskSubmit([Context] Tasks.SubmitActivity activity, [Context] IContext.Client client)
         {
-            log.LogInformation("[TASK_SUBMIT] Task submit request received");
+            _logger.LogInformation("[TASK_SUBMIT] Task submit request received");
 
             var data = activity.Value?.Data as JsonElement?;
             if (data == null)
             {
-                log.LogInformation("[TASK_SUBMIT] No data found in the activity value");
+                _logger.LogInformation("[TASK_SUBMIT] No data found in the activity value");
                 return new Microsoft.Teams.Api.TaskModules.Response(new Microsoft.Teams.Api.TaskModules.MessageTask("No data found in the activity value"));
             }
 
@@ -100,7 +103,7 @@ public static partial class Program
                 ? submissionTypeObj.ToString()
                 : null;
 
-            log.LogInformation($"[TASK_SUBMIT] Submission type: {submissionType}");
+            _logger.LogInformation($"[TASK_SUBMIT] Submission type: {submissionType}");
 
             string? GetFormValue(string key)
             {
@@ -292,17 +295,17 @@ new Microsoft.Teams.Cards.TaskFetchAction(
             return response;
         }
 
-        private static Microsoft.Teams.Api.TaskModules.Response CreateWebpageDialog(IConfiguration configuration, ILogger log)
+        private static Microsoft.Teams.Api.TaskModules.Response CreateWebpageDialog(IConfiguration configuration, ILogger logger)
         {
             var botEndpoint = configuration["BotEndpoint"];
             if (string.IsNullOrEmpty(botEndpoint))
             {
-                log.LogWarning("No remote endpoint detected. Using webpages for dialog will not work as expected");
+                logger.LogWarning("No remote endpoint detected. Using webpages for dialog will not work as expected");
                 botEndpoint = "http://localhost:3978"; // Fallback for local development
             }
             else
             {
-                log.LogInformation($"Using BotEndpoint: {botEndpoint}/tabs/dialog-form");
+                logger.LogInformation($"Using BotEndpoint: {botEndpoint}/tabs/dialog-form");
             }
 
             var taskInfo = new Microsoft.Teams.Api.TaskModules.TaskInfo

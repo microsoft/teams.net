@@ -30,7 +30,7 @@ public static partial class Program
     public class Controller
     {
         [Message]
-        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client, [Context] Microsoft.Extensions.Logging.ILogger log)
+        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client)
         {
             await client.Typing();
             await client.Send($"hi from teams...");
