@@ -52,6 +52,9 @@ public partial class App
         }
     }
 
+    internal App() : this(null!, null)
+    { }
+
     public App(IHttpCredentials credentials, AppOptions? options = null)
     {
         Logger = options?.Logger ?? new ConsoleLogger();

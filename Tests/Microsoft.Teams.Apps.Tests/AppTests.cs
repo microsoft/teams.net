@@ -24,7 +24,7 @@ public class AppTests
         {
             Credentials = credentials.Object,
         };
-        var app = new App(options);
+        var app = new App(credentials.Object,options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
         api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -51,7 +51,7 @@ public class AppTests
             Credentials = credentials.Object,
             Logger = logger.Object,
         };
-        var app = new App(options);
+        var app = new App(credentials.Object, options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
         api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
             .ThrowsAsync(exception);
@@ -73,7 +73,7 @@ public class AppTests
         {
             Credentials = null,
         };
-        var app = new App(options);
+        var app = new App(null!, options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
         api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -98,7 +98,7 @@ public class AppTests
             Client = client.Object,
             Credentials = credentials.Object,
         };
-        var app = new App(options);
+        var app = new App(credentials.Object, options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
         api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -124,7 +124,7 @@ public class AppTests
             Client = client.Object,
             Credentials = credentials.Object,
         };
-        var app = new App(options);
+        var app = new App(credentials.Object, options);
         app.Token = new JsonWebToken(_expiredJwt);
         credentials.Setup(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -149,7 +149,7 @@ public class AppTests
             Client = client.Object,
             Credentials = credentials.Object,
         };
-        var app = new App(options);
+        var app = new App(credentials.Object, options);
         app.Token = new JsonWebToken(_unexpiredJwt);
         credentials.Setup(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -177,7 +177,7 @@ public class AppTests
             Client = client.Object,
             Credentials = null,
         };
-        var app = new App(options);
+        var app = new App(null!, options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
         api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -209,7 +209,7 @@ public class AppTests
             Client = client.Object,
             Credentials = null,
         };
-        var app = new App(options);
+        var app = new App(null!, options);
 
         // act
         client.Object.Options.TokenFactory();

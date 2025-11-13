@@ -13,7 +13,6 @@ public class ClientCredentials(IAuthorizationHeaderProvider authorizationHeaderP
         AuthorizationHeaderProviderOptions options = new();
         options.AcquireTokenOptions = new AcquireTokenOptions()
         {
-            AuthenticationOptionsName = "AzureAd",
         };
         var tokenResult = await authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(scopes[0], options, cancellationToken);
         return new TokenResponse
