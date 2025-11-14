@@ -7,7 +7,8 @@ using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.AI.Models;
 using Microsoft.Teams.Common.Extensions;
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Teams.AI.Prompts;
 
@@ -121,22 +122,22 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
 
     protected IChatModel<TOptions> Model { get; }
     protected ITemplate? Template { get; }
-    protected ILogger Logger { get; }
     protected IList<IChatPlugin> Plugins { get; }
+    protected ILogger<ChatPrompt<TOptions>> Logger { get; }
     protected event EventHandler<Exception> ErrorEvent;
 
-    public ChatPrompt(IChatModel<TOptions> model, ChatPromptOptions? options = null)
+    public ChatPrompt(IChatModel<TOptions> model, ChatPromptOptions? options = null, ILogger<ChatPrompt<TOptions>>? logger = null)
     {
         options ??= new();
         Name = options.Name ?? "Chat";
         Description = options.Description ?? "an agent you can chat with";
         Model = model;
+        Logger = logger ?? NullLogger<ChatPrompt<TOptions>>.Instance;
         Template = options.Instructions;
         Messages = options.Messages ?? [];
         Functions = new();
-        Logger = (options.Logger ?? new ConsoleLogger()).Child($"AI.{Name}");
         Plugins = [];
-        ErrorEvent = (_, ex) => Logger.Error(ex);
+        ErrorEvent = (_, ex) => Logger.LogError(ex, "An error occurred in ChatPrompt '{PromptName}'", Name);
     }
 
     public ChatPrompt(ChatPrompt<TOptions> prompt)
@@ -146,8 +147,8 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         Messages = prompt.Messages;
         Functions = prompt.Functions;
         Model = prompt.Model;
-        Template = prompt.Template;
         Logger = prompt.Logger;
+        Template = prompt.Template;
         Plugins = prompt.Plugins;
         ErrorEvent = prompt.ErrorEvent;
     }
@@ -159,8 +160,8 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         Messages = prompt.Messages;
         Functions = prompt.Functions;
         Model = prompt.Model;
+        Logger = prompt.Logger;
         Template = prompt.Template;
-        Logger = prompt.Logger.Peer(name);
         Plugins = prompt.Plugins;
         ErrorEvent = prompt.ErrorEvent;
     }
@@ -170,9 +171,10 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
     /// utilizing the ChatPromptAttribute
     /// </summary>
     /// <param name="model">the model to use</param>
+    /// <param name="logger">the logger instance</param>
     /// <param name="value">the class instance to use</param>
     /// <returns>a ChatPrompt</returns>
-    public static ChatPrompt<TOptions> From<T>(IChatModel<TOptions> model, T value, ChatPromptOptions? options = null) where T : class
+    public static ChatPrompt<TOptions> From<T>(IChatModel<TOptions> model, T value, ChatPromptOptions? options = null, ILogger<ChatPrompt<TOptions>>? logger = null) where T : class
     {
         var type = value.GetType();
         var promptAttribute = type.GetCustomAttribute<PromptAttribute>();
@@ -201,7 +203,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
             options = options.WithInstructions(instructions);
         }
 
-        var prompt = new ChatPrompt<TOptions>(model, options);
+        var prompt = new ChatPrompt<TOptions>(model, options, logger);
 
         foreach (var method in type.GetMethods())
         {

@@ -38,49 +38,49 @@ public static partial class Program
     }
 
     [TeamsController]
-    public class Controller
+    public class Controller(ILogger<Controller> logger)
     {
         [Message]
-        public async Task OnMessage([Context] Microsoft.Teams.Api.Activities.MessageActivity activity, [Context] IContext.Client client, [Context] Microsoft.Teams.Common.Logging.ILogger log)
+        public async Task OnMessage([Context] Microsoft.Teams.Api.Activities.MessageActivity activity, [Context] IContext.Client client)
         {
-            log.Info($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
-            log.Info($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
+            logger.LogInformation($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
+            logger.LogInformation($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
 
             var text = activity.Text?.ToLowerInvariant() ?? "";
 
             if (text.Contains("card"))
             {
-                log.Info("[CARD] Basic card requested");
+                logger.LogInformation("[CARD] Basic card requested");
                 var card = CreateBasicAdaptiveCard();
                 await client.Send(card);
             }
             else if (text.Contains("profile"))
             {
-                log.Info("[PROFILE] Profile card requested");
+                logger.LogInformation("[PROFILE] Profile card requested");
                 var card = CreateProfileCard();
                 await client.Send(card);
             }
             else if (text.Contains("validation"))
             {
-                log.Info("[VALIDATION] Validation card requested");
+                logger.LogInformation("[VALIDATION] Validation card requested");
                 var card = CreateProfileCardWithValidation();
                 await client.Send(card);
             }
             else if (text.Contains("feedback"))
             {
-                log.Info("[FEEDBACK] Feedback card requested");
+                logger.LogInformation("[FEEDBACK] Feedback card requested");
                 var card = CreateFeedbackCard();
                 await client.Send(card);
             }
             else if (text.Contains("form"))
             {
-                log.Info("[FORM] Task form card requested");
+                logger.LogInformation("[FORM] Task form card requested");
                 var card = CreateTaskFormCard();
                 await client.Send(card);
             }
             else if (text.Contains("json"))
             {
-                log.Info("[JSON] JSON deserialization card requested");
+                logger.LogInformation("[JSON] JSON deserialization card requested");
                 var card = CreateCardFromJson();
                 await client.Send(card);
             }
@@ -96,18 +96,18 @@ public static partial class Program
         }
 
         [Microsoft.Teams.Apps.Activities.Invokes.AdaptiveCard.Action]
-        public async Task<ActionResponse> OnCardAction([Context] AdaptiveCards.ActionActivity activity, [Context] IContext.Client client, [Context] Microsoft.Teams.Common.Logging.ILogger log)
+        public async Task<ActionResponse> OnCardAction([Context] AdaptiveCards.ActionActivity activity, [Context] IContext.Client client)
         {
-            log.Info("[CARD_ACTION] Card action received");
+            logger.LogInformation("[CARD_ACTION] Card action received");
 
             var data = activity.Value?.Action?.Data;
 
             // Let's log the actual data structure to understand what we're working with
-            log.Info($"[CARD_ACTION] Raw data: {System.Text.Json.JsonSerializer.Serialize(data)}");
+            logger.LogInformation($"[CARD_ACTION] Raw data: {System.Text.Json.JsonSerializer.Serialize(data)}");
 
             if (data == null)
             {
-                log.Error("[CARD_ACTION] No data in card action");
+                logger.LogError("[CARD_ACTION] No data in card action");
                 return new ActionResponse.Message("No data specified") { StatusCode = 400 };
             }
 
@@ -116,10 +116,10 @@ public static partial class Program
 
             if (string.IsNullOrEmpty(action))
             {
-                log.Error("[CARD_ACTION] No action specified in card data");
+                logger.LogError("[CARD_ACTION] No action specified in card data");
                 return new ActionResponse.Message("No action specified") { StatusCode = 400 };
             }
-            log.Info($"[CARD_ACTION] Processing action: {action}");
+            logger.LogInformation($"[CARD_ACTION] Processing action: {action}");
 
             // Helper method to extract form field values (they're at root level, not in Value)
             string? GetFormValue(string key)
@@ -173,7 +173,7 @@ public static partial class Program
                     break;
 
                 default:
-                    log.Error($"[CARD_ACTION] Unknown action: {action}");
+                    logger.LogError($"[CARD_ACTION] Unknown action: {action}");
                     return new ActionResponse.Message("Unknown action") { StatusCode = 400 };
             }
 

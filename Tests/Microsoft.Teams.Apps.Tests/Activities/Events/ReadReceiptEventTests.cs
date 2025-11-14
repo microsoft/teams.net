@@ -6,19 +6,21 @@ using Microsoft.Teams.Apps.Activities.Events;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Testing.Plugins;
 
+using Microsoft.Extensions.Logging.Abstractions;
 using static Microsoft.Teams.Apps.Activities.Events.Event;
 
 namespace Microsoft.Teams.Apps.Tests.Activities.Events;
 
 public class ReadReceiptEventTests
 {
-    private readonly App _app = new();
+    private readonly App _app;
     private readonly TestPlugin _plugin = new();
     private readonly ReadReceiptController _controller = new();
     private readonly IToken _token = Globals.Token;
 
     public ReadReceiptEventTests()
     {
+        _app = new App(NullLogger<App>.Instance);
         _app.AddPlugin(_plugin);
         _app.AddController(_controller);
         _token = Globals.Token;

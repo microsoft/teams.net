@@ -1,5 +1,6 @@
 ﻿using System.Text.Json;
 
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.AI;
 using Microsoft.Teams.AI.Prompts;
 
@@ -9,6 +10,7 @@ namespace Microsoft.Teams.Plugins.External.McpClient.Tests;
 
 public class McpClientPluginTests
 {
+    
     [Fact]
     public void Test_Constructor_SetsDefaults_AndInitializesCacheTimestamps()
     {
@@ -23,8 +25,6 @@ public class McpClientPluginTests
                 LastFetched = null
             }
         };
-        var logger = new Mock<Microsoft.Teams.Common.Logging.ILogger>(MockBehavior.Strict);
-        logger.Setup(l => l.Child(It.IsAny<string>())).Returns(logger.Object);
 
         // Act
         var plugin = new McpClientPlugin(new McpClientPluginOptions
@@ -32,8 +32,7 @@ public class McpClientPluginTests
             Name = "TestPlugin",
             Version = "1.2.3",
             Cache = cache,
-            Logger = logger.Object
-        });
+        }, NullLogger<McpClientPlugin>.Instance);
 
         // Assert
         Assert.Equal("TestPlugin", plugin.Name);

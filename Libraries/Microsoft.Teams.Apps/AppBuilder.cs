@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Apps;
@@ -12,18 +13,6 @@ public partial class AppBuilder
     public AppBuilder(AppOptions? options = null)
     {
         _options = options ?? new AppOptions();
-    }
-
-    public AppBuilder AddLogger(Common.Logging.ILogger logger)
-    {
-        _options.Logger = logger;
-        return this;
-    }
-
-    public AppBuilder AddLogger(string? name = null, Common.Logging.LogLevel level = Common.Logging.LogLevel.Info)
-    {
-        _options.Logger = new Common.Logging.ConsoleLogger(name, level);
-        return this;
     }
 
     public AppBuilder AddStorage<TStorage>(TStorage storage) where TStorage : Common.Storage.IStorage<string, object>
@@ -98,8 +87,8 @@ public partial class AppBuilder
         return this;
     }
 
-    public App Build()
+    public App Build(ILogger<App> logger)
     {
-        return new App(_options);
+        return new App(logger, _options);
     }
 }

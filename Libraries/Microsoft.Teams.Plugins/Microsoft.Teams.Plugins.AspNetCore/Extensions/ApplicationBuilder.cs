@@ -5,6 +5,7 @@ using System.Reflection;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Plugins;
@@ -22,7 +23,7 @@ public static partial class ApplicationBuilderExtensions
     public static App UseTeams(this IApplicationBuilder builder, bool routing = true)
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
-        var app = builder.ApplicationServices.GetService<App>() ?? new App(builder.ApplicationServices.GetService<AppOptions>());
+        var app = builder.ApplicationServices.GetService<App>();
         var plugins = builder.ApplicationServices.GetServices<IPlugin>();
         var types = assembly.GetTypes();
 
@@ -39,13 +40,13 @@ public static partial class ApplicationBuilderExtensions
 
             if (controller is not null)
             {
-                app.AddController(controller);
+                app?.AddController(controller);
             }
         }
 
         foreach (var plugin in plugins)
         {
-            app.AddPlugin(plugin);
+            app?.AddPlugin(plugin);
 
             if (plugin is IAspNetCorePlugin aspNetCorePlugin)
             {
@@ -60,7 +61,7 @@ public static partial class ApplicationBuilderExtensions
             builder.UseEndpoints(endpoints => endpoints.MapControllers());
         }
 
-        return app;
+        return app!;
     }
 
     /// <summary>

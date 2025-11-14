@@ -3,6 +3,7 @@ using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Testing.Events;
 using Microsoft.Teams.Apps.Testing.Plugins;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Teams.Apps.Tests.Events;
 
@@ -14,7 +15,7 @@ public class CustomEventTests
 
     public CustomEventTests()
     {
-        _app = new App();
+        _app = new App(NullLogger<App>.Instance);
         _plugin = new TestPlugin();
         _app.AddPlugin(_plugin);
         _token = Globals.Token;

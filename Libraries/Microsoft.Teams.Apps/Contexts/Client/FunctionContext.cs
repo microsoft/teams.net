@@ -5,7 +5,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Cards;
-using Microsoft.Teams.Common.Logging;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Teams.Apps;
 
