@@ -62,7 +62,57 @@ Update `appsettings.json` with your bot credentials:
 }
 ```
 
-### 4. Local Development Setup
+### 4. Regional Bot Configuration (Optional)
+
+If you're deploying a regional bot, you need to configure several files to use regional endpoints. This example uses West Europe, but follow the equivalent for other locations.
+
+**Step 1: Update Azure Bot Configuration**
+
+In your `azurebot.bicep` file, replace all `global` occurrences with `westeurope`.
+
+**Step 2: Update Manifest**
+
+In `manifest.json`, in `validDomains`, replace `*.botframework.com` with `europe.token.botframework.com`.
+
+**Step 3: Update AAD Manifest**
+
+In `aad.manifest.json`, replace `https://token.botframework.com/.auth/web/redirect` with `https://europe.token.botframework.com/.auth/web/redirect`.
+
+**Step 4: Update Program.cs**
+
+Update `Program.cs` to include `ApiClientOptions`:
+
+```csharp
+var appBuilder = App.Builder()
+    .AddLogger(new ConsoleLogger(level: Microsoft.Teams.Common.Logging.LogLevel.Debug))
+    .AddOAuth("graph")
+    .AddOptions(new AppOptions
+    {
+        ApiClientOptions = new ApiClientOptions("https://europe.token.botframework.com")
+    });
+```
+
+**Alternative: Using Environment Variable**
+
+Instead of hard-coding the OAuth URL in `Program.cs`, you can set the `OAUTH_URL` environment variable:
+
+```bash
+# Windows (Command Prompt)
+set OAUTH_URL=https://europe.token.botframework.com
+dotnet run
+
+# Windows (PowerShell)
+$env:OAUTH_URL="https://europe.token.botframework.com"
+dotnet run
+
+# Linux/macOS
+export OAUTH_URL=https://europe.token.botframework.com
+dotnet run
+```
+
+**Note**: When using a regional bot, ensure your Azure Bot resource is also configured for the same region.
+
+### 5. Local Development Setup
 
 1. Install dev tunnels: `winget install Microsoft.DevTunnels`
 2. Create tunnel: `devtunnel create -a`

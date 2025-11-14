@@ -13,50 +13,89 @@ public class ApiClient : Client
     public virtual UserClient Users { get; }
     public virtual TeamClient Teams { get; }
     public virtual MeetingClient Meetings { get; }
+    private readonly ApiClientOptions _apiClientOptions;
 
     public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
-        Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge();
+        Bots = new BotClient(_http, _apiClientOptions, cancellationToken);
+        Conversations = new ConversationClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Users = new UserClient(_http, _apiClientOptions, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
-        Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge();
+        Bots = new BotClient(_http, _apiClientOptions, cancellationToken);
+        Conversations = new ConversationClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Users = new UserClient(_http, _apiClientOptions, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
-        Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge();
+        Bots = new BotClient(_http, _apiClientOptions, cancellationToken);
+        Conversations = new ConversationClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Users = new UserClient(_http, _apiClientOptions, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
-        Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge();
+        Bots = new BotClient(_http, _apiClientOptions, cancellationToken);
+        Conversations = new ConversationClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Users = new UserClient(_http, _apiClientOptions, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+    }
+
+    public ApiClient(string serviceUrl, IHttpClient client, ApiClientOptions? apiClientOptions, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    {
+        ServiceUrl = serviceUrl;
+        _apiClientOptions = ApiClientOptions.Merge(apiClientOptions);
+        Bots = new BotClient(_http, _apiClientOptions, cancellationToken);
+        Conversations = new ConversationClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Users = new UserClient(_http, _apiClientOptions, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+    }
+
+    public ApiClient(string serviceUrl, IHttpClientOptions options, ApiClientOptions? apiClientOptions, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    {
+        ServiceUrl = serviceUrl;
+        _apiClientOptions = ApiClientOptions.Merge(apiClientOptions);
+        Bots = new BotClient(_http, _apiClientOptions, cancellationToken);
+        Conversations = new ConversationClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Users = new UserClient(_http, _apiClientOptions, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+    }
+
+    public ApiClient(string serviceUrl, IHttpClientFactory factory, ApiClientOptions? apiClientOptions, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    {
+        ServiceUrl = serviceUrl;
+        _apiClientOptions = ApiClientOptions.Merge(apiClientOptions);
+        Bots = new BotClient(_http, _apiClientOptions, cancellationToken);
+        Conversations = new ConversationClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Users = new UserClient(_http, _apiClientOptions, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, _apiClientOptions, cancellationToken);
     }
 
     public ApiClient(ApiClient client) : base()
     {
         ServiceUrl = client.ServiceUrl;
+        _apiClientOptions = client._apiClientOptions;
         Bots = client.Bots;
         Conversations = client.Conversations;
         Users = client.Users;
