@@ -110,10 +110,6 @@ export OAUTH_URL=https://europe.token.botframework.com
 dotnet run
 ```
 
-**Available Regional Endpoints:**
-- **Default (Global)**: `https://token.botframework.com`
-- **Europe**: `https://europe.token.botframework.com`
-
 **Note**: When using a regional bot, ensure your Azure Bot resource is also configured for the same region.
 
 ### 5. Local Development Setup

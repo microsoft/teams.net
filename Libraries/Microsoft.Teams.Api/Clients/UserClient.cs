@@ -8,47 +8,47 @@ namespace Microsoft.Teams.Api.Clients;
 public class UserClient : Client
 {
     public UserTokenClient Token { get; }
-    private readonly ApiClientOptions _options;
+    private readonly ApiClientOptions _apiClientOptions;
 
     public UserClient(CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        _options = ApiClientOptions.Merge();
-        Token = new UserTokenClient(_http, _options, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge();
+        Token = new UserTokenClient(_http, _apiClientOptions, cancellationToken);
     }
 
     public UserClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        _options = ApiClientOptions.Merge();
-        Token = new UserTokenClient(_http, _options, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge();
+        Token = new UserTokenClient(_http, _apiClientOptions, cancellationToken);
     }
 
     public UserClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        _options = ApiClientOptions.Merge();
-        Token = new UserTokenClient(_http, _options, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge();
+        Token = new UserTokenClient(_http, _apiClientOptions, cancellationToken);
     }
 
     public UserClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        _options = ApiClientOptions.Merge();
-        Token = new UserTokenClient(_http, _options, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge();
+        Token = new UserTokenClient(_http, _apiClientOptions, cancellationToken);
     }
 
-    public UserClient(IHttpClient client, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public UserClient(IHttpClient client, ApiClientOptions? apiClientOptions, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        _options = ApiClientOptions.Merge(apiOptions);
-        Token = new UserTokenClient(_http, _options, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge(apiClientOptions);
+        Token = new UserTokenClient(_http, _apiClientOptions, cancellationToken);
     }
 
-    public UserClient(IHttpClientOptions options, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public UserClient(IHttpClientOptions options, ApiClientOptions? apiClientOptions, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        _options = ApiClientOptions.Merge(apiOptions);
-        Token = new UserTokenClient(_http, _options, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge(apiClientOptions);
+        Token = new UserTokenClient(_http, _apiClientOptions, cancellationToken);
     }
 
-    public UserClient(IHttpClientFactory factory, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public UserClient(IHttpClientFactory factory, ApiClientOptions? apiClientOptions, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        _options = ApiClientOptions.Merge(apiOptions);
-        Token = new UserTokenClient(_http, _options, cancellationToken);
+        _apiClientOptions = ApiClientOptions.Merge(apiClientOptions);
+        Token = new UserTokenClient(_http, _apiClientOptions, cancellationToken);
     }
 }

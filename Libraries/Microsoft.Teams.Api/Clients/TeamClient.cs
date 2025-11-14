@@ -8,48 +8,48 @@ namespace Microsoft.Teams.Api.Clients;
 public class TeamClient : Client
 {
     public readonly string ServiceUrl;
-    private readonly ApiClientOptions _options;
+    private readonly ApiClientOptions _apiClientOptions;
 
     public TeamClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _options = ApiClientOptions.Merge();
+        _apiClientOptions = ApiClientOptions.Merge();
     }
 
     public TeamClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _options = ApiClientOptions.Merge();
+        _apiClientOptions = ApiClientOptions.Merge();
     }
 
     public TeamClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _options = ApiClientOptions.Merge();
+        _apiClientOptions = ApiClientOptions.Merge();
     }
 
     public TeamClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _options = ApiClientOptions.Merge();
+        _apiClientOptions = ApiClientOptions.Merge();
     }
 
-    public TeamClient(string serviceUrl, IHttpClient client, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public TeamClient(string serviceUrl, IHttpClient client, ApiClientOptions? apiClientOptions, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _options = ApiClientOptions.Merge(apiOptions);
+        _apiClientOptions = ApiClientOptions.Merge(apiClientOptions);
     }
 
-    public TeamClient(string serviceUrl, IHttpClientOptions options, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public TeamClient(string serviceUrl, IHttpClientOptions options, ApiClientOptions? apiClientOptions, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _options = ApiClientOptions.Merge(apiOptions);
+        _apiClientOptions = ApiClientOptions.Merge(apiClientOptions);
     }
 
-    public TeamClient(string serviceUrl, IHttpClientFactory factory, ApiClientOptions? apiOptions, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public TeamClient(string serviceUrl, IHttpClientFactory factory, ApiClientOptions? apiClientOptions, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        _options = ApiClientOptions.Merge(apiOptions);
+        _apiClientOptions = ApiClientOptions.Merge(apiClientOptions);
     }
 
     public async Task<Team> GetByIdAsync(string id)
