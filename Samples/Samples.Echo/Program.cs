@@ -2,7 +2,6 @@ using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder();
-
 builder.AddTeams();
 var app = builder.Build();
 var teamsApp = app.UseTeams();
