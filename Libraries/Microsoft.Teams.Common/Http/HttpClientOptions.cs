@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.Extensions.Logging;
-
 namespace Microsoft.Teams.Common.Http;
 
 /// <summary>
@@ -24,11 +22,6 @@ public interface IHttpClientOptions : IHttpRequestOptions
     /// The authorization token factory to use
     /// </summary>
     public HttpTokenFactory? TokenFactory { get; set; }
-
-    /// <summary>
-    /// ILogger instance to use
-    /// </summary>
-    public ILogger? Logger { get; set; }
 
     /// <summary>
     /// Default request timeout (ms)
@@ -72,11 +65,6 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
     /// The authorization token factory to use
     /// </summary>
     public IHttpClientOptions.HttpTokenFactory? TokenFactory { get; set; }
-
-    /// <summary>
-    /// ILogger instance to use
-    /// </summary>
-    public ILogger? Logger { get; set; }
 
     /// <summary>
     /// Default request timeout (ms)

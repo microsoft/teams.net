@@ -14,6 +14,7 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Common.Text;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Models;
@@ -45,7 +46,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
         _sender = sender;
         _services = provider;
         _settings = provider.GetRequiredService<TeamsDevToolsSettings>();
-        Logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<DevToolsPlugin>();
+        Logger = logger ?? NullLogger<DevToolsPlugin>.Instance;
     }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)

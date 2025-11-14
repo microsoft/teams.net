@@ -2,22 +2,19 @@ using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Testing.Plugins;
-using Microsoft.Extensions.Logging;
-
-using Moq;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Teams.Apps.Tests.Events;
 
 public class ActivityEventTests
 {
-    private readonly Mock<ILogger<App>> _logger = new();
     private readonly App _app;
     private readonly TestPlugin _plugin;
     private readonly IToken _token;
 
     public ActivityEventTests()
     {
-        _app = new App(_logger.Object);
+        _app = new App(NullLogger<App>.Instance);
         _plugin = new TestPlugin();
         _app.AddPlugin(_plugin);
         _token = Globals.Token;

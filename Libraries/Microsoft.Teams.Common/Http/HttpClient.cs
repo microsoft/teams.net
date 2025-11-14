@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Teams.Common.Http;
 
@@ -22,43 +23,33 @@ public class HttpClient : IHttpClient
     public IHttpClientOptions Options { get; }
 
     protected System.Net.Http.HttpClient _client;
-    protected ILogger _logger;
+    protected readonly ILogger<HttpClient> _logger;
 
     private readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
-    public HttpClient()
+    public HttpClient(ILogger<HttpClient>? logger = null)
     {
         _client = new System.Net.Http.HttpClient();
-        using var loggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
-        _logger = loggerFactory.CreateLogger("Microsoft.Teams.Http.Client");
+        _logger = logger ?? NullLogger<HttpClient>.Instance;
         Options = new HttpClientOptions();
         Options.Apply(_client);
     }
 
-    public HttpClient(IHttpClientOptions options)
+    public HttpClient(IHttpClientOptions options, ILogger<HttpClient>? logger = null)
     {
         _client = new System.Net.Http.HttpClient();
-        if (options.Logger != null)
-        {
-            _logger = options.Logger;
-        }
-        else
-        {
-            using var loggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
-            _logger = loggerFactory.CreateLogger("Microsoft.Teams.Http.Client");
-        }
+        _logger = logger ?? NullLogger<HttpClient>.Instance;
         Options = options;
         Options.Apply(_client);
     }
 
-    public HttpClient(System.Net.Http.HttpClient client)
+    public HttpClient(System.Net.Http.HttpClient client, ILogger<HttpClient>? logger = null)
     {
         _client = client;
-        using var loggerFactory = LoggerFactory.Create(builder => { builder.AddConsole(); });
-        _logger = loggerFactory.CreateLogger("Microsoft.Teams.Http.Client");
+        _logger = logger ?? NullLogger<HttpClient>.Instance;
         Options = new HttpClientOptions();
         Options.Apply(_client);
     }

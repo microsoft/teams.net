@@ -1,4 +1,5 @@
-using Microsoft.Extensions.Logging;
+
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Api.Auth;
@@ -7,20 +8,17 @@ using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Testing.Plugins;
 
-using Moq;
-
 namespace Microsoft.Teams.Apps.Tests.Activities;
 
 public class ConfigsSubmitActionActivityTests
 {
-    private readonly Mock<ILogger<App>> _logger = new();
     private readonly App _app;
     private readonly IToken _token = Globals.Token;
     private readonly Controller _controller = new();
 
     public ConfigsSubmitActionActivityTests()
     {
-        _app = new App(_logger.Object);
+        _app = new App(NullLogger<App>.Instance);
         _app.AddPlugin(new TestPlugin());
         _app.AddController(_controller);
     }

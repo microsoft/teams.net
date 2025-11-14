@@ -4,6 +4,7 @@ using System.Text.Json;
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -16,9 +17,9 @@ namespace Microsoft.Teams.Plugins.AspNetCore.Tests;
 
 public class AspNetCorePluginTests
 {
-    private static AspNetCorePlugin CreatePlugin(Mock<ILogger<AspNetCorePlugin>>? loggerMock = null, EventFunction? events = null)
+    private static AspNetCorePlugin CreatePlugin(ILogger<AspNetCorePlugin> logger, EventFunction? events = null)
     {
-        var plugin = new AspNetCorePlugin(loggerMock?.Object);
+        var plugin = new AspNetCorePlugin(logger);
 
         plugin.Client = new Mock<Microsoft.Teams.Common.Http.IHttpClient>().Object;
         if (events is not null)
@@ -65,8 +66,7 @@ public class AspNetCorePluginTests
             return Task.FromResult<object?>(null);
         };
 
-        var logger = new Mock<ILogger<AspNetCorePlugin>>();
-        var plugin = CreatePlugin(logger, events);
+        var plugin = CreatePlugin(NullLogger<AspNetCorePlugin>.Instance, events);
         var ctx = CreateHttpContext(activity);
 
         // Act
@@ -93,7 +93,7 @@ public class AspNetCorePluginTests
             return Task.FromResult<object?>(null);
         };
 
-        var plugin = CreatePlugin(new Mock<ILogger<AspNetCorePlugin>>(), events);
+        var plugin = CreatePlugin(NullLogger<AspNetCorePlugin>.Instance, events);
         var ctx = CreateHttpContext(activity);
 
         // Act
@@ -118,7 +118,7 @@ public class AspNetCorePluginTests
         };
 
         var logger = new Mock<ILogger<AspNetCorePlugin>>();
-        var plugin = CreatePlugin(logger, events);
+        var plugin = CreatePlugin(logger.Object, events);
         var ctx = CreateHttpContext(CreateMessageActivity());
 
         // Act
@@ -141,7 +141,7 @@ public class AspNetCorePluginTests
     [Fact]
     public void Test_ExtractToken_ReturnsToken()
     {
-        var plugin = CreatePlugin();
+        var plugin = CreatePlugin(NullLogger<AspNetCorePlugin>.Instance);
         var ctx = CreateHttpContext(CreateMessageActivity(), "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjQ3MDI1MTUyMDB9.token123");
 
         var token = plugin.ExtractToken(ctx.Request);
@@ -152,7 +152,7 @@ public class AspNetCorePluginTests
     [Fact]
     public async Task Test_ExtractActivity_ReturnsActivity()
     {
-        var plugin = CreatePlugin();
+        var plugin = CreatePlugin(NullLogger<AspNetCorePlugin>.Instance);
         var activity = CreateMessageActivity();
         var ctx = CreateHttpContext(activity);
 
@@ -164,7 +164,7 @@ public class AspNetCorePluginTests
     [Fact]
     public async Task Test_ExtractActivity_HttpRequestBodyAlreadyRead_ReturnsActivity()
     {
-        var plugin = CreatePlugin();
+        var plugin = CreatePlugin(NullLogger<AspNetCorePlugin>.Instance);
         var activity = CreateMessageActivity();
         var ctx = CreateHttpContext(activity);
         // simulate body already read by setting position to end
@@ -186,7 +186,7 @@ public class AspNetCorePluginTests
             return Task.FromResult<object?>(null);
         };
         var logger = new Mock<ILogger<AspNetCorePlugin>>();
-        var plugin = CreatePlugin(logger, events);
+        var plugin = CreatePlugin(logger.Object, events);
         var evt = new ActivityEvent() { Token = new JsonWebToken("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjQ3MDI1MTUyMDB9.signature"), Activity = CreateMessageActivity() };
 
         // Act

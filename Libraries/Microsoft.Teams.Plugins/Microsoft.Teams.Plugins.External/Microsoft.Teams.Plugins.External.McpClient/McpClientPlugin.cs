@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 
 using ModelContextProtocol.Client;
 using ModelContextProtocol.Protocol;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Teams.Plugins.External.McpClient;
 
@@ -29,7 +30,7 @@ public class McpClientPlugin : BaseChatPlugin
         Version = options.Version;
         RefetchTimeoutMs = options.RefetchTimeoutMs;
         Cache = options.Cache ?? new Dictionary<string, McpCachedValue>();
-        _logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<McpClientPlugin>();
+        _logger = logger ?? NullLogger<McpClientPlugin>.Instance;
 
         _mcpServerParams = new Dictionary<string, McpClientPluginParams>();
 

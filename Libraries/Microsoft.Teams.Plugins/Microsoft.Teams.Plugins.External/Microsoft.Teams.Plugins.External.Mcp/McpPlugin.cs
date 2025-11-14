@@ -9,6 +9,7 @@ using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Plugins.AspNetCore;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Teams.Plugins.External.Mcp;
 
@@ -23,7 +24,7 @@ public class McpPlugin : IAspNetCorePlugin
 
     public McpPlugin(ILogger<McpPlugin>? logger = null)
     {
-        Logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<McpPlugin>();
+        Logger = logger ?? NullLogger<McpPlugin>.Instance;
     }
 
     public event EventFunction Events;

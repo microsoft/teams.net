@@ -5,15 +5,14 @@ using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Activities.Events;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Testing.Plugins;
-using Microsoft.Extensions.Logging;
-using Moq;
+
+using Microsoft.Extensions.Logging.Abstractions;
 using static Microsoft.Teams.Apps.Activities.Events.Event;
 
 namespace Microsoft.Teams.Apps.Tests.Activities.Events;
 
 public class ReadReceiptEventTests
 {
-    private readonly Mock<ILogger<App>> _logger = new();
     private readonly App _app;
     private readonly TestPlugin _plugin = new();
     private readonly ReadReceiptController _controller = new();
@@ -21,7 +20,7 @@ public class ReadReceiptEventTests
 
     public ReadReceiptEventTests()
     {
-        _app = new App(_logger.Object);
+        _app = new App(NullLogger<App>.Instance);
         _app.AddPlugin(_plugin);
         _app.AddController(_controller);
         _token = Globals.Token;

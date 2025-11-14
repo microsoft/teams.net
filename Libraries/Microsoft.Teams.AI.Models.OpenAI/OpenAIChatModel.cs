@@ -3,6 +3,8 @@
 
 using System.ClientModel;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+
 using OpenAI;
 using OpenAI.Chat;
 
@@ -33,7 +35,7 @@ public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
     {
         Model = model;
         ChatClient = client.GetChatClient(model);
-        Logger = logger ?? LoggerFactory.Create(builder => {}).CreateLogger<OpenAIChatModel>();
+        Logger = logger ?? NullLogger<OpenAIChatModel>.Instance;
     }
 
     public OpenAIChatModel(string model, string apiKey, ILogger<OpenAIChatModel>? logger = null, OpenAIClientOptions? options = null)
@@ -44,7 +46,7 @@ public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
         var client = new OpenAIClient(new ApiKeyCredential(apiKey), options);
         Model = model;
         ChatClient = client.GetChatClient(model);
-        Logger = logger ?? LoggerFactory.Create(builder => {}).CreateLogger<OpenAIChatModel>();
+        Logger = logger ?? NullLogger<OpenAIChatModel>.Instance;
     }
 
     public OpenAIChatModel(string model, ApiKeyCredential apiKey, ILogger<OpenAIChatModel>? logger = null, OpenAIClientOptions? options = null)
@@ -55,6 +57,6 @@ public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
         var client = new OpenAIClient(apiKey, options);
         Model = model;
         ChatClient = client.GetChatClient(model);
-        Logger = logger ?? LoggerFactory.Create(builder => {}).CreateLogger<OpenAIChatModel>();
+        Logger = logger ?? NullLogger<OpenAIChatModel>.Instance;
     }
 }

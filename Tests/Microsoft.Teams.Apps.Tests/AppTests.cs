@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -25,8 +26,7 @@ public class AppTests
         {
             Credentials = credentials.Object,
         };
-        var logger = new Mock<ILogger<App>>();
-        var app = new App(logger.Object, options);
+        var app = new App(NullLogger<App>.Instance, options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
         api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -89,8 +89,7 @@ public class AppTests
         {
             Credentials = null,
         };
-        var logger = new Mock<ILogger<App>>();
-        var app = new App(logger.Object, options);
+        var app = new App(NullLogger<App>.Instance, options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
         api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -108,15 +107,14 @@ public class AppTests
     public void Test_App_Client_TokenFactory_GetsToken_IfNotExists()
     {
         // arrange
-        var client = new Mock<Common.Http.HttpClient>() { CallBase = true };
+        var client = new Mock<Common.Http.HttpClient>(NullLogger<Common.Http.HttpClient>.Instance) { CallBase = true };
         var credentials = new Mock<IHttpCredentials>();
         var options = new AppOptions()
         {
             Client = client.Object,
             Credentials = credentials.Object,
         };
-        var logger = new Mock<ILogger<App>>();
-        var app = new App(logger.Object, options);
+        var app = new App(NullLogger<App>.Instance, options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
         api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -135,15 +133,14 @@ public class AppTests
     public void Test_App_Client_TokenFactory_GetsToken_IfExpired()
     {
         // arrange
-        var client = new Mock<Common.Http.HttpClient>() { CallBase = true };
+        var client = new Mock<Common.Http.HttpClient>(NullLogger<Common.Http.HttpClient>.Instance) { CallBase = true };
         var credentials = new Mock<IHttpCredentials>();
         var options = new AppOptions()
         {
             Client = client.Object,
             Credentials = credentials.Object,
         };
-        var logger = new Mock<ILogger<App>>();
-        var app = new App(logger.Object, options);
+        var app = new App(NullLogger<App>.Instance, options);
         app.Token = new JsonWebToken(_expiredJwt);
         credentials.Setup(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -161,15 +158,14 @@ public class AppTests
     public void Test_App_Client_TokenFactory_DoesNotGetToken_IfValid()
     {
         // arrange
-        var client = new Mock<Common.Http.HttpClient>() { CallBase = true };
+        var client = new Mock<Common.Http.HttpClient>(NullLogger<Common.Http.HttpClient>.Instance) { CallBase = true };
         var credentials = new Mock<IHttpCredentials>();
         var options = new AppOptions()
         {
             Client = client.Object,
             Credentials = credentials.Object,
         };
-        var logger = new Mock<ILogger<App>>();
-        var app = new App(logger.Object, options);
+        var app = new App(NullLogger<App>.Instance, options);
         app.Token = new JsonWebToken(_unexpiredJwt);
         credentials.Setup(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -191,14 +187,13 @@ public class AppTests
     public void Test_App_Client_TokenFactory_DoesNotGetToken_IfNoCredentials()
     {
         // arrange
-        var client = new Mock<Common.Http.HttpClient>() { CallBase = true };
+        var client = new Mock<Common.Http.HttpClient>(NullLogger<Common.Http.HttpClient>.Instance) { CallBase = true };
         var options = new AppOptions()
         {
             Client = client.Object,
             Credentials = null,
         };
-        var logger = new Mock<ILogger<App>>();
-        var app = new App(logger.Object, options);
+        var app = new App(NullLogger<App>.Instance, options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
         api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
@@ -217,7 +212,7 @@ public class AppTests
     public void Test_App_Client_CustomTokenFactory()
     {
         // arrange
-        var client = new Mock<Common.Http.HttpClient>() { CallBase = true };
+        var client = new Mock<Common.Http.HttpClient>(NullLogger<Common.Http.HttpClient>.Instance) { CallBase = true };
         var tokenFactoryInvoked = false;
         IHttpClientOptions.HttpTokenFactory tokenFactory = () =>
         {
@@ -230,8 +225,7 @@ public class AppTests
             Client = client.Object,
             Credentials = null,
         };
-        var logger = new Mock<ILogger<App>>();
-        var app = new App(logger.Object, options);
+        var app = new App(NullLogger<App>.Instance, options);
 
         // act
         client.Object.Options.TokenFactory();
@@ -245,8 +239,7 @@ public class AppTests
     {
         // arrange
         var client = new Mock<Common.Http.HttpClient>();
-        var logger = new Mock<ILogger<App>>();
-        var app = new App(logger.Object);
+        var app = new App(NullLogger<App>.Instance);
         var sender = new Mock<ISenderPlugin>();
         sender.Setup(s => s.CreateStream(It.IsAny<ConversationReference>(), It.IsAny<CancellationToken>())).Returns(new Mock<IStreamer>().Object);
         var token = new Mock<IToken>();
@@ -273,8 +266,7 @@ public class AppTests
     {
         // arrange
         var client = new Mock<Common.Http.HttpClient>();
-        var logger = new Mock<ILogger<App>>();
-        var app = new App(logger.Object);
+        var app = new App(NullLogger<App>.Instance);
         var sender = new Mock<ISenderPlugin>();
         sender.Setup(s => s.CreateStream(It.IsAny<ConversationReference>(), It.IsAny<CancellationToken>())).Returns(new Mock<IStreamer>().Object);
         var token = new Mock<IToken>();

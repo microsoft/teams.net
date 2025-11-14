@@ -14,6 +14,7 @@ using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using HttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
 
@@ -39,7 +40,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public AspNetCorePlugin(ILogger<AspNetCorePlugin>? logger = null)
     {
-        _logger = logger ?? LoggerFactory.Create(builder => { }).CreateLogger<AspNetCorePlugin>();
+        _logger = logger ?? NullLogger<AspNetCorePlugin>.Instance;
     }
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)

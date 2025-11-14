@@ -8,6 +8,7 @@ using Microsoft.Teams.AI.Messages;
 using Microsoft.Teams.AI.Models;
 using Microsoft.Teams.Common.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Teams.AI.Prompts;
 
@@ -131,7 +132,7 @@ public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
         Name = options.Name ?? "Chat";
         Description = options.Description ?? "an agent you can chat with";
         Model = model;
-        Logger = logger ?? LoggerFactory.Create(builder => {}).CreateLogger<ChatPrompt<TOptions>>();
+        Logger = logger ?? NullLogger<ChatPrompt<TOptions>>.Instance;
         Template = options.Instructions;
         Messages = options.Messages ?? [];
         Functions = new();

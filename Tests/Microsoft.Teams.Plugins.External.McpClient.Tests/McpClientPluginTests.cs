@@ -1,6 +1,6 @@
 ﻿using System.Text.Json;
 
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.AI;
 using Microsoft.Teams.AI.Prompts;
 
@@ -25,7 +25,6 @@ public class McpClientPluginTests
                 LastFetched = null
             }
         };
-        var logger = new Mock<ILogger<McpClientPlugin>>();
 
         // Act
         var plugin = new McpClientPlugin(new McpClientPluginOptions
@@ -33,7 +32,7 @@ public class McpClientPluginTests
             Name = "TestPlugin",
             Version = "1.2.3",
             Cache = cache,
-        }, logger.Object);
+        }, NullLogger<McpClientPlugin>.Instance);
 
         // Assert
         Assert.Equal("TestPlugin", plugin.Name);

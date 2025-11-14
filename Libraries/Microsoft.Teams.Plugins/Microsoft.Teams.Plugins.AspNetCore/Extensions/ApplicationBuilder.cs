@@ -23,7 +23,6 @@ public static partial class ApplicationBuilderExtensions
     public static App UseTeams(this IApplicationBuilder builder, bool routing = true)
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
-        var logger = builder.ApplicationServices.GetRequiredService<ILogger<App>>();
         var app = builder.ApplicationServices.GetService<App>();
         var plugins = builder.ApplicationServices.GetServices<IPlugin>();
         var types = assembly.GetTypes();
