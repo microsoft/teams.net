@@ -26,9 +26,9 @@ teams.Use(async context =>
     {
         await context.Next();
     }
-    catch
+    catch(Exception exception)
     {
-        logger.LogError("error occurred during activity processing");
+        logger.LogError(exception, "error occurred during activity processing");
     }
     logger.LogDebug($"request took {(DateTime.UtcNow - start).TotalMilliseconds}ms");
 });
