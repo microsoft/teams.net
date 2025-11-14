@@ -15,7 +15,7 @@ public class ChannelRenamedActivityTests
 
     public ChannelRenamedActivityTests()
     {
-        _app = new App(NullLogger<App>.Instance); 
+        _app = new App(NullLogger<App>.Instance);
         _app.AddPlugin(new TestPlugin());
         _app.AddController(_controller);
     }

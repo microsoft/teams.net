@@ -15,7 +15,7 @@ public class MembersAddedActivityTests
 
     public MembersAddedActivityTests()
     {
-        _app = new App(NullLogger<App>.Instance); 
+        _app = new App(NullLogger<App>.Instance);
         _app.AddPlugin(new TestPlugin());
         _app.AddController(_controller);
     }

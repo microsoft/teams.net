@@ -39,7 +39,7 @@ public static partial class Program
     public class Controller
     {
         private readonly IConfiguration _configuration;
-        private readonly ILogger<Controller> _logger;   
+        private readonly ILogger<Controller> _logger;
 
         public Controller(IConfiguration configuration, ILogger<Controller> logger)
         {
