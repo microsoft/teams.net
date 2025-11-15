@@ -7,6 +7,11 @@ a suite of packages used to build on the Teams Platform.
 
 [![📖 Getting Started](https://img.shields.io/badge/📖%20Getting%20Started-blue?style=for-the-badge)](https://microsoft.github.io/teams-ai)
 
+## Questions & Issues
+
+- **Questions or Feature Requests**: Please use [GitHub Discussions](https://github.com/microsoft/teams-sdk/discussions)
+- **Bug Reports**: Please [open an issue](https://github.com/microsoft/teams.net/issues/new/choose)
+
 ### Build
 
 ```bash
@@ -57,6 +62,3 @@ $: dotnet test
 - [`Microsoft.Teams.Plugins.External.Mcp`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.Mcp/README.md)
 - [`Microsoft.Teams.Plugins.External.McpClient`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.McpClient/README.md)
 
-## Feedback and Support
-
-For questions, feedback, or support regarding the Teams AI SDK, please contact us at [TeamsAISDKFeedback@microsoft.com](mailto:TeamsAISDKFeedback@microsoft.com).
