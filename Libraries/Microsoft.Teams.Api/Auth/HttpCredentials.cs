@@ -1,7 +1,9 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-namespace Microsoft.Teams.Common.Http;
+using Microsoft.Teams.Common.Http;
+
+namespace Microsoft.Teams.Api.Auth;
 
 public interface IHttpCredentials
 {

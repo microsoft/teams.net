@@ -5,10 +5,10 @@ using System.Reflection;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 

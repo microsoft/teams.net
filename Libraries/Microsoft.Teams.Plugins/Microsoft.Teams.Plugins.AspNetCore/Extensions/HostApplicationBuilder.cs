@@ -12,7 +12,6 @@ using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Extensions;
-using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
@@ -146,7 +145,7 @@ public static class HostApplicationBuilderExtensions
             AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(TeamsTokenAuthConstants.AuthenticationScheme, options =>
             {
-                TokenValidator.ConfigureValidation(options, teamsValidationSettings.Issuers, teamsValidationSettings.Audiences, teamsValidationSettings.OpenIdMetadataUrl);
+                TokenValidator.ConfigureValidation(options, teamsValidationSettings.GetValidIssuersForTenant(settings.TenantId), teamsValidationSettings.Audiences, teamsValidationSettings.OpenIdMetadataUrl);
             })
             .AddJwtBearer(EntraTokenAuthConstants.AuthenticationScheme, options =>
             {

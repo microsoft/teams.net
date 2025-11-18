@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Apps;
 
@@ -66,19 +66,19 @@ public partial class AppBuilder
         return this;
     }
 
-    public AppBuilder AddCredentials(Common.Http.IHttpCredentials credentials)
+    public AppBuilder AddCredentials(IHttpCredentials credentials)
     {
         _options.Credentials = credentials;
         return this;
     }
 
-    public AppBuilder AddCredentials(Func<Common.Http.IHttpCredentials> @delegate)
+    public AppBuilder AddCredentials(Func<IHttpCredentials> @delegate)
     {
         _options.Credentials = @delegate();
         return this;
     }
 
-    public AppBuilder AddCredentials(Func<Task<Common.Http.IHttpCredentials>> @delegate)
+    public AppBuilder AddCredentials(Func<Task<IHttpCredentials>> @delegate)
     {
         _options.Credentials = @delegate().GetAwaiter().GetResult();
         return this;

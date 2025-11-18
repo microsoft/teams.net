@@ -3,9 +3,14 @@
 
 using System.Text.Json.Serialization;
 
-using Microsoft.Teams.Common.Http;
-
 namespace Microsoft.Teams.Api.Auth;
+
+public interface ITokenResponse
+{
+    public string TokenType { get; }
+    public int? ExpiresIn { get; }
+    public string AccessToken { get; }
+}
 
 public class TokenResponse : ITokenResponse
 {
