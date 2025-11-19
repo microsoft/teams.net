@@ -6,7 +6,13 @@ using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Api.Auth;
 
-public delegate Task<ITokenResponse> TokenFactory(string? tenantId, params string[] scopes);
+public delegate Task<ITokenResponse> TokenFactory(string? tenantId, AgenticIdentity agenticIdentity, params string[] scopes);
+
+
+/// <summary>
+/// a factory for adding a token to http requests
+/// </summary>
+public delegate object? HttpTokenFactory();
 
 public class TokenCredentials : IHttpCredentials
 {
@@ -27,8 +33,8 @@ public class TokenCredentials : IHttpCredentials
         Token = token;
     }
 
-    public async Task<ITokenResponse> Resolve(IHttpClient _client, string[] scopes, CancellationToken cancellationToken = default)
+    public async Task<ITokenResponse> Resolve(IHttpClient _client, string[] scopes, AgenticIdentity agenticIdentity, CancellationToken cancellationToken = default)
     {
-        return await Token(TenantId, scopes);
+        return await Token(TenantId, agenticIdentity, scopes);
     }
 }

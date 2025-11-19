@@ -26,12 +26,11 @@ public class TeamsValidationSettings
 
     public IEnumerable<string> GetValidIssuersForTenant(string? tenantId)
     {
-        var validIssuers = new List<string>();
         if (!string.IsNullOrEmpty(tenantId))
         {
-            Issuers.Add($"https://login.microsoftonline.com/{tenantId}/v2.0");
+            Issuers.Add($"https://login.microsoftonline.com/{tenantId}/v2");
         }
-        return validIssuers;
+        return Issuers;
     }
 
     public string GetTenantSpecificOpenIdMetadataUrl(string? tenantId)

@@ -45,12 +45,12 @@ public interface IHttpClientOptions : IHttpRequestOptions
     /// apply options to an http request
     /// </summary>
     /// <param name="request">the request to apply the http options to</param>
-    public void Apply(HttpRequestMessage request);
+    public void Apply(HttpRequestMessage request, string agenticAppId = "", string agenticUserId = "");
 
     /// <summary>
     /// a factory for adding a token to http requests
     /// </summary>
-    public delegate object? HttpTokenFactory();
+    public delegate Task<object?> HttpTokenFactory(object? aid);
 }
 
 /// <summary>
@@ -105,11 +105,12 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
     /// apply options to an http request
     /// </summary>
     /// <param name="request">the request to apply the http options to</param>
-    public void Apply(HttpRequestMessage request)
+    public void Apply(HttpRequestMessage request, string agenticAppId = "", string agenticUserId = "")
     {
+
         if (TokenFactory is not null)
         {
-            var token = TokenFactory();
+            var token = TokenFactory(null);
 
             if (token is not null)
             {

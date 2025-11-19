@@ -1,6 +1,6 @@
 ﻿namespace Microsoft.Teams.Api.Auth;
 
-internal class AgenticIdentity
+public class AgenticIdentity
 {
     public string? AgentticAppId { get; set; }
     public string? AgenticUserId { get; set; }

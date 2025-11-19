@@ -67,33 +67,40 @@ public partial class App
         TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
         Client.Options.AddUserAgent(UserAgent);
-        Client.Options.TokenFactory ??= () =>
+        Client.Options.TokenFactory = async (object? aid) =>
         {
-            if (Credentials is not null)
-            {
-                if (Token is null)
-                {
-                    var res = Api!.Bots.Token.GetAsync(Credentials, TokenClient)
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
+            AgenticIdentity? agentiIdentity = aid as AgenticIdentity;
+            var res = await Api!.Bots.Token.GetAsync(Credentials!, agentiIdentity!, TokenClient);
+            return new JsonWebToken(res.AccessToken);
 
-                    Token = new JsonWebToken(res.AccessToken);
-                }
-
-                if (Token.IsExpired)
-                {
-                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(BotTokenClient.BotScope)])
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
-
-                    Token = new JsonWebToken(res.AccessToken);
-                }
-            }
-
-            return Token;
         };
+        //Client.Options.TokenFactory ??= () =>
+        //{
+        //    if (Credentials is not null)
+        //    {
+        //        if (Token is null)
+        //        {
+        //            var res = Api!.Bots.Token.GetAsync(Credentials, TokenClient)
+        //            .ConfigureAwait(false)
+        //            .GetAwaiter()
+        //            .GetResult();
+
+        //            Token = new JsonWebToken(res.AccessToken);
+        //        }
+
+        //        if (Token.IsExpired)
+        //        {
+        //            var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(BotTokenClient.BotScope)])
+        //            .ConfigureAwait(false)
+        //            .GetAwaiter()
+        //            .GetResult();
+
+        //            Token = new JsonWebToken(res.AccessToken);
+        //        }
+        //    }
+
+        //    return Token;
+        //};
 
         Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Container = new Container();
@@ -132,18 +139,18 @@ public partial class App
                 Inject(plugin);
             }
 
-            if (Credentials is not null)
-            {
-                try
-                {
-                    var res = await Api.Bots.Token.GetAsync(Credentials, TokenClient);
-                    Token = new JsonWebToken(res.AccessToken);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error("Failed to get bot token on app startup.", ex);
-                }
-            }
+            //if (Credentials is not null)
+            //{
+            //    try
+            //    {
+            //        var res = await Api.Bots.Token.GetAsync(Credentials, TokenClient);
+            //        Token = new JsonWebToken(res.AccessToken);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Logger.Error("Failed to get bot token on app startup.", ex);
+            //    }
+            //}
 
             Logger.Debug(Id);
             Logger.Debug(Name);
@@ -336,18 +343,18 @@ public partial class App
 
         var api = new ApiClient(Api);
 
-        try
-        {
-            var tokenResponse = await api.Users.Token.GetAsync(new()
-            {
-                UserId = @event.Activity.From.Id,
-                ChannelId = @event.Activity.ChannelId,
-                ConnectionName = OAuth.DefaultConnectionName
-            });
+        //try
+        //{
+        //    var tokenResponse = await api.Users.Token.GetAsync(new()
+        //    {
+        //        UserId = @event.Activity.From.Id,
+        //        ChannelId = @event.Activity.ChannelId,
+        //        ConnectionName = OAuth.DefaultConnectionName
+        //    });
 
-            userToken = new JsonWebToken(tokenResponse);
-        }
-        catch { }
+        //    userToken = new JsonWebToken(tokenResponse);
+        //}
+        //catch { }
 
         var path = @event.Activity.GetPath();
         Logger.Debug(path);

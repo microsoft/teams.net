@@ -3,7 +3,6 @@
 
 using System.Reflection;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Identity.Abstractions;
@@ -141,17 +140,17 @@ public static class HostApplicationBuilderExtensions
             teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
         }
 
-        builder.Services.
-            AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(TeamsTokenAuthConstants.AuthenticationScheme, options =>
-            {
-                TokenValidator.ConfigureValidation(options, teamsValidationSettings.GetValidIssuersForTenant(settings.TenantId), teamsValidationSettings.Audiences, teamsValidationSettings.OpenIdMetadataUrl);
-            })
-            .AddJwtBearer(EntraTokenAuthConstants.AuthenticationScheme, options =>
-            {
-                TokenValidator.ConfigureValidation(options, teamsValidationSettings.GetValidIssuersForTenant(settings.TenantId), teamsValidationSettings.Audiences, teamsValidationSettings.GetTenantSpecificOpenIdMetadataUrl(settings.TenantId));
-            });
-
+        //builder.Services.
+        //    AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+        //    .AddJwtBearer(TeamsTokenAuthConstants.AuthenticationScheme, options =>
+        //    {
+        //        TokenValidator.ConfigureValidation(options, teamsValidationSettings.GetValidIssuersForTenant(settings.TenantId), teamsValidationSettings.Audiences, teamsValidationSettings.OpenIdMetadataUrl);
+        //    })
+        //    .AddJwtBearer(EntraTokenAuthConstants.AuthenticationScheme, options =>
+        //    {
+        //        TokenValidator.ConfigureValidation(options, teamsValidationSettings.GetValidIssuersForTenant(settings.TenantId), teamsValidationSettings.Audiences, teamsValidationSettings.GetTenantSpecificOpenIdMetadataUrl(settings.TenantId));
+        //    });
+        builder.Services.AddBotAuthentication();
 
         builder.Services.AddAuthorization(options =>
         {
@@ -164,7 +163,7 @@ public static class HostApplicationBuilderExtensions
                 }
                 else
                 {
-                    policy.AddAuthenticationSchemes(TeamsTokenAuthConstants.AuthenticationScheme);
+                    policy.AddAuthenticationSchemes(["Bot", "Agent"]);
                     policy.RequireAuthenticatedUser();
                 }
             });

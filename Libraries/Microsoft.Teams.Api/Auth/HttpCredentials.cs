@@ -7,5 +7,5 @@ namespace Microsoft.Teams.Api.Auth;
 
 public interface IHttpCredentials
 {
-    public Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, CancellationToken cancellationToken = default);
+    public Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, AgenticIdentity agenticIdentity, CancellationToken cancellationToken = default);
 }

@@ -37,13 +37,13 @@ public class BotTokenClient : Client
 
     }
 
-    public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null)
+    public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, AgenticIdentity agenticIdentity,  IHttpClient? http = null)
     {
-        return await credentials.Resolve(http ?? _http, [BotScope], _cancellationToken);
+        return await credentials.Resolve(http ?? _http, [BotScope], agenticIdentity, _cancellationToken);
     }
 
-    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, IHttpClient? http = null)
+    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, AgenticIdentity agenticIdentity, IHttpClient? http = null)
     {
-        return await credentials.Resolve(http ?? _http, [GraphScope], _cancellationToken);
+        return await credentials.Resolve(http ?? _http, [GraphScope], agenticIdentity, _cancellationToken);
     }
 }

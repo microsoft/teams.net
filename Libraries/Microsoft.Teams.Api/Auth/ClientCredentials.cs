@@ -8,7 +8,7 @@ namespace Microsoft.Teams.Api.Auth;
 
 public class ClientCredentials(IAuthorizationHeaderProvider authorizationHeaderProvider) : IHttpCredentials
 {
-    public async Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, CancellationToken cancellationToken = default)
+    public async Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, AgenticIdentity agenticIdentity, CancellationToken cancellationToken = default)
     {
         AuthorizationHeaderProviderOptions options = new();
         options.AcquireTokenOptions = new AcquireTokenOptions()

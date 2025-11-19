@@ -8,7 +8,7 @@ var teamsApp = app.UseTeams();
 
 teamsApp.OnMessage(async context =>
 {
-    await context.Typing();
+    // await context.Typing();
     await context.Send($"you said '{context.Activity.Text}'");
 });
 
