@@ -4,6 +4,7 @@
 using System.Text.Json;
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Common.Http;
 
 using IHttpClientFactory = Microsoft.Teams.Common.Http.IHttpClientFactory;
@@ -43,8 +44,10 @@ public class ActivityClient : Client
         }
 
         var req = HttpRequest.Post(url, body: activity);
-        
-        var res = await _http.SendAsync(req, _cancellationToken);
+
+        AgenticIdentity aid = AgenticIdentity.FromProperties(activity.From.Properties!);
+
+        var res = await _http.SendAsync(req, aid, _cancellationToken);
 
         if (res.Body == string.Empty) return null;
 
@@ -62,7 +65,8 @@ public class ActivityClient : Client
         
         var req = HttpRequest.Put(url, body: activity);
 
-        var res = await _http.SendAsync(req, _cancellationToken);
+        AgenticIdentity aid = AgenticIdentity.FromProperties(activity.From.Properties!);
+        var res = await _http.SendAsync(req, aid!, _cancellationToken);
 
         if (res.Body == string.Empty) return null;
 
@@ -81,8 +85,8 @@ public class ActivityClient : Client
         }
         
         var req = HttpRequest.Post(url, body: activity);
-
-        var res = await _http.SendAsync(req, _cancellationToken);
+        AgenticIdentity aid = AgenticIdentity.FromProperties(activity.From.Properties!);
+        var res = await _http.SendAsync(req, aid, _cancellationToken);
 
         if (res.Body == string.Empty) return null;
 
@@ -100,6 +104,6 @@ public class ActivityClient : Client
 
         var req = HttpRequest.Delete(url);
 
-        await _http.SendAsync(req, _cancellationToken);
+        await _http.SendAsync(req, null,  _cancellationToken);
     }
 }

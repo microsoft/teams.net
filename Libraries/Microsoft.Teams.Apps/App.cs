@@ -67,10 +67,10 @@ public partial class App
         TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
         Client.Options.AddUserAgent(UserAgent);
-        Client.Options.TokenFactory = async (object? aid) =>
+        Client.Options.TokenFactory = async (AgenticIdentity? aid) =>
         {
-            AgenticIdentity? agentiIdentity = aid as AgenticIdentity;
-            var res = await Api!.Bots.Token.GetAsync(Credentials!, agentiIdentity!, TokenClient);
+            
+            var res = await Api!.Bots.Token.GetAsync(Credentials!, aid!, TokenClient);
             return new JsonWebToken(res.AccessToken);
 
         };

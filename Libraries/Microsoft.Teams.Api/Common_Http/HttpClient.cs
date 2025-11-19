@@ -6,6 +6,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.Common.Http;
@@ -14,8 +15,8 @@ public interface IHttpClient : IDisposable
 {
     public IHttpClientOptions Options { get; }
 
-    public Task<IHttpResponse<string>> SendAsync(IHttpRequest request, CancellationToken cancellationToken = default);
-    public Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(IHttpRequest request, CancellationToken cancellationToken = default);
+    public Task<IHttpResponse<string>> SendAsync(IHttpRequest request, AgenticIdentity? aid, CancellationToken cancellationToken = default);
+    public Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(IHttpRequest request, AgenticIdentity? aid, CancellationToken cancellationToken = default);
 }
 
 public class HttpClient : IHttpClient
@@ -54,16 +55,16 @@ public class HttpClient : IHttpClient
         Options.Apply(_client);
     }
 
-    public async Task<IHttpResponse<string>> SendAsync(IHttpRequest request, CancellationToken cancellationToken = default)
+    public async Task<IHttpResponse<string>> SendAsync(IHttpRequest request, AgenticIdentity? aid, CancellationToken cancellationToken = default)
     {
-        var httpRequest = CreateRequest(request);
+        var httpRequest = CreateRequest(request, aid);
         var httpResponse = await _client.SendAsync(httpRequest);
         return await CreateResponse(httpResponse, cancellationToken);
     }
 
-    public async Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(IHttpRequest request, CancellationToken cancellationToken = default)
+    public async Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(IHttpRequest request, AgenticIdentity? aid, CancellationToken cancellationToken = default)
     {
-        var httpRequest = CreateRequest(request);
+        var httpRequest = CreateRequest(request, aid);
         var httpResponse = await _client.SendAsync(httpRequest, cancellationToken);
         return await CreateResponse<TResponseBody>(httpResponse, cancellationToken);
     }
@@ -73,14 +74,14 @@ public class HttpClient : IHttpClient
         _client.Dispose();
     }
 
-    protected HttpRequestMessage CreateRequest(IHttpRequest request)
+    protected HttpRequestMessage CreateRequest(IHttpRequest request, AgenticIdentity? aid)
     {
         var httpRequest = new HttpRequestMessage(
             request.Method,
             request.Url
         );
 
-        Options.Apply(httpRequest);
+        Options.Apply(httpRequest, aid!);
 
         if (request.Body is not null)
         {

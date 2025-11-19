@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.Common.Http;
@@ -45,12 +46,12 @@ public interface IHttpClientOptions : IHttpRequestOptions
     /// apply options to an http request
     /// </summary>
     /// <param name="request">the request to apply the http options to</param>
-    public void Apply(HttpRequestMessage request, string agenticAppId = "", string agenticUserId = "");
+    public void Apply(HttpRequestMessage request, AgenticIdentity aid);
 
     /// <summary>
     /// a factory for adding a token to http requests
     /// </summary>
-    public delegate Task<object?> HttpTokenFactory(object? aid);
+    public delegate Task<object?> HttpTokenFactory(AgenticIdentity? aid);
 }
 
 /// <summary>
@@ -105,12 +106,12 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
     /// apply options to an http request
     /// </summary>
     /// <param name="request">the request to apply the http options to</param>
-    public void Apply(HttpRequestMessage request, string agenticAppId = "", string agenticUserId = "")
+    public void Apply(HttpRequestMessage request, AgenticIdentity? aid)
     {
 
         if (TokenFactory is not null)
         {
-            var token = TokenFactory(null);
+            var token = TokenFactory(aid);
 
             if (token is not null)
             {
