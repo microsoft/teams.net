@@ -29,7 +29,7 @@ public class TeamsValidationSettings
         var validIssuers = new List<string>();
         if (!string.IsNullOrEmpty(tenantId))
         {
-            validIssuers.Add($"https://login.microsoftonline.com/{tenantId}/");
+            Issuers.Add($"https://login.microsoftonline.com/{tenantId}/v2.0");
         }
         return validIssuers;
     }
