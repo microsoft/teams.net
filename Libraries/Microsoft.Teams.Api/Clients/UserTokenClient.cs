@@ -21,7 +21,7 @@ public class UserTokenClient : Client
 
     }
 
-    public UserTokenClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public UserTokenClient(IHttpClient client, string scope, CancellationToken cancellationToken = default) : base(client, scope, cancellationToken)
     {
 
     }

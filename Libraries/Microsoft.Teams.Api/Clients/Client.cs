@@ -10,16 +10,17 @@ public abstract class Client
 {
     protected IHttpClient _http;
     protected CancellationToken _cancellationToken;
-
+    public string? Scope { get; set; }
     public Client(CancellationToken cancellationToken = default)
     {
         _http = new Common.Http.HttpClient();
         _cancellationToken = cancellationToken;
     }
 
-    public Client(IHttpClient client, CancellationToken cancellationToken = default)
+    public Client(IHttpClient client, string scope, CancellationToken cancellationToken = default)
     {
         _http = client;
+        Scope = scope;
         _cancellationToken = cancellationToken;
     }
 

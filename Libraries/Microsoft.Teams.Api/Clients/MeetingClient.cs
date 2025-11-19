@@ -18,7 +18,7 @@ public class MeetingClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public MeetingClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public MeetingClient(string serviceUrl, IHttpClient client, string scope, CancellationToken cancellationToken = default) : base(client, scope, cancellationToken)
     {
         ServiceUrl = serviceUrl;
     }
@@ -36,14 +36,14 @@ public class MeetingClient : Client
     public async Task<Meeting> GetByIdAsync(string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{id}");
-        var response = await _http.SendAsync<Meeting>(request, _cancellationToken);
+        var response = await _http.SendAsync<Meeting>(request,null, _cancellationToken);
         return response.Body;
     }
 
     public async Task<MeetingParticipant> GetParticipantAsync(string meetingId, string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{meetingId}/participants/{id}");
-        var response = await _http.SendAsync<MeetingParticipant>(request, _cancellationToken);
+        var response = await _http.SendAsync<MeetingParticipant>(request, null, _cancellationToken);
         return response.Body;
     }
 }

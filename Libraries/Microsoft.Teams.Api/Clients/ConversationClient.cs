@@ -15,38 +15,38 @@ public class ConversationClient : Client
     public readonly ActivityClient Activities;
     public readonly MemberClient Members;
 
-    public ConversationClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
+    public ConversationClient(string serviceUrl, string scope, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
-        Members = new MemberClient(serviceUrl, _http, cancellationToken);
+        Activities = new ActivityClient(serviceUrl, _http, scope, cancellationToken);
+        Members = new MemberClient(serviceUrl, _http, scope, cancellationToken);
     }
 
-    public ConversationClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public ConversationClient(string serviceUrl, IHttpClient client, string scope, CancellationToken cancellationToken = default) : base(client, scope, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
-        Members = new MemberClient(serviceUrl, _http, cancellationToken);
+        Activities = new ActivityClient(serviceUrl, _http, scope, cancellationToken);
+        Members = new MemberClient(serviceUrl, _http, scope, cancellationToken);
     }
 
-    public ConversationClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public ConversationClient(string serviceUrl, IHttpClientOptions options, string scope, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
-        Members = new MemberClient(serviceUrl, _http, cancellationToken);
+        Activities = new ActivityClient(serviceUrl, _http, scope, cancellationToken);
+        Members = new MemberClient(serviceUrl, _http, scope, cancellationToken);
     }
 
-    public ConversationClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public ConversationClient(string serviceUrl, IHttpClientFactory factory, string scope, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
-        Members = new MemberClient(serviceUrl, _http, cancellationToken);
+        Activities = new ActivityClient(serviceUrl, _http, scope, cancellationToken);
+        Members = new MemberClient(serviceUrl, _http, scope, cancellationToken);
     }
 
     public async Task<ConversationResource> CreateAsync(CreateRequest request)
     {
         var req = HttpRequest.Post($"{ServiceUrl}v3/conversations", body: request);
-        var res = await _http.SendAsync<ConversationResource>(req, _cancellationToken);
+        var res = await _http.SendAsync<ConversationResource>(req, null, _cancellationToken);
         return res.Body;
     }
 

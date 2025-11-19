@@ -3,6 +3,7 @@
 
 using System.Reflection;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -42,6 +43,9 @@ public partial class App
     internal IHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
+
+    internal string? Scope { get; set; }
+
     internal string UserAgent
     {
         get
@@ -52,10 +56,10 @@ public partial class App
         }
     }
 
-    internal App() : this(null!, null)
+    internal App() : this(null!, null!, null)
     { }
 
-    public App(IHttpCredentials credentials, AppOptions? options = null)
+    public App(IHttpCredentials credentials, IConfiguration configuration, AppOptions? options = null)
     {
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
@@ -63,13 +67,12 @@ public partial class App
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
-
+        Scope = configuration["Teams:Scope"] ?? "https://api.botframework.com/.default";
         TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
         Client.Options.AddUserAgent(UserAgent);
         Client.Options.TokenFactory = async (AgenticIdentity? aid) =>
         {
-            
             var res = await Api!.Bots.Token.GetAsync(Credentials!, aid!, TokenClient);
             return new JsonWebToken(res.AccessToken);
 
@@ -102,12 +105,13 @@ public partial class App
         //    return Token;
         //};
 
-        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
+        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client, Scope);
         Container = new Container();
         Container.Register(Logger);
         Container.Register(Storage);
         Container.Register(Client);
         Container.Register(Api);
+        Container.Register(configuration);
         Container.Register<IHttpCredentials>(new FactoryProvider(() => Credentials));
         Container.Register("AppId", new FactoryProvider(() => Id));
         Container.Register("AppName", new FactoryProvider(() => Name));

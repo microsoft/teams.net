@@ -4,6 +4,7 @@
 using System.Reflection;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
@@ -23,7 +24,10 @@ public static partial class ApplicationBuilderExtensions
     public static App UseTeams(this IApplicationBuilder builder, bool routing = true)
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
-        var app = builder.ApplicationServices.GetService<App>() ?? new App(builder.ApplicationServices.GetService<IHttpCredentials>()!,builder.ApplicationServices.GetService<AppOptions>());
+        var app = builder.ApplicationServices.GetService<App>() ?? 
+                new App(builder.ApplicationServices.GetService<IHttpCredentials>()!, 
+                        builder.ApplicationServices.GetService<IConfiguration>()!, 
+                        builder.ApplicationServices.GetService<AppOptions>());
         var plugins = builder.ApplicationServices.GetServices<IPlugin>();
         var types = assembly.GetTypes();
 

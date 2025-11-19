@@ -10,23 +10,23 @@ public class UserClient : Client
 {
     public UserTokenClient Token { get; }
 
-    public UserClient(CancellationToken cancellationToken = default) : base(cancellationToken)
+    public UserClient(string scope,CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        Token = new UserTokenClient(_http, cancellationToken);
+        Token = new UserTokenClient(_http, scope, cancellationToken);
     }
 
-    public UserClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public UserClient(IHttpClient client, string scope, CancellationToken cancellationToken = default) : base(client,scope, cancellationToken)
     {
-        Token = new UserTokenClient(_http, cancellationToken);
+        Token = new UserTokenClient(_http, scope, cancellationToken);
     }
 
-    public UserClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public UserClient(IHttpClientOptions options, string scope, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        Token = new UserTokenClient(_http, cancellationToken);
+        Token = new UserTokenClient(_http, scope, cancellationToken);
     }
 
-    public UserClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public UserClient(IHttpClientFactory factory, string scope, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        Token = new UserTokenClient(_http, cancellationToken);
+        Token = new UserTokenClient(_http, scope, cancellationToken);
     }
 }

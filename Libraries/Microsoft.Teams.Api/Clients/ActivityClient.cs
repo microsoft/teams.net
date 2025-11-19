@@ -20,7 +20,7 @@ public class ActivityClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public ActivityClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public ActivityClient(string serviceUrl, IHttpClient client, string scope, CancellationToken cancellationToken = default) : base(client, scope, cancellationToken)
     {
         ServiceUrl = serviceUrl;
     }

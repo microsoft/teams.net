@@ -81,7 +81,7 @@ public class HttpClient : IHttpClient
             request.Url
         );
 
-        Options.Apply(httpRequest, aid!);
+        Options.Apply(httpRequest, aid!).Wait();
 
         if (request.Body is not null)
         {

@@ -15,7 +15,7 @@ public class TeamClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public TeamClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public TeamClient(string serviceUrl, IHttpClient client, string scope, CancellationToken cancellationToken = default) : base(client, scope, cancellationToken)
     {
         ServiceUrl = serviceUrl;
     }
@@ -33,14 +33,14 @@ public class TeamClient : Client
     public async Task<Team> GetByIdAsync(string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v3/teams/{id}");
-        var response = await _http.SendAsync<Team>(request, _cancellationToken);
+        var response = await _http.SendAsync<Team>(request, null, _cancellationToken);
         return response.Body;
     }
 
     public async Task<List<Channel>> GetConversationsAsync(string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v3/teams/{id}/conversations");
-        var response = await _http.SendAsync<List<Channel>>(request, _cancellationToken);
+        var response = await _http.SendAsync<List<Channel>>(request, null, _cancellationToken);
         return response.Body;
     }
 }

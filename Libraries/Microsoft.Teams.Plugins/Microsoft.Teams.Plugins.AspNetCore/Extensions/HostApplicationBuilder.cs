@@ -27,6 +27,7 @@ public static class HostApplicationBuilderExtensions
         builder.Services.AddHttpClient();
         builder.Services.AddTokenAcquisition();
         builder.Services.AddInMemoryTokenCaches();
+        builder.Services.AddAgentIdentities();
 
         builder.Services.AddScoped<IHttpCredentials, ClientCredentials>();
         builder.Services.AddSingleton<AppOptions>();

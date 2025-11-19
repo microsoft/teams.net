@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
@@ -30,6 +31,9 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     [Dependency]
     public IHttpClient Client { get; set; }
+
+    [Dependency]
+    public IConfiguration Configuration { get; set; }
 
     public event EventFunction Events;
 
@@ -95,7 +99,8 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
-        var client = new ApiClient(reference.ServiceUrl, Client, cancellationToken);
+        var scope = Configuration["Teams:Scope"] ?? "https://api.botframework.com/.default";
+        var client = new ApiClient(reference.ServiceUrl, Client, scope, cancellationToken);
 
         activity.Conversation = reference.Conversation;
         activity.From = reference.Bot;
