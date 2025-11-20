@@ -1,15 +1,18 @@
+using System.ClientModel;
 using System.Text.RegularExpressions;
-using Microsoft.Teams.Apps.Extensions;
-using Microsoft.Teams.Apps.Activities;
-using Microsoft.Teams.Apps.Activities.Invokes;
-using Microsoft.Teams.Plugins.AspNetCore.Extensions;
-using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
+
+using Azure.AI.OpenAI;
+
 using Microsoft.Teams.AI.Models.OpenAI;
 using Microsoft.Teams.AI.Prompts;
 using Microsoft.Teams.AI.Templates;
-using Azure.AI.OpenAI;
-using System.ClientModel;
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Apps.Activities;
+using Microsoft.Teams.Apps.Activities.Invokes;
+using Microsoft.Teams.Apps.Extensions;
+using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
+using Microsoft.Teams.Plugins.AspNetCore.Extensions;
+
 using Samples.AI.Handlers;
 
 var builder = WebApplication.CreateBuilder(args);

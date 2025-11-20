@@ -17,15 +17,17 @@ public class HttpException : Exception
 
     public override string ToString()
     {
-        if (Body is string textBody)
+        return JsonSerializer.Serialize(new
         {
-            return textBody;
-        }
-
-        return JsonSerializer.Serialize(Body, new JsonSerializerOptions()
+            headers = Headers,
+            statusCode = StatusCode,
+            body = Body
+        }, new JsonSerializerOptions()
         {
             WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            IndentSize = 4,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         });
     }
 }
