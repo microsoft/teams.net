@@ -27,7 +27,7 @@ stages:
       - script: dotnet restore 
         displayName: 'Restore'
 
-      - script: dotnet build  --no-restore --configuration
+      - script: dotnet build  --no-restore
         displayName: 'Build'
       
       - task: DotNetCoreCLI@2
