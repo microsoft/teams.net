@@ -15,7 +15,7 @@ public class ApiClient : Client
     public virtual TeamClient Teams { get; }
     public virtual MeetingClient Meetings { get; }
 
-    
+
 
     //public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     //{

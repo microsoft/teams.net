@@ -46,7 +46,7 @@ public class BotSignInClient : Client
             $"https://token.botframework.com/api/botsignin/GetSignInResource?{query}"
         );
 
-        var res = await _http.SendAsync<SignIn.UrlResponse>(req, null, _cancellationToken);
+        var res = await _http.SendAsync<SignIn.UrlResponse>(req, base.AgenticIdentity, _cancellationToken);
         return res.Body;
     }
 

@@ -14,19 +14,16 @@ public class ClientCredentials(IAuthorizationHeaderProvider authorizationHeaderP
         AuthorizationHeaderProviderOptions options = new();
 
         string tokenResult;
-        if (scopes.Contains("https://api.botframework.com/.default"))
+        
+        if (agenticIdentity is not null)
         {
-            tokenResult = await authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(scopes[0], options, cancellationToken);
+            options.WithAgentUserIdentity(agenticIdentity.AgenticAppId!, Guid.Parse(agenticIdentity.AgenticUserId!));
+            tokenResult = await authorizationHeaderProvider.CreateAuthorizationHeaderAsync(scopes, options, null, cancellationToken);
         }
         else
         {
-            if (agenticIdentity is not null)
-            {
-                options.WithAgentUserIdentity(agenticIdentity.AgentticAppId!, Guid.Parse(agenticIdentity.AgenticUserId!));
-            }
-            tokenResult = await authorizationHeaderProvider.CreateAuthorizationHeaderAsync(scopes, options, null, cancellationToken);
+            tokenResult = await authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(scopes[0], options, cancellationToken);
         }
-
 
         return new TokenResponse
         {

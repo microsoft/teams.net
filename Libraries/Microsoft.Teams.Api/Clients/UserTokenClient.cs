@@ -40,7 +40,7 @@ public class UserTokenClient : Client
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetToken?{query}");
-        var res = await _http.SendAsync<Token.Response>(req, null, _cancellationToken);
+        var res = await _http.SendAsync<Token.Response>(req, base.AgenticIdentity, _cancellationToken);
         return res.Body;
     }
 
@@ -48,7 +48,7 @@ public class UserTokenClient : Client
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/GetAadTokens?{query}", body: request);
-        var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, null, _cancellationToken);
+        var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, base.AgenticIdentity, _cancellationToken);
         return res.Body;
     }
 
@@ -56,7 +56,7 @@ public class UserTokenClient : Client
     {
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetTokenStatus?{query}");
-        var res = await _http.SendAsync<IList<Token.Status>>(req, null, _cancellationToken);
+        var res = await _http.SendAsync<IList<Token.Status>>(req, base.AgenticIdentity, _cancellationToken);
         return res.Body;
     }
 
@@ -83,7 +83,7 @@ public class UserTokenClient : Client
         var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/exchange?{query}", body);
         req.Headers.Add("Content-Type", new List<string>() { "application/json" });
 
-        var res = await _http.SendAsync<Token.Response>(req, null, _cancellationToken);
+        var res = await _http.SendAsync<Token.Response>(req, base.AgenticIdentity, _cancellationToken);
         return res.Body;
     }
 

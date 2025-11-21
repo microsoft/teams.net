@@ -45,7 +45,7 @@ public class ActivityClient : Client
 
         var req = HttpRequest.Post(url, body: activity);
 
-        AgenticIdentity aid = AgenticIdentity.FromProperties(activity.From.Properties!);
+        AgenticIdentity? aid = AgenticIdentity.FromProperties(activity.From.Properties!);
 
         var res = await _http.SendAsync(req, aid, _cancellationToken);
 
@@ -65,7 +65,7 @@ public class ActivityClient : Client
         
         var req = HttpRequest.Put(url, body: activity);
 
-        AgenticIdentity aid = AgenticIdentity.FromProperties(activity.From.Properties!);
+        AgenticIdentity? aid = AgenticIdentity.FromProperties(activity.From.Properties!);
         var res = await _http.SendAsync(req, aid!, _cancellationToken);
 
         if (res.Body == string.Empty) return null;
@@ -85,7 +85,7 @@ public class ActivityClient : Client
         }
         
         var req = HttpRequest.Post(url, body: activity);
-        AgenticIdentity aid = AgenticIdentity.FromProperties(activity.From.Properties!);
+        AgenticIdentity? aid = AgenticIdentity.FromProperties(activity.From.Properties!);
         var res = await _http.SendAsync(req, aid, _cancellationToken);
 
         if (res.Body == string.Empty) return null;
