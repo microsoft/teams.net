@@ -203,6 +203,7 @@ public partial class App
                 Name = Name,
                 Role = Role.Bot
             },
+            User = isTargeted ? activity.Recipient : null,
             Conversation = new()
             {
                 Id = conversationId,
