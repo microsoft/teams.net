@@ -7,10 +7,6 @@ pr:
 pool:
   vmImage: 'ubuntu-22.04'
 
-variables:
-  buildConfiguration: 'Release'
-  workingDirectory: 'botbuilder-dotnet'
-
 stages:
 - stage: Build_Test_Pack
   jobs:
@@ -27,22 +23,14 @@ stages:
       - script: dotnet restore 
         displayName: 'Restore'
 
-      - script: dotnet build --configuration $(buildConfiguration) --no-restore
+      - script: dotnet build --no-restore --configuration Release
         displayName: 'Build'
-      
-      - task: DotNetCoreCLI@2
-        displayName: 'Pack NuGet Packages'
-        inputs:
-          command: pack
-          packagesToPack: 'Microsoft.Teams.sln'
-          packDirectory: '$(Build.ArtifactStagingDirectory)'
-          includesymbols: false
-          nobuild: true
-          configuration: '$(buildConfiguration)'
-          versioningScheme: 'byEnvVar'
-          versionEnvVar: 'Version'
-          buildProperties: 'SymbolPackageFormat=snupkg'
 
+      - script: dotnet test --no-build --configuration Release
+        displayName: 'Test'
+
+      - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration Release
+        displayName: 'Pack'
 
       - task: NuGetCommand@2
         displayName: 'Push NuGet Packages'
