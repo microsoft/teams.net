@@ -90,6 +90,7 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
     /// <param name="client">the client to apply the http options to</param>
     public async Task Apply(System.Net.Http.HttpClient client)
     {
+        await Task.CompletedTask;
         if (Timeout is not null)
             client.Timeout = (TimeSpan)Timeout;
 
