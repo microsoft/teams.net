@@ -23,13 +23,13 @@ stages:
       - script: dotnet restore 
         displayName: 'Restore'
 
-      - script: dotnet build --no-restore
+      - script: dotnet build --no-restore --configuration Release
         displayName: 'Build'
 
-      - script: dotnet test --no-build 
+      - script: dotnet test --no-build --configuration Release
         displayName: 'Test'
 
-      - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg
+      - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration Release
         displayName: 'Pack'
 
       - task: NuGetCommand@2
