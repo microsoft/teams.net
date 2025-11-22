@@ -37,20 +37,20 @@ public static class ServiceCollectionExtensions
         return collection;
     }
 
-    public static IServiceCollection AddTeams(this IServiceCollection collection, AppOptions options)
-    {
-        var app = new App(options);
-        var log = new TeamsLogger(app.Logger);
+    //public static IServiceCollection AddTeams(this IServiceCollection collection, AppOptions options)
+    //{
+    //    var app = new App(options);
+    //    var log = new TeamsLogger(app.Logger);
 
-        collection.AddSingleton(app.Logger);
-        collection.AddSingleton(app.Storage);
-        collection.AddSingleton<ILoggerFactory>(_ => new LoggerFactory([new TeamsLoggerProvider(log)]));
-        collection.AddSingleton<ILogger>(log);
-        collection.AddSingleton(app);
-        collection.AddHostedService<TeamsService>();
-        collection.AddSingleton<IContext.Accessor>();
-        return collection;
-    }
+    //    collection.AddSingleton(app.Logger);
+    //    collection.AddSingleton(app.Storage);
+    //    collection.AddSingleton<ILoggerFactory>(_ => new LoggerFactory([new TeamsLoggerProvider(log)]));
+    //    collection.AddSingleton<ILogger>(log);
+    //    collection.AddSingleton(app);
+    //    collection.AddHostedService<TeamsService>();
+    //    collection.AddSingleton<IContext.Accessor>();
+    //    return collection;
+    //}
 
     public static IServiceCollection AddTeams(this IServiceCollection collection, AppBuilder builder)
     {
