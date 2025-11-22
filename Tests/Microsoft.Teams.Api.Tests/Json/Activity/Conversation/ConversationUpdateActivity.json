@@ -23,10 +23,8 @@
     "aadObjectId": "aadObjectId",
     "role": "bot",
     "name": "Bot user",
-    "properties": {
-      "key1": "value1",
-      "key2": "value2"
-    }
+    "key1": "value1",
+    "key2": "value2"
   },
   "recipient": {
     "id": "userId1",

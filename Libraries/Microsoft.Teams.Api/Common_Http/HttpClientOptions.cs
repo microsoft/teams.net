@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.Common.Http;
@@ -39,18 +40,18 @@ public interface IHttpClientOptions : IHttpRequestOptions
     /// apply options to an http client
     /// </summary>
     /// <param name="client">the client to apply the http options to</param>
-    public void Apply(System.Net.Http.HttpClient client);
+    public Task Apply(System.Net.Http.HttpClient client);
 
     /// <summary>
     /// apply options to an http request
     /// </summary>
     /// <param name="request">the request to apply the http options to</param>
-    public void Apply(HttpRequestMessage request);
+    public Task Apply(HttpRequestMessage request, AgenticIdentity aid);
 
     /// <summary>
     /// a factory for adding a token to http requests
     /// </summary>
-    public delegate object? HttpTokenFactory();
+    public delegate Task<object?> HttpTokenFactory(AgenticIdentity? aid);
 }
 
 /// <summary>
@@ -87,8 +88,9 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
     /// apply options to an http client
     /// </summary>
     /// <param name="client">the client to apply the http options to</param>
-    public void Apply(System.Net.Http.HttpClient client)
+    public async Task Apply(System.Net.Http.HttpClient client)
     {
+        await Task.CompletedTask;
         if (Timeout is not null)
             client.Timeout = (TimeSpan)Timeout;
 
@@ -105,11 +107,12 @@ public class HttpClientOptions : HttpRequestOptions, IHttpClientOptions
     /// apply options to an http request
     /// </summary>
     /// <param name="request">the request to apply the http options to</param>
-    public void Apply(HttpRequestMessage request)
+    public async Task Apply(HttpRequestMessage request, AgenticIdentity? aid)
     {
+
         if (TokenFactory is not null)
         {
-            var token = TokenFactory();
+            var token = await TokenFactory(aid);
 
             if (token is not null)
             {

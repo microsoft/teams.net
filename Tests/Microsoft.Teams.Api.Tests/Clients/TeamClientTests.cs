@@ -1,5 +1,6 @@
 using System.Net;
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Common.Http;
 
@@ -16,7 +17,7 @@ public class TeamClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Team>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Team>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Team>()
             {
                 Headers = responseMessage.Headers,
@@ -26,7 +27,7 @@ public class TeamClientTests
 
         string serviceUrl = "https://serviceurl.com/";
         string teamId = "team123";
-        var teamClient = new TeamClient(serviceUrl, mockHandler.Object);
+        var teamClient = new TeamClient(serviceUrl, mockHandler.Object, "scope");
 
         var result = await teamClient.GetByIdAsync(teamId);
 
@@ -37,6 +38,7 @@ public class TeamClientTests
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<Team>(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<AgenticIdentity?>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -48,7 +50,7 @@ public class TeamClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<List<Channel>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<List<Channel>>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<List<Channel>>()
             {
                 Headers = responseMessage.Headers,
@@ -62,7 +64,7 @@ public class TeamClientTests
 
         string serviceUrl = "https://serviceurl.com/";
         string teamId = "team123";
-        var teamClient = new TeamClient(serviceUrl, mockHandler.Object);
+        var teamClient = new TeamClient(serviceUrl, mockHandler.Object, "scope");
 
         var result = await teamClient.GetConversationsAsync(teamId);
 
@@ -74,6 +76,7 @@ public class TeamClientTests
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<List<Channel>>(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<AgenticIdentity?>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

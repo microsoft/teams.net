@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.SignIn;
 using Microsoft.Teams.Cards;
 using Microsoft.Teams.Common.Http;
@@ -33,7 +34,7 @@ public class HttpClientTests
         HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
 
         // Act
-        var response = await httpClient.SendAsync(request);
+        var response = await httpClient.SendAsync(request, null);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -59,7 +60,7 @@ public class HttpClientTests
         HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
 
         // Act
-        var response = await httpClient.SendAsync(request);
+        var response = await httpClient.SendAsync(request, null);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -103,7 +104,7 @@ public class HttpClientTests
         HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
 
         // Act
-        var response = await httpClient.SendAsync<UrlResponse>(request);
+        var response = await httpClient.SendAsync<UrlResponse>(request, null);
 
         // Assert
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -128,7 +129,7 @@ public class HttpClientTests
     {
         public HttpRequestMessage ValidateCreateRequest(HttpRequest request)
         {
-            var httpRequestMessage = CreateRequest(request);
+            var httpRequestMessage = CreateRequest(request, null);
             return httpRequestMessage;
         }
 
@@ -297,7 +298,7 @@ public class HttpClientTests
         HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync(request));
+        var ex = await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync(request, null));
 
         var expectedSubmitException = "Exception of type 'Microsoft.Teams.Common.Http.HttpException' was thrown.";
         Assert.Equal(expectedSubmitException, ex.Message);
@@ -324,7 +325,7 @@ public class HttpClientTests
         HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync(request));
+        var ex = await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync(request, null));
 
         var expectedSubmitException = "Exception of type 'Microsoft.Teams.Common.Http.HttpException' was thrown.";
         Assert.Equal(expectedSubmitException, ex.Message);
@@ -360,7 +361,7 @@ public class HttpClientTests
 
 
         // Act & Assert
-        var ex = await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync<UrlResponse>(request));
+        var ex = await Assert.ThrowsAsync<HttpException>(async () => await httpClient.SendAsync<UrlResponse>(request, null));
 
         var expectedSubmitException = "Exception of type 'Microsoft.Teams.Common.Http.HttpException' was thrown.";
         Assert.Equal(expectedSubmitException, ex.Message);

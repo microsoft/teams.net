@@ -1,16 +1,27 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Apps;
 
 public partial class AppBuilder
 {
+    private readonly IServiceProvider _serviceProvider;
     protected AppOptions _options;
+
+    public AppBuilder(IServiceProvider serviceProvider)
+    {
+        _serviceProvider = serviceProvider;
+        _options = serviceProvider.GetService(typeof(AppOptions)) as AppOptions ?? throw new InvalidOperationException("AppOptions not found in DI container");
+    }
 
     public AppBuilder(AppOptions? options = null)
     {
+        _serviceProvider = null!;
         _options = options ?? new AppOptions();
     }
 
@@ -56,19 +67,19 @@ public partial class AppBuilder
         return this;
     }
 
-    public AppBuilder AddCredentials(Common.Http.IHttpCredentials credentials)
+    public AppBuilder AddCredentials(IHttpCredentials credentials)
     {
         _options.Credentials = credentials;
         return this;
     }
 
-    public AppBuilder AddCredentials(Func<Common.Http.IHttpCredentials> @delegate)
+    public AppBuilder AddCredentials(Func<IHttpCredentials> @delegate)
     {
         _options.Credentials = @delegate();
         return this;
     }
 
-    public AppBuilder AddCredentials(Func<Task<Common.Http.IHttpCredentials>> @delegate)
+    public AppBuilder AddCredentials(Func<Task<IHttpCredentials>> @delegate)
     {
         _options.Credentials = @delegate().GetAwaiter().GetResult();
         return this;
@@ -100,6 +111,6 @@ public partial class AppBuilder
 
     public App Build()
     {
-        return new App(_options);
+        return new App(_serviceProvider.GetService<IHttpCredentials>()!,_serviceProvider.GetService<IConfiguration>()!, _options);
     }
 }

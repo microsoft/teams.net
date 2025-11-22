@@ -5,6 +5,7 @@ using System.Text.Json;
 
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Auth;
 
 namespace Microsoft.Teams.Apps;
 
@@ -51,6 +52,9 @@ public partial class Context<TActivity> : IContext<TActivity>
         options ??= new OAuthOptions();
         var reference = Ref.Copy();
 
+        AgenticIdentity? aid = AgenticIdentity.FromProperties(this.Activity.Recipient.Properties!);
+        Api.Users.Token.AgenticIdentity = aid;
+        
         try
         {
             var tokenResponse = await Api.Users.Token.GetAsync(new()
@@ -92,6 +96,7 @@ public partial class Context<TActivity> : IContext<TActivity>
         }
 
         var state = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(tokenExchangeState));
+        Api.Bots.SignIn.AgenticIdentity = aid;
         var resource = await Api.Bots.SignIn.GetResourceAsync(new() { State = state });
         var activity = new MessageActivity();
 

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Common.Http;
+// using IHttpClientFactory = Microsoft.Teams.Common.Http.IHttpClientFactory;
 
 namespace Microsoft.Teams.Api.Clients;
 
@@ -14,45 +15,47 @@ public class ApiClient : Client
     public virtual TeamClient Teams { get; }
     public virtual MeetingClient Meetings { get; }
 
-    public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
+
+
+    //public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
+    //{
+    //    ServiceUrl = serviceUrl;
+    //    Bots = new BotClient(_http, cancellationToken);
+    //    Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
+    //    Users = new UserClient(_http, cancellationToken);
+    //    Teams = new TeamClient(serviceUrl, _http, cancellationToken);
+    //    Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+    //}
+
+    public ApiClient(string serviceUrl, IHttpClient client, string scope, CancellationToken cancellationToken = default) : base(client, scope, cancellationToken)
     {
         ServiceUrl = serviceUrl;
-        Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
-        Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+        Bots = new BotClient(_http, scope, cancellationToken);
+        Conversations = new ConversationClient(serviceUrl, _http, scope, cancellationToken);
+        Users = new UserClient(_http, scope, cancellationToken);
+        Teams = new TeamClient(serviceUrl, _http, scope, cancellationToken);
+        Meetings = new MeetingClient(serviceUrl, _http, scope, cancellationToken);
     }
 
-    public ApiClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
-    {
-        ServiceUrl = serviceUrl;
-        Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
-        Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
-    }
+    //public ApiClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    //{
+    //    ServiceUrl = serviceUrl;
+    //    Bots = new BotClient(_http, cancellationToken);
+    //    Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
+    //    Users = new UserClient(_http, cancellationToken);
+    //    Teams = new TeamClient(serviceUrl, _http, cancellationToken);
+    //    Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+    //}
 
-    public ApiClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
-    {
-        ServiceUrl = serviceUrl;
-        Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
-        Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
-    }
-
-    public ApiClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
-    {
-        ServiceUrl = serviceUrl;
-        Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
-        Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
-    }
+    //public ApiClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    //{
+    //    ServiceUrl = serviceUrl;
+    //    Bots = new BotClient(_http, cancellationToken);
+    //    Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
+    //    Users = new UserClient(_http, cancellationToken);
+    //    Teams = new TeamClient(serviceUrl, _http, cancellationToken);
+    //    Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+    //}
 
     public ApiClient(ApiClient client) : base()
     {

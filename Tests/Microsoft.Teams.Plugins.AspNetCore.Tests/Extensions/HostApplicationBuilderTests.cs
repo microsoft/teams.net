@@ -19,13 +19,14 @@ public class HostApplicationBuilderTests
         var mockSettings = new Dictionary<string, string?>
         {
             ["Teams:ClientId"] = "test-client-id",
+            ["Teams:TenantId"] = "test-tenant-id"
         };
         builder.Configuration.AddInMemoryCollection(mockSettings);
         builder.AddTeams();
 
         var services = builder.Build().Services;
         var schemes = services.GetRequiredService<IAuthenticationSchemeProvider>();
-        var scheme = await schemes.GetSchemeAsync(TeamsTokenAuthConstants.AuthenticationScheme);
+        var scheme = await schemes.GetSchemeAsync("Bot");
         var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
 
         var policy = await authOptions.GetPolicyAsync(TeamsTokenAuthConstants.AuthorizationPolicy);
@@ -87,13 +88,14 @@ public class HostApplicationBuilderTests
         var mockSettings = new Dictionary<string, string?>
         {
             ["Teams:ClientId"] = "test-client-id",
+            ["Teams:TenantId"] = "test-tenant-id"
         };
         builder.Configuration.AddInMemoryCollection(mockSettings);
         builder.AddTeams();
 
         var services = builder.Build().Services;
         var schemes = services.GetRequiredService<IAuthenticationSchemeProvider>();
-        var scheme = await schemes.GetSchemeAsync(EntraTokenAuthConstants.AuthenticationScheme);
+        var scheme = await schemes.GetSchemeAsync("Agent");
         var authOptions = services.GetRequiredService<IAuthorizationPolicyProvider>();
 
         var policy = await authOptions.GetPolicyAsync(EntraTokenAuthConstants.AuthorizationPolicy);

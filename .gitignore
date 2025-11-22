@@ -5,6 +5,7 @@
 
 # dotenv files
 .env
+*.env
 
 # local app settings files
 appsettings.Local.json

@@ -1,5 +1,6 @@
 using System.Net;
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Api.Meetings;
 using Microsoft.Teams.Common.Http;
@@ -17,7 +18,7 @@ public class MeetingClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Meeting>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Meeting>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Meeting>()
             {
                 Headers = responseMessage.Headers,
@@ -27,7 +28,7 @@ public class MeetingClientTests
 
         string serviceUrl = "https://serviceurl.com/";
         string meetingId = "meeting123";
-        var meetingClient = new MeetingClient(serviceUrl, mockHandler.Object);
+        var meetingClient = new MeetingClient(serviceUrl, mockHandler.Object, "scope");
 
         var result = await meetingClient.GetByIdAsync(meetingId);
 
@@ -37,6 +38,7 @@ public class MeetingClientTests
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<Meeting>(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<AgenticIdentity?>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -48,7 +50,7 @@ public class MeetingClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<MeetingParticipant>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<MeetingParticipant>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<MeetingParticipant>()
             {
                 Headers = responseMessage.Headers,
@@ -66,7 +68,7 @@ public class MeetingClientTests
         string serviceUrl = "https://serviceurl.com/";
         string meetingId = "meeting123";
         string participantId = "participant1";
-        var meetingClient = new MeetingClient(serviceUrl, mockHandler.Object);
+        var meetingClient = new MeetingClient(serviceUrl, mockHandler.Object, "scope");
 
         var result = await meetingClient.GetParticipantAsync(meetingId, participantId);
 
@@ -80,6 +82,7 @@ public class MeetingClientTests
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<MeetingParticipant>(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<AgenticIdentity?>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

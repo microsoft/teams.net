@@ -1,5 +1,6 @@
 using System.Net;
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Common.Http;
 
@@ -16,7 +17,7 @@ public class MemberClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<List<Account>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<List<Account>>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<List<Account>>()
             {
                 Headers = responseMessage.Headers,
@@ -30,7 +31,7 @@ public class MemberClientTests
 
         string serviceUrl = "https://serviceurl.com/";
         string conversationId = "conv123";
-        var memberClient = new MemberClient(serviceUrl, mockHandler.Object);
+        var memberClient = new MemberClient(serviceUrl, mockHandler.Object, "scope");
 
         var result = await memberClient.GetAsync(conversationId);
 
@@ -41,6 +42,7 @@ public class MemberClientTests
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<List<Account>>(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<AgenticIdentity?>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -52,7 +54,7 @@ public class MemberClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Account>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Account>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Account>()
             {
                 Headers = responseMessage.Headers,
@@ -63,7 +65,7 @@ public class MemberClientTests
         string serviceUrl = "https://serviceurl.com/";
         string conversationId = "conv123";
         string memberId = "member1";
-        var memberClient = new MemberClient(serviceUrl, mockHandler.Object);
+        var memberClient = new MemberClient(serviceUrl, mockHandler.Object, "scope");
 
         var result = await memberClient.GetByIdAsync(conversationId, memberId);
 
@@ -74,6 +76,7 @@ public class MemberClientTests
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<Account>(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<AgenticIdentity?>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -85,7 +88,7 @@ public class MemberClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Headers = responseMessage.Headers,
@@ -96,7 +99,7 @@ public class MemberClientTests
         string serviceUrl = "https://serviceurl.com/";
         string conversationId = "conv123";
         string memberId = "member1";
-        var memberClient = new MemberClient(serviceUrl, mockHandler.Object);
+        var memberClient = new MemberClient(serviceUrl, mockHandler.Object, "scope");
 
         await memberClient.DeleteAsync(conversationId, memberId);
 
@@ -104,6 +107,7 @@ public class MemberClientTests
         HttpMethod expectedMethod = HttpMethod.Delete;
         mockHandler.Verify(x => x.SendAsync(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<AgenticIdentity?>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

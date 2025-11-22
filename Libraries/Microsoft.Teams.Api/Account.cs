@@ -32,6 +32,7 @@ public class Account
 
     [JsonPropertyName("properties")]
     [JsonPropertyOrder(5)]
+    [JsonExtensionData]
     public Dictionary<string, object>? Properties { get; set; }
 }
 

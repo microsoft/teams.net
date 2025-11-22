@@ -2,21 +2,12 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Extensions;
-using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Extensions.Graph;
-using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
-
-var appBuilder = App.Builder()
-    .AddLogger(new ConsoleLogger(level: Microsoft.Teams.Common.Logging.LogLevel.Debug))
-    // The name of the auth connection to use.
-    // It should be the same as the OAuth connection name defined in the Azure Bot configuration.
-    .AddOAuth("graph");
-
-builder.AddTeams(appBuilder).AddTeamsDevTools();
-
+builder.AddTeams();
+builder.Services.Configure<AppOptions>(options => options.OAuth = new OAuthSettings("graph"));
 var app = builder.Build();
 var teams = app.UseTeams();
 

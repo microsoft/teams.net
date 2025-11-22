@@ -1,46 +1,34 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Identity.Abstractions;
+using Microsoft.Identity.Web;
 using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Api.Auth;
 
-public class ClientCredentials : IHttpCredentials
+public class ClientCredentials(IAuthorizationHeaderProvider authorizationHeaderProvider) : IHttpCredentials
 {
-    public string ClientId { get; set; }
-    public string ClientSecret { get; set; }
-    public string? TenantId { get; set; }
-
-    public ClientCredentials(string clientId, string clientSecret)
+    public async Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, AgenticIdentity agenticIdentity, CancellationToken cancellationToken = default)
     {
-        ClientId = clientId;
-        ClientSecret = clientSecret;
-    }
+        AuthorizationHeaderProviderOptions options = new();
 
-    public ClientCredentials(string clientId, string clientSecret, string? tenantId)
-    {
-        ClientId = clientId;
-        ClientSecret = clientSecret;
-        TenantId = tenantId;
-    }
-
-    public async Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, CancellationToken cancellationToken = default)
-    {
-        var tenantId = TenantId ?? "botframework.com";
-        var request = HttpRequest.Post(
-            $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token"
-        );
-
-        request.Headers.Add("Content-Type", ["application/x-www-form-urlencoded"]);
-        request.Body = new Dictionary<string, string>()
+        string tokenResult;
+        
+        if (agenticIdentity is not null)
         {
-            { "grant_type", "client_credentials" },
-            { "client_id", ClientId },
-            { "client_secret", ClientSecret },
-            { "scope", string.Join(",", scopes) }
-        };
+            options.WithAgentUserIdentity(agenticIdentity.AgenticAppId!, Guid.Parse(agenticIdentity.AgenticUserId!));
+            tokenResult = await authorizationHeaderProvider.CreateAuthorizationHeaderAsync(scopes, options, null, cancellationToken);
+        }
+        else
+        {
+            tokenResult = await authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(scopes[0], options, cancellationToken);
+        }
 
-        var res = await client.SendAsync<TokenResponse>(request, cancellationToken);
-        return res.Body;
+        return new TokenResponse
+        {
+            AccessToken = tokenResult.Substring("Bearer ".Length),
+            TokenType = "Bearer",
+        };
     }
 }
