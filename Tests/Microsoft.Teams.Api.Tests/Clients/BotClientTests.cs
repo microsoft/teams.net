@@ -17,7 +17,7 @@ public class BotClientTests
     [Fact]
     public void UserClient_Default()
     {
-        var userClient = new UserClient();
+        var userClient = new UserClient("scope");
 
         Assert.NotNull(userClient.Token);
     }

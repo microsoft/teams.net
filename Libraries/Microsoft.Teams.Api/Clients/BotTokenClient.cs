@@ -9,6 +9,7 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class BotTokenClient : Client
 {
+    public static readonly string BotScope = "https://api.botframework.com/.default";
     public static readonly string GraphScope = "https://graph.microsoft.com/.default";
 
     public BotTokenClient() : this(default)
@@ -16,7 +17,7 @@ public class BotTokenClient : Client
 
     }
 
-    public BotTokenClient(CancellationToken cancellationToken = default) : base(cancellationToken)
+    public BotTokenClient(CancellationToken cancellationToken = default) : base(BotScope, cancellationToken)
     {
 
     }
@@ -26,12 +27,12 @@ public class BotTokenClient : Client
 
     }
 
-    public BotTokenClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public BotTokenClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, BotScope, cancellationToken)
     {
 
     }
 
-    public BotTokenClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public BotTokenClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, BotScope, cancellationToken)
     {
 
     }

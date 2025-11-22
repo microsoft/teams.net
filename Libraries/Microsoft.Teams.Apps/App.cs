@@ -67,7 +67,7 @@ public partial class App
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
-        Scope = configuration["Teams:Scope"] ?? "https://api.botframework.com/.default";
+        Scope = configuration?["Teams:Scope"] ?? "https://api.botframework.com/.default";
         TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
         Client.Options.AddUserAgent(UserAgent);
@@ -111,7 +111,10 @@ public partial class App
         Container.Register(Storage);
         Container.Register(Client);
         Container.Register(Api);
-        Container.Register(configuration);
+        if (configuration != null)
+        {
+            Container.Register(configuration);
+        }
         Container.Register<IHttpCredentials>(new FactoryProvider(() => Credentials));
         Container.Register("AppId", new FactoryProvider(() => Id));
         Container.Register("AppName", new FactoryProvider(() => Name));

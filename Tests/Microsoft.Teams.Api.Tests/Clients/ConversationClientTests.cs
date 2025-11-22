@@ -1,5 +1,6 @@
 using System.Net;
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Common.Http;
 
@@ -26,7 +27,7 @@ public class ConversationClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<ConversationResource>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<ConversationResource>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<ConversationResource>()
             {
                 Headers = responseMessage.Headers,
@@ -39,7 +40,7 @@ public class ConversationClientTests
             });
 
         string serviceUrl = "https://serviceurl.com/";
-        var conversationClient = new ConversationClient(serviceUrl, mockHandler.Object);
+        var conversationClient = new ConversationClient(serviceUrl, mockHandler.Object, "scope");
 
         var reqBody = await conversationClient.CreateAsync(createRequest);
 
@@ -49,6 +50,7 @@ public class ConversationClientTests
         HttpMethod expectedMethod = HttpMethod.Post;
         mockHandler.Verify(x => x.SendAsync<ConversationResource>(
             It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
+            It.IsAny<AgenticIdentity?>(),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

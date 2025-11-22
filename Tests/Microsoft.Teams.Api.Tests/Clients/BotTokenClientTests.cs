@@ -18,7 +18,7 @@ public class BotTokenClientTests
 
         string? actualTenantId = "";
         string[] actualScope = [""];
-        TokenFactory tokenFactory = new TokenFactory(async (tenantId, scope) =>
+        TokenFactory tokenFactory = new TokenFactory(async (tenantId, agenticIdentity, scope) =>
         {
             actualTenantId = tenantId;
             actualScope = scope;
@@ -30,8 +30,9 @@ public class BotTokenClientTests
         });
         var credentials = new TokenCredentials("clientId", tokenFactory);
         var botTokenClient = new BotTokenClient(cancellationToken);
+        var agenticIdentity = new AgenticIdentity();
 
-        var botToken = await botTokenClient.GetAsync(credentials);
+        var botToken = await botTokenClient.GetAsync(credentials, agenticIdentity);
 
         Assert.NotNull(botToken);
         Assert.Equal(accessToken, new JsonWebToken(botToken.AccessToken).ToString());
@@ -45,7 +46,7 @@ public class BotTokenClientTests
         var cancellationToken = new CancellationToken();
         string? actualTenantId = "";
         string[] actualScope = [""];
-        TokenFactory tokenFactory = new TokenFactory(async (tenantId, scope) =>
+        TokenFactory tokenFactory = new TokenFactory(async (tenantId, agenticIdentity, scope) =>
         {
             actualTenantId = tenantId;
             actualScope = scope;
@@ -57,8 +58,9 @@ public class BotTokenClientTests
         });
         var credentials = new TokenCredentials("clientId", tokenFactory);
         var botTokenClient = new BotTokenClient(cancellationToken);
+        var agenticIdentity = new AgenticIdentity();
 
-        var botGraphToken = await botTokenClient.GetGraphAsync(credentials);
+        var botGraphToken = await botTokenClient.GetGraphAsync(credentials, agenticIdentity);
 
         Assert.Equal(accessToken, new JsonWebToken(botGraphToken.AccessToken).ToString());
         Assert.Null(actualTenantId);
@@ -71,7 +73,7 @@ public class BotTokenClientTests
         var cancellationToken = new CancellationToken();
         string? actualTenantId = "";
         string[] actualScope = [""];
-        TokenFactory tokenFactory = new TokenFactory(async (tenantId, scope) =>
+        TokenFactory tokenFactory = new TokenFactory(async (tenantId, agenticIdentity, scope) =>
         {
             actualTenantId = tenantId;
             actualScope = scope;
@@ -83,9 +85,10 @@ public class BotTokenClientTests
         });
         var credentials = new TokenCredentials("clientId", "123-abc", tokenFactory);
         var botTokenClient = new BotTokenClient(cancellationToken);
+        var agenticIdentity = new AgenticIdentity();
         string expectedTenantId = "123-abc";
 
-        var botGraphToken = await botTokenClient.GetGraphAsync(credentials);
+        var botGraphToken = await botTokenClient.GetGraphAsync(credentials, agenticIdentity);
 
         Assert.Equal(accessToken, new JsonWebToken(botGraphToken.AccessToken).ToString());
         Assert.Equal(expectedTenantId, actualTenantId);
@@ -98,7 +101,7 @@ public class BotTokenClientTests
         var cancellationToken = new CancellationToken();
         string? actualTenantId = "";
         string[] actualScope = [""];
-        TokenFactory tokenFactory = new TokenFactory(async (tenantId, scope) =>
+        TokenFactory tokenFactory = new TokenFactory(async (tenantId, agenticIdentity, scope) =>
         {
             actualTenantId = tenantId;
             actualScope = scope;
@@ -111,9 +114,10 @@ public class BotTokenClientTests
 
         var credentials = new TokenCredentials("clientId", "123-abc", tokenFactory);
         var httpClient = new Common.Http.HttpClient();
-        var botTokenClient = new BotTokenClient(httpClient, cancellationToken);
+        var botTokenClient = new BotTokenClient(httpClient, BotTokenClient.BotScope, cancellationToken);
+        var agenticIdentity = new AgenticIdentity();
 
-        var botToken = await botTokenClient.GetAsync(credentials);
+        var botToken = await botTokenClient.GetAsync(credentials, agenticIdentity);
 
         string expectedTenantId = "123-abc";
         Assert.Equal(expectedTenantId, actualTenantId);
@@ -127,7 +131,7 @@ public class BotTokenClientTests
         var cancellationToken = new CancellationToken();
         string? actualTenantId = "";
         string[] actualScope = [""];
-        TokenFactory tokenFactory = new TokenFactory(async (tenantId, scope) =>
+        TokenFactory tokenFactory = new TokenFactory(async (tenantId, agenticIdentity, scope) =>
         {
             actualTenantId = tenantId;
             actualScope = scope;
@@ -140,8 +144,9 @@ public class BotTokenClientTests
         var credentials = new TokenCredentials("clientId", "123-abc", tokenFactory);
         var httpClientOtions = new Common.Http.HttpClientOptions();
         var botTokenClient = new BotTokenClient(httpClientOtions, cancellationToken);
+        var agenticIdentity = new AgenticIdentity();
 
-        var botToken = await botTokenClient.GetAsync(credentials);
+        var botToken = await botTokenClient.GetAsync(credentials, agenticIdentity);
 
         string expectedTenantId = "123-abc";
         Assert.Equal(expectedTenantId, actualTenantId);

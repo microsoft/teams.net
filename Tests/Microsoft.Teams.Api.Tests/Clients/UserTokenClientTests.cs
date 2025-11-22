@@ -1,5 +1,6 @@
 using System.Net;
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Common.Http;
 
@@ -29,7 +30,7 @@ public class UserTokenClientTests
 
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Token.Response>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Token.Response>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Token.Response>
             {
                 Headers = responseMessage.Headers,
@@ -41,14 +42,14 @@ public class UserTokenClientTests
                 }
             });
 
-        var UserTokenClient = new UserTokenClient(mockHandler.Object);
+        var UserTokenClient = new UserTokenClient(mockHandler.Object, "scope");
 
         var reqBody = await UserTokenClient.GetAsync(tokenRequest);
 
         Assert.Equal("validToken", reqBody.Token);
 
         string expecteUrl = "https://token.botframework.com/api/usertoken/GetToken?userId=userId-aad&connectionName=connectionName&channelId=webchat&code=200";
-        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -89,7 +90,7 @@ public class UserTokenClientTests
 
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<IDictionary<string, Token.Response>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<IDictionary<string, Token.Response>>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<IDictionary<string, Token.Response>>
             {
                 Headers = responseMessage.Headers,
@@ -97,14 +98,14 @@ public class UserTokenClientTests
                 Body = addTokenResponses
             });
 
-        var UserTokenClient = new UserTokenClient(mockHandler.Object);
+        var UserTokenClient = new UserTokenClient(mockHandler.Object, "scope");
 
         var reqBody = await UserTokenClient.GetAadAsync(aadTokenRequest);
 
         Assert.Equal(2, reqBody.Count);
 
         string expecteUrl = "https://token.botframework.com/api/usertoken/GetAadTokens?userId=userId-aad&connectionName=connectionName&channelId=webchat&resourceUrls%5b0%5d=value1&resourceUrls%5b1%5d=value2";
-        mockHandler.Verify(x => x.SendAsync<IDictionary<string, Token.Response>>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<IDictionary<string, Token.Response>>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -142,7 +143,7 @@ public class UserTokenClientTests
 
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<IList<Token.Status>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<IList<Token.Status>>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<IList<Token.Status>>
             {
                 Headers = responseMessage.Headers,
@@ -150,14 +151,14 @@ public class UserTokenClientTests
                 Body = tokenStatusList
             });
 
-        var UserTokenClient = new UserTokenClient(mockHandler.Object);
+        var UserTokenClient = new UserTokenClient(mockHandler.Object, "scope");
 
         var reqBody = await UserTokenClient.GetStatusAsync(tokenStatusRequest);
 
         Assert.Equal(2, reqBody.Count);
 
         string expecteUrl = "https://token.botframework.com/api/usertoken/GetTokenStatus?userId=userId-aad&channelId=webchat&includeFilter=validEntry";
-        mockHandler.Verify(x => x.SendAsync<IList<Token.Status>>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<IList<Token.Status>>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 
@@ -197,7 +198,7 @@ public class UserTokenClientTests
 
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Body = "valid signin data",
@@ -206,12 +207,12 @@ public class UserTokenClientTests
             });
 
 
-        var UserTokenClient = new UserTokenClient(mockHandler.Object);
+        var UserTokenClient = new UserTokenClient(mockHandler.Object, "scope");
 
         await UserTokenClient.SignOutAsync(signOutRequest);
 
         string expecteUrl = "https://token.botframework.com/api/usertoken/SignOut?userId=userId-aad&connectionName=connectionName&channelId=msteams";
-        mockHandler.Verify(x => x.SendAsync(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -233,7 +234,7 @@ public class UserTokenClientTests
 
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Token.Response>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Token.Response>(It.IsAny<IHttpRequest>(), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Token.Response>
             {
                 Headers = responseMessage.Headers,
@@ -245,14 +246,14 @@ public class UserTokenClientTests
                 }
             });
 
-        var UserTokenClient = new UserTokenClient(mockHandler.Object);
+        var UserTokenClient = new UserTokenClient(mockHandler.Object, "scope");
 
         var reqBody = await UserTokenClient.ExchangeAsync(tokenRequest);
 
         Assert.Equal("validToken", reqBody.Token);
         HttpMethod expectedMethod = HttpMethod.Post;
         string expecteUrl = "https://token.botframework.com/api/usertoken/exchange?userId=userId-aad&connectionName=connectionName&channelId=msteams";
-        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod), It.IsAny<AgenticIdentity?>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 }

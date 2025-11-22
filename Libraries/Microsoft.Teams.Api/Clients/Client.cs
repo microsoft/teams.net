@@ -21,6 +21,13 @@ public abstract class Client
         _cancellationToken = cancellationToken;
     }
 
+    public Client(string scope, CancellationToken cancellationToken = default)
+    {
+        _http = new Common.Http.HttpClient();
+        Scope = scope;
+        _cancellationToken = cancellationToken;
+    }
+
     public Client(IHttpClient client, string scope, CancellationToken cancellationToken = default)
     {
         _http = client;
@@ -28,9 +35,23 @@ public abstract class Client
         _cancellationToken = cancellationToken;
     }
 
+    public Client(IHttpClientOptions options, string scope, CancellationToken cancellationToken = default)
+    {
+        _http = new Common.Http.HttpClient(options);
+        Scope = scope;
+        _cancellationToken = cancellationToken;
+    }
+
     public Client(IHttpClientOptions options, CancellationToken cancellationToken = default)
     {
         _http = new Common.Http.HttpClient(options);
+        _cancellationToken = cancellationToken;
+    }
+
+    public Client(IHttpClientFactory factory, string scope, CancellationToken cancellationToken = default)
+    {
+        _http = factory.CreateClient("default");
+        Scope = scope;
         _cancellationToken = cancellationToken;
     }
 

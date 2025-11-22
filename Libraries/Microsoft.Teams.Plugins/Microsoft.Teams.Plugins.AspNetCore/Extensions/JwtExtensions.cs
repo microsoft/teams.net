@@ -19,13 +19,22 @@ public static class JwtExtensions
         var authenticationBuilder = services.AddAuthentication();
         var configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
         //string agentScope = configuration[$"{aadSectionName}:AgentScope"]!;
-        string audience = configuration[$"{aadSectionName}:ClientId"]!;
-        string tenantId = configuration[$"{aadSectionName}:TenantId"]!;
+        string? audience = configuration[$"{aadSectionName}:ClientId"];
+        string? tenantId = configuration[$"{aadSectionName}:TenantId"];
 
-        services
-            .AddAuthentication()
-            .AddCustomJwtBearer("Bot", "botframework.com", audience)
-            .AddCustomJwtBearer("Agent", tenantId, audience);
+        // Only add authentication if required configuration is present
+        if (!string.IsNullOrEmpty(audience))
+        {
+            services
+                .AddAuthentication()
+                .AddCustomJwtBearer("Bot", "botframework.com", audience);
+            
+            if (!string.IsNullOrEmpty(tenantId))
+            {
+                services.AddAuthentication().AddCustomJwtBearer("Agent", tenantId, audience);
+            }
+        }
+        
         return authenticationBuilder;
     }
 

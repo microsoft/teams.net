@@ -8,7 +8,8 @@ public class ApiClientTests
     public void ApiClient_Default()
     {
         var serviceUrl = "https://api.botframework.com";
-        var apiClient = new ApiClient(serviceUrl);
+        var mockHandler = new Moq.Mock<Microsoft.Teams.Common.Http.IHttpClient>();
+        var apiClient = new ApiClient(serviceUrl, mockHandler.Object, "scope");
 
         Assert.Equal(serviceUrl, apiClient.ServiceUrl);
     }
@@ -17,7 +18,8 @@ public class ApiClientTests
     public void ApiClient_Users_Default()
     {
         var serviceUrl = "https://api.botframework.com";
-        var apiClient = new ApiClient(serviceUrl);
+        var mockHandler = new Moq.Mock<Microsoft.Teams.Common.Http.IHttpClient>();
+        var apiClient = new ApiClient(serviceUrl, mockHandler.Object, "scope");
 
         Assert.Equal(serviceUrl, apiClient.ServiceUrl);
     }
