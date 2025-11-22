@@ -7,10 +7,6 @@ pr:
 pool:
   vmImage: 'ubuntu-22.04'
 
-variables:
-  buildConfiguration: 'Release'
-  workingDirectory: 'botbuilder-dotnet'
-
 stages:
 - stage: Build_Test_Pack
   jobs:
@@ -27,8 +23,11 @@ stages:
       - script: dotnet restore 
         displayName: 'Restore'
 
-      - script: dotnet build --configuration $(buildConfiguration) --no-restore
+      - script: dotnet build --no-restore
         displayName: 'Build'
+
+      - script: dotnet test 
+        displayName: 'Test'
       
       - task: DotNetCoreCLI@2
         displayName: 'Pack NuGet Packages'
@@ -38,7 +37,7 @@ stages:
           packDirectory: '$(Build.ArtifactStagingDirectory)'
           includesymbols: false
           nobuild: true
-          configuration: '$(buildConfiguration)'
+          configuration: 'Release'
           versioningScheme: 'byEnvVar'
           versionEnvVar: 'Version'
           buildProperties: 'SymbolPackageFormat=snupkg'
