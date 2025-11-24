@@ -193,6 +193,11 @@ public partial class App
             throw new InvalidOperationException("app not started");
         }
 
+        if (isTargeted && activity.Recipient is null)
+        {
+            throw new ArgumentException("activity.Recipient must be set for targeted messages");
+        }
+
         var reference = new ConversationReference()
         {
             ChannelId = ChannelId.MsTeams,
