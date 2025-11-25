@@ -8,6 +8,7 @@ using Microsoft.Teams.Apps.Testing.Plugins;
 using static Microsoft.Teams.Apps.Activities.Events.Event;
 
 namespace Microsoft.Teams.Apps.Tests.Activities.Events;
+
 public class MeetingEndEventTests
 {
     private readonly App _app = new();

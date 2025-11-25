@@ -411,52 +411,38 @@ public partial class App
             );
         };
 
-        try
+        if (@event.Services is not null)
         {
-            if (@event.Services is not null)
+            var accessor = (IContext.Accessor?)@event.Services.GetService(typeof(IContext.Accessor));
+
+            if (accessor is not null)
             {
-                var accessor = (IContext.Accessor?)@event.Services.GetService(typeof(IContext.Accessor));
-
-                if (accessor is not null)
-                {
-                    accessor.Value = context;
-                }
+                accessor.Value = context;
             }
-
-            foreach (var plugin in Plugins)
-            {
-                await plugin.OnActivity(this, sender, @event, cancellationToken);
-            }
-
-            var res = await Next(context);
-            await stream.Close();
-
-            var response = res is Response value
-                ? value
-                : new Response(System.Net.HttpStatusCode.OK, res);
-
-            response.Meta.Routes = i + 1;
-            response.Meta.Elapse = (DateTime.UtcNow - start).Milliseconds;
-
-            await Events.Emit(
-                sender,
-                EventType.ActivityResponse,
-                new ActivityResponseEvent() { Response = response },
-                cancellationToken
-            );
-
-            return response;
         }
-        catch (Exception ex)
+
+        foreach (var plugin in Plugins)
         {
-            await Events.Emit(
-                sender,
-                EventType.Error,
-                new ErrorEvent() { Exception = ex, Context = context.ToActivityType<IActivity>() },
-                cancellationToken
-            );
-
-            return new Response(System.Net.HttpStatusCode.InternalServerError);
+            await plugin.OnActivity(this, sender, @event, cancellationToken);
         }
+
+        var res = await Next(context);
+        await stream.Close();
+
+        var response = res is Response value
+            ? value
+            : new Response(System.Net.HttpStatusCode.OK, res);
+
+        response.Meta.Routes = i + 1;
+        response.Meta.Elapse = (DateTime.UtcNow - start).Milliseconds;
+
+        await Events.Emit(
+            sender,
+            EventType.ActivityResponse,
+            new ActivityResponseEvent() { Response = response },
+            cancellationToken
+        );
+
+        return response;
     }
 }

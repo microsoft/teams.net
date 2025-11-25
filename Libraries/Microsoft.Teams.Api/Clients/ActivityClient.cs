@@ -41,7 +41,7 @@ public class ActivityClient : Client
         }
 
         var req = HttpRequest.Post(url, body: activity);
-        
+
         var res = await _http.SendAsync(req, _cancellationToken);
 
         if (res.Body == string.Empty) return null;
@@ -57,7 +57,7 @@ public class ActivityClient : Client
         {
             url += "?isTargetedActivity=true";
         }
-        
+
         var req = HttpRequest.Put(url, body: activity);
 
         var res = await _http.SendAsync(req, _cancellationToken);
@@ -71,13 +71,13 @@ public class ActivityClient : Client
     public async Task<Resource?> ReplyAsync(string conversationId, string id, IActivity activity, bool isTargeted = false)
     {
         activity.ReplyToId = id;
-        
+
         var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
         if (isTargeted)
         {
             url += "?isTargetedActivity=true";
         }
-        
+
         var req = HttpRequest.Post(url, body: activity);
 
         var res = await _http.SendAsync(req, _cancellationToken);
