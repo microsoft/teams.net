@@ -9,65 +9,73 @@ namespace Microsoft.Teams.Plugins.AspNetCore.Tests;
 public class AspNetCorePluginStreamTests
 {
     [Fact]
-    public async Task Stream_EmitMessage_FlushesAfter500ms()
+    public async Task Stream_EmitMessage_FlushesImmediately()
     {
         var sendCallCount = 0;
-        var sendTimes = new List<DateTime>();
         var stream = new AspNetCorePlugin.Stream
         {
-            Send = activity =>
+            Send = async activity =>
             {
                 sendCallCount++;
-                sendTimes.Add(DateTime.Now);
                 activity.Id = $"test-id-{sendCallCount}";
-                return Task.FromResult(activity);
+                await Task.Delay(50); // Simulate some delay
+                return activity;
             }
         };
 
-        var startTime = DateTime.Now;
-
         stream.Emit("Test message");
-        await Task.Delay(600); // Wait longer than 500ms timeout
-
+        await Task.Delay(60); // Wait for flush to complete
         Assert.True(sendCallCount > 0, "Should have sent at least one message");
-        Assert.True(sendTimes.Any(t => t >= startTime.AddMilliseconds(450)),
-            "Should have waited approximately 500ms before sending");
     }
 
     [Fact]
-    public async Task Stream_MultipleEmits_RestartsTimer()
+    public async Task Stream_MultipleEmits_TimerCheck()
     {
         var sendCallCount = 0;
         var stream = new AspNetCorePlugin.Stream
         {
-            Send = activity =>
+            Send = async activity =>
             {
                 sendCallCount++;
                 activity.Id = $"test-id-{sendCallCount}";
-                return Task.FromResult(activity);
+                await Task.Delay(50); // Simulate some delay
+                return activity;
             }
         };
 
         stream.Emit("First message");
-        await Task.Delay(300); // Wait less than 500ms
+        stream.Emit("Second message");
+        stream.Emit("Third message");
+        stream.Emit("Fourth message");
+        stream.Emit("Fifth message");
+        stream.Emit("Sixth message");
+        stream.Emit("Seventh message");
+        stream.Emit("Eighth message");
+        stream.Emit("Ninth message");
+        stream.Emit("Tenth message");
+        stream.Emit("Eleventh message");
+        stream.Emit("Twelfth message");
 
-        stream.Emit("Second message"); // This should reset the timer
-        await Task.Delay(300); // Still less than 500ms from second emit
+        await Task.Delay(70); // Wait for initial flush
 
-        Assert.Equal(0, sendCallCount); // Should not have sent yet
+        Assert.Equal(1, sendCallCount); // First message should trigger flush immediately
 
-        await Task.Delay(300); // Now over 500ms from second emit
+        stream.Emit("Thirteenth message");
 
-        Assert.True(sendCallCount > 0, "Should have sent messages after timer expired");
+        await Task.Delay(300); // Less than 500ms from first flush
+        Assert.True(sendCallCount == 1, "Should have sent only 1 message so far");
+
+        await Task.Delay(300); // Now more than 500ms from first flush
+        Assert.True(sendCallCount == 2, "Should have sent 2 messages by now");
     }
 
     [Fact]
-    public async Task Stream_SendTimeout_HandledGracefully()
+    public async Task Stream_ErrorHandledGracefully()
     {
         var callCount = 0;
         var stream = new AspNetCorePlugin.Stream
         {
-            Send = activity =>
+            Send = async activity =>
             {
                 callCount++;
                 if (callCount == 1) // Fail first attempt
@@ -77,12 +85,13 @@ public class AspNetCorePluginStreamTests
 
                 // Succeed on second attempt
                 activity.Id = $"success-after-timeout-{callCount}";
-                return Task.FromResult(activity);
+                await Task.Delay(50); // Simulate some delay
+                return activity;
             }
         };
 
         stream.Emit("Test message with timeout");
-        await Task.Delay(600); // Wait for flush and retries
+        await Task.Delay(600); // Wait for flush and 1 retry
 
         var result = await stream.Close();
 
@@ -97,24 +106,63 @@ public class AspNetCorePluginStreamTests
         var sentActivities = new List<IActivity>();
         var stream = new AspNetCorePlugin.Stream
         {
-            Send = activity =>
+            Send = async activity =>
             {
                 sentActivities.Add(activity);
-                return Task.FromResult(activity);
+                await Task.Delay(50); // Simulate some delay
+                return activity;
             }
         };
 
         stream.Update("Thinking...");
-        await Task.Delay(600); // Wait for the flush task to complete
+
+        await Task.Delay(70); // Wait for flush to complete
 
         Assert.True(stream.Count > 0, "Should have processed the update");
         Assert.Equal(2, stream.Sequence); // Should increment sequence after sending
-
         Assert.True(sentActivities.Count > 0, "Should have sent at least one activity");
+
         var sentActivity = sentActivities.First();
         Assert.IsType<TypingActivity>(sentActivity);
         Assert.Equal("Thinking...", ((TypingActivity)sentActivity).Text);
         Assert.Equal(StreamType.Informative, ((TypingActivity)sentActivity).ChannelData?.StreamType);
+    }
+
+    [Fact]
+    public async Task Stream_ConcurrentEmits_DoNotFlushSimultaneously()
+    {
+        var concurrentEntries = 0;
+        var maxConcurrentEntries = 0;
+
+        var stream = new AspNetCorePlugin.Stream
+        {
+            Send = async activity =>
+            {
+                // Track concurrent entries to the Send method (simulates Flush execution)
+                Interlocked.Increment(ref concurrentEntries);
+                maxConcurrentEntries = Math.Max(maxConcurrentEntries, concurrentEntries);
+                activity.Id = "test-id";
+                await Task.Delay(50); // Simulate some delay
+                Interlocked.Decrement(ref concurrentEntries);
+
+                return activity;
+            }
+        };
+
+        // Emit from multiple threads simultaneously
+        var barrier = new Barrier(10);
+        var tasks = Enumerable.Range(0, 10).Select(_ => Task.Run(() =>
+        {
+            barrier.SignalAndWait(); // 10 threads must arrive before any can continue
+            stream.Emit("Concurrent message");
+        })).ToArray();
+
+        await Task.WhenAll(tasks);
+
+        await Task.Delay(70); // Wait for all flushes to complete
+
+        Assert.True(maxConcurrentEntries == 1, 
+            $"Flush entered concurrently {maxConcurrentEntries} times, expected 1");
     }
 
 }
