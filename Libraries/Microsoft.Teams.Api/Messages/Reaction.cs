@@ -9,8 +9,6 @@ namespace Microsoft.Teams.Api.Messages;
 
 /// <summary>
 /// The type of reaction given to the
-/// message. Possible values include: 'like', 'heart', 'laugh', 'surprised',
-/// 'sad', 'angry', 'plusOne'
 /// </summary>
 [JsonConverter(typeof(JsonConverter<ReactionType>))]
 public class ReactionType(string value) : StringEnum(value)
