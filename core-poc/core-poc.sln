@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Api", "..\L
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Cards", "..\Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj", "{1578CD4A-F538-7FE3-C77F-D09E53A1B481}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Bot.Core", "Microsoft.Bot.Core\Microsoft.Bot.Core.csproj", "{C06FC595-FEE2-0E38-D6D9-D11A5DC53FD5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams", "Microsoft.Teams\Microsoft.Teams.csproj", "{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{1578CD4A-F538-7FE3-C77F-D09E53A1B481}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1578CD4A-F538-7FE3-C77F-D09E53A1B481}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1578CD4A-F538-7FE3-C77F-D09E53A1B481}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C06FC595-FEE2-0E38-D6D9-D11A5DC53FD5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C06FC595-FEE2-0E38-D6D9-D11A5DC53FD5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C06FC595-FEE2-0E38-D6D9-D11A5DC53FD5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C06FC595-FEE2-0E38-D6D9-D11A5DC53FD5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
