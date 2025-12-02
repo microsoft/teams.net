@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-using Microsoft.Teams.Common.Json;
+// using Microsoft.Teams.Common.Json;
 
 namespace Microsoft.Teams.Api.Entities;
 
@@ -123,7 +123,9 @@ public class Entity : IEntity
             if (entity is null)
             {
                 entity = new(type);
-                entity.Properties = entity.FromJsonObject(element, options);
+
+                // TODO: handle extension data
+                // entity.Properties = entity.FromJsonObject(element, options);
             }
 
             return entity;
@@ -161,7 +163,8 @@ public class Entity : IEntity
                 return;
             }
 
-            JsonSerializer.Serialize(writer, value.ToJsonObject(options), options);
+            // TODO: Review
+            //JsonSerializer.Serialize(writer, value.ToJsonObject(options), options);
         }
     }
 }

@@ -5,8 +5,6 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-using Microsoft.Teams.Common.Json;
-
 namespace Microsoft.Teams.Api.Activities;
 
 public partial interface IActivity
@@ -76,7 +74,9 @@ public partial class Activity
             if (activity is null)
             {
                 activity = new(type);
-                activity.Properties = activity.FromJsonObject(element, options);
+
+                // TODO: Review
+                // activity.Properties = activity.FromJsonObject(element, options);
             }
 
             return activity;
@@ -150,7 +150,8 @@ public partial class Activity
                 return;
             }
 
-            JsonSerializer.Serialize(writer, value.ToJsonObject(options), options);
+            // TODO: Review
+            //JsonSerializer.Serialize(writer, value.ToJsonObject(options), options);
         }
     }
 }
