@@ -3,8 +3,8 @@
 
 namespace Microsoft.Teams.Common.Http;
 
-public interface IHttpClientFactory
+public interface ICustomHttpClientFactory
 {
-    public IHttpClient CreateClient();
-    public IHttpClient CreateClient(string name);
+    public ICustomHttpClient CreateClient();
+    public ICustomHttpClient CreateClient(string name);
 }

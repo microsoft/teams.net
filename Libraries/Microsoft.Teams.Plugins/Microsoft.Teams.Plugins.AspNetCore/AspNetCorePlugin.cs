@@ -29,7 +29,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
     public IToken? Token { get; set; }
 
     [Dependency]
-    public IHttpClient Client { get; set; }
+    public ICustomHttpClient Client { get; set; }
 
     public event EventFunction Events;
 

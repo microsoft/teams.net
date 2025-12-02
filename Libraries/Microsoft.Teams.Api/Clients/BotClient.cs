@@ -21,7 +21,7 @@ public class BotClient : Client
         SignIn = new BotSignInClient(_http, cancellationToken);
     }
 
-    public BotClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public BotClient(ICustomHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         Token = new BotTokenClient(_http, cancellationToken);
         SignIn = new BotSignInClient(_http, cancellationToken);
@@ -33,7 +33,7 @@ public class BotClient : Client
         SignIn = new BotSignInClient(_http, cancellationToken);
     }
 
-    public BotClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public BotClient(ICustomHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         Token = new BotTokenClient(_http, cancellationToken);
         SignIn = new BotSignInClient(_http, cancellationToken);

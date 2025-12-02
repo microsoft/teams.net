@@ -24,7 +24,7 @@ public class ClientCredentials : IHttpCredentials
         TenantId = tenantId;
     }
 
-    public async Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, CancellationToken cancellationToken = default)
+    public async Task<ITokenResponse> Resolve(ICustomHttpClient client, string[] scopes, CancellationToken cancellationToken = default)
     {
         var tenantId = TenantId ?? "botframework.com";
         var request = HttpRequest.Post(

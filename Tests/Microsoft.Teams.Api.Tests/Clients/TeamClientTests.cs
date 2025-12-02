@@ -14,9 +14,9 @@ public class TeamClientTests
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Team>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Team>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Team>()
             {
                 Headers = responseMessage.Headers,
@@ -36,7 +36,7 @@ public class TeamClientTests
         string expectedUrl = "https://serviceurl.com/v3/teams/team123";
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<Team>(
-            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -46,9 +46,9 @@ public class TeamClientTests
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<List<Channel>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<List<Channel>>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<List<Channel>>()
             {
                 Headers = responseMessage.Headers,
@@ -73,7 +73,7 @@ public class TeamClientTests
         string expectedUrl = "https://serviceurl.com/v3/teams/team123/conversations";
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<List<Channel>>(
-            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

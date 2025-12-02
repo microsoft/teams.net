@@ -12,7 +12,7 @@ public class BotSignInClient : Client
 
     }
 
-    public BotSignInClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public BotSignInClient(ICustomHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
 
     }
@@ -22,7 +22,7 @@ public class BotSignInClient : Client
 
     }
 
-    public BotSignInClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public BotSignInClient(ICustomHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
 
     }

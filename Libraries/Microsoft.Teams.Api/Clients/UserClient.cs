@@ -14,7 +14,7 @@ public class UserClient : Client
         Token = new UserTokenClient(_http, cancellationToken);
     }
 
-    public UserClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public UserClient(ICustomHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         Token = new UserTokenClient(_http, cancellationToken);
     }
@@ -24,7 +24,7 @@ public class UserClient : Client
         Token = new UserTokenClient(_http, cancellationToken);
     }
 
-    public UserClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public UserClient(ICustomHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         Token = new UserTokenClient(_http, cancellationToken);
     }

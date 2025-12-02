@@ -20,7 +20,7 @@ public class BotTokenClient : Client
 
     }
 
-    public BotTokenClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public BotTokenClient(ICustomHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
 
     }
@@ -30,17 +30,17 @@ public class BotTokenClient : Client
 
     }
 
-    public BotTokenClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public BotTokenClient(ICustomHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
 
     }
 
-    public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null)
+    public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, ICustomHttpClient? http = null)
     {
         return await credentials.Resolve(http ?? _http, [BotScope], _cancellationToken);
     }
 
-    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, IHttpClient? http = null)
+    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, ICustomHttpClient? http = null)
     {
         return await credentials.Resolve(http ?? _http, [GraphScope], _cancellationToken);
     }

@@ -27,7 +27,7 @@ public class AspNetCorePluginTests
         {
             plugin.Logger = new ConsoleLogger("Test", LogLevel.Debug);
         }
-        plugin.Client = new Mock<Microsoft.Teams.Common.Http.IHttpClient>().Object;
+        plugin.Client = new Mock<Microsoft.Teams.Common.Http.ICustomHttpClient>().Object;
         if (events is not null)
         {
             plugin.Events += events;

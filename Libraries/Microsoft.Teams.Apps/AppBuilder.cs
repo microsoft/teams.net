@@ -32,25 +32,25 @@ public partial class AppBuilder
         return this;
     }
 
-    public AppBuilder AddClient(Common.Http.IHttpClient client)
+    public AppBuilder AddClient(Common.Http.ICustomHttpClient client)
     {
         _options.Client = client;
         return this;
     }
 
-    public AppBuilder AddClient(Common.Http.IHttpClientFactory factory)
+    public AppBuilder AddClient(Common.Http.ICustomHttpClientFactory factory)
     {
         _options.ClientFactory = factory;
         return this;
     }
 
-    public AppBuilder AddClient(Func<Common.Http.IHttpClient> @delegate)
+    public AppBuilder AddClient(Func<Common.Http.ICustomHttpClient> @delegate)
     {
         _options.Client = @delegate();
         return this;
     }
 
-    public AppBuilder AddClient(Func<Task<Common.Http.IHttpClient>> @delegate)
+    public AppBuilder AddClient(Func<Task<Common.Http.ICustomHttpClient>> @delegate)
     {
         _options.Client = @delegate().GetAwaiter().GetResult();
         return this;

@@ -24,7 +24,7 @@ public class ApiClient : Client
         Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
     }
 
-    public ApiClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public ApiClient(string serviceUrl, ICustomHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
         Bots = new BotClient(_http, cancellationToken);
@@ -44,7 +44,7 @@ public class ApiClient : Client
         Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
     }
 
-    public ApiClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public ApiClient(string serviceUrl, ICustomHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
         Bots = new BotClient(_http, cancellationToken);

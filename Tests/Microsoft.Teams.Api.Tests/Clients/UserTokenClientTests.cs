@@ -27,9 +27,9 @@ public class UserTokenClientTests
             Headers = { { "Custom-Header", "HeaderValue" } }
         };
 
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Token.Response>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Token.Response>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Token.Response>
             {
                 Headers = responseMessage.Headers,
@@ -48,7 +48,7 @@ public class UserTokenClientTests
         Assert.Equal("validToken", reqBody.Token);
 
         string expecteUrl = "https://token.botframework.com/api/usertoken/GetToken?userId=userId-aad&connectionName=connectionName&channelId=webchat&code=200";
-        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -87,9 +87,9 @@ public class UserTokenClientTests
             }
         };
 
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<IDictionary<string, Token.Response>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<IDictionary<string, Token.Response>>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<IDictionary<string, Token.Response>>
             {
                 Headers = responseMessage.Headers,
@@ -104,7 +104,7 @@ public class UserTokenClientTests
         Assert.Equal(2, reqBody.Count);
 
         string expecteUrl = "https://token.botframework.com/api/usertoken/GetAadTokens?userId=userId-aad&connectionName=connectionName&channelId=webchat&resourceUrls%5b0%5d=value1&resourceUrls%5b1%5d=value2";
-        mockHandler.Verify(x => x.SendAsync<IDictionary<string, Token.Response>>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<IDictionary<string, Token.Response>>(It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -140,9 +140,9 @@ public class UserTokenClientTests
             }
         };
 
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<IList<Token.Status>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<IList<Token.Status>>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<IList<Token.Status>>
             {
                 Headers = responseMessage.Headers,
@@ -157,7 +157,7 @@ public class UserTokenClientTests
         Assert.Equal(2, reqBody.Count);
 
         string expecteUrl = "https://token.botframework.com/api/usertoken/GetTokenStatus?userId=userId-aad&channelId=webchat&includeFilter=validEntry";
-        mockHandler.Verify(x => x.SendAsync<IList<Token.Status>>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<IList<Token.Status>>(It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 
@@ -195,9 +195,9 @@ public class UserTokenClientTests
             }
         };
 
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Body = "valid signin data",
@@ -211,7 +211,7 @@ public class UserTokenClientTests
         await UserTokenClient.SignOutAsync(signOutRequest);
 
         string expecteUrl = "https://token.botframework.com/api/usertoken/SignOut?userId=userId-aad&connectionName=connectionName&channelId=msteams";
-        mockHandler.Verify(x => x.SendAsync(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync(It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -231,9 +231,9 @@ public class UserTokenClientTests
             Headers = { { "Custom-Header", "HeaderValue" } }
         };
 
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Token.Response>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Token.Response>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Token.Response>
             {
                 Headers = responseMessage.Headers,
@@ -252,7 +252,7 @@ public class UserTokenClientTests
         Assert.Equal("validToken", reqBody.Token);
         HttpMethod expectedMethod = HttpMethod.Post;
         string expecteUrl = "https://token.botframework.com/api/usertoken/exchange?userId=userId-aad&connectionName=connectionName&channelId=msteams";
-        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<Token.Response>(It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod), It.IsAny<CancellationToken>()), Times.Once);
     }
 
 }

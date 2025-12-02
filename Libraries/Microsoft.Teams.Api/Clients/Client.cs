@@ -7,7 +7,7 @@ namespace Microsoft.Teams.Api.Clients;
 
 public abstract class Client
 {
-    protected IHttpClient _http;
+    protected ICustomHttpClient _http;
     protected CancellationToken _cancellationToken;
 
     public Client(CancellationToken cancellationToken = default)
@@ -16,7 +16,7 @@ public abstract class Client
         _cancellationToken = cancellationToken;
     }
 
-    public Client(IHttpClient client, CancellationToken cancellationToken = default)
+    public Client(ICustomHttpClient client, CancellationToken cancellationToken = default)
     {
         _http = client;
         _cancellationToken = cancellationToken;
@@ -28,7 +28,7 @@ public abstract class Client
         _cancellationToken = cancellationToken;
     }
 
-    public Client(IHttpClientFactory factory, CancellationToken cancellationToken = default)
+    public Client(ICustomHttpClientFactory factory, CancellationToken cancellationToken = default)
     {
         _http = factory.CreateClient("default");
         _cancellationToken = cancellationToken;

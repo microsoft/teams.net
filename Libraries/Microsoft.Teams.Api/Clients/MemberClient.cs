@@ -14,7 +14,7 @@ public class MemberClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public MemberClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public MemberClient(string serviceUrl, ICustomHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
     }
@@ -24,7 +24,7 @@ public class MemberClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public MemberClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public MemberClient(string serviceUrl, ICustomHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
     }

@@ -15,9 +15,9 @@ public class MeetingClientTests
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Meeting>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Meeting>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Meeting>()
             {
                 Headers = responseMessage.Headers,
@@ -36,7 +36,7 @@ public class MeetingClientTests
         string expectedUrl = "https://serviceurl.com/v1/meetings/meeting123";
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<Meeting>(
-            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -46,9 +46,9 @@ public class MeetingClientTests
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<MeetingParticipant>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<MeetingParticipant>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<MeetingParticipant>()
             {
                 Headers = responseMessage.Headers,
@@ -79,7 +79,7 @@ public class MeetingClientTests
         string expectedUrl = "https://serviceurl.com/v1/meetings/meeting123/participants/participant1";
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<MeetingParticipant>(
-            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

@@ -3,14 +3,14 @@
 
 namespace Microsoft.Teams.Common.Http;
 
-public interface IHttpRequest : IHttpRequestOptions
+public interface ICustomHttpRequest : IHttpRequestOptions
 {
     public HttpMethod Method { get; set; }
     public string Url { get; set; }
     public object? Body { get; set; }
 }
 
-public class HttpRequest : HttpRequestOptions, IHttpRequest
+public class HttpRequest : HttpRequestOptions, ICustomHttpRequest
 {
     public required HttpMethod Method { get; set; }
     public required string Url { get; set; }

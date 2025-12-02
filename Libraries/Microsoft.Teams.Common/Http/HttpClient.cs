@@ -10,15 +10,15 @@ using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.Common.Http;
 
-public interface IHttpClient : IDisposable
+public interface ICustomHttpClient : IDisposable
 {
     public IHttpClientOptions Options { get; }
 
-    public Task<IHttpResponse<string>> SendAsync(IHttpRequest request, CancellationToken cancellationToken = default);
-    public Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(IHttpRequest request, CancellationToken cancellationToken = default);
+    public Task<IHttpResponse<string>> SendAsync(ICustomHttpRequest request, CancellationToken cancellationToken = default);
+    public Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(ICustomHttpRequest request, CancellationToken cancellationToken = default);
 }
 
-public class HttpClient : IHttpClient
+public class HttpClient : ICustomHttpClient
 {
     public IHttpClientOptions Options { get; }
 
@@ -54,14 +54,14 @@ public class HttpClient : IHttpClient
         Options.Apply(_client);
     }
 
-    public async Task<IHttpResponse<string>> SendAsync(IHttpRequest request, CancellationToken cancellationToken = default)
+    public async Task<IHttpResponse<string>> SendAsync(ICustomHttpRequest request, CancellationToken cancellationToken = default)
     {
         var httpRequest = CreateRequest(request);
         var httpResponse = await _client.SendAsync(httpRequest);
         return await CreateResponse(httpResponse, cancellationToken);
     }
 
-    public async Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(IHttpRequest request, CancellationToken cancellationToken = default)
+    public async Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(ICustomHttpRequest request, CancellationToken cancellationToken = default)
     {
         var httpRequest = CreateRequest(request);
         var httpResponse = await _client.SendAsync(httpRequest, cancellationToken);
@@ -73,7 +73,7 @@ public class HttpClient : IHttpClient
         _client.Dispose();
     }
 
-    protected HttpRequestMessage CreateRequest(IHttpRequest request)
+    protected HttpRequestMessage CreateRequest(ICustomHttpRequest request)
     {
         var httpRequest = new HttpRequestMessage(
             request.Method,

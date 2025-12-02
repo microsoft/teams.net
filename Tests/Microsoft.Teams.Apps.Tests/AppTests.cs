@@ -26,7 +26,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -34,7 +34,7 @@ public class AppTests
         await app.Start();
 
         // assert
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Once);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()), Times.Once);
         Assert.True(app.Token!.ToString() == _unexpiredJwt);
     }
 
@@ -53,7 +53,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()))
             .ThrowsAsync(exception);
         app.Api = api.Object;
 
@@ -75,7 +75,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -83,7 +83,7 @@ public class AppTests
         await app.Start();
 
         // assert
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Never);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()), Times.Never);
         Assert.Null(app.Token);
     }
 
@@ -100,7 +100,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -109,7 +109,7 @@ public class AppTests
         client.Object.Options.TokenFactory();
 
         // assert
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Once);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()), Times.Once);
         Assert.True(app.Token!.ToString() == _unexpiredJwt);
     }
 
@@ -126,7 +126,7 @@ public class AppTests
         };
         var app = new App(options);
         app.Token = new JsonWebToken(_expiredJwt);
-        credentials.Setup(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+        credentials.Setup(c => c.Resolve(It.IsAny<ICustomHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
 
         // act
@@ -134,7 +134,7 @@ public class AppTests
         client.Object.Options.TokenFactory();
 
         // assert
-        credentials.Verify(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()), Times.Once);
+        credentials.Verify(c => c.Resolve(It.IsAny<ICustomHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()), Times.Once);
         Assert.True(app.Token!.ToString() == _unexpiredJwt);
     }
 
@@ -151,10 +151,10 @@ public class AppTests
         };
         var app = new App(options);
         app.Token = new JsonWebToken(_unexpiredJwt);
-        credentials.Setup(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
+        credentials.Setup(c => c.Resolve(It.IsAny<ICustomHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -163,8 +163,8 @@ public class AppTests
         client.Object.Options.TokenFactory();
 
         // assert
-        credentials.Verify(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()), Times.Never);
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Never);
+        credentials.Verify(c => c.Resolve(It.IsAny<ICustomHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()), Times.Never);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()), Times.Never);
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -188,7 +188,7 @@ public class AppTests
         client.Object.Options.TokenFactory();
 
         // assert
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Never);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<ICustomHttpClient>()), Times.Never);
         Assert.Null(app.Token);
     }
 

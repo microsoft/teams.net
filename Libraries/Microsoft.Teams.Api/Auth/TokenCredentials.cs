@@ -26,7 +26,7 @@ public class TokenCredentials : IHttpCredentials
         Token = token;
     }
 
-    public async Task<ITokenResponse> Resolve(IHttpClient _client, string[] scopes, CancellationToken cancellationToken = default)
+    public async Task<ITokenResponse> Resolve(ICustomHttpClient _client, string[] scopes, CancellationToken cancellationToken = default)
     {
         return await Token(TenantId, scopes);
     }

@@ -34,12 +34,12 @@ public partial class App
     public ILogger Logger { get; }
     public IStorage<string, object> Storage { get; }
     public ApiClient Api { get; internal set; }
-    public IHttpClient Client { get; }
+    public ICustomHttpClient Client { get; }
     public IHttpCredentials? Credentials { get; }
     public IToken? Token { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
-    internal IHttpClient TokenClient { get; set; }
+    internal ICustomHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
     internal string UserAgent

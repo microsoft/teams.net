@@ -14,9 +14,9 @@ public class MemberClientTests
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<List<Account>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<List<Account>>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<List<Account>>()
             {
                 Headers = responseMessage.Headers,
@@ -40,7 +40,7 @@ public class MemberClientTests
         string expectedUrl = "https://serviceurl.com/v3/conversations/conv123/members";
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<List<Account>>(
-            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -50,9 +50,9 @@ public class MemberClientTests
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Account>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<Account>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<Account>()
             {
                 Headers = responseMessage.Headers,
@@ -73,7 +73,7 @@ public class MemberClientTests
         string expectedUrl = "https://serviceurl.com/v3/conversations/conv123/members/member1";
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<Account>(
-            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -83,9 +83,9 @@ public class MemberClientTests
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Headers = responseMessage.Headers,
@@ -103,7 +103,7 @@ public class MemberClientTests
         string expectedUrl = "https://serviceurl.com/v3/conversations/conv123/members/member1";
         HttpMethod expectedMethod = HttpMethod.Delete;
         mockHandler.Verify(x => x.SendAsync(
-            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

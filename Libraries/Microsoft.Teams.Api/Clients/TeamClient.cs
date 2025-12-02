@@ -14,7 +14,7 @@ public class TeamClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public TeamClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public TeamClient(string serviceUrl, ICustomHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
         ServiceUrl = serviceUrl;
     }
@@ -24,7 +24,7 @@ public class TeamClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public TeamClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public TeamClient(string serviceUrl, ICustomHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
         ServiceUrl = serviceUrl;
     }

@@ -24,9 +24,9 @@ public class ConversationClientTests
 
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<ConversationResource>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<ConversationResource>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<ConversationResource>()
             {
                 Headers = responseMessage.Headers,
@@ -48,7 +48,7 @@ public class ConversationClientTests
         string expecteUrl = "https://serviceurl.com/v3/conversations";
         HttpMethod expectedMethod = HttpMethod.Post;
         mockHandler.Verify(x => x.SendAsync<ConversationResource>(
-            It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }

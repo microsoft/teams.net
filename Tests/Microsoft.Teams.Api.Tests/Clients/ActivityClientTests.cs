@@ -20,9 +20,9 @@ public class ActivityClientTests
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var responseBody = new Resource() { Id = "activityId" };
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Body = JsonSerializer.Serialize(responseResource, new JsonSerializerOptions { WriteIndented = true }),
@@ -45,7 +45,7 @@ public class ActivityClientTests
         string expecteUrl = "https://serviceurl.com/v3/conversations/conversationId/activities";
         HttpMethod expectedMethod = HttpMethod.Post;
         mockHandler.Verify(x => x.SendAsync(
-            It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -57,9 +57,9 @@ public class ActivityClientTests
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var responseBody = new Resource() { Id = "activityId" };
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Body = String.Empty,
@@ -82,7 +82,7 @@ public class ActivityClientTests
         string expecteUrl = "https://serviceurl.com/v3/conversations/conversationId/activities";
         HttpMethod expectedMethod = HttpMethod.Post;
         mockHandler.Verify(x => x.SendAsync(
-            It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -96,9 +96,9 @@ public class ActivityClientTests
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var responseBody = new Resource() { Id = "activityId" };
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Body = JsonSerializer.Serialize(responseResource, new JsonSerializerOptions { WriteIndented = true }),
@@ -121,7 +121,7 @@ public class ActivityClientTests
         string expecteUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId";
         HttpMethod expectedMethod = HttpMethod.Put;
         mockHandler.Verify(x => x.SendAsync(
-            It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -135,9 +135,9 @@ public class ActivityClientTests
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var responseBody = new Resource() { Id = "activityId" };
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Body = JsonSerializer.Serialize(responseResource, new JsonSerializerOptions { WriteIndented = true }),
@@ -160,7 +160,7 @@ public class ActivityClientTests
         string expecteUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId";
         HttpMethod expectedMethod = HttpMethod.Post;
         mockHandler.Verify(x => x.SendAsync(
-            It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -173,9 +173,9 @@ public class ActivityClientTests
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var responseBody = new Resource() { Id = "activityId" };
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Body = String.Empty,
@@ -197,7 +197,7 @@ public class ActivityClientTests
         string expecteUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId";
         HttpMethod expectedMethod = HttpMethod.Delete;
         mockHandler.Verify(x => x.SendAsync(
-            It.Is<IHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
+            It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
@@ -210,9 +210,9 @@ public class ActivityClientTests
         using (var responseMessage = new HttpResponseMessage())
         {
             responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-            var mockHandler = new Mock<IHttpClient>();
+            var mockHandler = new Mock<ICustomHttpClient>();
             mockHandler
-                .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+                .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new HttpResponse<string>()
                 {
                     Body = JsonSerializer.Serialize(responseResource, new JsonSerializerOptions { WriteIndented = true }),
@@ -235,7 +235,7 @@ public class ActivityClientTests
             string expectedUrl = "https://serviceurl.com/v3/conversations/conversationId/activities?isTargetedActivity=true";
             HttpMethod expectedMethod = HttpMethod.Post;
             mockHandler.Verify(x => x.SendAsync(
-                It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+                It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
                 It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -249,9 +249,9 @@ public class ActivityClientTests
         using (var responseMessage = new HttpResponseMessage())
         {
             responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-            var mockHandler = new Mock<IHttpClient>();
+            var mockHandler = new Mock<ICustomHttpClient>();
             mockHandler
-                .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+                .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new HttpResponse<string>()
                 {
                     Body = JsonSerializer.Serialize(responseResource, new JsonSerializerOptions { WriteIndented = true }),
@@ -274,7 +274,7 @@ public class ActivityClientTests
             string expectedUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId?isTargetedActivity=true";
             HttpMethod expectedMethod = HttpMethod.Put;
             mockHandler.Verify(x => x.SendAsync(
-                It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+                It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
                 It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -288,9 +288,9 @@ public class ActivityClientTests
         using (var responseMessage = new HttpResponseMessage())
         {
             responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-            var mockHandler = new Mock<IHttpClient>();
+            var mockHandler = new Mock<ICustomHttpClient>();
             mockHandler
-                .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+                .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new HttpResponse<string>()
                 {
                     Body = JsonSerializer.Serialize(responseResource, new JsonSerializerOptions { WriteIndented = true }),
@@ -313,7 +313,7 @@ public class ActivityClientTests
             string expectedUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId?isTargetedActivity=true";
             HttpMethod expectedMethod = HttpMethod.Post;
             mockHandler.Verify(x => x.SendAsync(
-                It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+                It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
                 It.IsAny<CancellationToken>()),
                 Times.Once);
         }
@@ -327,9 +327,9 @@ public class ActivityClientTests
         using (var responseMessage = new HttpResponseMessage())
         {
             responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-            var mockHandler = new Mock<IHttpClient>();
+            var mockHandler = new Mock<ICustomHttpClient>();
             mockHandler
-                .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+                .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new HttpResponse<string>()
                 {
                     Body = String.Empty,
@@ -345,7 +345,7 @@ public class ActivityClientTests
             string expectedUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId?isTargetedActivity=true";
             HttpMethod expectedMethod = HttpMethod.Delete;
             mockHandler.Verify(x => x.SendAsync(
-                It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+                It.Is<ICustomHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
                 It.IsAny<CancellationToken>()),
                 Times.Once);
         }

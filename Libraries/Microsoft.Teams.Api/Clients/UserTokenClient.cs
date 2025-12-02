@@ -20,7 +20,7 @@ public class UserTokenClient : Client
 
     }
 
-    public UserTokenClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public UserTokenClient(ICustomHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
 
     }
@@ -30,7 +30,7 @@ public class UserTokenClient : Client
 
     }
 
-    public UserTokenClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public UserTokenClient(ICustomHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
 
     }

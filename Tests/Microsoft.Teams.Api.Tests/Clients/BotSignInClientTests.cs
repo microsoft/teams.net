@@ -18,9 +18,9 @@ public class BotSignInClientTests
         };
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Body = "valid signin data",
@@ -35,7 +35,7 @@ public class BotSignInClientTests
         Assert.Equal("valid signin data", reqBody);
 
         string expecteUrl = "https://token.botframework.com/api/botsignin/GetSignInUrl?State=state&CodeChallenge=&EmulatorUrl=&FinalRedirect=";
-        mockHandler.Verify(x => x.SendAsync(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync(It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -52,9 +52,9 @@ public class BotSignInClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
 
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<string>()
             {
                 Body = "valid signin data",
@@ -69,7 +69,7 @@ public class BotSignInClientTests
         Assert.Equal("valid signin data", reqBody);
 
         string expecteUrl = "https://token.botframework.com/api/botsignin/GetSignInUrl?State=state&CodeChallenge=code%241&EmulatorUrl=https%3a%2f%2femulator.com&FinalRedirect=https%3a%2f%2fsomewhere.com";
-        mockHandler.Verify(x => x.SendAsync(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync(It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -83,9 +83,9 @@ public class BotSignInClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
 
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<SignIn.UrlResponse>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<SignIn.UrlResponse>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<SignIn.UrlResponse>()
             {
                 Body = new SignIn.UrlResponse()
@@ -104,7 +104,7 @@ public class BotSignInClientTests
         Assert.Equal("valid signin data", reqBody.SignInLink);
 
         string expecteUrl = "https://token.botframework.com/api/botsignin/GetSignInResource?State=state&CodeChallenge=&EmulatorUrl=&FinalRedirect=";
-        mockHandler.Verify(x => x.SendAsync<SignIn.UrlResponse>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<SignIn.UrlResponse>(It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -121,9 +121,9 @@ public class BotSignInClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
 
 
-        var mockHandler = new Mock<IHttpClient>();
+        var mockHandler = new Mock<ICustomHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<SignIn.UrlResponse>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .Setup(handler => handler.SendAsync<SignIn.UrlResponse>(It.IsAny<ICustomHttpRequest>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new HttpResponse<SignIn.UrlResponse>()
             {
                 Body = new SignIn.UrlResponse()
@@ -142,6 +142,6 @@ public class BotSignInClientTests
         Assert.Equal("valid signin data", reqBody.SignInLink);
 
         string expecteUrl = "https://token.botframework.com/api/botsignin/GetSignInResource?State=state&CodeChallenge=code%241&EmulatorUrl=https%3a%2f%2femulator.com&FinalRedirect=https%3a%2f%2fsomewhere.com";
-        mockHandler.Verify(x => x.SendAsync<SignIn.UrlResponse>(It.Is<IHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
+        mockHandler.Verify(x => x.SendAsync<SignIn.UrlResponse>(It.Is<ICustomHttpRequest>(arg => arg.Url == expecteUrl), It.IsAny<CancellationToken>()), Times.Once);
     }
 }
