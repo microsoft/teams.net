@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Apps.Events;

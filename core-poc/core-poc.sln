@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Bot.Core", "Micro
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams", "Microsoft.Teams\Microsoft.Teams.csproj", "{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Apps", "..\Libraries\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj", "{C8FFD0DB-EE20-2F02-7D46-511DB9A46FF9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -33,6 +35,10 @@ Global
 		{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8FFD0DB-EE20-2F02-7D46-511DB9A46FF9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8FFD0DB-EE20-2F02-7D46-511DB9A46FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8FFD0DB-EE20-2F02-7D46-511DB9A46FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8FFD0DB-EE20-2F02-7D46-511DB9A46FF9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

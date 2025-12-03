@@ -5,6 +5,8 @@ using System.Text.Json;
 
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.SignIn;
+//using Microsoft.Teams.Api.TokenExchange;
 
 namespace Microsoft.Teams.Apps;
 
@@ -51,18 +53,20 @@ public partial class Context<TActivity> : IContext<TActivity>
         options ??= new OAuthOptions();
         var reference = Ref.Copy();
 
-        try
-        {
-            var tokenResponse = await Api.Users.Token.GetAsync(new()
-            {
-                UserId = Activity.From.Id,
-                ChannelId = Activity.ChannelId,
-                ConnectionName = options.ConnectionName ?? ConnectionName,
-            });
+        // TODO: finish SSO
 
-            return tokenResponse.Token;
-        }
-        catch { }
+        //try
+        //{
+        //    var tokenResponse = await Api.Users.Token.GetAsync(new()
+        //    {
+        //        UserId = Activity.From.Id,
+        //        ChannelId = Activity.ChannelId,
+        //        ConnectionName = options.ConnectionName ?? ConnectionName,
+        //    });
+
+        //    return tokenResponse.Token;
+        //}
+        //catch { }
 
         var tokenExchangeState = new Api.TokenExchange.State()
         {
@@ -76,15 +80,18 @@ public partial class Context<TActivity> : IContext<TActivity>
         {
             // create new 1:1 conversation with user to do SSO
             // because groupchats don't support it.
-            var (id, _, _) = await Api.Conversations.CreateAsync(new()
-            {
-                TenantId = Ref.Conversation.TenantId,
-                IsGroup = false,
-                Bot = Ref.Bot,
-                Members = [Activity.From]
-            });
 
-            reference.Conversation.Id = id;
+            // TODO: finish SSO
+
+            //var (id, _, _) = await Api.Conversations.CreateAsync(new()
+            //{
+            //    TenantId = Ref.Conversation.TenantId,
+            //    IsGroup = false,
+            //    Bot = Ref.Bot,
+            //    Members = [Activity.From]
+            //});
+
+            reference.Conversation.Id = "<id>";
             reference.Conversation.IsGroup = false;
 
             var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, false, CancellationToken);
@@ -92,7 +99,10 @@ public partial class Context<TActivity> : IContext<TActivity>
         }
 
         var state = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(tokenExchangeState));
-        var resource = await Api.Bots.SignIn.GetResourceAsync(new() { State = state });
+
+        // TODO: finish SSO
+
+        UrlResponse resource = null!; //await Api.Bots.SignIn.GetResourceAsync(new() { State = state });
         var activity = new MessageActivity();
 
         activity.InputHint = InputHint.AcceptingInput;
@@ -127,15 +137,19 @@ public partial class Context<TActivity> : IContext<TActivity>
         {
             // create new 1:1 conversation with user to do SSO
             // because groupchats don't support it.
-            var (id, _, _) = await Api.Conversations.CreateAsync(new()
-            {
-                TenantId = Ref.Conversation.TenantId,
-                IsGroup = false,
-                Bot = Ref.Bot,
-                Members = [Activity.From]
-            });
 
-            reference.Conversation.Id = id;
+            // TODO: finish SSO
+
+            //var (id, _, _) = await Api.Conversations.CreateAsync(new()
+            //{
+            //    TenantId = Ref.Conversation.TenantId,
+            //    IsGroup = false,
+            //    Bot = Ref.Bot,
+            //    Members = [Activity.From]
+            //});
+
+            reference.Conversation.Id = "<id>";
+
             reference.Conversation.IsGroup = false;
 
             var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, false, CancellationToken);
@@ -169,12 +183,14 @@ public partial class Context<TActivity> : IContext<TActivity>
 
     public async Task SignOut(string? connectionName = null)
     {
-        await Api.Users.Token.SignOutAsync(new()
-        {
-            ChannelId = Ref.ChannelId,
-            UserId = Activity.From.Id,
-            ConnectionName = connectionName ?? ConnectionName,
-        });
+        // TODO: finish sign out
+
+        //await Api.Users.Token.SignOutAsync(new()
+        //{
+        //    ChannelId = Ref.ChannelId,
+        //    UserId = Activity.From.Id,
+        //    ConnectionName = connectionName ?? ConnectionName,
+        //});
     }
 }
 

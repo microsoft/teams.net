@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0;netstandard2.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
@@ -20,7 +20,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
     <ProjectReference Include="..\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
-    <ProjectReference Include="..\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
   </ItemGroup>
 
 </Project>

@@ -4,13 +4,11 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
-using Microsoft.Teams.Api.Clients;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Logging;
-using Microsoft.Teams.Common.Storage;
 
 namespace Microsoft.Teams.Apps;
 
@@ -41,12 +39,16 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// <summary>
     /// the app logger instance
     /// </summary>
-    public ILogger Log { get; set; }
+    //public ILogger Log { get; set; }
+
+
+    // TODO: bring back storage
 
     /// <summary>
     /// the app storage instance
     /// </summary>
-    public IStorage<string, object> Storage { get; set; }
+    // public IStorage<string, object> Storage { get; set; }
+
 
     /// <summary>
     /// the api client
@@ -66,7 +68,7 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// <summary>
     /// The user's access token to the Microsoft Graph API.
     /// </summary>
-    public JsonWebToken? UserGraphToken { get; set; }
+    // public JsonWebToken? UserGraphToken { get; set; }
 
     /// <summary>
     /// any extra data
@@ -130,12 +132,15 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
 
     public required string AppId { get; set; }
     public required string TenantId { get; set; }
-    public required ILogger Log { get; set; }
-    public required IStorage<string, object> Storage { get; set; }
+    public ILogger? Log { get; set; }
+
+    // TODO: bring back storage
+
+    // public required IStorage<string, object> Storage { get; set; }
     public required ApiClient Api { get; set; }
     public required TActivity Activity { get; set; }
     public required ConversationReference Ref { get; set; }
-    public required JsonWebToken? UserGraphToken { get; set; }
+    // public required JsonWebToken? UserGraphToken { get; set; }
     public IDictionary<string, object?> Extra { get; set; } = new Dictionary<string, object?>();
     public CancellationToken CancellationToken { get; set; }
 
@@ -177,11 +182,11 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
             AppId = AppId,
             TenantId = TenantId,
             Log = Log,
-            Storage = Storage,
+            // Storage = Storage,
             Api = Api,
             Activity = (TToActivity)Activity.ToType(typeof(TToActivity), null),
             Ref = Ref,
-            UserGraphToken = UserGraphToken,
+            // UserGraphToken = UserGraphToken,
             IsSignedIn = IsSignedIn,
             ConnectionName = ConnectionName,
             Extra = Extra,

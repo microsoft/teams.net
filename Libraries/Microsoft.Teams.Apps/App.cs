@@ -3,45 +3,55 @@
 
 using System.Reflection;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Auth;
-using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps.Activities.Invokes;
+using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Http;
-using Microsoft.Teams.Common.Logging;
-using Microsoft.Teams.Common.Storage;
+
+//using static Microsoft.Teams.Api.MessageExtensions.Query;
+
 
 namespace Microsoft.Teams.Apps;
 
+public interface IToken
+{
+    public string? AppId { get; }
+    public string? TenantId { get; }
+    public string? ServiceUrl { get; }
+}
+
+
 public partial class App
 {
-    public static AppBuilder Builder(AppOptions? options = null) => new(options);
+
+    public ApiClient ApiClient;
 
     /// <summary>
     /// the apps id
     /// </summary>
-    public string? Id => Token?.AppId;
+    public string? Id => "Update app ID";
+
 
     /// <summary>
     /// the apps name
     /// </summary>
-    public string? Name => Token?.AppDisplayName;
+    //public string? Name => Token?.AppDisplayName;
 
     public Status? Status { get; internal set; }
     public ILogger Logger { get; }
-    public IStorage<string, object> Storage { get; }
-    public ApiClient Api { get; internal set; }
-    public ICustomHttpClient Client { get; }
-    public IHttpCredentials? Credentials { get; }
-    public IToken? Token { get; internal set; }
+    //public IStorage<string, object> Storage { get; }
+    //public ApiClient Api { get; internal set; }
+    //public ICustomHttpClient Client { get; }
+    //public IHttpCredentials? Credentials { get; }
+    //public IToken? Token { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
-    internal ICustomHttpClient TokenClient { get; set; }
+    //internal ICustomHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
-    internal IContainer Container { get; set; }
+    //internal IContainer Container { get; set; }
     internal string UserAgent
     {
         get
@@ -52,56 +62,63 @@ public partial class App
         }
     }
 
-    public App(AppOptions? options = null)
+    public App(ILogger<App> logger, ApiClient apiClient)
     {
-        Logger = options?.Logger ?? new ConsoleLogger();
-        Storage = options?.Storage ?? new LocalStorage<object>();
-        Credentials = options?.Credentials;
-        Plugins = options?.Plugins ?? [];
-        OAuth = options?.OAuth ?? new OAuthSettings();
-        Provider = options?.Provider;
+        ApiClient = apiClient;
 
-        TokenClient = new Common.Http.HttpClient();
-        Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
-        Client.Options.AddUserAgent(UserAgent);
-        Client.Options.TokenFactory ??= () =>
-        {
-            if (Credentials is not null)
-            {
-                if (Token is null)
-                {
-                    var res = Api!.Bots.Token.GetAsync(Credentials, TokenClient)
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
 
-                    Token = new JsonWebToken(res.AccessToken);
-                }
+        Logger = logger;// options?.Logger ?? new ConsoleLogger();
+        //Storage = options?.Storage ?? new LocalStorage<object>();
+        //Credentials = options?.Credentials;
 
-                if (Token.IsExpired)
-                {
-                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(BotTokenClient.BotScope)])
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
+        // TODO: implement plugins
+        Plugins = []; // options?.Plugins ?? [];
 
-                    Token = new JsonWebToken(res.AccessToken);
-                }
-            }
+        // TODO: implement OAuth settings
+        OAuth = new OAuthSettings();  //options?.OAuth ?? new OAuthSettings();
+        //Provider = options?.Provider;
 
-            return Token;
-        };
+        //TokenClient = new Common.Http.HttpClient();
+        //Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
+        //Client.Options.AddUserAgent(UserAgent);
+        //Client.Options.TokenFactory ??= () =>
+        //{
+        //    if (Credentials is not null)
+        //    {
+        //        if (Token is null)
+        //        {
+        //            var res = Api!.Bots.Token.GetAsync(Credentials, TokenClient)
+        //            .ConfigureAwait(false)
+        //            .GetAwaiter()
+        //            .GetResult();
 
-        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
-        Container = new Container();
-        Container.Register(Logger);
-        Container.Register(Storage);
-        Container.Register(Client);
-        Container.Register(Api);
-        Container.Register<IHttpCredentials>(new FactoryProvider(() => Credentials));
-        Container.Register("AppId", new FactoryProvider(() => Id));
-        Container.Register("AppName", new FactoryProvider(() => Name));
-        Container.Register("Token", new FactoryProvider(() => Token));
+        //            Token = new JsonWebToken(res.AccessToken);
+        //        }
+
+        //        if (Token.IsExpired)
+        //        {
+        //            var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(BotTokenClient.BotScope)])
+        //            .ConfigureAwait(false)
+        //            .GetAwaiter()
+        //            .GetResult();
+
+        //            Token = new JsonWebToken(res.AccessToken);
+        //        }
+        //    }
+
+        //    return Token;
+        //};
+
+        //ApiClient = new ApiClient();
+        //Container = new Container();
+        //Container.Register(Logger);
+        //Container.Register(Storage);
+        //Container.Register(Client);
+        //Container.Register(Api);
+        //Container.Register<IHttpCredentials>(new FactoryProvider(() => Credentials));
+        //Container.Register("AppId", new FactoryProvider(() => Id));
+        //Container.Register("AppName", new FactoryProvider(() => Name));
+        //Container.Register("Token", new FactoryProvider(() => Token));
 
         this.OnTokenExchange(OnTokenExchangeActivity);
         this.OnVerifyState(OnVerifyStateActivity);
@@ -117,56 +134,58 @@ public partial class App
         Status = Apps.Status.Ready;
     }
 
+    // TODO: finish removing start
+
     /// <summary>
     /// start the app
     /// </summary>
-    public async Task Start(CancellationToken cancellationToken = default)
-    {
-        try
-        {
-            foreach (var plugin in Plugins)
-            {
-                Inject(plugin);
-            }
+    //public async Task Start(CancellationToken cancellationToken = default)
+    //{
+    //    try
+    //    {
+    //        foreach (var plugin in Plugins)
+    //        {
+    //            Inject(plugin);
+    //        }
 
-            if (Credentials is not null)
-            {
-                try
-                {
-                    var res = await Api.Bots.Token.GetAsync(Credentials, TokenClient);
-                    Token = new JsonWebToken(res.AccessToken);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error("Failed to get bot token on app startup.", ex);
-                }
-            }
+    //        if (Credentials is not null)
+    //        {
+    //            try
+    //            {
+    //                var res = await Api.Bots.Token.GetAsync(Credentials, TokenClient);
+    //                Token = new JsonWebToken(res.AccessToken);
+    //            }
+    //            catch (Exception ex)
+    //            {
+    //                Logger.Error("Failed to get bot token on app startup.", ex);
+    //            }
+    //        }
 
-            Logger.Debug(Id);
-            Logger.Debug(Name);
+    //        Logger.Debug(Id);
+    //        Logger.Debug(Name);
 
-            foreach (var plugin in Plugins)
-            {
-                await plugin.OnInit(this, cancellationToken);
-            }
+    //        foreach (var plugin in Plugins)
+    //        {
+    //            await plugin.OnInit(this, cancellationToken);
+    //        }
 
-            foreach (var plugin in Plugins)
-            {
-                await plugin.OnStart(this, cancellationToken);
-            }
+    //        foreach (var plugin in Plugins)
+    //        {
+    //            await plugin.OnStart(this, cancellationToken);
+    //        }
 
-            Status = Apps.Status.Started;
-        }
-        catch (Exception ex)
-        {
-            Status = Apps.Status.Stopped;
-            await Events.Emit(
-                null!,
-                EventType.Error,
-                new ErrorEvent() { Exception = ex }
-            );
-        }
-    }
+    //        Status = Apps.Status.Started;
+    //    }
+    //    catch (Exception ex)
+    //    {
+    //        Status = Apps.Status.Stopped;
+    //        await Events.Emit(
+    //            null!,
+    //            EventType.Error,
+    //            new ErrorEvent() { Exception = ex }
+    //        );
+    //    }
+    //}
 
     /// <summary>
     /// send an activity to the conversation
@@ -196,11 +215,11 @@ public partial class App
         var reference = new ConversationReference()
         {
             ChannelId = ChannelId.MsTeams,
-            ServiceUrl = serviceUrl ?? Api.ServiceUrl,
+            ServiceUrl = serviceUrl ,//?? Api.ServiceUrl,
             Bot = new()
             {
-                Id = Id,
-                Name = Name,
+                Id = activity.From.Id,
+                Name = activity.From.Name,
                 Role = Role.Bot
             },
             Conversation = new()
@@ -329,25 +348,23 @@ public partial class App
     {
         var start = DateTime.UtcNow;
         var routes = Router.Select(@event.Activity);
-        JsonWebToken? userToken = null;
+        //JsonWebToken? userToken = null;
 
-        var api = new ApiClient(Api);
+        //try
+        //{
+        //    var tokenResponse = await api.Users.Token.GetAsync(new()
+        //    {
+        //        UserId = @event.Activity.From.Id,
+        //        ChannelId = @event.Activity.ChannelId,
+        //        ConnectionName = OAuth.DefaultConnectionName
+        //    });
 
-        try
-        {
-            var tokenResponse = await api.Users.Token.GetAsync(new()
-            {
-                UserId = @event.Activity.From.Id,
-                ChannelId = @event.Activity.ChannelId,
-                ConnectionName = OAuth.DefaultConnectionName
-            });
-
-            userToken = new JsonWebToken(tokenResponse);
-        }
-        catch { }
+        //    userToken = new JsonWebToken(tokenResponse);
+        //}
+        //catch { }
 
         var path = @event.Activity.GetPath();
-        Logger.Debug(path);
+        Logger.LogDebug(path);
 
         var reference = new ConversationReference()
         {
@@ -379,15 +396,15 @@ public partial class App
         {
             AppId = @event.Token.AppId ?? Id ?? string.Empty,
             TenantId = @event.Token.TenantId ?? string.Empty,
-            Log = Logger.Child(path),
-            Storage = Storage,
-            Api = api,
+            //Log = Logger.Child(path),
+            //Storage = Storage,
+            Api = ApiClient,
             Activity = @event.Activity,
             Ref = reference,
-            IsSignedIn = userToken is not null,
+            IsSignedIn = false, // userToken is not null, //TODO: restore sign-in check
             OnNext = Next,
             Extra = @event.Extra ?? new Dictionary<string, object?>(),
-            UserGraphToken = userToken,
+            //UserGraphToken = userToken,
             CancellationToken = cancellationToken,
             ConnectionName = OAuth.DefaultConnectionName,
             OnActivitySent = async (activity, context) =>

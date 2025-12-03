@@ -3,9 +3,9 @@
 
 using System.Reflection;
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Logging;
 
 namespace Microsoft.Teams.Apps;
 
@@ -48,9 +48,9 @@ public partial class App
         };
 
         Plugins.Add(plugin);
-        Container.Register(attr.Name, new ValueProvider(plugin));
-        Container.Register(plugin.GetType().Name, new ValueProvider(plugin));
-        Logger.Debug($"plugin {attr.Name} registered");
+        //Container.Register(attr.Name, new ValueProvider(plugin));
+        //Container.Register(plugin.GetType().Name, new ValueProvider(plugin));
+        Logger.LogDebug($"plugin {attr.Name} registered");
         return this;
     }
 
@@ -69,25 +69,25 @@ public partial class App
 
             if (attribute is null) continue;
 
-            var dependency = Container.Resolve<object>(attribute.Name ?? property.PropertyType.Name);
+            //var dependency = Container.Resolve<object>(attribute.Name ?? property.PropertyType.Name);
 
-            if (dependency is null)
-            {
-                dependency = Container.Resolve<object>(property.Name);
-            }
+            //if (dependency is null)
+            //{
+            //    dependency = Container.Resolve<object>(property.Name);
+            //}
 
-            if (dependency is null)
-            {
-                if (attribute.Optional) continue;
-                throw new InvalidOperationException($"dependency '{property.PropertyType.Name}' of property '{property.Name}' not found, but plugin '{metadata.Name}' depends on it");
-            }
+            //if (dependency is null)
+            //{
+            //    if (attribute.Optional) continue;
+            //    throw new InvalidOperationException($"dependency '{property.PropertyType.Name}' of property '{property.Name}' not found, but plugin '{metadata.Name}' depends on it");
+            //}
 
-            if (dependency is ILogger logger)
-            {
-                dependency = logger.Child(metadata.Name);
-            }
+            //if (dependency is ILogger logger)
+            //{
+            //    dependency = logger.Child(metadata.Name);
+            //}
 
-            property.SetValue(plugin, dependency);
+            property.SetValue(plugin, null);
         }
     }
 }

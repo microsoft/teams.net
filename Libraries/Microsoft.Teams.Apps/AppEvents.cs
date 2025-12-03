@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Apps;
 
@@ -14,18 +14,19 @@ public partial class App
     protected async Task OnErrorEvent(IPlugin sender, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
         cancellationToken = @event.Context?.CancellationToken ?? cancellationToken;
-        Logger.Error(@event.Exception);
+        Logger.LogError(@event.Exception, @event.Exception.Message);
 
-        if (@event.Exception is HttpException ex)
-        {
-            Logger.Error(ex.Request?.RequestUri?.ToString());
+        // TODO: review events errors
+        //if (@event.Exception is HttpException ex)
+        //{
+        //    Logger.Error(ex.Request?.RequestUri?.ToString());
 
-            if (ex.Request?.Content is not null)
-            {
-                var content = await ex.Request.Content.ReadAsStringAsync();
-                Logger.Error(content);
-            }
-        }
+        //    if (ex.Request?.Content is not null)
+        //    {
+        //        var content = await ex.Request.Content.ReadAsStringAsync();
+        //        Logger.Error(content);
+        //    }
+        //}
 
         foreach (var plugin in Plugins)
         {
@@ -36,13 +37,13 @@ public partial class App
 
     protected Task<Response> OnActivityEvent(ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug(EventType.Activity);
+        Logger.LogDebug(EventType.Activity);
         return Process(sender, @event, cancellationToken);
     }
 
     protected async Task OnActivitySentEvent(ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug(EventType.ActivitySent);
+        Logger.LogDebug(EventType.ActivitySent);
 
         foreach (var plugin in Plugins)
         {
@@ -53,7 +54,7 @@ public partial class App
 
     protected async Task OnActivityResponseEvent(ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.Debug(EventType.ActivityResponse);
+        Logger.LogDebug(EventType.ActivityResponse);
 
         foreach (var plugin in Plugins)
         {
