@@ -36,5 +36,5 @@ public class Meeting
     /// </summary>
     [JsonPropertyName("organizer")]
     [JsonPropertyOrder(3)]
-    public Account? Organizer { get; set; }
+    public TeamsChannelAccount? Organizer { get; set; }
 }

@@ -49,7 +49,7 @@ public class MeetingLeaveEventTests
                 {
                     new MeetingParticipantLeaveActivityValue.Member
                     {
-                        User = new Account { Id = "user1", Name = "Test User" },
+                        User = new TeamsChannelAccount { Id = "user1", Name = "Test User" },
                         Meeting = new MeetingParticipantLeaveActivityValue.Meeting
                         {
                             InMeeting = true,
@@ -105,7 +105,7 @@ public class MeetingLeaveEventTests
                 {
                     new MeetingParticipantLeaveActivityValue.Member
                     {
-                        User = new Account { Id = "user1", Name = "Test User" },
+                        User = new TeamsChannelAccount { Id = "user1", Name = "Test User" },
                         Meeting = new MeetingParticipantLeaveActivityValue.Meeting
                         {
                             InMeeting = true,
@@ -150,7 +150,7 @@ public class MeetingLeaveEventTests
                 {
                     new MeetingParticipantLeaveActivityValue.Member
                     {
-                        User = new Account { Id = "user1", Name = "Test User" },
+                        User = new TeamsChannelAccount { Id = "user1", Name = "Test User" },
                         Meeting = new MeetingParticipantLeaveActivityValue.Meeting
                         {
                             InMeeting = true,
