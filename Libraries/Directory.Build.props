@@ -22,6 +22,8 @@
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>$([MSBuild]::GetPathOfFileAbove('key.snk'))</AssemblyOriginatorKeyFile>
     <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+    <AnalysisMode>Recommended</AnalysisMode>
+    <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>
