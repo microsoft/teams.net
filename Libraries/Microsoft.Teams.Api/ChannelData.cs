@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Api;
 /// <summary>
 /// Channel data specific to messages received in Microsoft Teams
 /// </summary>
-public class ChannelData
+public class ChannelData : Microsoft.Bot.Core.Schema.ChannelData
 {
     /// <summary>
     /// Information about the channel in which the message was sent
@@ -113,7 +113,7 @@ public class ChannelData
     /// All extra data present
     /// </summary>
     [JsonExtensionData]
-    public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
+    public new IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
 
     /// <summary>
     /// merge two channel data objects

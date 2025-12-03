@@ -17,13 +17,13 @@ public class Activity<TChannelData>(string type = "message") where TChannelData 
     [JsonPropertyName("type")] public string Type { get; set; } = type;
     [JsonPropertyName("channelId")] public string? ChannelId { get; set; }
     [JsonPropertyName("text")] public string? Text { get; set; }
-    [JsonPropertyName("id")] public string? Id { get; set; }
+    [JsonPropertyName("id")] public string Id { get; set; } = Guid.NewGuid().ToString();
     [JsonPropertyName("serviceUrl")] public string? ServiceUrl { get; set; }
     [JsonPropertyName("replyToId")] public string? ReplyToId { get; set; }
     [JsonPropertyName("channelData")] public TChannelData? ChannelData { get; set; }
-    [JsonPropertyName("from")] public ConversationAccount? From { get; set; }
-    [JsonPropertyName("recipient")] public ConversationAccount? Recipient { get; set; }
-    [JsonPropertyName("conversation")] public Conversation? Conversation { get; set; }
+    [JsonPropertyName("from")] public ConversationAccount From { get; set; } = new();
+    [JsonPropertyName("recipient")] public ConversationAccount Recipient { get; set; } = new();
+    [JsonPropertyName("conversation")] public Conversation Conversation { get; set; } = new();
     [JsonPropertyName("entities")] public JsonArray? Entities { get; set; }
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
 

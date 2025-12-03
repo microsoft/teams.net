@@ -22,7 +22,7 @@ public abstract class ConfigActivity(Name.Configs name) : InvokeActivity(new(nam
     public Configs.FetchActivity ToFetch() => (Configs.FetchActivity)this;
     public Configs.SubmitActivity ToSubmit() => (Configs.SubmitActivity)this;
 
-    public override object ToType(Type type, IFormatProvider? provider)
+    public new object ToType(Type type, IFormatProvider? provider)
     {
         if (type == typeof(Configs.FetchActivity)) return ToFetch();
         if (type == typeof(Configs.SubmitActivity)) return ToSubmit();

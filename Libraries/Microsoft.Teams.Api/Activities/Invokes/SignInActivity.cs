@@ -22,7 +22,7 @@ public abstract class SignInActivity(Name.SignIn name) : InvokeActivity(new(name
     public SignIn.TokenExchangeActivity ToTokenExchange() => (SignIn.TokenExchangeActivity)this;
     public SignIn.VerifyStateActivity ToVerifyState() => (SignIn.VerifyStateActivity)this;
 
-    public override object ToType(Type type, IFormatProvider? provider)
+    public new object ToType(Type type, IFormatProvider? provider)
     {
         if (type == typeof(SignIn.TokenExchangeActivity)) return ToTokenExchange();
         if (type == typeof(SignIn.VerifyStateActivity)) return ToVerifyState();

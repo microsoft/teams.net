@@ -22,7 +22,7 @@ public abstract class TaskActivity(Name.Tasks name) : InvokeActivity(new(name.Va
     public Tasks.FetchActivity ToFetch() => (Tasks.FetchActivity)this;
     public Tasks.SubmitActivity ToSubmit() => (Tasks.SubmitActivity)this;
 
-    public override object ToType(Type type, IFormatProvider? provider)
+    public new object ToType(Type type, IFormatProvider? provider)
     {
         if (type == typeof(Tasks.FetchActivity)) return ToFetch();
         if (type == typeof(Tasks.SubmitActivity)) return ToSubmit();

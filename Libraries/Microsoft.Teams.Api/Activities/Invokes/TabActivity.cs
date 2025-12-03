@@ -22,7 +22,7 @@ public abstract class TabActivity(Name.Tabs name) : InvokeActivity(new(name.Valu
     public Tabs.FetchActivity ToFetch() => (Tabs.FetchActivity)this;
     public Tabs.SubmitActivity ToSubmit() => (Tabs.SubmitActivity)this;
 
-    public override object ToType(Type type, IFormatProvider? provider)
+    public new object ToType(Type type, IFormatProvider? provider)
     {
         if (type == typeof(Tabs.FetchActivity)) return ToFetch();
         if (type == typeof(Tabs.SubmitActivity)) return ToSubmit();

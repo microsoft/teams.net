@@ -59,7 +59,7 @@ public partial class InvokeActivity(Invokes.Name name) : Activity(ActivityType.I
     public Invokes.TabActivity ToTab() => (Invokes.TabActivity)this;
     public Invokes.TaskActivity ToTask() => (Invokes.TaskActivity)this;
 
-    public override object ToType(Type type, IFormatProvider? provider)
+    public object ToType(Type type, IFormatProvider? provider)
     {
         if (type == Invokes.Name.ExecuteAction.ToType()) return ToExecuteAction();
         if (type == Invokes.Name.FileConsent.ToType()) return ToFileConsent();

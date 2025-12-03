@@ -29,7 +29,7 @@ public abstract class MessageExtensionActivity(Name.MessageExtensions name) : In
     public MessageExtensions.SettingActivity ToSetting() => (MessageExtensions.SettingActivity)this;
     public MessageExtensions.SubmitActionActivity ToSubmitAction() => (MessageExtensions.SubmitActionActivity)this;
 
-    public override object ToType(Type type, IFormatProvider? provider)
+    public new object ToType(Type type, IFormatProvider? provider)
     {
         if (type == typeof(MessageExtensions.AnonQueryLinkActivity)) return ToAnonQueryLink();
         if (type == typeof(MessageExtensions.CardButtonClickedActivity)) return ToCardButtonClicked();

@@ -27,7 +27,7 @@ public class EndOfConversationActivity() : Activity(ActivityType.EndOfConversati
     /// </summary>
     [JsonPropertyName("text")]
     [JsonPropertyOrder(32)]
-    public required string Text { get; set; }
+    public required new string Text { get; set; }
 }
 
 [JsonConverter(typeof(JsonConverter<EndOfConversationCode>))]

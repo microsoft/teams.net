@@ -18,7 +18,7 @@ public class TypingActivity : Activity
 {
     [JsonPropertyName("text")]
     [JsonPropertyOrder(31)]
-    public string? Text { get; set; }
+    public new string? Text { get; set; }
 
     public TypingActivity() : base(ActivityType.Typing)
     {

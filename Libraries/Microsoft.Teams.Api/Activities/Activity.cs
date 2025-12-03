@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.Api.Entities;
 using Microsoft.Teams.Common;
 
@@ -37,7 +38,7 @@ public partial class ActivityType(string value) : StringEnum(value)
 }
 
 [JsonConverter(typeof(ActivityJsonConverter))]
-public partial interface IActivity : IConvertible, ICloneable
+public partial interface IActivity //: IConvertible, ICloneable
 {
     public string Id { get; set; }
 
@@ -87,43 +88,43 @@ public partial interface IActivity : IConvertible, ICloneable
 }
 
 [JsonConverter(typeof(ActivityJsonConverter))]
-public partial class Activity : IActivity
+public partial class Activity : Microsoft.Bot.Core.Schema.Activity<ChannelData>, IActivity
 {
-    [JsonPropertyName("id")]
-    [JsonPropertyOrder(0)]
-    public string Id { get; set; }
+    //[JsonPropertyName("id")]
+    //[JsonPropertyOrder(0)]
+    //public string Id { get; set; }
 
     [JsonPropertyName("type")]
     [JsonPropertyOrder(10)]
-    public ActivityType Type { get; set; }
+    public new ActivityType Type { get; set; }
 
-    [JsonPropertyName("replyToId")]
-    [JsonPropertyOrder(20)]
-    public string? ReplyToId { get; set; }
+    //[JsonPropertyName("replyToId")]
+    //[JsonPropertyOrder(20)]
+    //public string? ReplyToId { get; set; }
 
     [JsonPropertyName("channelId")]
     [JsonPropertyOrder(30)]
-    public ChannelId ChannelId { get; set; } = ChannelId.MsTeams;
+    public new ChannelId ChannelId { get; set; } = ChannelId.MsTeams;
 
     [JsonPropertyName("from")]
     [JsonPropertyOrder(40)]
-    public Account From { get; set; }
+    public new Account From { get; set; } = new() { Id = Guid.NewGuid().ToString() };
 
     [JsonPropertyName("recipient")]
     [JsonPropertyOrder(50)]
-    public Account Recipient { get; set; }
+    public new Account Recipient { get; set; } = new() { Id = Guid.NewGuid().ToString() };
 
     [JsonPropertyName("conversation")]
     [JsonPropertyOrder(60)]
-    public Conversation Conversation { get; set; }
+    public new Conversation Conversation { get; set; } = new() { Id = Guid.NewGuid().ToString() };
 
     [JsonPropertyName("relatesTo")]
     [JsonPropertyOrder(70)]
     public ConversationReference? RelatesTo { get; set; }
 
-    [JsonPropertyName("serviceUrl")]
-    [JsonPropertyOrder(80)]
-    public string? ServiceUrl { get; set; }
+    //[JsonPropertyName("serviceUrl")]
+    //[JsonPropertyOrder(80)]
+    //public string? ServiceUrl { get; set; }
 
     [JsonPropertyName("locale")]
     [JsonPropertyOrder(90)]
@@ -139,14 +140,14 @@ public partial class Activity : IActivity
 
     [JsonPropertyName("entities")]
     [JsonPropertyOrder(120)]
-    public IList<IEntity>? Entities { get; set; }
+    public new IList<IEntity>? Entities { get; set; }
 
-    [JsonPropertyName("channelData")]
-    [JsonPropertyOrder(130)]
-    public ChannelData? ChannelData { get; set; }
+    //[JsonPropertyName("channelData")]
+    //[JsonPropertyOrder(130)]
+    //public ChannelData? ChannelData { get; set; }
 
     [JsonExtensionData]
-    public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
+    public new IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
 
     [JsonConstructor]
     public Activity(string type)
@@ -165,17 +166,17 @@ public partial class Activity : IActivity
         Type = activity.Type;
         ReplyToId = activity.ReplyToId;
         ChannelId = activity.ChannelId;
-        From = activity.From;
-        Recipient = activity.Recipient;
-        Conversation = activity.Conversation;
+        From = new Account() { Id = activity.From.Id, Name = activity.From.Name };
+        Recipient = new Account() { Id = activity.Recipient.Id, Name = activity.Recipient.Name };
+        Conversation = new Conversation() { Id = activity.Conversation.Id };
         RelatesTo = activity.RelatesTo;
         ServiceUrl = activity.ServiceUrl;
         Locale = activity.Locale;
         Timestamp = activity.Timestamp;
         LocalTimestamp = activity.LocalTimestamp;
-        Entities = activity.Entities;
+        // Entities = activity.Entities; // TODO: core entity
         ChannelData = activity.ChannelData;
-        Properties = activity.Properties;
+        Properties = (activity.Properties as ExtendedPropertiesDictionary)!;
     }
 
     [JsonIgnore]
@@ -452,12 +453,14 @@ public partial class Activity : IActivity
         """;
     }
 
+    static readonly JsonSerializerOptions s_defaultOptions = new JsonSerializerOptions()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     public override string ToString()
     {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
+        return JsonSerializer.Serialize(this, s_defaultOptions);
     }
 }

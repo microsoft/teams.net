@@ -21,7 +21,7 @@ public class AdaptiveCardActivity(Name.AdaptiveCards name) : InvokeActivity(new(
 {
     public AdaptiveCards.ActionActivity ToAction() => (AdaptiveCards.ActionActivity)this;
 
-    public override object ToType(Type type, IFormatProvider? provider)
+    public new object ToType(Type type, IFormatProvider? provider)
     {
         if (type == typeof(AdaptiveCards.ActionActivity)) return ToAction();
         return this;

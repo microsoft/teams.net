@@ -21,7 +21,7 @@ public abstract class MessageActivity(Name.Messages name) : InvokeActivity(new(n
 {
     public Messages.SubmitActionActivity ToSubmitAction() => (Messages.SubmitActionActivity)this;
 
-    public override object ToType(Type type, IFormatProvider? provider)
+    public new  object ToType(Type type, IFormatProvider? provider)
     {
         if (type == typeof(Messages.SubmitActionActivity)) return ToSubmitAction();
         return this;

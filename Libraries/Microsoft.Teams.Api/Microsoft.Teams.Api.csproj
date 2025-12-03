@@ -15,14 +15,16 @@
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
     <NoWarn>CS8618</NoWarn>
+    <AnalysisLevel>latest</AnalysisLevel>
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\core-poc\Microsoft.Bot.Core\Microsoft.Bot.Core.csproj" />
     <ProjectReference Include="..\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <!--<ItemGroup>
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.5.0" />
-  </ItemGroup>
+  </ItemGroup>-->
 
 </Project>

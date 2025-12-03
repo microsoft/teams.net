@@ -18,7 +18,7 @@ public class MessageActivity : Activity
 {
     [JsonPropertyName("text")]
     [JsonPropertyOrder(31)]
-    public string Text { get; set; }
+    public new string Text { get; set; }
 
     [JsonPropertyName("speak")]
     [JsonPropertyOrder(32)]

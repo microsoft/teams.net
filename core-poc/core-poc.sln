@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
-VisualStudioVersion = 18.0.11222.15 d18.0
+VisualStudioVersion = 18.0.11222.15
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Api", "..\Libraries\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj", "{39FDB378-FD2F-D78B-E38F-5FC77EC9AC35}"
 EndProject
@@ -12,6 +12,13 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams", "Microsoft.Teams\Microsoft.Teams.csproj", "{DE9C3E04-86A5-2A14-67F2-8B4AD8A9F377}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Apps", "..\Libraries\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj", "{C8FFD0DB-EE20-2F02-7D46-511DB9A46FF9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "echo", "echo\echo.csproj", "{DCDDBFCA-BE54-48FC-BE51-C1E1B8F95C32}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{508F7DDD-0925-426A-A5BC-1A71F7E0978A}"
+	ProjectSection(SolutionItems) = preProject
+		..\Libraries\Directory.Build.props = ..\Libraries\Directory.Build.props
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +46,10 @@ Global
 		{C8FFD0DB-EE20-2F02-7D46-511DB9A46FF9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C8FFD0DB-EE20-2F02-7D46-511DB9A46FF9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C8FFD0DB-EE20-2F02-7D46-511DB9A46FF9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DCDDBFCA-BE54-48FC-BE51-C1E1B8F95C32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DCDDBFCA-BE54-48FC-BE51-C1E1B8F95C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DCDDBFCA-BE54-48FC-BE51-C1E1B8F95C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DCDDBFCA-BE54-48FC-BE51-C1E1B8F95C32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
