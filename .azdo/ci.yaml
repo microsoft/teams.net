@@ -32,6 +32,7 @@ stages:
 
       - task: NuGetCommand@2
         displayName: 'Push NuGet Packages'
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
         inputs:
           command: push
           packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
