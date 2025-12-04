@@ -1,24 +1,19 @@
 
 
+using Microsoft.Bot.Core.Hosting;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Activities;
+
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddBotApplication<App>();
 // builder.AddTeams();
 var app = builder.Build();
+var teamsApp = app.UseBotApplication<App>();
 // var teamsApp = app.UseTeams();
 
-//teamsApp.OnConversationUpdate(async context =>
-//{
-//    ConversationUpdateActivity cua = context.Activity;
-
-//    string result = $"Conversation ID {cua.Conversation.Id} Members Added Count: {cua.MembersAdded.Length}, Members Removed Count {cua.MembersRemoved.Length}";
-
-//    await context.Send(result);
-//    await context.Reply("Welcome to Quote Agent!");
-
-//});
-
-//teamsApp.OnMessage(context =>
-//{
-//    return context.Reply("you said: " + context.Activity.Text);
-//});
+teamsApp.OnMessage(context =>
+{
+    return context.Send("you said: " + context.Activity.Text);
+});
 
 app.Run();

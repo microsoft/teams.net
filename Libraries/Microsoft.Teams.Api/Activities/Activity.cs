@@ -163,6 +163,33 @@ public partial class Activity : Microsoft.Bot.Core.Schema.CoreActivity<ChannelDa
         Type = type;
     }
 
+    public Activity(CoreActivity activity)
+    {
+        Id = activity.Id;
+        Type = new ActivityType(activity.Type);
+        ReplyToId = activity.ReplyToId;
+        ChannelId = new ChannelId(activity.ChannelId!);
+        From = new Account() { Id = activity.From.Id!, Name = activity.From.Name };
+        Recipient = new Account() { Id = activity.Recipient.Id!, Name = activity.Recipient.Name };
+        Conversation = new Conversation() { Id = activity.Conversation.Id! };
+        //RelatesTo = activity.RelatesTo; // TODO: revire relates to
+        ServiceUrl = activity.ServiceUrl;
+        //Locale = activity.Locale;
+        //Timestamp = activity.Timestamp;
+        //LocalTimestamp = activity.LocalTimestamp;
+        // Entities = activity.Entities; // TODO: core entity
+        ChannelData = new ChannelData() { }; // TODO: core channel data
+        Properties = (activity.Properties as ExtendedPropertiesDictionary)!;
+
+        base.Id = activity.Id;
+        base.ChannelId = ChannelId;
+        base.Recipient = new ConversationAccount() { Id = activity.Recipient.Id, Name = activity.Recipient.Name, Properties = activity.Recipient.Properties! };
+        base.From = new ConversationAccount() { Id = activity.From.Id, Name = activity.From.Name, Properties = activity.From.Properties! };
+        base.Conversation = new Microsoft.Bot.Core.Schema.Conversation() { Id = activity.Conversation.Id };
+
+    }
+
+
     public Activity(IActivity activity)
     {
         Id = activity.Id;

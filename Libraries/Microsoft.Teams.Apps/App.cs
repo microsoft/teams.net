@@ -3,6 +3,8 @@
 
 using System.Reflection;
 
+using Microsoft.Bot.Core;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
@@ -16,6 +18,7 @@ using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Apps;
 
+// TODO: remove this
 public interface IToken
 {
     public string? AppId { get; }
@@ -24,10 +27,66 @@ public interface IToken
 }
 
 
-public partial class App
+public partial class App : BotApplication
 {
 
-    public ApiClient ApiClient;
+    public App()
+    {
+        
+    }
+
+    public App(IConfiguration config, ILogger<BotApplication> logger, string serviceKey = "AzureAd")
+        : base(config, logger, serviceKey)
+    {
+        OnActivity = async (activity, cancellationToken) =>
+        {
+            logger.LogInformation("New activity received of type {type} from {from}", activity.Type, activity.From?.Id);
+            Activity teamsActivity = new Activity(activity);
+            var route = Router.Select(teamsActivity).FirstOrDefault();
+
+            var ctx = new Context<IActivity>(null!, null!)
+            {
+                Api = ApiClient,
+                ConnectionName = OAuth?.DefaultConnectionName,
+                Activity = teamsActivity,
+                AppId = "",
+                TenantId = "",
+                Ref = new ConversationReference()
+                {
+                    ChannelId = teamsActivity.ChannelId,
+                    ServiceUrl = teamsActivity.ServiceUrl,
+                    Bot = teamsActivity.Recipient,
+                    User = teamsActivity.From,
+                    Locale = teamsActivity.Locale,
+                    Conversation = teamsActivity.Conversation,
+                },
+                CancellationToken = cancellationToken
+            };
+
+            await route!.Invoke(ctx);
+
+
+            //if (teamsActivity.Type == "message" && OnMessage is not null)
+            //{
+            //    await OnMessage.Invoke(teamsActivity, cancellationToken);
+            //}
+            //if (teamsActivity.Type == TeamsActivityTypes.InstallationUpdate && OnInstallationUpdate is not null)
+            //{
+            //    await OnInstallationUpdate.Invoke(new InstallationUpdateArgs(teamsActivity), cancellationToken);
+            //}
+            //if (teamsActivity.Type == TeamsActivityTypes.MessageReaction && OnMessageReaction is not null)
+            //{
+            //    await OnMessageReaction.Invoke(new MessageReactionArgs(teamsActivity), cancellationToken);
+            //}
+            //if (teamsActivity.Type == TeamsActivityTypes.ConversationUpdate && OnConversationUpdate is not null)
+            //{
+            //    await OnConversationUpdate.Invoke(new ConversationUpdateArgs(teamsActivity), cancellationToken);
+            //}
+        };
+    }
+
+
+    public ApiClient? ApiClient;
 
     /// <summary>
     /// the apps id
@@ -41,13 +100,13 @@ public partial class App
     //public string? Name => Token?.AppDisplayName;
 
     public Status? Status { get; internal set; }
-    public ILogger Logger { get; }
+    public ILogger? Logger { get; }
     //public IStorage<string, object> Storage { get; }
     //public ApiClient Api { get; internal set; }
     //public ICustomHttpClient Client { get; }
     //public IHttpCredentials? Credentials { get; }
     //public IToken? Token { get; internal set; }
-    public OAuthSettings OAuth { get; internal set; }
+    public OAuthSettings? OAuth { get; internal set; }
 
     //internal ICustomHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
@@ -229,7 +288,7 @@ public partial class App
             }
         };
 
-        var sender = Plugins.Where(plugin => plugin is ISenderPlugin).Select(plugin => plugin as ISenderPlugin).First();
+        var sender = Plugins?.Where(plugin => plugin is ISenderPlugin).Select(plugin => plugin as ISenderPlugin).First();
 
         if (sender is null)
         {
@@ -364,7 +423,7 @@ public partial class App
         //catch { }
 
         var path = @event.Activity.GetPath();
-        Logger.LogDebug(path);
+        Logger?.LogDebug(path);
 
         var reference = new ConversationReference()
         {
@@ -406,7 +465,7 @@ public partial class App
             Extra = @event.Extra ?? new Dictionary<string, object?>(),
             //UserGraphToken = userToken,
             CancellationToken = cancellationToken,
-            ConnectionName = OAuth.DefaultConnectionName,
+            ConnectionName = OAuth?.DefaultConnectionName,
             OnActivitySent = async (activity, context) =>
             {
                 await Events.Emit(
@@ -440,7 +499,7 @@ public partial class App
                 }
             }
 
-            foreach (var plugin in Plugins)
+            foreach (var plugin in Plugins!)
             {
                 await plugin.OnActivity(this, sender, @event, cancellationToken);
             }

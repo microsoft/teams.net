@@ -68,9 +68,9 @@ public partial class App
     {
         var connectionName = context.Activity.Value.ConnectionName;
 
-        if (OAuth.DefaultConnectionName != connectionName)
+        if (OAuth!.DefaultConnectionName != connectionName)
         {
-            Logger.LogWarning($"`default connection name \"{OAuth.DefaultConnectionName}\" does not match activity connection name \"{connectionName}\"");
+            Logger?.LogWarning($"`default connection name \"{OAuth.DefaultConnectionName}\" does not match activity connection name \"{connectionName}\"");
         }
 
         try
@@ -134,7 +134,7 @@ public partial class App
         {
             if (context.Activity.Value.State is null)
             {
-                Logger.LogWarning($"auth state not found for conversation '{context.Ref.Conversation.Id}' and user '{context.Activity.From.Id}'");
+                Logger?.LogWarning($"auth state not found for conversation '{context.Ref.Conversation.Id}' and user '{context.Activity.From.Id}'");
                 return new Response(HttpStatusCode.NotFound);
             }
 

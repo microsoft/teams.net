@@ -11,21 +11,21 @@ namespace Microsoft.Teams.Apps;
 
 public partial class App
 {
-    protected IList<IPlugin> Plugins { get; set; }
+    protected IList<IPlugin>? Plugins { get; set; }
 
     public IPlugin? GetPlugin(string name)
     {
-        return Plugins.SingleOrDefault(p => PluginService.GetAttribute(p).Name == name);
+        return Plugins?.SingleOrDefault(p => PluginService.GetAttribute(p).Name == name);
     }
 
     public IPlugin? GetPlugin(Type type)
     {
-        return Plugins.SingleOrDefault(p => p.GetType() == type);
+        return Plugins?.SingleOrDefault(p => p.GetType() == type);
     }
 
     public TPlugin? GetPlugin<TPlugin>() where TPlugin : IPlugin
     {
-        return (TPlugin?)Plugins.SingleOrDefault(p => p.GetType() == typeof(TPlugin));
+        return (TPlugin?)Plugins?.SingleOrDefault(p => p.GetType() == typeof(TPlugin));
     }
 
     public App AddPlugin(IPlugin plugin)
@@ -47,10 +47,10 @@ public partial class App
             return null;
         };
 
-        Plugins.Add(plugin);
+        Plugins?.Add(plugin);
         //Container.Register(attr.Name, new ValueProvider(plugin));
         //Container.Register(plugin.GetType().Name, new ValueProvider(plugin));
-        Logger.LogDebug($"plugin {attr.Name} registered");
+        Logger?.LogDebug($"plugin {attr.Name} registered");
         return this;
     }
 

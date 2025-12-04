@@ -14,7 +14,7 @@ public partial class App
     protected async Task OnErrorEvent(IPlugin sender, ErrorEvent @event, CancellationToken cancellationToken = default)
     {
         cancellationToken = @event.Context?.CancellationToken ?? cancellationToken;
-        Logger.LogError(@event.Exception, @event.Exception.Message);
+        Logger?.LogError(@event.Exception, @event.Exception.Message);
 
         // TODO: review events errors
         //if (@event.Exception is HttpException ex)
@@ -28,7 +28,7 @@ public partial class App
         //    }
         //}
 
-        foreach (var plugin in Plugins)
+        foreach (var plugin in Plugins!)
         {
             if (sender.Equals(plugin)) continue;
             await plugin.OnError(this, sender, @event, cancellationToken);
@@ -37,15 +37,15 @@ public partial class App
 
     protected Task<Response> OnActivityEvent(ISenderPlugin sender, ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug(EventType.Activity);
+        Logger?.LogDebug(EventType.Activity);
         return Process(sender, @event, cancellationToken);
     }
 
     protected async Task OnActivitySentEvent(ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug(EventType.ActivitySent);
+        Logger?.LogDebug(EventType.ActivitySent);
 
-        foreach (var plugin in Plugins)
+        foreach (var plugin in Plugins!)
         {
             if (sender.Equals(plugin)) continue;
             await plugin.OnActivitySent(this, sender, @event, cancellationToken);
@@ -54,9 +54,9 @@ public partial class App
 
     protected async Task OnActivityResponseEvent(ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
     {
-        Logger.LogDebug(EventType.ActivityResponse);
+        Logger?.LogDebug(EventType.ActivityResponse);
 
-        foreach (var plugin in Plugins)
+        foreach (var plugin in Plugins!)
         {
             if (sender.Equals(plugin)) continue;
             await plugin.OnActivityResponse(this, sender, @event, cancellationToken);
