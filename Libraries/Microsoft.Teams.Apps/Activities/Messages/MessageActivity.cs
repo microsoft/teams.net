@@ -47,7 +47,9 @@ public static partial class AppActivityExtensions
                 await handler(context.ToActivityType<MessageActivity>());
                 return null;
             },
-            Selector = activity => activity is MessageActivity
+
+            // TODO: Review Select Logic for Teams ChannelData
+            Selector = activity => activity is Microsoft.Bot.Core.Schema.CoreActivity<Microsoft.Teams.Api.ChannelData>
         });
 
         return app;

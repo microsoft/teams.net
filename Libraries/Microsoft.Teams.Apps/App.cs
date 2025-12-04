@@ -63,7 +63,7 @@ public partial class App : BotApplication
                 CancellationToken = cancellationToken
             };
 
-            await route!.Invoke(ctx);
+            await route?.Invoke(ctx)!;
 
 
             //if (teamsActivity.Type == "message" && OnMessage is not null)
