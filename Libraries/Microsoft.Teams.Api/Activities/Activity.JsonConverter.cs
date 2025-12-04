@@ -76,7 +76,7 @@ public partial class Activity
                 activity = new(type);
 
                 // TODO: Review
-                // activity.Properties = activity.FromJsonObject(element, options);
+                activity.Properties = activity.FromJsonObject(element, options);
             }
 
             return activity;
@@ -151,7 +151,7 @@ public partial class Activity
             }
 
             // TODO: Review
-            //JsonSerializer.Serialize(writer, value.ToJsonObject(options), options);
+            JsonSerializer.Serialize(writer, value.ToJsonObject(options), options);
         }
     }
 }

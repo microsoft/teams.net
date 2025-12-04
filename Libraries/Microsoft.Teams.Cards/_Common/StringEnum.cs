@@ -17,7 +17,18 @@ public class StringEnum(string value, bool caseSensitive = true) : ICloneable, I
     public int CompareTo(string? value) => Value.CompareTo(value);
     public override string ToString() => Value;
     public override int GetHashCode() => Value.GetHashCode();
-    public override bool Equals(object? value) => Value.Equals(value);
+    public override bool Equals(object? value)
+    {
+        if (value is StringEnum stringEnum)
+        {
+            return Equals(stringEnum);
+        }
+        if (value is string str)
+        {
+            return Equals(str);
+        }
+        return false;
+    }
     public bool Equals(StringEnum? value) => Value.Equals(value?.Value);
     public bool Equals(string? value)
     {

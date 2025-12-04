@@ -8,7 +8,7 @@ namespace Microsoft.Bot.Core;
 
 public class ConversationClient(HttpClient httpClient, ILogger<ConversationClient> logger)
 {
-    public async Task<string> SendActivityAsync(Activity activity, CancellationToken cancellationToken = default)
+    public async Task<string> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
 
         if (activity.Type == "trace")

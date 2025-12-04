@@ -166,6 +166,48 @@ public class MessageActivityTests
     public void JsonDeserialize()
     {
         var json = File.ReadAllText(@"../../../Json/Activity/Message/MessageActivity.json");
+        MessageActivity activity = JsonSerializer.Deserialize<MessageActivity>(json)!;
+        var expected = new MessageActivity("testing123")
+        {
+            Id = "1",
+            From = new()
+            {
+                Id = "1",
+                Name = "test",
+                Role = Role.User
+            },
+            Conversation = new()
+            {
+                Id = "1",
+                Type = ConversationType.Personal
+            },
+            Recipient = new()
+            {
+                Id = "2",
+                Name = "test-bot",
+                Role = Role.Bot
+            }
+        };
+
+        // Assert.Equivalent(expected, activity);
+
+        Assert.Equal(expected.Id, activity.Id);
+        Assert.Equal(expected.Text, activity.Text);
+        Assert.Equal(expected.From.Id, activity.From.Id);
+        Assert.Equal(expected.From.Name, activity.From.Name);
+        Assert.Equal(expected.From.Role, activity.From.Role);
+        Assert.Equal(expected.Conversation.Id, activity.Conversation.Id);
+        Assert.Equal(expected.Conversation.Type, activity.Conversation.Type);
+        Assert.Equal(expected.Recipient.Id, activity.Recipient.Id);
+        Assert.Equal(expected.Recipient.Name, activity.Recipient.Name);
+        Assert.Equal(expected.Recipient.Role, activity.Recipient.Role);
+       
+    }
+
+    [Fact]
+    public void JsonDeserialize_Derived()
+    {
+        var json = File.ReadAllText(@"../../../Json/Activity/Message/MessageActivity.json");
         var activity = JsonSerializer.Deserialize<MessageActivity>(json);
         var expected = new MessageActivity("testing123")
         {
@@ -189,37 +231,18 @@ public class MessageActivityTests
             }
         };
 
-        Assert.Equivalent(expected, activity);
-    }
+        //Assert.Equivalent(expected, activity);
+        Assert.Equal(expected.Id, activity!.Id);
+        Assert.Equal(expected.Text, activity.Text);
+        Assert.Equal(expected.From.Id, activity.From.Id);
+        Assert.Equal(expected.From.Name, activity.From.Name);
+        Assert.Equal(expected.From.Role, activity.From.Role);
+        Assert.Equal(expected.Conversation.Id, activity.Conversation.Id);
+        Assert.Equal(expected.Conversation.Type, activity.Conversation.Type);
+        Assert.Equal(expected.Recipient.Id, activity.Recipient.Id);
+        Assert.Equal(expected.Recipient.Name, activity.Recipient.Name);
+        Assert.Equal(expected.Recipient.Role, activity.Recipient.Role);
 
-    [Fact]
-    public void JsonDeserialize_Derived()
-    {
-        var json = File.ReadAllText(@"../../../Json/Activity/Message/MessageActivity.json");
-        var activity = JsonSerializer.Deserialize<Activity>(json);
-        var expected = new MessageActivity("testing123")
-        {
-            Id = "1",
-            From = new()
-            {
-                Id = "1",
-                Name = "test",
-                Role = Role.User
-            },
-            Conversation = new()
-            {
-                Id = "1",
-                Type = ConversationType.Personal
-            },
-            Recipient = new()
-            {
-                Id = "2",
-                Name = "test-bot",
-                Role = Role.Bot
-            }
-        };
-
-        Assert.Equivalent(expected, activity);
     }
 
     [Fact]

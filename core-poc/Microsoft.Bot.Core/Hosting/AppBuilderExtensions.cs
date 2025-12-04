@@ -19,7 +19,7 @@ public static class AppBuilderExtensions
 
         webApp?.MapPost(routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
         {
-            Activity resp = await app.ProcessAsync(httpContext, cancellationToken);
+            CoreActivity resp = await app.ProcessAsync(httpContext, cancellationToken);
             return resp.Id;
         }).RequireAuthorization(authorizationPolicy);
 
@@ -40,7 +40,7 @@ public static class AppBuilderExtensions
 
         webApp?.MapPost(routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
         {
-            Activity resp = await app.ProcessAsync(httpContext, cancellationToken);
+            CoreActivity resp = await app.ProcessAsync(httpContext, cancellationToken);
             return resp.Id;
         }).RequireAuthorization(authorizationPolicy);
 

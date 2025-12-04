@@ -3,6 +3,7 @@
 
 using System.Text.Json.Serialization;
 
+using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.Api.Memberships;
 using Microsoft.Teams.Common;
 
@@ -32,7 +33,7 @@ public class Account
 
     [JsonPropertyName("properties")]
     [JsonPropertyOrder(5)]
-    public Dictionary<string, object>? Properties { get; set; }
+    public ExtendedPropertiesDictionary? Properties { get; set; }
 }
 
 [JsonConverter(typeof(JsonConverter<Role>))]

@@ -20,6 +20,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\Libraries\Directory.Build.props = ..\Libraries\Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Api.Tests", "..\Tests\Microsoft.Teams.Api.Tests\Microsoft.Teams.Api.Tests.csproj", "{9FBADA7F-BAAB-3D20-C73A-9472DEC56D37}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +52,10 @@ Global
 		{DCDDBFCA-BE54-48FC-BE51-C1E1B8F95C32}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCDDBFCA-BE54-48FC-BE51-C1E1B8F95C32}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCDDBFCA-BE54-48FC-BE51-C1E1B8F95C32}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FBADA7F-BAAB-3D20-C73A-9472DEC56D37}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FBADA7F-BAAB-3D20-C73A-9472DEC56D37}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FBADA7F-BAAB-3D20-C73A-9472DEC56D37}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FBADA7F-BAAB-3D20-C73A-9472DEC56D37}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

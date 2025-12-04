@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Api.Activities;
 
@@ -36,7 +37,7 @@ public class ActivityTests
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
             WriteIndented = true,
-            IndentSize = 4,
+            IndentSize = 2,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
@@ -78,7 +79,7 @@ public class ActivityTests
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
             WriteIndented = true,
-            IndentSize = 4,
+            IndentSize = 2,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
@@ -88,5 +89,35 @@ public class ActivityTests
 
         var newActivity = JsonSerializer.Deserialize<IActivity>(json);
         Assert.Equal(newActivity?.ToString(), activity.ToString());
+    }
+
+    [Fact]
+    public void EmptyFieldsShouldBeSerialzed()
+    {
+        Activity a = new Activity(ActivityType.MessageReaction)
+        {
+            ChannelId = new ChannelId("test"),
+        };
+
+        Assert.NotNull(a.From);
+        Assert.Equal(string.Empty, a.From.Id);
+
+
+        var json = JsonSerializer.Serialize(a, new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            IndentSize = 2,
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        });
+
+        JsonDocument doc = JsonDocument.Parse(json);
+        Assert.Equal(ActivityType.MessageReaction.ToString(), doc.RootElement.GetProperty("type").GetString());
+        Assert.Equal("test", doc.RootElement.GetProperty("channelId").GetString());
+
+        Activity a2 = JsonSerializer.Deserialize<Activity>(json)!;
+        Assert.Equal(a2.Type, a.Type);
+        Assert.Equal(a2.ChannelId, a.ChannelId);
+
+
     }
 }

@@ -88,7 +88,7 @@ public partial interface IActivity //: IConvertible, ICloneable
 }
 
 [JsonConverter(typeof(ActivityJsonConverter))]
-public partial class Activity : Microsoft.Bot.Core.Schema.Activity<ChannelData>, IActivity
+public partial class Activity : Microsoft.Bot.Core.Schema.CoreActivity<ChannelData>, IActivity
 {
     //[JsonPropertyName("id")]
     //[JsonPropertyOrder(0)]
@@ -106,17 +106,19 @@ public partial class Activity : Microsoft.Bot.Core.Schema.Activity<ChannelData>,
     [JsonPropertyOrder(30)]
     public new ChannelId ChannelId { get; set; } = ChannelId.MsTeams;
 
+
+    // TODO: review which fields are really required and how it affects serialization/deserialization
     [JsonPropertyName("from")]
     [JsonPropertyOrder(40)]
-    public new Account From { get; set; } = new() { Id = Guid.NewGuid().ToString() };
+    public new Account From { get; set; } = new() { Id = string.Empty };
 
     [JsonPropertyName("recipient")]
     [JsonPropertyOrder(50)]
-    public new Account Recipient { get; set; } = new() { Id = Guid.NewGuid().ToString() };
+    public new Account Recipient { get; set; } = new() { Id = string.Empty };
 
     [JsonPropertyName("conversation")]
     [JsonPropertyOrder(60)]
-    public new Conversation Conversation { get; set; } = new() { Id = Guid.NewGuid().ToString() };
+    public new Conversation Conversation { get; set; } = new() { Id = string.Empty };
 
     [JsonPropertyName("relatesTo")]
     [JsonPropertyOrder(70)]
@@ -153,6 +155,7 @@ public partial class Activity : Microsoft.Bot.Core.Schema.Activity<ChannelData>,
     public Activity(string type)
     {
         Type = new(type);
+        base.Type = type;
     }
 
     public Activity(ActivityType type)
@@ -177,6 +180,12 @@ public partial class Activity : Microsoft.Bot.Core.Schema.Activity<ChannelData>,
         // Entities = activity.Entities; // TODO: core entity
         ChannelData = activity.ChannelData;
         Properties = (activity.Properties as ExtendedPropertiesDictionary)!;
+
+        base.Id = activity.Id;
+        base.ChannelId = activity.ChannelId.ToString();
+        base.Recipient = new ConversationAccount() { Id = activity.Recipient.Id, Name = activity.Recipient.Name, Properties = activity.Recipient.Properties! };
+        base.From = new ConversationAccount() { Id = activity.From.Id, Name = activity.From.Name, Properties = activity.From.Properties! };
+        base.Conversation = new Microsoft.Bot.Core.Schema.Conversation() { Id = activity.Conversation.Id };
     }
 
     [JsonIgnore]

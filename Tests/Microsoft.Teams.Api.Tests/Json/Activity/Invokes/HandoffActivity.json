@@ -5,5 +5,14 @@
   "name": "handoff/action",
   "value": {
     "continuation": " valid continuation"
+  },
+  "from": {
+    "id": ""
+  },
+  "recipient": {
+    "id": ""
+  },
+  "conversation": {
+    "id": ""
   }
 }

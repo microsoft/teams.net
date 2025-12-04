@@ -122,7 +122,7 @@ public class UserTokenClient(ILogger<UserTokenClient> logger, HttpClient httpCli
                 User = new ConversationAccount { Id = userId },
             }
         };
-        var tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState, Activity.DefaultJsonOptions);
+        var tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState, CoreActivity.DefaultJsonOptions);
         var state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
 
         queryParams.Add("state", state);

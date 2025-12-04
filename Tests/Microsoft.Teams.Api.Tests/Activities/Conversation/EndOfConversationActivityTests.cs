@@ -30,7 +30,7 @@ public class EndOfConversationActivityTests
                 Name = "Bot user",
                 Role = new Role("bot"),
                 AadObjectId = "aadObjectId",
-                Properties = new Dictionary<string, object>()
+                Properties = new Bot.Core.Schema.ExtendedPropertiesDictionary()
                 {
                     { "key1", "value1" },
                     { "key2", "value2" },

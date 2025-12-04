@@ -4,12 +4,12 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Schema;
 
-public class TeamsActivity : Activity<TeamsChannelData>
+public class TeamsActivity : CoreActivity<TeamsChannelData>
 {
-    public static TeamsActivity FromActivity(Activity activity) => new(activity);
-    public static new TeamsActivity FromJsonString(string json) => new(Activity.FromJsonString(json));
+    public static TeamsActivity FromActivity(CoreActivity activity) => new(activity);
+    public static new TeamsActivity FromJsonString(string json) => new(CoreActivity.FromJsonString(json));
 
-    private TeamsActivity(Activity activity)
+    private TeamsActivity(CoreActivity activity)
     {
         Id = activity.Id;
         ServiceUrl = activity.ServiceUrl;
