@@ -1,8 +1,10 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Common.Http;
 
+using IHttpClientFactory = Microsoft.Teams.Common.Http.IHttpClientFactory;
 namespace Microsoft.Teams.Api.Clients;
 
 public class BotTokenClient : Client
@@ -15,33 +17,33 @@ public class BotTokenClient : Client
 
     }
 
-    public BotTokenClient(CancellationToken cancellationToken = default) : base(cancellationToken)
+    public BotTokenClient(CancellationToken cancellationToken = default) : base(BotScope, cancellationToken)
     {
 
     }
 
-    public BotTokenClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public BotTokenClient(IHttpClient client, string scope, CancellationToken cancellationToken = default) : base(client, scope, cancellationToken)
     {
 
     }
 
-    public BotTokenClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public BotTokenClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, BotScope, cancellationToken)
     {
 
     }
 
-    public BotTokenClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public BotTokenClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, BotScope, cancellationToken)
     {
 
     }
 
-    public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null)
+    public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, AgenticIdentity agenticIdentity,  IHttpClient? http = null)
     {
-        return await credentials.Resolve(http ?? _http, [BotScope], _cancellationToken);
+        return await credentials.Resolve(http ?? _http, [base.Scope!], agenticIdentity, _cancellationToken);
     }
 
-    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, IHttpClient? http = null)
+    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, AgenticIdentity agenticIdentity, IHttpClient? http = null)
     {
-        return await credentials.Resolve(http ?? _http, [GraphScope], _cancellationToken);
+        return await credentials.Resolve(http ?? _http, [GraphScope], agenticIdentity, _cancellationToken);
     }
 }

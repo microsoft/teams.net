@@ -3,6 +3,7 @@
 
 using Microsoft.Teams.Common.Http;
 
+using IHttpClientFactory = Microsoft.Teams.Common.Http.IHttpClientFactory;
 namespace Microsoft.Teams.Api.Clients;
 
 public class BotClient : Client
@@ -10,32 +11,32 @@ public class BotClient : Client
     public virtual BotTokenClient Token { get; }
     public BotSignInClient SignIn { get; }
 
-    public BotClient() : this(default)
+    public BotClient() : this(default!)
     {
 
     }
 
-    public BotClient(CancellationToken cancellationToken = default) : base(cancellationToken)
+    public BotClient(string scope, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        Token = new BotTokenClient(_http, cancellationToken);
-        SignIn = new BotSignInClient(_http, cancellationToken);
+        Token = new BotTokenClient(_http, scope, cancellationToken);
+        SignIn = new BotSignInClient(_http, scope, cancellationToken);
     }
 
-    public BotClient(IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
+    public BotClient(IHttpClient client, string scope, CancellationToken cancellationToken = default) : base(client, scope, cancellationToken)
     {
-        Token = new BotTokenClient(_http, cancellationToken);
-        SignIn = new BotSignInClient(_http, cancellationToken);
+        Token = new BotTokenClient(_http, scope, cancellationToken);
+        SignIn = new BotSignInClient(_http, scope, cancellationToken);
     }
 
-    public BotClient(IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
+    public BotClient(IHttpClientOptions options, string scope, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        Token = new BotTokenClient(_http, cancellationToken);
-        SignIn = new BotSignInClient(_http, cancellationToken);
+        Token = new BotTokenClient(_http, scope, cancellationToken);
+        SignIn = new BotSignInClient(_http, scope, cancellationToken);
     }
 
-    public BotClient(IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
+    public BotClient(IHttpClientFactory factory, string scope, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        Token = new BotTokenClient(_http, cancellationToken);
-        SignIn = new BotSignInClient(_http, cancellationToken);
+        Token = new BotTokenClient(_http, scope, cancellationToken);
+        SignIn = new BotSignInClient(_http, scope, cancellationToken);
     }
 }

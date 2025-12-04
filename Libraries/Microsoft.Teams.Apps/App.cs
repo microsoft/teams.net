@@ -3,6 +3,7 @@
 
 using System.Reflection;
 
+using Microsoft.Extensions.Configuration;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -42,6 +43,9 @@ public partial class App
     internal IHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
+
+    internal string? Scope { get; set; }
+
     internal string UserAgent
     {
         get
@@ -52,52 +56,65 @@ public partial class App
         }
     }
 
-    public App(AppOptions? options = null)
+    internal App() : this(null!, null!, null)
+    { }
+
+    public App(IHttpCredentials credentials, IConfiguration configuration, AppOptions? options = null)
     {
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
-        Credentials = options?.Credentials;
+        Credentials = credentials;
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
-
+        Scope = configuration?["Teams:Scope"] ?? "https://api.botframework.com/.default";
         TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
         Client.Options.AddUserAgent(UserAgent);
-        Client.Options.TokenFactory ??= () =>
+        Client.Options.TokenFactory = async (AgenticIdentity? aid) =>
         {
-            if (Credentials is not null)
-            {
-                if (Token is null)
-                {
-                    var res = Api!.Bots.Token.GetAsync(Credentials, TokenClient)
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
+            var res = await Api!.Bots.Token.GetAsync(Credentials!, aid!, TokenClient);
+            return new JsonWebToken(res.AccessToken);
 
-                    Token = new JsonWebToken(res.AccessToken);
-                }
-
-                if (Token.IsExpired)
-                {
-                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(BotTokenClient.BotScope)])
-                    .ConfigureAwait(false)
-                    .GetAwaiter()
-                    .GetResult();
-
-                    Token = new JsonWebToken(res.AccessToken);
-                }
-            }
-
-            return Token;
         };
+        //Client.Options.TokenFactory ??= () =>
+        //{
+        //    if (Credentials is not null)
+        //    {
+        //        if (Token is null)
+        //        {
+        //            var res = Api!.Bots.Token.GetAsync(Credentials, TokenClient)
+        //            .ConfigureAwait(false)
+        //            .GetAwaiter()
+        //            .GetResult();
 
-        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
+        //            Token = new JsonWebToken(res.AccessToken);
+        //        }
+
+        //        if (Token.IsExpired)
+        //        {
+        //            var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(BotTokenClient.BotScope)])
+        //            .ConfigureAwait(false)
+        //            .GetAwaiter()
+        //            .GetResult();
+
+        //            Token = new JsonWebToken(res.AccessToken);
+        //        }
+        //    }
+
+        //    return Token;
+        //};
+
+        Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client, Scope);
         Container = new Container();
         Container.Register(Logger);
         Container.Register(Storage);
         Container.Register(Client);
         Container.Register(Api);
+        if (configuration != null)
+        {
+            Container.Register(configuration);
+        }
         Container.Register<IHttpCredentials>(new FactoryProvider(() => Credentials));
         Container.Register("AppId", new FactoryProvider(() => Id));
         Container.Register("AppName", new FactoryProvider(() => Name));
@@ -129,18 +146,18 @@ public partial class App
                 Inject(plugin);
             }
 
-            if (Credentials is not null)
-            {
-                try
-                {
-                    var res = await Api.Bots.Token.GetAsync(Credentials, TokenClient);
-                    Token = new JsonWebToken(res.AccessToken);
-                }
-                catch (Exception ex)
-                {
-                    Logger.Error("Failed to get bot token on app startup.", ex);
-                }
-            }
+            //if (Credentials is not null)
+            //{
+            //    try
+            //    {
+            //        var res = await Api.Bots.Token.GetAsync(Credentials, TokenClient);
+            //        Token = new JsonWebToken(res.AccessToken);
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        Logger.Error("Failed to get bot token on app startup.", ex);
+            //    }
+            //}
 
             Logger.Debug(Id);
             Logger.Debug(Name);
@@ -333,18 +350,18 @@ public partial class App
 
         var api = new ApiClient(Api);
 
-        try
-        {
-            var tokenResponse = await api.Users.Token.GetAsync(new()
-            {
-                UserId = @event.Activity.From.Id,
-                ChannelId = @event.Activity.ChannelId,
-                ConnectionName = OAuth.DefaultConnectionName
-            });
+        //try
+        //{
+        //    var tokenResponse = await api.Users.Token.GetAsync(new()
+        //    {
+        //        UserId = @event.Activity.From.Id,
+        //        ChannelId = @event.Activity.ChannelId,
+        //        ConnectionName = OAuth.DefaultConnectionName
+        //    });
 
-            userToken = new JsonWebToken(tokenResponse);
-        }
-        catch { }
+        //    userToken = new JsonWebToken(tokenResponse);
+        //}
+        //catch { }
 
         var path = @event.Activity.GetPath();
         Logger.Debug(path);
