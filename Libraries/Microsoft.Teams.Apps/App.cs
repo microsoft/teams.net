@@ -195,7 +195,7 @@ public partial class App
 
         if (isTargeted && activity.Recipient is null)
         {
-            throw new ArgumentException("activity.Recipient is required for targeted messages");
+            throw new ArgumentException("activity.Recipient is required for targeted messages", nameof(activity));
         }
 
         var reference = new ConversationReference()
