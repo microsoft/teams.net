@@ -181,7 +181,7 @@ public partial class App
     /// send an activity to the conversation
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    /// <param name="isTargeted">when true, sends the message privately to the specified recipient; when false, sends to all conversation participants</param>
+    /// <param name="isTargeted">when true, sends the message privately to the specified recipient. when false, sends to all conversation participants</param>
     /// <remarks>
     /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
     /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
