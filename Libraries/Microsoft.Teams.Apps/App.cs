@@ -10,6 +10,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Apps.Clients;
+using Microsoft.Teams.Apps.Contexts;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
 
@@ -49,8 +50,9 @@ public partial class App : BotApplication
                 Api = ApiClient,
                 ConnectionName = OAuth?.DefaultConnectionName,
                 Activity = teamsActivity,
-                AppId = "",
-                TenantId = "",
+                Sender = new SenderPlugin(base.ConversationClient),
+                // AppId = "",
+                // TenantId = "",
                 Ref = new ConversationReference()
                 {
                     ChannelId = teamsActivity.ChannelId,
@@ -287,8 +289,9 @@ public partial class App : BotApplication
                 Type = conversationType ?? ConversationType.Personal
             }
         };
-
-        var sender = Plugins?.Where(plugin => plugin is ISenderPlugin).Select(plugin => plugin as ISenderPlugin).First();
+        
+        //var sender = Plugins?.Where(plugin => plugin is ISenderPlugin).Select(plugin => plugin as ISenderPlugin).First();
+        var sender = new SenderPlugin(base.ConversationClient);
 
         if (sender is null)
         {
@@ -297,12 +300,12 @@ public partial class App : BotApplication
 
         var res = await sender.Send(activity, reference, isTargeted, cancellationToken);
 
-        await Events.Emit(
-            sender,
-            EventType.ActivitySent,
-            new ActivitySentEvent() { Activity = res },
-            cancellationToken
-        );
+        //await Events.Emit(
+        //    sender,
+        //    EventType.ActivitySent,
+        //    new ActivitySentEvent() { Activity = res },
+        //    cancellationToken
+        //);
 
         return res;
     }
@@ -453,8 +456,8 @@ public partial class App : BotApplication
         var stream = sender.CreateStream(reference, cancellationToken);
         var context = new Context<IActivity>(sender, stream)
         {
-            AppId = @event.Token.AppId ?? Id ?? string.Empty,
-            TenantId = @event.Token.TenantId ?? string.Empty,
+            // AppId = @event.Token.AppId ?? Id ?? string.Empty,
+            // TenantId = @event.Token.TenantId ?? string.Empty,
             //Log = Logger.Child(path),
             //Storage = Storage,
             Api = ApiClient,

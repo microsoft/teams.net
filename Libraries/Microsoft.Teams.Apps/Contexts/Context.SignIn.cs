@@ -73,7 +73,7 @@ public partial class Context<TActivity> : IContext<TActivity>
             ConnectionName = options.ConnectionName ?? ConnectionName,
             Conversation = reference,
             RelatesTo = Activity.RelatesTo,
-            MsAppId = AppId
+            // MsAppId = AppId
         };
 
         if (Activity.Conversation.IsGroup == true)
@@ -130,7 +130,8 @@ public partial class Context<TActivity> : IContext<TActivity>
 
     public async Task SignIn(SSOOptions options)
     {
-        var signInLink = $"{options.SignInLink}?scope={Uri.EscapeDataString(string.Join(" ", options.Scopes))}&clientId={AppId}&tenantId={TenantId}";
+        // TODO: finish SSO
+        var signInLink = $"{options.SignInLink}?scope={Uri.EscapeDataString(string.Join(" ", options.Scopes))}&clientId=&tenantId=";
         var reference = Ref.Copy();
 
         if (Activity.Conversation.IsGroup == true)

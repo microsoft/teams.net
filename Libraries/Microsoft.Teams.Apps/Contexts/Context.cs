@@ -1,10 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Clients;
@@ -29,12 +25,12 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// <summary>
     /// the app id of the bot
     /// </summary>
-    public string AppId { get; set; }
+    // public string AppId { get; set; }
 
     /// <summary>
     /// the tenant id of the request/activity
     /// </summary>
-    public string TenantId { get; set; }
+    // public string TenantId { get; set; }
 
     /// <summary>
     /// the app logger instance
@@ -80,33 +76,33 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     /// </summary>
     public CancellationToken CancellationToken { get; }
 
-    /// <summary>
-    /// destruct the context
-    /// </summary>
-    /// <param name="log">the ILogger instance</param>
-    /// <param name="api">the api client</param>
-    /// <param name="activity">the inbound activity</param>
-    public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity);
+    ///// <summary>
+    ///// destruct the context
+    ///// </summary>
+    ///// <param name="log">the ILogger instance</param>
+    ///// <param name="api">the api client</param>
+    ///// <param name="activity">the inbound activity</param>
+    //public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity);
 
-    /// <summary>
-    /// destruct the context
-    /// </summary>
-    /// <param name="log">the ILogger instance</param>
-    /// <param name="api">the api client</param>
-    /// <param name="activity">the inbound activity</param>
-    /// <param name="send">the methods to send activities</param>
-    public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity, out IContext.Client client);
+    ///// <summary>
+    ///// destruct the context
+    ///// </summary>
+    ///// <param name="log">the ILogger instance</param>
+    ///// <param name="api">the api client</param>
+    ///// <param name="activity">the inbound activity</param>
+    ///// <param name="send">the methods to send activities</param>
+    //public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity, out IContext.Client client);
 
-    /// <summary>
-    /// destruct the context
-    /// </summary>
-    /// <param name="appId">the apps id</param>
-    /// <param name="log">the ILogger instance</param>
-    /// <param name="api">the api client</param>
-    /// <param name="activity">the inbound activity</param>
-    /// <param name="reference">the inbound conversation reference</param>
-    /// <param name="send">the methods to send activities</param>
-    public void Deconstruct(out string appId, out ILogger log, out ApiClient api, out TActivity activity, out ConversationReference reference, out IContext.Client client);
+    ///// <summary>
+    ///// destruct the context
+    ///// </summary>
+    ///// <param name="appId">the apps id</param>
+    ///// <param name="log">the ILogger instance</param>
+    ///// <param name="api">the api client</param>
+    ///// <param name="activity">the inbound activity</param>
+    ///// <param name="reference">the inbound conversation reference</param>
+    ///// <param name="send">the methods to send activities</param>
+    //public void Deconstruct(out string appId, out ILogger log, out ApiClient api, out TActivity activity, out ConversationReference reference, out IContext.Client client);
 
     /// <summary>
     /// called to continue the chain of route handlers,
@@ -130,9 +126,9 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     public ISenderPlugin Sender { get; set; } = sender;
     public IStreamer Stream { get; set; } = stream;
 
-    public required string AppId { get; set; }
-    public required string TenantId { get; set; }
-    public ILogger? Log { get; set; }
+    // public required string AppId { get; set; }
+    // public required string TenantId { get; set; }
+    // public ILogger? Log { get; set; }
 
     // TODO: bring back storage
 
@@ -147,30 +143,30 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     internal Func<IContext<IActivity>, Task<object?>> OnNext { get; set; } = (_) => Task.FromResult<object?>(null);
     internal ActivitySentHandler OnActivitySent { get; set; } = (_, _) => Task.Run(() => { });
 
-    public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity)
-    {
-        log = Log;
-        api = Api;
-        activity = Activity;
-    }
+    //public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity)
+    //{
+    //    log = Log;
+    //    api = Api;
+    //    activity = Activity;
+    //}
 
-    public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity, out IContext.Client client)
-    {
-        log = Log;
-        api = Api;
-        activity = Activity;
-        client = new IContext.Client(ToActivityType());
-    }
+    //public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity, out IContext.Client client)
+    //{
+    //    log = Log;
+    //    api = Api;
+    //    activity = Activity;
+    //    client = new IContext.Client(ToActivityType());
+    //}
 
-    public void Deconstruct(out string appId, out ILogger log, out ApiClient api, out TActivity activity, out ConversationReference reference, out IContext.Client client)
-    {
-        appId = AppId;
-        log = Log;
-        api = Api;
-        activity = Activity;
-        reference = Ref;
-        client = new IContext.Client(ToActivityType());
-    }
+    //public void Deconstruct(out string appId, out ILogger log, out ApiClient api, out TActivity activity, out ConversationReference reference, out IContext.Client client)
+    //{
+    //    appId = AppId;
+    //    log = Log;
+    //    api = Api;
+    //    activity = Activity;
+    //    reference = Ref;
+    //    client = new IContext.Client(ToActivityType());
+    //}
 
     public Task<object?> Next() => OnNext(ToActivityType());
     public IContext<IActivity> ToActivityType() => ToActivityType<IActivity>();
@@ -179,9 +175,9 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
         return new Context<TToActivity>(Sender, Stream)
         {
             Sender = Sender,
-            AppId = AppId,
-            TenantId = TenantId,
-            Log = Log,
+            // AppId = AppId,
+            // TenantId = TenantId,
+            // Log = Log,
             // Storage = Storage,
             Api = Api,
             Activity = default(TToActivity)!, // (TToActivity)Activity.ToType(typeof(TToActivity), null),  // TODO: implement ToType
@@ -194,14 +190,5 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
             OnNext = OnNext,
             OnActivitySent = OnActivitySent
         };
-    }
-
-    public override string ToString()
-    {
-        return JsonSerializer.Serialize(this, new JsonSerializerOptions()
-        {
-            WriteIndented = true,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        });
     }
 }

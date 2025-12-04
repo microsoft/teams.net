@@ -31,10 +31,10 @@ public class State
     [JsonPropertyOrder(2)]
     public ConversationReference? RelatesTo { get; set; }
 
-    /// <summary>
-    /// The URL of the bot messaging endpoint.
-    /// </summary>
-    [JsonPropertyName("msAppId")]
-    [JsonPropertyOrder(3)]
-    public required string MsAppId { get; set; }
+    ///// <summary>
+    ///// The URL of the bot messaging endpoint.
+    ///// </summary>
+    //[JsonPropertyName("msAppId")]
+    //[JsonPropertyOrder(3)]
+    //public required string MsAppId { get; set; }
 }

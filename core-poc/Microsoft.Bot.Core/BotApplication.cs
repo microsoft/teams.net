@@ -51,6 +51,8 @@ public class BotApplication
 
     public UserTokenClient UserTokenClient => _userTokenClient ?? throw new Exception("UserTokenClient not initialized");
 
+    public ConversationClient ConversationClient => _conversationClient ?? throw new Exception("ConversationClient not initialized");
+
     public Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
 
     public async Task<CoreActivity> ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)

@@ -68,7 +68,7 @@ public partial interface IActivity //: IConvertible, ICloneable
 
     public ChannelData? ChannelData { get; set; }
 
-    public IDictionary<string, object?> Properties { get; set; }
+    public ExtendedPropertiesDictionary Properties { get; set; }
 
     /// <summary>
     /// is this a streaming activity
