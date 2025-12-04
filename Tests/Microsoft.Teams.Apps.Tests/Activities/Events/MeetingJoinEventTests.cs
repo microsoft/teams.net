@@ -47,7 +47,7 @@ public class MeetingJoinEventTests
                 {
                     new MeetingParticipantJoinActivityValue.Member
                     {
-                        User = new Account { Id = "user1", Name = "Test User" },
+                        User = new TeamsChannelAccount { Id = "user1", Name = "Test User" },
                         Meeting = new MeetingParticipantJoinActivityValue.Meeting
                         {
                             InMeeting = true,
@@ -103,7 +103,7 @@ public class MeetingJoinEventTests
                 {
                     new MeetingParticipantJoinActivityValue.Member
                     {
-                        User = new Account { Id = "user1", Name = "Test User" },
+                        User = new TeamsChannelAccount { Id = "user1", Name = "Test User" },
                         Meeting = new MeetingParticipantJoinActivityValue.Meeting
                         {
                             InMeeting = true,
@@ -148,7 +148,7 @@ public class MeetingJoinEventTests
                 {
                     new MeetingParticipantJoinActivityValue.Member
                     {
-                        User = new Account { Id = "user1", Name = "Test User" },
+                        User = new TeamsChannelAccount { Id = "user1", Name = "Test User" },
                         Meeting = new MeetingParticipantJoinActivityValue.Meeting
                         {
                             InMeeting = true,

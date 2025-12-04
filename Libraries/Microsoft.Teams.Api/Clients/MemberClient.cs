@@ -29,17 +29,17 @@ public class MemberClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public async Task<List<Account>> GetAsync(string conversationId)
+    public async Task<List<TeamsChannelAccount>> GetAsync(string conversationId)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v3/conversations/{conversationId}/members");
-        var response = await _http.SendAsync<List<Account>>(request, _cancellationToken);
+        var response = await _http.SendAsync<List<TeamsChannelAccount>>(request, _cancellationToken);
         return response.Body;
     }
 
-    public async Task<Account> GetByIdAsync(string conversationId, string memberId)
+    public async Task<TeamsChannelAccount> GetByIdAsync(string conversationId, string memberId)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v3/conversations/{conversationId}/members/{memberId}");
-        var response = await _http.SendAsync<Account>(request, _cancellationToken);
+        var response = await _http.SendAsync<TeamsChannelAccount>(request, _cancellationToken);
         return response.Body;
     }
 

@@ -42,7 +42,7 @@ public class MeetingParticipantLeaveActivityValue
         /// </summary>
         [JsonPropertyName("user")]
         [JsonPropertyOrder(0)]
-        public required Account User { get; set; }
+        public required TeamsChannelAccount User { get; set; }
 
         /// <summary>
         /// The participants info.

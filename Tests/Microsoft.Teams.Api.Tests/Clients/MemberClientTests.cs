@@ -16,15 +16,15 @@ public class MemberClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<List<Account>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new HttpResponse<List<Account>>()
+            .Setup(handler => handler.SendAsync<List<TeamsChannelAccount>>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponse<List<TeamsChannelAccount>>()
             {
                 Headers = responseMessage.Headers,
                 StatusCode = HttpStatusCode.OK,
-                Body = new List<Account>
+                Body = new List<TeamsChannelAccount>
                 {
-                    new Account { Id = "member1", Name = "User 1" },
-                    new Account { Id = "member2", Name = "User 2" }
+                    new TeamsChannelAccount { Id = "member1", Name = "User 1" },
+                    new TeamsChannelAccount { Id = "member2", Name = "User 2" }
                 }
             });
 
@@ -39,7 +39,7 @@ public class MemberClientTests
 
         string expectedUrl = "https://serviceurl.com/v3/conversations/conv123/members";
         HttpMethod expectedMethod = HttpMethod.Get;
-        mockHandler.Verify(x => x.SendAsync<List<Account>>(
+        mockHandler.Verify(x => x.SendAsync<List<TeamsChannelAccount>>(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);
@@ -52,12 +52,12 @@ public class MemberClientTests
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
         var mockHandler = new Mock<IHttpClient>();
         mockHandler
-            .Setup(handler => handler.SendAsync<Account>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new HttpResponse<Account>()
+            .Setup(handler => handler.SendAsync<TeamsChannelAccount>(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponse<TeamsChannelAccount>()
             {
                 Headers = responseMessage.Headers,
                 StatusCode = HttpStatusCode.OK,
-                Body = new Account { Id = "member1", Name = "User 1" }
+                Body = new TeamsChannelAccount { Id = "member1", Name = "User 1" }
             });
 
         string serviceUrl = "https://serviceurl.com/";
@@ -72,7 +72,7 @@ public class MemberClientTests
 
         string expectedUrl = "https://serviceurl.com/v3/conversations/conv123/members/member1";
         HttpMethod expectedMethod = HttpMethod.Get;
-        mockHandler.Verify(x => x.SendAsync<Account>(
+        mockHandler.Verify(x => x.SendAsync<TeamsChannelAccount>(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
             It.IsAny<CancellationToken>()),
             Times.Once);

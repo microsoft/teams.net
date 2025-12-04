@@ -56,7 +56,7 @@ public class MeetingClientTests
                 Body = new MeetingParticipant
                 {
                     Id = "participant1",
-                    User = new Account { Id = "user1", Name = "John Doe" },
+                    User = new TeamsChannelAccount { Id = "user1", Name = "John Doe" },
                     Role = "Presenter",
                     IsOrganizer = true,
                     JoinTime = DateTime.UtcNow
