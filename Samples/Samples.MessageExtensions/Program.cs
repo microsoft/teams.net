@@ -204,7 +204,7 @@ static Microsoft.Teams.Api.MessageExtensions.Response CreateSearchResults(string
     };
 }
 
-static Microsoft.Teams.Api.MessageExtensions.ActionResponse HandleCreateCard(JsonElement? data, Microsoft.Teams.Common.Logging.ILogger log)
+static Microsoft.Teams.Api.MessageExtensions.Response HandleCreateCard(JsonElement? data, Microsoft.Teams.Common.Logging.ILogger log)
 {
     var title = GetJsonValue(data, "title") ?? "Default Title";
     var description = GetJsonValue(data, "description") ?? "Default Description";
@@ -228,7 +228,7 @@ static Microsoft.Teams.Api.MessageExtensions.ActionResponse HandleCreateCard(Jso
         Content = card
     };
 
-    return new Microsoft.Teams.Api.MessageExtensions.ActionResponse
+    return new Microsoft.Teams.Api.MessageExtensions.Response
     {
         ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
         {
@@ -239,7 +239,7 @@ static Microsoft.Teams.Api.MessageExtensions.ActionResponse HandleCreateCard(Jso
     };
 }
 
-static Microsoft.Teams.Api.MessageExtensions.ActionResponse HandleGetMessageDetails(Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SubmitActionActivity activity, Microsoft.Teams.Common.Logging.ILogger log)
+static Microsoft.Teams.Api.MessageExtensions.Response HandleGetMessageDetails(Microsoft.Teams.Api.Activities.Invokes.MessageExtensions.SubmitActionActivity activity, Microsoft.Teams.Common.Logging.ILogger log)
 {
     var messageText = activity.Value?.MessagePayload?.Body?.Content ?? "No message content";
     var messageId = activity.Value?.MessagePayload?.Id ?? "Unknown";
@@ -263,7 +263,7 @@ static Microsoft.Teams.Api.MessageExtensions.ActionResponse HandleGetMessageDeta
         Content = card
     };
 
-    return new Microsoft.Teams.Api.MessageExtensions.ActionResponse
+    return new Microsoft.Teams.Api.MessageExtensions.Response
     {
         ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
         {
@@ -353,9 +353,9 @@ static Microsoft.Teams.Api.MessageExtensions.Response CreateErrorResponse(string
     };
 }
 
-static Microsoft.Teams.Api.MessageExtensions.ActionResponse CreateErrorActionResponse(string message)
+static Microsoft.Teams.Api.MessageExtensions.Response CreateErrorActionResponse(string message)
 {
-    return new Microsoft.Teams.Api.MessageExtensions.ActionResponse
+    return new Microsoft.Teams.Api.MessageExtensions.Response
     {
         ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
         {
