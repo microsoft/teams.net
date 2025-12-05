@@ -100,11 +100,9 @@ public class BotApplication
 
     public async Task<string> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
-        if (_conversationClient is null)
-        {
-            throw new Exception("ConversationClient not initialized");
-        }
-        return await _conversationClient.SendActivityAsync(activity, cancellationToken);
+        return _conversationClient is null
+            ? throw new Exception("ConversationClient not initialized")
+            : await _conversationClient.SendActivityAsync(activity, cancellationToken);
     }
 }
 

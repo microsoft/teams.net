@@ -27,7 +27,7 @@ public class CoreActivity<TChannelData>(string type = "message") where TChannelD
     [JsonPropertyName("entities")] public JsonArray? Entities { get; set; }
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
 
-    public readonly static JsonSerializerOptions DefaultJsonOptions = new()
+    public static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,

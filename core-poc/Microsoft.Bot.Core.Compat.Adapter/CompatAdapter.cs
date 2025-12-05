@@ -2,9 +2,8 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
-using Rido.BFLite.Core;
 
-namespace Rido.BFLite.Compat.Adapter;
+namespace Microsoft.Bot.Core.Compat.Adapter;
 
 public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compatBotAdapter) : IBotFrameworkHttpAdapter
 {
@@ -20,7 +19,7 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
 
     public async Task ProcessAsync(HttpRequest httpRequest, HttpResponse httpResponse, IBot bot, CancellationToken cancellationToken = default)
     {
-        Rido.BFLite.Core.Schema.Activity? activity = null;
+        Microsoft.Bot.Core.Schema.CoreActivity? activity = null;
         botApplication.OnActivity = (activity, cancellationToken1) =>
         {
             TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());

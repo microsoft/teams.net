@@ -1,12 +1,11 @@
 ﻿using Microsoft.Bot.Builder;
-using Rido.BFLite.Core;
-using Rido.BFLite.Core.Schema;
+using Microsoft.Bot.Core.Schema;
 
-namespace Rido.BFLite.Compat.Adapter;
+namespace Microsoft.Bot.Core.Compat.Adapter;
 
 internal class CompatMiddlewareAdapter(IMiddleware bfMiddleWare) : ITurnMiddleWare
 {
-    public Task OnTurnAsync(BotApplication botApplication, Activity activity, Core.NextDelegate next, CancellationToken cancellationToken = default)
+    public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, Core.NextDelegate next, CancellationToken cancellationToken = default)
         => bfMiddleWare.OnTurnAsync(new TurnContext(new CompatBotAdapter(botApplication), activity.ToCompatActivity()), (activity)
             => next(cancellationToken), cancellationToken);
 }

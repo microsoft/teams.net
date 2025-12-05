@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rido.BFLite.Core\Rido.BFLite.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.Bot.Core\Microsoft.Bot.Core.csproj" />
   </ItemGroup>
 
 </Project>

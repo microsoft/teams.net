@@ -20,6 +20,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Teams.Api.Tests", "..\Tests\Microsoft.Teams.Api.Tests\Microsoft.Teams.Api.Tests.csproj", "{9FBADA7F-BAAB-3D20-C73A-9472DEC56D37}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.Bot.Core.Compat.Adapter", "Microsoft.Bot.Core.Compat.Adapter\Microsoft.Bot.Core.Compat.Adapter.csproj", "{6414B0DB-E6C4-3695-0758-208EB8F5A25B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "compat", "compat\compat.csproj", "{4557D7BA-1613-4E90-8620-08F390FB0D5E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -50,6 +54,14 @@ Global
 		{9FBADA7F-BAAB-3D20-C73A-9472DEC56D37}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FBADA7F-BAAB-3D20-C73A-9472DEC56D37}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FBADA7F-BAAB-3D20-C73A-9472DEC56D37}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6414B0DB-E6C4-3695-0758-208EB8F5A25B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6414B0DB-E6C4-3695-0758-208EB8F5A25B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6414B0DB-E6C4-3695-0758-208EB8F5A25B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6414B0DB-E6C4-3695-0758-208EB8F5A25B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4557D7BA-1613-4E90-8620-08F390FB0D5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4557D7BA-1613-4E90-8620-08F390FB0D5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4557D7BA-1613-4E90-8620-08F390FB0D5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4557D7BA-1613-4E90-8620-08F390FB0D5E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

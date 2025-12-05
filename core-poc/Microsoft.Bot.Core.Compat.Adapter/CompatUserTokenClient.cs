@@ -1,9 +1,8 @@
-﻿using Microsoft.Bot.Connector.Authentication;
-using Microsoft.Bot.Schema;
+﻿using Microsoft.Bot.Schema;
 
-namespace Rido.BFLite.Compat.Adapter;
+namespace Microsoft.Bot.Core.Compat.Adapter;
 
-public class CompatUserTokenClient(Rido.BFLite.Core.UserTokenClient utc) : UserTokenClient
+public class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot.Connector.Authentication.UserTokenClient
 {
     public async override Task<TokenResponse> ExchangeTokenAsync(string userId, string connectionName, string channelId, TokenExchangeRequest exchangeRequest, CancellationToken cancellationToken)
     {
@@ -17,15 +16,15 @@ public class CompatUserTokenClient(Rido.BFLite.Core.UserTokenClient utc) : UserT
         };
     }
 
-    public async override Task<Dictionary<string, TokenResponse>> GetAadTokensAsync(string userId, string connectionName, string[] resourceUrls, string channelId, CancellationToken cancellationToken)
+    public override async Task<Dictionary<string, TokenResponse>> GetAadTokensAsync(string userId, string connectionName, string[] resourceUrls, string channelId, CancellationToken cancellationToken)
     {
         string res = await utc.GetAadTokensAsync(userId, connectionName, channelId, resourceUrls, cancellationToken);
         return new Dictionary<string, TokenResponse>();
     }
 
-    public async override Task<SignInResource> GetSignInResourceAsync(string connectionName, Activity activity, string finalRedirect, CancellationToken cancellationToken)
+    public override async Task<SignInResource> GetSignInResourceAsync(string connectionName, Activity activity, string finalRedirect, CancellationToken cancellationToken)
     {
-        Core.IUserTokenClient.GetSignInResourceResult res = await utc.GetTokenOrSignInResource(connectionName, activity.From.Id, activity.ChannelId, finalRedirect, cancellationToken);
+        IUserTokenClient.GetSignInResourceResult res = await utc.GetTokenOrSignInResource(connectionName, activity.From.Id, activity.ChannelId, finalRedirect, cancellationToken);
         return new SignInResource
         {
             SignInLink = res.SignInResource!.SignInLink,
@@ -34,9 +33,9 @@ public class CompatUserTokenClient(Rido.BFLite.Core.UserTokenClient utc) : UserT
 
     }
 
-    public async override Task<TokenStatus[]> GetTokenStatusAsync(string userId, string channelId, string includeFilter, CancellationToken cancellationToken)
+    public override async Task<TokenStatus[]> GetTokenStatusAsync(string userId, string channelId, string includeFilter, CancellationToken cancellationToken)
     {
-        Core.IUserTokenClient.GetTokenStatusResult[] res = await utc.GetTokenStatusAsync(userId, channelId, includeFilter, cancellationToken);
+        IUserTokenClient.GetTokenStatusResult[] res = await utc.GetTokenStatusAsync(userId, channelId, includeFilter, cancellationToken);
         return res.Select(t => new TokenStatus
         {
             ConnectionName = t.ConnectionName,
@@ -47,7 +46,7 @@ public class CompatUserTokenClient(Rido.BFLite.Core.UserTokenClient utc) : UserT
 
     public async override Task<TokenResponse> GetUserTokenAsync(string userId, string connectionName, string channelId, string magicCode, CancellationToken cancellationToken)
     {
-        Core.IUserTokenClient.GetTokenResult res = await utc.GetTokenAsync(userId, connectionName, channelId, magicCode, cancellationToken);
+        IUserTokenClient.GetTokenResult res = await utc.GetTokenAsync(userId, connectionName, channelId, magicCode, cancellationToken);
         return new TokenResponse
         {
             ChannelId = channelId,

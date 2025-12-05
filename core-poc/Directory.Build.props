@@ -1,0 +1,37 @@
+<Project>
+
+  <PropertyGroup>
+    <Product>Microsoft Teams SDK</Product>
+    <Authors>Microsoft</Authors>
+    <Company>Microsoft</Company>
+    <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
+    <RepositoryUrl>https://github.com/microsoft/teams.net</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <PackageIcon>icon.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <IsTestProject>false</IsTestProject>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <SignAssembly>False</SignAssembly>
+    <AssemblyOriginatorKeyFile>$([MSBuild]::GetPathOfFileAbove('key.snk'))</AssemblyOriginatorKeyFile>
+    <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include=".\README.md" Pack="true" PackagePath="\" />
+    <None Include="$(MSBuildThisFileDirectory)\..\Assets\icon.png" Pack="true" PackagePath="\" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">
+      <PrivateAssets>all</PrivateAssets>
+      <Version>3.9.50</Version>
+    </PackageReference>
+  </ItemGroup>
+</Project>
