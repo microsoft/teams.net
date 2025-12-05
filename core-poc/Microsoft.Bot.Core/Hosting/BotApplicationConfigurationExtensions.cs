@@ -39,7 +39,7 @@ public static class BotApplicationConfigurationExtensions
 
         services.Configure<MicrosoftIdentityApplicationOptions>(aadConfigSectionName, configuration.GetSection(aadConfigSectionName));
 
-        string agentScope = configuration[$"{aadConfigSectionName}:AgentScope"] ?? "https://api.botframework.com/.default";
+        string agentScope = configuration[$"{aadConfigSectionName}:Scope"] ?? "https://api.botframework.com/.default";
 
         services.AddHttpClient(ConversationHttpClientName)
             .AddHttpMessageHandler(sp => new BotAuthenticationHandler(

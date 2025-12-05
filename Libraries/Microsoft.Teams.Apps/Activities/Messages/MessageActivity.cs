@@ -49,7 +49,7 @@ public static partial class AppActivityExtensions
             },
 
             // TODO: Review Select Logic for Teams ChannelData
-            Selector = activity => activity is Microsoft.Bot.Core.Schema.CoreActivity<Microsoft.Teams.Api.ChannelData>
+            Selector = activity => activity is MessageActivity
         });
 
         return app;

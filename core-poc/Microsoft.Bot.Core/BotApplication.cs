@@ -71,13 +71,13 @@ public class BotApplication
         AgenticIdentity? agenticIdentity = AgenticIdentity.FromProperties(activity.Recipient!.Properties!);
 
         _userTokenClient.AgenticIdentity = agenticIdentity;
-
+        _conversationClient.AgenticIdentity = agenticIdentity;
 
         using (_logger.BeginScope("Processing activity {Type} {Id}", activity.Type, activity.Id))
         {
             try
             {
-                await _turnMiddleware.RunPipeline(this, activity, this.OnActivity, 0, cancellationToken).ConfigureAwait(false);
+                await _turnMiddleware.RunPipelineAsync(this, activity, this.OnActivity, 0, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -121,11 +121,11 @@ internal class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleWare>
 
     public async Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextDelegate next, CancellationToken cancellationToken = default)
     {
-        await RunPipeline(botApplication, activity, null!, 0, cancellationToken).ConfigureAwait(false);
+        await RunPipelineAsync(botApplication, activity, null!, 0, cancellationToken).ConfigureAwait(false);
         await next(cancellationToken).ConfigureAwait(false);
     }
 
-    public Task RunPipeline(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
+    public Task RunPipelineAsync(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
     {
         if (nextMiddlewareIndex == _middlewares.Count)
         {
@@ -142,7 +142,7 @@ internal class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleWare>
         return nextMiddleware.OnTurnAsync(
             botApplication,
             activity,
-            (ct) => RunPipeline(botApplication, activity, callback, nextMiddlewareIndex + 1, ct),
+            (ct) => RunPipelineAsync(botApplication, activity, callback, nextMiddlewareIndex + 1, ct),
             cancellationToken);
 
     }
