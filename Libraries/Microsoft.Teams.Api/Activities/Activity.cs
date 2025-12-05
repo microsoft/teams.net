@@ -85,6 +85,8 @@ public partial interface IActivity //: IConvertible, ICloneable
     /// get the quote reply string form of this activity
     /// </summary>
     public string ToQuoteReply();
+
+    public object ToType(Type conversionType, IFormatProvider? provider);
 }
 
 [JsonConverter(typeof(ActivityJsonConverter))]
@@ -498,5 +500,22 @@ public partial class Activity : Microsoft.Bot.Core.Schema.CoreActivity<ChannelDa
     public override string ToString()
     {
         return JsonSerializer.Serialize(this, s_defaultOptions);
+    }
+
+    public object ToType(Type type, IFormatProvider? provider)
+    {
+        if (type == ActivityType.Command.ToType()) return ToCommand();
+        if (type == ActivityType.CommandResult.ToType()) return ToCommandResult();
+        if (type == ActivityType.ConversationUpdate.ToType()) return ToConversationUpdate();
+        if (type == ActivityType.EndOfConversation.ToType()) return ToEndOfConversation();
+        if (type == ActivityType.InstallUpdate.ToType()) return ToInstallUpdate();
+        if (type == ActivityType.Typing.ToType()) return ToTyping();
+        if (type == ActivityType.Message.ToType()) return ToMessage();
+        if (type == ActivityType.MessageUpdate.ToType()) return ToMessageUpdate();
+        if (type == ActivityType.MessageReaction.ToType()) return ToMessageReaction();
+        if (type == ActivityType.MessageDelete.ToType()) return ToMessageDelete();
+        if (type == ActivityType.Event.ToType()) return ToEvent();
+        if (type == ActivityType.Invoke.ToType()) return ToInvoke();
+        return this;
     }
 }

@@ -13,7 +13,7 @@ var teamsApp = app.UseBotApplication<App>();
 
 teamsApp.OnMessage(context =>
 {
-    return context.Send("msg received");
+    return context.Send("you said: " + context.Activity.Text);
 });
 
 app.Run();

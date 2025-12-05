@@ -180,7 +180,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
             // Log = Log,
             // Storage = Storage,
             Api = Api,
-            Activity = default(TToActivity)!, // (TToActivity)Activity.ToType(typeof(TToActivity), null),  // TODO: implement ToType
+            Activity = (TToActivity)Activity.ToType(typeof(TToActivity), null),  // TODO: implement ToType
             Ref = Ref,
             // UserGraphToken = UserGraphToken,
             IsSignedIn = IsSignedIn,

@@ -43,7 +43,7 @@ public partial class EventActivity(Events.Name name) : Activity(ActivityType.Eve
     public Events.MeetingParticipantLeaveActivity ToMeetingParticipantLeave() => (Events.MeetingParticipantLeaveActivity)this;
     public Events.ReadReceiptActivity ToReadReceipt() => (Events.ReadReceiptActivity)this;
 
-    public object ToType(Type type, IFormatProvider? provider)
+    public new object ToType(Type type, IFormatProvider? provider)
     {
         if (type == Events.Name.ReadReceipt.ToType()) return ToReadReceipt();
         if (type == Events.Name.MeetingStart.ToType()) return ToMeetingStart();

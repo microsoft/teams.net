@@ -79,28 +79,11 @@ internal class SenderPlugin(ConversationClient conversationClient) : ISenderPlug
         activity.ChannelId = reference.ChannelId;
         activity.ServiceUrl = reference.ServiceUrl;
 
-        CoreActivity resultActivity = new()
-        {
-            Conversation = new Bot.Core.Schema.Conversation() { Id = activity.Conversation.Id },
-            From = new ConversationAccount() { Id = activity.From.Id , Name = activity.From.Name, Properties = activity.From.Properties },
-            Recipient = new ConversationAccount() { Id = activity.Recipient!.Id, Name = activity.Recipient.Name, Properties = activity.Recipient.Properties },
-            ChannelId = activity.ChannelId,
-            Type = activity.Type,
-            Id = activity.Id,
-            ReplyToId = activity.ReplyToId,
-            //Locale = activity.Locale,
-            //Timestamp = activity.Timestamp,
-            //LocalTimestamp = activity.LocalTimestamp,
-            //Entities = activity.Entities,
-            ChannelData = activity.ChannelData,
-            Properties = activity.Properties,
-            ServiceUrl = activity.ServiceUrl,
-            Text = "need to cast"
-        };
+        CoreActivity coreActivity = CoreActivity.FromJsonString(System.Text.Json.JsonSerializer.Serialize(activity));
 
         if (activity.Id is not null && !activity.IsStreaming)
         {
-            await conversationClient.SendActivityAsync(resultActivity, cancellationToken);
+            await conversationClient.SendActivityAsync(coreActivity, cancellationToken);
             //await client
             //    .Conversations
             //    .Activities

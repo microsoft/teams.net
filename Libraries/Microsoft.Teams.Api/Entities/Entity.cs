@@ -124,8 +124,7 @@ public class Entity : IEntity
             {
                 entity = new(type);
 
-                // TODO: handle extension data
-                // entity.Properties = entity.FromJsonObject(element, options);
+                entity.Properties = entity.FromJsonObject(element, options);
             }
 
             return entity;

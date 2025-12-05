@@ -75,7 +75,7 @@ public partial class Activity
             {
                 activity = new(type);
 
-                // TODO: Review
+                // TODO: Review FromJsonObject implementation
                 activity.Properties = activity.FromJsonObject(element, options);
             }
 

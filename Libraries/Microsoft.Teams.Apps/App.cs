@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Reflection;
+using System.Text.Json;
 
 using Microsoft.Bot.Core;
 using Microsoft.Extensions.Configuration;
@@ -42,8 +43,8 @@ public partial class App : BotApplication
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogInformation("New activity received of type {type} from {from}", activity.Type, activity.From?.Id);
-            Activity teamsActivity = new Activity(activity);
-            var route = Router.Select(teamsActivity).FirstOrDefault();
+            Activity? teamsActivity = JsonSerializer.Deserialize<Activity>(activity.ToJson());
+            var route = Router.Select(teamsActivity!).FirstOrDefault();
 
             var ctx = new Context<IActivity>(null!, null!)
             {
@@ -55,7 +56,7 @@ public partial class App : BotApplication
                 // TenantId = "",
                 Ref = new ConversationReference()
                 {
-                    ChannelId = teamsActivity.ChannelId,
+                    ChannelId = teamsActivity!.ChannelId,
                     ServiceUrl = teamsActivity.ServiceUrl,
                     Bot = teamsActivity.Recipient,
                     User = teamsActivity.From,
