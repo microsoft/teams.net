@@ -44,6 +44,12 @@ public partial class AppBuilder
         return this;
     }
 
+    public AppBuilder AddClient()
+    {
+        _options.Client = new Common.Http.HttpClient();
+        return this;
+    }
+
     public AppBuilder AddClient(Func<Common.Http.IHttpClient> @delegate)
     {
         _options.Client = @delegate();
