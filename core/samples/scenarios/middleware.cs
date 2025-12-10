@@ -28,7 +28,7 @@ public class MyTurnMiddleWare : ITurnMiddleWare
 {
     public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn next, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($"Processing activity {activity.Type} {activity.Id}");
+        Console.WriteLine($"MIDDLEWARE: Processing activity {activity.Type} {activity.Id}");
         return next(cancellationToken);
     }
 }
