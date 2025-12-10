@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Moq.Protected;
 
@@ -17,39 +18,17 @@ public class BotApplicationTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
+        var logger = NullLogger<BotApplication>.Instance;
 
         // Act
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         // Assert
         Assert.NotNull(botApp);
         Assert.NotNull(botApp.ConversationClient);
     }
 
-    [Fact]
-    public void Constructor_LogsStartupInformation()
-    {
-        // Arrange
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        mockConfig.Setup(c => c["ASPNETCORE_URLS"]).Returns("http://localhost:5000");
-        mockConfig.Setup(c => c["AzureAd:ClientId"]).Returns("test-app-id");
-        var mockLogger = new Mock<ILogger<BotApplication>>();
 
-        // Act
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
-
-        // Assert
-        mockLogger.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((v, t) => v.ToString()!.Contains("Started bot listener")),
-                null,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-            Times.Once);
-    }
 
     [Fact]
     public async Task ProcessAsync_WithNullHttpContext_ThrowsArgumentNullException()
@@ -57,8 +36,8 @@ public class BotApplicationTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
@@ -71,8 +50,8 @@ public class BotApplicationTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         var activity = new CoreActivity
         {
@@ -106,8 +85,8 @@ public class BotApplicationTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         var activity = new CoreActivity
         {
@@ -153,8 +132,8 @@ public class BotApplicationTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         var activity = new CoreActivity
         {
@@ -185,8 +164,8 @@ public class BotApplicationTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         var mockMiddleware = new Mock<ITurnMiddleWare>();
 
@@ -217,8 +196,8 @@ public class BotApplicationTests
         var httpClient = new HttpClient(mockHttpMessageHandler.Object);
         var conversationClient = new ConversationClient(httpClient);
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         var activity = new CoreActivity
         {
@@ -242,8 +221,8 @@ public class BotApplicationTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>

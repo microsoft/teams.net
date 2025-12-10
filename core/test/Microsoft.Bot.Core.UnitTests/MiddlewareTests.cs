@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace Microsoft.Bot.Core.UnitTests;
@@ -15,8 +16,8 @@ public class MiddlewareTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         var mockMiddleware = new Mock<ITurnMiddleWare>();
 
@@ -33,8 +34,8 @@ public class MiddlewareTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         var executionOrder = new List<int>();
 
@@ -90,8 +91,8 @@ public class MiddlewareTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         bool secondMiddlewareCalled = false;
         bool onActivityCalled = false;
@@ -140,8 +141,8 @@ public class MiddlewareTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         CancellationToken receivedToken = default;
 
@@ -182,8 +183,8 @@ public class MiddlewareTests
         // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
-        var mockLogger = new Mock<ILogger<BotApplication>>();
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, mockLogger.Object);
+        var logger = NullLogger<BotApplication>.Instance;
+        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
         CoreActivity? receivedActivity = null;
 
