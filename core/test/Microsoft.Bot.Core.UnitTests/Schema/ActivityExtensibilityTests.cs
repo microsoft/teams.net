@@ -43,14 +43,36 @@ public class ActivityExtensibilityTests
         {
             ChannelData = new MyChannelData
             {
-                CustomField = "ChannelDataValue"
+                CustomField = "customFieldValue",
+                MyChannelId = "12345"
             }
         };
         var json = MyCustomChannelDataActivity.ToJson<MyCustomChannelDataActivity>(customChannelDataActivity);
         var deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
         Assert.NotNull(deserializedActivity);
         Assert.NotNull(deserializedActivity!.ChannelData);
-        Assert.Equal("ChannelDataValue", deserializedActivity.ChannelData!.CustomField);
+        Assert.Equal("customFieldValue", deserializedActivity.ChannelData!.CustomField);
+        Assert.Equal("12345", deserializedActivity.ChannelData.MyChannelId);
+    }
+
+
+    [Fact]
+    public void Deserialize_CustomChannelDataActivity()
+    {
+        string json = """
+        {
+            "type": "message",
+            "channelData": {
+                "customField": "customFieldValue",
+                "myChannelId": "12345"
+            }
+        }
+        """;
+        var deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
+        Assert.NotNull(deserializedActivity);
+        Assert.NotNull(deserializedActivity!.ChannelData);
+        Assert.Equal("customFieldValue", deserializedActivity.ChannelData.CustomField);
+        Assert.Equal("12345", deserializedActivity.ChannelData.MyChannelId);
     }
 }
 
@@ -65,10 +87,13 @@ public class MyChannelData : ChannelData
 {
     [JsonPropertyName("customField")]
     public string? CustomField { get; set; }
+
+    [JsonPropertyName("myChannelId")]
+    public string? MyChannelId { get; set; }
 }
 
 public class MyCustomChannelDataActivity : CoreActivity
 {
-    [JsonPropertyName("customField")]
+    [JsonPropertyName("channelData")]
     public new MyChannelData? ChannelData { get; set; }
 }
