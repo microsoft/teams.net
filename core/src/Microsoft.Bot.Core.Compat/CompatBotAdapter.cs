@@ -35,7 +35,7 @@ public class CompatBotAdapter(BotApplication botApplication) : BotAdapter
     /// <param name="activities"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async override Task<ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
+    public override async Task<ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activities);
 

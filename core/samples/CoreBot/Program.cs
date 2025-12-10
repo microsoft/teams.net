@@ -19,4 +19,3 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 };
 
 webApp.Run();
-

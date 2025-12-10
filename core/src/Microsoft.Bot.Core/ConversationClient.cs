@@ -32,14 +32,14 @@ public class ConversationClient(HttpClient httpClient)
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         using HttpRequestMessage request = new(
-            HttpMethod.Post, 
+            HttpMethod.Post,
             $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/")
         {
             Content = JsonContent.Create(activity, options: CoreActivity.DefaultJsonOptions),
         };
-        
+
         request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, AgenticIdentity.FromProperties(activity.From?.Properties));
-        
+
         using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
         string respContent = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);

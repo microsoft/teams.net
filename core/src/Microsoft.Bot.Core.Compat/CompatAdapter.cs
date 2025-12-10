@@ -62,7 +62,7 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
         CoreActivity? activity = null;
         botApplication.OnActivity = (activity, cancellationToken1) =>
         {
-            TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());
+            using TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());
             //turnContext.TurnState.Add<Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(botApplication.UserTokenClient));
             return bot.OnTurnAsync(turnContext, cancellationToken1);
         };

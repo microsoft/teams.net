@@ -7,7 +7,7 @@ internal sealed class CompatMiddlewareAdapter(IMiddleware bfMiddleWare) : ITurnM
 {
     public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
     {
-        using var turnContext = new TurnContext(new CompatBotAdapter(botApplication), activity.ToCompatActivity());
+        using TurnContext turnContext = new(new CompatBotAdapter(botApplication), activity.ToCompatActivity());
         return bfMiddleWare.OnTurnAsync(turnContext, (activity)
                 => nextTurn(cancellationToken), cancellationToken);
     }

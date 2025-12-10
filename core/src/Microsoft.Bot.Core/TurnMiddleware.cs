@@ -1,6 +1,7 @@
 ﻿
-using Microsoft.Bot.Core.Schema;
 using System.Collections;
+
+using Microsoft.Bot.Core.Schema;
 
 namespace Microsoft.Bot.Core;
 

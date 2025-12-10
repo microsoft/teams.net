@@ -1,8 +1,9 @@
 ﻿using System.Net.Http.Headers;
-using Microsoft.Identity.Web;
+
+using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Abstractions;
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Identity.Web;
 
 namespace Microsoft.Bot.Core.Hosting;
 
@@ -124,4 +125,3 @@ internal sealed class BotAuthenticationHandler(
         return appToken;
     }
 }
-
