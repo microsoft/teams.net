@@ -11,7 +11,7 @@ namespace Microsoft.Bot.Core;
 /// <param name="httpClient">The HTTP client instance used to send requests to the conversation service. Must not be null.</param>
 public class ConversationClient(HttpClient httpClient)
 {
-    internal const string ConversationHttpClientName = "BotFrameworkConversation";
+    internal const string ConversationHttpClientName = "BotConversationClient";
 
     internal AgenticIdentity? AgenticIdentity { get; set; }
 

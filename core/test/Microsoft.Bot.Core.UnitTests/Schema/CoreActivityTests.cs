@@ -79,7 +79,7 @@ public class CoreCoreActivityTests
     {
         CoreActivity act = new()
         {
-            Type = "message",
+            Type = ActivityTypes.Message,
             Text = "hello",
         };
         act.Properties["unknownString"] = "some string";
@@ -174,7 +174,7 @@ public class CoreCoreActivityTests
     {
         CoreActivity act = new()
         {
-            Type = "message",
+            Type = ActivityTypes.Message,
             Text = "hello",
             Properties =
             {
@@ -228,6 +228,7 @@ public class CoreCoreActivityTests
     {
         CoreActivity act = new()
         {
+            Type = "myActivityType",
             Text = "hello",
             Id = "CoreActivity1",
             ChannelId = "channel1",

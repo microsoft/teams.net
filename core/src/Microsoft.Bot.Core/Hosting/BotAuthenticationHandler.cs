@@ -47,7 +47,6 @@ internal sealed class AgenticIdentity
 /// <param name="logger">The logger instance.</param>
 /// <param name="scope">The scope for the token request.</param>
 /// <param name="aadConfigSectionName">The configuration section name for Azure AD settings.</param>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1812:Avoid uninstantiated internal classes", Justification = "Instantiated via dependency injection")]
 internal sealed class BotAuthenticationHandler(
     IAuthorizationHeaderProvider authorizationHeaderProvider,
     ILogger<BotAuthenticationHandler> logger,
@@ -109,7 +108,7 @@ internal sealed class BotAuthenticationHandler(
             }
         };
 
-        if (agenticIdentity != null &&
+        if (agenticIdentity is not null &&
             !string.IsNullOrEmpty(agenticIdentity.AgenticAppId) &&
             !string.IsNullOrEmpty(agenticIdentity.AgenticUserId))
         {

@@ -17,7 +17,7 @@ public class ActivityExtensibilityTests
         string json = MyCustomActivity.ToJson<MyCustomActivity>(customActivity);
         var deserializedActivity = CoreActivity.FromJsonString<MyCustomActivity>(json);
         Assert.NotNull(deserializedActivity);
-        Assert.Equal("CustomValue", deserializedActivity!.CustomField);
+        Assert.Equal("CustomValue", deserializedActivity.CustomField);
     }
 
     [Fact]

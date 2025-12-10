@@ -13,7 +13,7 @@ internal static class CompatActivity
     public static Activity ToCompatActivity(this CoreActivity activity)
     {
         using JsonTextReader reader = new(new StringReader(activity.ToJson()));
-        return BotMessageHandlerBase.BotMessageSerializer.Deserialize<Bot.Schema.Activity>(reader)!;
+        return BotMessageHandlerBase.BotMessageSerializer.Deserialize<Activity>(reader)!;
     }
 
     public static CoreActivity FromCompatActivity(this Activity activity)

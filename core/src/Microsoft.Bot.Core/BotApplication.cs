@@ -14,7 +14,6 @@ namespace Microsoft.Bot.Core;
 public class BotApplication
 {
     private readonly ILogger<BotApplication> _logger;
-    private readonly IConfiguration _configuration;
     private readonly ConversationClient? _conversationClient;
     private readonly string _serviceKey;
     internal TurnMiddleware MiddleWare { get; }
@@ -34,11 +33,10 @@ public class BotApplication
     public BotApplication(ConversationClient conversationClient, IConfiguration config, ILogger<BotApplication> logger, string serviceKey = "AzureAd")
     {
         _logger = logger;
-        _configuration = config;
         _serviceKey = serviceKey;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
-        logger.LogInformation("Started bot listener on {Port} for AppID:{AppId} with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], config?[$"{_serviceKey}:ClientId"], SdkVersion);
+        logger.LogInformation("Started bot listener on {Port} for AppID:{AppId} with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], config?[$"{_serviceKey}:ClientId"], Version);
     }
 
 
@@ -69,10 +67,8 @@ public class BotApplication
     public async Task<CoreActivity> ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-        if (_conversationClient is null)
-        {
-            throw new InvalidOperationException("BotApplication not initialized with ConversationClient");
-        }
+        ArgumentNullException.ThrowIfNull(_conversationClient);
+        
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
@@ -132,5 +128,5 @@ public class BotApplication
     /// <summary>
     /// Gets the version of the SDK.
     /// </summary>
-    public static string SdkVersion => ThisAssembly.NuGetPackageVersion;
+    public static string Version => ThisAssembly.NuGetPackageVersion;
 }
