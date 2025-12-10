@@ -53,7 +53,7 @@ $: dotnet test
 
 ## External Packages
 
-> ℹ️ external packages (typically plugins) used to integrate with other platforms.
+> ℹ️ External packages (typically plugins) used to integrate with other platforms.
 
 - [`Microsoft.Teams.Plugins.External.Mcp`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.Mcp/README.md)
 - [`Microsoft.Teams.Plugins.External.McpClient`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.McpClient/README.md)
