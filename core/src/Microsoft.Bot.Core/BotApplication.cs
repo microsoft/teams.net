@@ -40,7 +40,7 @@ public class BotApplication
         _serviceKey = serviceKey;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
-        logger.LogInformation("Started bot listener on {Port} for AppID:{AppId}", config?["ASPNETCORE_URLS"], config?[$"{_serviceKey}:ClientId"]);
+        logger.LogInformation("Started bot listener on {Port} for AppID:{AppId} with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], config?[$"{_serviceKey}:ClientId"], SdkVersion);
     }
 
 
@@ -130,4 +130,9 @@ public class BotApplication
 
         return await _conversationClient.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Gets the version of the SDK.
+    /// </summary>
+    public static string SdkVersion => ThisAssembly.NuGetPackageVersion;
 }

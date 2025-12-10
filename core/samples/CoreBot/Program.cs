@@ -11,7 +11,10 @@ var botApp = webApp.UseBotApplication<BotApplication>();
 
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
-    var replyActivity = activity.CreateReplyActivity("You said " + activity.Text);
+    string replyText = $"CoreBot running on SDK {BotApplication.SdkVersion}.";
+    replyText += $"\r\nYou sent: `{activity.Text}` in activity of type `{activity.Type}`.";
+    replyText += $"\r\n Conversion ID: `{activity.Conversation?.Id}` type: `{activity.Conversation?.Properties?["conversationType"]}`";
+    var replyActivity = activity.CreateReplyActivity(replyText);
     await botApp.SendActivityAsync(replyActivity, cancellationToken);
 };
 
