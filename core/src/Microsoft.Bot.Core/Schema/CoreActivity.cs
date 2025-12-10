@@ -1,0 +1,167 @@
+using System.Text.Json;
+using System.Text.Json.Nodes;
+
+namespace Microsoft.Bot.Core.Schema;
+
+/// <summary>
+/// Represents a dictionary for storing extended properties as key-value pairs.
+/// </summary>
+public class ExtendedPropertiesDictionary : Dictionary<string, object?> { }
+
+/// <summary>
+/// Represents a core activity object that encapsulates the data and metadata for a bot interaction.
+/// </summary>
+/// <remarks>
+/// This class provides the foundational structure for bot activities including message exchanges,
+/// conversation updates, and other bot-related events. It supports serialization to and from JSON
+/// and includes extension properties for channel-specific data.
+/// </remarks>
+public class CoreActivity(string type = ActivityTypes.Message)
+{
+    /// <summary>
+    /// Gets or sets the type of the activity. See <see cref="ActivityTypes"/> for common values.
+    /// </summary>
+    /// <remarks>
+    /// Common activity types include "message", "conversationUpdate", "contactRelationUpdate", etc.
+    /// </remarks>
+    [JsonPropertyName("type")] public string Type { get; set; } = type;
+    /// <summary>
+    /// Gets or sets the unique identifier for the channel on which this activity is occurring.
+    /// </summary>
+    [JsonPropertyName("channelId")] public string? ChannelId { get; set; }
+    /// <summary>
+    /// Gets or sets the text content of the message.
+    /// </summary>
+    [JsonPropertyName("text")] public string? Text { get; set; }
+    /// <summary>
+    /// Gets or sets the unique identifier for the activity.
+    /// </summary>
+    [JsonPropertyName("id")] public string Id { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the URL of the service endpoint for this activity.
+    /// </summary>
+    /// <remarks>
+    /// This URL is used to send responses back to the channel.
+    /// </remarks>
+    [JsonPropertyName("serviceUrl")] public Uri? ServiceUrl { get; set; }
+    /// <summary>
+    /// Gets or sets channel-specific data associated with this activity.
+    /// </summary>
+    [JsonPropertyName("channelData")] public ChannelData? ChannelData { get; set; }
+    /// <summary>
+    /// Gets or sets the account that sent this activity.
+    /// </summary>
+    [JsonPropertyName("from")] public ConversationAccount From { get; set; } = new();
+    /// <summary>
+    /// Gets or sets the account that should receive this activity.
+    /// </summary>
+    [JsonPropertyName("recipient")] public ConversationAccount Recipient { get; set; } = new();
+    /// <summary>
+    /// Gets or sets the conversation in which this activity is taking place.
+    /// </summary>
+    [JsonPropertyName("conversation")] public Conversation Conversation { get; set; } = new();
+    /// <summary>
+    /// Gets the collection of entities contained in this activity.
+    /// </summary>
+    /// <remarks>
+    /// Entities are structured objects that represent mentions, places, or other data.
+    /// </remarks>
+    [JsonPropertyName("entities")] public JsonArray? Entities { get; }
+    /// <summary>
+    /// Gets the extension data dictionary for storing additional properties not defined in the schema.
+    /// </summary>
+    [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; init; } = [];
+
+    /// <summary>
+    /// Gets the default JSON serializer options used for serializing and deserializing activities.
+    /// </summary>
+    public static readonly JsonSerializerOptions DefaultJsonOptions = new()
+    {
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+    };
+
+    /// <summary>
+    /// Serializes the current activity to a JSON string.
+    /// </summary>
+    /// <returns>A JSON string representation of the activity.</returns>
+    public string ToJson() => JsonSerializer.Serialize(this, DefaultJsonOptions);
+
+    /// <summary>
+    /// Serializes the specified activity instance to a JSON string using the default serialization options.
+    /// </summary>
+    /// <remarks>The serialization uses the default JSON options defined by DefaultJsonOptions. The resulting
+    /// JSON reflects the public properties of the activity instance.</remarks>
+    /// <typeparam name="T">The type of the activity to serialize. Must inherit from CoreActivity.</typeparam>
+    /// <param name="instance">The activity instance to serialize. Cannot be null.</param>
+    /// <returns>A JSON string representation of the specified activity instance.</returns>
+    public static string ToJson<T>(T instance) where T : CoreActivity
+        => JsonSerializer.Serialize<T>(instance, DefaultJsonOptions);
+
+    /// <summary>
+    /// Deserializes a JSON string into a <see cref="CoreActivity"/> object.
+    /// </summary>
+    /// <param name="json">The JSON string to deserialize.</param>
+    /// <returns>A <see cref="CoreActivity"/> instance.</returns>
+    public static CoreActivity FromJsonString(string json)
+        => JsonSerializer.Deserialize<CoreActivity>(json, DefaultJsonOptions)!;
+
+    /// <summary>
+    /// Deserializes the specified JSON string to an object of type T.
+    /// </summary>
+    /// <remarks>The deserialization uses default JSON options defined by the application. If the JSON is
+    /// invalid or does not match the target type, a JsonException may be thrown.</remarks>
+    /// <typeparam name="T">The type of the object to deserialize to. Must be compatible with the JSON structure.</typeparam>
+    /// <param name="json">The JSON string to deserialize. Cannot be null or empty.</param>
+    /// <returns>An instance of type T that represents the deserialized JSON data.</returns>
+    public static T FromJsonString<T>(string json) where T : CoreActivity
+        => JsonSerializer.Deserialize<T>(json, DefaultJsonOptions)!;
+
+    /// <summary>
+    /// Asynchronously deserializes a JSON stream into a <see cref="CoreActivity"/> object.
+    /// </summary>
+    /// <param name="stream">The stream containing JSON data to deserialize.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized <see cref="CoreActivity"/> instance, or null if deserialization fails.</returns>
+    public static ValueTask<CoreActivity?> FromJsonStreamAsync(Stream stream, CancellationToken cancellationToken = default)
+        => JsonSerializer.DeserializeAsync<CoreActivity>(stream, DefaultJsonOptions, cancellationToken);
+
+    /// <summary>
+    /// Asynchronously deserializes a JSON value from the specified stream into an instance of type T.
+    /// </summary>
+    /// <remarks>The caller is responsible for managing the lifetime of the provided stream. The method uses
+    /// default JSON serialization options.</remarks>
+    /// <typeparam name="T">The type of the object to deserialize. Must derive from CoreActivity.</typeparam>
+    /// <param name="stream">The stream containing the JSON data to deserialize. The stream must be readable and positioned at the start of
+    /// the JSON content.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A ValueTask that represents the asynchronous operation. The result contains an instance of type T if
+    /// deserialization is successful; otherwise, null.</returns>
+    public static ValueTask<T?> FromJsonStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default) where T : CoreActivity
+    => JsonSerializer.DeserializeAsync<T>(stream, DefaultJsonOptions, cancellationToken);
+
+    /// <summary>
+    /// Creates a reply activity based on the current activity.
+    /// </summary>
+    /// <param name="text">The text content for the reply. Defaults to an empty string.</param>
+    /// <returns>A new <see cref="CoreActivity"/> configured as a reply to the current activity.</returns>
+    /// <remarks>
+    /// The reply activity automatically swaps the From and Recipient accounts and preserves
+    /// the conversation context, channel ID, and service URL from the original activity.
+    /// </remarks>
+    public CoreActivity CreateReplyActivity(string text = "")
+    {
+        CoreActivity result = new()
+        {
+            Type = "message",
+            ChannelId = ChannelId,
+            ServiceUrl = ServiceUrl,
+            Conversation = Conversation,
+            From = Recipient,
+            Recipient = From,
+            Text = text
+        };
+        return result!;
+    }
+}

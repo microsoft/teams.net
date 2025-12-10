@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="../.github/workflows/core-ci.yaml" />
+    <File Path=".gitignore" />
+    <File Path="src/Directory.Build.props" />
+    <File Path="src/Directory.Build.targets" />
+    <File Path="version.json" />
+  </Folder>
+  <Project Path="samples/CoreBot/CoreBot.csproj" Id="142a67bc-68e7-4020-83cf-51423e317b53" />
+  <Project Path="src/Microsoft.Bot.Core/Microsoft.Bot.Core.csproj" />
+  <Project Path="test/Microsoft.Bot.Core.UnitTests/Microsoft.Bot.Core.UnitTests.csproj" Id="8e6790ed-0352-45f6-b3dc-0c4c3bcab038" />
+</Solution>
