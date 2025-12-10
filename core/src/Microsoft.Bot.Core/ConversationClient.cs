@@ -38,7 +38,7 @@ public class ConversationClient(HttpClient httpClient)
             Content = JsonContent.Create(activity, options: CoreActivity.DefaultJsonOptions),
         };
 
-        request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, AgenticIdentity.FromProperties(activity.From?.Properties));
+        request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, AgenticIdentity);
 
         using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 

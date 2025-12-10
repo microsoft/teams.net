@@ -81,7 +81,7 @@ public class BotApplication
             _logger.LogTrace("Received activity: {Activity}", activity.ToJson());
         }
 
-        AgenticIdentity? agenticIdentity = AgenticIdentity.FromProperties(activity.Recipient!.Properties!);
+        AgenticIdentity? agenticIdentity = AgenticIdentity.FromProperties(activity.Recipient.Properties);
         _conversationClient.AgenticIdentity = agenticIdentity;
 
         using (_logger.BeginScope("Processing activity {Type} {Id}", activity.Type, activity.Id))
