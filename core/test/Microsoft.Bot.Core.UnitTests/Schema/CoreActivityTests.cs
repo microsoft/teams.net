@@ -194,7 +194,7 @@ public class CoreCoreActivityTests
                     { "conversationCustomField", "conversationCustomValue" }
                 }
             },
-            From = new ()
+            From = new()
             {
                 Id = "user1",
                 Properties =
@@ -202,7 +202,7 @@ public class CoreCoreActivityTests
                     { "fromCustomField", "fromCustomValue" }
                 }
             },
-            Recipient = new ()
+            Recipient = new()
             {
                 Id = "bot1",
                 Properties =

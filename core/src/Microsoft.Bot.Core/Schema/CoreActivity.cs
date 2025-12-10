@@ -66,7 +66,7 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <remarks>
     /// Entities are structured objects that represent mentions, places, or other data.
     /// </remarks>
-    [JsonPropertyName("entities")] public JsonArray? Entities { get;  }
+    [JsonPropertyName("entities")] public JsonArray? Entities { get; }
     /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
@@ -96,7 +96,7 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <typeparam name="T">The type of the activity to serialize. Must inherit from CoreActivity.</typeparam>
     /// <param name="instance">The activity instance to serialize. Cannot be null.</param>
     /// <returns>A JSON string representation of the specified activity instance.</returns>
-    public static string ToJson<T>(T instance) where T: CoreActivity
+    public static string ToJson<T>(T instance) where T : CoreActivity
         => JsonSerializer.Serialize<T>(instance, DefaultJsonOptions);
 
     /// <summary>
