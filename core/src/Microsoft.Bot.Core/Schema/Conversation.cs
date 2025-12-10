@@ -9,7 +9,7 @@ public class Conversation()
     /// Gets or sets the unique identifier for the object.
     /// </summary>
     [JsonPropertyName("id")]
-    public string? Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.

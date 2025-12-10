@@ -15,6 +15,7 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?> { }
 /// This class provides the foundational structure for bot activities including message exchanges,
 /// conversation updates, and other bot-related events. It supports serialization to and from JSON
 /// and includes extension properties for channel-specific data.
+/// Follows the Activity Protocol Specification: https://github.com/microsoft/Agents/blob/main/specs/activity/protocol-activity.md
 /// </remarks>
 public class CoreActivity(string type = ActivityTypes.Message)
 {
@@ -36,7 +37,7 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <summary>
     /// Gets or sets the unique identifier for the activity.
     /// </summary>
-    [JsonPropertyName("id")] public string Id { get; set; } = string.Empty;
+    [JsonPropertyName("id")] public string? Id { get; set; }
     /// <summary>
     /// Gets or sets the URL of the service endpoint for this activity.
     /// </summary>
@@ -158,17 +159,18 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <summary>
     /// Creates a reply activity based on the current activity.
     /// </summary>
+    /// <param name="type">The type of the reply activity. Defaults to <see cref="ActivityTypes.Message"/>.</param>
     /// <param name="text">The text content for the reply. Defaults to an empty string.</param>
     /// <returns>A new <see cref="CoreActivity"/> configured as a reply to the current activity.</returns>
     /// <remarks>
     /// The reply activity automatically swaps the From and Recipient accounts and preserves
     /// the conversation context, channel ID, and service URL from the original activity.
     /// </remarks>
-    public CoreActivity CreateReplyActivity(string text = "")
+    public CoreActivity CreateReplyActivity(string type, string text = "")
     {
         CoreActivity result = new()
         {
-            Type = "message",
+            Type = type,
             ChannelId = ChannelId,
             ServiceUrl = ServiceUrl,
             Conversation = Conversation,
