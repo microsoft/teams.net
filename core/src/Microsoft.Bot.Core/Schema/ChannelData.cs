@@ -8,11 +8,13 @@
 /// messaging channel. The properties dictionary allows channels to include additional metadata
 /// that is not part of the standard activity schema.
 /// </remarks>
-public class ChannelData()
+public class ChannelData
 {
     /// <summary>
     /// Gets the extension data dictionary for storing channel-specific properties.
     /// </summary>
     [JsonExtensionData]
-    public ExtendedPropertiesDictionary Properties { get; init; } = [];
+#pragma warning disable CA2227 // Collection properties should be read only
+    public ExtendedPropertiesDictionary Properties { get; set; } = [];
+#pragma warning restore CA2227 // Collection properties should be read only
 }

@@ -70,23 +70,23 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
-    [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; init; } = [];
+#pragma warning disable CA2227 // Collection properties should be read only
+    [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
+#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets the default JSON serializer options used for serializing and deserializing activities.
     /// </summary>
-    public static readonly JsonSerializerOptions DefaultJsonOptions = new()
-    {
-        WriteIndented = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-    };
+    /// <remarks>
+    /// Uses the source-generated JSON context for AOT-compatible serialization.
+    /// </remarks>
+    public static readonly JsonSerializerOptions DefaultJsonOptions = CoreActivityJsonContext.Default.Options;
 
     /// <summary>
     /// Serializes the current activity to a JSON string.
     /// </summary>
     /// <returns>A JSON string representation of the activity.</returns>
-    public string ToJson() => JsonSerializer.Serialize(this, DefaultJsonOptions);
+    public string ToJson() => JsonSerializer.Serialize(this, CoreActivityJsonContext.Default.CoreActivity);
 
     /// <summary>
     /// Serializes the specified activity instance to a JSON string using the default serialization options.
@@ -105,7 +105,7 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>A <see cref="CoreActivity"/> instance.</returns>
     public static CoreActivity FromJsonString(string json)
-        => JsonSerializer.Deserialize<CoreActivity>(json, DefaultJsonOptions)!;
+        => JsonSerializer.Deserialize(json, CoreActivityJsonContext.Default.CoreActivity)!;
 
     /// <summary>
     /// Deserializes the specified JSON string to an object of type T.
@@ -125,7 +125,7 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized <see cref="CoreActivity"/> instance, or null if deserialization fails.</returns>
     public static ValueTask<CoreActivity?> FromJsonStreamAsync(Stream stream, CancellationToken cancellationToken = default)
-        => JsonSerializer.DeserializeAsync<CoreActivity>(stream, DefaultJsonOptions, cancellationToken);
+        => JsonSerializer.DeserializeAsync(stream, CoreActivityJsonContext.Default.CoreActivity, cancellationToken);
 
     /// <summary>
     /// Asynchronously deserializes a JSON value from the specified stream into an instance of type T.
