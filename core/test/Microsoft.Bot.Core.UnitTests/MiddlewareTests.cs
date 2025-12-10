@@ -2,7 +2,6 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -13,7 +12,6 @@ public class MiddlewareTests
     [Fact]
     public async Task BotApplication_Use_AddsMiddlewareToChain()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
@@ -21,17 +19,15 @@ public class MiddlewareTests
 
         var mockMiddleware = new Mock<ITurnMiddleWare>();
 
-        // Act
         var result = botApp.Use(mockMiddleware.Object);
 
-        // Assert
         Assert.NotNull(result);
     }
+      
 
     [Fact]
     public async Task Middleware_ExecutesInOrder()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
@@ -78,17 +74,14 @@ public class MiddlewareTests
             return Task.CompletedTask;
         };
 
-        // Act
         await botApp.ProcessAsync(httpContext);
-
-        // Assert
-        Assert.Equal(new[] { 1, 2, 3 }, executionOrder);
+        int[] expected = [1, 2, 3];
+        Assert.Equal(expected, executionOrder);
     }
 
     [Fact]
     public async Task Middleware_CanShortCircuit()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
@@ -127,10 +120,8 @@ public class MiddlewareTests
             return Task.CompletedTask;
         };
 
-        // Act
         await botApp.ProcessAsync(httpContext);
 
-        // Assert
         Assert.False(secondMiddlewareCalled);
         Assert.False(onActivityCalled);
     }
@@ -138,7 +129,6 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_ReceivesCancellationToken()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
@@ -170,17 +160,14 @@ public class MiddlewareTests
 
         var cts = new CancellationTokenSource();
 
-        // Act
         await botApp.ProcessAsync(httpContext, cts.Token);
 
-        // Assert
         Assert.Equal(cts.Token, receivedToken);
     }
 
     [Fact]
     public async Task Middleware_ReceivesActivity()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
@@ -210,10 +197,8 @@ public class MiddlewareTests
 
         var httpContext = CreateHttpContextWithActivity(activity);
 
-        // Act
         await botApp.ProcessAsync(httpContext);
 
-        // Assert
         Assert.NotNull(receivedActivity);
         Assert.Equal(ActivityTypes.Message, receivedActivity.Type);
         Assert.Equal("Test message", receivedActivity.Text);
@@ -225,7 +210,7 @@ public class MiddlewareTests
         return new ConversationClient(mockHttpClient.Object);
     }
 
-    private static HttpContext CreateHttpContextWithActivity(CoreActivity activity)
+    private static DefaultHttpContext CreateHttpContextWithActivity(CoreActivity activity)
     {
         var httpContext = new DefaultHttpContext();
         var activityJson = activity.ToJson();

@@ -28,7 +28,7 @@ public class ConversationClient(HttpClient httpClient)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         using HttpRequestMessage request = new(

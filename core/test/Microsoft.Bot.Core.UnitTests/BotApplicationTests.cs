@@ -3,7 +3,6 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Moq.Protected;
@@ -15,15 +14,12 @@ public class BotApplicationTests
     [Fact]
     public void Constructor_InitializesProperties()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
 
-        // Act
         var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
-        // Assert
         Assert.NotNull(botApp);
         Assert.NotNull(botApp.ConversationClient);
     }
@@ -33,13 +29,11 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithNullHttpContext_ThrowsArgumentNullException()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
         var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
-        // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             botApp.ProcessAsync(null!));
     }
@@ -47,7 +41,6 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithValidActivity_ProcessesSuccessfully()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
@@ -70,10 +63,8 @@ public class BotApplicationTests
             return Task.CompletedTask;
         };
 
-        // Act
         var result = await botApp.ProcessAsync(httpContext);
 
-        // Assert
         Assert.NotNull(result);
         Assert.True(onActivityCalled);
         Assert.Equal(activity.Type, result.Type);
@@ -82,7 +73,6 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithMiddleware_ExecutesMiddleware()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
@@ -118,10 +108,8 @@ public class BotApplicationTests
             return Task.CompletedTask;
         };
 
-        // Act
         await botApp.ProcessAsync(httpContext);
 
-        // Assert
         Assert.True(middlewareCalled);
         Assert.True(onActivityCalled);
     }
@@ -129,7 +117,6 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithException_ThrowsBotHandlerException()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
@@ -145,12 +132,8 @@ public class BotApplicationTests
 
         var httpContext = CreateHttpContextWithActivity(activity);
 
-        botApp.OnActivity = (act, ct) =>
-        {
-            throw new InvalidOperationException("Test exception");
-        };
+        botApp.OnActivity = (act, ct) => throw new InvalidOperationException("Test exception");
 
-        // Act & Assert
         var exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
             botApp.ProcessAsync(httpContext));
 
@@ -161,7 +144,6 @@ public class BotApplicationTests
     [Fact]
     public void Use_AddsMiddlewareToChain()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
@@ -169,17 +151,14 @@ public class BotApplicationTests
 
         var mockMiddleware = new Mock<ITurnMiddleWare>();
 
-        // Act
         var result = botApp.Use(mockMiddleware.Object);
 
-        // Assert
         Assert.NotNull(result);
     }
 
     [Fact]
     public async Task SendActivityAsync_WithValidActivity_SendsSuccessfully()
     {
-        // Arrange
         var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
         mockHttpMessageHandler
             .Protected()
@@ -207,10 +186,8 @@ public class BotApplicationTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        // Act
         var result = await botApp.SendActivityAsync(activity);
 
-        // Assert
         Assert.NotNull(result);
         Assert.Contains("activity123", result);
     }
@@ -218,13 +195,11 @@ public class BotApplicationTests
     [Fact]
     public async Task SendActivityAsync_WithNullActivity_ThrowsArgumentNullException()
     {
-        // Arrange
         var conversationClient = CreateMockConversationClient();
         var mockConfig = new Mock<IConfiguration>();
         var logger = NullLogger<BotApplication>.Instance;
         var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
 
-        // Act & Assert
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             botApp.SendActivityAsync(null!));
     }
@@ -235,7 +210,7 @@ public class BotApplicationTests
         return new ConversationClient(mockHttpClient.Object);
     }
 
-    private static HttpContext CreateHttpContextWithActivity(CoreActivity activity)
+    private static DefaultHttpContext CreateHttpContextWithActivity(CoreActivity activity)
     {
         var httpContext = new DefaultHttpContext();
         var activityJson = activity.ToJson();
