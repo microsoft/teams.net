@@ -90,12 +90,26 @@ public static class AddBotApplicationExtensions
 
         string agentScope = configuration[$"{aadConfigSectionName}:Scope"] ?? "https://api.botframework.com/.default";
 
-        services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
-            .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
-                sp.GetRequiredService<IAuthorizationHeaderProvider>(),
-                sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                agentScope,
-                aadConfigSectionName));
+        if (configuration.GetSection(aadConfigSectionName).Get<MicrosoftIdentityApplicationOptions>() is null)
+        {
+#pragma warning disable CA1848 // Use the LoggerMessage delegates
+            services.BuildServiceProvider().GetRequiredService<ILoggerFactory>()
+                .CreateLogger("AddBotApplicationExtensions")
+                .LogWarning("No configuration found for section {AadConfigSectionName}. BotAuthenticationHandler will not be configured.", aadConfigSectionName);
+#pragma warning restore CA1848 // Use the LoggerMessage delegates
+
+            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName);
+
+        }
+        else
+        {
+            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
+                .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
+                    sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                    sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
+                    agentScope,
+                    aadConfigSectionName));
+        }
 
         return services;
     }

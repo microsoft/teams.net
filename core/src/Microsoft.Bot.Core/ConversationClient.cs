@@ -33,7 +33,7 @@ public class ConversationClient(HttpClient httpClient)
 
         using HttpRequestMessage request = new(
             HttpMethod.Post, 
-            $"{activity.ServiceUrl}v3/conversations/{activity.Conversation.Id}/activities/")
+            $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/")
         {
             Content = JsonContent.Create(activity, options: CoreActivity.DefaultJsonOptions),
         };
