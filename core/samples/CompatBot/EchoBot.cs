@@ -1,6 +1,5 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
-// using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
 
 namespace CompatBot;
