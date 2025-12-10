@@ -1,7 +1,5 @@
 ﻿
 
-using System.Diagnostics;
-
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
@@ -55,7 +53,7 @@ public class BotApplication
     /// Gets or sets the delegate that is invoked to handle an incoming activity asynchronously.
     /// </summary>
     /// <remarks>Assign a delegate to process activities as they are received. The delegate should accept an
-    /// <see cref="Activity"/> and a <see cref="CancellationToken"/>, and return a <see cref="Task"/> representing the
+    /// <see cref="CoreActivity"/> and a <see cref="CancellationToken"/>, and return a <see cref="Task"/> representing the
     /// asynchronous operation. If <see langword="null"/>, incoming activities will not be handled.</remarks>
     public Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
 
