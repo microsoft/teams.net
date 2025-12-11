@@ -36,7 +36,7 @@ stages:
         displayName: 'Build'
         workingDirectory: '$(Build.SourcesDirectory)/core'
 
-      - script: dotnet test --no-build --configuration Release
+      - script: dotnet test --no-build --configuration Release test/Microsoft.Bot.Core.UnitTests/Microsoft.Bot.Core.UnitTests.csproj
         displayName: 'Test'
         workingDirectory: '$(Build.SourcesDirectory)/core'
 

@@ -36,7 +36,7 @@ public class ConversationClientTest
             ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/"),
             Conversation = new()
             {
-                Id = Environment.GetEnvironmentVariable("TEST_ConversationId") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
+                Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
             }
         };
         var res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
@@ -56,7 +56,7 @@ public class ConversationClientTest
             ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/"),
             Conversation = new()
             {
-                Id = "19:9f2af1bee7cc4a71af25ac72478fd5c6@thread.tacv2;messageid=1765420585482"
+                Id = "19:9f2af1bee7cc4a71af25ac72478fd5c6@thread.tacv2"
             }
         };
         var res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
