@@ -46,7 +46,7 @@ public partial class App
     {
         get
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+            var version = ThisAssembly.AssemblyFileVersion;
             version ??= "0.0.0";
             return $"teams.net[apps]/{version}";
         }
