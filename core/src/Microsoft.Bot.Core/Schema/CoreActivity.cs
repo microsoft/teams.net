@@ -178,6 +178,6 @@ public class CoreActivity(string type = ActivityTypes.Message)
             Recipient = From,
             Text = text
         };
-        return result!;
+        return result;
     }
 }

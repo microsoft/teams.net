@@ -1,7 +1,10 @@
-trigger:
 pr:
-- main
 - next/*
+
+trigger:
+  branches:
+    include:
+    - next/*
 
 pool:
   vmImage: 'ubuntu-22.04'
