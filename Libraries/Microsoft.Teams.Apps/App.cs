@@ -193,6 +193,11 @@ public partial class App
             throw new InvalidOperationException("app not started");
         }
 
+        if (isTargeted && activity.Recipient is null)
+        {
+            throw new ArgumentException("activity.Recipient is required for targeted messages", nameof(activity));
+        }
+
         var reference = new ConversationReference()
         {
             ChannelId = ChannelId.MsTeams,
@@ -203,6 +208,7 @@ public partial class App
                 Name = Name,
                 Role = Role.Bot
             },
+            User = isTargeted ? activity.Recipient : null,
             Conversation = new()
             {
                 Id = conversationId,
