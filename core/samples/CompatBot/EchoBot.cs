@@ -29,7 +29,7 @@ internal class EchoBot(ConversationState conversationState) : TeamsActivityHandl
 
         string replyText = $"Echo from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
         await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
-        await turnContext.SendActivityAsync(MessageFactory.Text($"[Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
+        await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
     }
 
     protected override async Task OnMessageReactionActivityAsync(ITurnContext<IMessageReactionActivity> turnContext, CancellationToken cancellationToken)

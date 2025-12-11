@@ -1,18 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Azure.Monitor.OpenTelemetry.AspNetCore;
 using CompatBot;
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Core;
-
-// using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Core.Compat;
 using Microsoft.Bot.Schema;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+// using Microsoft.Bot.Connector.Authentication;
 
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+builder.Services.AddOpenTelemetry().UseAzureMonitor();
 builder.AddCompatAdapter();
 
 //builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
@@ -28,6 +29,7 @@ builder.Services.AddSingleton(conversationState);
 builder.Services.AddTransient<IBot, EchoBot>();
 
 WebApplication app = builder.Build();
+
 
 app.MapPost("/api/messages", async (IBotFrameworkHttpAdapter adapter, IBot bot, HttpRequest request, HttpResponse response, CancellationToken ct) =>
     await adapter.ProcessAsync(request, response, bot, ct));
