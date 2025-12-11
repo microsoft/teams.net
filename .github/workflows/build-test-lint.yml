@@ -5,9 +5,18 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ['main']
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'Assets/**'
+      - 'core/**'
   push:
     branches: ['main']
-
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'Assets/**'
+      - 'core/**'
 permissions: read-all
 
 jobs:
@@ -16,16 +25,32 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 
+
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '9.0'
+          
       - name: Restore
         run: dotnet restore
+
       - name: Build
         run: dotnet build --no-restore --configuration Release
+
       - name: Test
         run: dotnet test --no-restore --verbosity normal --logger trx --configuration Release
+
+      - name: Pack
+        run: dotnet pack --no-restore --configuration Release --output ./nupkgs
+
+      - name: Upload nupkg as workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nupkg
+          path: ./nupkgs/*.nupkg
