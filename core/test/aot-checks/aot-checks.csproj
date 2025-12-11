@@ -12,6 +12,14 @@
     <Nullable>enable</Nullable>
     <PublishAot>true</PublishAot>
     <IsAotCompatible>true</IsAotCompatible>
+    <OptimizationPreference>Speed</OptimizationPreference>
+    
+    <!-- Trim unused code -->
+    <PublishTrimmed>true</PublishTrimmed>
+    <TrimMode>full</TrimMode>
+    
+    <!-- Single file output -->
+    <PublishSingleFile>true</PublishSingleFile>
   </PropertyGroup>
 
 </Project>
