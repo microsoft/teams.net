@@ -12,7 +12,11 @@ on:
       - 'core/**'
   push:
     branches: ['main']
-
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'Assets/**'
+      - 'core/**'
 permissions: read-all
 
 jobs:
