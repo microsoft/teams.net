@@ -7,7 +7,7 @@
         <RepositoryUrl>https://github.com/microsoft/teams.net</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
-        <PackageIcon>icon.png</PackageIcon>
+        <PackageIcon>bot_icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageLicenseExpression>MIT</PackageLicenseExpression>
         <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
@@ -21,6 +21,10 @@
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
+    <ItemGroup>
+        <None Include="(MSBuildThisFileDirectory)../../../../bot_icon.png" Pack="true" PackagePath="/" />
+        <None Include="(MSBuildThisFileDirectory)../../../../README.md" Pack="true" PackagePath="/" />
+    </ItemGroup>
     <ItemGroup>
         <PackageReference Include="Nerdbank.GitVersioning" Condition="!Exists('packages.config')">
             <PrivateAssets>all</PrivateAssets>
