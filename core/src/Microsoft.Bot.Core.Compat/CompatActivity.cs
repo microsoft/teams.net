@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System.Text;
 
 using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;

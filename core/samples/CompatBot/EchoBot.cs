@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema;
@@ -10,7 +13,7 @@ public class ConversationData
 
 }
 
-class EchoBot(ConversationState conversationState) : TeamsActivityHandler
+internal class EchoBot(ConversationState conversationState) : TeamsActivityHandler
 {
     public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
     {

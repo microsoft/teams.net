@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System.Net;
 using Microsoft.Bot.Core.Schema;
 using Moq;

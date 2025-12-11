@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System.Net.Http.Json;
 
 using Microsoft.Bot.Core.Hosting;
