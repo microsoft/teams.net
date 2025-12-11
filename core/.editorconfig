@@ -29,6 +29,8 @@ dotnet_sort_system_directives_first = true
 csharp_new_line_before_open_brace = all
 csharp_new_line_before_else = true
 
+file_header_template = Copyright (c) Microsoft Corporation.\nLicensed under the MIT License.
+
 # Test projects can be more lenient
 [tests/**/*.cs]
 dotnet_diagnostic.CS8602.severity = warning
