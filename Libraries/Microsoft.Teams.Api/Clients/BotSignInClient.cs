@@ -3,6 +3,7 @@
 
 using Microsoft.Teams.Common.Http;
 
+using IHttpClientFactory = Microsoft.Teams.Common.Http.IHttpClientFactory;
 namespace Microsoft.Teams.Api.Clients;
 
 public class BotSignInClient : Client
