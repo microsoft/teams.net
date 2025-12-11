@@ -10,12 +10,12 @@ public class ActivityExtensibilityTests
     [Fact]
     public void CustomActivity_ExtendedProperties_SerializedAndDeserialized()
     {
-        var customActivity = new MyCustomActivity
+        MyCustomActivity customActivity = new()
         {
             CustomField = "CustomValue"
         };
         string json = MyCustomActivity.ToJson<MyCustomActivity>(customActivity);
-        var deserializedActivity = CoreActivity.FromJsonString<MyCustomActivity>(json);
+        MyCustomActivity deserializedActivity = CoreActivity.FromJsonString<MyCustomActivity>(json);
         Assert.NotNull(deserializedActivity);
         Assert.Equal("CustomValue", deserializedActivity.CustomField);
     }
@@ -29,8 +29,8 @@ public class ActivityExtensibilityTests
             "customField": "CustomValue"
         }
         """;
-        using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
-        var deserializedActivity = await CoreActivity.FromJsonStreamAsync<MyCustomActivity>(stream);
+        using MemoryStream stream = new(Encoding.UTF8.GetBytes(json));
+        MyCustomActivity? deserializedActivity = await CoreActivity.FromJsonStreamAsync<MyCustomActivity>(stream);
         Assert.NotNull(deserializedActivity);
         Assert.Equal("CustomValue", deserializedActivity!.CustomField);
     }
@@ -39,7 +39,7 @@ public class ActivityExtensibilityTests
     [Fact]
     public void CustomChannelDataActivity_ExtendedProperties_SerializedAndDeserialized()
     {
-        var customChannelDataActivity = new MyCustomChannelDataActivity
+        MyCustomChannelDataActivity customChannelDataActivity = new()
         {
             ChannelData = new MyChannelData
             {
@@ -47,8 +47,8 @@ public class ActivityExtensibilityTests
                 MyChannelId = "12345"
             }
         };
-        var json = MyCustomChannelDataActivity.ToJson<MyCustomChannelDataActivity>(customChannelDataActivity);
-        var deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
+        string json = MyCustomChannelDataActivity.ToJson<MyCustomChannelDataActivity>(customChannelDataActivity);
+        MyCustomChannelDataActivity deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
         Assert.NotNull(deserializedActivity);
         Assert.NotNull(deserializedActivity.ChannelData);
         Assert.Equal(ActivityTypes.Message, deserializedActivity.Type);
@@ -69,7 +69,7 @@ public class ActivityExtensibilityTests
             }
         }
         """;
-        var deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
+        MyCustomChannelDataActivity deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
         Assert.NotNull(deserializedActivity);
         Assert.NotNull(deserializedActivity.ChannelData);
         Assert.Equal("customFieldValue", deserializedActivity.ChannelData.CustomField);

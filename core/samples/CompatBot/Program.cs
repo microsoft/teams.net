@@ -5,7 +5,7 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 // using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Core.Compat;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 builder.AddCompatAdapter();
 
@@ -16,12 +16,12 @@ builder.AddCompatAdapter();
 //        provider.GetRequiredService<ILogger<CloudAdapter>>()));
 
 
-var storage = new MemoryStorage();
-var conversationState = new ConversationState(storage);
+MemoryStorage storage = new();
+ConversationState conversationState = new(storage);
 builder.Services.AddSingleton(conversationState);
 builder.Services.AddTransient<IBot, EchoBot>();
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 app.MapPost("/api/messages", async (IBotFrameworkHttpAdapter adapter, IBot bot, HttpRequest request, HttpResponse response) =>
     await adapter.ProcessAsync(request, response, bot));

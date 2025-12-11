@@ -10,7 +10,7 @@ public class ConversationClientTests
     [Fact]
     public async Task SendActivityAsync_WithValidActivity_SendsSuccessfully()
     {
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
         mockHttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -23,10 +23,10 @@ public class ConversationClientTests
                 Content = new StringContent("{\"id\":\"activity123\"}")
             });
 
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var conversationClient = new ConversationClient(httpClient);
+        HttpClient httpClient = new(mockHttpMessageHandler.Object);
+        ConversationClient conversationClient = new(httpClient);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -34,7 +34,7 @@ public class ConversationClientTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        var result = await conversationClient.SendActivityAsync(activity);
+        string result = await conversationClient.SendActivityAsync(activity);
 
         Assert.NotNull(result);
         Assert.Contains("activity123", result);
@@ -43,8 +43,8 @@ public class ConversationClientTests
     [Fact]
     public async Task SendActivityAsync_WithNullActivity_ThrowsArgumentNullException()
     {
-        var httpClient = new HttpClient();
-        var conversationClient = new ConversationClient(httpClient);
+        HttpClient httpClient = new();
+        ConversationClient conversationClient = new(httpClient);
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             conversationClient.SendActivityAsync(null!));
@@ -53,10 +53,10 @@ public class ConversationClientTests
     [Fact]
     public async Task SendActivityAsync_WithNullConversation_ThrowsArgumentNullException()
     {
-        var httpClient = new HttpClient();
-        var conversationClient = new ConversationClient(httpClient);
+        HttpClient httpClient = new();
+        ConversationClient conversationClient = new(httpClient);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -70,10 +70,10 @@ public class ConversationClientTests
     [Fact]
     public async Task SendActivityAsync_WithNullConversationId_ThrowsArgumentNullException()
     {
-        var httpClient = new HttpClient();
-        var conversationClient = new ConversationClient(httpClient);
+        HttpClient httpClient = new();
+        ConversationClient conversationClient = new(httpClient);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -88,10 +88,10 @@ public class ConversationClientTests
     [Fact]
     public async Task SendActivityAsync_WithNullServiceUrl_ThrowsArgumentNullException()
     {
-        var httpClient = new HttpClient();
-        var conversationClient = new ConversationClient(httpClient);
+        HttpClient httpClient = new();
+        ConversationClient conversationClient = new(httpClient);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -105,7 +105,7 @@ public class ConversationClientTests
     [Fact]
     public async Task SendActivityAsync_WithHttpError_ThrowsHttpRequestException()
     {
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
         mockHttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -118,10 +118,10 @@ public class ConversationClientTests
                 Content = new StringContent("Bad request error")
             });
 
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var conversationClient = new ConversationClient(httpClient);
+        HttpClient httpClient = new(mockHttpMessageHandler.Object);
+        ConversationClient conversationClient = new(httpClient);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -129,7 +129,7 @@ public class ConversationClientTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        var exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
+        HttpRequestException exception = await Assert.ThrowsAsync<HttpRequestException>(() =>
             conversationClient.SendActivityAsync(activity));
 
         Assert.Contains("Error sending activity", exception.Message);
@@ -140,7 +140,7 @@ public class ConversationClientTests
     public async Task SendActivityAsync_ConstructsCorrectUrl()
     {
         HttpRequestMessage? capturedRequest = null;
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
         mockHttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -154,10 +154,10 @@ public class ConversationClientTests
                 Content = new StringContent("{\"id\":\"activity123\"}")
             });
 
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var conversationClient = new ConversationClient(httpClient);
+        HttpClient httpClient = new(mockHttpMessageHandler.Object);
+        ConversationClient conversationClient = new(httpClient);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",

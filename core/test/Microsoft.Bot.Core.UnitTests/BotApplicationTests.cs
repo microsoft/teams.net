@@ -14,11 +14,11 @@ public class BotApplicationTests
     [Fact]
     public void Constructor_InitializesProperties()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
 
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         Assert.NotNull(botApp);
         Assert.NotNull(botApp.ConversationClient);
@@ -29,10 +29,10 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithNullHttpContext_ThrowsArgumentNullException()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             botApp.ProcessAsync(null!));
@@ -41,12 +41,12 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithValidActivity_ProcessesSuccessfully()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -54,7 +54,7 @@ public class BotApplicationTests
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
-        var httpContext = CreateHttpContextWithActivity(activity);
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
         bool onActivityCalled = false;
         botApp.OnActivity = (act, ct) =>
@@ -63,7 +63,7 @@ public class BotApplicationTests
             return Task.CompletedTask;
         };
 
-        var result = await botApp.ProcessAsync(httpContext);
+        CoreActivity result = await botApp.ProcessAsync(httpContext);
 
         Assert.NotNull(result);
         Assert.True(onActivityCalled);
@@ -73,12 +73,12 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithMiddleware_ExecutesMiddleware()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -86,10 +86,10 @@ public class BotApplicationTests
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
-        var httpContext = CreateHttpContextWithActivity(activity);
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
         bool middlewareCalled = false;
-        var mockMiddleware = new Mock<ITurnMiddleWare>();
+        Mock<ITurnMiddleWare> mockMiddleware = new();
         mockMiddleware
             .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
             .Callback<BotApplication, CoreActivity, NextTurn, CancellationToken>(async (app, act, next, ct) =>
@@ -117,12 +117,12 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithException_ThrowsBotHandlerException()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -130,11 +130,11 @@ public class BotApplicationTests
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
-        var httpContext = CreateHttpContextWithActivity(activity);
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
         botApp.OnActivity = (act, ct) => throw new InvalidOperationException("Test exception");
 
-        var exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
+        BotHandlerException exception = await Assert.ThrowsAsync<BotHandlerException>(() =>
             botApp.ProcessAsync(httpContext));
 
         Assert.Equal("Error processing activity", exception.Message);
@@ -144,14 +144,14 @@ public class BotApplicationTests
     [Fact]
     public void Use_AddsMiddlewareToChain()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
-        var mockMiddleware = new Mock<ITurnMiddleWare>();
+        Mock<ITurnMiddleWare> mockMiddleware = new();
 
-        var result = botApp.Use(mockMiddleware.Object);
+        ITurnMiddleWare result = botApp.Use(mockMiddleware.Object);
 
         Assert.NotNull(result);
     }
@@ -159,7 +159,7 @@ public class BotApplicationTests
     [Fact]
     public async Task SendActivityAsync_WithValidActivity_SendsSuccessfully()
     {
-        var mockHttpMessageHandler = new Mock<HttpMessageHandler>();
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
         mockHttpMessageHandler
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
@@ -172,13 +172,13 @@ public class BotApplicationTests
                 Content = new StringContent("{\"id\":\"activity123\"}")
             });
 
-        var httpClient = new HttpClient(mockHttpMessageHandler.Object);
-        var conversationClient = new ConversationClient(httpClient);
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        HttpClient httpClient = new(mockHttpMessageHandler.Object);
+        ConversationClient conversationClient = new(httpClient);
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -186,7 +186,7 @@ public class BotApplicationTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        var result = await botApp.SendActivityAsync(activity);
+        string result = await botApp.SendActivityAsync(activity);
 
         Assert.NotNull(result);
         Assert.Contains("activity123", result);
@@ -195,10 +195,10 @@ public class BotApplicationTests
     [Fact]
     public async Task SendActivityAsync_WithNullActivity_ThrowsArgumentNullException()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             botApp.SendActivityAsync(null!));
@@ -206,15 +206,15 @@ public class BotApplicationTests
 
     private static ConversationClient CreateMockConversationClient()
     {
-        var mockHttpClient = new Mock<HttpClient>();
+        Mock<HttpClient> mockHttpClient = new();
         return new ConversationClient(mockHttpClient.Object);
     }
 
     private static DefaultHttpContext CreateHttpContextWithActivity(CoreActivity activity)
     {
-        var httpContext = new DefaultHttpContext();
-        var activityJson = activity.ToJson();
-        var bodyBytes = Encoding.UTF8.GetBytes(activityJson);
+        DefaultHttpContext httpContext = new();
+        string activityJson = activity.ToJson();
+        byte[] bodyBytes = Encoding.UTF8.GetBytes(activityJson);
         httpContext.Request.Body = new MemoryStream(bodyBytes);
         httpContext.Request.ContentType = "application/json";
         return httpContext;

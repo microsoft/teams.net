@@ -280,7 +280,7 @@ public class CoreCoreActivityTests
             }
         }
         """;
-        using var ms = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(json));
+        using MemoryStream ms = new(System.Text.Encoding.UTF8.GetBytes(json));
         CoreActivity? act = await CoreActivity.FromJsonStreamAsync(ms);
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);

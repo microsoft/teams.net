@@ -22,7 +22,7 @@ public class Worker(ConversationClient conversationClient, ILogger<Worker> logge
                         Id = ConversationId
                     }
                 };
-                var aid = await conversationClient.SendActivityAsync(proactiveMessage, stoppingToken);
+                string aid = await conversationClient.SendActivityAsync(proactiveMessage, stoppingToken);
                 logger.LogInformation("Activity {Aid} sent", aid);
             }
             await Task.Delay(1000, stoppingToken);

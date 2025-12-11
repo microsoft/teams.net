@@ -12,14 +12,14 @@ public class MiddlewareTests
     [Fact]
     public async Task BotApplication_Use_AddsMiddlewareToChain()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
-        var mockMiddleware = new Mock<ITurnMiddleWare>();
+        Mock<ITurnMiddleWare> mockMiddleware = new();
 
-        var result = botApp.Use(mockMiddleware.Object);
+        ITurnMiddleWare result = botApp.Use(mockMiddleware.Object);
 
         Assert.NotNull(result);
     }
@@ -28,14 +28,14 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_ExecutesInOrder()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
-        var executionOrder = new List<int>();
+        List<int> executionOrder = new();
 
-        var mockMiddleware1 = new Mock<ITurnMiddleWare>();
+        Mock<ITurnMiddleWare> mockMiddleware1 = new();
         mockMiddleware1
             .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
             .Callback<BotApplication, CoreActivity, NextTurn, CancellationToken>(async (app, act, next, ct) =>
@@ -45,7 +45,7 @@ public class MiddlewareTests
             })
             .Returns(Task.CompletedTask);
 
-        var mockMiddleware2 = new Mock<ITurnMiddleWare>();
+        Mock<ITurnMiddleWare> mockMiddleware2 = new();
         mockMiddleware2
             .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
             .Callback<BotApplication, CoreActivity, NextTurn, CancellationToken>(async (app, act, next, ct) =>
@@ -58,7 +58,7 @@ public class MiddlewareTests
         botApp.Use(mockMiddleware1.Object);
         botApp.Use(mockMiddleware2.Object);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -66,7 +66,7 @@ public class MiddlewareTests
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
-        var httpContext = CreateHttpContextWithActivity(activity);
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
         botApp.OnActivity = (act, ct) =>
         {
@@ -82,20 +82,20 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_CanShortCircuit()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         bool secondMiddlewareCalled = false;
         bool onActivityCalled = false;
 
-        var mockMiddleware1 = new Mock<ITurnMiddleWare>();
+        Mock<ITurnMiddleWare> mockMiddleware1 = new();
         mockMiddleware1
             .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask); // Don't call next
 
-        var mockMiddleware2 = new Mock<ITurnMiddleWare>();
+        Mock<ITurnMiddleWare> mockMiddleware2 = new();
         mockMiddleware2
             .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
             .Callback(() => secondMiddlewareCalled = true)
@@ -104,7 +104,7 @@ public class MiddlewareTests
         botApp.Use(mockMiddleware1.Object);
         botApp.Use(mockMiddleware2.Object);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -112,7 +112,7 @@ public class MiddlewareTests
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
-        var httpContext = CreateHttpContextWithActivity(activity);
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
         botApp.OnActivity = (act, ct) =>
         {
@@ -129,14 +129,14 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_ReceivesCancellationToken()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         CancellationToken receivedToken = default;
 
-        var mockMiddleware = new Mock<ITurnMiddleWare>();
+        Mock<ITurnMiddleWare> mockMiddleware = new();
         mockMiddleware
             .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
             .Callback<BotApplication, CoreActivity, NextTurn, CancellationToken>(async (app, act, next, ct) =>
@@ -148,7 +148,7 @@ public class MiddlewareTests
 
         botApp.Use(mockMiddleware.Object);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -156,9 +156,9 @@ public class MiddlewareTests
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
-        var httpContext = CreateHttpContextWithActivity(activity);
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
-        var cts = new CancellationTokenSource();
+        CancellationTokenSource cts = new();
 
         await botApp.ProcessAsync(httpContext, cts.Token);
 
@@ -168,14 +168,14 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_ReceivesActivity()
     {
-        var conversationClient = CreateMockConversationClient();
-        var mockConfig = new Mock<IConfiguration>();
-        var logger = NullLogger<BotApplication>.Instance;
-        var botApp = new BotApplication(conversationClient, mockConfig.Object, logger);
+        ConversationClient conversationClient = CreateMockConversationClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         CoreActivity? receivedActivity = null;
 
-        var mockMiddleware = new Mock<ITurnMiddleWare>();
+        Mock<ITurnMiddleWare> mockMiddleware = new();
         mockMiddleware
             .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
             .Callback<BotApplication, CoreActivity, NextTurn, CancellationToken>(async (app, act, next, ct) =>
@@ -187,7 +187,7 @@ public class MiddlewareTests
 
         botApp.Use(mockMiddleware.Object);
 
-        var activity = new CoreActivity
+        CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
             Text = "Test message",
@@ -195,7 +195,7 @@ public class MiddlewareTests
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
-        var httpContext = CreateHttpContextWithActivity(activity);
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
         await botApp.ProcessAsync(httpContext);
 
@@ -206,15 +206,15 @@ public class MiddlewareTests
 
     private static ConversationClient CreateMockConversationClient()
     {
-        var mockHttpClient = new Mock<HttpClient>();
+        Mock<HttpClient> mockHttpClient = new();
         return new ConversationClient(mockHttpClient.Object);
     }
 
     private static DefaultHttpContext CreateHttpContextWithActivity(CoreActivity activity)
     {
-        var httpContext = new DefaultHttpContext();
-        var activityJson = activity.ToJson();
-        var bodyBytes = Encoding.UTF8.GetBytes(activityJson);
+        DefaultHttpContext httpContext = new();
+        string activityJson = activity.ToJson();
+        byte[] bodyBytes = Encoding.UTF8.GetBytes(activityJson);
         httpContext.Request.Body = new MemoryStream(bodyBytes);
         httpContext.Request.ContentType = "application/json";
         return httpContext;
