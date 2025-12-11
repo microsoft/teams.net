@@ -24,7 +24,7 @@ class EchoBot(ConversationState conversationState) : TeamsActivityHandler
         var conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
         var conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
 
-        var replyText = $"Echo [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
+        var replyText = $"Echo from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
         await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
     }
 

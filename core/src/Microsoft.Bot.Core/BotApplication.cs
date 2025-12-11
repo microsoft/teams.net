@@ -69,8 +69,11 @@ public class BotApplication
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(_conversationClient);
         
+        _logger.LogDebug("Start processing HTTP request for activity");
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
+        
+        _logger.LogInformation("Processing activity: {Id} {Type}", activity.Id, activity.Type);
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
