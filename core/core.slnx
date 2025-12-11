@@ -13,6 +13,5 @@
   <Project Path="samples/Proactive/Proactive.csproj" Id="69f021eb-451b-4dd3-b848-137d764ba586" />
   <Project Path="src/Microsoft.Bot.Core.Compat/Microsoft.Bot.Core.Compat.csproj" Id="42d14898-dcc0-43a4-bb61-60e289f63c44" />
   <Project Path="src/Microsoft.Bot.Core/Microsoft.Bot.Core.csproj" />
-  <Project Path="test/Microsoft.Bot.Core.Tests/Microsoft.Bot.Core.Tests.csproj" Id="7424bd58-7955-4175-9292-67366f8e7910" />
   <Project Path="test/Microsoft.Bot.Core.UnitTests/Microsoft.Bot.Core.UnitTests.csproj" Id="8e6790ed-0352-45f6-b3dc-0c4c3bcab038" />
 </Solution>
