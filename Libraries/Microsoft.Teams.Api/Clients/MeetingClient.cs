@@ -64,7 +64,7 @@ public class MeetingParticipant
     /// </summary>
     [JsonPropertyName("user")]
     [JsonPropertyOrder(1)]
-    public Account? User { get; set; }
+    public TeamsChannelAccount? User { get; set; }
 
     /// <summary>
     /// The participant's role in the meeting
