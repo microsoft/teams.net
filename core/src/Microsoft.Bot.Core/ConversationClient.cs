@@ -35,7 +35,7 @@ public class ConversationClient(HttpClient httpClient)
             HttpMethod.Post,
             $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/")
         {
-            Content = JsonContent.Create(activity, options: CoreActivity.DefaultJsonOptions),
+            Content = JsonContent.Create(activity, CoreActivityJsonContext.Default.CoreActivity),
         };
 
         request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, AgenticIdentity);

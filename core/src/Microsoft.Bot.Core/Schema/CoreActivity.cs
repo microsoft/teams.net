@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
@@ -107,10 +108,13 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// Serializes the specified activity instance to a JSON string using the default serialization options.
     /// </summary>
     /// <remarks>The serialization uses the default JSON options defined by DefaultJsonOptions. The resulting
-    /// JSON reflects the public properties of the activity instance.</remarks>
+    /// JSON reflects the public properties of the activity instance. This method requires runtime code generation
+    /// and is not compatible with AOT compilation.</remarks>
     /// <typeparam name="T">The type of the activity to serialize. Must inherit from CoreActivity.</typeparam>
     /// <param name="instance">The activity instance to serialize. Cannot be null.</param>
     /// <returns>A JSON string representation of the specified activity instance.</returns>
+    [RequiresDynamicCode("JSON serialization may require types that cannot be statically analyzed. Use the non-generic ToJson() method for AOT compatibility.")]
+    [RequiresUnreferencedCode("JSON serialization may require types that cannot be statically analyzed. Use the non-generic ToJson() method for AOT compatibility.")]
     public static string ToJson<T>(T instance) where T : CoreActivity
         => JsonSerializer.Serialize<T>(instance, ReflectionJsonOptions);
 
@@ -126,10 +130,13 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// Deserializes the specified JSON string to an object of type T.
     /// </summary>
     /// <remarks>The deserialization uses default JSON options defined by the application. If the JSON is
-    /// invalid or does not match the target type, a JsonException may be thrown.</remarks>
+    /// invalid or does not match the target type, a JsonException may be thrown. This method requires
+    /// runtime code generation and is not compatible with AOT compilation.</remarks>
     /// <typeparam name="T">The type of the object to deserialize to. Must be compatible with the JSON structure.</typeparam>
     /// <param name="json">The JSON string to deserialize. Cannot be null or empty.</param>
     /// <returns>An instance of type T that represents the deserialized JSON data.</returns>
+    [RequiresDynamicCode("JSON deserialization may require types that cannot be statically analyzed. Use the non-generic FromJsonString() method for AOT compatibility.")]
+    [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed. Use the non-generic FromJsonString() method for AOT compatibility.")]
     public static T FromJsonString<T>(string json) where T : CoreActivity
         => JsonSerializer.Deserialize<T>(json, ReflectionJsonOptions)!;
 
@@ -146,13 +153,16 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// Asynchronously deserializes a JSON value from the specified stream into an instance of type T.
     /// </summary>
     /// <remarks>The caller is responsible for managing the lifetime of the provided stream. The method uses
-    /// default JSON serialization options.</remarks>
+    /// default JSON serialization options. This method requires runtime code generation and is not compatible
+    /// with AOT compilation.</remarks>
     /// <typeparam name="T">The type of the object to deserialize. Must derive from CoreActivity.</typeparam>
     /// <param name="stream">The stream containing the JSON data to deserialize. The stream must be readable and positioned at the start of
     /// the JSON content.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A ValueTask that represents the asynchronous operation. The result contains an instance of type T if
     /// deserialization is successful; otherwise, null.</returns>
+    [RequiresDynamicCode("JSON deserialization may require types that cannot be statically analyzed. Use the non-generic FromJsonStreamAsync() method for AOT compatibility.")]
+    [RequiresUnreferencedCode("JSON deserialization may require types that cannot be statically analyzed. Use the non-generic FromJsonStreamAsync() method for AOT compatibility.")]
     public static ValueTask<T?> FromJsonStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default) where T : CoreActivity
     => JsonSerializer.DeserializeAsync<T>(stream, ReflectionJsonOptions, cancellationToken);
 

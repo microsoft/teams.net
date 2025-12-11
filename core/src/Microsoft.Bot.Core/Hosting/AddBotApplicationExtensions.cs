@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Builder;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
@@ -33,6 +34,8 @@ public static class AddBotApplicationExtensions
     /// <param name="routePath">The route path at which to listen for incoming bot messages. Defaults to "api/messages".</param>
     /// <returns>The registered bot application instance of type TApp.</returns>
     /// <exception cref="ApplicationException">Thrown if the bot application of type TApp is not registered in the application's service container.</exception>
+    [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "MapPost delegate usage is AOT-compatible with modern .NET runtime support")]
+    [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "MapPost delegate usage is AOT-compatible with modern .NET runtime support")]
     public static TApp UseBotApplication<TApp>(
        this IApplicationBuilder builder,
        string routePath = "api/messages")
@@ -57,7 +60,7 @@ public static class AddBotApplicationExtensions
     /// <typeparam name="TApp"></typeparam>
     /// <param name="services"></param>
     /// <returns></returns>
-    public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services) where TApp : BotApplication
+    public static IServiceCollection AddBotApplication<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors)] TApp>(this IServiceCollection services) where TApp : BotApplication
     {
         services.AddBotApplicationClients();
         services.AddSingleton<TApp>();
@@ -77,6 +80,11 @@ public static class AddBotApplicationExtensions
     /// <param name="aadConfigSectionName">The name of the configuration section containing Azure Active Directory settings. Defaults to "AzureAd" if not
     /// specified.</param>
     /// <returns>The same service collection instance, enabling method chaining.</returns>
+    [UnconditionalSuppressMessage("AOT", "SYSLIB1100", Justification = "Microsoft.Identity configuration binding may use reflection but has runtime AOT support")]
+    [UnconditionalSuppressMessage("AOT", "SYSLIB1101", Justification = "Microsoft.Identity configuration binding may use reflection but has runtime AOT support")]
+    [UnconditionalSuppressMessage("AOT", "SYSLIB0026", Justification = "Microsoft.Identity may use obsolete X509Certificate APIs but provides AOT alternatives")]
+    [UnconditionalSuppressMessage("AOT", "SYSLIB0027", Justification = "Microsoft.Identity may use obsolete cryptography APIs but provides AOT alternatives")]
+    [UnconditionalSuppressMessage("AOT", "SYSLIB0028", Justification = "Microsoft.Identity may use obsolete X509Certificate APIs but provides AOT alternatives")]
     public static IServiceCollection AddBotApplicationClients(this IServiceCollection services, string aadConfigSectionName = "AzureAd")
     {
         IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
@@ -86,11 +94,15 @@ public static class AddBotApplicationExtensions
             .AddInMemoryTokenCaches()
             .AddAgentIdentities();
 
+#pragma warning disable IL2026 // Suppress AOT warnings for Microsoft.Identity configuration binding
+#pragma warning disable IL3050 // Suppress AOT warnings for Microsoft.Identity configuration binding
         services.Configure<MicrosoftIdentityApplicationOptions>(aadConfigSectionName, configuration.GetSection(aadConfigSectionName));
 
         string agentScope = configuration[$"{aadConfigSectionName}:Scope"] ?? "https://api.botframework.com/.default";
 
         if (configuration.GetSection(aadConfigSectionName).Get<MicrosoftIdentityApplicationOptions>() is null)
+#pragma warning restore IL3050
+#pragma warning restore IL2026
         {
 #pragma warning disable CA1848 // Use the LoggerMessage delegates
             services.BuildServiceProvider().GetRequiredService<ILoggerFactory>()
