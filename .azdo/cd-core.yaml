@@ -43,4 +43,9 @@ stages:
           nuGetFeedType: internal
           publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
 
-      
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish NuGet Packages as Pipeline Artifact'
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifact: 'nuget-packages'
+          publishLocation: 'pipeline'
