@@ -32,7 +32,7 @@ public class ActivityExtensibilityTests
         using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
         var deserializedActivity = await CoreActivity.FromJsonStreamAsync<MyCustomActivity>(stream);
         Assert.NotNull(deserializedActivity);
-        Assert.Equal("CustomValue", deserializedActivity!.CustomField);
+        Assert.Equal("CustomValue", deserializedActivity.CustomField);
     }
 
 
@@ -51,7 +51,7 @@ public class ActivityExtensibilityTests
         var deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
         Assert.NotNull(deserializedActivity);
         Assert.NotNull(deserializedActivity!.ChannelData);
-        Assert.Equal("customFieldValue", deserializedActivity.ChannelData!.CustomField);
+        Assert.Equal("customFieldValue", deserializedActivity.ChannelData.CustomField);
         Assert.Equal("12345", deserializedActivity.ChannelData.MyChannelId);
     }
 
