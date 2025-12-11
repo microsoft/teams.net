@@ -79,7 +79,7 @@ public class CoreCoreActivityTests
     {
         CoreActivity act = new()
         {
-            Type = "message",
+            Type = ActivityTypes.Message,
             Text = "hello",
         };
         act.Properties["unknownString"] = "some string";
@@ -174,7 +174,7 @@ public class CoreCoreActivityTests
     {
         CoreActivity act = new()
         {
-            Type = "message",
+            Type = ActivityTypes.Message,
             Text = "hello",
             Properties =
             {
@@ -228,6 +228,7 @@ public class CoreCoreActivityTests
     {
         CoreActivity act = new()
         {
+            Type = "myActivityType",
             Text = "hello",
             Id = "CoreActivity1",
             ChannelId = "channel1",
@@ -247,7 +248,7 @@ public class CoreCoreActivityTests
                 Id = "conversation1"
             }
         };
-        CoreActivity reply = act.CreateReplyActivity("reply");
+        CoreActivity reply = act.CreateReplyActivity(ActivityTypes.Message, "reply");
         Assert.NotNull(reply);
         Assert.Equal("message", reply.Type);
         Assert.Equal("reply", reply.Text);

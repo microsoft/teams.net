@@ -25,5 +25,7 @@ public class ConversationAccount()
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData]
-    public ExtendedPropertiesDictionary Properties { get; init; } = [];
+#pragma warning disable CA2227 // Collection properties should be read only
+    public ExtendedPropertiesDictionary Properties { get; set; } = [];
+#pragma warning restore CA2227 // Collection properties should be read only
 }
