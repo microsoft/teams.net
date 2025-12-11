@@ -1,4 +1,5 @@
-
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 using Microsoft.Bot.Core;
 using Microsoft.Bot.Core.Hosting;

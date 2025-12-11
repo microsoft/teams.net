@@ -1,4 +1,7 @@
-﻿using Microsoft.Bot.Core.Hosting;
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,12 +21,12 @@ public class ConversationClientTest
 
         IConfiguration configuration = builder.Build();
 
-        var services = new ServiceCollection();
+        ServiceCollection services = new();
         services.AddSingleton(configuration);
         services.AddBotApplicationClients();
         _serviceProvider = services.BuildServiceProvider();
         _conversationClient = _serviceProvider.GetRequiredService<ConversationClient>();
-        
+
     }
 
     [Fact]
@@ -39,12 +42,12 @@ public class ConversationClientTest
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
             }
         };
-        var res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        string res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
         Assert.NotNull(res);
         Assert.Contains("\"id\"", res);
     }
 
-   
+
 
     [Fact]
     public async Task SendActivityToChannel()
@@ -59,7 +62,7 @@ public class ConversationClientTest
                 Id = "19:9f2af1bee7cc4a71af25ac72478fd5c6@thread.tacv2"
             }
         };
-        var res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        string res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
         Assert.NotNull(res);
         Assert.Contains("\"id\"", res);
     }
@@ -78,7 +81,7 @@ public class ConversationClientTest
             }
         };
 
-        await Assert.ThrowsAsync<HttpRequestException>(() 
+        await Assert.ThrowsAsync<HttpRequestException>(()
             => _conversationClient.SendActivityAsync(activity));
     }
 }

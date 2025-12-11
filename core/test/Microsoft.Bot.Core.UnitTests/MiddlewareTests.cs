@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core.Schema;

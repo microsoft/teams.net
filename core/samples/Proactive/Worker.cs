@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Microsoft.Bot.Core;
 using Microsoft.Bot.Core.Schema;
 
@@ -5,7 +8,7 @@ namespace Proactive;
 
 public class Worker(ConversationClient conversationClient, ILogger<Worker> logger) : BackgroundService
 {
-    const string ConversationId = "a:17vxw6pGQOb3Zfh8acXT8m_PqHycYpaFgzu2mFMUfkT-h0UskMctq5ZPPc7FIQxn2bx7rBSm5yE_HeUXsCcKZBrv77RgorB3_1_pAdvMhi39ClxQgawzyQ9GBFkdiwOxT";
+    private const string ConversationId = "a:17vxw6pGQOb3Zfh8acXT8m_PqHycYpaFgzu2mFMUfkT-h0UskMctq5ZPPc7FIQxn2bx7rBSm5yE_HeUXsCcKZBrv77RgorB3_1_pAdvMhi39ClxQgawzyQ9GBFkdiwOxT";
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
