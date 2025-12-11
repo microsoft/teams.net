@@ -1,10 +1,10 @@
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Activities.Invokes;
-using Microsoft.Teams.Apps;
+using System.Collections.Concurrent;
+
 using Microsoft.Teams.AI.Models.OpenAI;
 using Microsoft.Teams.AI.Prompts;
 using Microsoft.Teams.AI.Templates;
-using System.Collections.Concurrent;
+using Microsoft.Teams.Api.Activities.Invokes;
+using Microsoft.Teams.Apps;
 
 namespace Samples.AI.Handlers;
 
