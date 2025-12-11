@@ -1,4 +1,4 @@
-﻿using System.Text;
+using System.Text;
 using System.Text.Json.Serialization;
 
 using Microsoft.Bot.Core.Schema;
@@ -50,8 +50,9 @@ public class ActivityExtensibilityTests
         var json = MyCustomChannelDataActivity.ToJson<MyCustomChannelDataActivity>(customChannelDataActivity);
         var deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
         Assert.NotNull(deserializedActivity);
-        Assert.NotNull(deserializedActivity!.ChannelData);
-        Assert.Equal("customFieldValue", deserializedActivity.ChannelData!.CustomField);
+        Assert.NotNull(deserializedActivity.ChannelData);
+        Assert.Equal(ActivityTypes.Message, deserializedActivity.Type);
+        Assert.Equal("customFieldValue", deserializedActivity.ChannelData.CustomField);
         Assert.Equal("12345", deserializedActivity.ChannelData.MyChannelId);
     }
 
@@ -70,7 +71,7 @@ public class ActivityExtensibilityTests
         """;
         var deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
         Assert.NotNull(deserializedActivity);
-        Assert.NotNull(deserializedActivity!.ChannelData);
+        Assert.NotNull(deserializedActivity.ChannelData);
         Assert.Equal("customFieldValue", deserializedActivity.ChannelData.CustomField);
         Assert.Equal("12345", deserializedActivity.ChannelData.MyChannelId);
     }

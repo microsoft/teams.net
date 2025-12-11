@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Bot.Core.Schema;
+namespace Microsoft.Bot.Core.Schema;
 
 /// <summary>
 /// Represents a conversation account, including its unique identifier, display name, and any additional properties

@@ -23,7 +23,7 @@ public class MiddlewareTests
 
         Assert.NotNull(result);
     }
-      
+
 
     [Fact]
     public async Task Middleware_ExecutesInOrder()

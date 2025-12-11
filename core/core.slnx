@@ -3,6 +3,7 @@
     <File Path="../.azdo/cd-core.yaml" />
     <File Path="../.github/workflows/core-ci.yaml" />
     <File Path="../.github/workflows/core-test.yaml" />
+    <File Path=".editorconfig" />
     <File Path=".gitignore" />
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Build.targets" />

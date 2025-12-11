@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Bot.Core.Schema;
+namespace Microsoft.Bot.Core.Schema;
 
 /// <summary>
 /// Represents a conversation, including its unique identifier and associated extended properties.

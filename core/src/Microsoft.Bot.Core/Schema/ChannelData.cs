@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Bot.Core.Schema;
+namespace Microsoft.Bot.Core.Schema;
 
 /// <summary>
 /// Represents channel-specific data associated with an activity.

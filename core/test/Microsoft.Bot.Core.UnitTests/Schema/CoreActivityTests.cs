@@ -1,4 +1,4 @@
-﻿using Microsoft.Bot.Core.Schema;
+using Microsoft.Bot.Core.Schema;
 
 namespace Microsoft.Bot.Core.UnitTests.Schema;
 
@@ -86,6 +86,8 @@ public class CoreCoreActivityTests
         act.Properties["unknownInt"] = 123;
         act.Properties["unknownBool"] = true;
         act.Properties["unknownNull"] = null;
+        act.Properties["unknownLong"] = 1L;
+        act.Properties["unknownDouble"] = 1.0;
 
         string json = act.ToJson();
         Assert.Contains("\"type\": \"message\"", json);
@@ -94,6 +96,8 @@ public class CoreCoreActivityTests
         Assert.Contains("\"unknownInt\": 123", json);
         Assert.Contains("\"unknownBool\": true", json);
         Assert.Contains("\"unknownNull\": null", json);
+        Assert.Contains("\"unknownLong\": 1", json);
+        Assert.Contains("\"unknownDouble\": 1", json);
     }
 
     [Fact]
@@ -248,18 +252,18 @@ public class CoreCoreActivityTests
                 Id = "conversation1"
             }
         };
-        CoreActivity reply = act.CreateReplyActivity(ActivityTypes.Message, "reply");
+        CoreActivity reply = act.CreateReplyMessageActivity("reply");
         Assert.NotNull(reply);
-        Assert.Equal("message", reply.Type);
+        Assert.Equal(ActivityTypes.Message, reply.Type);
         Assert.Equal("reply", reply.Text);
         Assert.Equal("channel1", reply.ChannelId);
         Assert.NotNull(reply.ServiceUrl);
         Assert.Equal("http://service.url/", reply.ServiceUrl.ToString());
-        Assert.Equal("conversation1", reply.Conversation?.Id);
-        Assert.Equal("bot1", reply.From?.Id);
-        Assert.Equal("Bot One", reply.From?.Name);
-        Assert.Equal("user1", reply.Recipient?.Id);
-        Assert.Equal("User One", reply.Recipient?.Name);
+        Assert.Equal("conversation1", reply.Conversation.Id);
+        Assert.Equal("bot1", reply.From.Id);
+        Assert.Equal("Bot One", reply.From.Name);
+        Assert.Equal("user1", reply.Recipient.Id);
+        Assert.Equal("User One", reply.Recipient.Name);
     }
 
     [Fact]
@@ -283,7 +287,7 @@ public class CoreCoreActivityTests
         Assert.Equal("hello", act.Text);
         Assert.NotNull(act.From);
         Assert.IsType<ConversationAccount>(act.From);
-        Assert.Equal("1", act.From!.Id);
+        Assert.Equal("1", act.From.Id);
         Assert.Equal("tester", act.From.Name);
         Assert.True(act.From.Properties.ContainsKey("aadObjectId"));
         Assert.Equal("123", act.From.Properties["aadObjectId"]?.ToString());

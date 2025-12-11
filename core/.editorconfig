@@ -1,0 +1,34 @@
+root = true
+
+# All files
+[*]
+charset = utf-8
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+# C# files
+[*.cs]
+indent_style = space
+indent_size = 4
+nullable = enable
+
+#### Nullable Reference Types ####
+# Make nullable warnings strict
+dotnet_diagnostic.CS8600.severity = error
+dotnet_diagnostic.CS8602.severity = error
+dotnet_diagnostic.CS8603.severity = error
+dotnet_diagnostic.CS8604.severity = error
+dotnet_diagnostic.CS8618.severity = error  # Non-nullable field uninitialized
+
+# Code quality rules
+dotnet_code_quality_unused_parameters = all:suggestion
+dotnet_diagnostic.IDE0079.severity = warning
+
+#### Coding conventions ####
+dotnet_sort_system_directives_first = true
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+
+# Test projects can be more lenient
+[tests/**/*.cs]
+dotnet_diagnostic.CS8602.severity = warning

@@ -1,4 +1,4 @@
-﻿namespace Microsoft.Bot.Core.Schema;
+namespace Microsoft.Bot.Core.Schema;
 
 /// <summary>
 /// Provides constant values that represent activity types used in messaging workflows.

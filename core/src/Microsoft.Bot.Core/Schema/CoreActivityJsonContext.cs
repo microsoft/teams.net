@@ -16,6 +16,8 @@ namespace Microsoft.Bot.Core.Schema;
 [JsonSerializable(typeof(System.Text.Json.JsonElement))]
 [JsonSerializable(typeof(System.Int32))]
 [JsonSerializable(typeof(System.Boolean))]
+[JsonSerializable(typeof(System.Int64))]
+[JsonSerializable(typeof(System.Double))]
 public partial class CoreActivityJsonContext : JsonSerializerContext
 {
 }

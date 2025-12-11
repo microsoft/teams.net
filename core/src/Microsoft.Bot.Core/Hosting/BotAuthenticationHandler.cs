@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Headers;
+using System.Net.Http.Headers;
 
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;

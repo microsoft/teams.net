@@ -1,4 +1,4 @@
-﻿using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Core.Schema;
 
 namespace Microsoft.Bot.Core.Compat;

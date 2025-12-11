@@ -1,4 +1,4 @@
-﻿using Microsoft.Bot.Core.Schema;
+using Microsoft.Bot.Core.Schema;
 
 namespace Microsoft.Bot.Core;
 

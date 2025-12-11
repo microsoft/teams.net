@@ -159,18 +159,17 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <summary>
     /// Creates a reply activity based on the current activity.
     /// </summary>
-    /// <param name="type">The type of the reply activity. Defaults to <see cref="ActivityTypes.Message"/>.</param>
     /// <param name="text">The text content for the reply. Defaults to an empty string.</param>
     /// <returns>A new <see cref="CoreActivity"/> configured as a reply to the current activity.</returns>
     /// <remarks>
     /// The reply activity automatically swaps the From and Recipient accounts and preserves
     /// the conversation context, channel ID, and service URL from the original activity.
     /// </remarks>
-    public CoreActivity CreateReplyActivity(string type, string text = "")
+    public CoreActivity CreateReplyMessageActivity(string text = "")
     {
         CoreActivity result = new()
         {
-            Type = type,
+            Type = ActivityTypes.Message,
             ChannelId = ChannelId,
             ServiceUrl = ServiceUrl,
             Conversation = Conversation,
