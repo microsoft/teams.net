@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
-
+using System.Net.Mime;
+using System.Text;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 
@@ -34,12 +36,11 @@ public class ConversationClient(HttpClient httpClient)
         ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
-        using HttpRequestMessage request = new(
-            HttpMethod.Post,
-            $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/")
-        {
-            Content = JsonContent.Create(activity, options: CoreActivity.DefaultJsonOptions),
-        };
+        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
+
+        using StringContent content = new(activity.ToJson(), Encoding.UTF8, MediaTypeNames.Application.Json);
+
+        using HttpRequestMessage request = new(HttpMethod.Post, url) { Content = content };
 
         request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, AgenticIdentity);
 
