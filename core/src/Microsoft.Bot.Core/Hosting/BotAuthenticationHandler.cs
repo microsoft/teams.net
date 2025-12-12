@@ -75,7 +75,7 @@ internal sealed class BotAuthenticationHandler(
 
     /// </summary>
     /// Key used to store the agentic identity in HttpRequestMessage options.
-    /// /// </summary>
+    /// </summary>
     public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new("AgenticIdentity");
 
     /// <inheritdoc/>
