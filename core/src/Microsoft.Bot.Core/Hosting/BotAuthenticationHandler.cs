@@ -73,7 +73,7 @@ internal sealed class BotAuthenticationHandler(
             new EventId(2, nameof(LogAcquiringAppOnlyToken)),
             "Acquiring app-only token for scope: {Scope}");
 
-    /// </summary>
+    /// <summary>
     /// Key used to store the agentic identity in HttpRequestMessage options.
     /// </summary>
     public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new("AgenticIdentity");
