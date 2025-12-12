@@ -73,6 +73,8 @@ internal sealed class BotAuthenticationHandler(
             new EventId(2, nameof(LogAcquiringAppOnlyToken)),
             "Acquiring app-only token for scope: {Scope}");
 
+    public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new("AgenticIdentity");
+
     /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
