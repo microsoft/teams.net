@@ -10,7 +10,6 @@ using Microsoft.Identity.Web;
 
 namespace Microsoft.Bot.Core.Hosting;
 
-
 /// <summary>
 /// Represents an agentic identity for user-delegated token acquisition.
 /// </summary>
@@ -61,6 +60,8 @@ internal sealed class BotAuthenticationHandler(
     private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
     private readonly string _aadConfigSectionName = aadConfigSectionName ?? throw new ArgumentNullException(nameof(aadConfigSectionName));
 
+    //_logger.LogInformation("BotAuthenticationHandler initialized with scope: {Scope} and AAD config section: {AadConfigSectionName}", scope, aadConfigSectionName);
+
     private static readonly Action<ILogger, string, string, Exception?> LogAcquiringAgenticToken =
         LoggerMessage.Define<string, string>(
             LogLevel.Debug,
@@ -103,11 +104,12 @@ internal sealed class BotAuthenticationHandler(
     /// <returns>The authorization header value.</returns>
     private async Task<string> GetAuthorizationHeaderAsync(AgenticIdentity? agenticIdentity, CancellationToken cancellationToken)
     {
+        _logger.LogDebug("Getting authorization header for option {Option}", _aadConfigSectionName);
         AuthorizationHeaderProviderOptions options = new()
         {
             AcquireTokenOptions = new AcquireTokenOptions()
             {
-                AuthenticationOptionsName = _aadConfigSectionName,
+                //AuthenticationOptionsName = _aadConfigSectionName,
             }
         };
 

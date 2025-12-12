@@ -11,6 +11,8 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 nullable = enable
+dotnet_diagnostic.CS1591.severity = none
+dotnet_diagnostic.CA1848.severity = suggestion
 
 #### Nullable Reference Types ####
 # Make nullable warnings strict
