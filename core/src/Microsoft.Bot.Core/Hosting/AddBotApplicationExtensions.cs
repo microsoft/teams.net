@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.Eventing.Reader;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core.Schema;
@@ -42,10 +43,10 @@ public static class AddBotApplicationExtensions
            where TApp : BotApplication
     {
         ArgumentNullException.ThrowIfNull(builder);
-        WebApplication? webApp = builder as WebApplication;
         TApp app = builder.ApplicationServices.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
-
-        webApp?.MapPost(routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
+        WebApplication? webApp = builder as WebApplication;
+        ArgumentNullException.ThrowIfNull(webApp);
+        webApp.MapPost(routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
         {
             CoreActivity resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
             return resp.Id;
@@ -59,61 +60,141 @@ public static class AddBotApplicationExtensions
     /// </summary>
     /// <typeparam name="TApp"></typeparam>
     /// <param name="services"></param>
+    /// <param name="sectionName"></param>
     /// <returns></returns>
-    public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services) where TApp : BotApplication
+    public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
     {
-        services.AddBotApplicationClients();
+        services.AddConversationClient(sectionName);
         services.AddSingleton<TApp>();
         return services;
     }
-
+       
     /// <summary>
-    /// Adds and configures Bot Framework application clients and related authentication services to the specified
-    /// service collection.
+    /// Adds a conversation client to the service collection.
     /// </summary>
-    /// <remarks>This method registers HTTP clients, token acquisition, in-memory token caching, and agent
-    /// identity services required for Bot Framework integration. It also configures authentication options using the
-    /// specified Azure AD configuration section. The method should be called during application startup as part of
-    /// service configuration.</remarks>
-    /// <param name="services">The service collection to which the Bot Framework clients and authentication services will be added. Must not be
-    /// null.</param>
-    /// <param name="aadConfigSectionName">The name of the configuration section containing Azure Active Directory settings. Defaults to "AzureAd" if not
-    /// specified.</param>
-    /// <returns>The same service collection instance, enabling method chaining.</returns>
-    public static IServiceCollection AddBotApplicationClients(this IServiceCollection services, string aadConfigSectionName = "AzureAd")
+    /// <param name="services">service collection</param>
+    /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
+    /// <returns></returns>
+    public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
         IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+        ArgumentNullException.ThrowIfNull(configuration);
+        
+        string scope = "https://api.botframework.com/.default";
+        if (configuration["${sectionName}:Scopes"] is not null)
+        {
+            scope = configuration[$"{sectionName}:Scopes"]!;
+        }
+        
+        if (configuration["Scope"] is not null) //ToChannelFromBotOAuthScope
+        {
+            scope = configuration["Scope"]!;
+        }
+
         services
             .AddHttpClient()
             .AddTokenAcquisition(true)
             .AddInMemoryTokenCaches()
             .AddAgentIdentities();
 
-        services.Configure<MicrosoftIdentityApplicationOptions>(aadConfigSectionName, configuration.GetSection(aadConfigSectionName));
-
-        string agentScope = configuration[$"{aadConfigSectionName}:Scope"] ?? "https://api.botframework.com/.default";
-
-        if (configuration.GetSection(aadConfigSectionName).Get<MicrosoftIdentityApplicationOptions>() is null)
-        {
-#pragma warning disable CA1848 // Use the LoggerMessage delegates
-            services.BuildServiceProvider().GetRequiredService<ILoggerFactory>()
-                .CreateLogger("AddBotApplicationExtensions")
-                .LogWarning("No configuration found for section {AadConfigSectionName}. BotAuthenticationHandler will not be configured.", aadConfigSectionName);
-#pragma warning restore CA1848 // Use the LoggerMessage delegates
-
-            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName);
-
-        }
-        else
-        {
-            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
+        services.ConfigureMSAL(configuration, sectionName);
+        services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
                 .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                    agentScope,
-                    aadConfigSectionName));
-        }
-
+                    scope));
         return services;
     }
+
+    private static IServiceCollection ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        if (configuration["MicrosoftAppId"] is not null)
+        {
+            var botConfig = BotConfig.FromBFConfig(configuration);
+            services.ConfigureMSALFromBotConfig(botConfig);
+        }
+        else if (configuration["CLIENT_ID"] is not null)
+        {
+            var botConfig = BotConfig.FromCoreConfig(configuration);
+            services.ConfigureMSALFromBotConfig(botConfig);
+        }
+        else
+        {
+            services.ConfigureMSALFromConfig(configuration.GetSection(sectionName));
+        }
+        return services;
+    }
+
+    private static IServiceCollection ConfigureMSALFromConfig(this IServiceCollection services, IConfigurationSection msalConfigSection)
+    {
+        ArgumentNullException.ThrowIfNull(msalConfigSection);
+        services.Configure<MicrosoftIdentityApplicationOptions>(msalConfigSection);
+        return services;
+    }
+
+    private static IServiceCollection ConfigureMSALWithSecret(this IServiceCollection services, string tenantId, string clientId, string clientSecret)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientSecret);
+
+        services.Configure<MicrosoftIdentityApplicationOptions>(options =>
+        {
+            options.Instance = "https://login.microsoftonline.com/";
+            options.TenantId = tenantId;
+            options.ClientId = clientId;
+            options.ClientCredentials = [
+                new CredentialDescription()
+                {
+                   SourceType = CredentialSource.ClientSecret,
+                   ClientSecret = clientSecret
+                }
+            ];
+        });
+        return services;
+    }
+
+    private static IServiceCollection ConfigureMSALWithFIC(this IServiceCollection services, string tenantId, string clientId, string? ficClientId)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
+
+        var ficCredential = new CredentialDescription()
+        {
+            SourceType = CredentialSource.SignedAssertionFromManagedIdentity,
+        };
+        if (!string.IsNullOrEmpty(ficClientId) && clientId != ficClientId)
+        {
+            ficCredential.ManagedIdentityClientId = ficClientId;
+        }
+
+        services.Configure<MicrosoftIdentityApplicationOptions>(options =>
+        {
+            options.Instance = "https://login.microsoftonline.com/";
+            options.TenantId = tenantId;
+            options.ClientId = clientId;
+            options.ClientCredentials = [
+                ficCredential
+            ];
+        });
+        return services;
+    }
+
+    private static IServiceCollection ConfigureMSALFromBotConfig(this IServiceCollection services, BotConfig botConfig)
+    {
+        ArgumentNullException.ThrowIfNull(botConfig);
+        if (!string.IsNullOrEmpty(botConfig.ClientSecret))
+        {
+            services.ConfigureMSALWithSecret(botConfig.TenantId, botConfig.ClientId, botConfig.ClientSecret);
+        }
+        else
+        {
+            services.ConfigureMSALWithFIC(botConfig.TenantId, botConfig.ClientId, botConfig.FicClientId);
+        }
+        return services;
+    }
+
+    
 }

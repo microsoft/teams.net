@@ -10,7 +10,6 @@ using Microsoft.Identity.Web;
 
 namespace Microsoft.Bot.Core.Hosting;
 
-
 /// <summary>
 /// Represents an agentic identity for user-delegated token acquisition.
 /// </summary>
@@ -49,17 +48,17 @@ internal sealed class AgenticIdentity
 /// <param name="authorizationHeaderProvider">The authorization header provider for acquiring tokens.</param>
 /// <param name="logger">The logger instance.</param>
 /// <param name="scope">The scope for the token request.</param>
-/// <param name="aadConfigSectionName">The configuration section name for Azure AD settings.</param>
 internal sealed class BotAuthenticationHandler(
     IAuthorizationHeaderProvider authorizationHeaderProvider,
     ILogger<BotAuthenticationHandler> logger,
-    string scope,
-    string aadConfigSectionName = "AzureAd") : DelegatingHandler
+    string scope) : DelegatingHandler
 {
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
-    private readonly string _aadConfigSectionName = aadConfigSectionName ?? throw new ArgumentNullException(nameof(aadConfigSectionName));
+    //private readonly string _aadConfigSectionName = aadConfigSectionName ?? throw new ArgumentNullException(nameof(aadConfigSectionName));
+
+    //_logger.LogInformation("BotAuthenticationHandler initialized with scope: {Scope} and AAD config section: {AadConfigSectionName}", scope, aadConfigSectionName);
 
     private static readonly Action<ILogger, string, string, Exception?> LogAcquiringAgenticToken =
         LoggerMessage.Define<string, string>(
@@ -107,7 +106,7 @@ internal sealed class BotAuthenticationHandler(
         {
             AcquireTokenOptions = new AcquireTokenOptions()
             {
-                AuthenticationOptionsName = _aadConfigSectionName,
+                //AuthenticationOptionsName = _aadConfigSectionName,
             }
         };
 

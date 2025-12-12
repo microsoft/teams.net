@@ -6,7 +6,7 @@ using Microsoft.Bot.Core.Hosting;
 using Proactive;
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddBotApplicationClients();
+builder.Services.AddConversationClient();
 builder.Services.AddHostedService<Worker>();
 
 IHost host = builder.Build();
