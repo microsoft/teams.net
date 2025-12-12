@@ -38,8 +38,8 @@ static ConversationClient CreateConversationClient()
     //services.AddBotApplicationClients();
     //services.AddMSAL();
     //services.ConfigureMSALFromBFConfig(configuration);
-    //services.ConfigureMSALFromCoreConfig(configuration);
-    services.ConfigureMSALFromConfig(configuration.GetSection("AzureAd"));
+    services.ConfigureMSALFromCoreConfig(configuration);
+    //services.ConfigureMSALFromConfig(configuration.GetSection("AzureAd"));
 
     services.AddConversationClient();
 

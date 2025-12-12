@@ -172,7 +172,7 @@ public static class AddBotApplicationExtensions
         {
             SourceType = CredentialSource.SignedAssertionFromManagedIdentity,
         };
-        if (!string.IsNullOrEmpty(ficClientId) || clientId != ficClientId)
+        if (!string.IsNullOrEmpty(ficClientId) && clientId != ficClientId)
         {
             ficCredential.ManagedIdentityClientId = ficClientId;
         }
