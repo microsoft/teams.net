@@ -34,7 +34,7 @@ WebApplication app = builder.Build();
 app.MapPost("/api/messages", async (IBotFrameworkHttpAdapter adapter, IBot bot, HttpRequest request, HttpResponse response, CancellationToken ct) =>
     await adapter.ProcessAsync(request, response, bot, ct));
 
-app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string cid, CancellationToken ct) =>
+app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string cid, CancellationToken cancellationContext) =>
 {
     Activity proactive = new()
     {
@@ -46,9 +46,9 @@ app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string 
         proactive.GetConversationReference(),
         async (turnContext, ct) =>
         {
-            await turnContext.SendActivityAsync($"Proactive Message send from SDK `{BotApplication.Version}` at {DateTime.Now:T}");
+            await turnContext.SendActivityAsync($"Proactive Message send from SDK `{BotApplication.Version}` at {DateTime.Now:T}", null, null, ct);
         },
-        ct);
+        cancellationContext);
 });
 
 app.Run();

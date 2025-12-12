@@ -6,12 +6,10 @@ using Microsoft.Bot.Core;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 
-WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
-webAppBuilder.Services.AddOpenTelemetry().UseAzureMonitor();
-webAppBuilder.Services.AddBotApplication<BotApplication>();
-WebApplication webApp = webAppBuilder.Build();
-BotApplication botApp = webApp.UseBotApplication<BotApplication>();
-
+BotApplicationBuilder botAppBuilder = BotApplication.CreateBuilder();
+botAppBuilder.WithRoutePath("/api/messages");
+botAppBuilder.Services.AddOpenTelemetry().UseAzureMonitor();
+BotApplication botApp = botAppBuilder.Build();
 
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
@@ -29,4 +27,4 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     await botApp.SendActivityAsync(replyActivity, cancellationToken);
 };
 
-webApp.Run();
+botApp.Run();

@@ -10,14 +10,44 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Bot.Core;
 
 /// <summary>
-/// Represents a bot application.
+/// Represents a bot application listening to incoming activities and managing conversations.
+/// Exposes the <see cref="ConversationClient"/> for sending activities and managing conversations.
+/// Triggers the <see cref="OnActivity"/> delegate when an activity is received.
 /// </summary>
 public class BotApplication
 {
     private readonly ILogger<BotApplication> _logger;
     private readonly ConversationClient? _conversationClient;
     private readonly string _serviceKey;
+    private static BotApplicationBuilder? _botApplicationBuilder;
     internal TurnMiddleware MiddleWare { get; }
+
+    /// <summary>
+    /// Creates a new instance of the BotApplicationBuilder with default configuration and registered bot services.
+    /// </summary>
+    /// <remarks>This method initializes a new WebApplicationBuilder and registers the required services for a
+    /// bot application. Use the returned BotApplicationBuilder to further configure and build your bot
+    /// application.</remarks>
+    /// <returns>A BotApplicationBuilder instance configured with default services for building a bot application.</returns>
+    public static BotApplicationBuilder CreateBuilder()
+    {
+        _botApplicationBuilder = new BotApplicationBuilder();
+        return _botApplicationBuilder;
+    }
+
+    /// <summary>
+    /// Runs the web application configured by the bot application builder.
+    /// </summary>
+    /// <remarks>Call CreateBuilder() before invoking this method to ensure the bot application builder is
+    /// initialized. This method blocks the callsing thread until the web application shuts down.</remarks>
+#pragma warning disable CA1822 // Mark members as static
+    public void Run()
+#pragma warning restore CA1822 // Mark members as static
+    {
+        ArgumentNullException.ThrowIfNull(_botApplicationBuilder, "BotApplicationBuilder not initialized. Call CreateBuilder() first.");
+
+        _botApplicationBuilder.WebApplication.Run();
+    }
 
     /// <summary>
     /// Initializes a new instance of the BotApplication class with the specified conversation client, configuration,
