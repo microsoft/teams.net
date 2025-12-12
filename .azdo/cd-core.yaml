@@ -1,5 +1,21 @@
 pr:
 - next/*
+  branches:
+    include:
+      - next/*
+  # Uncomment and edit the following lines to add path filters for PRs in the future
+  # paths:
+  #   include:
+  #     - core/**
+
+trigger:
+  branches:
+    include:
+    - next/*
+  paths:
+    include:
+    - core/**
+
 
 trigger:
   branches:

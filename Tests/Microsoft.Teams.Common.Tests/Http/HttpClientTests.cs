@@ -14,8 +14,6 @@ namespace Microsoft.Teams.Common.Tests.Http;
 
 public class HttpClientTests
 {
-
-
     [Fact]
     public async Task HttpClient_ShouldReturnExpectedResponse_WhenMocked()
     {
@@ -273,16 +271,17 @@ public class HttpClientTests
     public async Task HttpClient_ShouldThrowException_WhenResponseIsNotSuccess()
     {
         // Arrange
-        var errorResponse = new Dictionary<string, object>
+        var errorResponse = new
         {
-            { "error", "invalid_grant" },
-            { "error_description", "The provided value for the 'client_assertion' parameter is not valid." }
+            error = "invalid_grant",
+            error_description = "The provided value for the client_assertion parameter is not valid."
         };
-        var errorResponseContent = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions()
+
+        var errorResponseJson = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions()
         {
-            WriteIndented = true,
-            IndentSize = 2,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            WriteIndented = false,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         });
 
         var mockMessageHandler = new Mock<HttpMessageHandler>();
@@ -291,7 +290,7 @@ public class HttpClientTests
                .ReturnsAsync(new HttpResponseMessage
                {
                    StatusCode = HttpStatusCode.BadRequest,
-                   Content = new StringContent(errorResponseContent, Encoding.UTF8, "application/json"),
+                   Content = new StringContent(errorResponseJson, Encoding.UTF8, "application/json"),
                });
         var httpClient = new Common.Http.HttpClient(new System.Net.Http.HttpClient(mockMessageHandler.Object));
         HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
@@ -303,7 +302,16 @@ public class HttpClientTests
         Assert.Equal(expectedSubmitException, ex.Message);
         Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
         Assert.NotNull(ex.Body);
-        Assert.Equal(errorResponseContent.ToString(), ex.ToString());
+        Assert.Equal($$"""
+        {
+            "headers": [],
+            "statusCode": 400,
+            "body": {
+                "error": "invalid_grant",
+                "error_description": "The provided value for the client_assertion parameter is not valid."
+            }
+        }
+        """, ex.ToString());
     }
 
     [Fact]
@@ -311,7 +319,6 @@ public class HttpClientTests
     {
         // Arrange
         var errorResponseContent = "Invalid request";
-
         var mockMessageHandler = new Mock<HttpMessageHandler>();
         mockMessageHandler.Protected()
                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
@@ -330,31 +337,40 @@ public class HttpClientTests
         Assert.Equal(expectedSubmitException, ex.Message);
         Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
         Assert.NotNull(ex.Body);
-        Assert.Equal(errorResponseContent, ex.ToString());
+        Assert.Equal($$"""
+        {
+            "headers": [],
+            "statusCode": 400,
+            "body": "Invalid request"
+        }
+        """, ex.ToString());
     }
 
     [Fact]
     public async Task HttpClient_ShouldThrowException_WhenResponseObjectIsNotSuccess()
     {
-        var errorResponse = new Dictionary<string, object>
+        var errorResponse = new
         {
-            { "error", "invalid_grant" },
-            { "error_description", "The provided value for the 'client_assertion' parameter is not valid." }
+            error = "invalid_grant",
+            error_description = "The provided value for the client_assertion parameter is not valid."
         };
+
         var errorResponseJson = JsonSerializer.Serialize(errorResponse, new JsonSerializerOptions()
         {
-            WriteIndented = true,
-            IndentSize = 2,
-            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+            WriteIndented = false,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
         });
+
         var mockMessageHandler = new Mock<HttpMessageHandler>();
         mockMessageHandler.Protected()
-               .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
-               .ReturnsAsync(new HttpResponseMessage
-               {
-                   StatusCode = HttpStatusCode.BadRequest,
-                   Content = new StringContent(errorResponseJson, Encoding.UTF8, "application/json"),
-               });
+            .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage()
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(errorResponseJson, Encoding.UTF8, "application/json"),
+            });
+
         var httpClient = new Common.Http.HttpClient(new System.Net.Http.HttpClient(mockMessageHandler.Object));
         HttpRequest request = HttpRequest.Get("https://www.microsoft.com");
 
@@ -366,6 +382,15 @@ public class HttpClientTests
         Assert.Equal(expectedSubmitException, ex.Message);
         Assert.Equal(HttpStatusCode.BadRequest, ex.StatusCode);
         Assert.NotNull(ex.Body);
-        Assert.Equal(errorResponseJson.ToString(), ex.ToString());
+        Assert.Equal($$"""
+        {
+            "headers": [],
+            "statusCode": 400,
+            "body": {
+                "error": "invalid_grant",
+                "error_description": "The provided value for the client_assertion parameter is not valid."
+            }
+        }
+        """, ex.ToString());
     }
 }
