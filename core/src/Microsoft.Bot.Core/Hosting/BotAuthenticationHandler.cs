@@ -73,17 +73,15 @@ internal sealed class BotAuthenticationHandler(
             new EventId(2, nameof(LogAcquiringAppOnlyToken)),
             "Acquiring app-only token for scope: {Scope}");
 
-    /// <summary>
-    /// Key used to store the agentic identity in HttpRequestMessage options.
-    /// </summary>
-    public static readonly HttpRequestOptionsKey<AgenticIdentity?> AgenticIdentityKey = new("AgenticIdentity");
-
     /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         request.Options.TryGetValue(AgenticIdentityKey, out AgenticIdentity? agenticIdentity);
 
-        string token = await GetAuthorizationHeaderAsync(agenticIdentity, cancellationToken).ConfigureAwait(false);
+        // TEMPORARY: Hardcoded Managed Identity test
+        const string HARDCODED_MANAGED_IDENTITY_CLIENT_ID = "36cc4d80-a643-49fc-8956-47afc1521748";
+        string token = await GetTokenUsingManagedIdentityAsync(HARDCODED_MANAGED_IDENTITY_CLIENT_ID, cancellationToken).ConfigureAwait(false);
+        // string token = await GetAuthorizationHeaderAsync(agenticIdentity, cancellationToken).ConfigureAwait(false);
 
         string tokenValue = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
             ? token["Bearer ".Length..]
@@ -125,5 +123,50 @@ internal sealed class BotAuthenticationHandler(
         LogAcquiringAppOnlyToken(_logger, _scope, null);
         string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(_scope, options, cancellationToken).ConfigureAwait(false);
         return appToken;
+    }
+
+    /// <summary>
+    /// Gets a token using User-Assigned Managed Identity via Microsoft.Identity.Web.
+    /// Based on: https://github.com/AzureAD/microsoft-identity-web/wiki/Calling-APIs-with-Managed-Identity
+    /// </summary>
+    /// <param name="managedIdentityClientId">The Client ID (GUID) of the user-assigned managed identity. Required.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>The authorization header value.</returns>
+    /// <remarks>
+    /// This method uses Microsoft.Identity.Web's built-in managed identity support to acquire tokens
+    /// without requiring ClientId/ClientSecret/TenantId in the AzureAd configuration section.
+    ///
+    /// The managed identity must be assigned to the Azure resource (App Service, VM, etc.) and must have
+    /// the appropriate permissions to access the Bot Framework API.
+    ///
+    /// To use this method, set the UseManagedIdentityKey and ManagedIdentityClientIdKey options on the HttpRequestMessage.
+    /// </remarks>
+    private async Task<string> GetTokenUsingManagedIdentityAsync(string? managedIdentityClientId, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrEmpty(managedIdentityClientId))
+        {
+            throw new ArgumentException("Managed Identity Client ID is required when using UseManagedIdentityKey.", nameof(managedIdentityClientId));
+        }
+
+        LogAcquiringManagedIdentityToken(_logger, _scope, managedIdentityClientId, null);
+
+        // Configure options with ManagedIdentity settings
+        // This follows the pattern from: https://github.com/AzureAD/microsoft-identity-web/wiki/Calling-APIs-with-Managed-Identity
+        AuthorizationHeaderProviderOptions options = new()
+        {
+            AcquireTokenOptions = new AcquireTokenOptions()
+            {
+                AuthenticationOptionsName = _aadConfigSectionName,
+                ManagedIdentity = new ManagedIdentityOptions
+                {
+                    UserAssignedClientId = managedIdentityClientId
+                }
+            }
+        };
+
+        // Use CreateAuthorizationHeaderForAppAsync - Microsoft.Identity.Web will detect the ManagedIdentity option
+        // and use managed identity instead of client credentials
+        string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(_scope, options, cancellationToken).ConfigureAwait(false);
+        return token;
     }
 }
