@@ -18,7 +18,7 @@ botApp.Use(new MyTurnMiddleWare());
 
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
-    var replyActivity = activity.CreateReplyActivity("You said " + activity.Text);
+    var replyActivity = activity.CreateReplyMessageActivity("You said " + activity.Text);
     await botApp.SendActivityAsync(replyActivity, cancellationToken);
 };
 
