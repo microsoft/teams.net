@@ -5,6 +5,7 @@
     <File Path="../.github/workflows/core-test.yaml" />
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
+    <File Path="README.md" />
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Build.targets" />
     <File Path="version.json" />
