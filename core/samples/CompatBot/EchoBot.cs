@@ -5,7 +5,6 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Core;
 using Microsoft.Bot.Schema;
-using Microsoft.Bot.Schema.Teams;
 
 namespace CompatBot;
 

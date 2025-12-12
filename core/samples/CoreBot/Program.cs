@@ -19,7 +19,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     replyText += $"\r\nYou sent: `{activity.Text}` in activity of type `{activity.Type}`.";
 
     string? conversationType = "unknown conversation type";
-    if (activity.Conversation.Properties.TryGetValue("conversationType", out var ctProp))
+    if (activity.Conversation.Properties.TryGetValue("conversationType", out object? ctProp))
     {
         conversationType = ctProp?.ToString();
     }
