@@ -6,7 +6,7 @@ using Microsoft.Extensions.Configuration;
 namespace Microsoft.Bot.Core.Hosting;
 
 
-internal class BotConfig
+internal sealed class BotConfig
 {
     public string TenantId { get; set; } = string.Empty;
     public string ClientId { get; set; } = string.Empty;

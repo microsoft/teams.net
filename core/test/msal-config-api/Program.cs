@@ -26,14 +26,7 @@ await conversationClient.SendActivityAsync(new CoreActivity
 static ConversationClient CreateConversationClient()
 {
     ServiceCollection services = InitializeDIContainer();
-    
-    //services.AddMSAL();
-    //services.ConfigureMSALFromBFConfig(configuration);
-    //services.ConfigureMSALFromCoreConfig(configuration);
-    //services.ConfigureMSALFromConfig(configuration.GetSection("AzureAd"));
-
     services.AddConversationClient();
-
     ServiceProvider serviceProvider = services.BuildServiceProvider();
     ConversationClient conversationClient = serviceProvider.GetRequiredService<ConversationClient>();
     return conversationClient;

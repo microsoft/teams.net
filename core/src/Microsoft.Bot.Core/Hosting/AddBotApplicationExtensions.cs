@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.Eventing.Reader;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core.Schema;
@@ -79,7 +80,16 @@ public static class AddBotApplicationExtensions
         IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
         ArgumentNullException.ThrowIfNull(configuration);
         
-        string scope = configuration[$"{sectionName}:Scope"] ?? "https://api.botframework.com/.default";
+        string scope = "https://api.botframework.com/.default";
+        if (configuration["${sectionName}:Scopes"] is not null)
+        {
+            scope = configuration[$"{sectionName}:Scopes"]!;
+        }
+        
+        if (configuration["Scope"] is not null) //ToChannelFromBotOAuthScope
+        {
+            scope = configuration["Scope"]!;
+        }
 
         services
             .AddHttpClient()
@@ -92,8 +102,28 @@ public static class AddBotApplicationExtensions
                 .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                    scope,
-                    ConversationClient.ConversationHttpClientName));
+                    scope));
+        return services;
+    }
+
+    private static IServiceCollection ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName)
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        if (configuration["MicrosoftAppId"] is not null)
+        {
+            var botConfig = BotConfig.FromBFConfig(configuration);
+            services.ConfigureMSALFromBotConfig(botConfig);
+        }
+        else if (configuration["CLIENT_ID"] is not null)
+        {
+            var botConfig = BotConfig.FromCoreConfig(configuration);
+            services.ConfigureMSALFromBotConfig(botConfig);
+        }
+        else
+        {
+            services.ConfigureMSALFromConfig(configuration.GetSection(sectionName));
+        }
         return services;
     }
 
@@ -166,24 +196,5 @@ public static class AddBotApplicationExtensions
         return services;
     }
 
-    private static IServiceCollection ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName)
-    {
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        if (configuration["MicrosoftAppId"] is not null)
-        {
-            var botConfig = BotConfig.FromBFConfig(configuration);
-            services.ConfigureMSALFromBotConfig(botConfig);
-        }
-        else if (configuration["CLIENT_ID"] is not null)
-        {
-            var botConfig = BotConfig.FromCoreConfig(configuration);
-            services.ConfigureMSALFromBotConfig(botConfig);
-        }
-        else
-        {
-            services.ConfigureMSALFromConfig(configuration.GetSection(sectionName));
-        }
-        return services;
-    }
+    
 }
