@@ -1,12 +1,10 @@
 pr:
-- next/*
   branches:
     include:
       - next/*
-  # Uncomment and edit the following lines to add path filters for PRs in the future
-  # paths:
-  #   include:
-  #     - core/**
+  paths:
+    include:
+      - core/**
 
 trigger:
   branches:
@@ -16,11 +14,9 @@ trigger:
     include:
     - core/**
 
-
-trigger:
-  branches:
-    include:
-    - next/*
+variables:
+- name: PushToADOFeed
+  value: false 
 
 pool:
   vmImage: 'ubuntu-22.04'
@@ -62,7 +58,7 @@ stages:
 
       - task: NuGetCommand@2
         displayName: 'Push NuGet Packages'
-        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/next/core'))
+        condition: eq(variables['PushToADOFeed'], true)
         inputs:
           command: push
           packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
