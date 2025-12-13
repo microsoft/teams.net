@@ -68,16 +68,19 @@ public static class AddBotApplicationExtensions
         services.AddSingleton<TApp>();
         return services;
     }
-       
+
     /// <summary>
     /// Adds a conversation client to the service collection.
     /// </summary>
     /// <param name="services">service collection</param>
     /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
     /// <returns></returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
-        IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+        var sp = services.BuildServiceProvider();
+        IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
+        ILogger logger = sp.GetRequiredService<ILogger<ConversationClient>>();
         ArgumentNullException.ThrowIfNull(configuration);
         
         string scope = "https://api.botframework.com/.default";
@@ -97,17 +100,24 @@ public static class AddBotApplicationExtensions
             .AddInMemoryTokenCaches()
             .AddAgentIdentities();
 
-        services.ConfigureMSAL(configuration, sectionName);
-
-        services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
-                .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
-                    sp.GetRequiredService<IAuthorizationHeaderProvider>(),
-                    sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                    scope));
+        if (services.ConfigureMSAL(configuration, sectionName))
+        {
+            logger.LogDebug("Configuring ConversationClient with BotAuthenticationHandler for scope: {Scope}", scope);
+            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
+                    .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
+                        sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                        sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
+                        scope));
+        }
+        else
+        {
+            logger.LogWarning("MSAL configuration not found. Configuring ConversationClient without BotAuthenticationHandler.");
+            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName);
+        }
         return services;
     }
 
-    private static IServiceCollection ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName)
+    private static bool ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName)
     {
         ArgumentNullException.ThrowIfNull(configuration);
 
@@ -121,15 +131,15 @@ public static class AddBotApplicationExtensions
             var botConfig = BotConfig.FromCoreConfig(configuration);
             services.ConfigureMSALFromBotConfig(botConfig);
         }
-        else if (configuration.GetSection(sectionName) is not null)
+        else if (configuration[$"{sectionName}:ClientId"] is not null)
         {
             services.ConfigureMSALFromConfig(configuration.GetSection(sectionName));
         }
         else
         {
-            throw new InvalidOperationException("No valid MSAL configuration found.");
+            return false;
         }
-        return services;
+        return true;
     }
 
     private static IServiceCollection ConfigureMSALFromConfig(this IServiceCollection services, IConfigurationSection msalConfigSection)
