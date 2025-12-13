@@ -10,7 +10,6 @@ using OpenAI;
 
 var builder = WebApplication.CreateBuilder(args);
 
-
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddOpenTelemetry().UseAzureMonitor();
 webAppBuilder.Services.AddBotApplication<BotApplication>();
