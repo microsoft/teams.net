@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.ClientModel;
+using AFBot;
 using Azure.AI.OpenAI;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.Agents.AI;
@@ -28,6 +29,7 @@ ChatClientAgent agent = azureClient.GetChatClient("gpt-5-nano").CreateAIAgent(
                     "Always respond with the three complete words only, and include a related emoji at the end.",
     name: "AcronymMaker");
 
+botApp.Use(new DropTypingMiddleware());
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
     await botApp.SendTypingActivityAsync(activity, cancellationToken);
