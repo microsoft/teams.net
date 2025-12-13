@@ -8,6 +8,7 @@ using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
@@ -98,12 +99,12 @@ public static class AddBotApplicationExtensions
             .AddAgentIdentities();
 
         services.ConfigureMSAL(configuration, sectionName);
-
         services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
                 .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                    scope));
+                    scope,
+                    sp.GetService<IOptions<ManagedIdentityOptions>>()));
         return services;
     }
 
@@ -121,13 +122,9 @@ public static class AddBotApplicationExtensions
             var botConfig = BotConfig.FromCoreConfig(configuration);
             services.ConfigureMSALFromBotConfig(botConfig);
         }
-        else if (configuration.GetSection(sectionName) is not null)
-        {
-            services.ConfigureMSALFromConfig(configuration.GetSection(sectionName));
-        }
         else
         {
-            throw new InvalidOperationException("No valid MSAL configuration found.");
+            services.ConfigureMSALFromConfig(configuration.GetSection(sectionName));
         }
         return services;
     }
@@ -187,12 +184,39 @@ public static class AddBotApplicationExtensions
         return services;
     }
 
+    private static IServiceCollection ConfigureMSALWithUMI(this IServiceCollection services, string tenantId, string clientId, string? managedIdentityClientId = null)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
+
+        // Register ManagedIdentityOptions for BotAuthenticationHandler to use
+        bool isSystemAssigned = managedIdentityClientId == BotConfig.SystemManagedIdentityIdentifier;
+        string? umiClientId = isSystemAssigned ? null : (managedIdentityClientId ?? clientId);
+
+        services.Configure<ManagedIdentityOptions>(options =>
+        {
+            options.UserAssignedClientId = umiClientId;
+        });
+
+        services.Configure<MicrosoftIdentityApplicationOptions>(options =>
+        {
+            options.Instance = "https://login.microsoftonline.com/";
+            options.TenantId = tenantId;
+            options.ClientId = clientId;
+        });
+        return services;
+    }
+
     private static IServiceCollection ConfigureMSALFromBotConfig(this IServiceCollection services, BotConfig botConfig)
     {
         ArgumentNullException.ThrowIfNull(botConfig);
         if (!string.IsNullOrEmpty(botConfig.ClientSecret))
         {
             services.ConfigureMSALWithSecret(botConfig.TenantId, botConfig.ClientId, botConfig.ClientSecret);
+        }
+        else if (string.IsNullOrEmpty(botConfig.FicClientId) || botConfig.FicClientId == botConfig.ClientId)
+        {
+            services.ConfigureMSALWithUMI(botConfig.TenantId, botConfig.ClientId, botConfig.FicClientId);
         }
         else
         {

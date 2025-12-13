@@ -5,6 +5,7 @@ using System.Net.Http.Headers;
 
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 
@@ -48,15 +49,17 @@ internal sealed class AgenticIdentity
 /// <param name="authorizationHeaderProvider">The authorization header provider for acquiring tokens.</param>
 /// <param name="logger">The logger instance.</param>
 /// <param name="scope">The scope for the token request.</param>
+/// <param name="managedIdentityOptions">Optional managed identity options for user-assigned managed identity authentication.</param>
 internal sealed class BotAuthenticationHandler(
     IAuthorizationHeaderProvider authorizationHeaderProvider,
     ILogger<BotAuthenticationHandler> logger,
-    string scope) : DelegatingHandler
+    string scope,
+    IOptions<ManagedIdentityOptions>? managedIdentityOptions = null) : DelegatingHandler
 {
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
-    //private readonly string _aadConfigSectionName = aadConfigSectionName ?? throw new ArgumentNullException(nameof(aadConfigSectionName));
+    private readonly IOptions<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
 
     //_logger.LogInformation("BotAuthenticationHandler initialized with scope: {Scope} and AAD config section: {AadConfigSectionName}", scope, aadConfigSectionName);
 
@@ -71,6 +74,18 @@ internal sealed class BotAuthenticationHandler(
             LogLevel.Debug,
             new EventId(2, nameof(LogAcquiringAppOnlyToken)),
             "Acquiring app-only token for scope: {Scope}");
+
+    private static readonly Action<ILogger, Exception?> LogUsingSystemAssignedMI =
+        LoggerMessage.Define(
+            LogLevel.Debug,
+            new EventId(3, nameof(LogUsingSystemAssignedMI)),
+            "Using System-Assigned Managed Identity for token acquisition");
+
+    private static readonly Action<ILogger, string, Exception?> LogUsingUserAssignedMI =
+        LoggerMessage.Define<string>(
+            LogLevel.Debug,
+            new EventId(4, nameof(LogUsingUserAssignedMI)),
+            "Using User-Assigned Managed Identity with ClientId: {ClientId} for token acquisition");
 
     /// <summary>
     /// Key used to store the agentic identity in HttpRequestMessage options.
@@ -109,6 +124,22 @@ internal sealed class BotAuthenticationHandler(
                 //AuthenticationOptionsName = _aadConfigSectionName,
             }
         };
+
+        // Conditionally apply ManagedIdentity configuration if registered
+        if (_managedIdentityOptions is not null)
+        {
+            var miOptions = _managedIdentityOptions.Value;
+
+            if (string.IsNullOrEmpty(miOptions.UserAssignedClientId))
+            {
+                LogUsingSystemAssignedMI(_logger, null);
+            }
+            else
+            {
+            options.AcquireTokenOptions.ManagedIdentity = miOptions;
+                LogUsingUserAssignedMI(_logger, miOptions.UserAssignedClientId, null);
+            }
+        }
 
         if (agenticIdentity is not null &&
             !string.IsNullOrEmpty(agenticIdentity.AgenticAppId) &&
