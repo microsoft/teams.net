@@ -126,6 +126,20 @@ public class BotApplication
     }
 
     /// <summary>
+    /// Sends a typing activity to the conversation asynchronously.
+    /// </summary>
+    /// <param name="activity">The activity containing conversation information.</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<string> SendTypingActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        var typing = activity.CreateReplyMessageActivity();
+        typing.Type = ActivityTypes.Typing;
+        return await SendActivityAsync(typing, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Gets the version of the SDK.
     /// </summary>
     public static string Version => ThisAssembly.NuGetPackageVersion;

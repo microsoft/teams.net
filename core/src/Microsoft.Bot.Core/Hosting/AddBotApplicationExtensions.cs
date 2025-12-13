@@ -81,9 +81,9 @@ public static class AddBotApplicationExtensions
         ArgumentNullException.ThrowIfNull(configuration);
         
         string scope = "https://api.botframework.com/.default";
-        if (configuration["${sectionName}:Scopes"] is not null)
+        if (configuration[$"{sectionName}:Scope"] is not null)
         {
-            scope = configuration[$"{sectionName}:Scopes"]!;
+            scope = configuration[$"{sectionName}:Scope"]!;
         }
         
         if (configuration["Scope"] is not null) //ToChannelFromBotOAuthScope

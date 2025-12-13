@@ -14,4 +14,8 @@ public static class ActivityTypes
     /// Represents the default message string used for communication or display purposes.
     /// </summary>
     public const string Message = "message";
+    /// <summary>
+    /// Represents a typing indicator activity.
+    /// </summary>
+    public const string Typing = "typing";
 }
