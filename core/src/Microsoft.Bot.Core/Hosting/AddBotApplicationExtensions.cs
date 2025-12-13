@@ -98,6 +98,7 @@ public static class AddBotApplicationExtensions
             .AddAgentIdentities();
 
         services.ConfigureMSAL(configuration, sectionName);
+
         services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
                 .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
@@ -120,9 +121,13 @@ public static class AddBotApplicationExtensions
             var botConfig = BotConfig.FromCoreConfig(configuration);
             services.ConfigureMSALFromBotConfig(botConfig);
         }
-        else
+        else if (configuration.GetSection(sectionName) is not null)
         {
             services.ConfigureMSALFromConfig(configuration.GetSection(sectionName));
+        }
+        else
+        {
+            throw new InvalidOperationException("No valid MSAL configuration found.");
         }
         return services;
     }
