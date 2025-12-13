@@ -75,18 +75,6 @@ internal sealed class BotAuthenticationHandler(
             new EventId(2, nameof(LogAcquiringAppOnlyToken)),
             "Acquiring app-only token for scope: {Scope}");
 
-    private static readonly Action<ILogger, Exception?> LogUsingSystemAssignedMI =
-        LoggerMessage.Define(
-            LogLevel.Debug,
-            new EventId(3, nameof(LogUsingSystemAssignedMI)),
-            "Using System-Assigned Managed Identity for token acquisition");
-
-    private static readonly Action<ILogger, string, Exception?> LogUsingUserAssignedMI =
-        LoggerMessage.Define<string>(
-            LogLevel.Debug,
-            new EventId(4, nameof(LogUsingUserAssignedMI)),
-            "Using User-Assigned Managed Identity with ClientId: {ClientId} for token acquisition");
-
     /// <summary>
     /// Key used to store the agentic identity in HttpRequestMessage options.
     /// </summary>
@@ -130,14 +118,9 @@ internal sealed class BotAuthenticationHandler(
         {
             var miOptions = _managedIdentityOptions.Value;
 
-            if (string.IsNullOrEmpty(miOptions.UserAssignedClientId))
-            {
-                LogUsingSystemAssignedMI(_logger, null);
-            }
-            else
+            if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
             {
             options.AcquireTokenOptions.ManagedIdentity = miOptions;
-                LogUsingUserAssignedMI(_logger, miOptions.UserAssignedClientId, null);
             }
         }
 
