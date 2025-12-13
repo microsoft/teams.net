@@ -1,0 +1,37 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System.ClientModel;
+using Azure.AI.OpenAI;
+using Azure.Monitor.OpenTelemetry.AspNetCore;
+using Microsoft.Bot.Core;
+using Microsoft.Bot.Core.Hosting;
+using OpenAI;
+
+var builder = WebApplication.CreateBuilder(args);
+
+
+WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
+webAppBuilder.Services.AddOpenTelemetry().UseAzureMonitor();
+webAppBuilder.Services.AddBotApplication<BotApplication>();
+WebApplication webApp = webAppBuilder.Build();
+BotApplication botApp = webApp.UseBotApplication<BotApplication>();
+
+AzureOpenAIClient azureClient = new(
+           new Uri("https://ridofoundry.cognitiveservices.azure.com/"),
+           new ApiKeyCredential(Environment.GetEnvironmentVariable("AZURE_OpenAI_KEY")!));
+
+var agent = azureClient.GetChatClient("gpt-5-nano").CreateAIAgent(
+    instructions: "You are an expert acronym maker, made an acronynm made up from the first three characters of the user's message. " +
+                    "Some examples: OMW on my way, BTW by the way, TVM thanks very much, and so on." + 
+                    "Always respond with the three complete words only, and include a related emoji at the end.",
+    name: "AcronymMaker");
+
+botApp.OnActivity = async (activity, cancellationToken) =>
+{
+    var res = await agent.RunAsync(activity?.Text!);
+    var reply = activity!.CreateReplyMessageActivity(res.Text);
+    await botApp.SendActivityAsync(reply, cancellationToken);
+};
+
+webApp.Run();
