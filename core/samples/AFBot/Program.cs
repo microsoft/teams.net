@@ -11,8 +11,6 @@ using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 using OpenAI;
 
-WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddOpenTelemetry().UseAzureMonitor();
 webAppBuilder.Services.AddBotApplication<BotApplication>();
@@ -33,7 +31,7 @@ botApp.Use(new DropTypingMiddleware());
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
     await botApp.SendTypingActivityAsync(activity, cancellationToken);
-    AgentRunResponse res = await agent.RunAsync(activity?.Text ?? "OMW");
+    AgentRunResponse res = await agent.RunAsync(activity?.Text ?? "OMW", cancellationToken: cancellationToken);
     CoreActivity reply = activity!.CreateReplyMessageActivity(res.Text);
     await botApp.SendActivityAsync(reply, cancellationToken);
 };

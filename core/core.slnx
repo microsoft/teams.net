@@ -11,6 +11,7 @@
     <File Path="version.json" />
   </Folder>
   <Project Path="samples/AFBot/AFBot.csproj" Id="ca5b4abd-3f26-457b-8197-ff9415506beb" />
+  <Project Path="samples/AFCompat/AFCompat.csproj" Id="70465cfe-2ee8-4edf-bc5a-22d156587a5a" />
   <Project Path="samples/CompatBot/CompatBot.csproj" Id="39461362-c3d0-41ae-9ed7-f7e1232a8ead" />
   <Project Path="samples/CoreBot/CoreBot.csproj" Id="142a67bc-68e7-4020-83cf-51423e317b53" />
   <Project Path="samples/Proactive/Proactive.csproj" Id="69f021eb-451b-4dd3-b848-137d764ba586" />

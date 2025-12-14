@@ -5,6 +5,7 @@ using System.Net.Mime;
 using System.Text;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Bot.Core;
 
@@ -12,7 +13,8 @@ namespace Microsoft.Bot.Core;
 /// Provides methods for sending activities to a conversation endpoint using HTTP requests.
 /// </summary>
 /// <param name="httpClient">The HTTP client instance used to send requests to the conversation service. Must not be null.</param>
-public class ConversationClient(HttpClient httpClient)
+/// <param name="logger">The logger instance used for logging activity send operations. Must not be null.</param>
+public class ConversationClient(HttpClient httpClient, ILogger<ConversationClient> logger)
 {
     internal const string ConversationHttpClientName = "BotConversationClient";
 
@@ -33,8 +35,11 @@ public class ConversationClient(HttpClient httpClient)
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
+        string body = activity.ToJson();
+        
+        logger.LogTrace("Sending activity to {Url}\r: {Body}", url, body);
 
-        using StringContent content = new(activity.ToJson(), Encoding.UTF8, MediaTypeNames.Application.Json);
+        using StringContent content = new(body, Encoding.UTF8, MediaTypeNames.Application.Json);
 
         using HttpRequestMessage request = new(HttpMethod.Post, url) { Content = content };
 

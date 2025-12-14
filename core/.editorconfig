@@ -13,6 +13,7 @@ indent_size = 4
 nullable = enable
 #dotnet_diagnostic.CS1591.severity = none ## Suppress missing XML comment warnings
 dotnet_diagnostic.CA1848.severity = warning
+dotnet_diagnostic.CA1848.severity = suggestion # Suppress Logger perfomance in samples
 
 #### Nullable Reference Types ####
 # Make nullable warnings strict

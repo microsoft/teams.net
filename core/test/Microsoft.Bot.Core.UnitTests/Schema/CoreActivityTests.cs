@@ -295,4 +295,52 @@ public class CoreCoreActivityTests
         Assert.True(act.From.Properties.ContainsKey("aadObjectId"));
         Assert.Equal("123", act.From.Properties["aadObjectId"]?.ToString());
     }
+
+    [Fact]
+    public void Deserialize_WithEntities()
+    {
+        string json = """
+            {
+                "type": "typing",
+                "id": "",
+                "serviceUrl": "https://smba.trafficmanager.net/amer/56653e9d-2158-46ee-90d7-675c39642038/",
+                "channelId": "msteams",
+                "from": {
+                    "id": "28:aabdbd62-bc97-4afb-83ee-575594577de5",
+                    "name": "ridobotlocal"
+                },
+                "conversation": {
+                    "conversationType": "personal",
+                    "id": "a:17vxw6pGQOb3Zfh8acXT8m_PqHycYpaFgzu2mFMUfkT-h0UskMctq5ZPPc7FIQxn2bx7rBSm5yE_HeUXsCcKZBrv77RgorB3_1_pAdvMhi39ClxQgawzyQ9GBFkdiwOxT",
+                    "tenantId": "56653e9d-2158-46ee-90d7-675c39642038"
+                },
+                "recipient": {
+                    "id": "29:1uMVvhoAyfTqdMsyvHL0qlJTTfQF9MOUSI8_cQts2kdSWEZVDyJO2jz-CsNOhQcdYq1Bw4cHT0__O6XDj4AZ-Jw",
+                    "name": "Rido",
+                    "aadObjectId": "c5e99701-2a32-49c1-a660-4629ceeb8c61"
+                },
+                "locale": "en-US",
+                "text": "Getting the information...",
+                "entities": [
+                    {
+                        "type": "streaminfo",
+                        "streamId": "",
+                        "streamType": "Informative",
+                        "streamSequence": 1
+                    }
+                ],
+                "channelData": {
+                    "streamId": "",
+                    "streamType": "informative",
+                    "streamSequence": 1
+                },
+                "replyToId": "1765601983160"
+            }
+            """;
+        CoreActivity act = CoreActivity.FromJsonString(json);
+        Assert.NotNull(act);
+        Assert.Equal("typing", act.Type);
+        Assert.NotNull(act.Entities);
+        Assert.Single(act.Entities);
+    }
 }

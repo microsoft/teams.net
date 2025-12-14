@@ -70,11 +70,11 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <remarks>
     /// Entities are structured objects that represent mentions, places, or other data.
     /// </remarks>
-    [JsonPropertyName("entities")] public JsonArray? Entities { get; }
+#pragma warning disable CA2227 // Collection properties should be read only
+    [JsonPropertyName("entities")] public JsonArray? Entities { get; set; }
     /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
 
