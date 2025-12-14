@@ -14,9 +14,6 @@ trigger:
     include:
     - core/**
 
-variables:
-- name: PushToADOFeed
-
 pool:
   vmImage: 'ubuntu-22.04'
 
