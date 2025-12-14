@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.ClientModel;
@@ -52,7 +52,7 @@ namespace AFCompat
                  * We can send an initial streaming message as informative while we get the response from the LLM setting the StreamType to Informative.
                  * This action is helpful to get the streaming sequence started and get messageId back, which we will use later as the StreamId
                  */
-                ChannelData channelData = new()
+                StreamingChannelData channelData = new()
                 {
                     StreamType = StreamType.Informative,
                     StreamSequence = streamSequence,
@@ -79,7 +79,7 @@ namespace AFCompat
                      */
                     if (streamingChatUpdate.FinishReason != null)
                     {
-                        channelData = new ChannelData
+                        channelData = new StreamingChannelData
                         {
                             StreamType = StreamType.Final,
                             StreamSequence = streamSequence,
@@ -101,7 +101,7 @@ namespace AFCompat
 
                     if (contentBuilder.Length > 0 && stopwatch.ElapsedMilliseconds > rps)
                     {
-                        channelData = new ChannelData
+                        channelData = new StreamingChannelData
                         {
                             StreamType = StreamType.Streaming,
                             StreamSequence = streamSequence,
@@ -130,7 +130,7 @@ namespace AFCompat
         private async Task<string> BuildAndSendStreamingActivity(
             ITurnContext<IMessageActivity> turnContext,
             string text,
-            ChannelData channelData,
+            StreamingChannelData channelData,
             CancellationToken cancellationToken)
         {
             bool isStreamFinal = channelData.StreamType.ToString().Equals(StreamType.Final.ToString());

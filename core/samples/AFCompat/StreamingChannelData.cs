@@ -1,10 +1,10 @@
-﻿using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using Newtonsoft.Json;
 
 namespace AFCompat
 {
-    public class ChannelData
+    public class StreamingChannelData
     {
         [JsonProperty(PropertyName = "streamId")]
         public string StreamId { get; set; } = string.Empty;
