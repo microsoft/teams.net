@@ -16,7 +16,6 @@ trigger:
 
 variables:
 - name: PushToADOFeed
-  value: false 
 
 pool:
   vmImage: 'ubuntu-22.04'
