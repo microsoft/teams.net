@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using Microsoft.Bot.Core.Hosting;
@@ -25,7 +26,7 @@ public class ConversationClient(HttpClient httpClient)
     /// the activity is sent successfully.</returns>
     /// <exception cref="Exception">Thrown if the activity could not be sent successfully. The exception message includes the HTTP status code and
     /// response content.</exception>
-    public async Task<string> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    public async Task<ResourceResponse> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
@@ -42,10 +43,23 @@ public class ConversationClient(HttpClient httpClient)
 
         using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        string respContent = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+        var respContent = await resp.Content.ReadFromJsonAsync<ResourceResponse?>(cancellationToken).ConfigureAwait(false);
 
-        return resp.IsSuccessStatusCode ?
+        return resp.IsSuccessStatusCode && respContent is not null ?
             respContent :
             throw new HttpRequestException($"Error sending activity: {resp.StatusCode} - {respContent}");
     }
+
+}
+
+/// <summary>
+/// Resource Response
+/// </summary>
+public class ResourceResponse
+{
+    /// <summary>
+    /// Id of the activity
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 }

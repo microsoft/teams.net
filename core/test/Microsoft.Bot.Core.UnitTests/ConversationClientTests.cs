@@ -37,10 +37,10 @@ public class ConversationClientTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        string result = await conversationClient.SendActivityAsync(activity);
+        var result = await conversationClient.SendActivityAsync(activity);
 
         Assert.NotNull(result);
-        Assert.Contains("activity123", result);
+        Assert.Contains("activity123", result.Id);
     }
 
     [Fact]
@@ -118,7 +118,7 @@ public class ConversationClientTests
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.BadRequest,
-                Content = new StringContent("Bad request error")
+                Content = new StringContent("{ \"id\": \"Bad request error\" }")
             });
 
         HttpClient httpClient = new(mockHttpMessageHandler.Object);
