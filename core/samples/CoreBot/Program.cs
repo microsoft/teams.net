@@ -16,7 +16,7 @@ BotApplication botApp = webApp.UseBotApplication<BotApplication>();
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
     string replyText = $"CoreBot running on SDK {BotApplication.Version}.";
-    replyText += $"\r\nYou sent: `{activity.Text}` in activity of type `{activity.Type}`.";
+    replyText += $"<br /> You sent: `{activity.Text}` in activity of type `{activity.Type}`.";
 
     string? conversationType = "unknown conversation type";
     if (activity.Conversation.Properties.TryGetValue("conversationType", out object? ctProp))
@@ -24,7 +24,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         conversationType = ctProp?.ToString();
     }
 
-    replyText += $"\r\n to Conversation ID: `{activity.Conversation.Id}` conv type: `{conversationType}`";
+    replyText += $"<br /> To Conversation ID: `{activity.Conversation.Id}` conv type: `{conversationType}`";
     CoreActivity replyActivity = activity.CreateReplyMessageActivity(replyText);
     await botApp.SendActivityAsync(replyActivity, cancellationToken);
 };

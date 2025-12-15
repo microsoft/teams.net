@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -80,9 +79,6 @@ public class BotApplication
         {
             _logger.LogTrace("Received activity: {Activity}", activity.ToJson());
         }
-
-        AgenticIdentity? agenticIdentity = AgenticIdentity.FromProperties(activity.Recipient.Properties);
-        _conversationClient.AgenticIdentity = agenticIdentity;
 
         using (_logger.BeginScope("Processing activity {Type} {Id}", activity.Type, activity.Id))
         {

@@ -16,8 +16,6 @@ public class ConversationClient(HttpClient httpClient)
 {
     internal const string ConversationHttpClientName = "BotConversationClient";
 
-    internal AgenticIdentity? AgenticIdentity { get; set; }
-
     /// <summary>
     /// Sends the specified activity to the conversation endpoint asynchronously.
     /// </summary>
@@ -40,7 +38,7 @@ public class ConversationClient(HttpClient httpClient)
 
         using HttpRequestMessage request = new(HttpMethod.Post, url) { Content = content };
 
-        request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, AgenticIdentity);
+        request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, AgenticIdentity.FromProperties(activity.Recipient.Properties));
 
         using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 

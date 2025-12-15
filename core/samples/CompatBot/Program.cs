@@ -46,7 +46,8 @@ app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string 
         proactive.GetConversationReference(),
         async (turnContext, ct) =>
         {
-            await turnContext.SendActivityAsync($"Proactive Message send from SDK `{BotApplication.Version}` at {DateTime.Now:T}");
+            await turnContext.SendActivityAsync(
+                MessageFactory.Text($"Proactive.  <br/> SDK `{BotApplication.Version}` at {DateTime.Now:T}"), ct);
         },
         ct);
 });
