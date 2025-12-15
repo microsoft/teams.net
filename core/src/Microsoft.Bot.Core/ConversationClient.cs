@@ -43,11 +43,18 @@ public class ConversationClient(HttpClient httpClient)
 
         using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        var respContent = await resp.Content.ReadFromJsonAsync<ResourceResponse?>(cancellationToken).ConfigureAwait(false);
+        ResourceResponse? resourceResponse;
 
-        return resp.IsSuccessStatusCode && respContent is not null ?
-            respContent :
-            throw new HttpRequestException($"Error sending activity: {resp.StatusCode} - {respContent}");
+        if (resp.IsSuccessStatusCode)
+        {
+            resourceResponse = await resp.Content.ReadFromJsonAsync<ResourceResponse?>(cancellationToken).ConfigureAwait(false);
+            return resourceResponse ?? new ResourceResponse();
+        }
+        else
+        {
+            string responseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            throw new HttpRequestException($"Error sending activity {resp.StatusCode}. {responseString}");
+        }
     }
 
 }

@@ -118,7 +118,7 @@ public class ConversationClientTests
             .ReturnsAsync(new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.BadRequest,
-                Content = new StringContent("{ \"id\": \"Bad request error\" }")
+                Content = new StringContent("Bad request error")
             });
 
         HttpClient httpClient = new(mockHttpMessageHandler.Object);
