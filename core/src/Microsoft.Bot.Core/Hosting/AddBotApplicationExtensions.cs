@@ -62,6 +62,7 @@ public static class AddBotApplicationExtensions
     /// <returns></returns>
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services) where TApp : BotApplication
     {
+        services.AddAuthorization();
         services.AddBotApplicationClients();
         services.AddSingleton<TApp>();
         return services;
