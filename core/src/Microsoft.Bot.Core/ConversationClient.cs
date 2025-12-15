@@ -4,6 +4,7 @@
 using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 
@@ -43,17 +44,20 @@ public class ConversationClient(HttpClient httpClient)
 
         using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        ResourceResponse? resourceResponse;
-
         if (resp.IsSuccessStatusCode)
         {
-            resourceResponse = await resp.Content.ReadFromJsonAsync<ResourceResponse?>(cancellationToken).ConfigureAwait(false);
-            return resourceResponse ?? new ResourceResponse();
+            string responseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            if (responseString.Length > 2) // to handle empty response 
+            {
+                ResourceResponse? resourceResponse = JsonSerializer.Deserialize<ResourceResponse>(responseString);
+                return resourceResponse ?? new ResourceResponse();
+            }
+            return new ResourceResponse();
         }
         else
         {
-            string responseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            throw new HttpRequestException($"Error sending activity {resp.StatusCode}. {responseString}");
+            string errResponseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            throw new HttpRequestException($"Error sending activity {resp.StatusCode}. {errResponseString}");
         }
     }
 
