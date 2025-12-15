@@ -5,8 +5,11 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
-       
     </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Microsoft.Bot.Core.UnitTests" />
+    </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.22" NoWarn="NU1605" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.22" NoWarn="NU1605" />
