@@ -60,20 +60,10 @@ internal sealed class BotAuthenticationHandler(
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
     private readonly IOptions<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
-
-    //_logger.LogInformation("BotAuthenticationHandler initialized with scope: {Scope} and AAD config section: {AadConfigSectionName}", scope, aadConfigSectionName);
-
-    private static readonly Action<ILogger, string, string, Exception?> LogAcquiringAgenticToken =
-        LoggerMessage.Define<string, string>(
-            LogLevel.Debug,
-            new EventId(1, nameof(LogAcquiringAgenticToken)),
-            "Acquiring agentic token for appId: {AgenticAppId}, userId: {AgenticUserId}");
-
-    private static readonly Action<ILogger, string, Exception?> LogAcquiringAppOnlyToken =
-        LoggerMessage.Define<string>(
-            LogLevel.Debug,
-            new EventId(2, nameof(LogAcquiringAppOnlyToken)),
-            "Acquiring app-only token for scope: {Scope}");
+    private static readonly Action<ILogger, string, Exception?> _logAgenticToken =
+        LoggerMessage.Define<string>(LogLevel.Debug, new(2), "Acquiring agentic token for app {AgenticAppId}");
+    private static readonly Action<ILogger, string, Exception?> _logAppOnlyToken =
+        LoggerMessage.Define<string>(LogLevel.Debug, new(3), "Acquiring app-only token for scope: {Scope}");
 
     /// <summary>
     /// Key used to store the agentic identity in HttpRequestMessage options.
@@ -120,7 +110,7 @@ internal sealed class BotAuthenticationHandler(
 
             if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
             {
-            options.AcquireTokenOptions.ManagedIdentity = miOptions;
+                options.AcquireTokenOptions.ManagedIdentity = miOptions;
             }
         }
 
@@ -128,14 +118,14 @@ internal sealed class BotAuthenticationHandler(
             !string.IsNullOrEmpty(agenticIdentity.AgenticAppId) &&
             !string.IsNullOrEmpty(agenticIdentity.AgenticUserId))
         {
-            LogAcquiringAgenticToken(_logger, agenticIdentity.AgenticAppId, agenticIdentity.AgenticUserId, null);
+            _logAgenticToken(_logger, agenticIdentity.AgenticAppId, null);
 
             options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, Guid.Parse(agenticIdentity.AgenticUserId));
             string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([_scope], options, null, cancellationToken).ConfigureAwait(false);
             return token;
         }
 
-        LogAcquiringAppOnlyToken(_logger, _scope, null);
+        _logAppOnlyToken(_logger, _scope, null);
         string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(_scope, options, cancellationToken).ConfigureAwait(false);
         return appToken;
     }
