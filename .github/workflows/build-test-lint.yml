@@ -5,9 +5,18 @@ on:
   workflow_dispatch:
   pull_request:
     branches: ['main']
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'Assets/**'
+      - 'core/**'
   push:
     branches: ['main']
-
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'Assets/**'
+      - 'core/**'
 permissions: read-all
 
 jobs:
