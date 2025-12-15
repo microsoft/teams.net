@@ -74,7 +74,6 @@ public static class AddBotApplicationExtensions
     /// <param name="services">service collection</param>
     /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
     /// <returns></returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
         var sp = services.BuildServiceProvider();
@@ -99,13 +98,21 @@ public static class AddBotApplicationExtensions
             .AddInMemoryTokenCaches()
             .AddAgentIdentities();
 
-        services.ConfigureMSAL(configuration, sectionName);
-        services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
+        if (services.ConfigureMSAL(configuration, sectionName))
+        {
+
+            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
                 .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
                     scope,
                     sp.GetService<IOptions<ManagedIdentityOptions>>()));
+        }
+        else
+        {
+            _logAuthConfigNotFound(logger, null);
+            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName);
+        }
         return services;
     }
 
@@ -255,6 +262,8 @@ public static class AddBotApplicationExtensions
         LoggerMessage.Define(LogLevel.Debug, new(5), "Configuring authentication with User-Assigned Managed Identity");
     private static readonly Action<ILogger, string, Exception?> _logUsingFIC =
         LoggerMessage.Define<string>(LogLevel.Debug, new(6), "Configuring authentication with Federated Identity Credential (Managed Identity) with {IdentityType} Managed Identity");
+    private static readonly Action<ILogger, Exception?> _logAuthConfigNotFound =
+        LoggerMessage.Define(LogLevel.Warning, new(7), "Authentication configuration not found. Running without Auth");
 
-    
+
 }
