@@ -4,9 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using System.Xml.Linq;
 using Microsoft.Bot.Core.Schema;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.Teams.BotApps.Schema.Entities;
 
@@ -24,14 +22,14 @@ public class EntityList : List<Entity>
     /// <returns></returns>
     public JsonArray? ToJsonArray()
     {
-        var jsonArray = new JsonArray();
-        foreach (var entity in this)
+        JsonArray jsonArray = new();
+        foreach (Entity entity in this)
         {
-            var jsonObject = new JsonObject
+            JsonObject jsonObject = new()
             {
                 ["type"] = entity.Type
             };
-            foreach (var property in entity.Properties)
+            foreach (KeyValuePair<string, object?> property in entity.Properties)
             {
                 jsonObject[property.Key] = property.Value as JsonNode ?? JsonValue.Create(property.Value);
             }
@@ -52,8 +50,8 @@ public class EntityList : List<Entity>
         {
             return [];
         }
-        var entities = new EntityList();
-        foreach (var item in jsonArray)
+        EntityList entities = new();
+        foreach (JsonNode? item in jsonArray)
         {
             if (item is JsonObject jsonObject
                 && jsonObject.TryGetPropertyValue("type", out JsonNode? typeNode)
@@ -141,7 +139,7 @@ public class EntityListJsonConverter : JsonConverter<EntityList>
             return null;
         }
 
-        var jsonArray = JsonSerializer.Deserialize<JsonArray>(ref reader, options);
+        JsonArray? jsonArray = JsonSerializer.Deserialize<JsonArray>(ref reader, options);
         return EntityList.FromJsonArray(jsonArray, options);
     }
 
@@ -151,7 +149,7 @@ public class EntityListJsonConverter : JsonConverter<EntityList>
     public override void Write(Utf8JsonWriter writer, EntityList value, JsonSerializerOptions options)
     {
         ArgumentNullException.ThrowIfNull(value);
-        var jsonArray = value.ToJsonArray();
+        JsonArray? jsonArray = value.ToJsonArray();
         JsonSerializer.Serialize(writer, jsonArray, options);
     }
 }

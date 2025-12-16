@@ -120,7 +120,7 @@ public class TeamsActivity : CoreActivity
     public TeamsActivity AddMention(ConversationAccount account, string? text = null, bool addText = true)
     {
         ArgumentNullException.ThrowIfNull(account);
-        var mentionText = text ?? account.Name;
+        string? mentionText = text ?? account.Name;
 
         if (addText)
         {

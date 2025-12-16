@@ -49,7 +49,7 @@ public class MentionEntity : Entity
     /// <exception cref="ArgumentNullException">Thrown if jsonNode is null or does not contain the required 'mentioned' property.</exception>
     public static MentionEntity FromJsonElement(JsonNode? jsonNode)
     {
-        var res = new MentionEntity
+        MentionEntity res = new()
         {
             Mentioned = jsonNode?["mentioned"] != null
                 ? JsonSerializer.Deserialize<ConversationAccount>(jsonNode["mentioned"]!.ToJsonString())!
