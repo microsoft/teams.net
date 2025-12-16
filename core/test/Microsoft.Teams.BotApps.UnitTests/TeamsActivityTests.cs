@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
@@ -55,12 +58,14 @@ public class TeamsActivityTests
     [Fact]
     public void AddMentionEntity_To_TeamsActivity()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityTypes.Message));
-        activity.AddMention(new ConversationAccount
-        {
-            Id = "user-id-01",
-            Name = "rido"
-        }, "ridotest");
+        TeamsActivity baseActivity = TeamsActivity.FromActivity(new CoreActivity(ActivityTypes.Message));
+        TeamsActivity activity = baseActivity.ToBuilder()
+            .AddMention(new ConversationAccount
+            {
+                Id = "user-id-01",
+                Name = "rido"
+            }, "ridotest")
+            .Build();
 
 
         Assert.NotNull(activity.Entities);
@@ -77,31 +82,61 @@ public class TeamsActivityTests
     }
 
     [Fact]
-    public void Deserialize_With_Mentions()
+    public void TeamsActivityBuilder_FluentAPI()
+    {
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(ActivityTypes.Message)
+            .WithText("Hello World")
+            .WithChannelId("msteams")
+            .AddMention(new ConversationAccount
+            {
+                Id = "user-123",
+                Name = "TestUser"
+            })
+            .Build();
+
+        Assert.Equal(ActivityTypes.Message, activity.Type);
+        Assert.Equal("<at>TestUser</at> Hello World", activity.Text);
+        Assert.Equal("msteams", activity.ChannelId);
+        Assert.NotNull(activity.Entities);
+        Assert.Single(activity.Entities);
+        
+        MentionEntity? mention = activity.Entities[0] as MentionEntity;
+        Assert.NotNull(mention);
+        Assert.Equal("user-123", mention.Mentioned?.Id);
+        Assert.Equal("TestUser", mention.Mentioned?.Name);
+    }
+
+    [Fact]
+    public void Deserialize_With_Entities()
     {
         TeamsActivity activity = TeamsActivity.FromJsonString(json);
         Assert.NotNull(activity.Entities);
         Assert.Equal(2, activity.Entities.Count);
-        MentionEntity? mention = activity.Entities[0] as MentionEntity;
-        Assert.NotNull(mention);
-        Assert.Equal("28:0b6fe6d1-fece-44f7-9a48-56465e2d5ab8", mention.Mentioned?.Id);
-        Assert.Equal("ridotest", mention.Mentioned?.Name);
-        Assert.Equal("<at>ridotest</at>", mention.Text);
 
-
-        var mentions = activity.Entities.Where(e => e is MentionEntity).ToList();
+        List<Entity> mentions = activity.Entities.Where(e => e is MentionEntity).ToList();
         Assert.Single(mentions);
-        var m1 = mentions[0] as MentionEntity;
+        MentionEntity? m1 = mentions[0] as MentionEntity;
         Assert.NotNull(m1);
-        Assert.Equal("28:0b6fe6d1-fece-44f7-9a48-56465e2d5ab8", m1.Mentioned?.Id);
-        Assert.Equal("ridotest", m1.Mentioned?.Name);
+        Assert.NotNull(m1.Mentioned);
+        Assert.Equal("28:0b6fe6d1-fece-44f7-9a48-56465e2d5ab8", m1.Mentioned.Id);
+        Assert.Equal("ridotest", m1.Mentioned.Name);
         Assert.Equal("<at>ridotest</at>", m1.Text);
+
+        List<Entity> clientInfos = activity.Entities.Where(e => e is ClientInfoEntity).ToList();
+        Assert.Single(clientInfos);
+        ClientInfoEntity? c1 = clientInfos[0] as ClientInfoEntity;
+        Assert.NotNull(c1);
+        Assert.Equal("en-US", c1.Locale);
+        Assert.Equal("US", c1.Country);
+        Assert.Equal("Web", c1.Platform);
+        Assert.Equal("America/Los_Angeles", c1.Timezone);
 
     }
 
 
 
-    const string json = """
+    private const string json = """
             {
               "type": "message",
               "channelId": "msteams",

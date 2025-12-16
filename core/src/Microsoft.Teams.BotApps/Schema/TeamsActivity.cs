@@ -111,24 +111,20 @@ public class TeamsActivity : CoreActivity
     }
 
     /// <summary>
-    /// Adds a mention to the activity.
+    /// Creates a new TeamsActivityBuilder instance for building a TeamsActivity with a fluent API.
     /// </summary>
-    /// <param name="account"></param>
-    /// <param name="text"></param>
-    /// <param name="addText"></param>
-    /// <returns></returns>
-    public TeamsActivity AddMention(ConversationAccount account, string? text = null, bool addText = true)
+    /// <returns>A new TeamsActivityBuilder instance.</returns>
+    public static TeamsActivityBuilder CreateBuilder()
     {
-        ArgumentNullException.ThrowIfNull(account);
-        string? mentionText = text ?? account.Name;
+        return new TeamsActivityBuilder();
+    }
 
-        if (addText)
-        {
-            Text = $"<at>{mentionText}</at> {Text}";
-        }
-
-        AddEntity(new MentionEntity(account, $"<at>{mentionText}</at>"));
-        base.Entities = this.Entities?.ToJsonArray();
-        return this;
+    /// <summary>
+    /// Creates a new TeamsActivityBuilder instance initialized with this activity.
+    /// </summary>
+    /// <returns>A new TeamsActivityBuilder instance initialized with this activity.</returns>
+    public TeamsActivityBuilder ToBuilder()
+    {
+        return new TeamsActivityBuilder(this);
     }
 }
