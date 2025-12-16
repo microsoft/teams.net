@@ -40,8 +40,9 @@ public class TeamsConversationAccount : ConversationAccount
     /// <param name="conversationAccount">The ConversationAccount instance containing the conversation's identifier, name, and properties. Cannot be null.</param>
     public TeamsConversationAccount(ConversationAccount conversationAccount)
     {
-        ConversationAcount = conversationAccount;
         ArgumentNullException.ThrowIfNull(conversationAccount);
+        ConversationAcount = conversationAccount;
+        Properties = conversationAccount.Properties;
         Id = conversationAccount.Id ?? string.Empty;
         Name = conversationAccount.Name ?? string.Empty;
         if (conversationAccount is not null && conversationAccount.Properties.TryGetValue("aadObjectId", out object? aadObj)

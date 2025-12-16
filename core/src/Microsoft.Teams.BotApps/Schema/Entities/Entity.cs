@@ -15,14 +15,6 @@ namespace Microsoft.Teams.BotApps.Schema.Entities;
 [JsonConverter(typeof(EntityListJsonConverter))]
 public class EntityList : List<Entity>
 {
-
-    //internal new int Add(Entity? item)
-    //{
-    //    ArgumentNullException.ThrowIfNull(item);
-    //    base.Add((Entity)item!);
-    //    return 1;
-    //}
-
     /// <summary>
     /// Converts the Entities collection to a JsonArray.
     /// </summary>
