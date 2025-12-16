@@ -64,6 +64,7 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// Gets or sets the conversation in which this activity is taking place.
     /// </summary>
     [JsonPropertyName("conversation")] public Conversation Conversation { get; set; } = new();
+
     /// <summary>
     /// Gets the collection of entities contained in this activity.
     /// </summary>
@@ -71,6 +72,12 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// Entities are structured objects that represent mentions, places, or other data.
     /// </remarks>
     [JsonPropertyName("entities")] public JsonArray? Entities { get; }
+
+    /// <summary>
+    /// Gets the collection of attachments associated with this activity.
+    /// </summary>
+    [JsonPropertyName("attachments")] public JsonArray? Attachments { get; }
+
     /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
