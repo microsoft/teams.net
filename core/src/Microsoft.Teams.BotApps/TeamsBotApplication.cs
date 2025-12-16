@@ -3,6 +3,7 @@
 
 using Microsoft.Bot.Core;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.BotApps.Handlers;
 using Microsoft.Teams.BotApps.Schema;
@@ -15,6 +16,9 @@ namespace Microsoft.Teams.BotApps;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class TeamsBotApplication : BotApplication
 {
+
+    private static TeamsBotApplicationBuilder? _botApplicationBuilder;
+
     /// <summary>
     /// Handler for message activities.
     /// </summary>
@@ -38,7 +42,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="config"></param>
     /// <param name="logger"></param>
     /// <param name="sectionName"></param>
-    public TeamsBotApplication(ConversationClient conversationClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "Teams") : base(conversationClient, config, logger, sectionName)
+    public TeamsBotApplication(ConversationClient conversationClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "AzureAd") : base(conversationClient, config, logger, sectionName)
     {
         OnActivity = async (activity, cancellationToken) =>
         {
@@ -62,5 +66,29 @@ public class TeamsBotApplication : BotApplication
                 await OnConversationUpdate.Invoke(new ConversationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
             }
         };
+    }
+
+    /// <summary>
+    /// Creates a new instance of the TeamsBotApplicationBuilder to configure and build a Teams bot application.
+    /// </summary>
+    /// <returns></returns>
+    public static TeamsBotApplicationBuilder CreateBuilder()
+    {
+        _botApplicationBuilder = new TeamsBotApplicationBuilder();
+        return _botApplicationBuilder;
+    }
+
+    /// <summary>
+    /// Runs the web application configured by the bot application builder.
+    /// </summary>
+    /// <remarks>Call CreateBuilder() before invoking this method to ensure the bot application builder is
+    /// initialized. This method blocks the callsing thread until the web application shuts down.</remarks>
+#pragma warning disable CA1822 // Mark members as static
+    public void Run()
+#pragma warning restore CA1822 // Mark members as static
+    {
+        ArgumentNullException.ThrowIfNull(_botApplicationBuilder, "BotApplicationBuilder not initialized. Call CreateBuilder() first.");
+
+        _botApplicationBuilder.WebApplication.Run();
     }
 }

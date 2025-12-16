@@ -166,6 +166,46 @@ public class TeamsActivityTests
     }
 
 
+    [Fact]
+    public void Deserialize_With_Entities_Extensions()
+    {
+        TeamsActivity activity = TeamsActivity.FromJsonString(json);
+        Assert.NotNull(activity.Entities);
+        Assert.Equal(2, activity.Entities.Count);
+
+        var mentions = activity.GetMentions();
+        Assert.Single(mentions);
+        MentionEntity? m1 = mentions.FirstOrDefault();
+        Assert.NotNull(m1);
+        Assert.NotNull(m1.Mentioned);
+        Assert.Equal("28:0b6fe6d1-fece-44f7-9a48-56465e2d5ab8", m1.Mentioned.Id);
+        Assert.Equal("ridotest", m1.Mentioned.Name);
+        Assert.Equal("<at>ridotest</at>", m1.Text);
+
+        var clientInfo =  activity.GetClientInfo();
+        Assert.NotNull(clientInfo);
+        Assert.Equal("en-US", clientInfo.Locale);
+        Assert.Equal("US", clientInfo.Country);
+        Assert.Equal("Web", clientInfo.Platform);
+        Assert.Equal("America/Los_Angeles", clientInfo.Timezone);
+    }
+
+    [Fact]
+    public void Serialize_TeamsActivity_WithEntities()
+    {
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(ActivityTypes.Message)
+            .WithText("Hello World")
+            .WithChannelId("msteams")
+            .Build();
+
+        activity.AddClientInfo("Web", "US", "America/Los_Angeles", "en-US");
+
+        string json = activity.ToJson();
+        Assert.Contains("clientInfo", json);
+        Assert.Contains("Web", json);
+    }
+
 
     private const string json = """
             {

@@ -27,4 +27,8 @@ public static class TeamsActivityTypes
     /// Message reaction activity type.
     /// </summary>
     public static readonly string MessageReaction = "messageReaction";
+    /// <summary>
+    /// Represents a typing indicator activity.
+    /// </summary>
+    public const string Typing = "typing";
 }

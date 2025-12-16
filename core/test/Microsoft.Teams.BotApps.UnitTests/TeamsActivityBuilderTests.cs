@@ -480,10 +480,8 @@ public class TeamsActivityBuilderTests
         TeamsActivityBuilder builder = new();
         TeamsActivity activity = builder.Build();
 
-        // Ensure entities is null initially
-        Assert.Null(activity.Entities);
+        Assert.NotNull(activity.Entities);
 
-        // Add entity through builder
         ClientInfoEntity entity = new() { Locale = "en-US" };
         builder.AddEntity(entity);
 
@@ -498,10 +496,8 @@ public class TeamsActivityBuilderTests
         TeamsActivityBuilder builder = new();
         TeamsActivity activity = builder.Build();
 
-        // Ensure attachments is null initially
-        Assert.Null(activity.Attachments);
+        Assert.NotNull(activity.Attachments);
 
-        // Add attachment through builder
         TeamsAttachment attachment = new() { ContentType = "text/html" };
         builder.AddAttachment(attachment);
 

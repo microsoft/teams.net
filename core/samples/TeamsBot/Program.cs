@@ -1,22 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Bot.Core.Hosting;
 using Microsoft.Teams.BotApps;
 using Microsoft.Teams.BotApps.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
 
-WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
-webAppBuilder.Services.AddBotApplication<TeamsBotApplication>();
-WebApplication webApp = webAppBuilder.Build();
-TeamsBotApplication teamsApp = webApp.UseBotApplication<TeamsBotApplication>();
-
-webApp.MapGet("/", () => "CoreBot is running.");
+var builder = TeamsBotApplication.CreateBuilder();
+var teamsApp = builder.Build();
 
 teamsApp.OnMessage = async (context, cancellationToken) =>
 {
-    string replyText = $"CoreBot running on Teams SDK {TeamsBotApplication.Version}.";
-    replyText += $"<br /> You sent: `{context.Activity.Text}` in activity of type `{context.Activity.Type}`.";
+    string replyText = $"You sent: `{context.Activity.Text}` in activity of type `{context.Activity.Type}`.";
+
+    await teamsApp.SendTypingActivityAsync(context.Activity, cancellationToken);
 
     TeamsActivity reply = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityTypes.Message)
@@ -43,4 +39,4 @@ teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>
     await context.SendActivityAsync(replyText, cancellationToken);
 };
 
-webApp.Run();
+teamsApp.Run();

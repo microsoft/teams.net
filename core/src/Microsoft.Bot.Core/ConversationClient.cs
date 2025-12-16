@@ -39,7 +39,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
         string body = activity.ToJson();
 
-        logger.LogTrace("Sending activity to {Url}: {Activity}", url, body);
+        logger?.LogTrace("Sending activity to {Url}: {Activity}", url, body);
 
         using StringContent content = new(body, Encoding.UTF8, MediaTypeNames.Application.Json);
 

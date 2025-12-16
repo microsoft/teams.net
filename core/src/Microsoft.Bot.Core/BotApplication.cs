@@ -38,7 +38,8 @@ public class BotApplication
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         string appId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? "Unknown AppID";
-        logger.LogInformation("Started bot listener on {Port} for AppID:{AppId} with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], appId, Version);
+        logger.LogInformation("Started bot listener \n on {Port} \n for AppID:{AppId} \n with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], appId, Version);
+
     }
 
 

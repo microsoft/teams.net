@@ -2,8 +2,12 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.Teams.BotApps.Schema.Entities;
+
+
+
 
 /// <summary>
 /// Product info entity.
@@ -19,4 +23,11 @@ public class ProductInfoEntity : Entity
     /// </summary>
     [JsonPropertyName("id")] public string? Id { get; set; }
 
+    /// <summary>
+    /// Adds custom fields as properties.
+    /// </summary>
+    public override void ToProperties()
+    {
+     
+    }
 }
