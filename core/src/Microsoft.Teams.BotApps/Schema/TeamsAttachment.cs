@@ -19,7 +19,7 @@ public class TeamsAttachment
         {
             return [];
         }
-        List<TeamsAttachment> attachments = new();
+        List<TeamsAttachment> attachments = [];
         foreach (var item in jsonArray)
         {
             attachments.Add(JsonSerializer.Deserialize<TeamsAttachment>(item)!);

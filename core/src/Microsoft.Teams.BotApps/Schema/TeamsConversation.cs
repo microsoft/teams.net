@@ -13,6 +13,15 @@ namespace Microsoft.Teams.BotApps.Schema;
 public class TeamsConversation : Conversation
 {
     /// <summary>
+    /// Initializes a new instance of the TeamsConversation class.
+    /// </summary>
+    [JsonConstructor]
+    public TeamsConversation()
+    {
+        Id = string.Empty;
+    }
+
+    /// <summary>
     /// Creates a new instance of the TeamsConversation class from the specified Conversation object.
     /// </summary>
     /// <param name="conversation"></param>

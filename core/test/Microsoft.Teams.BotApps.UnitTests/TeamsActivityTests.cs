@@ -1,11 +1,12 @@
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Schema;
+using Microsoft.Teams.BotApps.Schema.Entities;
 
 namespace Microsoft.Teams.BotApps.UnitTests;
 
 public class TeamsActivityTests
 {
-   
+
     [Fact]
     public void DeserializeActivityWithTeamsChannelData()
     {
@@ -43,13 +44,61 @@ public class TeamsActivityTests
         TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", teamsActivity.Conversation!.Id);
 
-        void AssertCid(CoreActivity a)
+        static void AssertCid(CoreActivity a)
         {
             Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
         }
         AssertCid(teamsActivity);
 
     }
+
+    [Fact]
+    public void AddMentionEntity_To_TeamsActivity()
+    {
+        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityTypes.Message));
+        activity.AddMention(new ConversationAccount
+        {
+            Id = "user-id-01",
+            Name = "rido"
+        }, "ridotest");
+
+
+        Assert.NotNull(activity.Entities);
+        Assert.Single(activity.Entities);
+        Assert.Equal("mention", activity.Entities[0].Type);
+        MentionEntity? mention = activity.Entities[0] as MentionEntity;
+        Assert.NotNull(mention);
+        Assert.Equal("user-id-01", mention.Mentioned?.Id);
+        Assert.Equal("rido", mention.Mentioned?.Name);
+        Assert.Equal("<at>ridotest</at>", mention.Text);
+
+        string json = activity.ToJson();
+        Assert.Contains("user-id-01", json);
+    }
+
+    [Fact]
+    public void Deserialize_With_Mentions()
+    {
+        TeamsActivity activity = TeamsActivity.FromJsonString(json);
+        Assert.NotNull(activity.Entities);
+        Assert.Equal(2, activity.Entities.Count);
+        MentionEntity? mention = activity.Entities[0] as MentionEntity;
+        Assert.NotNull(mention);
+        Assert.Equal("28:0b6fe6d1-fece-44f7-9a48-56465e2d5ab8", mention.Mentioned?.Id);
+        Assert.Equal("ridotest", mention.Mentioned?.Name);
+        Assert.Equal("<at>ridotest</at>", mention.Text);
+
+
+        var mentions = activity.Entities.Where(e => e is MentionEntity).ToList();
+        Assert.Single(mentions);
+        var m1 = mentions[0] as MentionEntity;
+        Assert.NotNull(m1);
+        Assert.Equal("28:0b6fe6d1-fece-44f7-9a48-56465e2d5ab8", m1.Mentioned?.Id);
+        Assert.Equal("ridotest", m1.Mentioned?.Name);
+        Assert.Equal("<at>ridotest</at>", m1.Text);
+
+    }
+
 
 
     const string json = """

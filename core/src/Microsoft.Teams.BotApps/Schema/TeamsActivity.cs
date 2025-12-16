@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.BotApps.Schema.Entities;
 
 namespace Microsoft.Teams.BotApps.Schema;
 
@@ -28,7 +30,20 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     /// <param name="json"></param>
     /// <returns></returns>
-    public static new TeamsActivity FromJsonString(string json) => new(CoreActivity.FromJsonString(json));
+    public static new TeamsActivity FromJsonString(string json) 
+         => JsonSerializer.Deserialize(json, TeamsActivityJsonContext.Default.TeamsActivity)!;
+
+    /// <summary>
+    /// Default constructor.
+    /// </summary>
+    [JsonConstructor]
+    public TeamsActivity()
+    {
+        From = new TeamsConversationAccount(new ConversationAccount());
+        Recipient = new TeamsConversationAccount(new ConversationAccount());
+        Conversation = new TeamsConversation(new Conversation());
+
+    }
 
     private TeamsActivity(CoreActivity activity)
     {
@@ -38,13 +53,14 @@ public class TeamsActivity : CoreActivity
         Type = activity.Type;
         // ReplyToId = activity.ReplyToId;
         Text = activity.Text;
-        Entities = activity.Entities;
+        Entities = EntityList.FromJsonArray(activity.Entities);
         ChannelData = new TeamsChannelData(activity.ChannelData!);
         From = new TeamsConversationAccount(activity.From!);
         Recipient = new TeamsConversationAccount(activity.Recipient!);
         Conversation = new TeamsConversation(activity.Conversation!);
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
 
+        //base.Entities = Entities.ToJsonArray();
         base.ChannelData = ChannelData;
         base.From = From;
         base.Recipient = Recipient;
@@ -72,8 +88,47 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     [JsonPropertyName("channelData")] public new TeamsChannelData? ChannelData { get; set; }
 
+    /// <summary>
+    /// Gets or sets the entities specific to Teams.
+    /// </summary>
+    [JsonPropertyName("entities")] public new EntityList? Entities { get; set; }
+
         /// <summary>
     /// Attachments specific to Teams.
     /// </summary>
     [JsonPropertyName("attachments")] public new IList<TeamsAttachment>? Attachments { get; set; }
+
+    /// <summary>
+    /// Adds an entity to the activity's Entities collection.
+    /// </summary>
+    /// <param name="entity"></param>
+    /// <returns></returns>
+    public TeamsActivity AddEntity(Entity entity)
+    {
+        Entities ??= [];
+        Entities.Add(entity);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a mention to the activity.
+    /// </summary>
+    /// <param name="account"></param>
+    /// <param name="text"></param>
+    /// <param name="addText"></param>
+    /// <returns></returns>
+    public TeamsActivity AddMention(ConversationAccount account, string? text = null, bool addText = true)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        var mentionText = text ?? account.Name;
+
+        if (addText)
+        {
+            Text = $"<at>{mentionText}</at> {Text}";
+        }
+
+        AddEntity(new MentionEntity(account, $"<at>{mentionText}</at>"));
+        base.Entities = this.Entities?.ToJsonArray();
+        return this;
+    }
 }

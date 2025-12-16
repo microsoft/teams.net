@@ -17,17 +17,34 @@ namespace Microsoft.Teams.BotApps.Schema;
 public class TeamsConversationAccount : ConversationAccount
 {
     /// <summary>
+    /// Conversation account.
+    /// </summary>
+    public ConversationAccount ConversationAcount { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the TeamsConversationAccount class.
+    /// </summary>
+    [JsonConstructor]
+    public TeamsConversationAccount()
+    {
+        ConversationAcount = new ConversationAccount();
+        Id = string.Empty;
+        Name = string.Empty;
+    }
+
+    /// <summary>
     /// Initializes a new instance of the TeamsConversationAccount class using the specified conversation account.
     /// </summary>
     /// <remarks>If the provided ConversationAccount contains an 'aadObjectId' property as a string, it is
     /// used to set the AadObjectId property of the TeamsConversationAccount.</remarks>
-    /// <param name="ca">The ConversationAccount instance containing the conversation's identifier, name, and properties. Cannot be null.</param>
-    public TeamsConversationAccount(ConversationAccount ca)
+    /// <param name="conversationAccount">The ConversationAccount instance containing the conversation's identifier, name, and properties. Cannot be null.</param>
+    public TeamsConversationAccount(ConversationAccount conversationAccount)
     {
-        ArgumentNullException.ThrowIfNull(ca);
-        Id = ca.Id ?? string.Empty;
-        Name = ca.Name ?? string.Empty;
-        if (ca is not null && ca.Properties.TryGetValue("aadObjectId", out object? aadObj)
+        ConversationAcount = conversationAccount;
+        ArgumentNullException.ThrowIfNull(conversationAccount);
+        Id = conversationAccount.Id ?? string.Empty;
+        Name = conversationAccount.Name ?? string.Empty;
+        if (conversationAccount is not null && conversationAccount.Properties.TryGetValue("aadObjectId", out object? aadObj)
             && aadObj is JsonElement je
             && je.ValueKind == JsonValueKind.String)
         {
