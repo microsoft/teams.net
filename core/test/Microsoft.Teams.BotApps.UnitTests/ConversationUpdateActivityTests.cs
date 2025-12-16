@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Handlers;
 using Microsoft.Teams.BotApps.Schema;
 
@@ -29,7 +30,7 @@ public class ConversationUpdateActivityTests
             ]
         }
         """;
-        TeamsActivity act = TeamsActivity.FromJsonString(json);
+        TeamsActivity act = CoreActivity.FromJsonString<TeamsActivity>(json);
         Assert.NotNull(act);
         Assert.Equal("conversationUpdate", act.Type);
 
@@ -61,7 +62,7 @@ public class ConversationUpdateActivityTests
             ]
         }
         """;
-        TeamsActivity act = TeamsActivity.FromJsonString(json);
+        TeamsActivity act = CoreActivity.FromJsonString<TeamsActivity>(json);
         Assert.NotNull(act);
         Assert.Equal("conversationUpdate", act.Type);
 
@@ -97,7 +98,7 @@ public class ConversationUpdateActivityTests
             ]
         }
         """;
-        TeamsActivity act = TeamsActivity.FromJsonString(json);
+        TeamsActivity act = CoreActivity.FromJsonString<TeamsActivity>(json);
         Assert.NotNull(act);
         Assert.Equal("conversationUpdate", act.Type);
 

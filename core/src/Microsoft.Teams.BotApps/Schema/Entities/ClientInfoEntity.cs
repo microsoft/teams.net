@@ -25,7 +25,7 @@ public static class ActivityClientInfoExtensions
         ArgumentNullException.ThrowIfNull(activity);
 
         ClientInfoEntity clientInfo = new(platform, country, timeZone, locale);
-        activity.Entities ??= new();
+        activity.Entities ??= [];
         activity.Entities.Add(clientInfo);
         activity.Rebase();
         return clientInfo;

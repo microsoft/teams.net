@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
@@ -31,14 +30,14 @@ public class TeamsActivity : CoreActivity
     /// <param name="json"></param>
     /// <returns></returns>
     public static new TeamsActivity FromJsonString(string json)
-         => JsonSerializer.Deserialize(json, TeamsActivityJsonContext.Default.TeamsActivity)!;
+         => FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity)!;
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
     /// </summary>
     /// <returns></returns>
     public new string ToJson()
-        => JsonSerializer.Serialize(this, TeamsActivityJsonContext.Default.TeamsActivity);
+        => ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
 
     /// <summary>
     /// Default constructor.

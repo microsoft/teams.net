@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.Bot.Core.Schema;
 
@@ -129,7 +130,17 @@ public class CoreActivity
     /// Serializes the current activity to a JSON string.
     /// </summary>
     /// <returns>A JSON string representation of the activity.</returns>
-    public string ToJson() => JsonSerializer.Serialize(this, CoreActivityJsonContext.Default.CoreActivity);
+    public string ToJson()
+        => JsonSerializer.Serialize(this, CoreActivityJsonContext.Default.CoreActivity);
+
+    /// <summary>
+    /// Serializes the current activity to a JSON string using the specified JsonTypeInfo options.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="ops"></param>
+    /// <returns></returns>
+    public string ToJson<T>(JsonTypeInfo<T> ops) where T: CoreActivity
+        => JsonSerializer.Serialize(this, ops);
 
     /// <summary>
     /// Serializes the specified activity instance to a JSON string using the default serialization options.
@@ -162,6 +173,16 @@ public class CoreActivity
         => JsonSerializer.Deserialize<T>(json, ReflectionJsonOptions)!;
 
     /// <summary>
+    /// Deserializes the specified JSON string to an object of type T using the provided JsonSerializerOptions.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="json"></param>
+    /// <param name="options"></param>
+    /// <returns></returns>
+    public static T FromJsonString<T>(string json, JsonTypeInfo<T> options) where T : CoreActivity
+        => JsonSerializer.Deserialize<T>(json, options)!;
+
+    /// <summary>
     /// Asynchronously deserializes a JSON stream into a <see cref="CoreActivity"/> object.
     /// </summary>
     /// <param name="stream">The stream containing JSON data to deserialize.</param>
@@ -169,6 +190,17 @@ public class CoreActivity
     /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized <see cref="CoreActivity"/> instance, or null if deserialization fails.</returns>
     public static ValueTask<CoreActivity?> FromJsonStreamAsync(Stream stream, CancellationToken cancellationToken = default)
         => JsonSerializer.DeserializeAsync(stream, CoreActivityJsonContext.Default.CoreActivity, cancellationToken);
+
+    /// <summary>
+    /// Deserializes a JSON stream into an instance of type T using the specified JsonTypeInfo options.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="stream"></param>
+    /// <param name="ops"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public static ValueTask<T?> FromJsonStreamAsync<T>(Stream stream, JsonTypeInfo<T> ops, CancellationToken cancellationToken = default) where T : CoreActivity
+        => JsonSerializer.DeserializeAsync(stream, ops, cancellationToken);
 
     /// <summary>
     /// Asynchronously deserializes a JSON value from the specified stream into an instance of type T.

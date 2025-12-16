@@ -13,7 +13,7 @@ public class TeamsActivityTests
     [Fact]
     public void DeserializeActivityWithTeamsChannelData()
     {
-        TeamsActivity activityWithTeamsChannelData = TeamsActivity.FromJsonString(json);
+        TeamsActivity activityWithTeamsChannelData = CoreActivity.FromJsonString<TeamsActivity>(json);
         TeamsChannelData tcd = activityWithTeamsChannelData.ChannelData!;
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.TeamsChannelId);
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.Channel!.Id);
@@ -23,7 +23,7 @@ public class TeamsActivityTests
     [Fact]
     public void DeserializeTeamsActivityWithTeamsChannelData()
     {
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
+        TeamsActivity activity = CoreActivity.FromJsonString<TeamsActivity>(json);
         TeamsChannelData tcd = activity.ChannelData!;
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.TeamsChannelId);
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.Channel!.Id);
@@ -141,7 +141,7 @@ public class TeamsActivityTests
     [Fact]
     public void Deserialize_With_Entities()
     {
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
+        TeamsActivity activity = CoreActivity.FromJsonString<TeamsActivity>(json);
         Assert.NotNull(activity.Entities);
         Assert.Equal(2, activity.Entities.Count);
 
@@ -169,7 +169,7 @@ public class TeamsActivityTests
     [Fact]
     public void Deserialize_With_Entities_Extensions()
     {
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
+        TeamsActivity activity = CoreActivity.FromJsonString<TeamsActivity>(json);
         Assert.NotNull(activity.Entities);
         Assert.Equal(2, activity.Entities.Count);
 
