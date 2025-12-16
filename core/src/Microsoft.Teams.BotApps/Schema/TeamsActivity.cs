@@ -9,6 +9,7 @@ namespace Microsoft.Teams.BotApps.Schema;
 /// <summary>
 /// Teams Activity schema.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227: Collection Properties should be read only", Justification = "<Pending>")]
 public class TeamsActivity : CoreActivity
 {
     /// <summary>
@@ -37,10 +38,12 @@ public class TeamsActivity : CoreActivity
         Type = activity.Type;
         // ReplyToId = activity.ReplyToId;
         Text = activity.Text;
+        Entities = activity.Entities;
         ChannelData = new TeamsChannelData(activity.ChannelData!);
         From = new TeamsConversationAccount(activity.From!);
         Recipient = new TeamsConversationAccount(activity.Recipient!);
         Conversation = new TeamsConversation(activity.Conversation!);
+        Attachments = TeamsAttachment.FromJArray(activity.Attachments);
 
         base.ChannelData = ChannelData;
         base.From = From;
@@ -68,4 +71,9 @@ public class TeamsActivity : CoreActivity
     /// Gets or sets the Teams-specific channel data associated with this activity.
     /// </summary>
     [JsonPropertyName("channelData")] public new TeamsChannelData? ChannelData { get; set; }
+
+        /// <summary>
+    /// Attachments specific to Teams.
+    /// </summary>
+    [JsonPropertyName("attachments")] public new IList<TeamsAttachment>? Attachments { get; set; }
 }

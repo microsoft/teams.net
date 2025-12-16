@@ -155,6 +155,41 @@ public class CoreCoreActivityTests
     }
 
     [Fact]
+    public void Deserialize_Serialize_Entities()
+    {
+        string json = """
+        {
+            "type": "message",
+            "text": "hello",
+            "entities": [
+            {
+              "mentioned": {
+                "id": "28:0b6fe6d1-fece-44f7-9a48-56465e2d5ab8",
+                "name": "ridotest"
+              },
+              "text": "\u003Cat\u003Eridotest\u003C/at\u003E",
+              "type": "mention"
+            },
+            {
+              "locale": "en-US",
+              "country": "US",
+              "platform": "Web",
+              "timezone": "America/Los_Angeles",
+              "type": "clientInfo"
+            }
+          ]
+        }
+        """;
+        CoreActivity act = CoreActivity.FromJsonString(json);
+        string json2 = act.ToJson();
+        Assert.Contains("\"type\": \"message\"", json2);
+        Assert.NotNull(act.Entities);
+        Assert.Equal(2, act.Entities!.Count);
+
+    }
+
+
+    [Fact]
     public void Handling_Nulls_from_default_serializer()
     {
         string json = """

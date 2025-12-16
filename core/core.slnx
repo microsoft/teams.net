@@ -18,5 +18,6 @@
   <Project Path="src/Microsoft.Bot.Core/Microsoft.Bot.Core.csproj" />
   <Project Path="src/Microsoft.Teams.BotApps/Microsoft.Teams.BotApps.csproj" Id="0e993a63-8a1a-4cdf-8a29-cc8c59bd6c30" />
   <Project Path="test/Microsoft.Bot.Core.UnitTests/Microsoft.Bot.Core.UnitTests.csproj" Id="8e6790ed-0352-45f6-b3dc-0c4c3bcab038" />
+  <Project Path="test/Microsoft.Teams.BotApps.UnitTests/Microsoft.Teams.BotApps.UnitTests.csproj" Id="16f5e8eb-ccb0-40e6-9630-a9d936d6ccde" />
   <Project Path="test/msal-config-api/msal-config-api.csproj" Id="54f814fa-348e-4fd3-8bc9-70cd2aedc9ae" />
 </Solution>
