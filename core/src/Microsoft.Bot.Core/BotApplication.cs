@@ -11,6 +11,7 @@ namespace Microsoft.Bot.Core;
 /// <summary>
 /// Represents a bot application.
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class BotApplication
 {
     private readonly ILogger<BotApplication> _logger;
@@ -28,15 +29,16 @@ public class BotApplication
     /// <param name="conversationClient">The client used to manage and interact with conversations for the bot.</param>
     /// <param name="config">The application configuration settings used to retrieve environment variables and service credentials.</param>
     /// <param name="logger">The logger used to record operational and diagnostic information for the bot application.</param>
-    /// <param name="serviceKey">The configuration key identifying the authentication service. Defaults to "AzureAd" if not specified.</param>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
-    public BotApplication(ConversationClient conversationClient, IConfiguration config, ILogger<BotApplication> logger, string serviceKey = "AzureAd")
+    /// <param name="sectionName">The configuration key identifying the authentication service. Defaults to "AzureAd" if not specified.</param>
+    public BotApplication(ConversationClient conversationClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "AzureAd")
     {
+        ArgumentNullException.ThrowIfNull(config);
         _logger = logger;
-        _serviceKey = serviceKey;
+        _serviceKey = sectionName;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
-        logger.LogInformation("Started bot listener on {Port} for AppID:{AppId} with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], config?[$"{_serviceKey}:ClientId"], Version);
+        string appId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? "Unknown AppID";
+        logger.LogInformation("Started bot listener on {Port} for AppID:{AppId} with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], appId, Version);
     }
 
 
@@ -63,7 +65,6 @@ public class BotApplication
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="BotHandlerException"></exception>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     public async Task<CoreActivity> ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -117,12 +118,26 @@ public class BotApplication
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the identifier of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the conversation client has not been initialized.</exception>
-    public async Task<string> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    public async Task<ResourceResponse?> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(_conversationClient, "ConversationClient not initialized");
 
         return await _conversationClient.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Sends a typing activity to the conversation asynchronously.
+    /// </summary>
+    /// <param name="activity">The activity containing conversation information.</param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<ResourceResponse?> SendTypingActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        var typing = activity.CreateReplyMessageActivity();
+        typing.Type = ActivityTypes.Typing;
+        return await SendActivityAsync(typing, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
