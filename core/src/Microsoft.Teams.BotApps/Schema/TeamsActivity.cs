@@ -30,7 +30,7 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     /// <param name="json"></param>
     /// <returns></returns>
-    public static new TeamsActivity FromJsonString(string json) 
+    public static new TeamsActivity FromJsonString(string json)
          => JsonSerializer.Deserialize(json, TeamsActivityJsonContext.Default.TeamsActivity)!;
 
     /// <summary>
@@ -93,7 +93,7 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     [JsonPropertyName("entities")] public new EntityList? Entities { get; set; }
 
-        /// <summary>
+    /// <summary>
     /// Attachments specific to Teams.
     /// </summary>
     [JsonPropertyName("attachments")] public new IList<TeamsAttachment>? Attachments { get; set; }

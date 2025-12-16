@@ -16,7 +16,7 @@ public class MentionEntity : Entity
     /// <summary>
     /// Creates a new instance of <see cref="MentionEntity"/>.
     /// </summary>
-    public MentionEntity() : base("mention"){}
+    public MentionEntity() : base("mention") { }
 
     /// <summary>
     /// Creates a new instance of <see cref="MentionEntity"/> with the specified mentioned account and text.

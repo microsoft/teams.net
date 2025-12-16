@@ -80,13 +80,13 @@ public static class AddBotApplicationExtensions
         IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
         ILogger logger = sp.GetRequiredService<ILogger<ConversationClient>>();
         ArgumentNullException.ThrowIfNull(configuration);
-        
+
         string scope = "https://api.botframework.com/.default";
         if (configuration[$"{sectionName}:Scope"] is not null)
         {
             scope = configuration[$"{sectionName}:Scope"]!;
         }
-        
+
         if (configuration["Scope"] is not null) //ToChannelFromBotOAuthScope
         {
             scope = configuration["Scope"]!;

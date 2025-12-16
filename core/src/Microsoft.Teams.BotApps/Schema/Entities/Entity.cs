@@ -60,7 +60,7 @@ public class EntityList : List<Entity>
                 && typeNode is JsonValue typeValue
                 && typeValue.GetValue<string>() is string typeString)
             {
-                
+
                 Entity? entity = typeString switch
                 {
                     "clientInfo" => item.Deserialize<ClientInfoEntity>(options),

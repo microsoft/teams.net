@@ -34,7 +34,7 @@ public class StreamInfoEntity : Entity
 /// <summary>
 /// Represents the types of streams.
 /// </summary>
-public static class  StreamType
+public static class StreamType
 {
     /// <summary>
     /// Informative stream type.

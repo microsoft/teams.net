@@ -9,7 +9,7 @@ namespace Microsoft.Bot.Core.Hosting;
 internal sealed class BotConfig
 {
     public const string SystemManagedIdentityIdentifier = "system";
-    
+
     public string TenantId { get; set; } = string.Empty;
     public string ClientId { get; set; } = string.Empty;
     public string? ClientSecret { get; set; }
