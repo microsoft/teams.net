@@ -58,14 +58,14 @@ public class TeamsActivityTests
     [Fact]
     public void AddMentionEntity_To_TeamsActivity()
     {
-        TeamsActivity baseActivity = TeamsActivity.FromActivity(new CoreActivity(ActivityTypes.Message));
-        TeamsActivity activity = baseActivity.ToBuilder()
+        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityTypes.Message));
+        activity
             .AddMention(new ConversationAccount
             {
                 Id = "user-id-01",
                 Name = "rido"
-            }, "ridotest")
-            .Build();
+            }, "ridotest");
+            
 
 
         Assert.NotNull(activity.Entities);
@@ -80,6 +80,37 @@ public class TeamsActivityTests
         string json = activity.ToJson();
         Assert.Contains("user-id-01", json);
     }
+
+    [Fact]
+    public void AddMentionEntity_Serialize_From_CoreActivity()
+    {
+        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityTypes.Message));
+        activity.AddMention(new ConversationAccount
+            {
+                Id = "user-id-01",
+                Name = "rido"
+            }, "ridotest");
+
+
+
+        Assert.NotNull(activity.Entities);
+        Assert.Single(activity.Entities);
+        Assert.Equal("mention", activity.Entities[0].Type);
+        MentionEntity? mention = activity.Entities[0] as MentionEntity;
+        Assert.NotNull(mention);
+        Assert.Equal("user-id-01", mention.Mentioned?.Id);
+        Assert.Equal("rido", mention.Mentioned?.Name);
+        Assert.Equal("<at>ridotest</at>", mention.Text);
+
+        static void SerializeAndAssert(CoreActivity a)
+        {
+            string json = a.ToJson();
+            Assert.Contains("user-id-01", json);
+        }
+
+        SerializeAndAssert(activity);
+    }
+
 
     [Fact]
     public void TeamsActivityBuilder_FluentAPI()

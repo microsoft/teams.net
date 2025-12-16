@@ -16,6 +16,13 @@ namespace Microsoft.Teams.BotApps.Schema.Entities;
 public class EntityList : List<Entity>
 {
 
+    //internal new int Add(Entity? item)
+    //{
+    //    ArgumentNullException.ThrowIfNull(item);
+    //    base.Add((Entity)item!);
+    //    return 1;
+    //}
+
     /// <summary>
     /// Converts the Entities collection to a JsonArray.
     /// </summary>
@@ -90,7 +97,7 @@ public class EntityList : List<Entity>
 /// Initializes a new instance of the Entity class with the specified type.
 /// </remarks>
 /// <param name="type">The type of the entity. Cannot be null.</param>
-public class Entity(string type)
+public class Entity(string type) 
 {
     /// <summary>
     /// Gets or sets the type identifier for the object represented by this instance.
@@ -117,7 +124,7 @@ public class Entity(string type)
     /// <summary>
     /// Adds properties to the Properties dictionary.
     /// </summary>
-    protected virtual void ToProperties()
+    public virtual void ToProperties()
     {
         throw new NotImplementedException();
     }

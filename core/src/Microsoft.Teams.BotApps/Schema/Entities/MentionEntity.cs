@@ -48,6 +48,7 @@ public static class ActivityMentionExtensions
         activity.Entities ??= [];
         MentionEntity mentionEntity = new(account, $"<at>{mentionText}</at>");
         activity.Entities.Add(mentionEntity);
+        activity.Rebase();
         return mentionEntity;
     }
 }
@@ -107,7 +108,7 @@ public class MentionEntity : Entity
     /// <summary>
     /// Adds custom fields as properties.
     /// </summary>
-    protected override void ToProperties()
+    public override void ToProperties()
     {
         base.Properties.Add("mentioned", Mentioned);
         base.Properties.Add("text", Text);

@@ -34,6 +34,13 @@ public class TeamsActivity : CoreActivity
          => JsonSerializer.Deserialize(json, TeamsActivityJsonContext.Default.TeamsActivity)!;
 
     /// <summary>
+    /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
+    /// </summary>
+    /// <returns></returns>
+    public new string ToJson()
+        => JsonSerializer.Serialize(this, TeamsActivityJsonContext.Default.TeamsActivity);
+
+    /// <summary>
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
@@ -130,12 +137,4 @@ public class TeamsActivity : CoreActivity
         return new TeamsActivityBuilder();
     }
 
-    /// <summary>
-    /// Creates a new TeamsActivityBuilder instance initialized with this activity.
-    /// </summary>
-    /// <returns>A new TeamsActivityBuilder instance initialized with this activity.</returns>
-    public TeamsActivityBuilder ToBuilder()
-    {
-        return new TeamsActivityBuilder(this);
-    }
 }
