@@ -74,7 +74,7 @@ public class BotApplication
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        _logger.LogInformation("Processing activity: {Id} {Type}", activity.Id, activity.Type);
+        _logger.LogInformation("Processing activity {Type} {Id}", activity.Type, activity.Id);
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
@@ -135,7 +135,7 @@ public class BotApplication
     public async Task<ResourceResponse?> SendTypingActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        var typing = activity.CreateReplyMessageActivity();
+        CoreActivity typing = activity.CreateReplyMessageActivity();
         typing.Type = ActivityTypes.Typing;
         return await SendActivityAsync(typing, cancellationToken).ConfigureAwait(false);
     }

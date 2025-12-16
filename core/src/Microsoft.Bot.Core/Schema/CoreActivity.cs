@@ -20,7 +20,7 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?> { }
 /// and includes extension properties for channel-specific data.
 /// Follows the Activity Protocol Specification: https://github.com/microsoft/Agents/blob/main/specs/activity/protocol-activity.md
 /// </remarks>
-public class CoreActivity(string type = ActivityTypes.Message)
+public class CoreActivity
 {
     /// <summary>
     /// Gets or sets the type of the activity. See <see cref="ActivityTypes"/> for common values.
@@ -28,7 +28,7 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// <remarks>
     /// Common activity types include "message", "conversationUpdate", "contactRelationUpdate", etc.
     /// </remarks>
-    [JsonPropertyName("type")] public string Type { get; set; } = type;
+    [JsonPropertyName("type")] public string Type { get; set; }
     /// <summary>
     /// Gets or sets the unique identifier for the channel on which this activity is occurring.
     /// </summary>
@@ -108,6 +108,24 @@ public class CoreActivity(string type = ActivityTypes.Message)
     };
 
     /// <summary>
+    /// Creates a new instance of the <see cref="CoreActivity"/> class with the specified activity type.
+    /// </summary>
+    /// <param name="type"></param>
+    public CoreActivity(string type = ActivityTypes.Message)
+    {
+        Type = type;
+    }
+
+
+    /// <summary>
+    ///  Creates a new instance of the <see cref="CoreActivity"/> class. As Message type by default.
+    /// </summary>
+    public CoreActivity()
+    {
+        Type = ActivityTypes.Message;
+    }
+
+    /// <summary>
     /// Serializes the current activity to a JSON string.
     /// </summary>
     /// <returns>A JSON string representation of the activity.</returns>
@@ -176,8 +194,17 @@ public class CoreActivity(string type = ActivityTypes.Message)
     /// the conversation context, channel ID, and service URL from the original activity.
     /// </remarks>
     public CoreActivity CreateReplyMessageActivity(string text = "")
+        => CreateReplyMessageActivity<CoreActivity>(text);
+
+    /// <summary>
+    /// Creates a reply activity of the specified type based on the current activity.
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
+    /// <param name="text"></param>
+    /// <returns></returns>
+    public T CreateReplyMessageActivity<T>(string text = "") where T : CoreActivity, new()
     {
-        CoreActivity result = new()
+        T result = new()
         {
             Type = ActivityTypes.Message,
             ChannelId = ChannelId,

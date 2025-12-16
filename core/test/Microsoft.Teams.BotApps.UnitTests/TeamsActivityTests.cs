@@ -100,7 +100,7 @@ public class TeamsActivityTests
         Assert.Equal("msteams", activity.ChannelId);
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
-        
+
         MentionEntity? mention = activity.Entities[0] as MentionEntity;
         Assert.NotNull(mention);
         Assert.Equal("user-123", mention.Mentioned?.Id);
@@ -114,7 +114,7 @@ public class TeamsActivityTests
         Assert.NotNull(activity.Entities);
         Assert.Equal(2, activity.Entities.Count);
 
-        List<Entity> mentions = activity.Entities.Where(e => e is MentionEntity).ToList();
+        List<Entity> mentions = [.. activity.Entities.Where(e => e is MentionEntity)];
         Assert.Single(mentions);
         MentionEntity? m1 = mentions[0] as MentionEntity;
         Assert.NotNull(m1);
@@ -123,7 +123,7 @@ public class TeamsActivityTests
         Assert.Equal("ridotest", m1.Mentioned.Name);
         Assert.Equal("<at>ridotest</at>", m1.Text);
 
-        List<Entity> clientInfos = activity.Entities.Where(e => e is ClientInfoEntity).ToList();
+        List<Entity> clientInfos = [.. activity.Entities.Where(e => e is ClientInfoEntity)];
         Assert.Single(clientInfos);
         ClientInfoEntity? c1 = clientInfos[0] as ClientInfoEntity;
         Assert.NotNull(c1);

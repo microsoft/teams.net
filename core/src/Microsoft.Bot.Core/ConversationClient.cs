@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Bot.Core;
 
@@ -14,7 +14,9 @@ namespace Microsoft.Bot.Core;
 /// Provides methods for sending activities to a conversation endpoint using HTTP requests.
 /// </summary>
 /// <param name="httpClient">The HTTP client instance used to send requests to the conversation service. Must not be null.</param>
-public class ConversationClient(HttpClient httpClient)
+/// <param name="logger">The logger instance used for logging. Optional.</param>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
+public class ConversationClient(HttpClient httpClient, ILogger<ConversationClient> logger = default!)
 {
     internal const string ConversationHttpClientName = "BotConversationClient";
 
@@ -35,8 +37,11 @@ public class ConversationClient(HttpClient httpClient)
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
+        string body = activity.ToJson();
 
-        using StringContent content = new(activity.ToJson(), Encoding.UTF8, MediaTypeNames.Application.Json);
+        logger.LogTrace("Sending activity to {Url}: {Activity}", url, body);
+
+        using StringContent content = new(body, Encoding.UTF8, MediaTypeNames.Application.Json);
 
         using HttpRequestMessage request = new(HttpMethod.Post, url) { Content = content };
 

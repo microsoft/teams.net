@@ -12,8 +12,8 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void Constructor_DefaultConstructor_CreatesNewActivity()
     {
-        var builder = new TeamsActivityBuilder();
-        var activity = builder.Build();
+        TeamsActivityBuilder builder = new();
+        TeamsActivity activity = builder.Build();
 
         Assert.NotNull(activity);
         Assert.NotNull(activity.From);
@@ -24,14 +24,14 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void Constructor_WithExistingActivity_UsesProvidedActivity()
     {
-        var existingActivity = new TeamsActivity
+        TeamsActivity existingActivity = new()
         {
             Id = "test-id",
             Text = "existing text"
         };
 
-        var builder = new TeamsActivityBuilder(existingActivity);
-        var activity = builder.Build();
+        TeamsActivityBuilder builder = new(existingActivity);
+        TeamsActivity activity = builder.Build();
 
         Assert.Equal("test-id", activity.Id);
         Assert.Equal("existing text", activity.Text);
@@ -46,7 +46,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithId_SetsActivityId()
     {
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithId("test-activity-id")
             .Build();
 
@@ -56,9 +56,9 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithServiceUrl_SetsServiceUrl()
     {
-        var serviceUrl = new Uri("https://smba.trafficmanager.net/teams/");
+        Uri serviceUrl = new("https://smba.trafficmanager.net/teams/");
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithServiceUrl(serviceUrl)
             .Build();
 
@@ -68,7 +68,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithChannelId_SetsChannelId()
     {
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithChannelId("msteams")
             .Build();
 
@@ -78,7 +78,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithType_SetsActivityType()
     {
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithType(ActivityTypes.Message)
             .Build();
 
@@ -88,7 +88,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithText_SetsTextContent()
     {
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithText("Hello, World!")
             .Build();
 
@@ -98,13 +98,13 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithFrom_SetsSenderAccount()
     {
-        var fromAccount = new TeamsConversationAccount(new ConversationAccount
+        TeamsConversationAccount fromAccount = new(new ConversationAccount
         {
             Id = "sender-id",
             Name = "Sender Name"
         });
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithFrom(fromAccount)
             .Build();
 
@@ -115,13 +115,13 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithRecipient_SetsRecipientAccount()
     {
-        var recipientAccount = new TeamsConversationAccount(new ConversationAccount
+        TeamsConversationAccount recipientAccount = new(new ConversationAccount
         {
             Id = "recipient-id",
             Name = "Recipient Name"
         });
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithRecipient(recipientAccount)
             .Build();
 
@@ -132,7 +132,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithConversation_SetsConversationInfo()
     {
-        var conversation = new TeamsConversation(new Conversation
+        TeamsConversation conversation = new(new Conversation
         {
             Id = "conversation-id"
         })
@@ -141,7 +141,7 @@ public class TeamsActivityBuilderTests
             ConversationType = "channel"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithConversation(conversation)
             .Build();
 
@@ -153,13 +153,13 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithChannelData_SetsChannelData()
     {
-        var channelData = new TeamsChannelData
+        TeamsChannelData channelData = new()
         {
             TeamsChannelId = "19:channel-id@thread.tacv2",
             TeamsTeamId = "19:team-id@thread.tacv2"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithChannelData(channelData)
             .Build();
 
@@ -171,7 +171,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithEntities_SetsEntitiesCollection()
     {
-        var entities = new EntityList
+        EntityList entities = new()
         {
             new ClientInfoEntity
             {
@@ -180,7 +180,7 @@ public class TeamsActivityBuilderTests
             }
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithEntities(entities)
             .Build();
 
@@ -192,16 +192,15 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithAttachments_SetsAttachmentsCollection()
     {
-        var attachments = new List<TeamsAttachment>
+        List<TeamsAttachment> attachments = new()
         {
-            new TeamsAttachment
-            {
+            new() {
                 ContentType = "application/json",
                 Name = "test-attachment"
             }
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithAttachments(attachments)
             .Build();
 
@@ -214,13 +213,13 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddEntity_AddsEntityToCollection()
     {
-        var entity = new ClientInfoEntity
+        ClientInfoEntity entity = new()
         {
             Locale = "en-US",
             Country = "US"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .AddEntity(entity)
             .Build();
 
@@ -232,7 +231,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddEntity_MultipleEntities_AddsAllToCollection()
     {
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .AddEntity(new ClientInfoEntity { Locale = "en-US" })
             .AddEntity(new ProductInfoEntity { Id = "product-123" })
             .Build();
@@ -244,13 +243,13 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddAttachment_AddsAttachmentToCollection()
     {
-        var attachment = new TeamsAttachment
+        TeamsAttachment attachment = new()
         {
             ContentType = "text/html",
             Name = "test.html"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .AddAttachment(attachment)
             .Build();
 
@@ -262,7 +261,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddAttachment_MultipleAttachments_AddsAllToCollection()
     {
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .AddAttachment(new TeamsAttachment { ContentType = "text/html" })
             .AddAttachment(new TeamsAttachment { ContentType = "application/json" })
             .Build();
@@ -274,7 +273,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_WithNullAccount_ThrowsArgumentNullException()
     {
-        var builder = new TeamsActivityBuilder();
+        TeamsActivityBuilder builder = new();
 
         Assert.Throws<ArgumentNullException>(() => builder.AddMention(null!));
     }
@@ -282,13 +281,13 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_WithAccountAndDefaultText_AddsMentionAndUpdatesText()
     {
-        var account = new ConversationAccount
+        ConversationAccount account = new()
         {
             Id = "user-123",
             Name = "John Doe"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithText("said hello")
             .AddMention(account)
             .Build();
@@ -297,7 +296,7 @@ public class TeamsActivityBuilderTests
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
 
-        var mention = activity.Entities[0] as MentionEntity;
+        MentionEntity? mention = activity.Entities[0] as MentionEntity;
         Assert.NotNull(mention);
         Assert.Equal("user-123", mention.Mentioned?.Id);
         Assert.Equal("John Doe", mention.Mentioned?.Name);
@@ -307,20 +306,20 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_WithCustomText_UsesCustomText()
     {
-        var account = new ConversationAccount
+        ConversationAccount account = new()
         {
             Id = "user-123",
             Name = "John Doe"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithText("replied")
             .AddMention(account, "CustomName")
             .Build();
 
         Assert.Equal("<at>CustomName</at> replied", activity.Text);
 
-        var mention = activity.Entities![0] as MentionEntity;
+        MentionEntity? mention = activity.Entities![0] as MentionEntity;
         Assert.NotNull(mention);
         Assert.Equal("<at>CustomName</at>", mention.Text);
     }
@@ -328,13 +327,13 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_WithAddTextFalse_DoesNotUpdateText()
     {
-        var account = new ConversationAccount
+        ConversationAccount account = new()
         {
             Id = "user-123",
             Name = "John Doe"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithText("original text")
             .AddMention(account, addText: false)
             .Build();
@@ -347,10 +346,10 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_MultipleMentions_AddsAllMentions()
     {
-        var account1 = new ConversationAccount { Id = "user-1", Name = "User One" };
-        var account2 = new ConversationAccount { Id = "user-2", Name = "User Two" };
+        ConversationAccount account1 = new() { Id = "user-1", Name = "User One" };
+        ConversationAccount account2 = new() { Id = "user-2", Name = "User Two" };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithText("message")
             .AddMention(account1)
             .AddMention(account2)
@@ -364,7 +363,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void FluentAPI_CompleteActivity_BuildsCorrectly()
     {
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithType(ActivityTypes.Message)
             .WithId("activity-123")
             .WithChannelId("msteams")
@@ -405,11 +404,11 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void FluentAPI_MethodChaining_ReturnsBuilderInstance()
     {
-        var builder = new TeamsActivityBuilder();
+        TeamsActivityBuilder builder = new();
 
-        var result1 = builder.WithId("id");
-        var result2 = builder.WithText("text");
-        var result3 = builder.WithType(ActivityTypes.Message);
+        TeamsActivityBuilder result1 = builder.WithId("id");
+        TeamsActivityBuilder result2 = builder.WithText("text");
+        TeamsActivityBuilder result3 = builder.WithType(ActivityTypes.Message);
 
         Assert.Same(builder, result1);
         Assert.Same(builder, result2);
@@ -419,11 +418,11 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void Build_CalledMultipleTimes_ReturnsSameInstance()
     {
-        var builder = new TeamsActivityBuilder()
+        TeamsActivityBuilder builder = new TeamsActivityBuilder()
             .WithId("test-id");
 
-        var activity1 = builder.Build();
-        var activity2 = builder.Build();
+        TeamsActivity activity1 = builder.Build();
+        TeamsActivity activity2 = builder.Build();
 
         Assert.Same(activity1, activity2);
     }
@@ -431,14 +430,14 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void Builder_ModifyingExistingActivity_PreservesOriginalData()
     {
-        var original = new TeamsActivity
+        TeamsActivity original = new()
         {
             Id = "original-id",
             Text = "original text",
             Type = ActivityTypes.Message
         };
 
-        var modified = new TeamsActivityBuilder(original)
+        TeamsActivity modified = new TeamsActivityBuilder(original)
             .WithText("modified text")
             .Build();
 
@@ -450,17 +449,17 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_UpdatesBaseEntityCollection()
     {
-        var account = new ConversationAccount
+        ConversationAccount account = new()
         {
             Id = "user-123",
             Name = "Test User"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .AddMention(account)
             .Build();
 
-        var baseActivity = (CoreActivity)activity;
+        CoreActivity baseActivity = activity;
         Assert.NotNull(baseActivity.Entities);
         Assert.NotEmpty(baseActivity.Entities);
     }
@@ -468,7 +467,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithChannelData_NullValue_SetsToNull()
     {
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithChannelData(null!)
             .Build();
 
@@ -478,17 +477,17 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddEntity_NullEntitiesCollection_InitializesCollection()
     {
-        var builder = new TeamsActivityBuilder();
-        var activity = builder.Build();
-        
+        TeamsActivityBuilder builder = new();
+        TeamsActivity activity = builder.Build();
+
         // Ensure entities is null initially
         Assert.Null(activity.Entities);
 
         // Add entity through builder
-        var entity = new ClientInfoEntity { Locale = "en-US" };
+        ClientInfoEntity entity = new() { Locale = "en-US" };
         builder.AddEntity(entity);
-        
-        var result = builder.Build();
+
+        TeamsActivity result = builder.Build();
         Assert.NotNull(result.Entities);
         Assert.Single(result.Entities);
     }
@@ -496,17 +495,17 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddAttachment_NullAttachmentsCollection_InitializesCollection()
     {
-        var builder = new TeamsActivityBuilder();
-        var activity = builder.Build();
-        
+        TeamsActivityBuilder builder = new();
+        TeamsActivity activity = builder.Build();
+
         // Ensure attachments is null initially
         Assert.Null(activity.Attachments);
 
         // Add attachment through builder
-        var attachment = new TeamsAttachment { ContentType = "text/html" };
+        TeamsAttachment attachment = new() { ContentType = "text/html" };
         builder.AddAttachment(attachment);
-        
-        var result = builder.Build();
+
+        TeamsActivity result = builder.Build();
         Assert.NotNull(result.Attachments);
         Assert.Single(result.Attachments);
     }
@@ -514,13 +513,13 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void Builder_EmptyText_AddMention_PrependsMention()
     {
-        var account = new ConversationAccount
+        ConversationAccount account = new()
         {
             Id = "user-123",
             Name = "User"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .AddMention(account)
             .Build();
 
@@ -530,14 +529,14 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void IntegrationTest_CreateComplexActivity()
     {
-        var serviceUrl = new Uri("https://smba.trafficmanager.net/amer/test/");
-        var channelData = new TeamsChannelData
+        Uri serviceUrl = new("https://smba.trafficmanager.net/amer/test/");
+        TeamsChannelData channelData = new()
         {
             TeamsChannelId = "19:channel@thread.tacv2",
             TeamsTeamId = "19:team@thread.tacv2"
         };
 
-        var activity = new TeamsActivityBuilder()
+        TeamsActivity activity = new TeamsActivityBuilder()
             .WithType(ActivityTypes.Message)
             .WithId("msg-001")
             .WithServiceUrl(serviceUrl)

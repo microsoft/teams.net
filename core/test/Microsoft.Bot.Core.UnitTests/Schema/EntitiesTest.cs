@@ -44,13 +44,13 @@ public class EntitiesTest
     [Fact]
     public void Entitiy_Serialization()
     {
-        var nops = new JsonNodeOptions
+        JsonNodeOptions nops = new()
         {
             PropertyNameCaseInsensitive = false
         };
 
-        CoreActivity activity = new CoreActivity(ActivityTypes.Message);
-        JsonObject mentionEntity = new JsonObject
+        CoreActivity activity = new(ActivityTypes.Message);
+        JsonObject mentionEntity = new()
         {
             ["type"] = "mention",
             ["mentioned"] = new JsonObject

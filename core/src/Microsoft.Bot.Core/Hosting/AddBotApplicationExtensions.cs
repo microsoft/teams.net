@@ -76,7 +76,7 @@ public static class AddBotApplicationExtensions
     /// <returns></returns>
     public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
-        var sp = services.BuildServiceProvider();
+        ServiceProvider sp = services.BuildServiceProvider();
         IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
         ILogger logger = sp.GetRequiredService<ILogger<ConversationClient>>();
         ArgumentNullException.ThrowIfNull(configuration);
@@ -119,18 +119,18 @@ public static class AddBotApplicationExtensions
     private static bool ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        var logger = services.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
+        ILogger logger = services.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
 
         if (configuration["MicrosoftAppId"] is not null)
         {
             _logUsingBFConfig(logger, null);
-            var botConfig = BotConfig.FromBFConfig(configuration);
+            BotConfig botConfig = BotConfig.FromBFConfig(configuration);
             services.ConfigureMSALFromBotConfig(botConfig, logger);
         }
         else if (configuration["CLIENT_ID"] is not null)
         {
             _logUsingCoreConfig(logger, null);
-            var botConfig = BotConfig.FromCoreConfig(configuration);
+            BotConfig botConfig = BotConfig.FromCoreConfig(configuration);
             services.ConfigureMSALFromBotConfig(botConfig, logger);
         }
         else
@@ -176,7 +176,7 @@ public static class AddBotApplicationExtensions
         ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
 
-        var ficCredential = new CredentialDescription()
+        CredentialDescription ficCredential = new()
         {
             SourceType = CredentialSource.SignedAssertionFromManagedIdentity,
         };

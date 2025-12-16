@@ -9,6 +9,50 @@ using Microsoft.Bot.Core.Schema;
 namespace Microsoft.Teams.BotApps.Schema.Entities;
 
 /// <summary>
+/// Extension methods for Activity to handle mentions.
+/// </summary>
+public static class ActivityMentionExtensions
+{
+    /// <summary>
+    /// Gets the MentionEntity from the activity's entities.
+    /// </summary>
+    /// <param name="activity">The activity to extract the mention from.</param>
+    /// <returns>The MentionEntity if found; otherwise, null.</returns>
+    public static IEnumerable<MentionEntity> GetMentions(this TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        if (activity.Entities == null)
+        {
+            return [];
+        }
+        return activity.Entities.Where(e => e is MentionEntity).Cast<MentionEntity>();
+    }
+
+    /// <summary>
+    /// Adds a mention to the activity.
+    /// </summary>
+    /// <param name="activity"></param>
+    /// <param name="account"></param>
+    /// <param name="text"></param>
+    /// <param name="addText"></param>
+    /// <returns></returns>
+    public static MentionEntity AddMention(this TeamsActivity activity, ConversationAccount account, string? text = null, bool addText = true)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(account);
+        string? mentionText = text ?? account.Name;
+        if (addText)
+        {
+            activity.Text = $"<at>{mentionText}</at> {activity.Text}";
+        }
+        activity.Entities ??= [];
+        MentionEntity mentionEntity = new(account, $"<at>{mentionText}</at>");
+        activity.Entities.Add(mentionEntity);
+        return mentionEntity;
+    }
+}
+
+/// <summary>
 /// Mention entity.
 /// </summary>
 public class MentionEntity : Entity

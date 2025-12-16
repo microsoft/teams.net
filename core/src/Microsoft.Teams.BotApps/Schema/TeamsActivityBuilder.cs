@@ -18,7 +18,7 @@ public class TeamsActivityBuilder
     /// </summary>
     public TeamsActivityBuilder()
     {
-        _activity = new TeamsActivity();
+        _activity = TeamsActivity.FromActivity(new CoreActivity());
     }
 
     /// <summary>
@@ -30,6 +30,32 @@ public class TeamsActivityBuilder
         ArgumentNullException.ThrowIfNull(activity);
         _activity = activity;
     }
+
+    /// <summary>
+    /// Apply Conversation Reference
+    /// </summary>
+    /// <param name="activity"></param>
+    /// <returns></returns>
+    public TeamsActivityBuilder WithConversationReference(TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ChannelId);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentNullException.ThrowIfNull(activity.From);
+        ArgumentNullException.ThrowIfNull(activity.Recipient);
+
+        this
+            .WithServiceUrl(activity.ServiceUrl)
+            .WithChannelId(activity.ChannelId)
+            .WithConversation(activity.Conversation)
+            .WithFrom(activity.Recipient)
+            .WithRecipient(activity.From);
+
+        return this;
+
+    }
+
 
     /// <summary>
     /// Sets the activity ID.
@@ -195,10 +221,10 @@ public class TeamsActivityBuilder
 
         _activity.Entities ??= [];
         _activity.Entities.Add(new MentionEntity(account, $"<at>{mentionText}</at>"));
-        
-        var baseActivity = (CoreActivity)_activity;
+
+        CoreActivity baseActivity = _activity;
         baseActivity.Entities = _activity.Entities.ToJsonArray();
-        
+
         return this;
     }
 
@@ -208,6 +234,7 @@ public class TeamsActivityBuilder
     /// <returns>The configured TeamsActivity.</returns>
     public TeamsActivity Build()
     {
+        _activity.Rebase();
         return _activity;
     }
 }

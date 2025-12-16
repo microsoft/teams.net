@@ -22,7 +22,7 @@ public class EntityList : List<Entity>
     /// <returns></returns>
     public JsonArray? ToJsonArray()
     {
-        JsonArray jsonArray = new();
+        JsonArray jsonArray = [];
         foreach (Entity entity in this)
         {
             JsonObject jsonObject = new()
@@ -50,7 +50,7 @@ public class EntityList : List<Entity>
         {
             return [];
         }
-        EntityList entities = new();
+        EntityList entities = [];
         foreach (JsonNode? item in jsonArray)
         {
             if (item is JsonObject jsonObject

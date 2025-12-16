@@ -61,11 +61,22 @@ public class TeamsActivity : CoreActivity
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
 
         //base.Entities = Entities.ToJsonArray();
-        base.ChannelData = ChannelData;
-        base.From = From;
-        base.Recipient = Recipient;
-        base.Conversation = Conversation;
-        base.Properties = activity.Properties;
+        Rebase();
+    }
+
+    /// <summary>
+    /// resets shadow properties in base class
+    /// </summary>
+    /// <returns></returns>
+    internal TeamsActivity Rebase()
+    {
+        base.Entities = this.Entities?.ToJsonArray();
+        base.ChannelData = this.ChannelData;
+        base.From = this.From;
+        base.Recipient = this.Recipient;
+        base.Conversation = this.Conversation;
+
+        return this;
     }
 
     /// <summary>
