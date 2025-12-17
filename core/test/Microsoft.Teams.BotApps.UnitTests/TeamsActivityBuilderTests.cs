@@ -523,6 +523,212 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
+    public void WithConversationReference_WithNullActivity_ThrowsArgumentNullException()
+    {
+        TeamsActivityBuilder builder = new();
+
+        Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(null!));
+    }
+
+    [Fact]
+    public void WithConversationReference_WithNullChannelId_ThrowsArgumentNullException()
+    {
+        TeamsActivityBuilder builder = new();
+        TeamsActivity sourceActivity = new()
+        {
+            ChannelId = null,
+            ServiceUrl = new Uri("https://test.com"),
+            Conversation = new TeamsConversation(new Conversation()),
+            From = new TeamsConversationAccount(new ConversationAccount()),
+            Recipient = new TeamsConversationAccount(new ConversationAccount())
+        };
+
+        Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(sourceActivity));
+    }
+
+    [Fact]
+    public void WithConversationReference_WithNullServiceUrl_ThrowsArgumentNullException()
+    {
+        TeamsActivityBuilder builder = new();
+        TeamsActivity sourceActivity = new()
+        {
+            ChannelId = "msteams",
+            ServiceUrl = null,
+            Conversation = new TeamsConversation(new Conversation()),
+            From = new TeamsConversationAccount(new ConversationAccount()),
+            Recipient = new TeamsConversationAccount(new ConversationAccount())
+        };
+
+        Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(sourceActivity));
+    }
+
+    [Fact]
+    public void WithConversationReference_WithEmptyConversationId_DoesNotThrow()
+    {
+        TeamsActivityBuilder builder = new();
+        TeamsActivity sourceActivity = new()
+        {
+            ChannelId = "msteams",
+            ServiceUrl = new Uri("https://test.com"),
+            Conversation = new TeamsConversation(new Conversation()),
+            From = new TeamsConversationAccount(new ConversationAccount { Id = "user-1" }),
+            Recipient = new TeamsConversationAccount(new ConversationAccount { Id = "bot-1" })
+        };
+
+        TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
+        
+        Assert.NotNull(result.Conversation);
+    }
+
+    [Fact]
+    public void WithConversationReference_WithEmptyFromId_DoesNotThrow()
+    {
+        TeamsActivityBuilder builder = new();
+        TeamsActivity sourceActivity = new()
+        {
+            ChannelId = "msteams",
+            ServiceUrl = new Uri("https://test.com"),
+            Conversation = new TeamsConversation(new Conversation { Id = "conv-1" }),
+            From = new TeamsConversationAccount(new ConversationAccount()),
+            Recipient = new TeamsConversationAccount(new ConversationAccount { Id = "bot-1" })
+        };
+
+        TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
+        
+        Assert.NotNull(result.From);
+    }
+
+    [Fact]
+    public void WithConversationReference_WithEmptyRecipientId_DoesNotThrow()
+    {
+        TeamsActivityBuilder builder = new();
+        TeamsActivity sourceActivity = new()
+        {
+            ChannelId = "msteams",
+            ServiceUrl = new Uri("https://test.com"),
+            Conversation = new TeamsConversation(new Conversation { Id = "conv-1" }),
+            From = new TeamsConversationAccount(new ConversationAccount { Id = "user-1" }),
+            Recipient = new TeamsConversationAccount(new ConversationAccount())
+        };
+
+        TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
+        
+        Assert.NotNull(result.Recipient);
+    }
+
+    [Fact]
+    public void WithFrom_WithBaseConversationAccount_ConvertsToTeamsConversationAccount()
+    {
+        ConversationAccount baseAccount = new()
+        {
+            Id = "user-123",
+            Name = "User Name"
+        };
+
+        TeamsActivity activity = new TeamsActivityBuilder()
+            .WithFrom(baseAccount)
+            .Build();
+
+        Assert.IsType<TeamsConversationAccount>(activity.From);
+        Assert.Equal("user-123", activity.From.Id);
+        Assert.Equal("User Name", activity.From.Name);
+    }
+
+    [Fact]
+    public void WithRecipient_WithBaseConversationAccount_ConvertsToTeamsConversationAccount()
+    {
+        ConversationAccount baseAccount = new()
+        {
+            Id = "bot-123",
+            Name = "Bot Name"
+        };
+
+        TeamsActivity activity = new TeamsActivityBuilder()
+            .WithRecipient(baseAccount)
+            .Build();
+
+        Assert.IsType<TeamsConversationAccount>(activity.Recipient);
+        Assert.Equal("bot-123", activity.Recipient.Id);
+        Assert.Equal("Bot Name", activity.Recipient.Name);
+    }
+
+    [Fact]
+    public void WithConversation_WithBaseConversation_ConvertsToTeamsConversation()
+    {
+        Conversation baseConversation = new()
+        {
+            Id = "conv-123"
+        };
+
+        TeamsActivity activity = new TeamsActivityBuilder()
+            .WithConversation(baseConversation)
+            .Build();
+
+        Assert.IsType<TeamsConversation>(activity.Conversation);
+        Assert.Equal("conv-123", activity.Conversation.Id);
+    }
+
+    [Fact]
+    public void WithEntities_WithNullValue_SetsToNull()
+    {
+        TeamsActivity activity = new TeamsActivityBuilder()
+            .WithEntities(new EntityList { new ClientInfoEntity() })
+            .WithEntities(null!)
+            .Build();
+
+        Assert.Null(activity.Entities);
+    }
+
+    [Fact]
+    public void WithAttachments_WithNullValue_SetsToNull()
+    {
+        TeamsActivity activity = new TeamsActivityBuilder()
+            .WithAttachments(new List<TeamsAttachment> { new() })
+            .WithAttachments(null!)
+            .Build();
+
+        Assert.Null(activity.Attachments);
+    }
+
+    [Fact]
+    public void AddMention_WithAccountWithNullName_UsesNullText()
+    {
+        ConversationAccount account = new()
+        {
+            Id = "user-123",
+            Name = null
+        };
+
+        TeamsActivity activity = new TeamsActivityBuilder()
+            .WithText("message")
+            .AddMention(account)
+            .Build();
+
+        Assert.Equal("<at></at> message", activity.Text);
+        Assert.NotNull(activity.Entities);
+        Assert.Single(activity.Entities);
+    }
+
+    [Fact]
+    public void Build_MultipleCalls_ReturnsRebasedActivity()
+    {
+        TeamsActivityBuilder builder = new TeamsActivityBuilder()
+            .AddEntity(new ClientInfoEntity { Locale = "en-US" });
+
+        TeamsActivity activity1 = builder.Build();
+        CoreActivity baseActivity1 = activity1;
+        Assert.NotNull(baseActivity1.Entities);
+
+        builder.AddEntity(new ProductInfoEntity { Id = "prod-1" });
+        TeamsActivity activity2 = builder.Build();
+        CoreActivity baseActivity2 = activity2;
+
+        Assert.Same(activity1, activity2);
+        Assert.NotNull(baseActivity2.Entities);
+        Assert.Equal(2, activity2.Entities!.Count);
+    }
+
+    [Fact]
     public void IntegrationTest_CreateComplexActivity()
     {
         Uri serviceUrl = new("https://smba.trafficmanager.net/amer/test/");

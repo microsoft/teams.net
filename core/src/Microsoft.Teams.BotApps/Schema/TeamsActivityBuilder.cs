@@ -9,140 +9,51 @@ namespace Microsoft.Teams.BotApps.Schema;
 /// <summary>
 /// Provides a fluent API for building TeamsActivity instances.
 /// </summary>
-public class TeamsActivityBuilder
+public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActivityBuilder>
 {
-    private readonly TeamsActivity _activity;
-
     /// <summary>
     /// Initializes a new instance of the TeamsActivityBuilder class.
     /// </summary>
-    public TeamsActivityBuilder()
+    public TeamsActivityBuilder() : base(TeamsActivity.FromActivity(new CoreActivity()))
     {
-        _activity = TeamsActivity.FromActivity(new CoreActivity());
     }
 
     /// <summary>
     /// Initializes a new instance of the TeamsActivityBuilder class with an existing activity.
     /// </summary>
     /// <param name="activity">The activity to build upon.</param>
-    public TeamsActivityBuilder(TeamsActivity activity)
+    public TeamsActivityBuilder(TeamsActivity activity) : base(activity)
     {
-        ArgumentNullException.ThrowIfNull(activity);
-        _activity = activity;
     }
 
     /// <summary>
-    /// Apply Conversation Reference
+    /// Sets the conversation (override for Teams-specific type).
     /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
-    public TeamsActivityBuilder WithConversationReference(TeamsActivity activity)
+    protected override void SetConversation(Conversation conversation)
     {
-        ArgumentNullException.ThrowIfNull(activity);
-        ArgumentNullException.ThrowIfNull(activity.ChannelId);
-        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
-        ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNull(activity.From);
-        ArgumentNullException.ThrowIfNull(activity.Recipient);
-
-        this
-            .WithServiceUrl(activity.ServiceUrl)
-            .WithChannelId(activity.ChannelId)
-            .WithConversation(activity.Conversation)
-            .WithFrom(activity.Recipient)
-            .WithRecipient(activity.From);
-
-        return this;
-
-    }
-
-
-    /// <summary>
-    /// Sets the activity ID.
-    /// </summary>
-    /// <param name="id">The activity ID.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithId(string id)
-    {
-        _activity.Id = id;
-        return this;
+        _activity.Conversation = conversation is TeamsConversation teamsConv
+            ? teamsConv
+            : new TeamsConversation(conversation);
     }
 
     /// <summary>
-    /// Sets the service URL.
+    /// Sets the From account (override for Teams-specific type).
     /// </summary>
-    /// <param name="serviceUrl">The service URL.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithServiceUrl(Uri serviceUrl)
+    protected override void SetFrom(ConversationAccount from)
     {
-        _activity.ServiceUrl = serviceUrl;
-        return this;
+        _activity.From = from is TeamsConversationAccount teamsAccount
+            ? teamsAccount
+            : new TeamsConversationAccount(from);
     }
 
     /// <summary>
-    /// Sets the channel ID.
+    /// Sets the Recipient account (override for Teams-specific type).
     /// </summary>
-    /// <param name="channelId">The channel ID.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithChannelId(string channelId)
+    protected override void SetRecipient(ConversationAccount recipient)
     {
-        _activity.ChannelId = channelId;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the activity type.
-    /// </summary>
-    /// <param name="type">The activity type.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithType(string type)
-    {
-        _activity.Type = type;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the text content.
-    /// </summary>
-    /// <param name="text">The text content.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithText(string text)
-    {
-        _activity.Text = text;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the sender account information.
-    /// </summary>
-    /// <param name="from">The sender account.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithFrom(TeamsConversationAccount from)
-    {
-        _activity.From = from;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the recipient account information.
-    /// </summary>
-    /// <param name="recipient">The recipient account.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithRecipient(TeamsConversationAccount recipient)
-    {
-        _activity.Recipient = recipient;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the conversation information.
-    /// </summary>
-    /// <param name="conversation">The conversation information.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithConversation(TeamsConversation conversation)
-    {
-        _activity.Conversation = conversation;
-        return this;
+        _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
+            ? teamsAccount
+            : new TeamsConversationAccount(recipient);
     }
 
     /// <summary>
@@ -150,7 +61,7 @@ public class TeamsActivityBuilder
     /// </summary>
     /// <param name="channelData">The channel data.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithChannelData(TeamsChannelData channelData)
+    public TeamsActivityBuilder WithChannelData(TeamsChannelData? channelData)
     {
         _activity.ChannelData = channelData;
         return this;
@@ -232,7 +143,7 @@ public class TeamsActivityBuilder
     /// Builds and returns the configured TeamsActivity instance.
     /// </summary>
     /// <returns>The configured TeamsActivity.</returns>
-    public TeamsActivity Build()
+    public override TeamsActivity Build()
     {
         _activity.Rebase();
         return _activity;
