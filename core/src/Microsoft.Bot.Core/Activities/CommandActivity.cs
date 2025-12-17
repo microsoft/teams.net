@@ -35,7 +35,7 @@ public class CommandActivity : Activity
 public class CommandValue
 {
     /// <summary>
-    /// Gets or sets the ID of the command.
+    /// Gets or sets the channel ID for the command.
     /// </summary>
     [JsonPropertyName("channelId")]
     public string? ChannelId { get; set; }
