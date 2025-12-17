@@ -5,6 +5,7 @@ using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Bot.Core;
 
 namespace Microsoft.Bot.Core.Tests;
 
@@ -12,6 +13,7 @@ public class ConversationClientTest
 {
     private readonly ServiceProvider _serviceProvider;
     private readonly ConversationClient _conversationClient;
+    private readonly Uri _serviceUrl;
 
     public ConversationClientTest()
     {
@@ -22,11 +24,12 @@ public class ConversationClientTest
         IConfiguration configuration = builder.Build();
 
         ServiceCollection services = new();
+        services.AddLogging();
         services.AddSingleton(configuration);
-        services.AddBotApplicationClients();
+        services.AddBotApplication<BotApplication>();
         _serviceProvider = services.BuildServiceProvider();
         _conversationClient = _serviceProvider.GetRequiredService<ConversationClient>();
-
+        _serviceUrl = new Uri(Environment.GetEnvironmentVariable("TEST_SERVICEURL") ?? "https://smba.trafficmanager.net/teams/");
     }
 
     [Fact]
@@ -36,17 +39,16 @@ public class ConversationClientTest
         {
             Type = ActivityTypes.Message,
             Text = $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`",
-            ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/"),
+            ServiceUrl = _serviceUrl,
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
             }
         };
-        string res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        ResourceResponse res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
         Assert.NotNull(res);
-        Assert.Contains("\"id\"", res);
+        Assert.NotNull(res.Id);
     }
-
 
 
     [Fact]
@@ -56,15 +58,15 @@ public class ConversationClientTest
         {
             Type = ActivityTypes.Message,
             Text = $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`",
-            ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/"),
+            ServiceUrl = _serviceUrl,
             Conversation = new()
             {
-                Id = "19:9f2af1bee7cc4a71af25ac72478fd5c6@thread.tacv2"
+                Id = Environment.GetEnvironmentVariable("TEST_CHANNELID") ?? throw new InvalidOperationException("TEST_CHANNELID environment variable not set")
             }
         };
-        string res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        ResourceResponse res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
         Assert.NotNull(res);
-        Assert.Contains("\"id\"", res);
+        Assert.NotNull(res.Id);
     }
 
     [Fact]
@@ -74,7 +76,7 @@ public class ConversationClientTest
         {
             Type = ActivityTypes.Message,
             Text = $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`",
-            ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/"),
+            ServiceUrl = _serviceUrl,
             Conversation = new()
             {
                 Id = "a:1"
@@ -83,5 +85,74 @@ public class ConversationClientTest
 
         await Assert.ThrowsAsync<HttpRequestException>(()
             => _conversationClient.SendActivityAsync(activity));
+    }
+
+    [Fact]
+    public async Task UpdateActivity()
+    {
+        // First send an activity to get an ID
+        CoreActivity activity = new()
+        {
+            Type = ActivityTypes.Message,
+            Text = $"Original message from Automated tests at `{DateTime.UtcNow:s}`",
+            ServiceUrl = _serviceUrl,
+            Conversation = new()
+            {
+                Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
+            }
+        };
+
+        ResourceResponse sendResponse = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        Assert.NotNull(sendResponse);
+        Assert.NotNull(sendResponse.Id);
+
+        // Now update the activity
+        CoreActivity updatedActivity = new()
+        {
+            Type = ActivityTypes.Message,
+            Text = $"Updated message from Automated tests at `{DateTime.UtcNow:s}`",
+            ServiceUrl = _serviceUrl,
+        };
+
+        ResourceResponse updateResponse = await _conversationClient.UpdateActivityAsync(
+            activity.Conversation.Id,
+            sendResponse.Id,
+            updatedActivity,
+            CancellationToken.None);
+
+        Assert.NotNull(updateResponse);
+        Assert.NotNull(updateResponse.Id);
+    }
+
+    [Fact]
+    public async Task DeleteActivity()
+    {
+        // First send an activity to get an ID
+        CoreActivity activity = new()
+        {
+            Type = ActivityTypes.Message,
+            Text = $"Message to delete from Automated tests at `{DateTime.UtcNow:s}`",
+            ServiceUrl = _serviceUrl,
+            Conversation = new()
+            {
+                Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
+            }
+        };
+
+        ResourceResponse sendResponse = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        Assert.NotNull(sendResponse);
+        Assert.NotNull(sendResponse.Id);
+
+        // Add a delay for 5 seconds
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        // Now delete the activity
+        await _conversationClient.DeleteActivityAsync(
+            activity.Conversation.Id,
+            sendResponse.Id,
+            _serviceUrl,
+            cancellationToken: CancellationToken.None);
+
+        // If no exception was thrown, the delete was successful
     }
 }
