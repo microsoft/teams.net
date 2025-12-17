@@ -323,7 +323,6 @@ public class Activity
     /// </summary>
     public Activity()
     {
-        Properties = new Dictionary<string, object?>();
     }
 
     /// <summary>

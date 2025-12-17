@@ -247,7 +247,7 @@ public class CardAction
     /// <summary>
     /// Gets or sets the image URL for the action.
     /// </summary>
-    public string? Image { get; set; }
+    public Uri? Image { get; set; }
 
     /// <summary>
     /// Gets or sets the text of the action.
@@ -289,8 +289,6 @@ public class SuggestedActions
     /// </summary>
     public SuggestedActions()
     {
-        To = new List<string>();
-        Actions = new List<CardAction>();
     }
 }
 
@@ -366,7 +364,6 @@ public class MessageActivity : Activity
     /// </summary>
     public MessageActivity() : base(ActivityTypes.Message)
     {
-        Text = string.Empty;
     }
 
     /// <summary>
@@ -375,6 +372,6 @@ public class MessageActivity : Activity
     /// <param name="text">The text content of the message.</param>
     public MessageActivity(string? text) : base(ActivityTypes.Message)
     {
-        Text = text ?? string.Empty;
+        Text = text;
     }
 }
