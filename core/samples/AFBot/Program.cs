@@ -32,9 +32,15 @@ ChatClientAgent agent = azureClient.GetChatClient("gpt-5-nano").CreateAIAgent(
 botApp.Use(new DropTypingMiddleware());
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
-    await botApp.SendTypingActivityAsync(activity, cancellationToken);
-    AgentRunResponse res = await agent.RunAsync(activity?.Text ?? "OMW");
-    CoreActivity reply = activity!.CreateReplyMessageActivity(res.Text);
+    ArgumentNullException.ThrowIfNull(activity);
+
+    AgentRunResponse res = await agent.RunAsync(activity.Text ?? "OMW", cancellationToken: cancellationToken);
+
+    CoreActivity reply = CoreActivity.CreateBuilder()
+        .WithType(ActivityTypes.Typing)
+        .WithConversationReference(activity) 
+        .Build();
+
     await botApp.SendActivityAsync(reply, cancellationToken);
 };
 

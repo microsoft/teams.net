@@ -127,19 +127,7 @@ public class BotApplication
         return await _conversationClient.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Sends a typing activity to the conversation asynchronously.
-    /// </summary>
-    /// <param name="activity">The activity containing conversation information.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<ResourceResponse?> SendTypingActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        CoreActivity typing = activity.CreateReplyMessageActivity();
-        typing.Type = ActivityTypes.Typing;
-        return await SendActivityAsync(typing, cancellationToken).ConfigureAwait(false);
-    }
+
 
     /// <summary>
     /// Gets the version of the SDK.

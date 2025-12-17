@@ -26,7 +26,13 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     }
 
     replyText += $"<br /> To Conversation ID: `{activity.Conversation.Id}` conv type: `{conversationType}`";
-    CoreActivity replyActivity = activity.CreateReplyMessageActivity(replyText);
+
+    CoreActivity replyActivity = CoreActivity.CreateBuilder()
+        .WithType(ActivityTypes.Message)
+        .WithConversationReference(activity)
+        .WithText(replyText)
+        .Build();
+
     await botApp.SendActivityAsync(replyActivity, cancellationToken);
 };
 

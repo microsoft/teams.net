@@ -14,7 +14,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <summary>
     /// Initializes a new instance of the TeamsActivityBuilder class.
     /// </summary>
-    public TeamsActivityBuilder() : base(TeamsActivity.FromActivity(new CoreActivity()))
+    internal TeamsActivityBuilder() : base(TeamsActivity.FromActivity(new CoreActivity()))
     {
     }
 
@@ -22,7 +22,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// Initializes a new instance of the TeamsActivityBuilder class with an existing activity.
     /// </summary>
     /// <param name="activity">The activity to build upon.</param>
-    public TeamsActivityBuilder(TeamsActivity activity) : base(activity)
+    internal TeamsActivityBuilder(TeamsActivity activity) : base(activity)
     {
     }
 

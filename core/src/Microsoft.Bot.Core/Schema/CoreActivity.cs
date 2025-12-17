@@ -217,35 +217,41 @@ public class CoreActivity
     => JsonSerializer.DeserializeAsync<T>(stream, ReflectionJsonOptions, cancellationToken);
 
     /// <summary>
-    /// Creates a reply activity based on the current activity.
+    /// Creates a new instance of the <see cref="CoreActivityBuilder"/> to construct activity instances.
     /// </summary>
-    /// <param name="text">The text content for the reply. Defaults to an empty string.</param>
-    /// <returns>A new <see cref="CoreActivity"/> configured as a reply to the current activity.</returns>
-    /// <remarks>
-    /// The reply activity automatically swaps the From and Recipient accounts and preserves
-    /// the conversation context, channel ID, and service URL from the original activity.
-    /// </remarks>
-    public CoreActivity CreateReplyMessageActivity(string text = "")
-        => CreateReplyMessageActivity<CoreActivity>(text);
-
-    /// <summary>
-    /// Creates a reply activity of the specified type based on the current activity.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="text"></param>
     /// <returns></returns>
-    public T CreateReplyMessageActivity<T>(string text = "") where T : CoreActivity, new()
-    {
-        T result = new()
-        {
-            Type = ActivityTypes.Message,
-            ChannelId = ChannelId,
-            ServiceUrl = ServiceUrl,
-            Conversation = Conversation,
-            From = Recipient,
-            Recipient = From,
-            Text = text
-        };
-        return result;
-    }
+    public static CoreActivityBuilder CreateBuilder() => new();
+
+    ///// <summary>
+    ///// Creates a reply activity based on the current activity.
+    ///// </summary>
+    ///// <param name="text">The text content for the reply. Defaults to an empty string.</param>
+    ///// <returns>A new <see cref="CoreActivity"/> configured as a reply to the current activity.</returns>
+    ///// <remarks>
+    ///// The reply activity automatically swaps the From and Recipient accounts and preserves
+    ///// the conversation context, channel ID, and service URL from the original activity.
+    ///// </remarks>
+    //public CoreActivity CreateReplyMessageActivity(string text = "")
+    //    => CreateReplyMessageActivity<CoreActivity>(text);
+
+    ///// <summary>
+    ///// Creates a reply activity of the specified type based on the current activity.
+    ///// </summary>
+    ///// <typeparam name="T"></typeparam>
+    ///// <param name="text"></param>
+    ///// <returns></returns>
+    //public T CreateReplyMessageActivity<T>(string text = "") where T : CoreActivity, new()
+    //{
+    //    T result = new()
+    //    {
+    //        Type = ActivityTypes.Message,
+    //        ChannelId = ChannelId,
+    //        ServiceUrl = ServiceUrl,
+    //        Conversation = Conversation,
+    //        From = Recipient,
+    //        Recipient = From,
+    //        Text = text
+    //    };
+    //    return result;
+    //}
 }

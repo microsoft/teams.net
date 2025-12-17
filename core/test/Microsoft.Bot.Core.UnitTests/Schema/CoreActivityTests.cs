@@ -290,7 +290,12 @@ public class CoreCoreActivityTests
                 Id = "conversation1"
             }
         };
-        CoreActivity reply = act.CreateReplyMessageActivity("reply");
+        CoreActivity reply = CoreActivity.CreateBuilder()
+            .WithType(ActivityTypes.Message)
+            .WithConversationReference(act)
+            .WithText("reply")
+            .Build();
+
         Assert.NotNull(reply);
         Assert.Equal(ActivityTypes.Message, reply.Type);
         Assert.Equal("reply", reply.Text);

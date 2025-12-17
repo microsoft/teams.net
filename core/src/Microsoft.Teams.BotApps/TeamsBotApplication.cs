@@ -3,7 +3,6 @@
 
 using Microsoft.Bot.Core;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.BotApps.Handlers;
 using Microsoft.Teams.BotApps.Schema;

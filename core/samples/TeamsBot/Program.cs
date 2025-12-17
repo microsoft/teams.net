@@ -12,7 +12,7 @@ teamsApp.OnMessage = async (context, cancellationToken) =>
 {
     string replyText = $"You sent: `{context.Activity.Text}` in activity of type `{context.Activity.Type}`.";
 
-    await teamsApp.SendTypingActivityAsync(context.Activity, cancellationToken);
+    await context.SendTypingActivityAsync(cancellationToken);
 
     TeamsActivity reply = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityTypes.Message)
