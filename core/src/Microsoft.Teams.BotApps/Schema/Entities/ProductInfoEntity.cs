@@ -28,6 +28,6 @@ public class ProductInfoEntity : Entity
     /// </summary>
     public override void ToProperties()
     {
-     
+
     }
 }

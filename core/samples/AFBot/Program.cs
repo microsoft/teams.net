@@ -30,18 +30,32 @@ ChatClientAgent agent = azureClient.GetChatClient("gpt-5-nano").CreateAIAgent(
     name: "AcronymMaker");
 
 botApp.Use(new DropTypingMiddleware());
+
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
     ArgumentNullException.ThrowIfNull(activity);
+    CancellationTokenSource timer = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 
-    AgentRunResponse res = await agent.RunAsync(activity.Text ?? "OMW", cancellationToken: cancellationToken);
-
-    CoreActivity reply = CoreActivity.CreateBuilder()
+    CoreActivity typing = CoreActivity.CreateBuilder()
         .WithType(ActivityTypes.Typing)
-        .WithConversationReference(activity) 
+        .WithConversationReference(activity)
+        .Build();
+    await botApp.SendActivityAsync(typing, cancellationToken);
+
+    AgentRunResponse agentResponse = await agent.RunAsync(activity.Text ?? "OMW", cancellationToken:  timer.Token);
+    
+    var m1 = agentResponse.Messages.FirstOrDefault();
+    Console.WriteLine($"AI:: GOT {agentResponse.Messages.Count} msgs");
+    CoreActivity replyActivity = CoreActivity.CreateBuilder()
+        .WithType(ActivityTypes.Message)
+        .WithConversationReference(activity)
+        .WithText(m1!.Text)
         .Build();
 
-    await botApp.SendActivityAsync(reply, cancellationToken);
+    var res = await botApp.SendActivityAsync(replyActivity, cancellationToken);
+
+    Console.WriteLine("SENT >>> => " + res?.Id);
+
 };
 
 webApp.Run();

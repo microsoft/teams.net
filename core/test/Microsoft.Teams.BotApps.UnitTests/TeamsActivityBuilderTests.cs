@@ -531,7 +531,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithConversationReference_WithNullChannelId_ThrowsArgumentNullException()
     {
-        
+
         TeamsActivity sourceActivity = new()
         {
             ChannelId = null,
@@ -572,7 +572,7 @@ public class TeamsActivityBuilderTests
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
-        
+
         Assert.NotNull(result.Conversation);
     }
 
@@ -589,7 +589,7 @@ public class TeamsActivityBuilderTests
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
-        
+
         Assert.NotNull(result.From);
     }
 
@@ -606,7 +606,7 @@ public class TeamsActivityBuilderTests
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
-        
+
         Assert.NotNull(result.Recipient);
     }
 

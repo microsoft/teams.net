@@ -181,7 +181,7 @@ public class CoreActivityBuilder : CoreActivityBuilder<CoreActivity, CoreActivit
     /// <summary>
     /// Initializes a new instance of the CoreActivityBuilder class.
     /// </summary>
-    public CoreActivityBuilder() : base(new CoreActivity())
+    internal CoreActivityBuilder() : base(new CoreActivity())
     {
     }
 
@@ -189,7 +189,7 @@ public class CoreActivityBuilder : CoreActivityBuilder<CoreActivity, CoreActivit
     /// Initializes a new instance of the CoreActivityBuilder class with an existing activity.
     /// </summary>
     /// <param name="activity">The activity to build upon.</param>
-    public CoreActivityBuilder(CoreActivity activity) : base(activity)
+    internal CoreActivityBuilder(CoreActivity activity) : base(activity)
     {
     }
 

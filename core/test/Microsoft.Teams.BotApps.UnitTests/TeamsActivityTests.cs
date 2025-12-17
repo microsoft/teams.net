@@ -65,7 +65,7 @@ public class TeamsActivityTests
                 Id = "user-id-01",
                 Name = "rido"
             }, "ridotest");
-            
+
 
 
         Assert.NotNull(activity.Entities);
@@ -86,10 +86,10 @@ public class TeamsActivityTests
     {
         TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityTypes.Message));
         activity.AddMention(new ConversationAccount
-            {
-                Id = "user-id-01",
-                Name = "rido"
-            }, "ridotest");
+        {
+            Id = "user-id-01",
+            Name = "rido"
+        }, "ridotest");
 
 
 
@@ -182,7 +182,7 @@ public class TeamsActivityTests
         Assert.Equal("ridotest", m1.Mentioned.Name);
         Assert.Equal("<at>ridotest</at>", m1.Text);
 
-        var clientInfo =  activity.GetClientInfo();
+        var clientInfo = activity.GetClientInfo();
         Assert.NotNull(clientInfo);
         Assert.Equal("en-US", clientInfo.Locale);
         Assert.Equal("US", clientInfo.Country);

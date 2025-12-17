@@ -139,7 +139,7 @@ public class CoreActivity
     /// <typeparam name="T"></typeparam>
     /// <param name="ops"></param>
     /// <returns></returns>
-    public string ToJson<T>(JsonTypeInfo<T> ops) where T: CoreActivity
+    public string ToJson<T>(JsonTypeInfo<T> ops) where T : CoreActivity
         => JsonSerializer.Serialize(this, ops);
 
     /// <summary>
@@ -214,44 +214,12 @@ public class CoreActivity
     /// <returns>A ValueTask that represents the asynchronous operation. The result contains an instance of type T if
     /// deserialization is successful; otherwise, null.</returns>
     public static ValueTask<T?> FromJsonStreamAsync<T>(Stream stream, CancellationToken cancellationToken = default) where T : CoreActivity
-    => JsonSerializer.DeserializeAsync<T>(stream, ReflectionJsonOptions, cancellationToken);
+        => JsonSerializer.DeserializeAsync<T>(stream, ReflectionJsonOptions, cancellationToken);
 
     /// <summary>
     /// Creates a new instance of the <see cref="CoreActivityBuilder"/> to construct activity instances.
     /// </summary>
     /// <returns></returns>
     public static CoreActivityBuilder CreateBuilder() => new();
-
-    ///// <summary>
-    ///// Creates a reply activity based on the current activity.
-    ///// </summary>
-    ///// <param name="text">The text content for the reply. Defaults to an empty string.</param>
-    ///// <returns>A new <see cref="CoreActivity"/> configured as a reply to the current activity.</returns>
-    ///// <remarks>
-    ///// The reply activity automatically swaps the From and Recipient accounts and preserves
-    ///// the conversation context, channel ID, and service URL from the original activity.
-    ///// </remarks>
-    //public CoreActivity CreateReplyMessageActivity(string text = "")
-    //    => CreateReplyMessageActivity<CoreActivity>(text);
-
-    ///// <summary>
-    ///// Creates a reply activity of the specified type based on the current activity.
-    ///// </summary>
-    ///// <typeparam name="T"></typeparam>
-    ///// <param name="text"></param>
-    ///// <returns></returns>
-    //public T CreateReplyMessageActivity<T>(string text = "") where T : CoreActivity, new()
-    //{
-    //    T result = new()
-    //    {
-    //        Type = ActivityTypes.Message,
-    //        ChannelId = ChannelId,
-    //        ServiceUrl = ServiceUrl,
-    //        Conversation = Conversation,
-    //        From = Recipient,
-    //        Recipient = From,
-    //        Text = text
-    //    };
-    //    return result;
-    //}
+   
 }

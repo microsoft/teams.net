@@ -20,7 +20,7 @@ teamsApp.OnMessage = async (context, cancellationToken) =>
         .WithText(replyText)
         .Build();
 
-    
+
     reply.AddMention(context.Activity.From!, "ridobotlocal", true);
 
     await context.TeamsBotApplication.SendActivityAsync(reply, cancellationToken);

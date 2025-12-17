@@ -131,7 +131,7 @@ public class TeamsActivity : CoreActivity
     /// Creates a new TeamsActivityBuilder instance for building a TeamsActivity with a fluent API.
     /// </summary>
     /// <returns>A new TeamsActivityBuilder instance.</returns>
-    public static new TeamsActivityBuilder CreateBuilder() => new ();
+    public static new TeamsActivityBuilder CreateBuilder() => new();
 
     /// <summary>
     /// Creates a new TeamsActivityBuilder instance initialized with the specified TeamsActivity.

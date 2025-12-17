@@ -89,7 +89,7 @@ public class EntityList : List<Entity>
 /// Initializes a new instance of the Entity class with the specified type.
 /// </remarks>
 /// <param name="type">The type of the entity. Cannot be null.</param>
-public class Entity(string type) 
+public class Entity(string type)
 {
     /// <summary>
     /// Gets or sets the type identifier for the object represented by this instance.
