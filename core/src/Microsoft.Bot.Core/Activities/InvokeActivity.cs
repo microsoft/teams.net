@@ -23,16 +23,18 @@ public class InvokeActivity : Activity
     /// <summary>
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class.
     /// </summary>
-    public InvokeActivity() : base(ActivityTypes.Invoke)
+    public InvokeActivity()
     {
+        Type = ActivityTypes.Invoke;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class with the specified name.
     /// </summary>
     /// <param name="name">The invoke operation name.</param>
-    public InvokeActivity(string name) : base(ActivityTypes.Invoke)
+    public InvokeActivity(string name)
     {
+        Type = ActivityTypes.Invoke;
         Name = name;
     }
 }

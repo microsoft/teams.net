@@ -11,7 +11,7 @@ public class AdaptiveCardActivity : InvokeActivity
     /// <summary>
     /// Initializes a new instance of the <see cref="AdaptiveCardActivity"/> class.
     /// </summary>
-    public AdaptiveCardActivity() : base()
+    public AdaptiveCardActivity()
     {
     }
 
@@ -19,8 +19,9 @@ public class AdaptiveCardActivity : InvokeActivity
     /// Initializes a new instance of the <see cref="AdaptiveCardActivity"/> class with the specified name.
     /// </summary>
     /// <param name="name">The invoke operation name.</param>
-    public AdaptiveCardActivity(string name) : base(name)
+    public AdaptiveCardActivity(string name)
     {
+        Name = name;
     }
 }
 
