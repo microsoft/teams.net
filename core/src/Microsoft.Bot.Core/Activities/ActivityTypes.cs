@@ -52,4 +52,19 @@ public static class ActivityTypes
     /// Invoke activity type.
     /// </summary>
     public const string Invoke = "invoke";
+
+    /// <summary>
+    /// Message delete activity type.
+    /// </summary>
+    public const string MessageDelete = "messageDelete";
+
+    /// <summary>
+    /// Message update activity type.
+    /// </summary>
+    public const string MessageUpdate = "messageUpdate";
+
+    /// <summary>
+    /// Message reaction activity type.
+    /// </summary>
+    public const string MessageReaction = "messageReaction";
 }
