@@ -17,7 +17,7 @@
 | DeleteActivity | ✅ Working | Successfully deletes activities |
 | GetConversationMembers | ✅ Working | Works for both conversations and channels |
 | GetActivityMembers | ✅ Working | Successfully retrieves activity members |
-| GetConversationPagedMembers | ✅ Working | Pagination works correctly |
+| GetConversationPagedMembers | ⚠️ Partial | Works, but count doesn't work, so could not test pagination behavior. |
 | CreateConversation | ⚠️ Partial | Basic scenarios work, advanced features fail |
 | GetConversations | ❌ Failed | Service does not support this operation |
 | DeleteConversationMember | ❌ Failed | HTTP method not allowed by service |
