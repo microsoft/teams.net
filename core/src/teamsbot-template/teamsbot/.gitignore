@@ -1,0 +1,7 @@
+.vs/
+bin/
+obj/
+debug/
+launchSettings.json
+appsettings.Development.json
+*.user

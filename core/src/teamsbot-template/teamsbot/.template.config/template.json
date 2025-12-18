@@ -1,0 +1,14 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": ["Web", "Bot", "Teams"],
+  "identity": "TeamsBot.Template",
+  "name": "Teams Bot",
+  "shortName": "teamsbot",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "TeamsBotTemplate",
+  "preferNameDirectory": true
+}

@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <PackageType>Template</PackageType>
+    <PackageVersion>0.1</PackageVersion>
+    <PackageId>Microsoft.TeamsBot.Template</PackageId>
+    <Title>TeamsBot</Title>
+    <Authors>Microsoft</Authors>
+    <Description>Project template to create TeamsBot apps</Description>
+    <PackageTags>teams;bot</PackageTags>
+
+    <TargetFramework>net8.0</TargetFramework>
+
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <ContentTargetFolders>content</ContentTargetFolders>
+    <NoWarn>$(NoWarn);NU5128;NU5017</NoWarn>
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <Copyright>Microsoft</Copyright>
+		<PackageProjectUrl>https://github.com/microsoft/teams.net</PackageProjectUrl>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="teamsbot\**\*" Exclude="teamsbot\**\bin\**;teamsbot\**\obj\**" />
+    <Compile Remove="**\*" />
+  </ItemGroup>
+
+</Project>
