@@ -5,6 +5,7 @@ using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Bot.Core.ClientSchema;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 
@@ -23,11 +24,10 @@ public class ConversationClient(HttpClient httpClient)
     /// </summary>
     /// <param name="activity">The activity to send. Cannot be null. The activity must contain valid conversation and service URL information.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the response content as a string if
-    /// the activity is sent successfully.</returns>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the activity could not be sent successfully. The exception message includes the HTTP status code and
     /// response content.</exception>
-    public async Task<ResourceResponse> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
@@ -36,7 +36,13 @@ public class ConversationClient(HttpClient httpClient)
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
 
-        return await SendHttpRequestAsync(HttpMethod.Post, url, activity, "sending activity", cancellationToken).ConfigureAwait(false);
+        return await SendHttpRequestAsync<SendActivityResponse>(
+            HttpMethod.Post,
+            url,
+            activity.ToJson(),
+            activity.From.GetAgenticIdentity(),
+            "sending activity",
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -48,7 +54,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
-    public async Task<ResourceResponse> UpdateActivityAsync(string conversationId, string activityId, CoreActivity activity, CancellationToken cancellationToken = default)
+    public async Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string activityId, CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(activityId);
@@ -57,7 +63,13 @@ public class ConversationClient(HttpClient httpClient)
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}";
 
-        return await SendHttpRequestAsync(HttpMethod.Put, url, activity, "updating activity", cancellationToken).ConfigureAwait(false);
+        return await SendHttpRequestAsync<UpdateActivityResponse>(
+            HttpMethod.Put,
+            url,
+            activity.ToJson(),
+            activity.From.GetAgenticIdentity(),
+            "updating activity",
+            cancellationToken).ConfigureAwait(false);
     }
 
 
@@ -79,7 +91,7 @@ public class ConversationClient(HttpClient httpClient)
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}";
 
-        await SendHttpRequestAsync(
+        await SendHttpRequestAsync<DeleteActivityResponse>(
             HttpMethod.Delete,
             url,
             body: null,
@@ -111,7 +123,237 @@ public class ConversationClient(HttpClient httpClient)
             cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<ResourceResponse> SendHttpRequestAsync(HttpMethod method, string url, string? body, AgenticIdentity? agenticIdentity, string operationDescription, CancellationToken cancellationToken)
+    /// <summary>
+    /// Gets the members of a conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a list of conversation members.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the members could not be retrieved successfully.</exception>
+    public async Task<IList<ConversationAccount>> GetConversationMembersAsync(string conversationId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members";
+
+        return await SendHttpRequestAsync<IList<ConversationAccount>>(
+            HttpMethod.Get,
+            url,
+            body: null,
+            agenticIdentity,
+            "getting conversation members",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the conversations in which the bot has participated.
+    /// </summary>
+    /// <param name="serviceUrl">The service URL for the bot. Cannot be null.</param>
+    /// <param name="continuationToken">Optional continuation token for pagination.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the conversations and an optional continuation token.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the conversations could not be retrieved successfully.</exception>
+    public async Task<GetConversationsResponse> GetConversationsAsync(Uri serviceUrl, string? continuationToken = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations";
+        if (!string.IsNullOrWhiteSpace(continuationToken))
+        {
+            url += $"?continuationToken={Uri.EscapeDataString(continuationToken)}";
+        }
+
+        return await SendHttpRequestAsync<GetConversationsResponse>(
+            HttpMethod.Get,
+            url,
+            body: null,
+            agenticIdentity,
+            "getting conversations",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the members of a specific activity.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="activityId">The ID of the activity. Cannot be null or whitespace.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a list of members for the activity.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the activity members could not be retrieved successfully.</exception>
+    public async Task<IList<ConversationAccount>> GetActivityMembersAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(activityId);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/members";
+
+        return await SendHttpRequestAsync<IList<ConversationAccount>>(
+            HttpMethod.Get,
+            url,
+            body: null,
+            agenticIdentity,
+            "getting activity members",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Creates a new conversation.
+    /// </summary>
+    /// <param name="parameters">The parameters for creating the conversation. Cannot be null.</param>
+    /// <param name="serviceUrl">The service URL for the bot. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the conversation resource response with the conversation ID.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the conversation could not be created successfully.</exception>
+    public async Task<CreateConversationResponse> CreateConversationAsync(ConversationParameters parameters, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations";
+
+        return await SendHttpRequestAsync<CreateConversationResponse>(
+            HttpMethod.Post,
+            url,
+            JsonSerializer.Serialize(parameters),
+            agenticIdentity,
+            "creating conversation",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the members of a conversation one page at a time.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="pageSize">Optional page size for the number of members to retrieve.</param>
+    /// <param name="continuationToken">Optional continuation token for pagination.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a page of members and an optional continuation token.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the conversation members could not be retrieved successfully.</exception>
+    public async Task<PagedMembersResult> GetConversationPagedMembersAsync(string conversationId, Uri serviceUrl, int? pageSize = null, string? continuationToken = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/pagedmembers";
+
+        List<string> queryParams = new();
+        if (pageSize.HasValue)
+        {
+            queryParams.Add($"pageSize={pageSize.Value}");
+        }
+        if (!string.IsNullOrWhiteSpace(continuationToken))
+        {
+            queryParams.Add($"continuationToken={Uri.EscapeDataString(continuationToken)}");
+        }
+        if (queryParams.Count > 0)
+        {
+            url += $"?{string.Join("&", queryParams)}";
+        }
+
+        return await SendHttpRequestAsync<PagedMembersResult>(
+            HttpMethod.Get,
+            url,
+            body: null,
+            agenticIdentity,
+            "getting paged conversation members",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Deletes a member from a conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="memberId">The ID of the member to delete. Cannot be null or whitespace.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the member could not be deleted successfully.</exception>
+    /// <remarks>If the deleted member was the last member of the conversation, the conversation is also deleted.</remarks>
+    public async Task DeleteConversationMemberAsync(string conversationId, string memberId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(memberId);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members/{memberId}";
+
+        await SendHttpRequestAsync<object>(
+            HttpMethod.Delete,
+            url,
+            body: null,
+            agenticIdentity,
+            "deleting conversation member",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Uploads and sends historic activities to the conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="transcript">The transcript containing the historic activities. Cannot be null.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the response with a resource ID.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the history could not be sent successfully.</exception>
+    /// <remarks>Activities in the transcript must have unique IDs and appropriate timestamps for proper rendering.</remarks>
+    public async Task<SendConversationHistoryResponse> SendConversationHistoryAsync(string conversationId, Transcript transcript, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentNullException.ThrowIfNull(transcript);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/history";
+
+        return await SendHttpRequestAsync<SendConversationHistoryResponse>(
+            HttpMethod.Post,
+            url,
+            JsonSerializer.Serialize(transcript),
+            agenticIdentity,
+            "sending conversation history",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Uploads an attachment to the channel's blob storage.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="attachmentData">The attachment data to upload. Cannot be null.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the response with an attachment ID.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the attachment could not be uploaded successfully.</exception>
+    /// <remarks>This is useful for storing data in a compliant store when dealing with enterprises.</remarks>
+    public async Task<UploadAttachmentResponse> UploadAttachmentAsync(string conversationId, AttachmentData attachmentData, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentNullException.ThrowIfNull(attachmentData);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/attachments";
+
+        return await SendHttpRequestAsync<UploadAttachmentResponse>(
+            HttpMethod.Post,
+            url,
+            JsonSerializer.Serialize(attachmentData),
+            agenticIdentity,
+            "uploading attachment",
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<T> SendHttpRequestAsync<T>(HttpMethod method, string url, string? body, AgenticIdentity? agenticIdentity, string operationDescription, CancellationToken cancellationToken)
     {
         using HttpRequestMessage request = new(method, url);
 
@@ -132,10 +374,11 @@ public class ConversationClient(HttpClient httpClient)
             string responseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
             if (responseString.Length > 2) // to handle empty response
             {
-                ResourceResponse? resourceResponse = JsonSerializer.Deserialize<ResourceResponse>(responseString);
-                return resourceResponse ?? new ResourceResponse();
+                T? result = JsonSerializer.Deserialize<T>(responseString);
+                return result ?? throw new InvalidOperationException($"Failed to deserialize response for {operationDescription}");
             }
-            return new ResourceResponse();
+            // Empty response - return default value (e.g., for DELETE operations)
+            return default!;
         }
         else
         {
@@ -144,27 +387,4 @@ public class ConversationClient(HttpClient httpClient)
         }
     }
 
-    private Task<ResourceResponse> SendHttpRequestAsync(HttpMethod method, string url, CoreActivity activity, string operationDescription, CancellationToken cancellationToken)
-    {
-        return SendHttpRequestAsync(
-            method,
-            url,
-            activity.ToJson(),
-            activity.From.GetAgenticIdentity(),
-            operationDescription,
-            cancellationToken);
-    }
-
-}
-
-/// <summary>
-/// Resource Response
-/// </summary>
-public class ResourceResponse
-{
-    /// <summary>
-    /// Id of the activity
-    /// </summary>
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
 }
