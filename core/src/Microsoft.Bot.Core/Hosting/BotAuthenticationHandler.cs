@@ -71,14 +71,14 @@ internal sealed class BotAuthenticationHandler(
         {
             AcquireTokenOptions = new AcquireTokenOptions()
             {
-                //AuthenticationOptionsName = _aadConfigSectionName,
+                AuthenticationOptionsName = AddBotApplicationExtensions.MsalConfigKey,
             }
         };
 
         // Conditionally apply ManagedIdentity configuration if registered
         if (_managedIdentityOptions is not null)
         {
-            var miOptions = _managedIdentityOptions.Value;
+            ManagedIdentityOptions miOptions = _managedIdentityOptions.Value;
 
             if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
             {
