@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="teamsbot\**\*" Exclude="teamsbot\**\bin\**;teamsbot\**\obj\**" />
+    <Content Include="teamsbot\**\*" Exclude="teamsbot\**\bin\**;teamsbot\**\obj\**;teamsbot\Properties\launchSettings.json" />
     <Compile Remove="**\*" />
   </ItemGroup>
 
