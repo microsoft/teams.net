@@ -12,6 +12,7 @@ webAppBuilder.Services.AddBotApplication<BotApplication>();
 WebApplication webApp = webAppBuilder.Build();
 BotApplication botApp = webApp.UseBotApplication<BotApplication>();
 
+webApp.MapGet("/", () => "CoreBot is running.");
 
 botApp.OnActivity = async (activity, cancellationToken) =>
 {

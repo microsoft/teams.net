@@ -23,6 +23,17 @@ await conversationClient.SendActivityAsync(new CoreActivity
 
 }, cancellationToken: default);
 
+await conversationClient.SendActivityAsync(new CoreActivity
+{
+    Text = "Hello from MSAL Config API test!",
+    Conversation = new() { Id = "bad conversation" },
+    ServiceUrl = new Uri(ServiceUrl),
+    From = new() { Id = FromId }
+
+}, cancellationToken: default);
+
+
+
 static ConversationClient CreateConversationClient()
 {
     ServiceCollection services = InitializeDIContainer();
