@@ -124,7 +124,7 @@ public class BotApplication
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(_conversationClient, "ConversationClient not initialized");
 
-        return await _conversationClient.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
+        return await _conversationClient.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>

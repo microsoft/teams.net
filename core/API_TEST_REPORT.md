@@ -98,15 +98,39 @@ Found 5 members:
 
 ---
 
+---
+
+### ⚠️ Partially Working APIs (2)
+
 #### 6. GetConversationPagedMembers
-**Status:** Fully Functional
-**Tests Passed:** 2/2
-- ✅ GetConversationPagedMembers - Basic pagination
-- ✅ GetConversationPagedMembers_WithPageSize - Pagination with custom page size
+**Status:** Partially Functional
+**Tests Passed:** 1/2
+
+**Working Scenarios:**
+- ✅ GetConversationPagedMembers - Basic retrieval of conversation members
+
+**Failing Scenarios:**
+- ❌ GetConversationPagedMembers_WithPageSize
 
 **Implementation:**
 - Endpoint: `GET /v3/conversations/{conversationId}/pagedmembers?pageSize={pageSize}&continuationToken={token}`
 - Returns: `PagedMembersResult` with members and continuation token
+
+**Error Details:**
+
+##### GetConversationPagedMembers_WithPageSize
+```
+Test Assertion Failure
+Expected: 1 member (pageSize=1)
+Actual: 5 members returned
+```
+
+**Test Configuration:**
+```csharp
+pageSize: 1
+```
+
+**Analysis:** The service ignores the `pageSize` parameter and returns all members regardless of the requested page size. The API successfully retrieves members but does not honor pagination parameters. The `continuationToken` parameter may also not be functional.
 
 ---
 

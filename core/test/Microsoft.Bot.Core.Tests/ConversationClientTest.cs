@@ -45,7 +45,7 @@ public class ConversationClientTest
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
             }
         };
-        SendActivityResponse res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        SendActivityResponse res = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(res);
         Assert.NotNull(res.Id);
     }
@@ -64,7 +64,7 @@ public class ConversationClientTest
                 Id = Environment.GetEnvironmentVariable("TEST_CHANNELID") ?? throw new InvalidOperationException("TEST_CHANNELID environment variable not set")
             }
         };
-        SendActivityResponse res = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        SendActivityResponse res = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(res);
         Assert.NotNull(res.Id);
     }
@@ -102,7 +102,7 @@ public class ConversationClientTest
             }
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -118,7 +118,7 @@ public class ConversationClientTest
             activity.Conversation.Id,
             sendResponse.Id,
             updatedActivity,
-            CancellationToken.None);
+            cancellationToken: CancellationToken.None);
 
         Assert.NotNull(updateResponse);
         Assert.NotNull(updateResponse.Id);
@@ -139,7 +139,7 @@ public class ConversationClientTest
             }
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -217,7 +217,7 @@ public class ConversationClientTest
             }
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -314,7 +314,7 @@ public class ConversationClientTest
             }
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -365,7 +365,7 @@ public class ConversationClientTest
             }
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -413,7 +413,7 @@ public class ConversationClientTest
             }
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, CancellationToken.None);
+        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 

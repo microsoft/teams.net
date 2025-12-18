@@ -25,7 +25,7 @@ public class Worker(ConversationClient conversationClient, ILogger<Worker> logge
                     From = new() { Id = FromId },
                     Conversation = new() { Id = ConversationId }
                 };
-                var aid = await conversationClient.SendActivityAsync(proactiveMessage, stoppingToken);
+                var aid = await conversationClient.SendActivityAsync(proactiveMessage, cancellationToken: stoppingToken);
                 logger.LogInformation("Activity {Aid} sent", aid.Id);
             }
             await Task.Delay(1000, stoppingToken);
