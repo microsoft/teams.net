@@ -9,7 +9,7 @@ namespace Microsoft.Bot.Core.Hosting;
 internal sealed class BotConfig
 {
     public const string SystemManagedIdentityIdentifier = "system";
-    
+
     public string TenantId { get; set; } = string.Empty;
     public string ClientId { get; set; } = string.Empty;
     public string? ClientSecret { get; set; }
@@ -35,6 +35,18 @@ internal sealed class BotConfig
             ClientId = configuration["CLIENT_ID"] ?? string.Empty,
             ClientSecret = configuration["CLIENT_SECRET"],
             FicClientId = configuration["MANAGED_IDENTITY_CLIENT_ID"],
+        };
+    }
+
+    public static BotConfig FromAadConfig(IConfiguration configuration, string sectionName = "AzureAd")
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        IConfigurationSection section = configuration.GetSection(sectionName);
+        return new()
+        {
+            TenantId = section["TenantId"] ?? string.Empty,
+            ClientId = section["ClientId"] ?? string.Empty,
+            ClientSecret = section["ClientSecret"],
         };
     }
 }

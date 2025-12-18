@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -17,6 +18,7 @@ namespace Microsoft.Bot.Core.Hosting
     /// <summary>
     /// Provides extension methods for configuring JWT authentication and authorization for bots and agents.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     public static class JwtExtensions
     {
         internal const string BotScheme = "BotScheme";
@@ -33,22 +35,34 @@ namespace Microsoft.Bot.Core.Hosting
         /// <param name="configuration">The application configuration containing the settings.</param>
         /// <param name="useAgentAuth">Indicates whether to use agent authentication (true) or bot authentication (false).</param>
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
+        /// <param name="logger">The logger instance for logging.</param>
         /// <returns>An <see cref="AuthenticationBuilder"/> for further authentication configuration.</returns>
-        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, IConfiguration configuration, bool useAgentAuth, string aadSectionName = "AzureAd")
+        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, IConfiguration configuration, bool useAgentAuth, ILogger logger, string aadSectionName = "AzureAd")
         {
+
+            // TODO: Task 5039187: Refactor use of BotConfig for MSAL and JWT
+
             AuthenticationBuilder builder = services.AddAuthentication();
             ArgumentNullException.ThrowIfNull(configuration);
-            string audience = configuration[$"{aadSectionName}:ClientId"]!;
+            string audience = configuration[$"{aadSectionName}:ClientId"]
+                   ?? configuration["CLIENT_ID"]
+                   ?? configuration["MicrosoftAppId"]
+                   ?? throw new InvalidOperationException("ClientID not found in configuration, tried the 3 option");
 
             if (!useAgentAuth)
             {
                 string[] validIssuers = ["https://api.botframework.com"];
-                builder.AddCustomJwtBearer(BotScheme, validIssuers, audience);
-            } else
+                builder.AddCustomJwtBearer(BotScheme, validIssuers, audience, logger);
+            }
+            else
             {
-                string tenantId = configuration[$"{aadSectionName}:TenantId"]!;
+                string tenantId = configuration[$"{aadSectionName}:TenantId"]
+                    ?? configuration["TENANT_ID"]
+                    ?? configuration["MicrosoftAppTenantId"]
+                    ?? "botframework.com"; // TODO: Task 5039198: Test JWT Validation for MultiTenant
+
                 string[] validIssuers = [$"https://sts.windows.net/{tenantId}/", $"https://login.microsoftonline.com/{tenantId}/v2", "https://api.botframework.com"];
-                builder.AddCustomJwtBearer(AgentScheme, validIssuers, audience);
+                builder.AddCustomJwtBearer(AgentScheme, validIssuers, audience, logger);
             }
             return builder;
         }
@@ -58,11 +72,12 @@ namespace Microsoft.Bot.Core.Hosting
         /// </summary>
         /// <param name="services">The service collection to add authorization to.</param>
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
+        /// <param name="logger">The logger instance for logging.</param>
         /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
-        public static AuthorizationBuilder AddAuthorization(this IServiceCollection services, string aadSectionName = "AzureAd")
+        public static AuthorizationBuilder AddAuthorization(this IServiceCollection services, ILogger logger, string aadSectionName = "AzureAd")
         {
             IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-            string azureScope = configuration[$"{aadSectionName}:Scope"]!;
+            string azureScope = configuration[$"Scope"]!;
             bool useAgentAuth = false;
 
             if (string.Equals(azureScope, AgentScope, StringComparison.OrdinalIgnoreCase))
@@ -70,7 +85,7 @@ namespace Microsoft.Bot.Core.Hosting
                 useAgentAuth = true;
             }
 
-            services.AddBotAuthentication(configuration, useAgentAuth, aadSectionName);
+            services.AddBotAuthentication(configuration, useAgentAuth, logger, aadSectionName);
             AuthorizationBuilder authorizationBuilder = services
                 .AddAuthorizationBuilder()
                 .AddDefaultPolicy("DefaultPolicy", policy =>
@@ -88,15 +103,7 @@ namespace Microsoft.Bot.Core.Hosting
             return authorizationBuilder;
         }
 
-        /// <summary>
-        /// Adds a custom JWT Bearer authentication scheme with specified valid issuers and audience.
-        /// </summary>
-        /// <param name="builder">The <see cref="AuthenticationBuilder"/> to add the JWT Bearer scheme to.</param>
-        /// <param name="schemeName">The name of the authentication scheme.</param>
-        /// <param name="validIssuers">An array of valid issuer strings for token validation.</param>
-        /// <param name="audience">The expected audience for the JWT token.</param>
-        /// <returns>The <see cref="AuthenticationBuilder"/> for further configuration.</returns>
-        public static AuthenticationBuilder AddCustomJwtBearer(this AuthenticationBuilder builder, string schemeName, string[] validIssuers, string audience)
+        private static AuthenticationBuilder AddCustomJwtBearer(this AuthenticationBuilder builder, string schemeName, string[] validIssuers, string audience, ILogger logger)
         {
             builder.AddJwtBearer(schemeName, jwtOptions =>
             {
@@ -117,6 +124,7 @@ namespace Microsoft.Bot.Core.Hosting
                 {
                     OnMessageReceived = async context =>
                     {
+                        logger.LogDebug("OnMessageReceived invoked for scheme: {Scheme}", schemeName);
                         string authorizationHeader = context.Request.Headers.Authorization.ToString();
 
                         if (string.IsNullOrEmpty(authorizationHeader))
@@ -124,6 +132,7 @@ namespace Microsoft.Bot.Core.Hosting
                             // Default to AadTokenValidation handling
                             context.Options.TokenValidationParameters.ConfigurationManager ??= jwtOptions.ConfigurationManager as BaseConfigurationManager;
                             await Task.CompletedTask.ConfigureAwait(false);
+                            logger.LogWarning("Authorization header is missing.");
                             return;
                         }
 
@@ -133,6 +142,7 @@ namespace Microsoft.Bot.Core.Hosting
                             // Default to AadTokenValidation handling
                             context.Options.TokenValidationParameters.ConfigurationManager ??= jwtOptions.ConfigurationManager as BaseConfigurationManager;
                             await Task.CompletedTask.ConfigureAwait(false);
+                            logger.LogWarning("Invalid authorization header format.");
                             return;
                         }
 
@@ -142,6 +152,8 @@ namespace Microsoft.Bot.Core.Hosting
 
                         string oidcAuthority = issuer.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
                             ? BotOIDC : $"{AgentOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
+
+                        logger.LogDebug("Using OIDC Authority: {OidcAuthority} for issuer: {Issuer}", oidcAuthority, issuer);
 
                         jwtOptions.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                             oidcAuthority,
@@ -156,14 +168,17 @@ namespace Microsoft.Bot.Core.Hosting
                     },
                     OnTokenValidated = context =>
                     {
+                        logger.LogInformation("Token validated successfully for scheme: {Scheme}", schemeName);
                         return Task.CompletedTask;
                     },
                     OnForbidden = context =>
                     {
+                        logger.LogWarning("Forbidden response for scheme: {Scheme}", schemeName);
                         return Task.CompletedTask;
                     },
                     OnAuthenticationFailed = context =>
                     {
+                        logger.LogWarning("Authentication failed for scheme: {Scheme}. Exception: {Exception}", schemeName, context.Exception);
                         return Task.CompletedTask;
                     }
                 };
