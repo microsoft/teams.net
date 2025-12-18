@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
+using System.Text.Json;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 
@@ -25,7 +27,7 @@ public class ConversationClient(HttpClient httpClient)
     /// the activity is sent successfully.</returns>
     /// <exception cref="Exception">Thrown if the activity could not be sent successfully. The exception message includes the HTTP status code and
     /// response content.</exception>
-    public async Task<string> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    public async Task<ResourceResponse> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
@@ -42,10 +44,33 @@ public class ConversationClient(HttpClient httpClient)
 
         using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        string respContent = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-        return resp.IsSuccessStatusCode ?
-            respContent :
-            throw new HttpRequestException($"Error sending activity: {resp.StatusCode} - {respContent}");
+        if (resp.IsSuccessStatusCode)
+        {
+            string responseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            if (responseString.Length > 2) // to handle empty response 
+            {
+                ResourceResponse? resourceResponse = JsonSerializer.Deserialize<ResourceResponse>(responseString);
+                return resourceResponse ?? new ResourceResponse();
+            }
+            return new ResourceResponse();
+        }
+        else
+        {
+            string errResponseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+            throw new HttpRequestException($"Error sending activity {resp.StatusCode}. {errResponseString}");
+        }
     }
+
+}
+
+/// <summary>
+/// Resource Response
+/// </summary>
+public class ResourceResponse
+{
+    /// <summary>
+    /// Id of the activity
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
 }

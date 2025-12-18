@@ -81,13 +81,15 @@ public static class AddBotApplicationExtensions
     /// <returns></returns>
     public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
-        IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+        var sp = services.BuildServiceProvider();
+        IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
+        ILogger logger = sp.GetRequiredService<ILogger<ConversationClient>>();
         ArgumentNullException.ThrowIfNull(configuration);
 
         string scope = "https://api.botframework.com/.default";
-        if (configuration["${sectionName}:Scopes"] is not null)
+        if (configuration[$"{sectionName}:Scope"] is not null)
         {
-            scope = configuration[$"{sectionName}:Scopes"]!;
+            scope = configuration[$"{sectionName}:Scope"]!;
         }
 
         if (configuration["Scope"] is not null) //ToChannelFromBotOAuthScope
@@ -101,17 +103,25 @@ public static class AddBotApplicationExtensions
             .AddInMemoryTokenCaches()
             .AddAgentIdentities();
 
-        services.ConfigureMSAL(configuration, sectionName);
-        services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
+        if (services.ConfigureMSAL(configuration, sectionName))
+        {
+
+            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
                 .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
                     scope,
                     sp.GetService<IOptions<ManagedIdentityOptions>>()));
+        }
+        else
+        {
+            _logAuthConfigNotFound(logger, null);
+            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName);
+        }
         return services;
     }
 
-    private static IServiceCollection ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName)
+    private static bool ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName)
     {
         ArgumentNullException.ThrowIfNull(configuration);
         ILogger logger = services.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
@@ -133,7 +143,7 @@ public static class AddBotApplicationExtensions
             _logUsingSectionConfig(logger, sectionName, null);
             services.ConfigureMSALFromConfig(configuration.GetSection(sectionName));
         }
-        return services;
+        return true;
     }
 
     private static IServiceCollection ConfigureMSALFromConfig(this IServiceCollection services, IConfigurationSection msalConfigSection)
@@ -257,6 +267,8 @@ public static class AddBotApplicationExtensions
         LoggerMessage.Define(LogLevel.Debug, new(5), "Configuring authentication with User-Assigned Managed Identity");
     private static readonly Action<ILogger, string, Exception?> _logUsingFIC =
         LoggerMessage.Define<string>(LogLevel.Debug, new(6), "Configuring authentication with Federated Identity Credential (Managed Identity) with {IdentityType} Managed Identity");
+    private static readonly Action<ILogger, Exception?> _logAuthConfigNotFound =
+        LoggerMessage.Define(LogLevel.Warning, new(7), "Authentication configuration not found. Running without Auth");
 
 
 }

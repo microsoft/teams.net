@@ -12,34 +12,6 @@ using Microsoft.Identity.Web;
 namespace Microsoft.Bot.Core.Hosting;
 
 /// <summary>
-/// Represents an agentic identity for user-delegated token acquisition.
-/// </summary>
-internal sealed class AgenticIdentity
-{
-    public string? AgenticAppId { get; set; }
-    public string? AgenticUserId { get; set; }
-    public string? AgenticAppBlueprintId { get; set; }
-
-    public static AgenticIdentity? FromProperties(ExtendedPropertiesDictionary? properties)
-    {
-        if (properties is null)
-        {
-            return null;
-        }
-
-        properties.TryGetValue("agenticAppId", out object? appIdObj);
-        properties.TryGetValue("agenticUserId", out object? userIdObj);
-        properties.TryGetValue("agenticAppBlueprintId", out object? bluePrintObj);
-        return new AgenticIdentity
-        {
-            AgenticAppId = appIdObj?.ToString(),
-            AgenticUserId = userIdObj?.ToString(),
-            AgenticAppBlueprintId = bluePrintObj?.ToString()
-        };
-    }
-}
-
-/// <summary>
 /// HTTP message handler that automatically acquires and attaches authentication tokens
 /// for Bot Framework API calls. Supports both app-only and agentic (user-delegated) token acquisition.
 /// </summary>

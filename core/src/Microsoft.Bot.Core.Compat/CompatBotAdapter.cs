@@ -4,6 +4,7 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
+using Microsoft.Extensions.Logging;
 
 
 namespace Microsoft.Bot.Core.Compat;
@@ -16,7 +17,9 @@ namespace Microsoft.Bot.Core.Compat;
 /// This class is intended for scenarios where integration with non-standard bot runtimes or legacy systems is
 /// required.</remarks>
 /// <param name="botApplication">The bot application instance used to process and send activities within the adapter.</param>
-public class CompatBotAdapter(BotApplication botApplication) : BotAdapter
+/// <param name="logger">The <paramref name="logger"/></param>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
+public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAdapter> logger = default!) : BotAdapter
 {
     /// <summary>
     /// Deletes an activity from the conversation.
@@ -38,17 +41,24 @@ public class CompatBotAdapter(BotApplication botApplication) : BotAdapter
     /// <param name="activities"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
+    public override async Task<Microsoft.Bot.Schema.ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activities);
 
-        ResourceResponse[] responses = new ResourceResponse[1];
+        Microsoft.Bot.Schema.ResourceResponse[] responses = new Microsoft.Bot.Schema.ResourceResponse[1];
         for (int i = 0; i < activities.Length; i++)
         {
             CoreActivity a = activities[i].FromCompatActivity();
 
-            string resp = await botApplication.SendActivityAsync(a, cancellationToken).ConfigureAwait(false);
-            responses[i] = new ResourceResponse(id: resp);
+            ResourceResponse? resp = await botApplication.SendActivityAsync(a, cancellationToken).ConfigureAwait(false);
+            if (resp is not null)
+            {
+                responses[i] = new Microsoft.Bot.Schema.ResourceResponse() { Id = resp.Id };
+            }
+            else
+            {
+                logger.LogWarning("Found null ResourceResponse after calling SendActivityAsync");
+            }
         }
         return responses;
     }
@@ -61,7 +71,7 @@ public class CompatBotAdapter(BotApplication botApplication) : BotAdapter
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public override Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
+    public override Task<Microsoft.Bot.Schema.ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

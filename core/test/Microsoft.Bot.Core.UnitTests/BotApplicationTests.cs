@@ -189,10 +189,10 @@ public class BotApplicationTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        string result = await botApp.SendActivityAsync(activity);
+        var result = await botApp.SendActivityAsync(activity);
 
         Assert.NotNull(result);
-        Assert.Contains("activity123", result);
+        Assert.Contains("activity123", result.Id);
     }
 
     [Fact]
