@@ -3,7 +3,7 @@
 
 using Microsoft.Bot.Core.Schema;
 
-namespace Microsoft.Bot.Core.ClientSchema;
+namespace Microsoft.Bot.Core;
 
 /// <summary>
 /// Response from sending an activity.

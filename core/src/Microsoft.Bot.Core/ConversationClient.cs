@@ -5,11 +5,12 @@ using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Bot.Core.ClientSchema;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 
 namespace Microsoft.Bot.Core;
+
+using CustomHeaders = Dictionary<string, string>;
 
 /// <summary>
 /// Provides methods for sending activities to a conversation endpoint using HTTP requests.
@@ -22,7 +23,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <summary>
     /// Gets the default custom headers that will be included in all requests.
     /// </summary>
-    public Dictionary<string, string> DefaultCustomHeaders { get; } = new();
+    public CustomHeaders DefaultCustomHeaders { get; } = new();
 
     /// <summary>
     /// Sends the specified activity to the conversation endpoint asynchronously.
@@ -33,7 +34,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the activity could not be sent successfully. The exception message includes the HTTP status code and
     /// response content.</exception>
-    public async Task<SendActivityResponse> SendActivityAsync(CoreActivity activity, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse> SendActivityAsync(CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
@@ -62,7 +63,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
-    public async Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string activityId, CoreActivity activity, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string activityId, CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(activityId);
@@ -93,7 +94,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
-    public async Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(activityId);
@@ -119,7 +120,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
-    public async Task DeleteActivityAsync(CoreActivity activity, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task DeleteActivityAsync(CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Id);
@@ -146,7 +147,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of conversation members.</returns>
     /// <exception cref="HttpRequestException">Thrown if the members could not be retrieved successfully.</exception>
-    public async Task<IList<ConversationAccount>> GetConversationMembersAsync(string conversationId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<IList<ConversationAccount>> GetConversationMembersAsync(string conversationId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
@@ -173,7 +174,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the conversations and an optional continuation token.</returns>
     /// <exception cref="HttpRequestException">Thrown if the conversations could not be retrieved successfully.</exception>
-    public async Task<GetConversationsResponse> GetConversationsAsync(Uri serviceUrl, string? continuationToken = null, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<GetConversationsResponse> GetConversationsAsync(Uri serviceUrl, string? continuationToken = null, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
@@ -204,7 +205,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of members for the activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity members could not be retrieved successfully.</exception>
-    public async Task<IList<ConversationAccount>> GetActivityMembersAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<IList<ConversationAccount>> GetActivityMembersAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(activityId);
@@ -232,7 +233,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the conversation resource response with the conversation ID.</returns>
     /// <exception cref="HttpRequestException">Thrown if the conversation could not be created successfully.</exception>
-    public async Task<CreateConversationResponse> CreateConversationAsync(ConversationParameters parameters, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<CreateConversationResponse> CreateConversationAsync(ConversationParameters parameters, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(parameters);
         ArgumentNullException.ThrowIfNull(serviceUrl);
@@ -261,7 +262,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a page of members and an optional continuation token.</returns>
     /// <exception cref="HttpRequestException">Thrown if the conversation members could not be retrieved successfully.</exception>
-    public async Task<PagedMembersResult> GetConversationPagedMembersAsync(string conversationId, Uri serviceUrl, int? pageSize = null, string? continuationToken = null, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<PagedMembersResult> GetConversationPagedMembersAsync(string conversationId, Uri serviceUrl, int? pageSize = null, string? continuationToken = null, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
@@ -304,7 +305,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the member could not be deleted successfully.</exception>
     /// <remarks>If the deleted member was the last member of the conversation, the conversation is also deleted.</remarks>
-    public async Task DeleteConversationMemberAsync(string conversationId, string memberId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task DeleteConversationMemberAsync(string conversationId, string memberId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(memberId);
@@ -334,7 +335,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with a resource ID.</returns>
     /// <exception cref="HttpRequestException">Thrown if the history could not be sent successfully.</exception>
     /// <remarks>Activities in the transcript must have unique IDs and appropriate timestamps for proper rendering.</remarks>
-    public async Task<SendConversationHistoryResponse> SendConversationHistoryAsync(string conversationId, Transcript transcript, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<SendConversationHistoryResponse> SendConversationHistoryAsync(string conversationId, Transcript transcript, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(transcript);
@@ -364,7 +365,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with an attachment ID.</returns>
     /// <exception cref="HttpRequestException">Thrown if the attachment could not be uploaded successfully.</exception>
     /// <remarks>This is useful for storing data in a compliant store when dealing with enterprises.</remarks>
-    public async Task<UploadAttachmentResponse> UploadAttachmentAsync(string conversationId, AttachmentData attachmentData, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<UploadAttachmentResponse> UploadAttachmentAsync(string conversationId, AttachmentData attachmentData, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(attachmentData);
@@ -382,7 +383,7 @@ public class ConversationClient(HttpClient httpClient)
             cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task<T> SendHttpRequestAsync<T>(HttpMethod method, string url, string? body, AgenticIdentity? agenticIdentity, string operationDescription, Dictionary<string, string>? customHeaders, CancellationToken cancellationToken)
+    private async Task<T> SendHttpRequestAsync<T>(HttpMethod method, string url, string? body, AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders, CancellationToken cancellationToken)
     {
         using HttpRequestMessage request = new(method, url);
 

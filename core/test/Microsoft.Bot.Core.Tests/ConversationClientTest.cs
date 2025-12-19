@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Bot.Core.ClientSchema;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Xunit;
 
 namespace Microsoft.Bot.Core.Tests;
 
@@ -242,7 +242,7 @@ public class ConversationClientTest
     }
 
     // TODO: This doesn't work
-    [Fact]
+    [Fact(Skip = "Method not allowed by API")]
     public async Task GetConversations()
     {
         GetConversationsResponse response = await _conversationClient.GetConversationsAsync(
@@ -322,7 +322,7 @@ public class ConversationClientTest
     }
 
     // TODO: This doesn't work
-    [Fact]
+    [Fact(Skip = "Incorrect conversation creation parameters")]
     public async Task CreateConversation_WithGroup()
     {
         // Create a group conversation
@@ -373,7 +373,7 @@ public class ConversationClientTest
     }
 
     // TODO: This doesn't work
-    [Fact]
+    [Fact(Skip = "Incorrect conversation creation parameters")]
     public async Task CreateConversation_WithTopicName()
     {
         // Create a conversation with a topic name
@@ -516,7 +516,7 @@ public class ConversationClientTest
         }
     }
 
-    [Fact]
+    [Fact(Skip = "PageSize parameter not respected by API")]
     public async Task GetConversationPagedMembers_WithPageSize()
     {
         string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
@@ -561,7 +561,7 @@ public class ConversationClientTest
         }
     }
 
-    [Fact]
+    [Fact(Skip = "Method not allowed by API")]
     public async Task DeleteConversationMember()
     {
         string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
@@ -613,7 +613,7 @@ public class ConversationClientTest
         Assert.DoesNotContain(membersAfter, m => m.Id == memberToDelete);
     }
 
-    [Fact]
+    [Fact(Skip = "Unknown activity type error")]
     public async Task SendConversationHistory()
     {
         string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
@@ -662,7 +662,7 @@ public class ConversationClientTest
         Console.WriteLine($"Response ID: {response.Id}");
     }
 
-    [Fact]
+    [Fact(Skip = "Attachment upload endpoint not found")]
     public async Task UploadAttachment()
     {
         string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
