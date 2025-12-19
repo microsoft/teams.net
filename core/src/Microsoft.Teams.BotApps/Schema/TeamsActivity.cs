@@ -58,7 +58,6 @@ public class TeamsActivity : CoreActivity
         ChannelId = activity.ChannelId;
         Type = activity.Type;
         // ReplyToId = activity.ReplyToId;
-        Text = activity.Text;
         Entities = EntityList.FromJsonArray(activity.Entities);
         ChannelData = new TeamsChannelData(activity.ChannelData!);
         From = new TeamsConversationAccount(activity.From!);
@@ -84,6 +83,16 @@ public class TeamsActivity : CoreActivity
 
         return this;
     }
+
+    /// <summary>
+    /// Gets or sets the text content associated with this object.
+    /// </summary>
+    [JsonPropertyName("text")] public string? Text { get; set; }
+
+    /// <summary>
+    /// Gets or sets the text Format associated with this object.
+    /// </summary>
+    [JsonPropertyName("textFormat")] public string? TextFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.

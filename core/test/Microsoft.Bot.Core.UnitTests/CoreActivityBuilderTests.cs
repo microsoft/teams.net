@@ -225,7 +225,7 @@ public class CoreActivityBuilderTests
             .WithId("other-id")
             .Build();
 
-        Assert.Equal("original-id", modified.Id);
+        Assert.Equal("other-id", modified.Id);
         Assert.Equal(ActivityTypes.Message, modified.Type);
     }
 

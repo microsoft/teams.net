@@ -114,6 +114,19 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     }
 
     /// <summary>
+    /// Adds or sets the text content of the activity.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="textFormat"></param>
+    /// <returns></returns>
+    public TeamsActivityBuilder WithText(string text, string textFormat = "plain")
+    {
+        _activity.Text = text;
+        _activity.TextFormat = textFormat;
+        return this;
+    }
+
+    /// <summary>
     /// Adds a mention to the activity.
     /// </summary>
     /// <param name="account">The account to mention.</param>

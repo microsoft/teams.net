@@ -17,7 +17,7 @@ webApp.MapGet("/", () => "CoreBot is running.");
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
     string replyText = $"CoreBot running on SDK {BotApplication.Version}.";
-    replyText += $"<br /> You sent: `{activity.Text}` in activity of type `{activity.Type}`.";
+    replyText += $"<br /> You sent: `{activity.Properties["text"]}` in activity of type `{activity.Type}`.";
 
     string? conversationType = "unknown conversation type";
     if (activity.Conversation.Properties.TryGetValue("conversationType", out object? ctProp))
@@ -30,7 +30,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityTypes.Message)
         .WithConversationReference(activity)
-        .WithText(replyText)
+        .WithProperty("text",replyText)
         .Build();
 
     await botApp.SendActivityAsync(replyActivity, cancellationToken);

@@ -20,11 +20,11 @@ public class Worker(ConversationClient conversationClient, ILogger<Worker> logge
             {
                 CoreActivity proactiveMessage = new()
                 {
-                    Text = $"Proactive hello at {DateTimeOffset.Now}",
                     ServiceUrl = new Uri(ServiceUrl),
                     From = new() { Id = FromId },
                     Conversation = new() { Id = ConversationId }
                 };
+                proactiveMessage.Properties["text"] = $"Proactive hello at {DateTimeOffset.Now}";
                 ResourceResponse aid = await conversationClient.SendActivityAsync(proactiveMessage, stoppingToken);
                 logger.LogInformation("Activity {Aid} sent", aid.Id);
             }
