@@ -38,7 +38,8 @@ public class BotApplication
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         string appId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? "Unknown AppID";
-        logger.LogInformation("Started bot listener on {Port} for AppID:{AppId} with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], appId, Version);
+        logger.LogInformation("Started bot listener \n on {Port} \n for AppID:{AppId} \n with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], appId, Version);
+
     }
 
 
@@ -74,7 +75,7 @@ public class BotApplication
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        _logger.LogInformation("Processing activity: {Id} {Type}", activity.Id, activity.Type);
+        _logger.LogInformation("Processing activity {Type} {Id}", activity.Type, activity.Id);
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
@@ -126,19 +127,7 @@ public class BotApplication
         return await _conversationClient.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Sends a typing activity to the conversation asynchronously.
-    /// </summary>
-    /// <param name="activity">The activity containing conversation information.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<ResourceResponse?> SendTypingActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        var typing = activity.CreateReplyMessageActivity();
-        typing.Type = ActivityTypes.Typing;
-        return await SendActivityAsync(typing, cancellationToken).ConfigureAwait(false);
-    }
+
 
     /// <summary>
     /// Gets the version of the SDK.

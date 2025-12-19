@@ -32,12 +32,11 @@ public class ConversationClientTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        var result = await conversationClient.SendActivityAsync(activity);
+        ResourceResponse result = await conversationClient.SendActivityAsync(activity);
 
         Assert.NotNull(result);
         Assert.Contains("activity123", result.Id);
@@ -62,7 +61,6 @@ public class ConversationClientTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
@@ -79,7 +77,6 @@ public class ConversationClientTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Conversation = new Conversation() { Id = null! },
             ServiceUrl = new Uri("https://test.service.url/")
         }; ;
@@ -97,7 +94,6 @@ public class ConversationClientTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Conversation = new Conversation { Id = "conv123" }
         };
 
@@ -127,7 +123,6 @@ public class ConversationClientTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };
@@ -163,7 +158,6 @@ public class ConversationClientTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };

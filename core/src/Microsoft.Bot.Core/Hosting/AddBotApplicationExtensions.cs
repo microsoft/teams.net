@@ -81,7 +81,7 @@ public static class AddBotApplicationExtensions
     /// <returns></returns>
     public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
-        var sp = services.BuildServiceProvider();
+        ServiceProvider sp = services.BuildServiceProvider();
         IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
         ILogger logger = sp.GetRequiredService<ILogger<ConversationClient>>();
         ArgumentNullException.ThrowIfNull(configuration);
