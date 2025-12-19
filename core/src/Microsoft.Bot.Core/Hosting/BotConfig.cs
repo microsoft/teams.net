@@ -37,4 +37,16 @@ internal sealed class BotConfig
             FicClientId = configuration["MANAGED_IDENTITY_CLIENT_ID"],
         };
     }
+
+    public static BotConfig FromAadConfig(IConfiguration configuration, string sectionName = "AzureAd")
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+        IConfigurationSection section = configuration.GetSection(sectionName);
+        return new()
+        {
+            TenantId = section["TenantId"] ?? string.Empty,
+            ClientId = section["ClientId"] ?? string.Empty,
+            ClientSecret = section["ClientSecret"],
+        };
+    }
 }

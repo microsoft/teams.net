@@ -24,6 +24,8 @@ namespace Microsoft.Bot.Core.Hosting;
 /// methods are called in the application's service configuration pipeline.</remarks>
 public static class AddBotApplicationExtensions
 {
+    internal const string MsalConfigKey = "AzureAd";
+
     /// <summary>
     /// Configures the application to handle bot messages at the specified route and returns the registered bot
     /// application instance.
@@ -49,7 +51,7 @@ public static class AddBotApplicationExtensions
         {
             CoreActivity resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
             return resp.Id;
-        });
+        }).RequireAuthorization();
 
         return app;
     }
@@ -63,6 +65,9 @@ public static class AddBotApplicationExtensions
     /// <returns></returns>
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
     {
+        ILogger logger = services.BuildServiceProvider().GetRequiredService<ILogger<BotApplication>>();
+
+        services.AddAuthorization(logger, sectionName);
         services.AddConversationClient(sectionName);
         services.AddSingleton<TApp>();
         return services;
@@ -144,7 +149,7 @@ public static class AddBotApplicationExtensions
     private static IServiceCollection ConfigureMSALFromConfig(this IServiceCollection services, IConfigurationSection msalConfigSection)
     {
         ArgumentNullException.ThrowIfNull(msalConfigSection);
-        services.Configure<MicrosoftIdentityApplicationOptions>(msalConfigSection);
+        services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, msalConfigSection);
         return services;
     }
 
@@ -154,7 +159,7 @@ public static class AddBotApplicationExtensions
         ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(clientSecret);
 
-        services.Configure<MicrosoftIdentityApplicationOptions>(options =>
+        services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
             // TODO: Make Instance configurable
             options.Instance = "https://login.microsoftonline.com/";
@@ -185,7 +190,7 @@ public static class AddBotApplicationExtensions
             ficCredential.ManagedIdentityClientId = ficClientId;
         }
 
-        services.Configure<MicrosoftIdentityApplicationOptions>(options =>
+        services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
             // TODO: Make Instance configurable
             options.Instance = "https://login.microsoftonline.com/";
@@ -212,7 +217,7 @@ public static class AddBotApplicationExtensions
             options.UserAssignedClientId = umiClientId;
         });
 
-        services.Configure<MicrosoftIdentityApplicationOptions>(options =>
+        services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
             // TODO: Make Instance configurable
             options.Instance = "https://login.microsoftonline.com/";

@@ -35,7 +35,9 @@ public class AddBotApplicationExtensionsTests
 
     private static void AssertMsalOptions(ServiceProvider serviceProvider, string expectedClientId, string expectedTenantId, string expectedInstance = "https://login.microsoftonline.com/")
     {
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider.GetRequiredService<IOptions<MicrosoftIdentityApplicationOptions>>().Value;
+        var msalOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
+            .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.Equal(expectedClientId, msalOptions.ClientId);
         Assert.Equal(expectedTenantId, msalOptions.TenantId);
         Assert.Equal(expectedInstance, msalOptions.Instance);
@@ -45,7 +47,7 @@ public class AddBotApplicationExtensionsTests
     public void AddConversationClient_WithBotFrameworkConfig_ConfiguresClientSecret()
     {
         // Arrange
-        Dictionary<string, string?> configData = new()
+            var configData = new Dictionary<string, string?>
         {
             ["MicrosoftAppId"] = "test-app-id",
             ["MicrosoftAppTenantId"] = "test-tenant-id",
@@ -57,7 +59,9 @@ public class AddBotApplicationExtensionsTests
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-app-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider.GetRequiredService<IOptions<MicrosoftIdentityApplicationOptions>>().Value;
+        var msalOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
+            .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
         CredentialDescription credential = msalOptions.ClientCredentials.First();
@@ -81,7 +85,9 @@ public class AddBotApplicationExtensionsTests
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider.GetRequiredService<IOptions<MicrosoftIdentityApplicationOptions>>().Value;
+        var msalOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
+            .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
         CredentialDescription credential = msalOptions.ClientCredentials.First();
@@ -105,7 +111,9 @@ public class AddBotApplicationExtensionsTests
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider.GetRequiredService<IOptions<MicrosoftIdentityApplicationOptions>>().Value;
+        var msalOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
+            .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
         CredentialDescription credential = msalOptions.ClientCredentials.First();
@@ -132,7 +140,9 @@ public class AddBotApplicationExtensionsTests
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider.GetRequiredService<IOptions<MicrosoftIdentityApplicationOptions>>().Value;
+        var msalOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
+            .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
         CredentialDescription credential = msalOptions.ClientCredentials.First();
@@ -158,7 +168,9 @@ public class AddBotApplicationExtensionsTests
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider.GetRequiredService<IOptions<MicrosoftIdentityApplicationOptions>>().Value;
+        var msalOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
+            .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.Null(msalOptions.ClientCredentials);
 
         ManagedIdentityOptions managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
