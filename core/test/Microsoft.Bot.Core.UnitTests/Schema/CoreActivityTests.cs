@@ -13,7 +13,6 @@ public class CoreCoreActivityTests
         CoreActivity a1 = new();
         Assert.NotNull(a1);
         Assert.Equal(ActivityTypes.Message, a1.Type);
-        Assert.Null(a1.Text);
 
         CoreActivity a2 = new()
         {
@@ -21,7 +20,6 @@ public class CoreCoreActivityTests
         };
         Assert.NotNull(a2);
         Assert.Equal("mytype", a2.Type);
-        Assert.Null(a2.Text);
     }
 
     [Fact]
@@ -36,7 +34,6 @@ public class CoreCoreActivityTests
         CoreActivity act = CoreActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);
-        Assert.Null(act.Text);
 
         string json2 = """
         {
@@ -46,7 +43,6 @@ public class CoreCoreActivityTests
         CoreActivity act2 = CoreActivity.FromJsonString(json2);
         Assert.NotNull(act2);
         Assert.Equal("message", act2.Type);
-        Assert.Null(act2.Text);
 
     }
 
@@ -66,7 +62,6 @@ public class CoreCoreActivityTests
         CoreActivity act = CoreActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);
-        Assert.Equal("hello", act.Text);
         Assert.True(act.Properties.ContainsKey("unknownString"));
         Assert.True(act.Properties.ContainsKey("unknownInt"));
         Assert.True(act.Properties.ContainsKey("unknownBool"));
@@ -83,7 +78,6 @@ public class CoreCoreActivityTests
         CoreActivity act = new()
         {
             Type = ActivityTypes.Message,
-            Text = "hello",
         };
         act.Properties["unknownString"] = "some string";
         act.Properties["unknownInt"] = 123;
@@ -94,7 +88,6 @@ public class CoreCoreActivityTests
 
         string json = act.ToJson();
         Assert.Contains("\"type\": \"message\"", json);
-        Assert.Contains("\"text\": \"hello\"", json);
         Assert.Contains("\"unknownString\": \"some string\"", json);
         Assert.Contains("\"unknownInt\": 123", json);
         Assert.Contains("\"unknownBool\": true", json);
@@ -120,7 +113,6 @@ public class CoreCoreActivityTests
         CoreActivity act = CoreActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);
-        Assert.Equal("hello", act.Text);
         Assert.NotNull(act.From);
         Assert.IsType<ConversationAccount>(act.From);
         Assert.Equal("1", act.From!.Id);
@@ -144,10 +136,9 @@ public class CoreCoreActivityTests
         }
         """;
         CoreActivity act = CoreActivity.FromJsonString(json);
-        act.Text = "updated";
         string json2 = act.ToJson();
         Assert.Contains("\"type\": \"message\"", json2);
-        Assert.Contains("\"text\": \"updated\"", json2);
+        Assert.Contains("\"text\": \"hello\"", json2);
         Assert.Contains("\"from\": {", json2);
         Assert.Contains("\"id\": \"1\"", json2);
         Assert.Contains("\"name\": \"tester\"", json2);
@@ -202,7 +193,7 @@ public class CoreCoreActivityTests
         CoreActivity? act = JsonSerializer.Deserialize<CoreActivity>(json); //without default options
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);
-        Assert.Null(act.Text);
+        Assert.Null(act.Properties["text"]);
         Assert.Null(act.Properties["unknownString"]!);
 
         string json2 = JsonSerializer.Serialize(act); //without default options
@@ -217,7 +208,6 @@ public class CoreCoreActivityTests
         CoreActivity act = new()
         {
             Type = ActivityTypes.Message,
-            Text = "hello",
             Properties =
             {
                 { "customField", "customValue" }
@@ -256,7 +246,6 @@ public class CoreCoreActivityTests
         };
         string json = act.ToJson();
         Assert.Contains("\"type\": \"message\"", json);
-        Assert.Contains("\"text\": \"hello\"", json);
         Assert.Contains("\"customField\": \"customValue\"", json);
         Assert.Contains("\"channelCustomField\": \"channelCustomValue\"", json);
         Assert.Contains("\"conversationCustomField\": \"conversationCustomValue\"", json);
@@ -271,7 +260,6 @@ public class CoreCoreActivityTests
         CoreActivity act = new()
         {
             Type = "myActivityType",
-            Text = "hello",
             Id = "CoreActivity1",
             ChannelId = "channel1",
             ServiceUrl = new Uri("http://service.url"),
@@ -293,12 +281,12 @@ public class CoreCoreActivityTests
         CoreActivity reply = CoreActivity.CreateBuilder()
             .WithType(ActivityTypes.Message)
             .WithConversationReference(act)
-            .WithText("reply")
+            .WithProperty("text", "reply")
             .Build();
 
         Assert.NotNull(reply);
         Assert.Equal(ActivityTypes.Message, reply.Type);
-        Assert.Equal("reply", reply.Text);
+        Assert.Equal("reply", reply.Properties["text"]);
         Assert.Equal("channel1", reply.ChannelId);
         Assert.NotNull(reply.ServiceUrl);
         Assert.Equal("http://service.url/", reply.ServiceUrl.ToString());
@@ -327,7 +315,7 @@ public class CoreCoreActivityTests
         CoreActivity? act = await CoreActivity.FromJsonStreamAsync(ms);
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);
-        Assert.Equal("hello", act.Text);
+        Assert.Equal("hello", act.Properties["text"]?.ToString());
         Assert.NotNull(act.From);
         Assert.IsType<ConversationAccount>(act.From);
         Assert.Equal("1", act.From.Id);

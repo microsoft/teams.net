@@ -112,13 +112,14 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     }
 
     /// <summary>
-    /// Sets the text content.
+    /// Adds or updates a property in the activity's Properties dictionary.
     /// </summary>
-    /// <param name="text">The text content.</param>
+    /// <param name="name">Name of the property.</param>
+    /// <param name="value">Value of the property.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithText(string text)
+    public TBuilder WithProperty<T>(string name, T? value)
     {
-        _activity.Text = text;
+        _activity.Properties[name] = value;
         return (TBuilder)this;
     }
 

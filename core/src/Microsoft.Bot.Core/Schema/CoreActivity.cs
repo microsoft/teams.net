@@ -35,10 +35,6 @@ public class CoreActivity
     /// </summary>
     [JsonPropertyName("channelId")] public string? ChannelId { get; set; }
     /// <summary>
-    /// Gets or sets the text content of the message.
-    /// </summary>
-    [JsonPropertyName("text")] public string? Text { get; set; }
-    /// <summary>
     /// Gets or sets the unique identifier for the activity.
     /// </summary>
     [JsonPropertyName("id")] public string? Id { get; set; }
