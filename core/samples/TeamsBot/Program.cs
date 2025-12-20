@@ -24,6 +24,7 @@ teamsApp.OnMessage = async (context, cancellationToken) =>
     reply.AddMention(context.Activity.From!, "ridobotlocal", true);
 
     await teamsApp.SendActivityAsync(reply, cancellationToken);
+    await context.SendActivityAsync("Mention sent!", cancellationToken);
 };
 
 teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>

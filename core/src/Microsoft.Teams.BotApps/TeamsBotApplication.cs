@@ -45,7 +45,7 @@ public class TeamsBotApplication : BotApplication
     {
         OnActivity = async (activity, cancellationToken) =>
         {
-            logger.LogInformation("New activity received of type {Type} from {From}", activity.Type, activity.From?.Id);
+            logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context context = new(this, teamsActivity);
             if (teamsActivity.Type == TeamsActivityTypes.Message && OnMessage is not null)
