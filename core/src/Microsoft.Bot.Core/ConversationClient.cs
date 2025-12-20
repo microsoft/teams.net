@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Net.Http.Json;
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
@@ -23,7 +22,7 @@ public class ConversationClient(HttpClient httpClient)
     /// <summary>
     /// Gets the default custom headers that will be included in all requests.
     /// </summary>
-    public CustomHeaders DefaultCustomHeaders { get; } = new();
+    public CustomHeaders DefaultCustomHeaders { get; } = [];
 
     /// <summary>
     /// Sends the specified activity to the conversation endpoint asynchronously.
@@ -269,7 +268,7 @@ public class ConversationClient(HttpClient httpClient)
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/pagedmembers";
 
-        List<string> queryParams = new();
+        List<string> queryParams = [];
         if (pageSize.HasValue)
         {
             queryParams.Add($"pageSize={pageSize.Value}");
@@ -398,7 +397,7 @@ public class ConversationClient(HttpClient httpClient)
         }
 
         // Apply default custom headers
-        foreach (var header in DefaultCustomHeaders)
+        foreach (KeyValuePair<string, string> header in DefaultCustomHeaders)
         {
             request.Headers.TryAddWithoutValidation(header.Key, header.Value);
         }
@@ -406,7 +405,7 @@ public class ConversationClient(HttpClient httpClient)
         // Apply method-level custom headers (these override default headers if same key)
         if (customHeaders is not null)
         {
-            foreach (var header in customHeaders)
+            foreach (KeyValuePair<string, string> header in customHeaders)
             {
                 request.Headers.Remove(header.Key);
                 request.Headers.TryAddWithoutValidation(header.Key, header.Value);

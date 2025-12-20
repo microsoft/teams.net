@@ -50,7 +50,7 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
         {
             CoreActivity a = activities[i].FromCompatActivity();
 
-            var resp = await botApplication.SendActivityAsync(a, cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? resp = await botApplication.SendActivityAsync(a, cancellationToken).ConfigureAwait(false);
             if (resp is not null)
             {
                 responses[i] = new Microsoft.Bot.Schema.ResourceResponse() { Id = resp.Id };

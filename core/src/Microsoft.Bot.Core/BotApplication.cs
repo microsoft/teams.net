@@ -135,7 +135,7 @@ public class BotApplication
     public async Task<SendActivityResponse?> SendTypingActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        var typing = activity.CreateReplyMessageActivity();
+        CoreActivity typing = activity.CreateReplyMessageActivity();
         typing.Type = ActivityTypes.Typing;
         return await SendActivityAsync(typing, cancellationToken).ConfigureAwait(false);
     }
