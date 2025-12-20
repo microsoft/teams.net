@@ -2,14 +2,10 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Core.Hosting;
-using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
-using Microsoft.Identity.Web;
-using Moq;
 
 namespace Microsoft.Bot.Core.UnitTests.Hosting;
 
@@ -17,11 +13,11 @@ public class AddBotApplicationExtensionsTests
 {
     private static ServiceProvider BuildServiceProvider(Dictionary<string, string?> configData, string? aadConfigSectionName = null)
     {
-        var configuration = new ConfigurationBuilder()
+        IConfigurationRoot configuration = new ConfigurationBuilder()
             .AddInMemoryCollection(configData)
             .Build();
 
-        var services = new ServiceCollection();
+        ServiceCollection services = new();
         services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging();
 
@@ -51,7 +47,7 @@ public class AddBotApplicationExtensionsTests
     public void AddConversationClient_WithBotFrameworkConfig_ConfiguresClientSecret()
     {
         // Arrange
-            var configData = new Dictionary<string, string?>
+        var configData = new Dictionary<string, string?>
         {
             ["MicrosoftAppId"] = "test-app-id",
             ["MicrosoftAppTenantId"] = "test-tenant-id",
@@ -59,7 +55,7 @@ public class AddBotApplicationExtensionsTests
         };
 
         // Act
-        var serviceProvider = BuildServiceProvider(configData);
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-app-id", "test-tenant-id");
@@ -68,7 +64,7 @@ public class AddBotApplicationExtensionsTests
             .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
-        var credential = msalOptions.ClientCredentials.First();
+        CredentialDescription credential = msalOptions.ClientCredentials.First();
         Assert.Equal(CredentialSource.ClientSecret, credential.SourceType);
         Assert.Equal("test-secret", credential.ClientSecret);
     }
@@ -77,7 +73,7 @@ public class AddBotApplicationExtensionsTests
     public void AddConversationClient_WithCoreConfigAndClientSecret_ConfiguresClientSecret()
     {
         // Arrange
-        var configData = new Dictionary<string, string?>
+        Dictionary<string, string?> configData = new()
         {
             ["CLIENT_ID"] = "test-client-id",
             ["TENANT_ID"] = "test-tenant-id",
@@ -85,7 +81,7 @@ public class AddBotApplicationExtensionsTests
         };
 
         // Act
-        var serviceProvider = BuildServiceProvider(configData);
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
@@ -94,7 +90,7 @@ public class AddBotApplicationExtensionsTests
             .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
-        var credential = msalOptions.ClientCredentials.First();
+        CredentialDescription credential = msalOptions.ClientCredentials.First();
         Assert.Equal(CredentialSource.ClientSecret, credential.SourceType);
         Assert.Equal("test-client-secret", credential.ClientSecret);
     }
@@ -103,7 +99,7 @@ public class AddBotApplicationExtensionsTests
     public void AddConversationClient_WithCoreConfigAndSystemAssignedMI_ConfiguresSystemAssignedFIC()
     {
         // Arrange
-        var configData = new Dictionary<string, string?>
+        Dictionary<string, string?> configData = new()
         {
             ["CLIENT_ID"] = "test-client-id",
             ["TENANT_ID"] = "test-tenant-id",
@@ -111,7 +107,7 @@ public class AddBotApplicationExtensionsTests
         };
 
         // Act
-        var serviceProvider = BuildServiceProvider(configData);
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
@@ -120,11 +116,11 @@ public class AddBotApplicationExtensionsTests
             .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
-        var credential = msalOptions.ClientCredentials.First();
+        CredentialDescription credential = msalOptions.ClientCredentials.First();
         Assert.Equal(CredentialSource.SignedAssertionFromManagedIdentity, credential.SourceType);
         Assert.Null(credential.ManagedIdentityClientId); // System-assigned
 
-        var managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
+        ManagedIdentityOptions managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
         Assert.Null(managedIdentityOptions.UserAssignedClientId);
     }
 
@@ -132,7 +128,7 @@ public class AddBotApplicationExtensionsTests
     public void AddConversationClient_WithCoreConfigAndUserAssignedMI_ConfiguresUserAssignedFIC()
     {
         // Arrange
-        var configData = new Dictionary<string, string?>
+        Dictionary<string, string?> configData = new()
         {
             ["CLIENT_ID"] = "test-client-id",
             ["TENANT_ID"] = "test-tenant-id",
@@ -140,7 +136,7 @@ public class AddBotApplicationExtensionsTests
         };
 
         // Act
-        var serviceProvider = BuildServiceProvider(configData);
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
@@ -149,11 +145,11 @@ public class AddBotApplicationExtensionsTests
             .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
-        var credential = msalOptions.ClientCredentials.First();
+        CredentialDescription credential = msalOptions.ClientCredentials.First();
         Assert.Equal(CredentialSource.SignedAssertionFromManagedIdentity, credential.SourceType);
         Assert.Equal("umi-client-id", credential.ManagedIdentityClientId);
 
-        var managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
+        ManagedIdentityOptions managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
         Assert.Null(managedIdentityOptions.UserAssignedClientId);
     }
 
@@ -161,14 +157,14 @@ public class AddBotApplicationExtensionsTests
     public void AddConversationClient_WithCoreConfigAndNoManagedIdentity_ConfiguresUMIWithClientId()
     {
         // Arrange
-        var configData = new Dictionary<string, string?>
+        Dictionary<string, string?> configData = new()
         {
             ["CLIENT_ID"] = "test-client-id",
             ["TENANT_ID"] = "test-tenant-id"
         };
 
         // Act
-        var serviceProvider = BuildServiceProvider(configData);
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
 
         // Assert
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
@@ -177,7 +173,7 @@ public class AddBotApplicationExtensionsTests
             .Get(AddBotApplicationExtensions.MsalConfigKey);
         Assert.Null(msalOptions.ClientCredentials);
 
-        var managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
+        ManagedIdentityOptions managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
         Assert.Equal("test-client-id", managedIdentityOptions.UserAssignedClientId);
     }
 
@@ -186,7 +182,7 @@ public class AddBotApplicationExtensionsTests
     {
         // AzureAd is the default Section Name
         // Arrange
-        var configData = new Dictionary<string, string?>
+        Dictionary<string, string?> configData = new()
         {
             ["AzureAd:ClientId"] = "azuread-client-id",
             ["AzureAd:TenantId"] = "azuread-tenant-id",
@@ -194,7 +190,7 @@ public class AddBotApplicationExtensionsTests
         };
 
         // Act
-        var serviceProvider = BuildServiceProvider(configData);
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
 
         // Assert
         AssertMsalOptions(serviceProvider, "azuread-client-id", "azuread-tenant-id");
@@ -204,7 +200,7 @@ public class AddBotApplicationExtensionsTests
     public void AddConversationClient_WithCustomSectionName_ConfiguresFromCustomSection()
     {
         // Arrange
-        var configData = new Dictionary<string, string?>
+        Dictionary<string, string?> configData = new()
         {
             ["CustomAuth:ClientId"] = "custom-client-id",
             ["CustomAuth:TenantId"] = "custom-tenant-id",
@@ -212,7 +208,7 @@ public class AddBotApplicationExtensionsTests
         };
 
         // Act
-        var serviceProvider = BuildServiceProvider(configData, "CustomAuth");
+        ServiceProvider serviceProvider = BuildServiceProvider(configData, "CustomAuth");
 
         // Assert
         AssertMsalOptions(serviceProvider, "custom-client-id", "custom-tenant-id");

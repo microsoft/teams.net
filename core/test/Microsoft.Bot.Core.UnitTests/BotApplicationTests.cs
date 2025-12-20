@@ -52,9 +52,9 @@ public class BotApplicationTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Id = "act123"
         };
+        activity.Properties["text"] = "Test message";
         activity.Recipient.Properties["appId"] = "test-app-id";
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
@@ -84,7 +84,6 @@ public class BotApplicationTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -128,7 +127,6 @@ public class BotApplicationTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -184,7 +182,6 @@ public class BotApplicationTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };

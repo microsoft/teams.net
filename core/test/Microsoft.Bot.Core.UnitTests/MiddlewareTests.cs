@@ -36,7 +36,7 @@ public class MiddlewareTests
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
         BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
-        List<int> executionOrder = new();
+        List<int> executionOrder = [];
 
         Mock<ITurnMiddleWare> mockMiddleware1 = new();
         mockMiddleware1
@@ -64,7 +64,6 @@ public class MiddlewareTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -110,7 +109,6 @@ public class MiddlewareTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -154,7 +152,6 @@ public class MiddlewareTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -193,7 +190,6 @@ public class MiddlewareTests
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = "Test message",
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -204,7 +200,6 @@ public class MiddlewareTests
 
         Assert.NotNull(receivedActivity);
         Assert.Equal(ActivityTypes.Message, receivedActivity.Type);
-        Assert.Equal("Test message", receivedActivity.Text);
     }
 
     private static ConversationClient CreateMockConversationClient()
