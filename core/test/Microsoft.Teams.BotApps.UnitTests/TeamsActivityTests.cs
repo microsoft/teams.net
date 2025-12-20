@@ -204,6 +204,7 @@ public class TeamsActivityTests
         string json = activity.ToJson();
         Assert.Contains("clientInfo", json);
         Assert.Contains("Web", json);
+        Assert.Contains("Hello World", json);
     }
 
 

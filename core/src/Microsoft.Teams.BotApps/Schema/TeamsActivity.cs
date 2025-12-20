@@ -48,7 +48,6 @@ public class TeamsActivity : CoreActivity
         From = new TeamsConversationAccount(new ConversationAccount());
         Recipient = new TeamsConversationAccount(new ConversationAccount());
         Conversation = new TeamsConversation(new Conversation());
-
     }
 
     private TeamsActivity(CoreActivity activity)
@@ -80,14 +79,29 @@ public class TeamsActivity : CoreActivity
         base.From = this.From;
         base.Recipient = this.Recipient;
         base.Conversation = this.Conversation;
-
+        
         return this;
     }
 
+    private string? _text;
     /// <summary>
     /// Gets or sets the text content associated with this object.
     /// </summary>
-    [JsonPropertyName("text")] public string? Text { get; set; }
+    [JsonPropertyName("text")] public string? Text {
+        get => _text;
+        set
+        {
+            _text = value;
+            if (Properties.ContainsKey("text"))
+            {
+                Properties["text"] = _text;
+            }
+            else
+            {
+                Properties.TryAdd("text", _text);
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets the text Format associated with this object.

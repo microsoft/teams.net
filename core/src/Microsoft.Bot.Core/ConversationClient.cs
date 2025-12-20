@@ -51,7 +51,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         return await SendHttpRequestAsync<SendActivityResponse>(
             HttpMethod.Post,
             url,
-            activity.ToJson(),
+            body,
             activity.From.GetAgenticIdentity(),
             "sending activity",
             customHeaders,
@@ -76,11 +76,14 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}";
+        string body = activity.ToJson();
+
+        logger.LogTrace("Updating activity at {Url}: {Activity}", url, body);
 
         return await SendHttpRequestAsync<UpdateActivityResponse>(
             HttpMethod.Put,
             url,
-            activity.ToJson(),
+            body,
             activity.From.GetAgenticIdentity(),
             "updating activity",
             customHeaders,
@@ -106,6 +109,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}";
+
+        logger.LogTrace("Deleting activity at {Url}", url);
 
         await SendHttpRequestAsync<DeleteActivityResponse>(
             HttpMethod.Delete,
@@ -159,6 +164,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members";
 
+        logger.LogTrace("Getting conversation members from {Url}", url);
+
         return await SendHttpRequestAsync<IList<ConversationAccount>>(
             HttpMethod.Get,
             url,
@@ -189,6 +196,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += $"?continuationToken={Uri.EscapeDataString(continuationToken)}";
         }
 
+        logger.LogTrace("Getting conversations from {Url}", url);
+
         return await SendHttpRequestAsync<GetConversationsResponse>(
             HttpMethod.Get,
             url,
@@ -218,6 +227,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/members";
 
+        logger.LogTrace("Getting activity members from {Url}", url);
+
         return await SendHttpRequestAsync<IList<ConversationAccount>>(
             HttpMethod.Get,
             url,
@@ -244,6 +255,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations";
+
+        logger.LogTrace("Creating conversation at {Url} with parameters: {Parameters}", url, JsonSerializer.Serialize(parameters));
 
         return await SendHttpRequestAsync<CreateConversationResponse>(
             HttpMethod.Post,
@@ -288,6 +301,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += $"?{string.Join("&", queryParams)}";
         }
 
+        logger.LogTrace("Getting paged conversation members from {Url}", url);
+
         return await SendHttpRequestAsync<PagedMembersResult>(
             HttpMethod.Get,
             url,
@@ -317,6 +332,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members/{memberId}";
+
+        logger.LogTrace("Deleting conversation member at {Url}", url);
 
         await SendHttpRequestAsync<object>(
             HttpMethod.Delete,
@@ -348,6 +365,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/history";
 
+        logger.LogTrace("Sending conversation history to {Url}: {Transcript}", url, JsonSerializer.Serialize(transcript));
+
         return await SendHttpRequestAsync<SendConversationHistoryResponse>(
             HttpMethod.Post,
             url,
@@ -377,6 +396,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/attachments";
+        
+        logger.LogTrace("Uploading attachment to {Url}: {AttachmentData}", url, JsonSerializer.Serialize(attachmentData));
 
         return await SendHttpRequestAsync<UploadAttachmentResponse>(
             HttpMethod.Post,
@@ -417,6 +438,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
                 request.Headers.TryAddWithoutValidation(header.Key, header.Value);
             }
         }
+
+        logger?.LogTrace("Sending HTTP {Method} request to {Url} with body: {Body}", method, url, body);
 
         using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 

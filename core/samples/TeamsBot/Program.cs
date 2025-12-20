@@ -12,7 +12,7 @@ teamsApp.OnMessage = async (context, cancellationToken) =>
 {
     string replyText = $"You sent: `{context.Activity.Text}` in activity of type `{context.Activity.Type}`.";
 
-    await context.SendTypingActivityAsync(cancellationToken);
+    // await context.SendTypingActivityAsync(cancellationToken);
 
     TeamsActivity reply = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityTypes.Message)
@@ -23,7 +23,7 @@ teamsApp.OnMessage = async (context, cancellationToken) =>
 
     reply.AddMention(context.Activity.From!, "ridobotlocal", true);
 
-    await context.TeamsBotApplication.SendActivityAsync(reply, cancellationToken);
+    await teamsApp.SendActivityAsync(reply, cancellationToken);
 };
 
 teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>
