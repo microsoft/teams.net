@@ -47,7 +47,7 @@ public class AddBotApplicationExtensionsTests
     public void AddConversationClient_WithBotFrameworkConfig_ConfiguresClientSecret()
     {
         // Arrange
-            var configData = new Dictionary<string, string?>
+        var configData = new Dictionary<string, string?>
         {
             ["MicrosoftAppId"] = "test-app-id",
             ["MicrosoftAppTenantId"] = "test-tenant-id",

@@ -67,6 +67,8 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
         {
             TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());
             //turnContext.TurnState.Add<Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(botApplication.UserTokenClient));
+            CompatConnectorClient connectionClient = new(new CompatConversationsClient(botApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
+            turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             return bot.OnTurnAsync(turnContext, cancellationToken1);
         };
         try
