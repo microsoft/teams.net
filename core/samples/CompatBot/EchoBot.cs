@@ -4,7 +4,6 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Connector;
-using Microsoft.Bot.Core;
 using Microsoft.Bot.Schema;
 
 namespace CompatBot;
@@ -26,8 +25,7 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
 
     protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
-        logger.LogInformation("EchoBot OnMessageActivityAsync {Version}", BotApplication.Version);
-
+        logger.LogInformation("OnMessage");
         IStatePropertyAccessor<ConversationData> conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
         ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
 
