@@ -29,7 +29,7 @@ public class Context(TeamsBotApplication botApplication, TeamsActivity activity)
     /// <param name="text"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<ResourceResponse?> SendActivityAsync(string text, CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse?> SendActivityAsync(string text, CancellationToken cancellationToken = default)
     {
         TeamsActivity reply = new TeamsActivityBuilder()
             .WithText(text)
@@ -44,7 +44,7 @@ public class Context(TeamsBotApplication botApplication, TeamsActivity activity)
     /// </summary>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<ResourceResponse?> SendTypingActivityAsync(CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse?> SendTypingActivityAsync(CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(Activity);
         TeamsActivity typing = TeamsActivity.CreateBuilder()
