@@ -29,9 +29,10 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public override Task DeleteActivityAsync(ITurnContext turnContext, ConversationReference reference, CancellationToken cancellationToken)
+    public override async Task DeleteActivityAsync(ITurnContext turnContext, ConversationReference reference, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(turnContext);
+        await botApplication.ConversationClient.DeleteActivityAsync(turnContext.Activity.FromCompatActivity(), cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -69,11 +70,17 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
     /// <param name="turnContext"></param>
     /// <param name="activity"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <returns></returns>s
     /// <exception cref="NotImplementedException"></exception>
-    public override Task<Microsoft.Bot.Schema.ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
+    public override async Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+       ArgumentNullException.ThrowIfNull(activity);
+       var res =  await botApplication.ConversationClient.UpdateActivityAsync(
+           activity.Conversation.Id,
+           activity.Id,
+           activity.FromCompatActivity(),
+           cancellationToken: cancellationToken).ConfigureAwait(false);
+        return new ResourceResponse() { Id = res.Id };
     }
 
 
