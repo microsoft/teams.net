@@ -8,6 +8,24 @@ using Microsoft.Bot.Core.Schema;
 
 namespace Microsoft.Teams.BotApps.Schema;
 
+
+/// <summary>
+/// Extension methods for TeamsAttachment.
+/// </summary>
+public static class TeamsAttachmentExtensions
+{
+    static internal JsonArray ToJsonArray(this IList<TeamsAttachment> attachments)
+    {
+        JsonArray jsonArray = [];
+        foreach (TeamsAttachment attachment in attachments)
+        {
+            JsonNode jsonNode = JsonSerializer.SerializeToNode(attachment)!;
+            jsonArray.Add(jsonNode);
+        }
+        return jsonArray;
+    }
+}   
+
 /// <summary>
 /// Teams attachment model.
 /// </summary>

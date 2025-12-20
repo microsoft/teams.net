@@ -57,12 +57,15 @@ public class TeamsActivity : CoreActivity
         ChannelId = activity.ChannelId;
         Type = activity.Type;
         // ReplyToId = activity.ReplyToId;
-        Entities = EntityList.FromJsonArray(activity.Entities);
         ChannelData = new TeamsChannelData(activity.ChannelData!);
         From = new TeamsConversationAccount(activity.From!);
         Recipient = new TeamsConversationAccount(activity.Recipient!);
         Conversation = new TeamsConversation(activity.Conversation!);
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
+        Entities = EntityList.FromJsonArray(activity.Entities);
+
+        Text = activity.Properties.TryGetValue("text", out var textObj) ? textObj?.ToString() : null;
+        TextFormat = activity.Properties.TryGetValue("textFormat", out var textFormatObj) ? textFormatObj?.ToString() : null;
 
         //base.Entities = Entities.ToJsonArray();
         Rebase();
@@ -74,6 +77,7 @@ public class TeamsActivity : CoreActivity
     /// <returns></returns>
     internal TeamsActivity Rebase()
     {
+        base.Attachments = this.Attachments?.ToJsonArray();
         base.Entities = this.Entities?.ToJsonArray();
         base.ChannelData = this.ChannelData;
         base.From = this.From;
@@ -103,10 +107,25 @@ public class TeamsActivity : CoreActivity
         }
     }
 
+    private string? _textFormat;
     /// <summary>
     /// Gets or sets the text Format associated with this object.
     /// </summary>
-    [JsonPropertyName("textFormat")] public string? TextFormat { get; set; }
+    [JsonPropertyName("textFormat")] public string? TextFormat {
+        get => _textFormat;
+        set
+        {
+            _textFormat = value;
+            if (Properties.ContainsKey("textFormat"))
+            {
+                Properties["textFormat"] = _textFormat;
+            }
+            else
+            {
+                Properties.TryAdd("textFormat", _textFormat);
+            }
+        }
+    }
 
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.
