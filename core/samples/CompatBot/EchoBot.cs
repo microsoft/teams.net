@@ -3,6 +3,7 @@
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
+using Microsoft.Bot.Connector;
 using Microsoft.Bot.Core;
 using Microsoft.Bot.Schema;
 
@@ -25,7 +26,7 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
 
     protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
-        logger.LogInformation("EchoBot OnMessageActivityAsync " + BotApplication.Version);
+        logger.LogInformation("EchoBot OnMessageActivityAsync {Version}", BotApplication.Version);
 
         IStatePropertyAccessor<ConversationData> conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
         ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
@@ -33,6 +34,31 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
         string replyText = $"Echo from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
         await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
         // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
+
+        var conversationClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.IConnectorClient>().Conversations;
+
+        var cr = turnContext.Activity.GetConversationReference();
+        var reply = Activity.CreateMessageActivity();
+        reply.ApplyConversationReference(cr, isIncoming: false);
+        reply.Text = "This is a proactive message sent using the Conversations API.";
+
+        var res = await conversationClient.SendToConversationAsync(cr.Conversation.Id, (Activity)reply, cancellationToken);
+
+        await Task.Delay(2000, cancellationToken);
+
+        await conversationClient.UpdateActivityAsync(cr.Conversation.Id, res.Id!, new Activity
+        {
+            Id = res.Id,
+            ServiceUrl = turnContext.Activity.ServiceUrl,
+            Type = ActivityTypes.Message,
+            Text = "This message has been updated.",
+        }, cancellationToken);
+
+        await Task.Delay(2000, cancellationToken);
+
+        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, cancellationToken);
+
+        await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
     }
 
     protected override async Task OnMessageReactionActivityAsync(ITurnContext<IMessageReactionActivity> turnContext, CancellationToken cancellationToken)
