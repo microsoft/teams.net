@@ -18,7 +18,6 @@ public static partial class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
-        builder.WebHost.UseUrls("http://localhost:3978");
         builder.Services.AddOpenApi();
         builder.Services.AddTransient<Controller>();
         builder.AddTeams().AddTeamsDevTools();

@@ -2,6 +2,7 @@
 using Microsoft.Teams.Api.Clients;
 
 namespace Microsoft.Teams.Api.Tests.Clients;
+
 public class BotClientTests
 {
     [Fact]

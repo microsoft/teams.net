@@ -5,12 +5,12 @@
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Plugins.AspNetCore.DevTools</PackageId>
     <PackageDescription>Teams AspNetCore DevTools Plugin</PackageDescription>
-    <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
+    <PackageProjectUrl>https://microsoft.github.io/teams-sdk</PackageProjectUrl>
     <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore;devtools</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>

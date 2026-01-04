@@ -5,12 +5,12 @@
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Plugins.AspNetCore.BotBuilder</PackageId>
     <PackageDescription>Teams AspNetCore BotBuilder Plugin</PackageDescription>
-    <PackageProjectUrl>https://microsoft.github.io/teams-ai</PackageProjectUrl>
+    <PackageProjectUrl>https://microsoft.github.io/teams-sdk</PackageProjectUrl>
     <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore;botbuilder</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>

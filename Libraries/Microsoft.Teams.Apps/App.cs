@@ -46,7 +46,7 @@ public partial class App
     {
         get
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
+            var version = ThisAssembly.AssemblyFileVersion;
             version ??= "0.0.0";
             return $"teams.net[apps]/{version}";
         }
@@ -174,9 +174,28 @@ public partial class App
     /// <param name="activity">activity activity to send</param>
     public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
     {
+        return await Send(conversationId, activity, conversationType, serviceUrl, false, cancellationToken);
+    }
+
+    /// <summary>
+    /// send an activity to the conversation
+    /// </summary>
+    /// <param name="activity">activity activity to send</param>
+    /// <param name="isTargeted">when true, sends the message privately to the specified recipient; when false, sends to all conversation participants</param>
+    /// <remarks>
+    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
+    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
+    /// </remarks>
+    public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType, string? serviceUrl, bool isTargeted = false, CancellationToken cancellationToken = default) where T : IActivity
+    {
         if (Id is null)
         {
             throw new InvalidOperationException("app not started");
+        }
+
+        if (isTargeted && activity.Recipient is null)
+        {
+            throw new ArgumentException("activity.Recipient is required for targeted messages", nameof(activity));
         }
 
         var reference = new ConversationReference()
@@ -189,6 +208,7 @@ public partial class App
                 Name = Name,
                 Role = Role.Bot
             },
+            User = isTargeted ? activity.Recipient : null,
             Conversation = new()
             {
                 Id = conversationId,
@@ -203,7 +223,7 @@ public partial class App
             throw new Exception("no plugin that can send activities was found");
         }
 
-        var res = await sender.Send(activity, reference, cancellationToken);
+        var res = await sender.Send(activity, reference, isTargeted, cancellationToken);
 
         await Events.Emit(
             sender,
@@ -221,7 +241,21 @@ public partial class App
     /// <param name="text">the text to send</param>
     public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
-        return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, cancellationToken);
+        return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, false, cancellationToken);
+    }
+
+    /// <summary>
+    /// send a message activity to the conversation
+    /// </summary>
+    /// <param name="text">the text to send</param>
+    /// <param name="isTargeted">when true, sends the message privately to the specified recipient; when false, sends to all conversation participants</param>
+    /// <remarks>
+    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
+    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
+    /// </remarks>
+    public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType, string? serviceUrl, bool isTargeted = false, CancellationToken cancellationToken = default)
+    {
+        return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, isTargeted, cancellationToken);
     }
 
     /// <summary>
@@ -230,7 +264,21 @@ public partial class App
     /// <param name="card">the card to send as an attachment</param>
     public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
-        return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, cancellationToken);
+        return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, false, cancellationToken);
+    }
+
+    /// <summary>
+    /// send a message activity with a card attachment
+    /// </summary>
+    /// <param name="card">the card to send as an attachment</param>
+    /// <param name="isTargeted">when true, sends the message privately to the specified recipient; when false, sends to all conversation participants</param>
+    /// <remarks>
+    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
+    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
+    /// </remarks>
+    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType, string? serviceUrl, bool isTargeted = false, CancellationToken cancellationToken = default)
+    {
+        return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, isTargeted, cancellationToken);
     }
 
     /// <summary>
@@ -369,52 +417,38 @@ public partial class App
             );
         };
 
-        try
+        if (@event.Services is not null)
         {
-            if (@event.Services is not null)
+            var accessor = (IContext.Accessor?)@event.Services.GetService(typeof(IContext.Accessor));
+
+            if (accessor is not null)
             {
-                var accessor = (IContext.Accessor?)@event.Services.GetService(typeof(IContext.Accessor));
-
-                if (accessor is not null)
-                {
-                    accessor.Value = context;
-                }
+                accessor.Value = context;
             }
-
-            foreach (var plugin in Plugins)
-            {
-                await plugin.OnActivity(this, sender, @event, cancellationToken);
-            }
-
-            var res = await Next(context);
-            await stream.Close();
-
-            var response = res is Response value
-                ? value
-                : new Response(System.Net.HttpStatusCode.OK, res);
-
-            response.Meta.Routes = i + 1;
-            response.Meta.Elapse = (DateTime.UtcNow - start).Milliseconds;
-
-            await Events.Emit(
-                sender,
-                EventType.ActivityResponse,
-                new ActivityResponseEvent() { Response = response },
-                cancellationToken
-            );
-
-            return response;
         }
-        catch (Exception ex)
+
+        foreach (var plugin in Plugins)
         {
-            await Events.Emit(
-                sender,
-                EventType.Error,
-                new ErrorEvent() { Exception = ex, Context = context.ToActivityType<IActivity>() },
-                cancellationToken
-            );
-
-            return new Response(System.Net.HttpStatusCode.InternalServerError);
+            await plugin.OnActivity(this, sender, @event, cancellationToken);
         }
+
+        var res = await Next(context);
+        await stream.Close();
+
+        var response = res is Response value
+            ? value
+            : new Response(System.Net.HttpStatusCode.OK, res);
+
+        response.Meta.Routes = i + 1;
+        response.Meta.Elapse = (DateTime.UtcNow - start).Milliseconds;
+
+        await Events.Emit(
+            sender,
+            EventType.ActivityResponse,
+            new ActivityResponseEvent() { Response = response },
+            cancellationToken
+        );
+
+        return response;
     }
 }
