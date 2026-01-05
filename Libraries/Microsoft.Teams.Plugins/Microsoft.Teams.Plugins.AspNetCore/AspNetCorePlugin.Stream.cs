@@ -189,7 +189,7 @@ public partial class AspNetCorePlugin
 
                 Queue<TypingActivity> informativeUpdates = new();
 
-                while (i <= 10 && _queue.TryDequeue(out var activity))
+                while (i < 10 && _queue.TryDequeue(out var activity))
                 {
                     if (activity is MessageActivity message)
                     {
