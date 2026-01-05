@@ -48,7 +48,7 @@ public partial class AspNetCorePlugin
         private DateTime? _closedAt;
         private int _count = 0;
         private MessageActivity? _result;
-        readonly SemaphoreSlim _lock = new(1, 1);
+        private readonly SemaphoreSlim _lock = new(1, 1);
 
         private Timer? _timeout;
         private const int _timeoutMs = 5000;
