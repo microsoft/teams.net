@@ -1,6 +1,12 @@
 pr:
-- main
-- release/*
+  branches:
+    include:
+      - main
+      - release/*
+  paths:
+    exclude:
+      - core/**
+
 
 pool:
   vmImage: 'ubuntu-22.04'
