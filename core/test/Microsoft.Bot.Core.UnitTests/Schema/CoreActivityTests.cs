@@ -323,4 +323,27 @@ public class CoreCoreActivityTests
         Assert.True(act.From.Properties.ContainsKey("aadObjectId"));
         Assert.Equal("123", act.From.Properties["aadObjectId"]?.ToString());
     }
+
+
+    [Fact]
+    public async Task DeserializeInvokeWithValueAsync()
+    {
+        string json = """
+        {
+            "type": "invoke",
+            "value": {
+                "key1": "value1",
+                "key2": 2
+            }
+        }
+        """;
+        using MemoryStream ms = new(System.Text.Encoding.UTF8.GetBytes(json));
+        CoreActivity? act = await CoreActivity.FromJsonStreamAsync(ms);
+        Assert.NotNull(act);
+        Assert.Equal(ActivityTypes.Invoke, act.Type);
+        Assert.NotNull(act.Value);
+        Assert.NotNull(act.Value["key1"]);
+        Assert.Equal("value1", act.Value["key1"]?.GetValue<string>());
+        Assert.Equal(2, act.Value["key2"]?.GetValue<int>());
+    }
 }

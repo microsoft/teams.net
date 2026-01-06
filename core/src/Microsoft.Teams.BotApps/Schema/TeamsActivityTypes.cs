@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Bot.Core.Schema;
+
 namespace Microsoft.Teams.BotApps.Schema;
 
 /// <summary>
@@ -11,10 +13,21 @@ namespace Microsoft.Teams.BotApps.Schema;
 /// platform.</remarks>
 public static class TeamsActivityTypes
 {
+
     /// <summary>
-    /// Message activity type.
+    /// Represents the default message string used for communication or display purposes.
     /// </summary>
-    public static readonly string Message = "message";
+    public const string Message = ActivityTypes.Message;
+    /// <summary>
+    /// Represents a typing indicator activity.
+    /// </summary>
+    public const string Typing = ActivityTypes.Typing;
+
+    /// <summary>
+    /// Represents an invoke activity.
+    /// </summary>
+    public const string Invoke = ActivityTypes.Invoke;
+
     /// <summary>
     /// Conversation update activity type.
     /// </summary>
@@ -27,8 +40,5 @@ public static class TeamsActivityTypes
     /// Message reaction activity type.
     /// </summary>
     public static readonly string MessageReaction = "messageReaction";
-    /// <summary>
-    /// Represents a typing indicator activity.
-    /// </summary>
-    public const string Typing = "typing";
+    
 }

@@ -77,6 +77,11 @@ public class CoreActivity
     [JsonPropertyName("attachments")] public JsonArray? Attachments { get; set; }
 
     /// <summary>
+    /// Gets or sets the value payload of the activity.
+    /// </summary>
+    [JsonPropertyName("value")] public JsonNode? Value { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];

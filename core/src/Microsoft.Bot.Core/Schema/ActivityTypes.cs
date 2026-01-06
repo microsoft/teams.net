@@ -18,4 +18,9 @@ public static class ActivityTypes
     /// Represents a typing indicator activity.
     /// </summary>
     public const string Typing = "typing";
+
+    /// <summary>
+    /// Represents an invoke activity.
+    /// </summary>
+    public const string Invoke = "invoke";
 }

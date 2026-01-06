@@ -34,6 +34,11 @@ public class TeamsBotApplication : BotApplication
     public InstallationUpdateHandler? OnInstallationUpdate { get; set; }
 
     /// <summary>
+    /// Handler for invoke activities.
+    /// </summary>
+    public InvokeHandler? OnInvoke { get; set; }
+
+    /// <summary>
     /// Handler for conversation update activities.
     /// </summary>
     public ConversationUpdateHandler? OnConversationUpdate { get; set; }
@@ -63,6 +68,11 @@ public class TeamsBotApplication : BotApplication
             if (teamsActivity.Type == TeamsActivityTypes.ConversationUpdate && OnConversationUpdate is not null)
             {
                 await OnConversationUpdate.Invoke(new ConversationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
+            }
+            if (teamsActivity.Type == TeamsActivityTypes.Invoke && OnInvoke is not null)
+            {
+               InvokeResponse invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
+               
             }
         };
     }

@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.Teams.BotApps;
 using Microsoft.Teams.BotApps.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
+using TeamsBot;
 
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();
@@ -25,6 +27,21 @@ teamsApp.OnMessage = async (context, cancellationToken) =>
 
     await teamsApp.SendActivityAsync(reply, cancellationToken);
     await context.SendActivityAsync("Mention sent!", cancellationToken);
+
+
+    TeamsActivity feedbackCard = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityTypes.Message)
+        .WithConversationReference(context.Activity)
+        .WithAttachments(new[]
+        {
+            new TeamsAttachment
+            {
+                ContentType = "application/vnd.microsoft.card.adaptive",
+                Content = Cards.FeedbackCardJson
+            }
+        })
+        .Build();
+    await teamsApp.SendActivityAsync(feedbackCard, cancellationToken);
 };
 
 teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>
@@ -37,8 +54,23 @@ teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>
    ? $"<br /> Reactions Removed: {string.Join(", ", args.ReactionsRemoved.Select(r => r.Type))}."
        : string.Empty;
 
-
     await context.SendActivityAsync(replyText, cancellationToken);
 };
 
+teamsApp.OnInvoke = async (context, cancellationToken) =>
+{
+    string replyText = $"Invoke activity of type `{context.Activity.Type}` received.";
+    await context.SendActivityAsync(replyText, cancellationToken);
+    return new Microsoft.Teams.BotApps.Handlers.InvokeResponse(200)
+    {
+        Type = "application/vnd.microsoft.activity.message",
+        Body = new
+        {
+            value = "Invokes are great !!"
+        }
+    };
+};
+
 teamsApp.Run();
+
+

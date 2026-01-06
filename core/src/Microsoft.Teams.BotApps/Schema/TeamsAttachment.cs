@@ -56,16 +56,19 @@ public class TeamsAttachment
     [JsonPropertyName("contentUrl")] public Uri? ContentUrl { get; set; }
 
     /// <summary>
+    /// Content for the Attachment
+    /// </summary>
+    [JsonPropertyName("content")] public object? Content { get; set; }
+
+    /// <summary>
     /// Gets or sets the name of the attachment.
     /// </summary>
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    [JsonPropertyName("name")] public string? Name { get; set; }
 
     /// <summary>
     /// Gets or sets the thumbnail URL of the attachment.
     /// </summary>
-    [JsonPropertyName("thumbnailUrl")]
-    public Uri? ThumbnailUrl { get; set; }
+    [JsonPropertyName("thumbnailUrl")] public Uri? ThumbnailUrl { get; set; }
 
     /// <summary>
     /// Extension data for additional properties not explicitly defined by the type.
