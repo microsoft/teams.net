@@ -61,15 +61,17 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
     {
         ArgumentNullException.ThrowIfNull(httpRequest);
         ArgumentNullException.ThrowIfNull(bot);
+        CoreActivity? coreActivity = null;
 
-        CoreActivity? activity = null;
         botApplication.OnActivity = (activity, cancellationToken1) =>
         {
+            coreActivity = activity;
             TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());
             //turnContext.TurnState.Add<Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(botApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversationsClient(botApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
-            return bot.OnTurnAsync(turnContext, cancellationToken1);
+            bot.OnTurnAsync(turnContext, cancellationToken1);
+            return null!;
         };
         try
         {
@@ -78,7 +80,7 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
                 botApplication.Use(new CompatMiddlewareAdapter(middleware));
             }
 
-            activity = await botApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
+            var invokeResponse = await botApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -86,8 +88,8 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
             {
                 if (ex is BotHandlerException aex)
                 {
-                    activity = aex.Activity;
-                    using TurnContext turnContext = new(compatBotAdapter, activity!.ToCompatActivity());
+                    coreActivity = aex.Activity;
+                    using TurnContext turnContext = new(compatBotAdapter, coreActivity!.ToCompatActivity());
                     await OnTurnError(turnContext, ex).ConfigureAwait(false);
                 }
                 else

@@ -63,8 +63,8 @@ public class TeamsBotApplicationBuilder
         TeamsBotApplication botApp = _webApp.Services.GetService<TeamsBotApplication>() ?? throw new InvalidOperationException("Application not registered");
         _webApp.MapPost(_routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
         {
-            CoreActivity resp = await botApp.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
-            return resp.Id;
+            var resp = await botApp.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
+            return resp;
         });
 
         return botApp;

@@ -50,16 +50,19 @@ public class TeamsBotApplication : BotApplication
     {
         OnActivity = async (activity, cancellationToken) =>
         {
+            InvokeResponse invokeResponse = null!;
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context context = new(this, teamsActivity);
             if (teamsActivity.Type == TeamsActivityTypes.Message && OnMessage is not null)
             {
                 await OnMessage.Invoke(context, cancellationToken).ConfigureAwait(false);
+                
             }
             if (teamsActivity.Type == TeamsActivityTypes.InstallationUpdate && OnInstallationUpdate is not null)
             {
                 await OnInstallationUpdate.Invoke(new InstallationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
+                
             }
             if (teamsActivity.Type == TeamsActivityTypes.MessageReaction && OnMessageReaction is not null)
             {
@@ -71,9 +74,10 @@ public class TeamsBotApplication : BotApplication
             }
             if (teamsActivity.Type == TeamsActivityTypes.Invoke && OnInvoke is not null)
             {
-               InvokeResponse invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
+               invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
                
             }
+            return invokeResponse;
         };
     }
 

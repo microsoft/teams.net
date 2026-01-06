@@ -57,6 +57,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     var res = await botApp.SendActivityAsync(replyActivity, cancellationToken);
 
     Console.WriteLine("SENT >>> => " + res?.Id);
+    return null!;
 
 };
 

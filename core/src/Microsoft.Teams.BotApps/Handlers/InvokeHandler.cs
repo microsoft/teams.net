@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Bot.Core;
 
 namespace Microsoft.Teams.BotApps.Handlers;
 
@@ -16,37 +17,4 @@ namespace Microsoft.Teams.BotApps.Handlers;
 public delegate Task<InvokeResponse> InvokeHandler(Context context, CancellationToken cancellationToken = default);
 
 
-/// <summary>
-/// Represents the response returned from an invocation handler.
-/// </summary>
-public class InvokeResponse
-{
-    /// <summary>
-    /// Status code of the response.
-    /// </summary>
-    [JsonPropertyName("status")]
-    public int Status { get; set; }
 
-    /// <summary>
-    /// Gets or sets the message body content.
-    /// </summary>
-    [JsonPropertyName("body")]
-    public object? Body { get; set; }
-
-    /// <summary>
-    /// Gets or Sets the Type
-    /// </summary>
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="InvokeResponse"/> class with the specified status code and optional body.
-    /// </summary>
-    /// <param name="status"></param>
-    /// <param name="body"></param>
-    public InvokeResponse(int status, object? body = null)
-    {
-        Status = status;
-        Body = body;
-    }
-}

@@ -49,8 +49,8 @@ public static class AddBotApplicationExtensions
         ArgumentNullException.ThrowIfNull(webApp);
         webApp.MapPost(routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
         {
-            CoreActivity resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
-            return resp.Id;
+            InvokeResponse resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
+            return resp;
         }).RequireAuthorization();
 
         return app;

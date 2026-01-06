@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using Microsoft.Bot.Core;
 using Microsoft.Teams.BotApps;
 using Microsoft.Teams.BotApps.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
@@ -32,14 +33,15 @@ teamsApp.OnMessage = async (context, cancellationToken) =>
     TeamsActivity feedbackCard = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityTypes.Message)
         .WithConversationReference(context.Activity)
-        .WithAttachments(new[]
-        {
-            new TeamsAttachment
-            {
-                ContentType = "application/vnd.microsoft.card.adaptive",
-                Content = Cards.FeedbackCardJson
-            }
-        })
+        .WithAttachments(
+        [
+                new TeamsAttachment
+                {
+                    ContentType = "application/vnd.microsoft.card.adaptive",
+                    Content = Cards.FeedbackCardJson
+                }
+            ]
+        )
         .Build();
     await teamsApp.SendActivityAsync(feedbackCard, cancellationToken);
 };
@@ -61,13 +63,10 @@ teamsApp.OnInvoke = async (context, cancellationToken) =>
 {
     string replyText = $"Invoke activity of type `{context.Activity.Type}` received.";
     await context.SendActivityAsync(replyText, cancellationToken);
-    return new Microsoft.Teams.BotApps.Handlers.InvokeResponse(200)
+    return new InvokeResponse(200)
     {
         Type = "application/vnd.microsoft.activity.message",
-        Body = new
-        {
-            value = "Invokes are great !!"
-        }
+        Body = "Invokes are great !!"
     };
 };
 
