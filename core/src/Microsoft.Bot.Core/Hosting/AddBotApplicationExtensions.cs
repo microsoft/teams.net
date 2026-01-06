@@ -49,7 +49,7 @@ public static class AddBotApplicationExtensions
         ArgumentNullException.ThrowIfNull(webApp);
         webApp.MapPost(routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
         {
-            InvokeResponse resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
+            InvokeResponse? resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
             return resp;
         }).RequireAuthorization();
 

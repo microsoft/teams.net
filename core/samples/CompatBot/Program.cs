@@ -31,7 +31,6 @@ builder.Services.AddTransient<IBot, EchoBot>();
 WebApplication app = builder.Build();
 
 CompatAdapter compatAdapter = (CompatAdapter)app.Services.GetRequiredService<IBotFrameworkHttpAdapter>();
-
 compatAdapter.Use(new MyCompatMiddleware());
 
 app.MapPost("/api/messages", async (IBotFrameworkHttpAdapter adapter, IBot bot, HttpRequest request, HttpResponse response, CancellationToken ct) =>

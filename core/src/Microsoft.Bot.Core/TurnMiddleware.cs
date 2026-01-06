@@ -24,14 +24,14 @@ internal sealed class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleW
         await next(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<InvokeResponse> RunPipelineAsync(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task<InvokeResponse>>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
+    public async Task<InvokeResponse?> RunPipelineAsync(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task<InvokeResponse?>>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
     {
-        InvokeResponse invokeResponse = null!;
+        InvokeResponse? invokeResponse = null;
         if (nextMiddlewareIndex == _middlewares.Count)
         {
             if (callback is not null)
             {
-                invokeResponse = await callback!(activity, cancellationToken).ConfigureAwait(false);
+                invokeResponse = await callback(activity, cancellationToken).ConfigureAwait(false);
             }
             return invokeResponse;           
         }

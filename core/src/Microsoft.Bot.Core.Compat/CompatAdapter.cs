@@ -63,16 +63,17 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
         ArgumentNullException.ThrowIfNull(bot);
         CoreActivity? coreActivity = null;
 
-        botApplication.OnActivity = (activity, cancellationToken1) =>
+        botApplication.OnActivity = async (activity, cancellationToken1) =>
         {
             coreActivity = activity;
             TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());
             //turnContext.TurnState.Add<Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(botApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversationsClient(botApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
-            bot.OnTurnAsync(turnContext, cancellationToken1);
-            return null!;
+            await bot.OnTurnAsync(turnContext, cancellationToken1).ConfigureAwait(false);
+            return null;
         };
+
         try
         {
             foreach (Builder.IMiddleware? middleware in MiddlewareSet)

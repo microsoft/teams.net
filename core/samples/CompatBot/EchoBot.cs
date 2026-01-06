@@ -2,9 +2,13 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
+using Microsoft.Identity.Client;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace CompatBot;
 
@@ -42,21 +46,30 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
 
         var res = await conversationClient.SendToConversationAsync(cr.Conversation.Id, (Activity)reply, cancellationToken);
 
-        await Task.Delay(2000, cancellationToken);
+        //await Task.Delay(2000, cancellationToken);
 
-        await conversationClient.UpdateActivityAsync(cr.Conversation.Id, res.Id!, new Activity
+        //await conversationClient.UpdateActivityAsync(cr.Conversation.Id, res.Id!, new Activity
+        //{
+        //    Id = res.Id,
+        //    ServiceUrl = turnContext.Activity.ServiceUrl,
+        //    Type = ActivityTypes.Message,
+        //    Text = "This message has been updated.",
+        //}, cancellationToken);
+
+        //await Task.Delay(2000, cancellationToken);
+
+        //await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, cancellationToken);
+
+        //await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
+
+        var attachment = new Attachment
         {
-            Id = res.Id,
-            ServiceUrl = turnContext.Activity.ServiceUrl,
-            Type = ActivityTypes.Message,
-            Text = "This message has been updated.",
-        }, cancellationToken);
+            ContentType = "application/vnd.microsoft.card.adaptive",
+            Content = Cards.FeedbackCardJson
+        };
+        var attachmentReply = MessageFactory.Attachment(attachment);
+        await turnContext.SendActivityAsync(attachmentReply, cancellationToken);
 
-        await Task.Delay(2000, cancellationToken);
-
-        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, cancellationToken);
-
-        await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
     }
 
     protected override async Task OnMessageReactionActivityAsync(ITurnContext<IMessageReactionActivity> turnContext, CancellationToken cancellationToken)
@@ -74,6 +87,65 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
     {
         await turnContext.SendActivityAsync(MessageFactory.Text("Installation update Add received."), cancellationToken);
         await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive messages to  `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
+    }
+
+    protected override async Task<InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Invoke Activity received: {Name}", turnContext.Activity.Name);
+        using var sw = new StringWriter();
+        using var writer = new JsonTextWriter(sw);
+        BotMessageHandlerBase.BotMessageSerializer.Serialize(writer, turnContext.Activity);
+
+        logger.LogTrace("Invoke Activity details: {@Activity}", sw.ToString());
+
+        var actionValue = JObject.FromObject(turnContext.Activity.Value);
+        var action = actionValue["action"] as JObject;
+        var actionData = action?["data"] as JObject;
+        var userInput = actionData?["feedback"]?.ToString();
+        //var userInput = actionValue["userInput"]?.ToString();
+
+        logger.LogInformation("Action: {Action}, User Input: {UserInput}", action, userInput);
+
+        var responseCard = new
+        {
+            type = "AdaptiveCard",
+            version = "1.4",
+            body = new object[]
+            {
+                    new
+                    {
+                        type = "TextBlock",
+                        text = "Form Submitted Successfully! ✓",
+                        weight = "Bolder",
+                        size = "Large",
+                        color = "Good"
+                    },
+                    new
+                    {
+                        type = "TextBlock",
+                        text = $"You entered: **{userInput ?? "(empty)"}**",
+                        wrap = true
+                    }
+            }
+        };
+
+        var attachment = new Attachment
+        {
+            ContentType = "application/vnd.microsoft.card.adaptive",
+            Content = responseCard
+        };
+
+        var card = MessageFactory.Attachment(attachment);
+        await turnContext.SendActivityAsync(card, cancellationToken);
+
+        return new InvokeResponse
+        {
+            Status = 200,
+            Body = new
+            {
+                value = " invoke response value"
+            }
+        };
     }
 
     //protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
