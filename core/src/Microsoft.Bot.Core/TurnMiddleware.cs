@@ -35,11 +35,15 @@ internal sealed class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleW
             }
             return invokeResponse;           
         }
+
         ITurnMiddleWare nextMiddleware = _middlewares[nextMiddlewareIndex];
         await nextMiddleware.OnTurnAsync(
             botApplication,
             activity,
-            (ct) => RunPipelineAsync(botApplication, activity, callback, nextMiddlewareIndex + 1, ct),
+            async (ct) => {
+                invokeResponse = await RunPipelineAsync(botApplication, activity, callback, nextMiddlewareIndex + 1, ct).ConfigureAwait(false);
+                return invokeResponse;
+            },
             cancellationToken).ConfigureAwait(false);
 
         return invokeResponse;

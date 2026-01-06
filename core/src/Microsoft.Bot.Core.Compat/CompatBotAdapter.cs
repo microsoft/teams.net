@@ -45,11 +45,17 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
     public override async Task<Microsoft.Bot.Schema.ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activities);
+        ArgumentNullException.ThrowIfNull(turnContext);
 
         Microsoft.Bot.Schema.ResourceResponse[] responses = new Microsoft.Bot.Schema.ResourceResponse[1];
         for (int i = 0; i < activities.Length; i++)
         {
             CoreActivity a = activities[i].FromCompatActivity();
+
+            if (a.Type == "invokeResponse")
+            {
+                turnContext.TurnState.Add(BotAdapter.InvokeResponseKey, a.ToCompatActivity());
+            }
 
             SendActivityResponse? resp = await botApplication.SendActivityAsync(a, cancellationToken).ConfigureAwait(false);
             if (resp is not null)
@@ -60,6 +66,8 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
             {
                 logger.LogWarning("Found null ResourceResponse after calling SendActivityAsync");
             }
+
+
         }
         return responses;
     }
@@ -74,12 +82,12 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
     /// <exception cref="NotImplementedException"></exception>
     public override async Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
     {
-       ArgumentNullException.ThrowIfNull(activity);
-       var res =  await botApplication.ConversationClient.UpdateActivityAsync(
-           activity.Conversation.Id,
-           activity.Id,
-           activity.FromCompatActivity(),
-           cancellationToken: cancellationToken).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(activity);
+        var res = await botApplication.ConversationClient.UpdateActivityAsync(
+            activity.Conversation.Id,
+            activity.Id,
+            activity.FromCompatActivity(),
+            cancellationToken: cancellationToken).ConfigureAwait(false);
         return new ResourceResponse() { Id = res.Id };
     }
 

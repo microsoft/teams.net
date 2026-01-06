@@ -29,5 +29,5 @@ public class InvokeResponse(int status, object? body = null)
     /// Gets or Sets the Type
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public string? Type { get; set; } = "application/vnd.microsoft.activity.message";
 }

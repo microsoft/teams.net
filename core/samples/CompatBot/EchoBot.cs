@@ -20,12 +20,12 @@ public class ConversationData
 
 internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> logger) : TeamsActivityHandler
 {
-    public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
-    {
-        await base.OnTurnAsync(turnContext, cancellationToken);
+    //public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
+    //{
+    //    await base.OnTurnAsync(turnContext, cancellationToken);
 
-        await conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
-    }
+    //    await conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
+    //}
 
     protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
@@ -141,10 +141,7 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
         return new InvokeResponse
         {
             Status = 200,
-            Body = new
-            {
-                value = " invoke response value"
-            }
+            Body = "invokes from compat bot"
         };
     }
 
