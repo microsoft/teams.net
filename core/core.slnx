@@ -1,4 +1,14 @@
 <Solution>
+  <!-- <Folder Name="/bf/">
+    <Project Path="../../botbuilder-dotnet/libraries/integration/Microsoft.Bot.Builder.Integration.AspNet.Core/Microsoft.Bot.Builder.Integration.AspNet.Core.csproj" />
+    <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Builder.Dialogs/Microsoft.Bot.Builder.Dialogs.csproj" />
+    <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Builder/Microsoft.Bot.Builder.csproj" />
+    <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Configuration/Microsoft.Bot.Configuration.csproj" />
+    <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Connector.Streaming/Microsoft.Bot.Connector.Streaming.csproj" />
+    <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Connector/Microsoft.Bot.Connector.csproj" />
+    <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Schema/Microsoft.Bot.Schema.csproj" />
+    <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Streaming/Microsoft.Bot.Streaming.csproj" />
+  </Folder> -->
   <Folder Name="/Samples/">
     <Project Path="samples/AFBot/AFBot.csproj" Id="ca5b4abd-3f26-457b-8197-ff9415506beb" />
     <Project Path="samples/CompatBot/CompatBot.csproj" Id="39461362-c3d0-41ae-9ed7-f7e1232a8ead" />
