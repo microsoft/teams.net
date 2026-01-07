@@ -8,7 +8,7 @@ using Microsoft.Rest;
 
 namespace Microsoft.Bot.Core.Compat
 {
-    internal sealed class CompatConversationsClient(ConversationClient client) : IConversations
+    internal sealed class CompatConversations(ConversationClient client) : IConversations
     {
         private readonly ConversationClient _client = client;
         internal string? ServiceUrl { get; set; }

@@ -7,7 +7,7 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Core.Compat
 {
-    internal sealed class CompatConnectorClient(CompatConversationsClient conversations) : IConnectorClient
+    internal sealed class CompatConnectorClient(CompatConversations conversations) : IConnectorClient
     {
         public IConversations Conversations => conversations;
 

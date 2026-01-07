@@ -70,7 +70,7 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
             coreActivity = activity;
             TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());
             //turnContext.TurnState.Add<Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(botApplication.UserTokenClient));
-            CompatConnectorClient connectionClient = new(new CompatConversationsClient(botApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
+            CompatConnectorClient connectionClient = new(new CompatConversations(botApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             await bot.OnTurnAsync(turnContext, cancellationToken1).ConfigureAwait(false);
             var invokeResponseAct = turnContext.TurnState.Get<Activity>(BotAdapter.InvokeResponseKey);
