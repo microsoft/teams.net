@@ -32,11 +32,6 @@ public class TeamsChannelData : ChannelData
                 TeamsChannelId = jeChannelId.GetString();
             }
 
-            if (cd.Properties.TryGetValue("teamsChannelId", out object? teamsChannelId) && teamsChannelId is JsonElement teamsChannelIdJE && teamsChannelIdJE.ValueKind == JsonValueKind.String)
-            {
-                TeamsChannelId = teamsChannelIdJE.GetString();
-            }
-
             if (cd.Properties.TryGetValue("channel", out object? channelObj) && channelObj is JsonElement channelObjJE && channelObjJE.ValueKind == JsonValueKind.Object)
             {
                 Channel = JsonSerializer.Deserialize<TeamsChannel?>(channelObjJE.GetRawText());
@@ -44,7 +39,7 @@ public class TeamsChannelData : ChannelData
 
             if (cd.Properties.TryGetValue("tenant", out object? tenantObj) && tenantObj is JsonElement je && je.ValueKind == JsonValueKind.Object)
             {
-                Tenant = JsonSerializer.Deserialize<TeamsChannelDataTenant>(je.GetRawText())!;
+                Tenant = JsonSerializer.Deserialize<TeamsChannelDataTenant>(je.GetRawText());
             }
         }
     }

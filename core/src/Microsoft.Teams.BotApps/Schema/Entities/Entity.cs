@@ -67,13 +67,7 @@ public class EntityList : List<Entity>
                     "streaminfo" => item.Deserialize<StreamInfoEntity>(options),
                     _ => null
                 };
-                //foreach (var property in jsonObject)
-                //{
-                //    if (property.Key != "type")
-                //    {
-                //        entity?.Properties[property.Key] = property.Value!;
-                //    }
-                //}
+                
                 if (entity != null)
                     entities.Add(entity);
             }

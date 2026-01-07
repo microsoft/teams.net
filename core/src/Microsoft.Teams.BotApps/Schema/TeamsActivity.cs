@@ -30,7 +30,7 @@ public class TeamsActivity : CoreActivity
     /// <param name="json"></param>
     /// <returns></returns>
     public static new TeamsActivity FromJsonString(string json)
-         => FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity)!;
+         => FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity);
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
@@ -56,11 +56,16 @@ public class TeamsActivity : CoreActivity
         ServiceUrl = activity.ServiceUrl;
         ChannelId = activity.ChannelId;
         Type = activity.Type;
+
+        // TODO: Review if we need to handle ReplyToId
         // ReplyToId = activity.ReplyToId;
-        ChannelData = new TeamsChannelData(activity.ChannelData!);
-        From = new TeamsConversationAccount(activity.From!);
-        Recipient = new TeamsConversationAccount(activity.Recipient!);
-        Conversation = new TeamsConversation(activity.Conversation!);
+
+        ArgumentNullException.ThrowIfNull(activity.ChannelData);
+
+        ChannelData = new TeamsChannelData(activity.ChannelData);
+        From = new TeamsConversationAccount(activity.From);
+        Recipient = new TeamsConversationAccount(activity.Recipient);
+        Conversation = new TeamsConversation(activity.Conversation);
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
         Entities = EntityList.FromJsonArray(activity.Entities);
 

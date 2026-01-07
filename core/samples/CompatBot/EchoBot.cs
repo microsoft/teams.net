@@ -6,7 +6,6 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
-using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -20,13 +19,12 @@ public class ConversationData
 
 internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> logger) : TeamsActivityHandler
 {
-    //public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
-    //{
-    //    await base.OnTurnAsync(turnContext, cancellationToken);
+    public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
+    {
+        await base.OnTurnAsync(turnContext, cancellationToken);
 
-    //    await conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
-    //}
-
+        await conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
+    }
     protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
         logger.LogInformation("OnMessage");
@@ -46,21 +44,21 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
 
         var res = await conversationClient.SendToConversationAsync(cr.Conversation.Id, (Activity)reply, cancellationToken);
 
-        //await Task.Delay(2000, cancellationToken);
+        await Task.Delay(2000, cancellationToken);
 
-        //await conversationClient.UpdateActivityAsync(cr.Conversation.Id, res.Id!, new Activity
-        //{
-        //    Id = res.Id,
-        //    ServiceUrl = turnContext.Activity.ServiceUrl,
-        //    Type = ActivityTypes.Message,
-        //    Text = "This message has been updated.",
-        //}, cancellationToken);
+        await conversationClient.UpdateActivityAsync(cr.Conversation.Id, res.Id!, new Activity
+        {
+            Id = res.Id,
+            ServiceUrl = turnContext.Activity.ServiceUrl,
+            Type = ActivityTypes.Message,
+            Text = "This message has been updated.",
+        }, cancellationToken);
 
-        //await Task.Delay(2000, cancellationToken);
+        await Task.Delay(2000, cancellationToken);
 
-        //await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, cancellationToken);
+        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, cancellationToken);
 
-        //await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
+        await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
 
         var attachment = new Attachment
         {
