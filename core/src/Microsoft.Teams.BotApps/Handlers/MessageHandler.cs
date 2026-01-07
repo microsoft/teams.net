@@ -6,6 +6,8 @@ using Microsoft.Teams.BotApps.Schema;
 
 namespace Microsoft.Teams.BotApps.Handlers;
 
+// TODO: Handlers should just have context instead of args + context.
+
 /// <summary>
 /// Delegate for handling message activities.
 /// </summary>

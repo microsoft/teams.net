@@ -58,6 +58,9 @@ public class EntityList : List<Entity>
                 && typeValue.GetValue<string>() is string typeString)
             {
 
+                // TODO: Investigate if there is any way for Parent to avoid
+                // Knowing the children.
+                // Maybe a registry pattern, or Converters?
                 Entity? entity = typeString switch
                 {
                     "clientInfo" => item.Deserialize<ClientInfoEntity>(options),

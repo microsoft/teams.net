@@ -97,6 +97,7 @@ public class MentionEntity : Entity
     {
         MentionEntity res = new()
         {
+            // TODO: Verify if throwing exceptions is okay here
             Mentioned = jsonNode?["mentioned"] != null
                 ? JsonSerializer.Deserialize<ConversationAccount>(jsonNode["mentioned"]!.ToJsonString())!
                 : throw new ArgumentNullException(nameof(jsonNode), "mentioned property is required"),

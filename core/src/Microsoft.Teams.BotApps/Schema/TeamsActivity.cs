@@ -116,6 +116,8 @@ public class TeamsActivity : CoreActivity
     /// <returns></returns>
     public TeamsActivity AddEntity(Entity entity)
     {
+        // TODO: Pick up nuances about entities.
+        // For eg, there can only be 1 single MessageEntity
         Entities ??= [];
         Entities.Add(entity);
         return this;

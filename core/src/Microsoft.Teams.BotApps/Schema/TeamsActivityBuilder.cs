@@ -89,6 +89,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         return this;
     }
 
+    // TODO: Builders should only have "With" methods, not "Add" methods.
     /// <summary>
     /// Adds an entity to the activity's Entities collection.
     /// </summary>
