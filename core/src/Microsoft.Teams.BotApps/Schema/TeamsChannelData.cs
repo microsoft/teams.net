@@ -23,18 +23,13 @@ public class TeamsChannelData : ChannelData
     /// Creates a new instance of the <see cref="TeamsChannelData"/> class from the specified <see cref="ChannelData"/> object.
     /// </summary>
     /// <param name="cd"></param>
-    public TeamsChannelData(ChannelData cd)
+    public TeamsChannelData(ChannelData? cd)
     {
         if (cd is not null)
         {
             if (cd.Properties.TryGetValue("teamsChannelId", out object? channelIdObj) && channelIdObj is JsonElement jeChannelId && jeChannelId.ValueKind == JsonValueKind.String)
             {
                 TeamsChannelId = jeChannelId.GetString();
-            }
-
-            if (cd.Properties.TryGetValue("teamsChannelId", out object? teamsChannelId) && teamsChannelId is JsonElement teamsChannelIdJE && teamsChannelIdJE.ValueKind == JsonValueKind.String)
-            {
-                TeamsChannelId = teamsChannelIdJE.GetString();
             }
 
             if (cd.Properties.TryGetValue("channel", out object? channelObj) && channelObj is JsonElement channelObjJE && channelObjJE.ValueKind == JsonValueKind.Object)
@@ -44,7 +39,7 @@ public class TeamsChannelData : ChannelData
 
             if (cd.Properties.TryGetValue("tenant", out object? tenantObj) && tenantObj is JsonElement je && je.ValueKind == JsonValueKind.Object)
             {
-                Tenant = JsonSerializer.Deserialize<TeamsChannelDataTenant>(je.GetRawText())!;
+                Tenant = JsonSerializer.Deserialize<TeamsChannelDataTenant>(je.GetRawText());
             }
         }
     }

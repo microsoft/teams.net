@@ -31,15 +31,15 @@ public class TeamsActivityBuilderTests
     {
         TeamsActivity existingActivity = new()
         {
-            Id = "test-id",
-            Text = "existing text"
+            Id = "test-id"
         };
+        existingActivity.Properties["text"] = "existing text";
 
         TeamsActivityBuilder builder = TeamsActivity.CreateBuilder(existingActivity);
         TeamsActivity activity = builder.Build();
 
         Assert.Equal("test-id", activity.Id);
-        Assert.Equal("existing text", activity.Text);
+        Assert.Equal("existing text", activity.Properties["text"]);
     }
 
     [Fact]
@@ -97,7 +97,7 @@ public class TeamsActivityBuilderTests
             .WithText("Hello, World!")
             .Build();
 
-        Assert.Equal("Hello, World!", activity.Text);
+        Assert.Equal("Hello, World!", activity.Properties["text"]);
     }
 
     [Fact]
@@ -295,7 +295,7 @@ public class TeamsActivityBuilderTests
             .AddMention(account)
             .Build();
 
-        Assert.Equal("<at>John Doe</at> said hello", activity.Text);
+        Assert.Equal("<at>John Doe</at> said hello", activity.Properties["text"]);
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
 
@@ -320,7 +320,7 @@ public class TeamsActivityBuilderTests
             .AddMention(account, "CustomName")
             .Build();
 
-        Assert.Equal("<at>CustomName</at> replied", activity.Text);
+        Assert.Equal("<at>CustomName</at> replied", activity.Properties["text"]);
 
         MentionEntity? mention = activity.Entities![0] as MentionEntity;
         Assert.NotNull(mention);
@@ -341,7 +341,7 @@ public class TeamsActivityBuilderTests
             .AddMention(account, addText: false)
             .Build();
 
-        Assert.Equal("original text", activity.Text);
+        Assert.Equal("original text", activity.Properties["text"]);
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
     }
@@ -358,7 +358,7 @@ public class TeamsActivityBuilderTests
             .AddMention(account2)
             .Build();
 
-        Assert.Equal("<at>User Two</at> <at>User One</at> message", activity.Text);
+        Assert.Equal("<at>User Two</at> <at>User One</at> message", activity.Properties["text"]);
         Assert.NotNull(activity.Entities);
         Assert.Equal(2, activity.Entities.Count);
     }
@@ -394,7 +394,7 @@ public class TeamsActivityBuilderTests
         Assert.Equal(ActivityTypes.Message, activity.Type);
         Assert.Equal("activity-123", activity.Id);
         Assert.Equal("msteams", activity.ChannelId);
-        Assert.Equal("<at>User</at> Test message", activity.Text);
+        Assert.Equal("<at>User</at> Test message", activity.Properties["text"]);
         Assert.Equal("sender-id", activity.From.Id);
         Assert.Equal("recipient-id", activity.Recipient.Id);
         Assert.Equal("conv-id", activity.Conversation.Id);
@@ -435,16 +435,16 @@ public class TeamsActivityBuilderTests
         TeamsActivity original = new()
         {
             Id = "original-id",
-            Text = "original text",
             Type = ActivityTypes.Message
         };
+        original.Properties["text"] = "original text";
 
         TeamsActivity modified = TeamsActivity.CreateBuilder(original)
             .WithText("modified text")
             .Build();
 
         Assert.Equal("original-id", modified.Id);
-        Assert.Equal("modified text", modified.Text);
+        Assert.Equal("modified text", modified.Properties["text"]);
         Assert.Equal(ActivityTypes.Message, modified.Type);
     }
 
@@ -519,7 +519,7 @@ public class TeamsActivityBuilderTests
             .AddMention(account)
             .Build();
 
-        Assert.Equal("<at>User</at> ", activity.Text);
+        Assert.Equal("<at>User</at> ", activity.Properties["text"]);
     }
 
     [Fact]
@@ -698,7 +698,7 @@ public class TeamsActivityBuilderTests
             .AddMention(account)
             .Build();
 
-        Assert.Equal("<at></at> message", activity.Text);
+        Assert.Equal("<at></at> message", activity.Properties["text"]);
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
     }
@@ -780,7 +780,7 @@ public class TeamsActivityBuilderTests
         Assert.Equal("msg-001", activity.Id);
         Assert.Equal(serviceUrl, activity.ServiceUrl);
         Assert.Equal("msteams", activity.ChannelId);
-        Assert.Equal("<at>Manager</at> Please review this document", activity.Text);
+        Assert.Equal("<at>Manager</at> Please review this document", activity.Properties["text"]);
         Assert.Equal("bot-id", activity.From.Id);
         Assert.Equal("user-id", activity.Recipient.Id);
         Assert.Equal("conv-001", activity.Conversation.Id);

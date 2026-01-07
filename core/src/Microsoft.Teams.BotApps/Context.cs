@@ -48,7 +48,7 @@ public class Context(TeamsBotApplication botApplication, TeamsActivity activity)
     {
         ArgumentNullException.ThrowIfNull(Activity);
         TeamsActivity typing = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityTypes.Typing)
+            .WithType(TeamsActivityType.Typing)
             .WithConversationReference(Activity)
             .Build();
         return await TeamsBotApplication.SendActivityAsync(typing, cancellationToken).ConfigureAwait(false);

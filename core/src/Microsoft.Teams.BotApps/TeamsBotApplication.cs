@@ -48,19 +48,19 @@ public class TeamsBotApplication : BotApplication
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context context = new(this, teamsActivity);
-            if (teamsActivity.Type == TeamsActivityTypes.Message && OnMessage is not null)
+            if (teamsActivity.Type == TeamsActivityType.Message && OnMessage is not null)
             {
-                await OnMessage.Invoke(context, cancellationToken).ConfigureAwait(false);
+                await OnMessage.Invoke(new MessageArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
             }
-            if (teamsActivity.Type == TeamsActivityTypes.InstallationUpdate && OnInstallationUpdate is not null)
+            if (teamsActivity.Type == TeamsActivityType.InstallationUpdate && OnInstallationUpdate is not null)
             {
                 await OnInstallationUpdate.Invoke(new InstallationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
             }
-            if (teamsActivity.Type == TeamsActivityTypes.MessageReaction && OnMessageReaction is not null)
+            if (teamsActivity.Type == TeamsActivityType.MessageReaction && OnMessageReaction is not null)
             {
                 await OnMessageReaction.Invoke(new MessageReactionArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
             }
-            if (teamsActivity.Type == TeamsActivityTypes.ConversationUpdate && OnConversationUpdate is not null)
+            if (teamsActivity.Type == TeamsActivityType.ConversationUpdate && OnConversationUpdate is not null)
             {
                 await OnConversationUpdate.Invoke(new ConversationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
             }

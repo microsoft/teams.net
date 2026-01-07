@@ -50,24 +50,16 @@ public class TeamsActivity : CoreActivity
         Conversation = new TeamsConversation(new Conversation());
     }
 
-    private TeamsActivity(CoreActivity activity)
+    private TeamsActivity(CoreActivity activity) : base(activity)
     {
-        Id = activity.Id;
-        ServiceUrl = activity.ServiceUrl;
-        ChannelId = activity.ChannelId;
-        Type = activity.Type;
-        // ReplyToId = activity.ReplyToId;
-        ChannelData = new TeamsChannelData(activity.ChannelData!);
-        From = new TeamsConversationAccount(activity.From!);
-        Recipient = new TeamsConversationAccount(activity.Recipient!);
-        Conversation = new TeamsConversation(activity.Conversation!);
+        // Convert base types to Teams-specific types
+        ChannelData = new TeamsChannelData(activity.ChannelData);
+        From = new TeamsConversationAccount(activity.From);
+        Recipient = new TeamsConversationAccount(activity.Recipient);
+        Conversation = new TeamsConversation(activity.Conversation);
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
         Entities = EntityList.FromJsonArray(activity.Entities);
 
-        Text = activity.Properties.TryGetValue("text", out var textObj) ? textObj?.ToString() : null;
-        TextFormat = activity.Properties.TryGetValue("textFormat", out var textFormatObj) ? textFormatObj?.ToString() : null;
-
-        //base.Entities = Entities.ToJsonArray();
         Rebase();
     }
 
@@ -83,48 +75,8 @@ public class TeamsActivity : CoreActivity
         base.From = this.From;
         base.Recipient = this.Recipient;
         base.Conversation = this.Conversation;
-        
+
         return this;
-    }
-
-    private string? _text;
-    /// <summary>
-    /// Gets or sets the text content associated with this object.
-    /// </summary>
-    [JsonPropertyName("text")] public string? Text {
-        get => _text;
-        set
-        {
-            _text = value;
-            if (Properties.ContainsKey("text"))
-            {
-                Properties["text"] = _text;
-            }
-            else
-            {
-                Properties.TryAdd("text", _text);
-            }
-        }
-    }
-
-    private string? _textFormat;
-    /// <summary>
-    /// Gets or sets the text Format associated with this object.
-    /// </summary>
-    [JsonPropertyName("textFormat")] public string? TextFormat {
-        get => _textFormat;
-        set
-        {
-            _textFormat = value;
-            if (Properties.ContainsKey("textFormat"))
-            {
-                Properties["textFormat"] = _textFormat;
-            }
-            else
-            {
-                Properties.TryAdd("textFormat", _textFormat);
-            }
-        }
     }
 
     /// <summary>
