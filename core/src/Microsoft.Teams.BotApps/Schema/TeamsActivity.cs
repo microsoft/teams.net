@@ -60,9 +60,11 @@ public class TeamsActivity : CoreActivity
         // TODO: Review if we need to handle ReplyToId
         // ReplyToId = activity.ReplyToId;
 
-        ArgumentNullException.ThrowIfNull(activity.ChannelData);
+        if (activity.ChannelData is not null)
+        {
+            ChannelData = new TeamsChannelData(activity.ChannelData);
+        }
 
-        ChannelData = new TeamsChannelData(activity.ChannelData);
         From = new TeamsConversationAccount(activity.From);
         Recipient = new TeamsConversationAccount(activity.Recipient);
         Conversation = new TeamsConversation(activity.Conversation);
@@ -88,7 +90,7 @@ public class TeamsActivity : CoreActivity
         base.From = this.From;
         base.Recipient = this.Recipient;
         base.Conversation = this.Conversation;
-        
+
         return this;
     }
 
@@ -96,7 +98,9 @@ public class TeamsActivity : CoreActivity
     /// <summary>
     /// Gets or sets the text content associated with this object.
     /// </summary>
-    [JsonPropertyName("text")] public string? Text {
+    [JsonPropertyName("text")]
+    public string? Text
+    {
         get => _text;
         set
         {
@@ -116,7 +120,9 @@ public class TeamsActivity : CoreActivity
     /// <summary>
     /// Gets or sets the text Format associated with this object.
     /// </summary>
-    [JsonPropertyName("textFormat")] public string? TextFormat {
+    [JsonPropertyName("textFormat")]
+    public string? TextFormat
+    {
         get => _textFormat;
         set
         {
