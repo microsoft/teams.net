@@ -5,7 +5,6 @@ using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
 namespace Microsoft.Bot.Core.Tests;
 
@@ -38,7 +37,7 @@ public class ConversationClientTest
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`",
+            Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
             {
@@ -57,7 +56,7 @@ public class ConversationClientTest
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`",
+            Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
             {
@@ -75,7 +74,7 @@ public class ConversationClientTest
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`",
+            Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
             {
@@ -94,7 +93,7 @@ public class ConversationClientTest
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Original message from Automated tests at `{DateTime.UtcNow:s}`",
+            Properties = { { "text", $"Original message from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
             {
@@ -110,7 +109,7 @@ public class ConversationClientTest
         CoreActivity updatedActivity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Updated message from Automated tests at `{DateTime.UtcNow:s}`",
+            Properties = { { "text", $"Updated message from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
         };
 
@@ -131,7 +130,7 @@ public class ConversationClientTest
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Message to delete from Automated tests at `{DateTime.UtcNow:s}`",
+            Properties = { { "text", $"Message to delete from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
             {
@@ -171,13 +170,35 @@ public class ConversationClientTest
 
         // Log members
         Console.WriteLine($"Found {members.Count} members in conversation {conversationId}:");
-        foreach (var member in members)
+        foreach (ConversationAccount member in members)
         {
             Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             Assert.NotNull(member);
             Assert.NotNull(member.Id);
         }
     }
+
+    [Fact]
+    public async Task GetConversationMember()
+    {
+        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+
+        ConversationAccount member = await _conversationClient.GetConversationMemberAsync(
+            conversationId,
+            userId,
+            _serviceUrl,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(member);
+
+        // Log member
+        Console.WriteLine($"Found member in conversation {conversationId}:");
+        Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+        Assert.NotNull(member);
+        Assert.NotNull(member.Id);
+    }
+
 
     [Fact]
     public async Task GetConversationMembersInChannel()
@@ -194,7 +215,7 @@ public class ConversationClientTest
 
         // Log members
         Console.WriteLine($"Found {members.Count} members in channel {channelId}:");
-        foreach (var member in members)
+        foreach (ConversationAccount member in members)
         {
             Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             Assert.NotNull(member);
@@ -209,7 +230,7 @@ public class ConversationClientTest
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Message for GetActivityMembers test at `{DateTime.UtcNow:s}`",
+            Properties = { { "text", $"Message for GetActivityMembers test at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
             {
@@ -233,7 +254,7 @@ public class ConversationClientTest
 
         // Log activity members
         Console.WriteLine($"Found {members.Count} members for activity {sendResponse.Id}:");
-        foreach (var member in members)
+        foreach (ConversationAccount member in members)
         {
             Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             Assert.NotNull(member);
@@ -255,7 +276,7 @@ public class ConversationClientTest
 
         // Log conversations
         Console.WriteLine($"Found {response.Conversations.Count} conversations:");
-        foreach (var conversation in response.Conversations)
+        foreach (ConversationMembers conversation in response.Conversations)
         {
             Console.WriteLine($"  - Conversation Id: {conversation.Id}");
             Assert.NotNull(conversation);
@@ -264,7 +285,7 @@ public class ConversationClientTest
             if (conversation.Members != null && conversation.Members.Any())
             {
                 Console.WriteLine($"    Members ({conversation.Members.Count}):");
-                foreach (var member in conversation.Members)
+                foreach (ConversationAccount member in conversation.Members)
                 {
                     Console.WriteLine($"      - Id: {member.Id}, Name: {member.Name}");
                 }
@@ -279,13 +300,13 @@ public class ConversationClientTest
         ConversationParameters parameters = new()
         {
             IsGroup = false,
-            Members = new List<ConversationAccount>
-            {
+            Members =
+            [
                 new()
                 {
                     Id = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set"),
                 }
-            },
+            ],
             // TODO: This is required for some reason. Should it be required in the api?
             TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
         };
@@ -306,7 +327,7 @@ public class ConversationClientTest
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Test message to new conversation at {DateTime.UtcNow:s}",
+            Properties = { { "text", $"Test message to new conversation at {DateTime.UtcNow:s}" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
             {
@@ -329,8 +350,8 @@ public class ConversationClientTest
         ConversationParameters parameters = new()
         {
             IsGroup = true,
-            Members = new List<ConversationAccount>
-            {
+            Members =
+            [
                 new()
                 {
                     Id = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set"),
@@ -339,7 +360,7 @@ public class ConversationClientTest
                 {
                     Id = Environment.GetEnvironmentVariable("TEST_USER_ID_2") ?? throw new InvalidOperationException("TEST_USER_ID_2 environment variable not set"),
                 }
-            },
+            ],
             TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
         };
 
@@ -357,7 +378,7 @@ public class ConversationClientTest
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Test message to new group conversation at {DateTime.UtcNow:s}",
+            Properties = { { "text", $"Test message to new group conversation at {DateTime.UtcNow:s}" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
             {
@@ -381,13 +402,13 @@ public class ConversationClientTest
         {
             IsGroup = true,
             TopicName = $"Test Conversation - {DateTime.UtcNow:s}",
-            Members = new List<ConversationAccount>
-            {
+            Members =
+            [
                 new()
                 {
                     Id = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set"),
                 }
-            },
+            ],
             TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
         };
 
@@ -405,7 +426,7 @@ public class ConversationClientTest
         CoreActivity activity = new()
         {
             Type = ActivityTypes.Message,
-            Text = $"Test message to conversation with topic name at {DateTime.UtcNow:s}",
+            Properties = { { "text", $"Test message to conversation with topic name at {DateTime.UtcNow:s}" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
             {
@@ -428,17 +449,17 @@ public class ConversationClientTest
         ConversationParameters parameters = new()
         {
             IsGroup = false,
-            Members = new List<ConversationAccount>
-            {
+            Members =
+            [
                 new()
                 {
                     Id = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set"),
                 }
-            },
+            ],
             Activity = new CoreActivity
             {
                 Type = ActivityTypes.Message,
-                Text = $"Initial message sent at {DateTime.UtcNow:s}"
+                Properties = { { "text", $"Initial message sent at {DateTime.UtcNow:s}" } },
             },
             TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
         };
@@ -463,13 +484,13 @@ public class ConversationClientTest
         ConversationParameters parameters = new()
         {
             IsGroup = false,
-            Members = new List<ConversationAccount>
-            {
+            Members =
+            [
                 new()
                 {
                     Id = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set"),
                 }
-            },
+            ],
             ChannelData = new
             {
                 teamsChannelId = Environment.GetEnvironmentVariable("TEST_CHANNELID")
@@ -503,7 +524,7 @@ public class ConversationClientTest
         Assert.NotEmpty(result.Members);
 
         Console.WriteLine($"Found {result.Members.Count} members in page:");
-        foreach (var member in result.Members)
+        foreach (ConversationAccount member in result.Members)
         {
             Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             Assert.NotNull(member);
@@ -533,7 +554,7 @@ public class ConversationClientTest
         Assert.Single(result.Members);
 
         Console.WriteLine($"Found {result.Members.Count} members with pageSize=1:");
-        foreach (var member in result.Members)
+        foreach (ConversationAccount member in result.Members)
         {
             Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
         }
@@ -554,7 +575,7 @@ public class ConversationClientTest
             Assert.NotNull(nextPage.Members);
 
             Console.WriteLine($"Found {nextPage.Members.Count} members in next page:");
-            foreach (var member in nextPage.Members)
+            foreach (ConversationAccount member in nextPage.Members)
             {
                 Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             }
@@ -576,7 +597,7 @@ public class ConversationClientTest
         Assert.NotEmpty(membersBefore);
 
         Console.WriteLine($"Members before deletion: {membersBefore.Count}");
-        foreach (var member in membersBefore)
+        foreach (ConversationAccount member in membersBefore)
         {
             Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
         }
@@ -604,7 +625,7 @@ public class ConversationClientTest
         Assert.NotNull(membersAfter);
 
         Console.WriteLine($"Members after deletion: {membersAfter.Count}");
-        foreach (var member in membersAfter)
+        foreach (ConversationAccount member in membersAfter)
         {
             Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
         }
@@ -621,13 +642,13 @@ public class ConversationClientTest
         // Create a transcript with historic activities
         Transcript transcript = new()
         {
-            Activities = new List<CoreActivity>
-            {
+            Activities =
+            [
                 new()
                 {
                     Type = ActivityTypes.Message,
                     Id = Guid.NewGuid().ToString(),
-                    Text = "Historic message 1",
+                    Properties = { { "text", "Historic message 1" } },
                     ServiceUrl = _serviceUrl,
                     Conversation = new() { Id = conversationId }
                 },
@@ -635,7 +656,7 @@ public class ConversationClientTest
                 {
                     Type = ActivityTypes.Message,
                     Id = Guid.NewGuid().ToString(),
-                    Text = "Historic message 2",
+                    Properties = { { "text", "Historic message 2" } },
                     ServiceUrl = _serviceUrl,
                     Conversation = new() { Id = conversationId }
                 },
@@ -643,11 +664,11 @@ public class ConversationClientTest
                 {
                     Type = ActivityTypes.Message,
                     Id = Guid.NewGuid().ToString(),
-                    Text = "Historic message 3",
+                    Properties = { { "text", "Historic message 3" } },
                     ServiceUrl = _serviceUrl,
                     Conversation = new() { Id = conversationId }
                 }
-            }
+            ]
         };
 
         SendConversationHistoryResponse response = await _conversationClient.SendConversationHistoryAsync(
