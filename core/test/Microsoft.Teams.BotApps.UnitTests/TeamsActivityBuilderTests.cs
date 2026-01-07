@@ -216,6 +216,24 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
+    public void WithAttachment_SetsSingleAttachment()
+    {
+        TeamsAttachment attachment = new()
+        {
+            ContentType = "application/json",
+            Name = "single"
+        };
+
+        var activity = builder
+            .WithAttachment(attachment)
+            .Build();
+
+        Assert.NotNull(activity.Attachments);
+        Assert.Single(activity.Attachments);
+        Assert.Equal("single", activity.Attachments[0].Name);
+    }
+
+    [Fact]
     public void AddEntity_AddsEntityToCollection()
     {
         ClientInfoEntity entity = new()
@@ -273,6 +291,41 @@ public class TeamsActivityBuilderTests
 
         Assert.NotNull(activity.Attachments);
         Assert.Equal(2, activity.Attachments.Count);
+    }
+
+    [Fact]
+    public void AddAdaptiveCardAttachment_AddsAdaptiveCard()
+    {
+        var adaptiveCard = new { type = "AdaptiveCard", version = "1.2" };
+
+        var activity = builder
+            .AddAdaptiveCardAttachment(adaptiveCard)
+            .Build();
+
+        Assert.NotNull(activity.Attachments);
+        Assert.Single(activity.Attachments);
+        Assert.Equal("application/vnd.microsoft.card.adaptive", activity.Attachments[0].ContentType);
+        Assert.Same(adaptiveCard, activity.Attachments[0].Content);
+    }
+
+    [Fact]
+    public void WithAdaptiveCardAttachment_ConfigureActionAppliesChanges()
+    {
+        var adaptiveCard = new { type = "AdaptiveCard" };
+
+        var activity = builder
+            .WithAdaptiveCardAttachment(adaptiveCard, b => b.WithName("feedback"))
+            .Build();
+
+        Assert.NotNull(activity.Attachments);
+        Assert.Single(activity.Attachments);
+        Assert.Equal("feedback", activity.Attachments[0].Name);
+    }
+
+    [Fact]
+    public void AddAdaptiveCardAttachment_WithNullPayload_Throws()
+    {
+        Assert.Throws<ArgumentNullException>(() => builder.AddAdaptiveCardAttachment(null!));
     }
 
     [Fact]

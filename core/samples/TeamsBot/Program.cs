@@ -15,35 +15,24 @@ var teamsApp = builder.Build();
 
 teamsApp.OnMessage = async (context, cancellationToken) =>
 {
+    await context.SendTypingActivityAsync(cancellationToken);
+
     string replyText = $"You sent: `{context.Activity.Text}` in activity of type `{context.Activity.Type}`.";
 
-    // await context.SendTypingActivityAsync(cancellationToken);
-
     TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
-        .WithConversationReference(context.Activity)
         .WithText(replyText)
         .Build();
 
-
     reply.AddMention(context.Activity.From!, "ridobotlocal", true);
 
-    await teamsApp.SendActivityAsync(reply, cancellationToken);
+    await context.SendActivityAsync(reply, cancellationToken);
 
     TeamsActivity feedbackCard = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityTypes.Message)
-        .WithConversationReference(context.Activity)
-        .WithAttachments(
-        [
-                new TeamsAttachment
-                {
-                    ContentType = "application/vnd.microsoft.card.adaptive",
-                    Content = Cards.FeedbackCardObj
-                }
-            ]
-        )
+        .WithAttachment(TeamsAttachment.CreateBuilder()
+            .WithAdaptiveCard(Cards.FeedbackCardObj)
+            .Build())
         .Build();
-    await teamsApp.SendActivityAsync(feedbackCard, cancellationToken);
+    await context.SendActivityAsync(feedbackCard, cancellationToken);
 };
 
 teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>
@@ -64,8 +53,14 @@ teamsApp.OnInvoke = async (context, cancellationToken) =>
     var valueNode = context.Activity.Value;
     string? feedbackValue = valueNode?["action"]?["data"]?["feedback"]?.GetValue<string>();
 
-    string replyText = $"Invoke activity of type `{context.Activity.Type}` received. Feedback Data {feedbackValue}";
-    await context.SendActivityAsync(replyText, cancellationToken);
+    var reply = TeamsActivity.CreateBuilder()
+        .WithAttachment(TeamsAttachment.CreateBuilder()
+            .WithAdaptiveCard(Cards.ResponseCard(feedbackValue))
+            .Build()
+        )
+        .Build();
+
+    await context.SendActivityAsync(reply, cancellationToken);
 
     return new InvokeResponse(200)
     {

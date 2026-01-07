@@ -98,33 +98,12 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
 
         logger.LogInformation("Action: {Action}, User Input: {UserInput}", action, userInput);
 
-        var responseCard = new
-        {
-            type = "AdaptiveCard",
-            version = "1.4",
-            body = new object[]
-            {
-                    new
-                    {
-                        type = "TextBlock",
-                        text = "Form Submitted Successfully! ✓",
-                        weight = "Bolder",
-                        size = "Large",
-                        color = "Good"
-                    },
-                    new
-                    {
-                        type = "TextBlock",
-                        text = $"You entered: **{userInput ?? "(empty)"}**",
-                        wrap = true
-                    }
-            }
-        };
+
 
         var attachment = new Attachment
         {
             ContentType = "application/vnd.microsoft.card.adaptive",
-            Content = responseCard
+            Content = Cards.ResponseCard(userInput)
         };
 
         var card = MessageFactory.Attachment(attachment);

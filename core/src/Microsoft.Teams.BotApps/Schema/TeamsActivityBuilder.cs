@@ -90,6 +90,20 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     }
 
     /// <summary>
+    /// Replaces the attachments collection with a single attachment.
+    /// </summary>
+    /// <param name="attachment">The attachment to set. Passing null clears the attachments.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder WithAttachment(TeamsAttachment? attachment)
+    {
+        _activity.Attachments = attachment is null
+            ? null
+            : [attachment];
+
+        return this;
+    }
+
+    /// <summary>
     /// Adds an entity to the activity's Entities collection.
     /// </summary>
     /// <param name="entity">The entity to add.</param>
@@ -111,6 +125,30 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         _activity.Attachments ??= [];
         _activity.Attachments.Add(attachment);
         return this;
+    }
+
+    /// <summary>
+    /// Adds an Adaptive Card attachment to the activity.
+    /// </summary>
+    /// <param name="adaptiveCard">The Adaptive Card payload.</param>
+    /// <param name="configure">Optional callback to further configure the attachment before it is added.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder AddAdaptiveCardAttachment(object adaptiveCard, Action<TeamsAttachmentBuilder>? configure = null)
+    {
+        TeamsAttachment attachment = BuildAdaptiveCardAttachment(adaptiveCard, configure);
+        return AddAttachment(attachment);
+    }
+
+    /// <summary>
+    /// Sets the activity attachments collection to a single Adaptive Card attachment.
+    /// </summary>
+    /// <param name="adaptiveCard">The Adaptive Card payload.</param>
+    /// <param name="configure">Optional callback to further configure the attachment.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder WithAdaptiveCardAttachment(object adaptiveCard, Action<TeamsAttachmentBuilder>? configure = null)
+    {
+        TeamsAttachment attachment = BuildAdaptiveCardAttachment(adaptiveCard, configure);
+        return WithAttachment(attachment);
     }
 
     /// <summary>
@@ -160,5 +198,18 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     {
         _activity.Rebase();
         return _activity;
+    }
+
+    private static TeamsAttachment BuildAdaptiveCardAttachment(object adaptiveCard, Action<TeamsAttachmentBuilder>? configure)
+    {
+        ArgumentNullException.ThrowIfNull(adaptiveCard);
+
+        TeamsAttachmentBuilder attachmentBuilder = TeamsAttachment
+            .CreateBuilder()
+            .WithAdaptiveCard(adaptiveCard);
+
+        configure?.Invoke(attachmentBuilder);
+
+        return attachmentBuilder.Build();
     }
 }

@@ -76,4 +76,15 @@ public class TeamsAttachment
 #pragma warning disable CA2227 // Collection properties should be read only
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
+
+    /// <summary>
+    /// Creates a builder for constructing a <see cref="TeamsAttachment"/> instance.
+    /// </summary>
+    public static TeamsAttachmentBuilder CreateBuilder() => new();
+
+    /// <summary>
+    /// Creates a builder initialized with an existing <see cref="TeamsAttachment"/> instance.
+    /// </summary>
+    /// <param name="attachment">The attachment to wrap.</param>
+    public static TeamsAttachmentBuilder CreateBuilder(TeamsAttachment attachment) => new(attachment);
 }

@@ -8,6 +8,30 @@ namespace CompatBot;
 
 internal class Cards
 {
+
+    public static object ResponseCard(string? feedback) => new
+    {
+        type = "AdaptiveCard",
+        version = "1.4",
+        body = new object[]
+            {
+                    new
+                    {
+                        type = "TextBlock",
+                        text = "Form Submitted Successfully! ✓",
+                        weight = "Bolder",
+                        size = "Large",
+                        color = "Good"
+                    },
+                    new
+                    {
+                        type = "TextBlock",
+                        text = $"You entered: **{feedback ?? "(empty)"}**",
+                        wrap = true
+                    }
+            }
+    };
+
     public static object FeedbackCardObj = new
     {
         type = "AdaptiveCard",

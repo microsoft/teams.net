@@ -32,12 +32,27 @@ public class Context(TeamsBotApplication botApplication, TeamsActivity activity)
     public async Task<SendActivityResponse?> SendActivityAsync(string text, CancellationToken cancellationToken = default)
     {
         TeamsActivity reply = new TeamsActivityBuilder()
-            .WithText(text)
             .WithConversationReference(Activity)
+            .WithText(text)
             .Build();
 
         return await TeamsBotApplication.SendActivityAsync(reply, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Sends Activity
+    /// </summary>
+    /// <param name="activity"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<SendActivityResponse?> SendActivityAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
+    {
+        var reply = new TeamsActivityBuilder(activity)
+            .WithConversationReference(Activity)
+            .Build();
+        return await TeamsBotApplication.SendActivityAsync(reply, cancellationToken).ConfigureAwait(false);
+    }
+
 
     /// <summary>
     /// Sends a typing activity to the conversation asynchronously.
