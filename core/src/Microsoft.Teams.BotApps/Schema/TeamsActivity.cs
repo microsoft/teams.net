@@ -45,9 +45,9 @@ public class TeamsActivity : CoreActivity
     [JsonConstructor]
     public TeamsActivity()
     {
-        From = new TeamsConversationAccount(new ConversationAccount());
-        Recipient = new TeamsConversationAccount(new ConversationAccount());
-        Conversation = new TeamsConversation(new Conversation());
+        From = new TeamsConversationAccount();
+        Recipient = new TeamsConversationAccount();
+        Conversation = new TeamsConversation();
     }
 
     private TeamsActivity(CoreActivity activity)

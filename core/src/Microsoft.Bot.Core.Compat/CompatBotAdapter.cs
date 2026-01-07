@@ -78,7 +78,7 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
     /// <param name="turnContext"></param>
     /// <param name="activity"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>s
+    /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
     public override async Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
     {

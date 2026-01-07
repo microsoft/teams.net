@@ -19,7 +19,7 @@ public class TeamsConversationAccount : ConversationAccount
     /// <summary>
     /// Conversation account.
     /// </summary>
-    public ConversationAccount ConversationAcount { get; set; }
+    public ConversationAccount ConversationAccount { get; set; }
 
     /// <summary>
     /// Initializes a new instance of the TeamsConversationAccount class.
@@ -27,7 +27,7 @@ public class TeamsConversationAccount : ConversationAccount
     [JsonConstructor]
     public TeamsConversationAccount()
     {
-        ConversationAcount = new ConversationAccount();
+        ConversationAccount = new ConversationAccount();
         Id = string.Empty;
         Name = string.Empty;
     }
@@ -41,7 +41,7 @@ public class TeamsConversationAccount : ConversationAccount
     public TeamsConversationAccount(ConversationAccount conversationAccount)
     {
         ArgumentNullException.ThrowIfNull(conversationAccount);
-        ConversationAcount = conversationAccount;
+        ConversationAccount = conversationAccount;
         Properties = conversationAccount.Properties;
         Id = conversationAccount.Id ?? string.Empty;
         Name = conversationAccount.Name ?? string.Empty;
