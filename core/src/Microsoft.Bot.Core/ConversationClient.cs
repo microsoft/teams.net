@@ -181,6 +181,37 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             cancellationToken).ConfigureAwait(false);
     }
 
+
+    /// <summary>
+    /// Gets a specific member of a conversation.
+    /// </summary>
+    /// <param name="conversationId"></param>
+    /// <param name="userId"></param>
+    /// <param name="serviceUrl"></param>
+    /// <param name="agenticIdentity"></param>
+    /// <param name="customHeaders"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public async Task<ConversationAccount> GetConversationMemberAsync(string conversationId, string userId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+        ArgumentNullException.ThrowIfNullOrWhiteSpace(userId);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members/{userId}";
+
+        logger.LogTrace("Getting conversation members from {Url}", url);
+
+        return await SendHttpRequestAsync<ConversationAccount>(
+            HttpMethod.Get,
+            url,
+            body: null,
+            agenticIdentity,
+            "getting conversation members",
+            customHeaders,
+            cancellationToken).ConfigureAwait(false);
+    }
+
     /// <summary>
     /// Gets the conversations in which the bot has participated.
     /// </summary>

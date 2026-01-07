@@ -318,5 +318,19 @@ namespace Microsoft.Bot.Core.Compat
 
             return convertedHeaders;
         }
+
+        public async Task<HttpOperationResponse<ChannelAccount>> GetConversationMemberWithHttpMessagesAsync(string userId, string conversationId, Dictionary<string, List<string>> customHeaders = null!, CancellationToken cancellationToken = default)
+        {
+            Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
+
+            Schema.ConversationAccount response = await _client.GetConversationMemberAsync(conversationId, userId, new Uri(ServiceUrl!), null!, convertedHeaders, cancellationToken).ConfigureAwait(false);
+
+            return new HttpOperationResponse<ChannelAccount>
+            {
+                Body = response.ToCompatChannelAccount(),
+                Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
+            };
+
+        }
     }
 }
