@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
-using System.Text.Json.Nodes;
-
 namespace TeamsBot;
 
 internal class Cards
 {
-    public static object FeedbackCardJson = new
+    public static object FeedbackCardObj = new
     {
         type = "AdaptiveCard",
         version = "1.4",

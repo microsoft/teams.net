@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json.Nodes;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
@@ -207,6 +208,86 @@ public class TeamsActivityTests
         Assert.Contains("Hello World", json);
     }
 
+    [Fact]
+    public void Deserialize_TeamsActivity_WithAttachments()
+    {
+        TeamsActivity activity = CoreActivity.FromJsonString<TeamsActivity>(json);
+        Assert.NotNull(activity.Attachments);
+        Assert.Single(activity.Attachments);
+        TeamsAttachment attachment = activity.Attachments[0] as TeamsAttachment;
+        Assert.NotNull(attachment);
+        Assert.Equal("text/html", attachment.ContentType);
+        Assert.Equal("<p><span itemtype=\"http://schema.skype.com/Mention\" itemscope=\"\" itemid=\"0\">ridotest</span>&nbsp;reply to thread</p>", attachment.Content?.ToString());
+    }
+
+    [Fact]
+    public void Deserialize_TeamsActivity_Invoke_WithValue()
+    {
+        //TeamsActivity activity = CoreActivity.FromJsonString<TeamsActivity>(jsonInvoke);
+        TeamsActivity activity = TeamsActivity.FromActivity(CoreActivity.FromJsonString(jsonInvoke))    ;
+        Assert.NotNull(activity.Value);
+        string feedback = activity.Value?["action"]?["data"]?["feedback"]?.ToString()!;
+        Assert.Equal("test invokes", feedback);
+    }
+
+    private const string jsonInvoke = """
+          {
+          "type": "invoke",
+          "channelId": "msteams",
+          "id": "f:17b96347-e8b4-f340-10bc-eb52fc1a6ad4",
+          "serviceUrl": "https://smba.trafficmanager.net/amer/56653e9d-2158-46ee-90d7-675c39642038/",
+          "channelData": {
+            "tenant": {
+              "id": "56653e9d-2158-46ee-90d7-675c39642038"
+            },
+            "source": {
+              "name": "message"
+            },
+            "legacy": {
+              "replyToId": "1:12SWreU4430kJA9eZCb1kXDuo6A8KdDEGB6d9TkjuDYM"
+            }
+          },
+          "from": {
+            "id": "29:1uMVvhoAyfTqdMsyvHL0qlJTTfQF9MOUSI8_cQts2kdSWEZVDyJO2jz-CsNOhQcdYq1Bw4cHT0__O6XDj4AZ-Jw",
+            "name": "Rido",
+            "aadObjectId": "c5e99701-2a32-49c1-a660-4629ceeb8c61"
+          },
+          "recipient": {
+            "id": "28:aabdbd62-bc97-4afb-83ee-575594577de5",
+            "name": "ridobotlocal"
+          },
+          "conversation": {
+            "id": "a:17vxw6pGQOb3Zfh8acXT8m_PqHycYpaFgzu2mFMUfkT-h0UskMctq5ZPPc7FIQxn2bx7rBSm5yE_HeUXsCcKZBrv77RgorB3_1_pAdvMhi39ClxQgawzyQ9GBFkdiwOxT",
+            "conversationType": "personal",
+            "tenantId": "56653e9d-2158-46ee-90d7-675c39642038"
+          },
+          "entities": [
+            {
+              "locale": "en-US",
+              "country": "US",
+              "platform": "Web",
+              "timezone": "America/Los_Angeles",
+              "type": "clientInfo"
+            }
+          ],
+          "value": {
+            "action": {
+              "type": "Action.Execute",
+              "title": "Submit Feedback",
+              "data": {
+                "feedback": "test invokes"
+              }
+            },
+            "trigger": "manual"
+          },
+          "name": "adaptiveCard/action",
+          "timestamp": "2026-01-07T06:04:59.89Z",
+          "localTimestamp": "2026-01-06T22:04:59.89-08:00",
+          "replyToId": "1767765488332",
+          "locale": "en-US",
+          "localTimezone": "America/Los_Angeles"
+        }
+        """;
 
     private const string json = """
             {

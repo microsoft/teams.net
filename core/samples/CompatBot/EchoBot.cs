@@ -63,7 +63,7 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
         var attachment = new Attachment
         {
             ContentType = "application/vnd.microsoft.card.adaptive",
-            Content = Cards.FeedbackCardJson
+            Content = Cards.FeedbackCardObj
         };
         var attachmentReply = MessageFactory.Attachment(attachment);
         await turnContext.SendActivityAsync(attachmentReply, cancellationToken);
@@ -90,12 +90,6 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
     protected override async Task<InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
     {
         logger.LogInformation("Invoke Activity received: {Name}", turnContext.Activity.Name);
-        using var sw = new StringWriter();
-        using var writer = new JsonTextWriter(sw);
-        BotMessageHandlerBase.BotMessageSerializer.Serialize(writer, turnContext.Activity);
-
-        logger.LogTrace("Invoke Activity details: {@Activity}", sw.ToString());
-
         var actionValue = JObject.FromObject(turnContext.Activity.Value);
         var action = actionValue["action"] as JObject;
         var actionData = action?["data"] as JObject;

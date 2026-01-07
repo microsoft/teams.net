@@ -70,11 +70,10 @@ public class TeamsActivity : CoreActivity
         Conversation = new TeamsConversation(activity.Conversation);
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
         Entities = EntityList.FromJsonArray(activity.Entities);
-
+        Value = activity.Value;
         Text = activity.Properties.TryGetValue("text", out var textObj) ? textObj?.ToString() : null;
         TextFormat = activity.Properties.TryGetValue("textFormat", out var textFormatObj) ? textFormatObj?.ToString() : null;
 
-        //base.Entities = Entities.ToJsonArray();
         Rebase();
     }
 

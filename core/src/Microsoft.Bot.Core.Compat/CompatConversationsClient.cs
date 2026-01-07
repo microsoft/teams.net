@@ -85,7 +85,7 @@ namespace Microsoft.Bot.Core.Compat
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
-            List<ChannelAccount> channelAccounts = members.Select(m => m.ToCompatChannelAccount()).ToList();
+            List<ChannelAccount> channelAccounts = [.. members.Select(m => m.ToCompatChannelAccount())];
 
             return new HttpOperationResponse<IList<ChannelAccount>>
             {
@@ -105,7 +105,7 @@ namespace Microsoft.Bot.Core.Compat
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
-            List<ChannelAccount> channelAccounts = members.Select(m => m.ToCompatChannelAccount()).ToList();
+            List<ChannelAccount> channelAccounts = [.. members.Select(m => m.ToCompatChannelAccount())];
 
             return new HttpOperationResponse<IList<ChannelAccount>>
             {
@@ -310,7 +310,7 @@ namespace Microsoft.Bot.Core.Compat
                 return null;
             }
 
-            Dictionary<string, string> convertedHeaders = new();
+            Dictionary<string, string> convertedHeaders = [];
             foreach (KeyValuePair<string, List<string>> kvp in customHeaders)
             {
                 convertedHeaders[kvp.Key] = string.Join(",", kvp.Value);

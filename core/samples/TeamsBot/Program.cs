@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Runtime.InteropServices.JavaScript;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Bot.Core;
 using Microsoft.Teams.BotApps;
 using Microsoft.Teams.BotApps.Schema;
@@ -27,8 +29,6 @@ teamsApp.OnMessage = async (context, cancellationToken) =>
     reply.AddMention(context.Activity.From!, "ridobotlocal", true);
 
     await teamsApp.SendActivityAsync(reply, cancellationToken);
-    await context.SendActivityAsync("Mention sent!", cancellationToken);
-
 
     TeamsActivity feedbackCard = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityTypes.Message)
@@ -38,7 +38,7 @@ teamsApp.OnMessage = async (context, cancellationToken) =>
                 new TeamsAttachment
                 {
                     ContentType = "application/vnd.microsoft.card.adaptive",
-                    Content = Cards.FeedbackCardJson
+                    Content = Cards.FeedbackCardObj
                 }
             ]
         )
@@ -61,15 +61,16 @@ teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>
 
 teamsApp.OnInvoke = async (context, cancellationToken) =>
 {
-    string replyText = $"Invoke activity of type `{context.Activity.Type}` received.";
+    var valueNode = context.Activity.Value;
+    string? feedbackValue = valueNode?["action"]?["data"]?["feedback"]?.GetValue<string>();
+
+    string replyText = $"Invoke activity of type `{context.Activity.Type}` received. Feedback Data {feedbackValue}";
     await context.SendActivityAsync(replyText, cancellationToken);
+
     return new InvokeResponse(200)
     {
-        Type = "application/vnd.microsoft.activity.message",
         Body = "Invokes are great !!"
     };
 };
 
 teamsApp.Run();
-
-
