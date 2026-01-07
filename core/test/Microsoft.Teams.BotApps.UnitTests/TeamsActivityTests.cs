@@ -78,8 +78,8 @@ public class TeamsActivityTests
         Assert.Equal("rido", mention.Mentioned?.Name);
         Assert.Equal("<at>ridotest</at>", mention.Text);
 
-        string json = activity.ToJson();
-        Assert.Contains("user-id-01", json);
+        string jsonResult = activity.ToJson();
+        Assert.Contains("user-id-01", jsonResult);
     }
 
     [Fact]
@@ -202,10 +202,10 @@ public class TeamsActivityTests
 
         activity.AddClientInfo("Web", "US", "America/Los_Angeles", "en-US");
 
-        string json = activity.ToJson();
-        Assert.Contains("clientInfo", json);
-        Assert.Contains("Web", json);
-        Assert.Contains("Hello World", json);
+        string jsonResult = activity.ToJson();
+        Assert.Contains("clientInfo", jsonResult);
+        Assert.Contains("Web", jsonResult);
+        Assert.Contains("Hello World", jsonResult);
     }
 
     [Fact]

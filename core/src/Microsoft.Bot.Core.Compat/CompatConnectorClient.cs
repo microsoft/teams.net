@@ -25,7 +25,6 @@ namespace Microsoft.Bot.Core.Compat
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            Dispose();
             GC.SuppressFinalize(this);
         }
     }

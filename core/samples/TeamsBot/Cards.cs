@@ -28,7 +28,7 @@ internal class Cards
             }
     };
 
-    public static object FeedbackCardObj = new
+    public static readonly object FeedbackCardObj = new
     {
         type = "AdaptiveCard",
         version = "1.4",

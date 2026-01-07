@@ -68,6 +68,7 @@ public class BotApplicationTests
 
         InvokeResponse? result = await botApp.ProcessAsync(httpContext);
 
+        Assert.Null(result);
         Assert.True(onActivityCalled);
     }
 

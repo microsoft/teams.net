@@ -35,8 +35,8 @@ public class TeamsActivityBuilderTests
             Text = "existing text"
         };
 
-        TeamsActivityBuilder builder = TeamsActivity.CreateBuilder(existingActivity);
-        TeamsActivity activity = builder.Build();
+        TeamsActivityBuilder taBuilder = TeamsActivity.CreateBuilder(existingActivity);
+        TeamsActivity activity = taBuilder.Build();
 
         Assert.Equal("test-id", activity.Id);
         Assert.Equal("existing text", activity.Text);

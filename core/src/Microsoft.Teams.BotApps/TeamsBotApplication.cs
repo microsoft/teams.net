@@ -50,7 +50,7 @@ public class TeamsBotApplication : BotApplication
     {
         OnActivity = async (activity, cancellationToken) =>
         {
-            InvokeResponse invokeResponse = null!;
+            InvokeResponse? invokeResponse = null;
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context context = new(this, teamsActivity);
@@ -95,7 +95,7 @@ public class TeamsBotApplication : BotApplication
     /// Runs the web application configured by the bot application builder.
     /// </summary>
     /// <remarks>Call CreateBuilder() before invoking this method to ensure the bot application builder is
-    /// initialized. This method blocks the callsing thread until the web application shuts down.</remarks>
+    /// initialized. This method blocks the calling thread until the web application shuts down.</remarks>
 #pragma warning disable CA1822 // Mark members as static
     public void Run()
 #pragma warning restore CA1822 // Mark members as static
