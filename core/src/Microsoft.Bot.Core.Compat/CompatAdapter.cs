@@ -6,6 +6,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
+using Newtonsoft.Json.Linq;
 
 
 namespace Microsoft.Bot.Core.Compat;
@@ -60,15 +61,31 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
     public async Task ProcessAsync(HttpRequest httpRequest, HttpResponse httpResponse, IBot bot, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpRequest);
+        ArgumentNullException.ThrowIfNull(httpResponse);
         ArgumentNullException.ThrowIfNull(bot);
+        CoreActivity? coreActivity = null;
 
-        CoreActivity? activity = null;
-        botApplication.OnActivity = (activity, cancellationToken1) =>
+        botApplication.OnActivity = async (activity, cancellationToken1) =>
         {
+            coreActivity = activity;
             TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());
             //turnContext.TurnState.Add<Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(botApplication.UserTokenClient));
-            return bot.OnTurnAsync(turnContext, cancellationToken1);
+            CompatConnectorClient connectionClient = new(new CompatConversations(botApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
+            turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
+            await bot.OnTurnAsync(turnContext, cancellationToken1).ConfigureAwait(false);
+            var invokeResponseAct = turnContext.TurnState.Get<Activity>(BotAdapter.InvokeResponseKey);
+            if (invokeResponseAct is not null)
+            {
+                JObject valueObj = (JObject)invokeResponseAct.Value;
+                var body = valueObj["Body"]?.ToString();
+                return new InvokeResponse(200)
+                {
+                    Body = body,
+                };
+            }
+            return null;
         };
+
         try
         {
             foreach (Builder.IMiddleware? middleware in MiddlewareSet)
@@ -76,7 +93,12 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
                 botApplication.Use(new CompatMiddlewareAdapter(middleware));
             }
 
-            activity = await botApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
+            var invokeResponse = await botApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
+            if (invokeResponse is not null)
+            {
+                httpResponse.StatusCode = invokeResponse.Status;
+                await httpResponse.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
+            }
         }
         catch (Exception ex)
         {
@@ -84,8 +106,8 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
             {
                 if (ex is BotHandlerException aex)
                 {
-                    activity = aex.Activity;
-                    using TurnContext turnContext = new(compatBotAdapter, activity!.ToCompatActivity());
+                    coreActivity = aex.Activity;
+                    using TurnContext turnContext = new(compatBotAdapter, coreActivity!.ToCompatActivity());
                     await OnTurnError(turnContext, ex).ConfigureAwait(false);
                 }
                 else

@@ -54,7 +54,7 @@ public class ActivityExtensibilityTests
         MyCustomChannelDataActivity deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
         Assert.NotNull(deserializedActivity);
         Assert.NotNull(deserializedActivity.ChannelData);
-        Assert.Equal(ActivityTypes.Message, deserializedActivity.Type);
+        Assert.Equal(ActivityType.Message, deserializedActivity.Type);
         Assert.Equal("customFieldValue", deserializedActivity.ChannelData.CustomField);
         Assert.Equal("12345", deserializedActivity.ChannelData.MyChannelId);
     }

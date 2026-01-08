@@ -27,4 +27,26 @@ internal static class CompatActivity
         BotMessageHandlerBase.BotMessageSerializer.Serialize(json, activity);
         return CoreActivity.FromJsonString(sb.ToString());
     }
+
+    public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Bot.Core.Schema.ConversationAccount account)
+    {
+        ChannelAccount channelAccount = new()
+        {
+            Id = account.Id,
+            Name = account.Name
+        };
+
+        // Extract AadObjectId and Role from Properties if they exist
+        if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
+        {
+            channelAccount.AadObjectId = aadObjectId?.ToString();
+        }
+
+        if (account.Properties.TryGetValue("role", out object? role))
+        {
+            channelAccount.Role = role?.ToString();
+        }
+
+        return channelAccount;
+    }
 }

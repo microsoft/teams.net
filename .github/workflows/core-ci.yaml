@@ -27,10 +27,14 @@ jobs:
       run: dotnet restore
       working-directory: core
     
-    - name: Build
+    - name: Build Core
       run: dotnet build --no-restore
       working-directory: core
     
     - name: Test
       run: dotnet test --no-build
       working-directory: core
+
+    - name: Build Core Tests
+      run: dotnet build
+      working-directory: core/test

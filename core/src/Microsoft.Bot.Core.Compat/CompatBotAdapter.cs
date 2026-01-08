@@ -29,9 +29,10 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public override Task DeleteActivityAsync(ITurnContext turnContext, ConversationReference reference, CancellationToken cancellationToken)
+    public override async Task DeleteActivityAsync(ITurnContext turnContext, ConversationReference reference, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(turnContext);
+        await botApplication.ConversationClient.DeleteActivityAsync(turnContext.Activity.FromCompatActivity(), cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -44,13 +45,19 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
     public override async Task<Microsoft.Bot.Schema.ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activities);
+        ArgumentNullException.ThrowIfNull(turnContext);
 
         Microsoft.Bot.Schema.ResourceResponse[] responses = new Microsoft.Bot.Schema.ResourceResponse[1];
         for (int i = 0; i < activities.Length; i++)
         {
             CoreActivity a = activities[i].FromCompatActivity();
 
-            ResourceResponse? resp = await botApplication.SendActivityAsync(a, cancellationToken).ConfigureAwait(false);
+            if (a.Type == "invokeResponse")
+            {
+                turnContext.TurnState.Add(BotAdapter.InvokeResponseKey, a.ToCompatActivity());
+            }
+
+            SendActivityResponse? resp = await botApplication.SendActivityAsync(a, cancellationToken).ConfigureAwait(false);
             if (resp is not null)
             {
                 responses[i] = new Microsoft.Bot.Schema.ResourceResponse() { Id = resp.Id };
@@ -59,6 +66,8 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
             {
                 logger.LogWarning("Found null ResourceResponse after calling SendActivityAsync");
             }
+
+
         }
         return responses;
     }
@@ -71,9 +80,15 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public override Task<Microsoft.Bot.Schema.ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
+    public override async Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        ArgumentNullException.ThrowIfNull(activity);
+        var res = await botApplication.ConversationClient.UpdateActivityAsync(
+            activity.Conversation.Id,
+            activity.Id,
+            activity.FromCompatActivity(),
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+        return new ResourceResponse() { Id = res.Id };
     }
 
 

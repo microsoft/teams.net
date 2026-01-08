@@ -31,4 +31,27 @@ public class ConversationAccount()
 #pragma warning disable CA2227 // Collection properties should be read only
     public ExtendedPropertiesDictionary Properties { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
+
+    /// <summary>
+    /// Gets the agentic identity from the account properties.
+    /// </summary>
+    /// <returns>An AgenticIdentity instance if properties contain agentic identity information; otherwise, null.</returns>
+    internal AgenticIdentity? GetAgenticIdentity()
+    {
+        Properties.TryGetValue("agenticAppId", out object? appIdObj);
+        Properties.TryGetValue("agenticUserId", out object? userIdObj);
+        Properties.TryGetValue("agenticAppBlueprintId", out object? bluePrintObj);
+
+        if (appIdObj is null && userIdObj is null && bluePrintObj is null)
+        {
+            return null;
+        }
+
+        return new AgenticIdentity
+        {
+            AgenticAppId = appIdObj?.ToString(),
+            AgenticUserId = userIdObj?.ToString(),
+            AgenticAppBlueprintId = bluePrintObj?.ToString()
+        };
+    }
 }

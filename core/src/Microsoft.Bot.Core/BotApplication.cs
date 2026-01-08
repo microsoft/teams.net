@@ -41,7 +41,8 @@ public class BotApplication
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
         string appId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? "Unknown AppID";
-        logger.LogInformation("Started bot listener on {Port} for AppID:{AppId} with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], appId, Version);
+        logger.LogInformation("Started bot listener \n on {Port} \n for AppID:{AppId} \n with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], appId, Version);
+
     }
 
 
@@ -65,7 +66,7 @@ public class BotApplication
     /// <remarks>Assign a delegate to process activities as they are received. The delegate should accept an
     /// <see cref="CoreActivity"/> and a <see cref="CancellationToken"/>, and return a <see cref="Task"/> representing the
     /// asynchronous operation. If <see langword="null"/>, incoming activities will not be handled.</remarks>
-    public Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
+    public Func<CoreActivity, CancellationToken, Task<InvokeResponse?>>? OnActivity { get; set; }
 
     /// <summary>
     /// Processes an incoming HTTP request containing a bot activity.
@@ -75,16 +76,18 @@ public class BotApplication
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="BotHandlerException"></exception>
-    public async Task<CoreActivity> ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
+    public async Task<InvokeResponse?> ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(_conversationClient);
+
+        InvokeResponse? invokeResponse = null;
 
         _logger.LogDebug("Start processing HTTP request for activity");
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        _logger.LogInformation("Processing activity: {Id} {Type}", activity.Id, activity.Type);
+        _logger.LogInformation("Processing activity {Type} {Id}", activity.Type, activity.Id);
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
@@ -95,7 +98,7 @@ public class BotApplication
         {
             try
             {
-                await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, cancellationToken).ConfigureAwait(false);
+                invokeResponse =  await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -106,7 +109,7 @@ public class BotApplication
             {
                 _logger.LogInformation("Finished processing activity {Type} {Id}", activity.Type, activity.Id);
             }
-            return activity;
+            return invokeResponse;
         }
     }
 
@@ -128,27 +131,15 @@ public class BotApplication
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the identifier of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the conversation client has not been initialized.</exception>
-    public async Task<ResourceResponse?> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(_conversationClient, "ConversationClient not initialized");
 
-        return await _conversationClient.SendActivityAsync(activity, cancellationToken).ConfigureAwait(false);
+        return await _conversationClient.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-    /// <summary>
-    /// Sends a typing activity to the conversation asynchronously.
-    /// </summary>
-    /// <param name="activity">The activity containing conversation information.</param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<ResourceResponse?> SendTypingActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        var typing = activity.CreateReplyMessageActivity();
-        typing.Type = ActivityTypes.Typing;
-        return await SendActivityAsync(typing, cancellationToken).ConfigureAwait(false);
-    }
+
 
     /// <summary>
     /// Gets the version of the SDK.
