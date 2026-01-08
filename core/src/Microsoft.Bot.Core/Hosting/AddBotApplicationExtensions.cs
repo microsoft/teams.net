@@ -69,33 +69,44 @@ public static class AddBotApplicationExtensions
 
         services.AddAuthorization(logger, sectionName);
         services.AddConversationClient(sectionName);
+        services.AddUserTokenClient(sectionName);
         services.AddSingleton<TApp>();
         return services;
     }
 
     /// <summary>
-    /// Adds a conversation client to the service collection.
+    /// Adds conversation client to the service collection.
     /// </summary>
     /// <param name="services">service collection</param>
     /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
     /// <returns></returns>
-    public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
+    public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd") =>
+    services.AddBotClient<ConversationClient>(ConversationClient.ConversationHttpClientName, sectionName);
+
+    /// <summary>
+    /// Adds user token client to the service collection.
+    /// </summary>
+    /// <param name="services">service collection</param>
+    /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
+    /// <returns></returns>
+    public static IServiceCollection AddUserTokenClient(this IServiceCollection services, string sectionName = "AzureAd") =>
+        services.AddBotClient<UserTokenClient>(UserTokenClient.UserTokenHttpClientName, sectionName);
+
+    private static IServiceCollection AddBotClient<TClient>(
+        this IServiceCollection services,
+        string httpClientName,
+        string sectionName) where TClient : class
     {
         var sp = services.BuildServiceProvider();
-        IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-        ILogger logger = sp.GetRequiredService<ILogger<ConversationClient>>();
+        var configuration = sp.GetRequiredService<IConfiguration>();
+        var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
         ArgumentNullException.ThrowIfNull(configuration);
 
         string scope = "https://api.botframework.com/.default";
-        if (configuration[$"{sectionName}:Scope"] is not null)
-        {
+        if (!string.IsNullOrEmpty(configuration[$"{sectionName}:Scope"]))
             scope = configuration[$"{sectionName}:Scope"]!;
-        }
-
-        if (configuration["Scope"] is not null) //ToChannelFromBotOAuthScope
-        {
+        if (!string.IsNullOrEmpty(configuration["Scope"]))
             scope = configuration["Scope"]!;
-        }
 
         services
             .AddHttpClient()
@@ -105,9 +116,9 @@ public static class AddBotApplicationExtensions
 
         if (services.ConfigureMSAL(configuration, sectionName))
         {
-
-            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName)
-                .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
+            services.AddHttpClient<TClient>(httpClientName)
+                .AddHttpMessageHandler(sp =>
+                new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
                     scope,
@@ -116,8 +127,9 @@ public static class AddBotApplicationExtensions
         else
         {
             _logAuthConfigNotFound(logger, null);
-            services.AddHttpClient<ConversationClient>(ConversationClient.ConversationHttpClientName);
+            services.AddHttpClient<TClient>(httpClientName);
         }
+
         return services;
     }
 
