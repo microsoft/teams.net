@@ -16,7 +16,6 @@ public class BotApplication
 {
     private readonly ILogger<BotApplication> _logger;
     private readonly ConversationClient? _conversationClient;
-    private UserTokenClient? _userTokenClient;
     private readonly string _serviceKey;
     internal TurnMiddleware MiddleWare { get; }
 
@@ -28,18 +27,16 @@ public class BotApplication
     /// configuration and service key. The service key is used to locate authentication credentials in the
     /// configuration.</remarks>
     /// <param name="conversationClient">The client used to manage and interact with conversations for the bot.</param>
-    /// <param name="userTokenClient">The client used to manage user tokens for authentication.</param>
     /// <param name="config">The application configuration settings used to retrieve environment variables and service credentials.</param>
     /// <param name="logger">The logger used to record operational and diagnostic information for the bot application.</param>
     /// <param name="sectionName">The configuration key identifying the authentication service. Defaults to "AzureAd" if not specified.</param>
-    public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "AzureAd")
+    public BotApplication(ConversationClient conversationClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "AzureAd")
     {
         ArgumentNullException.ThrowIfNull(config);
         _logger = logger;
         _serviceKey = sectionName;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
-        _userTokenClient = userTokenClient;
         string appId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? "Unknown AppID";
         logger.LogInformation("Started bot listener \n on {Port} \n for AppID:{AppId} \n with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], appId, Version);
 
@@ -52,13 +49,6 @@ public class BotApplication
     /// <remarks>Accessing this property before the client is initialized will result in an exception. Ensure
     /// that the client is properly configured before use.</remarks>
     public ConversationClient ConversationClient => _conversationClient ?? throw new InvalidOperationException("ConversationClient not initialized");
-
-    /// <summary>
-    /// Gets the client used to manage user tokens for authentication.
-    /// </summary>
-    /// <remarks>Accessing this property before the client is initialized will result in an exception. Ensure
-    /// that the client is properly configured before use.</remarks>
-    public UserTokenClient UserTokenClient => _userTokenClient ?? throw new InvalidOperationException("UserTokenClient not registered");
 
     /// <summary>
     /// Gets or sets the delegate that is invoked to handle an incoming activity asynchronously.

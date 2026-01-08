@@ -16,10 +16,9 @@ public class MiddlewareTests
     public async Task BotApplication_Use_AddsMiddlewareToChain()
     {
         ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
         Mock<IConfiguration> mockConfig = new();
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         Mock<ITurnMiddleWare> mockMiddleware = new();
 
@@ -33,10 +32,9 @@ public class MiddlewareTests
     public async Task Middleware_ExecutesInOrder()
     {
         ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
         Mock<IConfiguration> mockConfig = new();
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         List<int> executionOrder = [];
 
@@ -87,10 +85,9 @@ public class MiddlewareTests
     public async Task Middleware_CanShortCircuit()
     {
         ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
         Mock<IConfiguration> mockConfig = new();
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         bool secondMiddlewareCalled = false;
         bool onActivityCalled = false;
@@ -134,10 +131,9 @@ public class MiddlewareTests
     public async Task Middleware_ReceivesCancellationToken()
     {
         ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
         Mock<IConfiguration> mockConfig = new();
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         CancellationToken receivedToken = default;
 
@@ -173,10 +169,9 @@ public class MiddlewareTests
     public async Task Middleware_ReceivesActivity()
     {
         ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
         Mock<IConfiguration> mockConfig = new();
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
         CoreActivity? receivedActivity = null;
 
@@ -211,13 +206,6 @@ public class MiddlewareTests
     {
         Mock<HttpClient> mockHttpClient = new();
         return new ConversationClient(mockHttpClient.Object);
-    }
-
-    private static UserTokenClient CreateMockUserTokenClient()
-    {
-        Mock<HttpClient> mockHttpClient = new();
-        NullLogger<UserTokenClient> logger = NullLogger<UserTokenClient>.Instance;
-        return new UserTokenClient(mockHttpClient.Object, logger);
     }
 
     private static DefaultHttpContext CreateHttpContextWithActivity(CoreActivity activity)
