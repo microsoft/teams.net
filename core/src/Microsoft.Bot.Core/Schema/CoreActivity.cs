@@ -76,6 +76,7 @@ public class CoreActivity
     /// </summary>
     [JsonPropertyName("attachments")] public JsonArray? Attachments { get; set; }
 
+    // TODO: Can value need be a JSONObject?
     /// <summary>
     /// Gets or sets the value payload of the activity.
     /// </summary>
@@ -139,7 +140,7 @@ public class CoreActivity
         ServiceUrl = activity.ServiceUrl;
         ChannelId = activity.ChannelId;
         Type = activity.Type;
-        // TODO: Enable
+        // TODO: Figure out why this is needed...
         // ReplyToId = activity.ReplyToId;
         ChannelData = activity.ChannelData;
         From = activity.From;

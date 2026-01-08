@@ -6,6 +6,8 @@ using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Rest;
 
+// TODO: Figure out what to do with Agentic Identities. They're all "nulls" here right now.
+// The identity is dependent on the incoming payload or supplied in for proactive scenarios.
 namespace Microsoft.Bot.Core.Compat
 {
     internal sealed class CompatConversations(ConversationClient client) : IConversations

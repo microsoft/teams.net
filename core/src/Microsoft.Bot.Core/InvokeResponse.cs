@@ -19,12 +19,15 @@ public class InvokeResponse(int status, object? body = null)
     [JsonPropertyName("status")]
     public int Status { get; set; } = status;
 
+    // TODO: This is strange - Should this be Value or Body?
     /// <summary>
     /// Gets or sets the message body content.
     /// </summary>
     [JsonPropertyName("value")]
     public object? Body { get; set; } = body;
 
+    // TODO: Get confirmation that this should be "Type"
+    // This particular type should be for AC responses
     /// <summary>
     /// Gets or Sets the Type
     /// </summary>
