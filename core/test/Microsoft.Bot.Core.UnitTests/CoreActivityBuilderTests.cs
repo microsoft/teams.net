@@ -75,10 +75,10 @@ public class CoreActivityBuilderTests
     public void WithType_SetsActivityType()
     {
         CoreActivity activity = new CoreActivityBuilder()
-            .WithType(ActivityTypes.Message)
+            .WithType(ActivityType.Message)
             .Build();
 
-        Assert.Equal(ActivityTypes.Message, activity.Type);
+        Assert.Equal(ActivityType.Message, activity.Type);
     }
 
     [Fact]
@@ -156,7 +156,7 @@ public class CoreActivityBuilderTests
     public void FluentAPI_CompleteActivity_BuildsCorrectly()
     {
         CoreActivity activity = new CoreActivityBuilder()
-            .WithType(ActivityTypes.Message)
+            .WithType(ActivityType.Message)
             .WithId("activity-123")
             .WithChannelId("msteams")
             .WithProperty("text", "Test message")
@@ -177,7 +177,7 @@ public class CoreActivityBuilderTests
             })
             .Build();
 
-        Assert.Equal(ActivityTypes.Message, activity.Type);
+        Assert.Equal(ActivityType.Message, activity.Type);
         Assert.Equal("activity-123", activity.Id);
         Assert.Equal("msteams", activity.ChannelId);
         Assert.Equal("Test message", activity.Properties["text"]?.ToString());
@@ -193,7 +193,7 @@ public class CoreActivityBuilderTests
 
         CoreActivityBuilder result1 = builder.WithId("id");
         CoreActivityBuilder result2 = builder.WithProperty("text", "text");
-        CoreActivityBuilder result3 = builder.WithType(ActivityTypes.Message);
+        CoreActivityBuilder result3 = builder.WithType(ActivityType.Message);
 
         Assert.Same(builder, result1);
         Assert.Same(builder, result2);
@@ -218,7 +218,7 @@ public class CoreActivityBuilderTests
         CoreActivity original = new()
         {
             Id = "original-id",
-            Type = ActivityTypes.Message
+            Type = ActivityType.Message
         };
 
         CoreActivity modified = new CoreActivityBuilder(original)
@@ -226,7 +226,7 @@ public class CoreActivityBuilderTests
             .Build();
 
         Assert.Equal("other-id", modified.Id);
-        Assert.Equal(ActivityTypes.Message, modified.Type);
+        Assert.Equal(ActivityType.Message, modified.Type);
     }
 
     [Fact]
@@ -418,11 +418,11 @@ public class CoreActivityBuilderTests
         };
 
         CoreActivity activity = new CoreActivityBuilder()
-            .WithType(ActivityTypes.Message)
+            .WithType(ActivityType.Message)
             .WithConversationReference(sourceActivity)
             .Build();
 
-        Assert.Equal(ActivityTypes.Message, activity.Type);
+        Assert.Equal(ActivityType.Message, activity.Type);
         Assert.Equal("bot-1", activity.From.Id);
         Assert.Equal("user-1", activity.Recipient.Id);
     }
@@ -450,7 +450,7 @@ public class CoreActivityBuilderTests
         ChannelData channelData = new();
 
         CoreActivity activity = new CoreActivityBuilder()
-            .WithType(ActivityTypes.Message)
+            .WithType(ActivityType.Message)
             .WithId("msg-001")
             .WithServiceUrl(serviceUrl)
             .WithChannelId("msteams")
@@ -471,7 +471,7 @@ public class CoreActivityBuilderTests
             .WithChannelData(channelData)
             .Build();
 
-        Assert.Equal(ActivityTypes.Message, activity.Type);
+        Assert.Equal(ActivityType.Message, activity.Type);
         Assert.Equal("msg-001", activity.Id);
         Assert.Equal(serviceUrl, activity.ServiceUrl);
         Assert.Equal("msteams", activity.ChannelId);

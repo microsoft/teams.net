@@ -12,7 +12,7 @@ public class CoreCoreActivityTests
     {
         CoreActivity a1 = new();
         Assert.NotNull(a1);
-        Assert.Equal(ActivityTypes.Message, a1.Type);
+        Assert.Equal(ActivityType.Message, a1.Type);
 
         CoreActivity a2 = new()
         {
@@ -77,7 +77,7 @@ public class CoreCoreActivityTests
     {
         CoreActivity act = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
         };
         act.Properties["unknownString"] = "some string";
         act.Properties["unknownInt"] = 123;
@@ -207,7 +207,7 @@ public class CoreCoreActivityTests
     {
         CoreActivity act = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties =
             {
                 { "customField", "customValue" }
@@ -279,13 +279,13 @@ public class CoreCoreActivityTests
             }
         };
         CoreActivity reply = CoreActivity.CreateBuilder()
-            .WithType(ActivityTypes.Message)
+            .WithType(ActivityType.Message)
             .WithConversationReference(act)
             .WithProperty("text", "reply")
             .Build();
 
         Assert.NotNull(reply);
-        Assert.Equal(ActivityTypes.Message, reply.Type);
+        Assert.Equal(ActivityType.Message, reply.Type);
         Assert.Equal("reply", reply.Properties["text"]);
         Assert.Equal("channel1", reply.ChannelId);
         Assert.NotNull(reply.ServiceUrl);
@@ -340,7 +340,7 @@ public class CoreCoreActivityTests
         using MemoryStream ms = new(System.Text.Encoding.UTF8.GetBytes(json));
         CoreActivity? act = await CoreActivity.FromJsonStreamAsync(ms);
         Assert.NotNull(act);
-        Assert.Equal(ActivityTypes.Invoke, act.Type);
+        Assert.Equal(ActivityType.Invoke, act.Type);
         Assert.NotNull(act.Value);
         Assert.NotNull(act.Value["key1"]);
         Assert.Equal("value1", act.Value["key1"]?.GetValue<string>());

@@ -39,7 +39,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         cancellationToken, new CancellationTokenSource(TimeSpan.FromSeconds(15)).Token);
 
     CoreActivity typing = CoreActivity.CreateBuilder()
-        .WithType(ActivityTypes.Typing)
+        .WithType(ActivityType.Typing)
         .WithConversationReference(activity)
         .Build();
     await botApp.SendActivityAsync(typing, cancellationToken);
@@ -49,7 +49,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     var m1 = agentResponse.Messages.FirstOrDefault();
     Console.WriteLine($"AI:: GOT {agentResponse.Messages.Count} msgs");
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
-        .WithType(ActivityTypes.Message)
+        .WithType(ActivityType.Message)
         .WithConversationReference(activity)
         .WithProperty("text",m1!.Text)
         .Build();

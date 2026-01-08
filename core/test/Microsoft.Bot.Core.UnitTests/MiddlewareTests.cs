@@ -63,7 +63,7 @@ public class MiddlewareTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -108,7 +108,7 @@ public class MiddlewareTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -151,7 +151,7 @@ public class MiddlewareTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -189,7 +189,7 @@ public class MiddlewareTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -199,7 +199,7 @@ public class MiddlewareTests
         await botApp.ProcessAsync(httpContext);
 
         Assert.NotNull(receivedActivity);
-        Assert.Equal(ActivityTypes.Message, receivedActivity.Type);
+        Assert.Equal(ActivityType.Message, receivedActivity.Type);
     }
 
     private static ConversationClient CreateMockConversationClient()

@@ -51,7 +51,7 @@ public class BotApplicationTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Properties["text"] = "Test message";
@@ -82,7 +82,7 @@ public class BotApplicationTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -125,7 +125,7 @@ public class BotApplicationTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -180,7 +180,7 @@ public class BotApplicationTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };

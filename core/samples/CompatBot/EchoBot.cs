@@ -51,7 +51,7 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
         {
             Id = res.Id,
             ServiceUrl = turnContext.Activity.ServiceUrl,
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Text = "This message has been updated.",
         }, cancellationToken);
 

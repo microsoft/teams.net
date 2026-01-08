@@ -24,7 +24,7 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?> { }
 public class CoreActivity
 {
     /// <summary>
-    /// Gets or sets the type of the activity. See <see cref="ActivityTypes"/> for common values.
+    /// Gets or sets the type of the activity. See <see cref="ActivityType"/> for common values.
     /// </summary>
     /// <remarks>
     /// Common activity types include "message", "conversationUpdate", "contactRelationUpdate", etc.
@@ -113,7 +113,7 @@ public class CoreActivity
     /// Creates a new instance of the <see cref="CoreActivity"/> class with the specified activity type.
     /// </summary>
     /// <param name="type"></param>
-    public CoreActivity(string type = ActivityTypes.Message)
+    public CoreActivity(string type = ActivityType.Message)
     {
         Type = type;
     }
@@ -124,7 +124,7 @@ public class CoreActivity
     /// </summary>
     public CoreActivity()
     {
-        Type = ActivityTypes.Message;
+        Type = ActivityType.Message;
     }
 
     /// <summary>

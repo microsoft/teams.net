@@ -59,7 +59,7 @@ public class TeamsActivityTests
     [Fact]
     public void AddMentionEntity_To_TeamsActivity()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityTypes.Message));
+        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
         activity
             .AddMention(new ConversationAccount
             {
@@ -85,7 +85,7 @@ public class TeamsActivityTests
     [Fact]
     public void AddMentionEntity_Serialize_From_CoreActivity()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityTypes.Message));
+        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
         activity.AddMention(new ConversationAccount
         {
             Id = "user-id-01",
@@ -117,7 +117,7 @@ public class TeamsActivityTests
     public void TeamsActivityBuilder_FluentAPI()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(ActivityTypes.Message)
+            .WithType(ActivityType.Message)
             .WithText("Hello World")
             .WithChannelId("msteams")
             .AddMention(new ConversationAccount
@@ -127,7 +127,7 @@ public class TeamsActivityTests
             })
             .Build();
 
-        Assert.Equal(ActivityTypes.Message, activity.Type);
+        Assert.Equal(ActivityType.Message, activity.Type);
         Assert.Equal("<at>TestUser</at> Hello World", activity.Properties["text"]);
         Assert.Equal("msteams", activity.ChannelId);
         Assert.NotNull(activity.Entities);
@@ -195,7 +195,7 @@ public class TeamsActivityTests
     public void Serialize_TeamsActivity_WithEntities()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(ActivityTypes.Message)
+            .WithType(ActivityType.Message)
             .WithText("Hello World")
             .WithChannelId("msteams")
             .Build();

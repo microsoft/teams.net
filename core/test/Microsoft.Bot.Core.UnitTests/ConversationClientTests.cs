@@ -31,7 +31,7 @@ public class ConversationClientTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };
@@ -60,7 +60,7 @@ public class ConversationClientTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
@@ -76,7 +76,7 @@ public class ConversationClientTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Conversation = new Conversation() { Id = null! },
             ServiceUrl = new Uri("https://test.service.url/")
         }; ;
@@ -93,7 +93,7 @@ public class ConversationClientTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Conversation = new Conversation { Id = "conv123" }
         };
 
@@ -122,7 +122,7 @@ public class ConversationClientTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };
@@ -157,7 +157,7 @@ public class ConversationClientTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };

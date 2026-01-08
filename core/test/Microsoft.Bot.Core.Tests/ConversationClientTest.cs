@@ -36,7 +36,7 @@ public class ConversationClientTest
     {
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
@@ -55,7 +55,7 @@ public class ConversationClientTest
     {
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
@@ -73,7 +73,7 @@ public class ConversationClientTest
     {
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
@@ -92,7 +92,7 @@ public class ConversationClientTest
         // First send an activity to get an ID
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Original message from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
@@ -108,7 +108,7 @@ public class ConversationClientTest
         // Now update the activity
         CoreActivity updatedActivity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Updated message from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
         };
@@ -129,7 +129,7 @@ public class ConversationClientTest
         // First send an activity to get an ID
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Message to delete from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
@@ -229,7 +229,7 @@ public class ConversationClientTest
         // First send an activity to get an activity ID
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Message for GetActivityMembers test at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
@@ -326,7 +326,7 @@ public class ConversationClientTest
         // Send a message to the newly created conversation
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Test message to new conversation at {DateTime.UtcNow:s}" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
@@ -377,7 +377,7 @@ public class ConversationClientTest
         // Send a message to the newly created group conversation
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Test message to new group conversation at {DateTime.UtcNow:s}" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
@@ -425,7 +425,7 @@ public class ConversationClientTest
         // Send a message to the newly created conversation
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
+            Type = ActivityType.Message,
             Properties = { { "text", $"Test message to conversation with topic name at {DateTime.UtcNow:s}" } },
             ServiceUrl = _serviceUrl,
             Conversation = new()
@@ -458,7 +458,7 @@ public class ConversationClientTest
             ],
             Activity = new CoreActivity
             {
-                Type = ActivityTypes.Message,
+                Type = ActivityType.Message,
                 Properties = { { "text", $"Initial message sent at {DateTime.UtcNow:s}" } },
             },
             TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
@@ -646,7 +646,7 @@ public class ConversationClientTest
             [
                 new()
                 {
-                    Type = ActivityTypes.Message,
+                    Type = ActivityType.Message,
                     Id = Guid.NewGuid().ToString(),
                     Properties = { { "text", "Historic message 1" } },
                     ServiceUrl = _serviceUrl,
@@ -654,7 +654,7 @@ public class ConversationClientTest
                 },
                 new()
                 {
-                    Type = ActivityTypes.Message,
+                    Type = ActivityType.Message,
                     Id = Guid.NewGuid().ToString(),
                     Properties = { { "text", "Historic message 2" } },
                     ServiceUrl = _serviceUrl,
@@ -662,7 +662,7 @@ public class ConversationClientTest
                 },
                 new()
                 {
-                    Type = ActivityTypes.Message,
+                    Type = ActivityType.Message,
                     Id = Guid.NewGuid().ToString(),
                     Properties = { { "text", "Historic message 3" } },
                     ServiceUrl = _serviceUrl,

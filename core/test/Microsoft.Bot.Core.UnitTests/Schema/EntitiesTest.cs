@@ -49,7 +49,7 @@ public class EntitiesTest
             PropertyNameCaseInsensitive = false
         };
 
-        CoreActivity activity = new(ActivityTypes.Message);
+        CoreActivity activity = new(ActivityType.Message);
         JsonObject mentionEntity = new()
         {
             ["type"] = "mention",

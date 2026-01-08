@@ -17,16 +17,16 @@ public static class TeamsActivityType
     /// <summary>
     /// Represents the default message string used for communication or display purposes.
     /// </summary>
-    public const string Message = ActivityTypes.Message;
+    public const string Message = ActivityType.Message;
     /// <summary>
     /// Represents a typing indicator activity.
     /// </summary>
-    public const string Typing = ActivityTypes.Typing;
+    public const string Typing = ActivityType.Typing;
 
     /// <summary>
     /// Represents an invoke activity.
     /// </summary>
-    public const string Invoke = ActivityTypes.Invoke;
+    public const string Invoke = ActivityType.Invoke;
 
     /// <summary>
     /// Conversation update activity type.

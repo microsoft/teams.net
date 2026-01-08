@@ -20,7 +20,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 {
     string? text = activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
     var replyActivity = CoreActivity.CreateBuilder()
-        .WithType(ActivityTypes.Message)
+        .WithType(ActivityType.Message)
         .WithConversationReference(activity)
         .WithProperty("text", "You said " + text)
         .Build();

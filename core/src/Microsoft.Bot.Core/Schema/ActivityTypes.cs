@@ -8,7 +8,7 @@ namespace Microsoft.Bot.Core.Schema;
 /// </summary>
 /// <remarks>Use the fields of this class to specify or compare activity types in message-based systems. This
 /// class is typically used to avoid hardcoding string literals for activity type identifiers.</remarks>
-public static class ActivityTypes
+public static class ActivityType
 {
     /// <summary>
     /// Represents the default message string used for communication or display purposes.
