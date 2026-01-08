@@ -9,8 +9,8 @@
 	  <IsPackable>false</IsPackable>
   </PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Bot.Core\Microsoft.Bot.Core.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Microsoft.Bot.Core\Microsoft.Bot.Core.csproj" />
+	</ItemGroup>
 
 </Project>

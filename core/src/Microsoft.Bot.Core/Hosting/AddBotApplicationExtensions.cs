@@ -49,8 +49,10 @@ public static class AddBotApplicationExtensions
         ArgumentNullException.ThrowIfNull(webApp);
         webApp.MapPost(routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
         {
-            CoreActivity resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
-            return resp.Id;
+            // TODO: BotFramework used to return activity.id if incoming activity was not "Invoke".
+            // We don't know if that is required.
+            InvokeResponse? resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
+            return resp;
         }).RequireAuthorization();
 
         return app;
@@ -81,7 +83,7 @@ public static class AddBotApplicationExtensions
     /// <returns></returns>
     public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
-        var sp = services.BuildServiceProvider();
+        ServiceProvider sp = services.BuildServiceProvider();
         IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
         ILogger logger = sp.GetRequiredService<ILogger<ConversationClient>>();
         ArgumentNullException.ThrowIfNull(configuration);

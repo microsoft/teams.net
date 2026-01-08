@@ -51,10 +51,10 @@ public class BotApplicationTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
-            Text = "Test message",
+            Type = ActivityType.Message,
             Id = "act123"
         };
+        activity.Properties["text"] = "Test message";
         activity.Recipient.Properties["appId"] = "test-app-id";
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
@@ -63,14 +63,13 @@ public class BotApplicationTests
         botApp.OnActivity = (act, ct) =>
         {
             onActivityCalled = true;
-            return Task.CompletedTask;
+            return Task.FromResult<InvokeResponse?>(null);
         };
 
-        CoreActivity result = await botApp.ProcessAsync(httpContext);
+        InvokeResponse? result = await botApp.ProcessAsync(httpContext);
 
-        Assert.NotNull(result);
+        Assert.Null(result);
         Assert.True(onActivityCalled);
-        Assert.Equal(activity.Type, result.Type);
     }
 
     [Fact]
@@ -83,8 +82,7 @@ public class BotApplicationTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
-            Text = "Test message",
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -108,7 +106,7 @@ public class BotApplicationTests
         botApp.OnActivity = (act, ct) =>
         {
             onActivityCalled = true;
-            return Task.CompletedTask;
+            return Task.FromResult<InvokeResponse?>(null);
         };
 
         await botApp.ProcessAsync(httpContext);
@@ -127,8 +125,7 @@ public class BotApplicationTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
-            Text = "Test message",
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -183,8 +180,7 @@ public class BotApplicationTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
-            Text = "Test message",
+            Type = ActivityType.Message,
             Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };

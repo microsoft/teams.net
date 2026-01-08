@@ -36,7 +36,7 @@ public class MiddlewareTests
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
         BotApplication botApp = new(conversationClient, mockConfig.Object, logger);
 
-        List<int> executionOrder = new();
+        List<int> executionOrder = [];
 
         Mock<ITurnMiddleWare> mockMiddleware1 = new();
         mockMiddleware1
@@ -63,8 +63,7 @@ public class MiddlewareTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
-            Text = "Test message",
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -74,7 +73,7 @@ public class MiddlewareTests
         botApp.OnActivity = (act, ct) =>
         {
             executionOrder.Add(3);
-            return Task.CompletedTask;
+            return Task.FromResult<InvokeResponse?>(null);
         };
 
         await botApp.ProcessAsync(httpContext);
@@ -109,8 +108,7 @@ public class MiddlewareTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
-            Text = "Test message",
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -120,7 +118,7 @@ public class MiddlewareTests
         botApp.OnActivity = (act, ct) =>
         {
             onActivityCalled = true;
-            return Task.CompletedTask;
+            return Task.FromResult<InvokeResponse?>(null);
         };
 
         await botApp.ProcessAsync(httpContext);
@@ -153,8 +151,7 @@ public class MiddlewareTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
-            Text = "Test message",
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -192,8 +189,7 @@ public class MiddlewareTests
 
         CoreActivity activity = new()
         {
-            Type = ActivityTypes.Message,
-            Text = "Test message",
+            Type = ActivityType.Message,
             Id = "act123"
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
@@ -203,8 +199,7 @@ public class MiddlewareTests
         await botApp.ProcessAsync(httpContext);
 
         Assert.NotNull(receivedActivity);
-        Assert.Equal(ActivityTypes.Message, receivedActivity.Type);
-        Assert.Equal("Test message", receivedActivity.Text);
+        Assert.Equal(ActivityType.Message, receivedActivity.Type);
     }
 
     private static ConversationClient CreateMockConversationClient()
