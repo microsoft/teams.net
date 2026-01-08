@@ -128,7 +128,7 @@ public class TeamsActivityTests
             .Build();
 
         Assert.Equal(ActivityTypes.Message, activity.Type);
-        Assert.Equal("<at>TestUser</at> Hello World", activity.Text);
+        Assert.Equal("<at>TestUser</at> Hello World", activity.Properties["text"]);
         Assert.Equal("msteams", activity.ChannelId);
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);

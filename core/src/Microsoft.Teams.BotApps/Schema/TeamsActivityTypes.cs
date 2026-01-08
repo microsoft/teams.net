@@ -11,7 +11,7 @@ namespace Microsoft.Teams.BotApps.Schema;
 /// <remarks>These activity type constants are used to identify the type of activity received or sent in a Teams
 /// bot context. Use these values when handling or generating activities to ensure compatibility with the Teams
 /// platform.</remarks>
-public static class TeamsActivityTypes
+public static class TeamsActivityType
 {
 
     /// <summary>

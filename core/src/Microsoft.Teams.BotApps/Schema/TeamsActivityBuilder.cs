@@ -89,6 +89,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         return this;
     }
 
+    // TODO: Builders should only have "With" methods, not "Add" methods.
     /// <summary>
     /// Replaces the attachments collection with a single attachment.
     /// </summary>
@@ -159,8 +160,8 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns></returns>
     public TeamsActivityBuilder WithText(string text, string textFormat = "plain")
     {
-        _activity.Text = text;
-        _activity.TextFormat = textFormat;
+        WithProperty("text", text);
+        WithProperty("textFormat", textFormat);
         return this;
     }
 
@@ -178,7 +179,8 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
 
         if (addText)
         {
-            _activity.Text = $"<at>{mentionText}</at> {_activity.Text}";
+            string? currentText = _activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
+            WithProperty("text", $"<at>{mentionText}</at> {currentText}");
         }
 
         _activity.Entities ??= [];

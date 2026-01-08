@@ -6,6 +6,10 @@ using Microsoft.Teams.BotApps.Schema;
 
 namespace Microsoft.Teams.BotApps;
 
+// TODO: Make Context Generic over the TeamsActivity type.
+// It should be able to work with any type of TeamsActivity.
+
+
 /// <summary>
 /// Context for a bot turn.
 /// </summary>
@@ -57,7 +61,7 @@ public class Context(TeamsBotApplication botApplication, TeamsActivity activity)
     public Task<SendActivityResponse?> SendTypingActivityAsync(CancellationToken cancellationToken = default)
         => TeamsBotApplication.SendActivityAsync(
             TeamsActivity.CreateBuilder()
-                .WithType(TeamsActivityTypes.Typing)
+                .WithType(TeamsActivityType.Typing)
                 .WithConversationReference(Activity)
                 .Build(), cancellationToken);
 }

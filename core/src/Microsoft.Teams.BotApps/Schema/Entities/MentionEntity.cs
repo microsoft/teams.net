@@ -43,7 +43,8 @@ public static class ActivityMentionExtensions
         string? mentionText = text ?? account.Name;
         if (addText)
         {
-            activity.Text = $"<at>{mentionText}</at> {activity.Text}";
+            string? currentText = activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
+            activity.Properties["text"] = $"<at>{mentionText}</at> {currentText}";
         }
         activity.Entities ??= [];
         MentionEntity mentionEntity = new(account, $"<at>{mentionText}</at>");
@@ -96,6 +97,7 @@ public class MentionEntity : Entity
     {
         MentionEntity res = new()
         {
+            // TODO: Verify if throwing exceptions is okay here
             Mentioned = jsonNode?["mentioned"] != null
                 ? JsonSerializer.Deserialize<ConversationAccount>(jsonNode["mentioned"]!.ToJsonString())!
                 : throw new ArgumentNullException(nameof(jsonNode), "mentioned property is required"),

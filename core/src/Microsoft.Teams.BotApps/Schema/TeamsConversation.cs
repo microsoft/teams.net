@@ -8,6 +8,22 @@ using Microsoft.Bot.Core.Schema;
 namespace Microsoft.Teams.BotApps.Schema;
 
 /// <summary>
+/// Defines known conversation types for Teams.
+/// </summary>
+public static class ConversationType
+{
+    /// <summary>
+    /// One-to-one conversation between a user and a bot.
+    /// </summary>
+    public const string Personal = "personal";
+
+    /// <summary>
+    /// Group chat conversation.
+    /// </summary>
+    public const string GroupChat = "groupChat";
+}
+
+/// <summary>
 /// Teams Conversation schema.
 /// </summary>
 public class TeamsConversation : Conversation
@@ -49,7 +65,7 @@ public class TeamsConversation : Conversation
     [JsonPropertyName("tenantId")] public string? TenantId { get; set; }
 
     /// <summary>
-    /// Conversation Type.
+    /// Conversation Type. See <see cref="Schema.ConversationType"/> for known values.
     /// </summary>
     [JsonPropertyName("conversationType")] public string? ConversationType { get; set; }
 }

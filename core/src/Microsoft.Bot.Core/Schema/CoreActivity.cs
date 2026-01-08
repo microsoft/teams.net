@@ -128,6 +128,30 @@ public class CoreActivity
     }
 
     /// <summary>
+    /// Creates a new instance of the <see cref="CoreActivity"/> class by copying properties from another activity.
+    /// </summary>
+    /// <param name="activity">The source activity to copy from.</param>
+    protected CoreActivity(CoreActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+
+        Id = activity.Id;
+        ServiceUrl = activity.ServiceUrl;
+        ChannelId = activity.ChannelId;
+        Type = activity.Type;
+        // TODO: Enable
+        // ReplyToId = activity.ReplyToId;
+        ChannelData = activity.ChannelData;
+        From = activity.From;
+        Recipient = activity.Recipient;
+        Conversation = activity.Conversation;
+        Entities = activity.Entities;
+        Attachments = activity.Attachments;
+        Properties = activity.Properties;
+        Value = activity.Value;
+    }
+
+    /// <summary>
     /// Serializes the current activity to a JSON string.
     /// </summary>
     /// <returns>A JSON string representation of the activity.</returns>

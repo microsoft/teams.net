@@ -13,11 +13,11 @@ using TeamsBot;
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();
 
-teamsApp.OnMessage = async (context, cancellationToken) =>
+teamsApp.OnMessage = async (messageArgs, context, cancellationToken) =>
 {
     await context.SendTypingActivityAsync(cancellationToken);
 
-    string replyText = $"You sent: `{context.Activity.Text}` in activity of type `{context.Activity.Type}`.";
+    string replyText = $"You sent: `{messageArgs.Text}` in activity of type `{context.Activity.Type}`.";
 
     TeamsActivity reply = TeamsActivity.CreateBuilder()
         .WithText(replyText)

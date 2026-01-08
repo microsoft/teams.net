@@ -23,7 +23,7 @@ public class TeamsChannelData : ChannelData
     /// Creates a new instance of the <see cref="TeamsChannelData"/> class from the specified <see cref="ChannelData"/> object.
     /// </summary>
     /// <param name="cd"></param>
-    public TeamsChannelData(ChannelData cd)
+    public TeamsChannelData(ChannelData? cd)
     {
         if (cd is not null)
         {
