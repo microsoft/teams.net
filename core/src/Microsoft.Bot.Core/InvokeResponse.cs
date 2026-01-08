@@ -13,6 +13,13 @@ namespace Microsoft.Bot.Core;
 /// <param name="body"></param>
 public class InvokeResponse(int status, object? body = null)
 {
+
+    /// <summary>
+    /// Id of the response
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
     /// <summary>
     /// Status code of the response.
     /// </summary>
@@ -24,6 +31,7 @@ public class InvokeResponse(int status, object? body = null)
     /// Gets or sets the message body content.
     /// </summary>
     [JsonPropertyName("value")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Body { get; set; } = body;
 
     // TODO: Get confirmation that this should be "Type"
@@ -32,5 +40,6 @@ public class InvokeResponse(int status, object? body = null)
     /// Gets or Sets the Type
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; } = "application/vnd.microsoft.activity.message";
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Type { get; set; }
 }

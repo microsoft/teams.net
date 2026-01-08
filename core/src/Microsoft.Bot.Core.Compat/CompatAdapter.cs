@@ -78,12 +78,17 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
             {
                 JObject valueObj = (JObject)invokeResponseAct.Value;
                 var body = valueObj["Body"]?.ToString();
-                return new InvokeResponse(200)
+                return new InvokeResponse(201)
                 {
+                    Id = coreActivity.Id,
                     Body = body,
                 };
             }
-            return null;
+            return new InvokeResponse(202)
+            {
+                Id = coreActivity.Id,
+                Body = null,
+            };
         };
 
         try

@@ -50,7 +50,7 @@ public class TeamsBotApplication : BotApplication
     {
         OnActivity = async (activity, cancellationToken) =>
         {
-            InvokeResponse? invokeResponse = null;
+            InvokeResponse? invokeResponse = new InvokeResponse(203) { Id = activity.Id };
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context context = new(this, teamsActivity);
