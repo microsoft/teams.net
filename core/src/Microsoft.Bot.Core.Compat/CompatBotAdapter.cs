@@ -50,6 +50,7 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
         Microsoft.Bot.Schema.ResourceResponse[] responses = new Microsoft.Bot.Schema.ResourceResponse[1];
         for (int i = 0; i < activities.Length; i++)
         {
+            
             CoreActivity a = activities[i].FromCompatActivity();
 
             if (a.Type == "invokeResponse")
@@ -58,16 +59,10 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
             }
 
             SendActivityResponse? resp = await botApplication.SendActivityAsync(a, cancellationToken).ConfigureAwait(false);
-            if (resp is not null)
-            {
-                responses[i] = new Microsoft.Bot.Schema.ResourceResponse() { Id = resp.Id };
-            }
-            else
-            {
-                logger.LogWarning("Found null ResourceResponse after calling SendActivityAsync");
-            }
 
+            logger.LogInformation("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
 
+            responses[i] = new Microsoft.Bot.Schema.ResourceResponse() { Id = resp?.Id };
         }
         return responses;
     }
