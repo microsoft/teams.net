@@ -126,8 +126,6 @@ public class BotApplication
         return await _conversationClient.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
-
-
     /// <summary>
     /// Gets the version of the SDK.
     /// </summary>

@@ -3,10 +3,8 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 
 
 namespace Microsoft.Bot.Core.Compat;
@@ -57,21 +55,7 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
             var activity = activities[i];
             if (activity.Type == "invokeResponse")
             {
-                // turnContext.TurnState.Add(BotAdapter.InvokeResponseKey, a.ToCompatActivity());
-                var response = httpContextAccessor?.HttpContext?.Response;
-                Microsoft.Bot.Builder.InvokeResponse? invokeResponseValue = activity.Value as Microsoft.Bot.Builder.InvokeResponse;
-                if (response is not null)
-                {
-                    int? status  = invokeResponseValue?.Status;
-                    //string type = "application/vnd.microsoft.activity.message";
-                    string? value = invokeResponseValue?.Body as string;
-                    response.StatusCode = status ?? 100;
-                    await response.WriteAsJsonAsync(new
-                    {
-                        status,value
-                    },
-                    cancellationToken).ConfigureAwait(false);
-                }
+                await WriteInvokeResponseToHttpResponseAsync(activity.Value as InvokeResponse, cancellationToken).ConfigureAwait(false);
                 return [new ResourceResponse() { Id = null } ];
             }
 
@@ -103,5 +87,21 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         return new ResourceResponse() { Id = res.Id };
     }
 
+    private async Task WriteInvokeResponseToHttpResponseAsync(InvokeResponse? invokeResponse, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(invokeResponse);
+        var response = httpContextAccessor?.HttpContext?.Response;
+        ArgumentNullException.ThrowIfNull(response);
+        int? status = invokeResponse?.Status;
+        //string type = "application/vnd.microsoft.activity.message";
+        string? value = invokeResponse?.Body as string;
+        response.StatusCode = status ?? 100;
+        await response.WriteAsJsonAsync(new
+        {
+            status,
+            value
+        },
+        cancellationToken).ConfigureAwait(false);
+    }
 
 }

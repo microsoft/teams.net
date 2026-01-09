@@ -2,22 +2,18 @@
 // Licensed under the MIT License.
 
 using System.Collections;
-
 using Microsoft.Bot.Core.Schema;
 
 namespace Microsoft.Bot.Core;
 
 internal sealed class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleWare>
 {
-
     private readonly IList<ITurnMiddleWare> _middlewares = [];
     internal TurnMiddleware Use(ITurnMiddleWare middleware)
     {
         _middlewares.Add(middleware);
         return this;
     }
-
-
     public async Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn next, CancellationToken cancellationToken = default)
     {
         await RunPipelineAsync(botApplication, activity, null!, 0, cancellationToken).ConfigureAwait(false);
@@ -36,7 +32,6 @@ internal sealed class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleW
             activity,
             (ct) => RunPipelineAsync(botApplication, activity, callback, nextMiddlewareIndex + 1, ct),
             cancellationToken);
-
     }
 
     public IEnumerator<ITurnMiddleWare> GetEnumerator()

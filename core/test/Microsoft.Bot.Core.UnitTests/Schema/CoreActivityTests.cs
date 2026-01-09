@@ -340,7 +340,7 @@ public class CoreCoreActivityTests
         using MemoryStream ms = new(System.Text.Encoding.UTF8.GetBytes(json));
         CoreActivity? act = await CoreActivity.FromJsonStreamAsync(ms);
         Assert.NotNull(act);
-        Assert.Equal(ActivityType.Invoke, act.Type);
+        Assert.Equal("invoke", act.Type);
         Assert.NotNull(act.Value);
         Assert.NotNull(act.Value["key1"]);
         Assert.Equal("value1", act.Value["key1"]?.GetValue<string>());

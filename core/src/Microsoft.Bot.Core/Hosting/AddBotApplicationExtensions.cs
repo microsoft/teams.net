@@ -48,7 +48,7 @@ public static class AddBotApplicationExtensions
         WebApplication? webApp = builder as WebApplication;
         ArgumentNullException.ThrowIfNull(webApp);
         webApp.MapPost(routePath, (HttpContext httpContext, CancellationToken cancellationToken)
-            => app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false)
+            => app.ProcessAsync(httpContext, cancellationToken)
         ).RequireAuthorization();
 
         return app;
@@ -152,9 +152,9 @@ public static class AddBotApplicationExtensions
 
     private static IServiceCollection ConfigureMSALWithSecret(this IServiceCollection services, string tenantId, string clientId, string clientSecret)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientSecret);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientSecret);
 
         services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
@@ -175,8 +175,8 @@ public static class AddBotApplicationExtensions
 
     private static IServiceCollection ConfigureMSALWithFIC(this IServiceCollection services, string tenantId, string clientId, string? ficClientId)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
 
         CredentialDescription ficCredential = new()
         {
