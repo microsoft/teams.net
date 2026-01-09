@@ -1,83 +1,75 @@
+using System.Diagnostics;
+
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Events;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Activities;
+using Microsoft.Teams.Apps.Activities.Events;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Cards;
-using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
+using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
-namespace Samples.Meetings;
+var builder = WebApplication.CreateBuilder(args);
 
-public static partial class Program
+var appBuilder = App.Builder()
+    .AddLogger(new ConsoleLogger(level: Microsoft.Teams.Common.Logging.LogLevel.Debug));
+
+builder.AddTeams(appBuilder);
+
+var app = builder.Build();
+var teams = app.UseTeams();
+
+teams.Use(async context =>
 {
-    public static void Main(string[] args)
+    var start = DateTime.UtcNow;
+    try
     {
-        var builder = WebApplication.CreateBuilder(args);
-        builder.Services.AddOpenApi();
-        builder.Services.AddTransient<Controller>();
-        builder.AddTeams().AddTeamsDevTools();
-
-        var app = builder.Build();
-
-        if (app.Environment.IsDevelopment())
-        {
-            app.MapOpenApi();
-        }
-
-        app.UseHttpsRedirection();
-        app.UseTeams();
-        app.Run();
+        await context.Next();
     }
-
-    [TeamsController]
-    public class Controller
+    catch(Exception e)
     {
-        [Microsoft.Teams.Apps.Activities.Events.Event.MeetingStart]
-        public async Task OnMeetingStart(
-            IContext<MeetingStartActivity> context,
-            [Context] IContext.Client client,
-            [Context] IContext.Next next)
+        context.Log.Error(e);
+        context.Log.Error("error occurred during activity processing");
+    }
+    context.Log.Debug($"request took {(DateTime.UtcNow - start).TotalMilliseconds}ms");
+});
+
+teams.OnMeetingStart(async context =>
+{
+    var activity = context.Activity.Value;
+    var startTime = activity.StartTime.ToLocalTime();
+    AdaptiveCard card = new AdaptiveCard
+    {
+        Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+        Body = new List<CardElement>
         {
-            var activity = context.Activity.Value;
-            var startTime = activity.StartTime.ToLocalTime();
-
-            AdaptiveCard card = new AdaptiveCard
+            new TextBlock($"'{activity.Title}' has started at {startTime}.")
             {
-                Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-                Body = new List<CardElement>
-                {
-                    new TextBlock($"'{activity.Title}' has started at {startTime}.")
-                    {
-                        Wrap = true,
-                        Weight = TextWeight.Bolder
-                    }
-                },
-                Actions = new List<Microsoft.Teams.Cards.Action>
-                {
-                    new OpenUrlAction(activity.JoinUrl)
-                    {
-                       Title = "Join the meeting",
-                    }
-                }
-            };
-
-            await client.Send(card);
+                Wrap = true,
+                Weight = TextWeight.Bolder
+            }
+        },
+        Actions = new List<Microsoft.Teams.Cards.Action>
+        {
+            new OpenUrlAction(activity.JoinUrl)
+            {
+               Title = "Join the meeting",
+            }
         }
+    };
+    await context.Send(card);
+});
 
-        [Microsoft.Teams.Apps.Activities.Events.Event.MeetingEnd]
-        public async Task OnMeetingEnd(
-            IContext<MeetingEndActivity> context,
-            [Context] IContext.Client client,
-            [Context] IContext.Next next)
-        {
-            var activity = context.Activity.Value;
-            var endTime = activity.EndTime.ToLocalTime();
+teams.OnMeetingEnd(async context =>
+{
+    var activity = context.Activity.Value;
+    var endTime = activity.EndTime.ToLocalTime();
 
-            AdaptiveCard card = new AdaptiveCard
-            {
-                Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-                Body = new List<CardElement>
+    AdaptiveCard card = new AdaptiveCard
+    {
+        Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+        Body = new List<CardElement>
                 {
                     new TextBlock($"'{activity.Title}' has ended at {endTime}.")
                     {
@@ -85,25 +77,21 @@ public static partial class Program
                         Weight = TextWeight.Bolder
                     }
                 }
-            };
+    };
 
-            await client.Send(card);
-        }
+    await context.Send(card);
+});
 
-        [Microsoft.Teams.Apps.Activities.Events.Event.MeetingJoin]
-        public async Task OnMeetingParticipantJoin(
-            IContext<MeetingParticipantJoinActivity> context,
-            [Context] IContext.Client client,
-            [Context] IContext.Next next)
-        {
-            var activity = context.Activity.Value;
-            var member = activity.Members[0].User.Name;
-            var role = activity.Members[0].Meeting.Role;
+teams.OnMeetingJoin(async context =>
+{
+    var activity = context.Activity.Value;
+    var member = activity.Members[0].User.Name;
+    var role = activity.Members[0].Meeting.Role;
 
-            AdaptiveCard card = new AdaptiveCard
-            {
-                Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-                Body = new List<CardElement>
+    AdaptiveCard card = new AdaptiveCard
+    {
+        Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+        Body = new List<CardElement>
                 {
                     new TextBlock($"{member} has joined the meeting as {role}.")
                     {
@@ -111,24 +99,21 @@ public static partial class Program
                         Weight = TextWeight.Bolder
                     }
                 }
-            };
+    };
 
-            await client.Send(card);
-        }
+    await context.Send(card);
 
-        [Microsoft.Teams.Apps.Activities.Events.Event.MeetingLeave]
-        public async Task OnMeetingParticipantLeave(
-            IContext<MeetingParticipantLeaveActivity> context,
-            [Context] IContext.Client client,
-            [Context] IContext.Next next)
-        {
-            var activity = context.Activity.Value;
-            var member = activity.Members[0].User.Name;
+});
 
-            AdaptiveCard card = new AdaptiveCard
-            {
-                Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-                Body = new List<CardElement>
+teams.OnMeetingLeave(async context =>
+{
+    var activity = context.Activity.Value;
+    var member = activity.Members[0].User.Name;
+
+    AdaptiveCard card = new AdaptiveCard
+    {
+        Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+        Body = new List<CardElement>
                 {
                     new TextBlock($"{member} has left the meeting.")
                     {
@@ -136,16 +121,15 @@ public static partial class Program
                         Weight = TextWeight.Bolder
                     }
                 }
-            };
+    };
 
-            await client.Send(card);
-        }
+    await context.Send(card);
+});
 
-        [Message]
-        public async Task OnMessage([Context] MessageActivity activity, [Context] IContext.Client client)
-        {
-            await client.Typing();
-            await client.Send($"you said '{activity.Text}'");
-        }
-    }
-}
+teams.OnMessage(async context =>
+{
+    await context.Typing();
+    await context.Send($"you said '{context.Activity.Text}'");
+});
+
+app.Run();
