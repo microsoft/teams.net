@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 
 
 namespace Microsoft.Bot.Core.Compat;
@@ -102,20 +100,8 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         ArgumentNullException.ThrowIfNull(response);
         
         response.StatusCode = invokeResponse.Status;
-        if (invokeResponse.Body is AdaptiveCardInvokeResponse adaptiveCardInvokeResponse)
-        {
-            string json = JsonConvert.SerializeObject(adaptiveCardInvokeResponse); // use newtonsoft for compatibility 
-            await response.WriteAsync(json, cancellationToken).ConfigureAwait(false);
-        }
-        else
-        {
-            await response.WriteAsJsonAsync(new
-            {
-                status = invokeResponse.Status,
-                value = invokeResponse.Body as string
-            },
-            cancellationToken).ConfigureAwait(false);
-        }
+        response.ContentType = "application/json";
+        await response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
     }
 
 }
