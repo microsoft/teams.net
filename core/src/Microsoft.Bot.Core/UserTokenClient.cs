@@ -94,14 +94,8 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
     /// <param name="finalRedirect">The optional final redirect URL.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    public async Task<GetTokenOrSignInResourceResult> GetTokenOrSignInResource(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
+    public async Task<GetSignInResourceResult> GetSignInResource(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
     {
-        Dictionary<string, string?> queryParams = new()
-        {
-            { "userid", userId },
-            { "connectionName", connectionName },
-            { "channelId", channelId }
-        };
         var tokenExchangeState = new
         {
             ConnectionName = connectionName,
@@ -113,15 +107,18 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
         var tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState, _defaultOptions);
         var state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
 
-        queryParams.Add("state", state);
+        Dictionary<string, string?> queryParams = new()
+        {
+            { "state", state }
+        };
 
         if (!string.IsNullOrEmpty(finalRedirect))
         {
             queryParams.Add("finalRedirect", finalRedirect);
         }
 
-        string? resJson = await CallApiAsync("api/usertoken/GetTokenOrSignInResource", queryParams, cancellationToken: cancellationToken).ConfigureAwait(false);
-        GetTokenOrSignInResourceResult result = JsonSerializer.Deserialize<GetTokenOrSignInResourceResult>(resJson!, _defaultOptions)!;
+        string? resJson = await CallApiAsync("api/botsignin/GetSignInResource", queryParams, cancellationToken: cancellationToken).ConfigureAwait(false);
+        GetSignInResourceResult result = JsonSerializer.Deserialize<GetSignInResourceResult>(resJson!, _defaultOptions)!;
         return result;
     }
 

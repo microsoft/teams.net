@@ -39,23 +39,6 @@ public class GetTokenResult
 }
 
 /// <summary>
-/// Represents a response containing either a token or a sign-in resource.
-/// </summary>
-public class GetTokenOrSignInResourceResult
-{
-    /// <summary>
-    /// The sign-in resource containing sign-in and token exchange information.
-    /// </summary>
-    public GetSignInResourceResult? SignInResource { get; set; }
-
-    /// <summary>
-    /// The token response containing OAuth token information.
-    /// </summary>
-    public GetTokenResult? TokenResponse { get; set; }
-}
-
-
-/// <summary>
 /// SignIn resource object.
 /// </summary>
 public class GetSignInResourceResult

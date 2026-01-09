@@ -31,10 +31,10 @@ internal sealed class CompatUserTokenClient(Core.UserTokenClient utc) : Connecto
     public async override Task<SignInResource> GetSignInResourceAsync(string connectionName, Activity activity, string finalRedirect, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        GetTokenOrSignInResourceResult res = await utc.GetTokenOrSignInResource(activity.From.Id, connectionName, activity.ChannelId, finalRedirect, cancellationToken).ConfigureAwait(false);
+        GetSignInResourceResult res = await utc.GetSignInResource(activity.From.Id, connectionName, activity.ChannelId, finalRedirect, cancellationToken).ConfigureAwait(false);
         return new SignInResource
         {
-            SignInLink = res!.SignInResource?.SignInLink,
+            SignInLink = res!.SignInLink,
             TokenExchangeResource = null,
             TokenPostResource = null,
         };
