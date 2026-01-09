@@ -113,9 +113,12 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     public Task<object?> Next();
 
     /// <summary>
-    /// called to continue the chain of route handlers,
-    /// if not called no other handlers in the sequence will be executed
+    /// Called to continue the chain of route handlers using the specified context instance.
+    /// Use this overload when you want to invoke the next handler with a different or wrapped
+    /// <see cref="IContext{TActivity}"/> than the current one; if not called, no other handlers
+    /// in the sequence will be executed.
     /// </summary>
+    /// <param name="context">The context to pass to the next handler in the chain.</param>
     public Task<object?> Next(IContext<TActivity> context);
 
     /// <summary>
