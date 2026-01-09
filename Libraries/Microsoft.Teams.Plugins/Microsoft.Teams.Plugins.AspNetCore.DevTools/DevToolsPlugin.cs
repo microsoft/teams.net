@@ -143,7 +143,6 @@ public class DevToolsPlugin : IAspNetCorePlugin
     public async Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
         Logger.Debug("OnActivitySent");
-        Logger.Debug($"[DEBUG] DevToolsPlugin.OnActivitySent - Called! Sender: {sender.GetType().Name}, Activity: {@event.Activity.Type}");
 
         await Sockets.Emit(
             DevTools.Events.ActivityEvent.Sent(
@@ -152,8 +151,6 @@ public class DevToolsPlugin : IAspNetCorePlugin
             ),
             cancellationToken
         );
-
-        Logger.Debug($"[DEBUG] DevToolsPlugin.OnActivitySent - Emitted to {Sockets.Count} WebSocket(s)");
     }
 
     public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
