@@ -4,7 +4,7 @@
 namespace Microsoft.Teams.Common.Http;
 
 /// <summary>
-/// Http Credential resolver used to fetch some access token. 
+/// Http Credential resolver used to fetch some access token.
 /// </summary>
 public interface IHttpCredentials
 {
