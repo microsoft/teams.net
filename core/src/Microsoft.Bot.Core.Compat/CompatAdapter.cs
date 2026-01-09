@@ -64,7 +64,6 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
         ArgumentNullException.ThrowIfNull(httpResponse);
         ArgumentNullException.ThrowIfNull(bot);
         CoreActivity? coreActivity = null;
-
         botApplication.OnActivity = async (activity, cancellationToken1) =>
         {
             coreActivity = activity;
@@ -73,17 +72,6 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
             CompatConnectorClient connectionClient = new(new CompatConversations(botApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             await bot.OnTurnAsync(turnContext, cancellationToken1).ConfigureAwait(false);
-            var invokeResponseAct = turnContext.TurnState.Get<Activity>(BotAdapter.InvokeResponseKey);
-            if (invokeResponseAct is not null)
-            {
-                JObject valueObj = (JObject)invokeResponseAct.Value;
-                var body = valueObj["Body"]?.ToString();
-                return new InvokeResponse(200)
-                {
-                    Body = body,
-                };
-            }
-            return null;
         };
 
         try
@@ -93,12 +81,7 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
                 botApplication.Use(new CompatMiddlewareAdapter(middleware));
             }
 
-            var invokeResponse = await botApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
-            if (invokeResponse is not null)
-            {
-                httpResponse.StatusCode = invokeResponse.Status;
-                await httpResponse.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
-            }
+            await botApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

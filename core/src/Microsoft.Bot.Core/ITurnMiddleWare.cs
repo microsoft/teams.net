@@ -12,7 +12,7 @@ namespace Microsoft.Bot.Core;
 /// The cancellation token should be observed to support cooperative cancellation.</remarks>
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
 /// <returns>A task that represents the completion of the middleware invocation.</returns>
-public delegate Task<InvokeResponse?> NextTurn(CancellationToken cancellationToken);
+public delegate Task NextTurn(CancellationToken cancellationToken);
 
 /// <summary>
 /// Defines a middleware component that can process or modify activities during a bot turn.

@@ -14,7 +14,40 @@ namespace Microsoft.Teams.BotApps.Handlers;
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation. The default value is <see
 /// cref="CancellationToken.None"/>.</param>
 /// <returns>A task that represents the asynchronous operation. The task result contains the response to the invocation.</returns>
-public delegate Task<InvokeResponse> InvokeHandler(Context context, CancellationToken cancellationToken = default);
+public delegate Task<CoreInvokeResponse> InvokeHandler(Context context, CancellationToken cancellationToken = default);
 
 
 
+/// <summary>
+/// Represents the response returned from an invocation handler.
+/// </summary>
+/// <remarks>
+/// Creates a new instance of the <see cref="CoreInvokeResponse"/> class with the specified status code and optional body.
+/// </remarks>
+/// <param name="status"></param>
+/// <param name="body"></param>
+public class CoreInvokeResponse(int status, object? body = null)
+{
+    /// <summary>
+    /// Status code of the response.
+    /// </summary>
+    [JsonPropertyName("status")]
+    public int Status { get; set; } = status;
+
+    // TODO: This is strange - Should this be Value or Body?
+    /// <summary>
+    /// Gets or sets the message body content.
+    /// </summary>
+    [JsonPropertyName("value")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public object? Body { get; set; } = body;
+
+    // TODO: Get confirmation that this should be "Type"
+    // This particular type should be for AC responses
+    /// <summary>
+    /// Gets or Sets the Type
+    /// </summary>
+    [JsonPropertyName("type")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Type { get; set; }
+}
