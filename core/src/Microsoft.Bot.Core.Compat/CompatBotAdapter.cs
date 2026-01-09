@@ -1,10 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
+using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 
 namespace Microsoft.Bot.Core.Compat;
@@ -98,10 +102,45 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         ArgumentNullException.ThrowIfNull(invokeResponse);
         var response = httpContextAccessor?.HttpContext?.Response;
         ArgumentNullException.ThrowIfNull(response);
-        
-        response.StatusCode = invokeResponse.Status;
-        response.ContentType = "application/json";
-        await response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+
+        using StreamWriter httpResponseStreamWriter = new (response.BodyWriter.AsStream());
+        using JsonTextWriter httpResponseJsonWriter = new (httpResponseStreamWriter);
+        Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
     }
+
+        //#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
+        //        var options = new JsonSerializerOptions
+        //        {
+        //            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        //            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        //            Converters = {
+        //                new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
+        //            }
+        //        };
+        //#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
+
+        //        string jsonBody = System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, options);
+
+        //        response.StatusCode = invokeResponse.Status;
+        //        response.ContentType = "application/json";
+        //        await response.WriteAsync(jsonBody, cancellationToken).ConfigureAwait(false);
+
+
+        //using StreamWriter sw = new StreamWriter(response.BodyWriter.AsStream());
+        //using JsonWriter jw = new JsonTextWriter(sw);
+        //Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(jw, invokeResponse.Body);
+
+        //JsonSerializerOptions options = new()
+        //{
+        //    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        //    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
+        //    Converters = {
+        //        new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
+        //        new AttachmentMemoryStreamConverter(),
+        //        new AttachmentContentConverter() }
+        //};
+
+        //await response.WriteAsJsonAsync(invokeResponse.Body, options, cancellationToken).ConfigureAwait(false);
+    
 
 }
