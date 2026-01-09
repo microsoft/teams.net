@@ -27,9 +27,8 @@ public partial class App
             }
         }
 
-        foreach (var plugin in Plugins)
+        foreach (var plugin in Plugins.Where(p => !ReferenceEquals(sender, p)))
         {
-            if (ReferenceEquals(sender, plugin)) continue;
             await plugin.OnError(this, sender, @event, cancellationToken);
         }
     }
@@ -43,22 +42,9 @@ public partial class App
     protected async Task OnActivitySentEvent(ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
     {
         Logger.Debug(EventType.ActivitySent);
-        Logger.Debug($"[DEBUG] OnActivitySentEvent - Sender: {sender.GetType().Name} (Hash: {sender.GetHashCode()})");
-        Logger.Debug($"[DEBUG] OnActivitySentEvent - Plugins count: {Plugins.Count}");
 
-        foreach (var plugin in Plugins)
+        foreach (var plugin in Plugins.Where(p => !ReferenceEquals(sender, p)))
         {
-            Logger.Debug($"[DEBUG] OnActivitySentEvent - Checking plugin: {plugin.GetType().Name} (Hash: {plugin.GetHashCode()})");
-            Logger.Debug($"[DEBUG] OnActivitySentEvent - sender.Equals(plugin): {sender.Equals(plugin)}");
-            Logger.Debug($"[DEBUG] OnActivitySentEvent - ReferenceEquals(sender, plugin): {ReferenceEquals(sender, plugin)}");
-
-            if (ReferenceEquals(sender, plugin))
-            {
-                Logger.Debug($"[DEBUG] OnActivitySentEvent - Skipping plugin: {plugin.GetType().Name}");
-                continue;
-            }
-
-            Logger.Debug($"[DEBUG] OnActivitySentEvent - Calling OnActivitySent for plugin: {plugin.GetType().Name}");
             await plugin.OnActivitySent(this, sender, @event, cancellationToken);
         }
     }
@@ -67,9 +53,8 @@ public partial class App
     {
         Logger.Debug(EventType.ActivityResponse);
 
-        foreach (var plugin in Plugins)
+        foreach (var plugin in Plugins.Where(p => !ReferenceEquals(sender, p)))
         {
-            if (ReferenceEquals(sender, plugin)) continue;
             await plugin.OnActivityResponse(this, sender, @event, cancellationToken);
         }
     }
