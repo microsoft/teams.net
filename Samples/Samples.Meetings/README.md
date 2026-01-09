@@ -4,7 +4,7 @@ This sample demonstrates how to handle real-time updates for meeting events and 
 
 ### Manifest Requirements
 
-There are a few requirements in the Teams app manifest (manifest.json) to support receiving and responding to these events.
+There are a few requirements in the Teams app manifest (manifest.json) to support these events.
 
 1) The `scopes` section must include `team`, and `groupChat`:
 
@@ -22,38 +22,30 @@ There are a few requirements in the Teams app manifest (manifest.json) to suppor
     ]
 ```
 
-2) Permissions should include `identity` and `messageTeamMembers`:
-```csharp
-    "permissions": [
-        "identity",
-        "messageTeamMembers"
-    ],
-```
-
-3) In the authorization section, make sure to specify the following resource-specific permissions:
+2) In the authorization section, make sure to specify the following resource-specific permissions:
 
 ```csharp
-"authorization": {
-        "permissions": {
-            "resourceSpecific": [
+ "authorization":{
+        "permissions":{
+            "resourceSpecific":[
                 {
-                    "name": "OnlineMeeting.ReadBasic.Chat",
-                    "type": "Application"
+                    "name":"OnlineMeetingParticipant.Read.Chat",
+                    "type":"Application"
                 },
                 {
-                    "name": "ChannelMeeting.ReadBasic.Group",
-                    "type": "Application"
+                    "name":"ChannelMeeting.ReadBasic.Group",
+                    "type":"Application"
                 },
                 {
-                    "name": "OnlineMeetingParticipant.Read.Chat",
-                    "type": "Application"
+                    "name":"OnlineMeeting.ReadBasic.Chat",
+                    "type":"Application"
                 }
-            ]
+                ]
+            }
         }
-    }
 ```
 
 ### Teams Developer Portal: Bot Configuration
 
-For your Bot, make sure the [Meeting Event Subscriptions](https://learn.microsoft.com/en-us/microsoftteams/platform/apps-in-teams-meetings/meeting-apps-apis?branch=pr-en-us-8455&tabs=channel-meeting%2Cguest-user%2Cone-on-one-call%2Cdotnet3%2Cdotnet2%2Cdotnet%2Cparticipant-join-event%2Cparticipant-join-event1#receive-meeting-participant-events) are turned on.
+For your Bot, make sure the [Meeting Event Subscriptions](https://learn.microsoft.com/en-us/microsoftteams/platform/apps-in-teams-meetings/meeting-apps-apis?branch=pr-en-us-8455&tabs=channel-meeting%2Cguest-user%2Cone-on-one-call%2Cdotnet3%2Cdotnet2%2Cdotnet%2Cparticipant-join-event%2Cparticipant-join-event1#receive-meeting-participant-events) are checked.
 This enables you to receive the Meeting Participant events.
