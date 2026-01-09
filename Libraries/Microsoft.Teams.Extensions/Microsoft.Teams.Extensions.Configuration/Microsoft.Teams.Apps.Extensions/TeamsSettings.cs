@@ -13,7 +13,7 @@ public class TeamsSettings
     public string? ClientId { get; set; }
 
     /// <summary>
-    /// The secret (ie password) for your application.
+    /// The secret (i.e. password) for your application.
     /// </summary>
     public string? ClientSecret { get; set; }
 
