@@ -19,8 +19,7 @@ namespace ABSTokenServiceClient
 
         protected async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            //const string userId = "29:10n4Hk6RsMPuLvAxMNd2zEYU2w1dpvsiLC4QcffJ84rCMp_TKJO_dMzosR4d_K67eAumKyxTzXVYqHQWzRf2ukg";
-            const string userId = "29:1z8ZE78C9fd__EBOAY7Xd9QWs_9QMRVpuJK8ad47JE1hTXiiHiTQQxVbreKRFGM1Bc7gqkroHiQdEeSflOyUB4A";
+            const string userId = "your-user-id";
             const string connectionName = "graph";
             const string channelId = "msteams";
 
@@ -28,7 +27,6 @@ namespace ABSTokenServiceClient
 
             try
             {
-                string token;
                 logger.LogInformation("=== Testing GetTokenStatus ===");
                 GetTokenStatusResult[] tokenStatus = await userTokenClient.GetTokenStatusAsync(userId, channelId, null, cancellationToken);
                 logger.LogInformation("GetTokenStatus result: {Result}", JsonSerializer.Serialize(tokenStatus, new JsonSerializerOptions { WriteIndented = true }));
@@ -36,7 +34,6 @@ namespace ABSTokenServiceClient
                 if (tokenStatus[0].HasToken == true)
                 {
                     GetTokenResult tokenResponse = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, null, cancellationToken);
-                    token = tokenResponse.Token!;
                     logger.LogInformation("GetToken result: {Result}", JsonSerializer.Serialize(tokenResponse, new JsonSerializerOptions { WriteIndented = true }));
                 }
                 else
@@ -48,7 +45,6 @@ namespace ABSTokenServiceClient
                     string code = Console.ReadLine()!;
 
                     GetTokenResult tokenResponse2 = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, code, cancellationToken);
-                    token = tokenResponse2.Token!;
                     logger.LogInformation("GetToken With Code result: {Result}", JsonSerializer.Serialize(tokenResponse2, new JsonSerializerOptions { WriteIndented = true }));
                 }
 
@@ -56,8 +52,13 @@ namespace ABSTokenServiceClient
                 string yn = Console.ReadLine()!;
                 if ("y".Equals(yn, StringComparison.OrdinalIgnoreCase))
                 {
-                    await userTokenClient.SignOutUserAsync(userId, connectionName, channelId, cancellationToken);
-                    logger.LogInformation("SignOutUser completed successfully");
+                    try{
+                        await userTokenClient.SignOutUserAsync(userId, connectionName, channelId, cancellationToken);
+                        logger.LogInformation("SignOutUser completed successfully");
+                    }
+                    catch (Exception ex) {
+                        logger.LogError(ex, "Error during SignOutUser");
+                    }
                 }
             }
             catch (Exception ex)
