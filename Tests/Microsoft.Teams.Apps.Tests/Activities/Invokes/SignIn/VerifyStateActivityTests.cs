@@ -56,7 +56,7 @@ public class VerifyStateActivityTests
         userTokenClient.Setup(_ => _.GetAsync(It.IsAny<UserTokenClient.GetTokenRequest>())).ReturnsAsync(new Api.Token.Response()
         {
             ConnectionName = "graph",
-            Token = tokenHandler.WriteToken(new JwtSecurityTokenHandler().CreateToken(tokenDescriptor))
+            Token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor))
         });
 
         _app.Api = api.Object;
@@ -106,7 +106,7 @@ public class VerifyStateActivityTests
         userTokenClient.Setup(_ => _.GetAsync(It.IsAny<UserTokenClient.GetTokenRequest>())).Returns(Task.FromResult(new Api.Token.Response()
         {
             ConnectionName = "test",
-            Token = tokenHandler.WriteToken(new JwtSecurityTokenHandler().CreateToken(tokenDescriptor))
+            Token = tokenHandler.WriteToken(tokenHandler.CreateToken(tokenDescriptor))
         }));
 
         _app.Api = api.Object;
@@ -133,6 +133,6 @@ public class VerifyStateActivityTests
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(2, calls);
         Assert.Equal(2, res.Meta.Routes);
-        Assert.Equal(res.Body, new { accountLinkingUrl = "test_linking_url" });
+        Assert.Equivalent(res.Body, new { accountLinkingUrl = "test_linking_url" });
     }
 }
