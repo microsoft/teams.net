@@ -132,9 +132,8 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
     /// <param name="connectionName">The connection name.</param>
     /// <param name="channelId">The channel ID.</param>
     /// <param name="exchangeToken">The token to exchange.</param>
-    /// <param name="uri">The URI.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task<GetTokenResult> ExchangeTokenAsync(string userId, string connectionName, string channelId, string? exchangeToken, Uri? uri, CancellationToken cancellationToken = default)
+    public async Task<GetTokenResult> ExchangeTokenAsync(string userId, string connectionName, string channelId, string? exchangeToken, CancellationToken cancellationToken = default)
     {
         Dictionary<string, string?> queryParams = new()
         {
@@ -145,7 +144,6 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
 
         var tokenExchangeRequest = new
         {
-            uri = uri,
             token = exchangeToken
         };
 

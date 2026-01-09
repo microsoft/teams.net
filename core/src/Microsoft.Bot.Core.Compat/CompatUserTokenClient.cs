@@ -1,9 +1,9 @@
 ﻿using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
 
-namespace Microsoft.Bot.Core.Compat.Adapter;
+namespace Microsoft.Bot.Core.Compat;
 
-public class CompatUserTokenClient(Core.UserTokenClient utc) : Connector.Authentication.UserTokenClient
+internal sealed class CompatUserTokenClient(Core.UserTokenClient utc) : Connector.Authentication.UserTokenClient
 {
     public async override Task<TokenStatus[]> GetTokenStatusAsync(string userId, string channelId, string includeFilter, CancellationToken cancellationToken)
     {
@@ -30,12 +30,13 @@ public class CompatUserTokenClient(Core.UserTokenClient utc) : Connector.Authent
 
     public async override Task<SignInResource> GetSignInResourceAsync(string connectionName, Activity activity, string finalRedirect, CancellationToken cancellationToken)
     {
+        ArgumentNullException.ThrowIfNull(activity);
         GetTokenOrSignInResourceResult res = await utc.GetTokenOrSignInResource(activity.From.Id, connectionName, activity.ChannelId, finalRedirect, cancellationToken).ConfigureAwait(false);
         return new SignInResource
         {
-            SignInLink = res!.SignInResource.SignInLink,
-            TokenExchangeResource = res!.SignInResource.TokenExchangeResource,
-            TokenPostResource = res!.SignInResource.TokenPostResource,
+            SignInLink = res!.SignInResource?.SignInLink,
+            TokenExchangeResource = null,
+            TokenPostResource = null,
         };
     }
 
@@ -43,7 +44,7 @@ public class CompatUserTokenClient(Core.UserTokenClient utc) : Connector.Authent
      TokenExchangeRequest exchangeRequest, CancellationToken cancellationToken)
     {
         GetTokenResult resp = await utc.ExchangeTokenAsync(userId, connectionName, channelId, exchangeRequest.Token,
-        exchangeRequest.Uri, cancellationToken).ConfigureAwait(false);
+        cancellationToken).ConfigureAwait(false);
         return new TokenResponse
         {
             ChannelId = channelId,
