@@ -44,7 +44,7 @@ public class TeamsSettings
             options.Credentials = new ClientCredentials(ClientId, ClientSecret, TenantId);
         }
 
-        if (AccountLinkingUrl is null)
+        if (!string.IsNullOrEmpty(AccountLinkingUrl))
         {
             options.OAuth.AccountLinkingUrl = AccountLinkingUrl;
         }
