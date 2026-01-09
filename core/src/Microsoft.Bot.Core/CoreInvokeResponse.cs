@@ -7,19 +7,12 @@ namespace Microsoft.Bot.Core;
 /// Represents the response returned from an invocation handler.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="InvokeResponse"/> class with the specified status code and optional body.
+/// Creates a new instance of the <see cref="CoreInvokeResponse"/> class with the specified status code and optional body.
 /// </remarks>
 /// <param name="status"></param>
 /// <param name="body"></param>
-public class InvokeResponse(int status, object? body = null)
+public class CoreInvokeResponse(int status, object? body = null)
 {
-
-    /// <summary>
-    /// Id of the response
-    /// </summary>
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
     /// <summary>
     /// Status code of the response.
     /// </summary>

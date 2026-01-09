@@ -43,11 +43,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
-        if (activity.Type == "invokeResponse")
-        {
-            return new SendActivityResponse();
-        }
-
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
         string body = activity.ToJson();
 

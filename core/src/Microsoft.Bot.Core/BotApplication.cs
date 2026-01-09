@@ -56,7 +56,7 @@ public class BotApplication
     /// <remarks>Assign a delegate to process activities as they are received. The delegate should accept an
     /// <see cref="CoreActivity"/> and a <see cref="CancellationToken"/>, and return a <see cref="Task"/> representing the
     /// asynchronous operation. If <see langword="null"/>, incoming activities will not be handled.</remarks>
-    public Func<CoreActivity, CancellationToken, Task<InvokeResponse?>>? OnActivity { get; set; }
+    public Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
 
     /// <summary>
     /// Processes an incoming HTTP request containing a bot activity.
@@ -66,12 +66,10 @@ public class BotApplication
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="BotHandlerException"></exception>
-    public async Task<InvokeResponse?> ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
+    public async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(_conversationClient);
-
-        InvokeResponse? invokeResponse = null;
 
         _logger.LogDebug("Start processing HTTP request for activity");
 
@@ -88,7 +86,7 @@ public class BotApplication
         {
             try
             {
-                invokeResponse =  await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, cancellationToken).ConfigureAwait(false);
+                await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -99,7 +97,6 @@ public class BotApplication
             {
                 _logger.LogInformation("Finished processing activity {Type} {Id}", activity.Type, activity.Id);
             }
-            return invokeResponse;
         }
     }
 

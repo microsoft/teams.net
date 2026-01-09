@@ -31,11 +31,11 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
         IStatePropertyAccessor<ConversationData> conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
         ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
 
-        string replyText = $"Echo from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
-        await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
+        //string replyText = $"Echo from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
+        //await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
         // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
 
-        var conversationClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.IConnectorClient>().Conversations;
+        //var conversationClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.IConnectorClient>().Conversations;
 
         // await SendUpdateDeleteActivityAsync(turnContext, conversationClient, cancellationToken);
 
@@ -87,11 +87,11 @@ internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> log
         };
 
         var card = MessageFactory.Attachment(attachment);
-        await turnContext.SendActivityAsync(card, cancellationToken);
+        // await turnContext.SendActivityAsync(card, cancellationToken);
 
         return new InvokeResponse
         {
-            Status = 205,
+            Status = 200,
             Body = "invokes from compat bot"
         };
     }

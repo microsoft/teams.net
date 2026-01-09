@@ -62,8 +62,9 @@ teamsApp.OnInvoke = async (context, cancellationToken) =>
 
     await context.SendActivityAsync(reply, cancellationToken);
 
-    return new InvokeResponse(209)
+    return new CoreInvokeResponse(209)
     {
+        Type = "application/vnd.microsoft.activity.message",
         Body = "Invokes are great !!"
     };
 };

@@ -33,8 +33,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         .WithProperty("text",replyText)
         .Build();
 
-    var saResp = await botApp.SendActivityAsync(replyActivity, cancellationToken);
-    return new InvokeResponse(208) { Id = saResp?.Id };
+    await botApp.SendActivityAsync(replyActivity, cancellationToken);
 };
 
 webApp.Run();

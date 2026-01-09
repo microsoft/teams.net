@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -44,13 +45,13 @@ public class TeamsBotApplication : BotApplication
     public ConversationUpdateHandler? OnConversationUpdate { get; set; }
     /// <param name="conversationClient"></param>
     /// <param name="config"></param>
+    /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
     /// <param name="sectionName"></param>
-    public TeamsBotApplication(ConversationClient conversationClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "AzureAd") : base(conversationClient, config, logger, sectionName)
+    public TeamsBotApplication(ConversationClient conversationClient, IConfiguration config, IHttpContextAccessor httpContextAccessor, ILogger<BotApplication> logger, string sectionName = "AzureAd") : base(conversationClient, config, logger, sectionName)
     {
         OnActivity = async (activity, cancellationToken) =>
         {
-            InvokeResponse? invokeResponse = new InvokeResponse(203) { Id = activity.Id };
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context context = new(this, teamsActivity);
@@ -61,7 +62,7 @@ public class TeamsBotApplication : BotApplication
             if (teamsActivity.Type == TeamsActivityType.InstallationUpdate && OnInstallationUpdate is not null)
             {
                 await OnInstallationUpdate.Invoke(new InstallationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
-                
+
             }
             if (teamsActivity.Type == TeamsActivityType.MessageReaction && OnMessageReaction is not null)
             {
@@ -73,10 +74,14 @@ public class TeamsBotApplication : BotApplication
             }
             if (teamsActivity.Type == TeamsActivityType.Invoke && OnInvoke is not null)
             {
-               invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
-               
+                var invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
+                var httpContext = httpContextAccessor.HttpContext;
+                if (httpContext is not null)
+                {
+                    httpContext.Response.StatusCode = invokeResponse.Status;
+                    await httpContext.Response.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
+                }
             }
-            return invokeResponse;
         };
     }
 

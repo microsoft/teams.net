@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json.Linq;
 
 
 namespace Microsoft.Bot.Core.Compat;
@@ -17,9 +19,10 @@ namespace Microsoft.Bot.Core.Compat;
 /// This class is intended for scenarios where integration with non-standard bot runtimes or legacy systems is
 /// required.</remarks>
 /// <param name="botApplication">The bot application instance used to process and send activities within the adapter.</param>
+/// <param name="httpContextAccessor" >The HTTP context accessor used to retrieve the current HTTP context.</param>
 /// <param name="logger">The <paramref name="logger"/></param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
-public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAdapter> logger = default!) : BotAdapter
+public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccessor httpContextAccessor = default!, ILogger<CompatBotAdapter> logger = default!) : BotAdapter
 {
     /// <summary>
     /// Deletes an activity from the conversation.
@@ -42,23 +45,37 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
     /// <param name="activities"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<Microsoft.Bot.Schema.ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
+    public override async Task<ResourceResponse[]> SendActivitiesAsync(ITurnContext turnContext, Activity[] activities, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activities);
         ArgumentNullException.ThrowIfNull(turnContext);
 
-        Microsoft.Bot.Schema.ResourceResponse[] responses = new Microsoft.Bot.Schema.ResourceResponse[1];
+        ResourceResponse[] responses = new Microsoft.Bot.Schema.ResourceResponse[activities.Length];
+
         for (int i = 0; i < activities.Length; i++)
         {
-            
-            CoreActivity a = activities[i].FromCompatActivity();
-
-            if (a.Type == "invokeResponse")
+            var activity = activities[i];
+            if (activity.Type == "invokeResponse")
             {
-                turnContext.TurnState.Add(BotAdapter.InvokeResponseKey, a.ToCompatActivity());
+                // turnContext.TurnState.Add(BotAdapter.InvokeResponseKey, a.ToCompatActivity());
+                var response = httpContextAccessor?.HttpContext?.Response;
+                Microsoft.Bot.Builder.InvokeResponse? invokeResponseValue = activity.Value as Microsoft.Bot.Builder.InvokeResponse;
+                if (response is not null)
+                {
+                    int? status  = invokeResponseValue?.Status;
+                    //string type = "application/vnd.microsoft.activity.message";
+                    string? value = invokeResponseValue?.Body as string;
+                    response.StatusCode = status ?? 100;
+                    await response.WriteAsJsonAsync(new
+                    {
+                        status,value
+                    },
+                    cancellationToken).ConfigureAwait(false);
+                }
+                return [new ResourceResponse() { Id = null } ];
             }
 
-            SendActivityResponse? resp = await botApplication.SendActivityAsync(a, cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? resp = await botApplication.SendActivityAsync(activity.FromCompatActivity(), cancellationToken).ConfigureAwait(false);
 
             logger.LogInformation("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
 

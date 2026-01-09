@@ -24,29 +24,19 @@ internal sealed class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleW
         await next(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<InvokeResponse?> RunPipelineAsync(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task<InvokeResponse?>>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
+    public Task RunPipelineAsync(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
     {
-        InvokeResponse? invokeResponse = null;
         if (nextMiddlewareIndex == _middlewares.Count)
         {
-            if (callback is not null)
-            {
-                invokeResponse = await callback(activity, cancellationToken).ConfigureAwait(false);
-            }
-            return invokeResponse;           
+            return callback is not null ? callback!(activity, cancellationToken) ?? Task.CompletedTask : Task.CompletedTask;
         }
-
         ITurnMiddleWare nextMiddleware = _middlewares[nextMiddlewareIndex];
-        await nextMiddleware.OnTurnAsync(
+        return nextMiddleware.OnTurnAsync(
             botApplication,
             activity,
-            async (ct) => {
-                invokeResponse = await RunPipelineAsync(botApplication, activity, callback, nextMiddlewareIndex + 1, ct).ConfigureAwait(false);
-                return invokeResponse;
-            },
-            cancellationToken).ConfigureAwait(false);
+            (ct) => RunPipelineAsync(botApplication, activity, callback, nextMiddlewareIndex + 1, ct),
+            cancellationToken);
 
-        return invokeResponse;
     }
 
     public IEnumerator<ITurnMiddleWare> GetEnumerator()

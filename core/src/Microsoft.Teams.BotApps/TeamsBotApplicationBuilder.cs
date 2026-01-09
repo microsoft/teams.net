@@ -48,6 +48,7 @@ public class TeamsBotApplicationBuilder
     public TeamsBotApplicationBuilder()
     {
         _webAppBuilder = WebApplication.CreateSlimBuilder();
+        _webAppBuilder.Services.AddHttpContextAccessor();
         _webAppBuilder.Services.AddBotApplication<TeamsBotApplication>();
     }
 
@@ -59,13 +60,10 @@ public class TeamsBotApplicationBuilder
     public TeamsBotApplication Build()
     {
         _webApp = _webAppBuilder.Build();
-
         TeamsBotApplication botApp = _webApp.Services.GetService<TeamsBotApplication>() ?? throw new InvalidOperationException("Application not registered");
-        _webApp.MapPost(_routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
-        {
-            var resp = await botApp.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
-            return resp;
-        });
+        _webApp.UseBotApplication<TeamsBotApplication>();
+        //_webApp.MapPost(_routePath, (HttpContext httpContext, CancellationToken cancellationToken) =>
+        //    botApp.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false));
 
         return botApp;
     }

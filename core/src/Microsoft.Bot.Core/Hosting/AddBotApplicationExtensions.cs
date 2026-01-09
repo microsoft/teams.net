@@ -47,13 +47,9 @@ public static class AddBotApplicationExtensions
         TApp app = builder.ApplicationServices.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
         WebApplication? webApp = builder as WebApplication;
         ArgumentNullException.ThrowIfNull(webApp);
-        webApp.MapPost(routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
-        {
-            // TODO: BotFramework used to return activity.id if incoming activity was not "Invoke".
-            // We don't know if that is required.
-            InvokeResponse? resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
-            return resp;
-        }).RequireAuthorization();
+        webApp.MapPost(routePath, (HttpContext httpContext, CancellationToken cancellationToken)
+            => app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false)
+        ).RequireAuthorization();
 
         return app;
     }
@@ -68,7 +64,6 @@ public static class AddBotApplicationExtensions
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
     {
         ILogger logger = services.BuildServiceProvider().GetRequiredService<ILogger<BotApplication>>();
-
         services.AddAuthorization(logger, sectionName);
         services.AddConversationClient(sectionName);
         services.AddSingleton<TApp>();

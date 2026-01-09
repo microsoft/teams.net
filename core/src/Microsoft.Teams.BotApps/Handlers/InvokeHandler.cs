@@ -14,7 +14,7 @@ namespace Microsoft.Teams.BotApps.Handlers;
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation. The default value is <see
 /// cref="CancellationToken.None"/>.</param>
 /// <returns>A task that represents the asynchronous operation. The task result contains the response to the invocation.</returns>
-public delegate Task<InvokeResponse> InvokeHandler(Context context, CancellationToken cancellationToken = default);
+public delegate Task<CoreInvokeResponse> InvokeHandler(Context context, CancellationToken cancellationToken = default);
 
 
 
