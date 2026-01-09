@@ -29,14 +29,14 @@ public class TeamClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public async Task<Team> GetByIdAsync(string id)
+    public virtual async Task<Team> GetByIdAsync(string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v3/teams/{id}");
         var response = await _http.SendAsync<Team>(request, _cancellationToken);
         return response.Body;
     }
 
-    public async Task<List<Channel>> GetConversationsAsync(string id)
+    public virtual async Task<List<Channel>> GetConversationsAsync(string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v3/teams/{id}/conversations");
         var response = await _http.SendAsync<List<Channel>>(request, _cancellationToken);
