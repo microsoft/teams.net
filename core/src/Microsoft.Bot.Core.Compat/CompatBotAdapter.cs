@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 
 namespace Microsoft.Bot.Core.Compat;
@@ -53,6 +55,12 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         for (int i = 0; i < activities.Length; i++)
         {
             var activity = activities[i];
+
+            if (activity.Type == ActivityTypes.Trace)
+            {
+                return [new ResourceResponse() { Id = null }];
+            }
+
             if (activity.Type == "invokeResponse")
             {
                 await WriteInvokeResponseToHttpResponseAsync(activity.Value as InvokeResponse, cancellationToken).ConfigureAwait(false);
@@ -92,16 +100,22 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         ArgumentNullException.ThrowIfNull(invokeResponse);
         var response = httpContextAccessor?.HttpContext?.Response;
         ArgumentNullException.ThrowIfNull(response);
-        int? status = invokeResponse?.Status;
-        //string type = "application/vnd.microsoft.activity.message";
-        string? value = invokeResponse?.Body as string;
-        response.StatusCode = status ?? 100;
-        await response.WriteAsJsonAsync(new
+        
+        response.StatusCode = invokeResponse.Status;
+        if (invokeResponse.Body is AdaptiveCardInvokeResponse adaptiveCardInvokeResponse)
         {
-            status,
-            value
-        },
-        cancellationToken).ConfigureAwait(false);
+            string json = JsonConvert.SerializeObject(adaptiveCardInvokeResponse); // use newtonsoft for compatibility 
+            await response.WriteAsync(json, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await response.WriteAsJsonAsync(new
+            {
+                status = invokeResponse.Status,
+                value = invokeResponse.Body as string
+            },
+            cancellationToken).ConfigureAwait(false);
+        }
     }
 
 }
