@@ -28,7 +28,7 @@ public class TeamsSettings
     public string? AccountLinkingUrl { get; set; }
 
     /// <summary>
-    /// true when <code>ClientId</code> OR <code>ClientSecret</code> are empty
+    /// True when <code>ClientId</code> OR <code>ClientSecret</code> are empty
     /// </summary>
     public bool Empty => string.IsNullOrEmpty(ClientId) || string.IsNullOrEmpty(ClientSecret);
 
