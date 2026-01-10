@@ -35,8 +35,16 @@ internal sealed class CompatUserTokenClient(Core.UserTokenClient utc) : Connecto
         return new SignInResource
         {
             SignInLink = res!.SignInLink,
-            TokenExchangeResource = null,
-            TokenPostResource = null,
+            TokenExchangeResource = new Bot.Schema.TokenExchangeResource
+            {
+                Id = res.TokenExchangeResource?.Id,
+                Uri = res.TokenExchangeResource?.Uri?.ToString(),
+                ProviderId = res.TokenExchangeResource?.ProviderId
+            },
+            TokenPostResource = new Bot.Schema.TokenPostResource
+            {
+                SasUrl = res.TokenPostResource?.SasUrl?.ToString(),
+            }
         };
     }
 
