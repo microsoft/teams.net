@@ -43,10 +43,11 @@ public class TeamsBotApplication : BotApplication
     /// </summary>
     public ConversationUpdateHandler? OnConversationUpdate { get; set; }
     /// <param name="conversationClient"></param>
+    /// <param name="userTokenClient"></param>
     /// <param name="config"></param>
     /// <param name="logger"></param>
     /// <param name="sectionName"></param>
-    public TeamsBotApplication(ConversationClient conversationClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "AzureAd") : base(conversationClient, config, logger, sectionName)
+    public TeamsBotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "AzureAd") : base(conversationClient, userTokenClient, config, logger, sectionName)
     {
         OnActivity = async (activity, cancellationToken) =>
         {
@@ -61,7 +62,7 @@ public class TeamsBotApplication : BotApplication
             if (teamsActivity.Type == TeamsActivityType.InstallationUpdate && OnInstallationUpdate is not null)
             {
                 await OnInstallationUpdate.Invoke(new InstallationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
-                
+
             }
             if (teamsActivity.Type == TeamsActivityType.MessageReaction && OnMessageReaction is not null)
             {
@@ -74,7 +75,7 @@ public class TeamsBotApplication : BotApplication
             if (teamsActivity.Type == TeamsActivityType.Invoke && OnInvoke is not null)
             {
                invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
-               
+
             }
             return invokeResponse;
         };
