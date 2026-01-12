@@ -90,7 +90,7 @@ public static partial class Program
                 ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
                 {
                     Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                    AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
                     Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>()
                 }
             };
@@ -262,7 +262,7 @@ public static partial class Program
                 ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
                 {
                     Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                    AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
                     Attachments = attachments
                 }
             };
@@ -310,7 +310,7 @@ public static partial class Program
                 ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
                 {
                     Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                    AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
                     Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
                 }
             };
@@ -356,7 +356,7 @@ public static partial class Program
                 ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
                 {
                     Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                    AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
                     Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
                 }
             };
@@ -407,7 +407,7 @@ public static partial class Program
                 ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
                 {
                     Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                    AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
                     Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
                 }
             };
@@ -452,7 +452,7 @@ public static partial class Program
                 ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
                 {
                     Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-                    AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
+                    AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
                     Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
                 }
             };
