@@ -63,12 +63,12 @@ public class BotApplicationTests
         botApp.OnActivity = (act, ct) =>
         {
             onActivityCalled = true;
-            return Task.FromResult<InvokeResponse?>(null);
+            return Task.CompletedTask;
         };
 
-        InvokeResponse? result = await botApp.ProcessAsync(httpContext);
+        await botApp.ProcessAsync(httpContext);
 
-        Assert.Null(result);
+        
         Assert.True(onActivityCalled);
     }
 
@@ -106,7 +106,7 @@ public class BotApplicationTests
         botApp.OnActivity = (act, ct) =>
         {
             onActivityCalled = true;
-            return Task.FromResult<InvokeResponse?>(null);
+            return Task.CompletedTask;
         };
 
         await botApp.ProcessAsync(httpContext);

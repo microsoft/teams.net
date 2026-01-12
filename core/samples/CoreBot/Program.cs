@@ -34,7 +34,6 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         .Build();
 
     await botApp.SendActivityAsync(replyActivity, cancellationToken);
-    return null!;
 };
 
 webApp.Run();

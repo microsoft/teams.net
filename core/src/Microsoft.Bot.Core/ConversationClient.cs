@@ -43,11 +43,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
-        if (activity.Type == "invokeResponse")
-        {
-            return new SendActivityResponse();
-        }
-
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
         string body = activity.ToJson();
 
@@ -75,8 +70,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
     public async Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string activityId, CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(activityId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
@@ -109,8 +104,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
     public async Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(activityId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}";
@@ -138,9 +133,9 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     public async Task DeleteActivityAsync(CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Id);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         await DeleteActivityAsync(
@@ -164,7 +159,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <exception cref="HttpRequestException">Thrown if the members could not be retrieved successfully.</exception>
     public async Task<IList<ConversationAccount>> GetConversationMembersAsync(string conversationId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members";
@@ -194,9 +189,9 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <returns></returns>
     public async Task<ConversationAccount> GetConversationMemberAsync(string conversationId, string userId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(userId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(userId);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members/{userId}";
 
@@ -257,8 +252,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <exception cref="HttpRequestException">Thrown if the activity members could not be retrieved successfully.</exception>
     public async Task<IList<ConversationAccount>> GetActivityMembersAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(activityId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/members";
@@ -318,7 +313,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <exception cref="HttpRequestException">Thrown if the conversation members could not be retrieved successfully.</exception>
     public async Task<PagedMembersResult> GetConversationPagedMembersAsync(string conversationId, Uri serviceUrl, int? pageSize = null, string? continuationToken = null, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/pagedmembers";
@@ -363,8 +358,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <remarks>If the deleted member was the last member of the conversation, the conversation is also deleted.</remarks>
     public async Task DeleteConversationMemberAsync(string conversationId, string memberId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(memberId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(memberId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members/{memberId}";
@@ -395,7 +390,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <remarks>Activities in the transcript must have unique IDs and appropriate timestamps for proper rendering.</remarks>
     public async Task<SendConversationHistoryResponse> SendConversationHistoryAsync(string conversationId, Transcript transcript, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(transcript);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
@@ -427,7 +422,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <remarks>This is useful for storing data in a compliant store when dealing with enterprises.</remarks>
     public async Task<UploadAttachmentResponse> UploadAttachmentAsync(string conversationId, AttachmentData attachmentData, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(attachmentData);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 

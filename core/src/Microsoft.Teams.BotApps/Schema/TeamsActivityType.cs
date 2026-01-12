@@ -26,7 +26,7 @@ public static class TeamsActivityType
     /// <summary>
     /// Represents an invoke activity.
     /// </summary>
-    public const string Invoke = ActivityType.Invoke;
+    public const string Invoke = "invoke";
 
     /// <summary>
     /// Conversation update activity type.

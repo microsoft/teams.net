@@ -47,13 +47,9 @@ public static class AddBotApplicationExtensions
         TApp app = builder.ApplicationServices.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
         WebApplication? webApp = builder as WebApplication;
         ArgumentNullException.ThrowIfNull(webApp);
-        webApp.MapPost(routePath, async (HttpContext httpContext, CancellationToken cancellationToken) =>
-        {
-            // TODO: BotFramework used to return activity.id if incoming activity was not "Invoke".
-            // We don't know if that is required.
-            InvokeResponse? resp = await app.ProcessAsync(httpContext, cancellationToken).ConfigureAwait(false);
-            return resp;
-        }).RequireAuthorization();
+        webApp.MapPost(routePath, (HttpContext httpContext, CancellationToken cancellationToken)
+            => app.ProcessAsync(httpContext, cancellationToken)
+        ).RequireAuthorization();
 
         return app;
     }
@@ -68,7 +64,6 @@ public static class AddBotApplicationExtensions
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
     {
         ILogger logger = services.BuildServiceProvider().GetRequiredService<ILogger<BotApplication>>();
-
         services.AddAuthorization(logger, sectionName);
         services.AddConversationClient(sectionName);
         services.AddSingleton<TApp>();
@@ -157,9 +152,9 @@ public static class AddBotApplicationExtensions
 
     private static IServiceCollection ConfigureMSALWithSecret(this IServiceCollection services, string tenantId, string clientId, string clientSecret)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientSecret);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientSecret);
 
         services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
@@ -180,8 +175,8 @@ public static class AddBotApplicationExtensions
 
     private static IServiceCollection ConfigureMSALWithFIC(this IServiceCollection services, string tenantId, string clientId, string? ficClientId)
     {
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
 
         CredentialDescription ficCredential = new()
         {
