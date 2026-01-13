@@ -141,6 +141,6 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         //};
 
         //await response.WriteAsJsonAsync(invokeResponse.Body, options, cancellationToken).ConfigureAwait(false);
-    
+
 
 }
