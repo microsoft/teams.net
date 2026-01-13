@@ -1,11 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Runtime.InteropServices.JavaScript;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using Microsoft.Bot.Core;
 using Microsoft.Teams.BotApps;
+using Microsoft.Teams.BotApps.Handlers;
 using Microsoft.Teams.BotApps.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
 using TeamsBot;
@@ -62,8 +59,9 @@ teamsApp.OnInvoke = async (context, cancellationToken) =>
 
     await context.SendActivityAsync(reply, cancellationToken);
 
-    return new InvokeResponse(200)
+    return new CoreInvokeResponse(200)
     {
+        Type = "application/vnd.microsoft.activity.message",
         Body = "Invokes are great !!"
     };
 };

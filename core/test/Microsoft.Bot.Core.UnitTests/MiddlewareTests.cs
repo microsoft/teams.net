@@ -75,7 +75,7 @@ public class MiddlewareTests
         botApp.OnActivity = (act, ct) =>
         {
             executionOrder.Add(3);
-            return Task.FromResult<InvokeResponse?>(null);
+            return Task.CompletedTask;
         };
 
         await botApp.ProcessAsync(httpContext);
@@ -121,7 +121,7 @@ public class MiddlewareTests
         botApp.OnActivity = (act, ct) =>
         {
             onActivityCalled = true;
-            return Task.FromResult<InvokeResponse?>(null);
+            return Task.CompletedTask;
         };
 
         await botApp.ProcessAsync(httpContext);

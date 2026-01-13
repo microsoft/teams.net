@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -45,13 +46,13 @@ public class TeamsBotApplication : BotApplication
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
     /// <param name="config"></param>
+    /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
     /// <param name="sectionName"></param>
     public TeamsBotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "AzureAd") : base(conversationClient, userTokenClient, config, logger, sectionName)
     {
         OnActivity = async (activity, cancellationToken) =>
         {
-            InvokeResponse? invokeResponse = null;
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context context = new(this, teamsActivity);
@@ -74,10 +75,14 @@ public class TeamsBotApplication : BotApplication
             }
             if (teamsActivity.Type == TeamsActivityType.Invoke && OnInvoke is not null)
             {
-               invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
-
+                var invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
+                var httpContext = httpContextAccessor.HttpContext;
+                if (httpContext is not null)
+                {
+                    httpContext.Response.StatusCode = invokeResponse.Status;
+                    await httpContext.Response.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
+                }
             }
-            return invokeResponse;
         };
     }
 
