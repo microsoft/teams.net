@@ -10,6 +10,7 @@
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Microsoft.Bot.Core\Microsoft.Bot.Core.csproj" />
+      <ProjectReference Include="..\Microsoft.Teams.BotApps\Microsoft.Teams.BotApps.csproj" />
 	  <!--<ProjectReference Include="..\..\..\..\botbuilder-dotnet\libraries\integration\Microsoft.Bot.Builder.Integration.AspNet.Core\Microsoft.Bot.Builder.Integration.AspNet.Core.csproj" />-->
     </ItemGroup>
 </Project>
