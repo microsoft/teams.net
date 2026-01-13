@@ -188,27 +188,6 @@ public class CoreActivity
         => JsonSerializer.Deserialize(json, CoreActivityJsonContext.Default.CoreActivity)!;
 
     /// <summary>
-    /// Deserializes the specified JSON string to an object of type T.
-    /// </summary>
-    /// <remarks>The deserialization uses default JSON options defined by the application. If the JSON is
-    /// invalid or does not match the target type, a JsonException may be thrown.</remarks>
-    /// <typeparam name="T">The type of the object to deserialize to. Must be compatible with the JSON structure.</typeparam>
-    /// <param name="json">The JSON string to deserialize. Cannot be null or empty.</param>
-    /// <returns>An instance of type T that represents the deserialized JSON data.</returns>
-    public static T FromJsonString<T>(string json) where T : CoreActivity
-        => JsonSerializer.Deserialize<T>(json, ReflectionJsonOptions)!;
-
-    /// <summary>
-    /// Deserializes the specified JSON string to an object of type T using the provided JsonSerializerOptions.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="json"></param>
-    /// <param name="options"></param>
-    /// <returns></returns>
-    public static T FromJsonString<T>(string json, JsonTypeInfo<T> options) where T : CoreActivity
-        => JsonSerializer.Deserialize<T>(json, options)!;
-
-    /// <summary>
     /// Asynchronously deserializes a JSON stream into a <see cref="CoreActivity"/> object.
     /// </summary>
     /// <param name="stream">The stream containing JSON data to deserialize.</param>

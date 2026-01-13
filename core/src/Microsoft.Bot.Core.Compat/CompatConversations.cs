@@ -207,7 +207,7 @@ namespace Microsoft.Bot.Core.Compat
 
             Transcript coreTranscript = new()
             {
-                Activities = transcript.Activities?.Select(a => a.FromCompatActivity()).ToList()
+                Activities = transcript.Activities?.Select(a => a.FromCompatActivity() as CoreActivity).ToList()
             };
 
             SendConversationHistoryResponse response = await _client.SendConversationHistoryAsync(
@@ -325,7 +325,7 @@ namespace Microsoft.Bot.Core.Compat
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Schema.ConversationAccount response = await _client.GetConversationMemberAsync(conversationId, userId, new Uri(ServiceUrl!), null!, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            Teams.BotApps.Schema.TeamsConversationAccount response = await _client.GetConversationMemberAsync<Teams.BotApps.Schema.TeamsConversationAccount>(conversationId, userId, new Uri(ServiceUrl!), null!, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             return new HttpOperationResponse<ChannelAccount>
             {

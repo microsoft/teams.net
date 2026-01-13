@@ -184,7 +184,7 @@ public class ConversationClientTest
         string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
 
-        ConversationAccount member = await _conversationClient.GetConversationMemberAsync(
+        ConversationAccount member = await _conversationClient.GetConversationMemberAsync<ConversationAccount>(
             conversationId,
             userId,
             _serviceUrl,

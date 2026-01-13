@@ -28,7 +28,7 @@ public class MessageReactionActivityTests
             ]
         }
         """;
-        TeamsActivity act = CoreActivity.FromJsonString<TeamsActivity>(json);
+        TeamsActivity act = TeamsActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("messageReaction", act.Type);
 

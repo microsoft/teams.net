@@ -123,6 +123,7 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
         ArgumentNullException.ThrowIfNull(callback);
 
         using TurnContext turnContext = new(compatBotAdapter, reference.GetContinuationActivity());
+        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(botApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl }));
         await callback(turnContext, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -45,7 +45,8 @@ public class TeamsConversationAccount : ConversationAccount
         Properties = conversationAccount.Properties;
         Id = conversationAccount.Id ?? string.Empty;
         Name = conversationAccount.Name ?? string.Empty;
-        if (conversationAccount is not null && conversationAccount.Properties.TryGetValue("aadObjectId", out object? aadObj)
+        if (conversationAccount is not null
+            && conversationAccount.Properties.TryGetValue("aadObjectId", out object? aadObj)
             && aadObj is JsonElement je
             && je.ValueKind == JsonValueKind.String)
         {
