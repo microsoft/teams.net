@@ -66,7 +66,7 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
     /// <param name="code">The optional code.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    public async Task<GetTokenResult> GetTokenAsync(string userId, string connectionName, string channelId, string? code = null, CancellationToken cancellationToken = default)
+    public async Task<GetTokenResult?> GetTokenAsync(string userId, string connectionName, string channelId, string? code = null, CancellationToken cancellationToken = default)
     {
         Dictionary<string, string?> queryParams = new()
         {
@@ -79,10 +79,14 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
         {
             queryParams.Add("code", code);
         }
-
         string? resJson = await CallApiAsync("api/usertoken/GetToken", queryParams, cancellationToken: cancellationToken).ConfigureAwait(false);
-        GetTokenResult result = JsonSerializer.Deserialize<GetTokenResult>(resJson!, _defaultOptions)!;
-        return result;
+
+        if (resJson is not null)
+        {
+            GetTokenResult result = JsonSerializer.Deserialize<GetTokenResult>(resJson!, _defaultOptions)!;
+            return result;
+        }
+        return null;
     }
 
     /// <summary>
@@ -173,9 +177,9 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
             queryParams.Add("channelId", channelId);
         }
 
-            await CallApiAsync("api/usertoken/SignOut", queryParams, HttpMethod.Delete, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return;
-        }
+        await CallApiAsync("api/usertoken/SignOut", queryParams, HttpMethod.Delete, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return;
+    }
 
     /// <summary>
     /// Gets AAD tokens for a user.

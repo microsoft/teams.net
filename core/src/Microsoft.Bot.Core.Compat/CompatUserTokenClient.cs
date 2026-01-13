@@ -17,14 +17,19 @@ internal sealed class CompatUserTokenClient(Core.UserTokenClient utc) : Connecto
         }).ToArray();
     }
 
-    public async override Task<TokenResponse> GetUserTokenAsync(string userId, string connectionName, string channelId, string magicCode, CancellationToken cancellationToken)
+    public async override Task<TokenResponse?> GetUserTokenAsync(string userId, string connectionName, string channelId, string magicCode, CancellationToken cancellationToken)
     {
-        GetTokenResult res = await utc.GetTokenAsync(userId, connectionName, channelId, magicCode, cancellationToken).ConfigureAwait(false);
+        GetTokenResult? res = await utc.GetTokenAsync(userId, connectionName, channelId, magicCode, cancellationToken).ConfigureAwait(false);
+        if (res == null)
+        {
+            return null;
+        }
+
         return new TokenResponse
         {
             ChannelId = channelId,
             ConnectionName = res.ConnectionName,
-            Token = res.Token,
+            Token = res.Token
         };
     }
 
@@ -32,20 +37,30 @@ internal sealed class CompatUserTokenClient(Core.UserTokenClient utc) : Connecto
     {
         ArgumentNullException.ThrowIfNull(activity);
         GetSignInResourceResult res = await utc.GetSignInResource(activity.From.Id, connectionName, activity.ChannelId, finalRedirect, cancellationToken).ConfigureAwait(false);
-        return new SignInResource
+        var signInResource = new SignInResource
         {
-            SignInLink = res!.SignInLink,
-            TokenExchangeResource = new Bot.Schema.TokenExchangeResource
-            {
-                Id = res.TokenExchangeResource?.Id,
-                Uri = res.TokenExchangeResource?.Uri?.ToString(),
-                ProviderId = res.TokenExchangeResource?.ProviderId
-            },
-            TokenPostResource = new Bot.Schema.TokenPostResource
-            {
-                SasUrl = res.TokenPostResource?.SasUrl?.ToString(),
-            }
+            SignInLink = res!.SignInLink
         };
+
+        if (res.TokenExchangeResource != null)
+        {
+            signInResource.TokenExchangeResource = new Bot.Schema.TokenExchangeResource
+            {
+                Id = res.TokenExchangeResource.Id,
+                Uri = res.TokenExchangeResource.Uri?.ToString(),
+                ProviderId = res.TokenExchangeResource.ProviderId
+            };
+        }
+
+        if (res.TokenPostResource != null)
+        {
+            signInResource.TokenPostResource = new Bot.Schema.TokenPostResource
+            {
+                SasUrl = res.TokenPostResource.SasUrl?.ToString()
+            };
+        }
+
+        return signInResource;
     }
 
     public async override Task<TokenResponse> ExchangeTokenAsync(string userId, string connectionName, string channelId,

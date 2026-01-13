@@ -65,6 +65,8 @@ public class CompatBotAdapter(BotApplication botApplication, ILogger<CompatBotAd
             else
             {
                 logger.LogWarning("Found null ResourceResponse after calling SendActivityAsync");
+                // BF throws if a response is not returned, so return an empty one to avoid null refs.
+                responses[i] = new Microsoft.Bot.Schema.ResourceResponse();
             }
 
 

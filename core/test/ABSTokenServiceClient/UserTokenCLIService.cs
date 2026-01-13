@@ -5,6 +5,7 @@ using System.Text.Json;
 
 namespace ABSTokenServiceClient
 {
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     internal class UserTokenCLIService(UserTokenClient userTokenClient, ILogger<UserTokenCLIService> logger) : IHostedService
     {
         public Task StartAsync(CancellationToken cancellationToken)
@@ -33,7 +34,7 @@ namespace ABSTokenServiceClient
 
                 if (tokenStatus[0].HasToken == true)
                 {
-                    GetTokenResult tokenResponse = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, null, cancellationToken);
+                    GetTokenResult? tokenResponse = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, null, cancellationToken);
                     logger.LogInformation("GetToken result: {Result}", JsonSerializer.Serialize(tokenResponse, new JsonSerializerOptions { WriteIndented = true }));
                 }
                 else
@@ -44,7 +45,7 @@ namespace ABSTokenServiceClient
                     Console.WriteLine("Code?");
                     string code = Console.ReadLine()!;
 
-                    GetTokenResult tokenResponse2 = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, code, cancellationToken);
+                    GetTokenResult? tokenResponse2 = await userTokenClient.GetTokenAsync(userId, connectionName, channelId, code, cancellationToken);
                     logger.LogInformation("GetToken With Code result: {Result}", JsonSerializer.Serialize(tokenResponse2, new JsonSerializerOptions { WriteIndented = true }));
                 }
 

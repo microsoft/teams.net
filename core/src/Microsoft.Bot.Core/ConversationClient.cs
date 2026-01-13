@@ -43,7 +43,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
-        if (activity.Type == "invokeResponse")
+        //TODO : Handle trace activities
+        if (activity.Type == "invokeResponse" || activity.Type == "trace")
         {
             return new SendActivityResponse();
         }
@@ -432,7 +433,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/attachments";
-        
+
         logger.LogTrace("Uploading attachment to {Url}: {AttachmentData}", url, JsonSerializer.Serialize(attachmentData));
 
         return await SendHttpRequestAsync<UploadAttachmentResponse>(
