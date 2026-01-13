@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Api.Auth;
+// using Microsoft.Teams.Api.Auth;
 
 namespace Microsoft.Teams.Apps.Extensions;
 
@@ -20,10 +20,10 @@ public class TeamsSettings
     {
         options ??= new AppOptions();
 
-        if (ClientId is not null && ClientSecret is not null && !Empty)
-        {
-            options.Credentials = new ClientCredentials(ClientId, ClientSecret, TenantId);
-        }
+        //if (ClientId is not null && ClientSecret is not null && !Empty)
+        //{
+        //    options.Credentials = new ClientCredentials(ClientId, ClientSecret, TenantId);
+        //}
 
         return options;
     }

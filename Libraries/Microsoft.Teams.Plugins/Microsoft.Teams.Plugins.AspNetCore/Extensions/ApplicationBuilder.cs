@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Plugins;
+using Microsoft.Teams.Common.Http;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
@@ -22,7 +23,7 @@ public static partial class ApplicationBuilderExtensions
     public static App UseTeams(this IApplicationBuilder builder, bool routing = true)
     {
         var assembly = Assembly.GetEntryAssembly() ?? Assembly.GetCallingAssembly();
-        var app = builder.ApplicationServices.GetService<App>() ?? new App(builder.ApplicationServices.GetService<AppOptions>());
+        var app = builder.ApplicationServices.GetService<App>() ?? new App(builder.ApplicationServices.GetService<IHttpCredentials>()!,builder.ApplicationServices.GetService<AppOptions>());
         var plugins = builder.ApplicationServices.GetServices<IPlugin>();
         var types = assembly.GetTypes();
 
