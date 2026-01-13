@@ -1,11 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
-using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -32,8 +29,6 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
     /// <param name="turnContext"></param>
     /// <param name="reference"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public override async Task DeleteActivityAsync(ITurnContext turnContext, ConversationReference reference, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
@@ -84,8 +79,7 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
     /// <param name="turnContext"></param>
     /// <param name="activity"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <returns>ResourceResponse</returns>
     public override async Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -107,40 +101,4 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         using JsonTextWriter httpResponseJsonWriter = new (httpResponseStreamWriter);
         Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
     }
-
-        //#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-        //        var options = new JsonSerializerOptions
-        //        {
-        //            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        //            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-        //            Converters = {
-        //                new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
-        //            }
-        //        };
-        //#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-
-        //        string jsonBody = System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, options);
-
-        //        response.StatusCode = invokeResponse.Status;
-        //        response.ContentType = "application/json";
-        //        await response.WriteAsync(jsonBody, cancellationToken).ConfigureAwait(false);
-
-
-        //using StreamWriter sw = new StreamWriter(response.BodyWriter.AsStream());
-        //using JsonWriter jw = new JsonTextWriter(sw);
-        //Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(jw, invokeResponse.Body);
-
-        //JsonSerializerOptions options = new()
-        //{
-        //    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        //    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-        //    Converters = {
-        //        new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
-        //        new AttachmentMemoryStreamConverter(),
-        //        new AttachmentContentConverter() }
-        //};
-
-        //await response.WriteAsJsonAsync(invokeResponse.Body, options, cancellationToken).ConfigureAwait(false);
-    
-
 }
