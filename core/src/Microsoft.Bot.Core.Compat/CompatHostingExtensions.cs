@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Core.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.BotApps;

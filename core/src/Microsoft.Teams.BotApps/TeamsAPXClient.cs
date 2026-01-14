@@ -4,11 +4,9 @@
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Bot.Core;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.BotApps.Schema;
 
 namespace Microsoft.Teams.BotApps;
 
@@ -215,7 +213,7 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/users/";
-        var request = new SendMessageToUsersRequest
+        SendMessageToUsersRequest request = new()
         {
             Members = teamsMembers,
             Activity = activity,
@@ -253,7 +251,7 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/tenant/";
-        var request = new SendMessageToTenantRequest
+        SendMessageToTenantRequest request = new()
         {
             Activity = activity,
             TenantId = tenantId
@@ -292,7 +290,7 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/team/";
-        var request = new SendMessageToTeamRequest
+        SendMessageToTeamRequest request = new()
         {
             Activity = activity,
             TeamId = teamId,
@@ -336,7 +334,7 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/channels/";
-        var request = new SendMessageToUsersRequest
+        SendMessageToUsersRequest request = new()
         {
             Members = channelMembers,
             Activity = activity,

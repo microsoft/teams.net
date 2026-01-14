@@ -11,7 +11,7 @@ internal sealed class CompatMiddlewareAdapter(IMiddleware bfMiddleWare) : ITurnM
 {
     public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
     {
-        
+
         if (botApplication is TeamsBotApplication tba)
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
@@ -25,7 +25,8 @@ internal sealed class CompatMiddlewareAdapter(IMiddleware bfMiddleWare) : ITurnM
             turnContext.TurnState.Add<Connector.IConnectorClient>(
                 new CompatConnectorClient(
                     new CompatConversations(botApplication.ConversationClient)
-                    {    ServiceUrl = activity.ServiceUrl?.ToString()
+                    {
+                        ServiceUrl = activity.ServiceUrl?.ToString()
                     }
                 )
             );

@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Bot.Core.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
-using static System.Formats.Asn1.AsnWriter;
 
 namespace Microsoft.Teams.BotApps;
 
@@ -41,7 +39,7 @@ public static class TeamsBotApplicationHostingExtensions
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
                     scope,
                     sp.GetService<IOptions<ManagedIdentityOptions>>()));
-        
+
         services.AddBotApplication<TeamsBotApplication>();
         return services;
     }

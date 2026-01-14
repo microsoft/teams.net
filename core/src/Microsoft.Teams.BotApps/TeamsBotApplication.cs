@@ -42,7 +42,7 @@ public class TeamsBotApplication : BotApplication
     /// <summary>
     /// Gets the client used to interact with the TeamsAPX service.
     /// </summary>
-    public TeamsAPXClient TeamsAPXClient  => _teamsAPXClient;
+    public TeamsAPXClient TeamsAPXClient => _teamsAPXClient;
 
     /// <summary>
     /// Handler for conversation update activities.
