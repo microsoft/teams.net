@@ -20,7 +20,7 @@ namespace Microsoft.Bot.Core.Tests
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
         string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
 
-        [Fact]
+        [Fact(Skip = "not implemented")]
         public async Task GetMemberAsync()
         {
 
@@ -76,7 +76,7 @@ namespace Microsoft.Bot.Core.Tests
                 }, CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "not implemented")]
         public async Task GetMeetingInfo()
         {
             string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");

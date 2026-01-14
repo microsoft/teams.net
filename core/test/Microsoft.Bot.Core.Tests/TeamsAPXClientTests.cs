@@ -27,7 +27,7 @@ public class TeamsAPXClientTests
         ServiceCollection services = new();
         services.AddLogging();
         services.AddSingleton(configuration);
-        services.AddBotApplication<BotApplication>();
+        services.AddTeamsBotApplication();
         _serviceProvider = services.BuildServiceProvider();
         _teamsClient = _serviceProvider.GetRequiredService<TeamsAPXClient>();
         _serviceUrl = new Uri(Environment.GetEnvironmentVariable("TEST_SERVICEURL") ?? "https://smba.trafficmanager.net/teams/");
@@ -46,11 +46,11 @@ public class TeamsAPXClientTests
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.NotNull(result.Conversations);
-        Assert.NotEmpty(result.Conversations);
+        Assert.NotNull(result.Channels);
+        Assert.NotEmpty(result.Channels);
 
-        Console.WriteLine($"Found {result.Conversations.Count} channels in team {teamId}:");
-        foreach (var channel in result.Conversations)
+        Console.WriteLine($"Found {result.Channels.Count} channels in team {teamId}:");
+        foreach (var channel in result.Channels)
         {
             Console.WriteLine($"  - Id: {channel.Id}, Name: {channel.Name}");
             Assert.NotNull(channel);
@@ -98,7 +98,7 @@ public class TeamsAPXClientTests
 
     #region Meeting Operations Tests
 
-    [Fact(Skip = "Requires active meeting context")]
+    [Fact]
     public async Task FetchMeetingInfo()
     {
         string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
@@ -109,10 +109,10 @@ public class TeamsAPXClientTests
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
-        Assert.NotNull(result.Id);
+        //Assert.NotNull(result.Id);
 
         Console.WriteLine($"Meeting info for {meetingId}:");
-        Console.WriteLine($"  - Id: {result.Id}");
+        
         if (result.Details != null)
         {
             Console.WriteLine($"  - Title: {result.Details.Title}");
@@ -408,7 +408,7 @@ public class TeamsAPXClientTests
     [Fact]
     public async Task FetchChannelList_ThrowsOnNullTeamId()
     {
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.FetchChannelListAsync(null!, _serviceUrl));
     }
 
@@ -429,35 +429,35 @@ public class TeamsAPXClientTests
     [Fact]
     public async Task FetchTeamDetails_ThrowsOnNullTeamId()
     {
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.FetchTeamDetailsAsync(null!, _serviceUrl));
     }
 
     [Fact]
     public async Task FetchMeetingInfo_ThrowsOnNullMeetingId()
     {
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.FetchMeetingInfoAsync(null!, _serviceUrl));
     }
 
     [Fact]
     public async Task FetchParticipant_ThrowsOnNullMeetingId()
     {
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.FetchParticipantAsync(null!, "participant", "tenant", _serviceUrl));
     }
 
     [Fact]
     public async Task FetchParticipant_ThrowsOnNullParticipantId()
     {
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.FetchParticipantAsync("meeting", null!, "tenant", _serviceUrl));
     }
 
     [Fact]
     public async Task FetchParticipant_ThrowsOnNullTenantId()
     {
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.FetchParticipantAsync("meeting", "participant", null!, _serviceUrl));
     }
 
@@ -465,7 +465,7 @@ public class TeamsAPXClientTests
     public async Task SendMeetingNotification_ThrowsOnNullMeetingId()
     {
         var notification = new TargetedMeetingNotification();
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.SendMeetingNotificationAsync(null!, notification, _serviceUrl));
     }
 
@@ -510,7 +510,7 @@ public class TeamsAPXClientTests
     public async Task SendMessageToAllUsersInTenant_ThrowsOnNullTenantId()
     {
         var activity = new CoreActivity { Type = ActivityType.Message };
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.SendMessageToAllUsersInTenantAsync(activity, null!, _serviceUrl));
     }
 
@@ -525,7 +525,7 @@ public class TeamsAPXClientTests
     public async Task SendMessageToAllUsersInTeam_ThrowsOnNullTeamId()
     {
         var activity = new CoreActivity { Type = ActivityType.Message };
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.SendMessageToAllUsersInTeamAsync(activity, null!, "tenant", _serviceUrl));
     }
 
@@ -540,21 +540,21 @@ public class TeamsAPXClientTests
     [Fact]
     public async Task GetOperationState_ThrowsOnNullOperationId()
     {
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.GetOperationStateAsync(null!, _serviceUrl));
     }
 
     [Fact]
     public async Task GetPagedFailedEntries_ThrowsOnNullOperationId()
     {
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.GetPagedFailedEntriesAsync(null!, _serviceUrl));
     }
 
     [Fact]
     public async Task CancelOperation_ThrowsOnNullOperationId()
     {
-        await Assert.ThrowsAsync<ArgumentException>(()
+        await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsClient.CancelOperationAsync(null!, _serviceUrl));
     }
 

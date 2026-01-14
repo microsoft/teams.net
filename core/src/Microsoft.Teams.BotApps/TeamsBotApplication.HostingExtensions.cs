@@ -3,7 +3,12 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Bot.Core.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Identity.Abstractions;
+using static System.Formats.Asn1.AsnWriter;
 
 namespace Microsoft.Teams.BotApps;
 
@@ -16,11 +21,27 @@ public static class TeamsBotApplicationHostingExtensions
     /// Adds TeamsBotApplication to the service collection.
     /// </summary>
     /// <param name="services">The WebApplicationBuilder instance.</param>
+    /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
     /// <returns>The updated WebApplicationBuilder instance.</returns>
-    public static IServiceCollection AddTeamsBotApplication(this IServiceCollection services)
+    public static IServiceCollection AddTeamsBotApplication(this IServiceCollection services, string sectionName = "AzureAd")
     {
-        services.AddHttpClient<TeamsAPXClient>();
-        services.AddSingleton<TeamsAPXClient>();
+        ServiceProvider sp = services.BuildServiceProvider();
+        IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
+
+        string scope = "https://api.botframework.com/.default";
+        if (!string.IsNullOrEmpty(configuration[$"{sectionName}:Scope"]))
+            scope = configuration[$"{sectionName}:Scope"]!;
+        if (!string.IsNullOrEmpty(configuration["Scope"]))
+            scope = configuration["Scope"]!;
+
+        services.AddHttpClient<TeamsAPXClient>(TeamsAPXClient.TeamsHttpClientName)
+            .AddHttpMessageHandler(sp =>
+                new BotAuthenticationHandler(
+                    sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                    sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
+                    scope,
+                    sp.GetService<IOptions<ManagedIdentityOptions>>()));
+        
         services.AddBotApplication<TeamsBotApplication>();
         return services;
     }

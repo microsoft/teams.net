@@ -17,7 +17,7 @@ public class ChannelList
     /// </summary>
     [JsonPropertyName("conversations")]
 #pragma warning disable CA2227 // Collection properties should be read only
-    public IList<TeamsChannel>? Conversations { get; set; }
+    public IList<TeamsChannel>? Channels { get; set; }
 #pragma warning restore CA2227 // Collection properties should be read only
 }
 
@@ -68,11 +68,11 @@ public class TeamDetails
 /// </summary>
 public class MeetingInfo
 {
-    /// <summary>
-    /// Gets or sets the unique identifier of the meeting.
-    /// </summary>
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
+    ///// <summary>
+    ///// Gets or sets the unique identifier of the meeting.
+    ///// </summary>
+    //[JsonPropertyName("id")]
+    //public string? Id { get; set; }
 
     /// <summary>
     /// Gets or sets the details of the meeting.
