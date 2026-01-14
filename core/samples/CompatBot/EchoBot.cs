@@ -40,7 +40,10 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
         await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
 
-        await teamsBotApp.TeamsAPXClient.NotifyActivityAsync(turnContext.Activity.Conversation.Id, cancellationToken);
+        // TeamsAPXClient provides Teams-specific operations like:
+        // - FetchTeamDetailsAsync, FetchChannelListAsync
+        // - FetchMeetingInfoAsync, FetchParticipantAsync, SendMeetingNotificationAsync
+        // - Batch messaging: SendMessageToListOfUsersAsync, SendMessageToAllUsersInTenantAsync, etc.
 
         await SendUpdateDeleteActivityAsync(turnContext, teamsBotApp.ConversationClient, cancellationToken);
 
