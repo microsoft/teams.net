@@ -6,7 +6,6 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
-using Newtonsoft.Json.Linq;
 
 
 namespace Microsoft.Bot.Core.Compat;

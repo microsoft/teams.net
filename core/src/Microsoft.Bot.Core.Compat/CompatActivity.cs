@@ -26,7 +26,7 @@ internal static class CompatActivity
         using JsonTextWriter json = new(stringWriter);
         BotMessageHandlerBase.BotMessageSerializer.Serialize(json, activity);
         string jsonString = sb.ToString();
-        var coreActivity =  CoreActivity.FromJsonString(jsonString);
+        CoreActivity coreActivity = CoreActivity.FromJsonString(jsonString);
         return TeamsActivity.FromActivity(coreActivity);
     }
 

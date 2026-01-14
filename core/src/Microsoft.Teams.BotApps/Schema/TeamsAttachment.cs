@@ -24,7 +24,7 @@ public static class TeamsAttachmentExtensions
         }
         return jsonArray;
     }
-}   
+}
 
 /// <summary>
 /// Teams attachment model.

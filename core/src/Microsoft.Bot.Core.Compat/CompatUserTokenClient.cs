@@ -1,4 +1,6 @@
-﻿using Microsoft.Bot.Connector.Authentication;
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Microsoft.Bot.Schema;
 
 namespace Microsoft.Bot.Core.Compat;
@@ -37,7 +39,7 @@ internal sealed class CompatUserTokenClient(Core.UserTokenClient utc) : Connecto
     {
         ArgumentNullException.ThrowIfNull(activity);
         GetSignInResourceResult res = await utc.GetSignInResource(activity.From.Id, connectionName, activity.ChannelId, finalRedirect, cancellationToken).ConfigureAwait(false);
-        var signInResource = new SignInResource
+        SignInResource signInResource = new()
         {
             SignInLink = res!.SignInLink
         };

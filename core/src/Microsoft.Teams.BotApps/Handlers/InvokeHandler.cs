@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Bot.Core;
 
 namespace Microsoft.Teams.BotApps.Handlers;
 

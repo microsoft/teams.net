@@ -187,7 +187,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="customHeaders"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<T> GetConversationMemberAsync<T>(string conversationId, string userId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default) where T: ConversationAccount
+    public async Task<T> GetConversationMemberAsync<T>(string conversationId, string userId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default) where T : ConversationAccount
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);

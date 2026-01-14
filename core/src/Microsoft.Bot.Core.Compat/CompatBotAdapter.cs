@@ -51,7 +51,7 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
 
         for (int i = 0; i < activities.Length; i++)
         {
-            var activity = activities[i];
+            Activity activity = activities[i];
 
             if (activity.Type == ActivityTypes.Trace)
             {
@@ -61,7 +61,7 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
             if (activity.Type == "invokeResponse")
             {
                 WriteInvokeResponseToHttpResponse(activity.Value as InvokeResponse, cancellationToken);
-                return [new ResourceResponse() { Id = null } ];
+                return [new ResourceResponse() { Id = null }];
             }
 
             SendActivityResponse? resp = await botApplication.SendActivityAsync(activity.FromCompatActivity(), cancellationToken).ConfigureAwait(false);
@@ -83,7 +83,7 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
     public override async Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        var res = await botApplication.ConversationClient.UpdateActivityAsync(
+        UpdateActivityResponse res = await botApplication.ConversationClient.UpdateActivityAsync(
             activity.Conversation.Id,
             activity.Id,
             activity.FromCompatActivity(),
@@ -94,11 +94,11 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
     private void WriteInvokeResponseToHttpResponse(InvokeResponse? invokeResponse, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(invokeResponse);
-        var response = httpContextAccessor?.HttpContext?.Response;
+        HttpResponse? response = httpContextAccessor?.HttpContext?.Response;
         if (response is not null && !response.HasStarted)
         {
-            using StreamWriter httpResponseStreamWriter = new (response.BodyWriter.AsStream());
-            using JsonTextWriter httpResponseJsonWriter = new (httpResponseStreamWriter);
+            using StreamWriter httpResponseStreamWriter = new(response.BodyWriter.AsStream());
+            using JsonTextWriter httpResponseJsonWriter = new(httpResponseStreamWriter);
             Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse);
         }
         else

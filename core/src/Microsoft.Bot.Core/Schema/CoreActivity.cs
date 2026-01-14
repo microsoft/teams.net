@@ -226,5 +226,5 @@ public class CoreActivity
     /// </summary>
     /// <returns></returns>
     public static CoreActivityBuilder CreateBuilder() => new();
-   
+
 }

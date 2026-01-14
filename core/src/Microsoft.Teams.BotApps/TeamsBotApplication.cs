@@ -75,8 +75,8 @@ public class TeamsBotApplication : BotApplication
             }
             if (teamsActivity.Type == TeamsActivityType.Invoke && OnInvoke is not null)
             {
-                var invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
-                var httpContext = httpContextAccessor.HttpContext;
+                CoreInvokeResponse invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
+                HttpContext? httpContext = httpContextAccessor.HttpContext;
                 if (httpContext is not null)
                 {
                     httpContext.Response.StatusCode = invokeResponse.Status;
