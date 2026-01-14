@@ -12,7 +12,6 @@ using Microsoft.Bot.Core.Schema;
 using OpenAI;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddOpenTelemetry().UseAzureMonitor();
 webAppBuilder.Services.AddBotApplication<BotApplication>();
@@ -20,7 +19,7 @@ WebApplication webApp = webAppBuilder.Build();
 BotApplication botApp = webApp.UseBotApplication<BotApplication>();
 
 AzureOpenAIClient azureClient = new(
-           new Uri("https://ridofoundry.cognitiveservices.azure.com/"),
+           new Uri("https://tsdkfoundry.openai.azure.com/"),
            new ApiKeyCredential(Environment.GetEnvironmentVariable("AZURE_OpenAI_KEY")!));
 
 ChatClientAgent agent = azureClient.GetChatClient("gpt-5-nano").CreateAIAgent(
