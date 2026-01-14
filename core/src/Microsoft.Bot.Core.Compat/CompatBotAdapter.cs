@@ -60,7 +60,7 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
 
             if (activity.Type == "invokeResponse")
             {
-                await WriteInvokeResponseToHttpResponseAsync(activity.Value as InvokeResponse, cancellationToken).ConfigureAwait(false);
+                WriteInvokeResponseToHttpResponse(activity.Value as InvokeResponse, cancellationToken);
                 return [new ResourceResponse() { Id = null } ];
             }
 
@@ -91,14 +91,19 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         return new ResourceResponse() { Id = res.Id };
     }
 
-    private async Task WriteInvokeResponseToHttpResponseAsync(InvokeResponse? invokeResponse, CancellationToken cancellationToken = default)
+    private void WriteInvokeResponseToHttpResponse(InvokeResponse? invokeResponse, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(invokeResponse);
         var response = httpContextAccessor?.HttpContext?.Response;
-        ArgumentNullException.ThrowIfNull(response);
-
-        using StreamWriter httpResponseStreamWriter = new (response.BodyWriter.AsStream());
-        using JsonTextWriter httpResponseJsonWriter = new (httpResponseStreamWriter);
-        Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
+        if (response is not null && !response.HasStarted)
+        {
+            using StreamWriter httpResponseStreamWriter = new (response.BodyWriter.AsStream());
+            using JsonTextWriter httpResponseJsonWriter = new (httpResponseStreamWriter);
+            Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse);
+        }
+        else
+        {
+            logger.LogWarning("HTTP response is null or has started. Cannot write invoke response. ResponseStarted: {ResponseStarted}", response?.HasStarted);
+        }
     }
 }
