@@ -11,14 +11,28 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Core.Compat;
 
-internal static class CompatActivity
+/// <summary>
+/// Extension methods for converting between Bot Framework Activity and CoreActivity/TeamsActivity.
+/// </summary>
+public static class CompatActivity
 {
+    /// <summary>
+    /// Converts a CoreActivity to a Bot Framework Activity.
+    /// </summary>
+    /// <param name="activity"></param>
+    /// <returns></returns>
     public static Activity ToCompatActivity(this CoreActivity activity)
     {
+        ArgumentNullException.ThrowIfNull(activity);
         using JsonTextReader reader = new(new StringReader(activity.ToJson()));
         return BotMessageHandlerBase.BotMessageSerializer.Deserialize<Activity>(reader)!;
     }
 
+    /// <summary>
+    /// Converts a Bot Framework Activity to a TeamsActivity.
+    /// </summary>
+    /// <param name="activity"></param>
+    /// <returns></returns>
     public static TeamsActivity FromCompatActivity(this Activity activity)
     {
         StringBuilder sb = new();
@@ -30,8 +44,16 @@ internal static class CompatActivity
         return TeamsActivity.FromActivity(coreActivity);
     }
 
+
+    /// <summary>
+    /// Converts a ConversationAccount to a ChannelAccount.
+    /// </summary>
+    /// <param name="account"></param>
+    /// <returns></returns>
     public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Bot.Core.Schema.ConversationAccount account)
     {
+        ArgumentNullException.ThrowIfNull(account);
+
         Microsoft.Bot.Schema.ChannelAccount channelAccount;
         if (account is TeamsConversationAccount tae)
         {

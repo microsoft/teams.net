@@ -1,7 +1,7 @@
-﻿using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Bot.Core;
 using System.Text.Json;
+using Microsoft.Bot.Core;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace ABSTokenServiceClient
 {
@@ -53,11 +53,13 @@ namespace ABSTokenServiceClient
                 string yn = Console.ReadLine()!;
                 if ("y".Equals(yn, StringComparison.OrdinalIgnoreCase))
                 {
-                    try{
+                    try
+                    {
                         await userTokenClient.SignOutUserAsync(userId, connectionName, channelId, cancellationToken);
                         logger.LogInformation("SignOutUser completed successfully");
                     }
-                    catch (Exception ex) {
+                    catch (Exception ex)
+                    {
                         logger.LogError(ex, "Error during SignOutUser");
                     }
                 }

@@ -37,7 +37,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Message)
         .WithConversationReference(activity)
-        .WithProperty("text",replyText)
+        .WithProperty("text", replyText)
         .Build();
 
     await botApp.SendActivityAsync(replyActivity, cancellationToken);

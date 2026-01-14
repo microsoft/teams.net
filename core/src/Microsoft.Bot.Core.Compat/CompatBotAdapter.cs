@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.BotApps;
 using Newtonsoft.Json;
 
 
@@ -21,7 +22,7 @@ namespace Microsoft.Bot.Core.Compat;
 /// <param name="httpContextAccessor" >The HTTP context accessor used to retrieve the current HTTP context.</param>
 /// <param name="logger">The <paramref name="logger"/></param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
-public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccessor httpContextAccessor = default!, ILogger<CompatBotAdapter> logger = default!) : BotAdapter
+public class CompatBotAdapter(TeamsBotApplication botApplication, IHttpContextAccessor httpContextAccessor = default!, ILogger<CompatBotAdapter> logger = default!) : BotAdapter
 {
     /// <summary>
     /// Deletes an activity from the conversation.
@@ -60,7 +61,7 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
 
             if (activity.Type == "invokeResponse")
             {
-                WriteInvokeResponseToHttpResponse(activity.Value as InvokeResponse, cancellationToken);
+                WriteInvokeResponseToHttpResponse(activity.Value as InvokeResponse);
                 return [new ResourceResponse() { Id = null }];
             }
 
@@ -91,7 +92,7 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         return new ResourceResponse() { Id = res.Id };
     }
 
-    private void WriteInvokeResponseToHttpResponse(InvokeResponse? invokeResponse, CancellationToken cancellationToken = default)
+    private void WriteInvokeResponseToHttpResponse(InvokeResponse? invokeResponse)
     {
         ArgumentNullException.ThrowIfNull(invokeResponse);
         HttpResponse? response = httpContextAccessor?.HttpContext?.Response;

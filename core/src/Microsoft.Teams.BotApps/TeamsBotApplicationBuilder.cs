@@ -47,6 +47,7 @@ public class TeamsBotApplicationBuilder
     {
         _webAppBuilder = WebApplication.CreateSlimBuilder();
         _webAppBuilder.Services.AddHttpContextAccessor();
+        _webAppBuilder.Services.AddSingleton<TeamsAPXClient>();
         _webAppBuilder.Services.AddBotApplication<TeamsBotApplication>();
     }
 

@@ -6,6 +6,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
+using Microsoft.Teams.BotApps;
 
 
 namespace Microsoft.Bot.Core.Compat;
@@ -20,7 +21,7 @@ namespace Microsoft.Bot.Core.Compat;
 /// requests.</remarks>
 /// <param name="botApplication">The bot application instance that handles activity processing and manages user token operations.</param>
 /// <param name="compatBotAdapter">The underlying bot adapter used to interact with the bot framework and create turn contexts.</param>
-public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compatBotAdapter) : IBotFrameworkHttpAdapter
+public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter compatBotAdapter) : IBotFrameworkHttpAdapter
 {
     /// <summary>
     /// Gets the collection of middleware components configured for the application.

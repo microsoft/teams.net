@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.BotApps;
 using Microsoft.Teams.BotApps.Handlers;
 using Microsoft.Teams.BotApps.Schema;
@@ -9,6 +10,8 @@ using TeamsBot;
 
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();
+
+
 
 teamsApp.OnMessage = async (messageArgs, context, cancellationToken) =>
 {
@@ -65,5 +68,15 @@ teamsApp.OnInvoke = async (context, cancellationToken) =>
         Body = "Invokes are great !!"
     };
 };
+
+//teamsApp.OnActivity = async (activity, ct) =>
+//{
+//    var reply = CoreActivity.CreateBuilder()
+//        .WithConversationReference(activity)
+//        .WithProperty("text", "yo")
+//        .Build();
+//    await teamsApp.SendActivityAsync(reply, ct);
+//};
+
 
 teamsApp.Run();

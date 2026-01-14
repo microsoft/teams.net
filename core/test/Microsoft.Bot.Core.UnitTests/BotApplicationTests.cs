@@ -70,7 +70,7 @@ public class BotApplicationTests
 
         await botApp.ProcessAsync(httpContext);
 
-        
+
         Assert.True(onActivityCalled);
     }
 

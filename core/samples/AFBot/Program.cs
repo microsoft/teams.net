@@ -44,14 +44,14 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         .Build();
     await botApp.SendActivityAsync(typing, cancellationToken);
 
-    AgentRunResponse agentResponse = await agent.RunAsync(activity.Properties["text"]?.ToString() ?? "OMW", cancellationToken:  timer.Token);
-    
+    AgentRunResponse agentResponse = await agent.RunAsync(activity.Properties["text"]?.ToString() ?? "OMW", cancellationToken: timer.Token);
+
     var m1 = agentResponse.Messages.FirstOrDefault();
     Console.WriteLine($"AI:: GOT {agentResponse.Messages.Count} msgs");
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Message)
         .WithConversationReference(activity)
-        .WithProperty("text",m1!.Text)
+        .WithProperty("text", m1!.Text)
         .Build();
 
     var res = await botApp.SendActivityAsync(replyActivity, cancellationToken);

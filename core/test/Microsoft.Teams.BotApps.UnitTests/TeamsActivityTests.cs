@@ -59,7 +59,7 @@ public class TeamsActivityTests
     [Fact]
     public void DownCastTeamsActivity_To_CoreActivity_FromJsonString()
     {
-        
+
         TeamsActivity teamsActivity = TeamsActivity.FromJsonString(json);
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", teamsActivity.Conversation!.Id);
 
@@ -240,7 +240,7 @@ public class TeamsActivityTests
     public void Deserialize_TeamsActivity_Invoke_WithValue()
     {
         //TeamsActivity activity = CoreActivity.FromJsonString<TeamsActivity>(jsonInvoke);
-        TeamsActivity activity = TeamsActivity.FromActivity(CoreActivity.FromJsonString(jsonInvoke))    ;
+        TeamsActivity activity = TeamsActivity.FromActivity(CoreActivity.FromJsonString(jsonInvoke));
         Assert.NotNull(activity.Value);
         string feedback = activity.Value?["action"]?["data"]?["feedback"]?.ToString()!;
         Assert.Equal("test invokes", feedback);
