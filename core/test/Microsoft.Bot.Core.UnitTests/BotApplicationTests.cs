@@ -220,7 +220,8 @@ public class BotApplicationTests
     {
         Mock<HttpClient> mockHttpClient = new();
         NullLogger<UserTokenClient> logger = NullLogger<UserTokenClient>.Instance;
-        return new UserTokenClient(mockHttpClient.Object, logger);
+        Mock<IConfiguration> mockConfiguration = new();
+        return new UserTokenClient(mockHttpClient.Object, mockConfiguration.Object, logger);
     }
 
     private static DefaultHttpContext CreateHttpContextWithActivity(CoreActivity activity)

@@ -217,8 +217,9 @@ public class MiddlewareTests
     private static UserTokenClient CreateMockUserTokenClient()
     {
         Mock<HttpClient> mockHttpClient = new();
+        Mock<IConfiguration> mockConfig = new();
         NullLogger<UserTokenClient> logger = NullLogger<UserTokenClient>.Instance;
-        return new UserTokenClient(mockHttpClient.Object, logger);
+        return new UserTokenClient(mockHttpClient.Object, mockConfig.Object, logger);
     }
 
     private static DefaultHttpContext CreateHttpContextWithActivity(CoreActivity activity)
