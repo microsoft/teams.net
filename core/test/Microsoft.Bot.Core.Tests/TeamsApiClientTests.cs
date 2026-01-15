@@ -10,13 +10,13 @@ using Microsoft.Teams.BotApps;
 
 namespace Microsoft.Bot.Core.Tests;
 
-public class TeamsAPXClientTests
+public class TeamsApiClientTests
 {
     private readonly ServiceProvider _serviceProvider;
-    private readonly TeamsAPXClient _teamsClient;
+    private readonly TeamsApiClient _teamsClient;
     private readonly Uri _serviceUrl;
 
-    public TeamsAPXClientTests()
+    public TeamsApiClientTests()
     {
         IConfigurationBuilder builder = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -29,7 +29,7 @@ public class TeamsAPXClientTests
         services.AddSingleton(configuration);
         services.AddTeamsBotApplication();
         _serviceProvider = services.BuildServiceProvider();
-        _teamsClient = _serviceProvider.GetRequiredService<TeamsAPXClient>();
+        _teamsClient = _serviceProvider.GetRequiredService<TeamsApiClient>();
         _serviceUrl = new Uri(Environment.GetEnvironmentVariable("TEST_SERVICEURL") ?? "https://smba.trafficmanager.net/teams/");
     }
 

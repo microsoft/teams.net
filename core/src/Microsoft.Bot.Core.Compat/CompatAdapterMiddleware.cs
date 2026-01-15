@@ -7,7 +7,7 @@ using Microsoft.Teams.BotApps;
 
 namespace Microsoft.Bot.Core.Compat;
 
-internal sealed class CompatMiddlewareAdapter(IMiddleware bfMiddleWare) : ITurnMiddleWare
+internal sealed class CompatAdapterMiddleware(IMiddleware bfMiddleWare) : ITurnMiddleWare
 {
     public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
     {

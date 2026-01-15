@@ -78,7 +78,7 @@ public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter 
         {
             foreach (Builder.IMiddleware? middleware in MiddlewareSet)
             {
-                botApplication.Use(new CompatMiddlewareAdapter(middleware));
+                botApplication.Use(new CompatAdapterMiddleware(middleware));
             }
 
             await botApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);

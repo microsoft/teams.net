@@ -12,6 +12,7 @@ var teamsApp = builder.Build();
 
 
 
+
 teamsApp.OnMessage = async (messageArgs, context, cancellationToken) =>
 {
     await context.SendTypingActivityAsync(cancellationToken);
