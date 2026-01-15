@@ -3,11 +3,11 @@
   "channelId": "msteams",
   "name": "application/vnd.microsoft.meetingStart",
   "value": {
-    "id": "id",
-    "meetingType": "meetingType",
-    "joinUrl": "https://teams.meetingjoin.url/somevalues",
-    "title": "Meeting For Teams.net",
-    "startTime": "2025-01-01T04:30:00"
+    "Id": "id",
+    "MeetingType": "meetingType",
+    "JoinUrl": "https://teams.meetingjoin.url/somevalues",
+    "Title": "Meeting For Teams.net",
+    "StartTime": "2025-01-01T04:30:00"
   },
   "recipient": {
     "id": "recipientId",

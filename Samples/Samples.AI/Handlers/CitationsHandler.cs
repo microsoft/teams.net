@@ -34,11 +34,11 @@ public static class CitationsHandler
         for (int i = 0; i < citedDocs.Length; i++)
         {
             Console.WriteLine($"[HANDLER] Adding citation [{i + 1}]: {citedDocs[i].Title}");
-            messageActivity.AddCitation(i+1, new CitationAppearance
-                {
-                    Name = citedDocs[i].Title,
-                    Abstract = citedDocs[i].Content
-                }
+            messageActivity.AddCitation(i + 1, new CitationAppearance
+            {
+                Name = citedDocs[i].Title,
+                Abstract = citedDocs[i].Content
+            }
             );
         }
 
