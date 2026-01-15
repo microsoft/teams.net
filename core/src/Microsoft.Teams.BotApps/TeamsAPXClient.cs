@@ -1,10 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Net.Mime;
-using System.Text;
 using System.Text.Json;
 using Microsoft.Bot.Core.Hosting;
+using Microsoft.Bot.Core.Http;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +19,7 @@ using CustomHeaders = Dictionary<string, string>;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logger = default!)
 {
+    private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
     internal const string TeamsHttpClientName = "TeamsAPXClient";
 
     /// <summary>
@@ -48,14 +48,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Fetching channel list from {Url}", url);
 
-        return await SendHttpRequestAsync<ChannelList>(
+        return (await _botHttpClient.SendAsync<ChannelList>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "fetching channel list",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "fetching channel list", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -77,14 +75,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Fetching team details from {Url}", url);
 
-        return await SendHttpRequestAsync<TeamDetails>(
+        return (await _botHttpClient.SendAsync<TeamDetails>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "fetching team details",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "fetching team details", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     #endregion
@@ -110,14 +106,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Fetching meeting info from {Url}", url);
 
-        return await SendHttpRequestAsync<MeetingInfo>(
+        return (await _botHttpClient.SendAsync<MeetingInfo>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "fetching meeting info",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "fetching meeting info", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -143,14 +137,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Fetching meeting participant from {Url}", url);
 
-        return await SendHttpRequestAsync<MeetingParticipant>(
+        return (await _botHttpClient.SendAsync<MeetingParticipant>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "fetching meeting participant",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "fetching meeting participant", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -175,14 +167,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Sending meeting notification to {Url}: {Notification}", url, body);
 
-        return await SendHttpRequestAsync<MeetingNotificationResponse>(
+        return (await _botHttpClient.SendAsync<MeetingNotificationResponse>(
             HttpMethod.Post,
             url,
             body,
-            agenticIdentity,
-            "sending meeting notification",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "sending meeting notification", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     #endregion
@@ -223,14 +213,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Sending message to list of users at {Url}: {Request}", url, body);
 
-        return await SendHttpRequestAsync<string>(
+        return (await _botHttpClient.SendAsync<string>(
             HttpMethod.Post,
             url,
             body,
-            agenticIdentity,
-            "sending message to list of users",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "sending message to list of users", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -260,14 +248,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Sending message to all users in tenant at {Url}: {Request}", url, body);
 
-        return await SendHttpRequestAsync<string>(
+        return (await _botHttpClient.SendAsync<string>(
             HttpMethod.Post,
             url,
             body,
-            agenticIdentity,
-            "sending message to all users in tenant",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "sending message to all users in tenant", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -300,14 +286,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Sending message to all users in team at {Url}: {Request}", url, body);
 
-        return await SendHttpRequestAsync<string>(
+        return (await _botHttpClient.SendAsync<string>(
             HttpMethod.Post,
             url,
             body,
-            agenticIdentity,
-            "sending message to all users in team",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "sending message to all users in team", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -344,14 +328,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Sending message to list of channels at {Url}: {Request}", url, body);
 
-        return await SendHttpRequestAsync<string>(
+        return (await _botHttpClient.SendAsync<string>(
             HttpMethod.Post,
             url,
             body,
-            agenticIdentity,
-            "sending message to list of channels",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "sending message to list of channels", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     #endregion
@@ -377,14 +359,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Getting operation state from {Url}", url);
 
-        return await SendHttpRequestAsync<BatchOperationState>(
+        return (await _botHttpClient.SendAsync<BatchOperationState>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "getting operation state",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "getting operation state", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -412,14 +392,12 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Getting paged failed entries from {Url}", url);
 
-        return await SendHttpRequestAsync<BatchFailedEntriesResponse>(
+        return (await _botHttpClient.SendAsync<BatchFailedEntriesResponse>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "getting paged failed entries",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "getting paged failed entries", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -441,13 +419,11 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
         logger?.LogTrace("Cancelling operation at {Url}", url);
 
-        await SendHttpRequestAsync<object>(
+        await _botHttpClient.SendAsync(
             HttpMethod.Delete,
             url,
             body: null,
-            agenticIdentity,
-            "cancelling operation",
-            customHeaders,
+            CreateRequestOptions(agenticIdentity, "cancelling operation", customHeaders),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -455,72 +431,14 @@ public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logge
 
     #region Private Methods
 
-    private async Task<T> SendHttpRequestAsync<T>(HttpMethod method, string url, string? body, AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders, CancellationToken cancellationToken)
-    {
-        using HttpRequestMessage request = new(method, url);
-
-        if (body is not null)
+    private BotRequestOptions CreateRequestOptions(AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders) =>
+        new()
         {
-            request.Content = new StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json);
-        }
-
-        if (agenticIdentity is not null)
-        {
-            request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, agenticIdentity);
-        }
-
-        // Apply default custom headers
-        foreach (KeyValuePair<string, string> header in DefaultCustomHeaders)
-        {
-            request.Headers.TryAddWithoutValidation(header.Key, header.Value);
-        }
-
-        // Apply method-level custom headers (these override default headers if same key)
-        if (customHeaders is not null)
-        {
-            foreach (KeyValuePair<string, string> header in customHeaders)
-            {
-                request.Headers.Remove(header.Key);
-                request.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-        }
-
-        logger?.LogTrace("Sending HTTP {Method} request to {Url} with body: {Body}", method, url, body);
-
-        using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-        if (resp.IsSuccessStatusCode)
-        {
-            string responseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            if (responseString.Length > 2) // to handle empty response
-            {
-                // Handle string responses (like operation IDs)
-                if (typeof(T) == typeof(string))
-                {
-                    // Try to deserialize as a quoted string first, then return raw if that fails
-                    try
-                    {
-                        T? result = JsonSerializer.Deserialize<T>(responseString);
-                        return result ?? (T)(object)responseString;
-                    }
-                    catch (JsonException)
-                    {
-                        return (T)(object)responseString;
-                    }
-                }
-
-                T? deserializedResult = JsonSerializer.Deserialize<T>(responseString);
-                return deserializedResult ?? throw new InvalidOperationException($"Failed to deserialize response for {operationDescription}");
-            }
-            // Empty response - return default value (e.g., for DELETE operations)
-            return default!;
-        }
-        else
-        {
-            string errResponseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            throw new HttpRequestException($"Error {operationDescription} {resp.StatusCode}. {errResponseString}");
-        }
-    }
+            AgenticIdentity = agenticIdentity,
+            OperationDescription = operationDescription,
+            DefaultHeaders = DefaultCustomHeaders,
+            CustomHeaders = customHeaders
+        };
 
     #endregion
 }
