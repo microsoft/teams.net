@@ -1,11 +1,11 @@
 <Solution>
   <Folder Name="/libs/">
-    <Project Path="../src/Microsoft.Bot.Core.Compat/Microsoft.Bot.Core.Compat.csproj" />
-    <Project Path="../src/Microsoft.Bot.Core/Microsoft.Bot.Core.csproj" />
-    <Project Path="../src/Microsoft.Teams.BotApps/Microsoft.Teams.BotApps.csproj" />
+    <Project Path="../src/Microsoft.Teams.Bot.Compat/Microsoft.Teams.Bot.Compat.csproj" />
+    <Project Path="../src/Microsoft.Teams.Bot.Core/Microsoft.Teams.Bot.Core.csproj" />
+    <Project Path="../src/Microsoft.Teams.Bot.Apps/Microsoft.Teams.Bot.Apps.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
     <File Path="../.runsettings" />
   </Folder>
-  <Project Path="Microsoft.Bot.Core.Tests/Microsoft.Bot.Core.Tests.csproj" />
+  <Project Path="Microsoft.Teams.Bot.Core.Tests/Microsoft.Teams.Bot.Core.Tests.csproj" />
 </Solution>

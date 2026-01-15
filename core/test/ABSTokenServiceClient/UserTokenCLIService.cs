@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Microsoft.Bot.Core;
+using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 

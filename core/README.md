@@ -1,14 +1,14 @@
-# Microsoft.Bot.Core
+# Microsoft.Teams.Bot.Core
 
 Bot Core implements the Activity Protocol, including schema, conversation client, user token client, and support for Bot and Agentic Identities.
 
 ## Design Principles
 
-- Loose schema. `CoreActivity` contains only the strictly required fields for Conversation Client, additional fields are captured as a Dictitionary with JsonExtensionData attributes.
-- Simple Serialization. `CoreActivity` can be serialized/deserialized without any custom logic, and trying to avoid custom converters as much as possible. 
+- Loose schema. `TeamsActivity` contains only the strictly required fields for Conversation Client, additional fields are captured as a Dictionary with JsonExtensionData attributes.
+- Simple Serialization. `TeamsActivity` can be serialized/deserialized without any custom logic, and trying to avoid custom converters as much as possible. 
 - Extensible schema. Fields subject to extension, such as `ChannelData` must define their own `Properties` to allow serialization of unknown fields. Use of generics to allow additional types that are not defined in the Core Library.
 - Auth based on MSAL. Token acquisition done on top of MSAL
-- Respect ASP.NET DI. `BotApplication` dependencies are configured based on .NET ServiceCollection extensions, reusing the existing `HttpClient`
+- Respect ASP.NET DI. `TeamsBotApplication` dependencies are configured based on .NET ServiceCollection extensions, reusing the existing `HttpClient`
 - Respect ILogger and IConfiguration.
 
 ## Samples
@@ -25,7 +25,7 @@ public class MyChannelData : ChannelData
     public string? MyChannelId { get; set; }
 }
 
-public class MyCustomChannelDataActivity : CoreActivity
+public class MyCustomChannelDataActivity : TeamsActivity
 {
     [JsonPropertyName("channelData")]
     public new MyChannelData? ChannelData { get; set; }
@@ -43,7 +43,7 @@ public void Deserialize_CustomChannelDataActivity()
         }
     }
     """;
-    var deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
+    var deserializedActivity = TeamsActivity.FromJsonString<MyCustomChannelDataActivity>(json);
     Assert.NotNull(deserializedActivity);
     Assert.NotNull(deserializedActivity.ChannelData);
     Assert.Equal("customFieldValue", deserializedActivity.ChannelData.CustomField);
@@ -51,27 +51,32 @@ public void Deserialize_CustomChannelDataActivity()
 }
 ```
 
-> Note `FromJsonString` lives in `CoreActivity`, and there is no need to override.
+> Note `FromJsonString` lives in `TeamsActivity`, and there is no need to override.
 
 
 ### Basic Bot Application Usage
 
 ```cs
-var webAppBuilder = WebApplication.CreateSlimBuilder(args);
-webAppBuilder.Services.AddBotApplication<BotApplication>();
-var webApp = webAppBuilder.Build();
-var botApp = webApp.UseBotApplication<BotApplication>();
+using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Apps.Schema;
 
-botApp.OnActivity = async (activity, cancellationToken) =>
+var builder = TeamsBotApplication.CreateBuilder();
+var teamsApp = builder.Build();
+
+teamsApp.OnMessage = async (messageArgs, context, cancellationToken) =>
 {
-    var replyText = $"CoreBot running on SDK {BotApplication.Version}.";
-    replyText += $"\r\nYou sent: `{activity.Text}` in activity of type `{activity.Type}`.";
-    replyText += $"\r\n to Conversation ID: `{activity.Conversation.Id}` type: `{activity.Conversation.Properties["conversationType"]}`";
-    var replyActivity = activity.CreateReplyActivity(ActivityType.Message, replyText);
-    await botApp.SendActivityAsync(replyActivity, cancellationToken);
+    await context.SendTypingActivityAsync(cancellationToken);
+
+    string replyText = $"You sent: `{messageArgs.Text}` in activity of type `{context.Activity.Type}`.";
+
+    TeamsActivity reply = TeamsActivity.CreateBuilder()
+        .WithText(replyText)
+        .Build();
+
+    await context.SendActivityAsync(reply, cancellationToken);
 };
 
-webApp.Run();
+teamsApp.Run();
 ```
 
 ## Testing in Teams

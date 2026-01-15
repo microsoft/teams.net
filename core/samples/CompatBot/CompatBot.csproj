@@ -11,7 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Microsoft.Bot.Core.Compat\Microsoft.Bot.Core.Compat.csproj" />
+		<ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Compat\Microsoft.Teams.Bot.Compat.csproj" />
 	</ItemGroup>
 
 </Project>

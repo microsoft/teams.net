@@ -2,13 +2,13 @@
 
 #:sdk Microsoft.NET.Sdk.Web
 
-#:project ../../src/Microsoft.Bot.Core/Microsoft.Bot.Core.csproj
-#:project ../../src/Microsoft.Teams.BotApps/Microsoft.Teams.BotApps.csproj
+#:project ../../src/Microsoft.Teams.Bot.Core/Microsoft.Teams.Bot.Core.csproj
+#:project ../../src/Microsoft.Teams.Bot.Apps/Microsoft.Teams.Bot.Apps.csproj
 
 
-using Microsoft.Teams.BotApps;
-using Microsoft.Teams.BotApps.Schema;
-using Microsoft.Teams.BotApps.Schema.Entities;
+using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Schema.Entities;
 
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();
