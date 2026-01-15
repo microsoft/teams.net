@@ -20,6 +20,8 @@ namespace Microsoft.Bot.Core.Compat
                 Dictionary<string, List<string>>? customHeaders = null,
                 CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
+
             Microsoft.Bot.Core.ConversationParameters convoParams = new()
             {
                 Activity = parameters.Activity.FromCompatActivity()
@@ -28,7 +30,7 @@ namespace Microsoft.Bot.Core.Compat
 
             CreateConversationResponse res = await _client.CreateConversationAsync(
                 convoParams,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 AgenticIdentity.FromProperties(convoParams.Activity?.From.Properties),
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
@@ -50,10 +52,12 @@ namespace Microsoft.Bot.Core.Compat
 
         public async Task<HttpOperationResponse> DeleteActivityWithHttpMessagesAsync(string conversationId, string activityId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
+
             await _client.DeleteActivityAsync(
                 conversationId,
                 activityId,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 null!,
                 ConvertHeaders(customHeaders),
                 cancellationToken).ConfigureAwait(false);
@@ -65,10 +69,12 @@ namespace Microsoft.Bot.Core.Compat
 
         public async Task<HttpOperationResponse> DeleteConversationMemberWithHttpMessagesAsync(string conversationId, string memberId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
+
             await _client.DeleteConversationMemberAsync(
                 conversationId,
                 memberId,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 null!,
                 ConvertHeaders(customHeaders),
                 cancellationToken).ConfigureAwait(false);
@@ -98,11 +104,13 @@ namespace Microsoft.Bot.Core.Compat
 
         public async Task<HttpOperationResponse<IList<ChannelAccount>>> GetConversationMembersWithHttpMessagesAsync(string conversationId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
+
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             IList<Schema.ConversationAccount> members = await _client.GetConversationMembersAsync(
                 conversationId,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 null,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
@@ -118,11 +126,13 @@ namespace Microsoft.Bot.Core.Compat
 
         public async Task<HttpOperationResponse<Microsoft.Bot.Schema.PagedMembersResult>> GetConversationPagedMembersWithHttpMessagesAsync(string conversationId, int? pageSize = null, string? continuationToken = null, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
+
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             PagedMembersResult pagedMembers = await _client.GetConversationPagedMembersAsync(
                 conversationId,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 pageSize,
                 continuationToken,
                 null,
@@ -203,17 +213,19 @@ namespace Microsoft.Bot.Core.Compat
 
         public async Task<HttpOperationResponse<ResourceResponse>> SendConversationHistoryWithHttpMessagesAsync(string conversationId, Microsoft.Bot.Schema.Transcript transcript, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
+
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             Transcript coreTranscript = new()
             {
-                Activities = transcript.Activities?.Select(a => a.FromCompatActivity()).ToList()
+                Activities = transcript.Activities?.Select(a => a.FromCompatActivity() as CoreActivity).ToList()
             };
 
             SendConversationHistoryResponse response = await _client.SendConversationHistoryAsync(
                 conversationId,
                 coreTranscript,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 null,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
@@ -275,6 +287,7 @@ namespace Microsoft.Bot.Core.Compat
 
         public async Task<HttpOperationResponse<ResourceResponse>> UploadAttachmentWithHttpMessagesAsync(string conversationId, Microsoft.Bot.Schema.AttachmentData attachmentUpload, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             AttachmentData coreAttachmentData = new()
@@ -288,7 +301,7 @@ namespace Microsoft.Bot.Core.Compat
             UploadAttachmentResponse response = await _client.UploadAttachmentAsync(
                 conversationId,
                 coreAttachmentData,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 null,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
@@ -323,9 +336,12 @@ namespace Microsoft.Bot.Core.Compat
 
         public async Task<HttpOperationResponse<ChannelAccount>> GetConversationMemberWithHttpMessagesAsync(string userId, string conversationId, Dictionary<string, List<string>> customHeaders = null!, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
+
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Schema.ConversationAccount response = await _client.GetConversationMemberAsync(conversationId, userId, new Uri(ServiceUrl!), null!, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            Teams.BotApps.Schema.TeamsConversationAccount response = await _client.GetConversationMemberAsync<Teams.BotApps.Schema.TeamsConversationAccount>(
+                conversationId, userId, new Uri(ServiceUrl), null!, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             return new HttpOperationResponse<ChannelAccount>
             {

@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Core.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Teams.BotApps;
 
 namespace Microsoft.Bot.Core.Compat;
 
@@ -42,7 +42,7 @@ public static class CompatHostingExtensions
     /// compatibility adapter and related services registered.</returns>
     public static IServiceCollection AddCompatAdapter(this IServiceCollection services)
     {
-        services.AddBotApplication<BotApplication>();
+        services.AddTeamsBotApplication();
         services.AddSingleton<CompatBotAdapter>();
         services.AddSingleton<IBotFrameworkHttpAdapter, CompatAdapter>();
         return services;

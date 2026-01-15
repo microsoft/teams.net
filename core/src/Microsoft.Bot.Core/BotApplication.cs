@@ -16,7 +16,7 @@ public class BotApplication
 {
     private readonly ILogger<BotApplication> _logger;
     private readonly ConversationClient? _conversationClient;
-    private UserTokenClient? _userTokenClient;
+    private readonly UserTokenClient? _userTokenClient;
     private readonly string _serviceKey;
     internal TurnMiddleware MiddleWare { get; }
 

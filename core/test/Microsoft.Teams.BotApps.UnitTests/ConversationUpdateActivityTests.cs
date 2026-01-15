@@ -30,7 +30,7 @@ public class ConversationUpdateActivityTests
             ]
         }
         """;
-        TeamsActivity act = CoreActivity.FromJsonString<TeamsActivity>(json);
+        TeamsActivity act = TeamsActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("conversationUpdate", act.Type);
 
@@ -62,7 +62,7 @@ public class ConversationUpdateActivityTests
             ]
         }
         """;
-        TeamsActivity act = CoreActivity.FromJsonString<TeamsActivity>(json);
+        TeamsActivity act = TeamsActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("conversationUpdate", act.Type);
 
@@ -98,7 +98,7 @@ public class ConversationUpdateActivityTests
             ]
         }
         """;
-        TeamsActivity act = CoreActivity.FromJsonString<TeamsActivity>(json);
+        TeamsActivity act = TeamsActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("conversationUpdate", act.Type);
 

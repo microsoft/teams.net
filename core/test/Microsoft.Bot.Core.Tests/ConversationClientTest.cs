@@ -184,7 +184,7 @@ public class ConversationClientTest
         string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
 
-        ConversationAccount member = await _conversationClient.GetConversationMemberAsync(
+        ConversationAccount member = await _conversationClient.GetConversationMemberAsync<ConversationAccount>(
             conversationId,
             userId,
             _serviceUrl,
@@ -308,7 +308,7 @@ public class ConversationClientTest
                 }
             ],
             // TODO: This is required for some reason. Should it be required in the api?
-            TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
+            TenantId = Environment.GetEnvironmentVariable("AzureAd__TenantId") ?? throw new InvalidOperationException("AzureAd__TenantId environment variable not set")
         };
 
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
@@ -461,7 +461,7 @@ public class ConversationClientTest
                 Type = ActivityType.Message,
                 Properties = { { "text", $"Initial message sent at {DateTime.UtcNow:s}" } },
             },
-            TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
+            TenantId = Environment.GetEnvironmentVariable("AzureAd__TenantId") ?? throw new InvalidOperationException("AzureAd__TenantId environment variable not set")
         };
 
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
@@ -495,7 +495,7 @@ public class ConversationClientTest
             {
                 teamsChannelId = Environment.GetEnvironmentVariable("TEST_CHANNELID")
             },
-            TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
+            TenantId = Environment.GetEnvironmentVariable("AzureAd__TenantId") ?? throw new InvalidOperationException("AzureAd__TenantId environment variable not set")
         };
 
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(

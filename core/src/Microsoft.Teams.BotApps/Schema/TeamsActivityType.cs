@@ -40,5 +40,5 @@ public static class TeamsActivityType
     /// Message reaction activity type.
     /// </summary>
     public static readonly string MessageReaction = "messageReaction";
-    
+
 }

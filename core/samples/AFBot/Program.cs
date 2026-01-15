@@ -12,7 +12,6 @@ using Microsoft.Bot.Core.Schema;
 using OpenAI;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddOpenTelemetry().UseAzureMonitor();
 webAppBuilder.Services.AddBotApplication<BotApplication>();
@@ -20,7 +19,7 @@ WebApplication webApp = webAppBuilder.Build();
 BotApplication botApp = webApp.UseBotApplication<BotApplication>();
 
 AzureOpenAIClient azureClient = new(
-           new Uri("https://ridofoundry.cognitiveservices.azure.com/"),
+           new Uri("https://tsdkfoundry.openai.azure.com/"),
            new ApiKeyCredential(Environment.GetEnvironmentVariable("AZURE_OpenAI_KEY")!));
 
 ChatClientAgent agent = azureClient.GetChatClient("gpt-5-nano").CreateAIAgent(
@@ -44,14 +43,14 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         .Build();
     await botApp.SendActivityAsync(typing, cancellationToken);
 
-    AgentRunResponse agentResponse = await agent.RunAsync(activity.Properties["text"]?.ToString() ?? "OMW", cancellationToken:  timer.Token);
-    
+    AgentRunResponse agentResponse = await agent.RunAsync(activity.Properties["text"]?.ToString() ?? "OMW", cancellationToken: timer.Token);
+
     var m1 = agentResponse.Messages.FirstOrDefault();
     Console.WriteLine($"AI:: GOT {agentResponse.Messages.Count} msgs");
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Message)
         .WithConversationReference(activity)
-        .WithProperty("text",m1!.Text)
+        .WithProperty("text", m1!.Text)
         .Build();
 
     var res = await botApp.SendActivityAsync(replyActivity, cancellationToken);

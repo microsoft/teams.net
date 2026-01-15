@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
-using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.BotApps;
 using Newtonsoft.Json;
 
 
@@ -24,7 +22,7 @@ namespace Microsoft.Bot.Core.Compat;
 /// <param name="httpContextAccessor" >The HTTP context accessor used to retrieve the current HTTP context.</param>
 /// <param name="logger">The <paramref name="logger"/></param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
-public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccessor httpContextAccessor = default!, ILogger<CompatBotAdapter> logger = default!) : BotAdapter
+public class CompatBotAdapter(TeamsBotApplication botApplication, IHttpContextAccessor httpContextAccessor = default!, ILogger<CompatBotAdapter> logger = default!) : BotAdapter
 {
     /// <summary>
     /// Deletes an activity from the conversation.
@@ -32,8 +30,6 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
     /// <param name="turnContext"></param>
     /// <param name="reference"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public override async Task DeleteActivityAsync(ITurnContext turnContext, ConversationReference reference, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
@@ -56,7 +52,7 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
 
         for (int i = 0; i < activities.Length; i++)
         {
-            var activity = activities[i];
+            Activity activity = activities[i];
 
             if (activity.Type == ActivityTypes.Trace)
             {
@@ -65,8 +61,8 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
 
             if (activity.Type == "invokeResponse")
             {
-                await WriteInvokeResponseToHttpResponseAsync(activity.Value as InvokeResponse, cancellationToken).ConfigureAwait(false);
-                return [new ResourceResponse() { Id = null } ];
+                WriteInvokeResponseToHttpResponse(activity.Value as InvokeResponse);
+                return [new ResourceResponse() { Id = null }];
             }
 
             SendActivityResponse? resp = await botApplication.SendActivityAsync(activity.FromCompatActivity(), cancellationToken).ConfigureAwait(false);
@@ -84,12 +80,11 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
     /// <param name="turnContext"></param>
     /// <param name="activity"></param>
     /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
+    /// <returns>ResourceResponse</returns>
     public override async Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        var res = await botApplication.ConversationClient.UpdateActivityAsync(
+        UpdateActivityResponse res = await botApplication.ConversationClient.UpdateActivityAsync(
             activity.Conversation.Id,
             activity.Id,
             activity.FromCompatActivity(),
@@ -97,50 +92,19 @@ public class CompatBotAdapter(BotApplication botApplication, IHttpContextAccesso
         return new ResourceResponse() { Id = res.Id };
     }
 
-    private async Task WriteInvokeResponseToHttpResponseAsync(InvokeResponse? invokeResponse, CancellationToken cancellationToken = default)
+    private void WriteInvokeResponseToHttpResponse(InvokeResponse? invokeResponse)
     {
         ArgumentNullException.ThrowIfNull(invokeResponse);
-        var response = httpContextAccessor?.HttpContext?.Response;
-        ArgumentNullException.ThrowIfNull(response);
-
-        using StreamWriter httpResponseStreamWriter = new (response.BodyWriter.AsStream());
-        using JsonTextWriter httpResponseJsonWriter = new (httpResponseStreamWriter);
-        Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
+        HttpResponse? response = httpContextAccessor?.HttpContext?.Response;
+        if (response is not null && !response.HasStarted)
+        {
+            using StreamWriter httpResponseStreamWriter = new(response.BodyWriter.AsStream());
+            using JsonTextWriter httpResponseJsonWriter = new(httpResponseStreamWriter);
+            Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse);
+        }
+        else
+        {
+            logger.LogWarning("HTTP response is null or has started. Cannot write invoke response. ResponseStarted: {ResponseStarted}", response?.HasStarted);
+        }
     }
-
-        //#pragma warning disable CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-        //        var options = new JsonSerializerOptions
-        //        {
-        //            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        //            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-        //            Converters = {
-        //                new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
-        //            }
-        //        };
-        //#pragma warning restore CA1869 // Cache and reuse 'JsonSerializerOptions' instances
-
-        //        string jsonBody = System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, options);
-
-        //        response.StatusCode = invokeResponse.Status;
-        //        response.ContentType = "application/json";
-        //        await response.WriteAsync(jsonBody, cancellationToken).ConfigureAwait(false);
-
-
-        //using StreamWriter sw = new StreamWriter(response.BodyWriter.AsStream());
-        //using JsonWriter jw = new JsonTextWriter(sw);
-        //Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(jw, invokeResponse.Body);
-
-        //JsonSerializerOptions options = new()
-        //{
-        //    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        //    DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull,
-        //    Converters = {
-        //        new System.Text.Json.Serialization.JsonStringEnumConverter(JsonNamingPolicy.CamelCase),
-        //        new AttachmentMemoryStreamConverter(),
-        //        new AttachmentContentConverter() }
-        //};
-
-        //await response.WriteAsJsonAsync(invokeResponse.Body, options, cancellationToken).ConfigureAwait(false);
-
-
 }

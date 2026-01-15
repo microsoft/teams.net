@@ -85,7 +85,7 @@ public class CoreActivityBuilderTests
     public void WithText_SetsTextContent_As_Property()
     {
         CoreActivity activity = new CoreActivityBuilder()
-            .WithProperty("text","Hello, World!")
+            .WithProperty("text", "Hello, World!")
             .Build();
 
         Assert.Equal("Hello, World!", activity.Properties["text"]);

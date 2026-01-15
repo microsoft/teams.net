@@ -6,7 +6,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
-using Newtonsoft.Json.Linq;
+using Microsoft.Teams.BotApps;
 
 
 namespace Microsoft.Bot.Core.Compat;
@@ -21,7 +21,7 @@ namespace Microsoft.Bot.Core.Compat;
 /// requests.</remarks>
 /// <param name="botApplication">The bot application instance that handles activity processing and manages user token operations.</param>
 /// <param name="compatBotAdapter">The underlying bot adapter used to interact with the bot framework and create turn contexts.</param>
-public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compatBotAdapter) : IBotFrameworkHttpAdapter
+public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter compatBotAdapter) : IBotFrameworkHttpAdapter
 {
     /// <summary>
     /// Gets the collection of middleware components configured for the application.
@@ -78,7 +78,7 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
         {
             foreach (Builder.IMiddleware? middleware in MiddlewareSet)
             {
-                botApplication.Use(new CompatMiddlewareAdapter(middleware));
+                botApplication.Use(new CompatAdapterMiddleware(middleware));
             }
 
             await botApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
@@ -123,6 +123,7 @@ public class CompatAdapter(BotApplication botApplication, CompatBotAdapter compa
         ArgumentNullException.ThrowIfNull(callback);
 
         using TurnContext turnContext = new(compatBotAdapter, reference.GetContinuationActivity());
+        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(botApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl }));
         await callback(turnContext, cancellationToken).ConfigureAwait(false);
     }
 }

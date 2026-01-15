@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace Microsoft.Teams.BotApps.Schema.Entities;
 

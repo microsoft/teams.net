@@ -1,27 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Extensions.Logging;
-using Microsoft.Bot.Core;
-using Microsoft.Bot.Core.Hosting;
-using Microsoft.Bot.Core.Schema;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Bot.Core.Http;
+using Microsoft.Bot.Core.Schema;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Bot.Core;
 
 /// <summary>
 /// Client for managing user tokens via HTTP requests.
 /// </summary>
+/// <param name="configuration"></param>
 /// <param name="logger"></param>
 /// <param name="httpClient"></param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
-public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> logger)
+public class UserTokenClient(HttpClient httpClient, IConfiguration configuration, ILogger<UserTokenClient> logger)
 {
     internal const string UserTokenHttpClientName = "BotUserTokenClient";
     private readonly ILogger<UserTokenClient> _logger = logger;
-    private readonly string _apiEndpoint = "https://token.botframework.com";
+    private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
+    private readonly string _apiEndpoint = configuration["UserTokenApiEndpoint"] ?? "https://token.botframework.com";
     private readonly JsonSerializerOptions _defaultOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     internal AgenticIdentity? AgenticIdentity { get; set; }
@@ -47,8 +48,16 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
             queryParams.Add("include", include);
         }
 
-        string? resJson = await CallApiAsync("api/usertoken/GetTokenStatus", queryParams, cancellationToken: cancellationToken).ConfigureAwait(false);
-        IList<GetTokenStatusResult> result = JsonSerializer.Deserialize<IList<GetTokenStatusResult>>(resJson!, _defaultOptions)!;
+        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/GetTokenStatus");
+        IList<GetTokenStatusResult>? result = await _botHttpClient.SendAsync<IList<GetTokenStatusResult>>(
+            HttpMethod.Get,
+            _apiEndpoint,
+            "api/usertoken/GetTokenStatus",
+            queryParams,
+            body: null,
+            CreateRequestOptions("getting token status"),
+            cancellationToken).ConfigureAwait(false);
+
         if (result == null || result.Count == 0)
         {
             return [new GetTokenStatusResult { HasToken = false }];
@@ -79,14 +88,16 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
         {
             queryParams.Add("code", code);
         }
-        string? resJson = await CallApiAsync("api/usertoken/GetToken", queryParams, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-        if (resJson is not null)
-        {
-            GetTokenResult result = JsonSerializer.Deserialize<GetTokenResult>(resJson!, _defaultOptions)!;
-            return result;
-        }
-        return null;
+        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/GetToken");
+        return await _botHttpClient.SendAsync<GetTokenResult>(
+            HttpMethod.Get,
+            _apiEndpoint,
+            "api/usertoken/GetToken",
+            queryParams,
+            body: null,
+            CreateRequestOptions("getting token", returnNullOnNotFound: true),
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -108,8 +119,8 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
                 User = new ConversationAccount { Id = userId },
             }
         };
-        var tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState, _defaultOptions);
-        var state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
+        string tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState, _defaultOptions);
+        string state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
 
         Dictionary<string, string?> queryParams = new()
         {
@@ -121,9 +132,15 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
             queryParams.Add("finalRedirect", finalRedirect);
         }
 
-        string? resJson = await CallApiAsync("api/botsignin/GetSignInResource", queryParams, cancellationToken: cancellationToken).ConfigureAwait(false);
-        GetSignInResourceResult result = JsonSerializer.Deserialize<GetSignInResourceResult>(resJson!, _defaultOptions)!;
-        return result;
+        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/botsignin/GetSignInResource");
+        return (await _botHttpClient.SendAsync<GetSignInResourceResult>(
+            HttpMethod.Get,
+            _apiEndpoint,
+            "api/botsignin/GetSignInResource",
+            queryParams,
+            body: null,
+            CreateRequestOptions("getting sign-in resource"),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -148,9 +165,15 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
             token = exchangeToken
         };
 
-        string? resJson = await CallApiAsync("api/usertoken/exchange", queryParams, method: HttpMethod.Post, JsonSerializer.Serialize(tokenExchangeRequest), cancellationToken).ConfigureAwait(false);
-        GetTokenResult result =  JsonSerializer.Deserialize<GetTokenResult>(resJson!, _defaultOptions)!;
-        return result!;
+        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/exchange");
+        return (await _botHttpClient.SendAsync<GetTokenResult>(
+            HttpMethod.Post,
+            _apiEndpoint,
+            "api/usertoken/exchange",
+            queryParams,
+            JsonSerializer.Serialize(tokenExchangeRequest),
+            CreateRequestOptions("exchanging token"),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -177,8 +200,15 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
             queryParams.Add("channelId", channelId);
         }
 
-        await CallApiAsync("api/usertoken/SignOut", queryParams, HttpMethod.Delete, cancellationToken: cancellationToken).ConfigureAwait(false);
-        return;
+        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/SignOut");
+        await _botHttpClient.SendAsync(
+            HttpMethod.Delete,
+            _apiEndpoint,
+            "api/usertoken/SignOut",
+            queryParams,
+            body: null,
+            CreateRequestOptions("signing out user"),
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -200,89 +230,22 @@ public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> log
             resourceUrls = resourceUrls ?? []
         };
 
-        string? respJson = await CallApiAsync("api/usertoken/GetAadTokens", body, cancellationToken).ConfigureAwait(false);
-        IDictionary<string, GetTokenResult> res = JsonSerializer.Deserialize<Dictionary<string, GetTokenResult>>(respJson!, _defaultOptions)!;
-        return res;
+        _logger.LogInformation("Calling API endpoint with POST: {Endpoint}", "api/usertoken/GetAadTokens");
+        return (await _botHttpClient.SendAsync<Dictionary<string, GetTokenResult>>(
+            HttpMethod.Post,
+            _apiEndpoint,
+            "api/usertoken/GetAadTokens",
+            queryParams: null,
+            JsonSerializer.Serialize(body),
+            CreateRequestOptions("getting AAD tokens"),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
-    private async Task<string?> CallApiAsync(string endpoint, Dictionary<string, string?> queryParams, HttpMethod? method = null, string? body = null, CancellationToken cancellationToken = default)
-    {
-
-        var fullPath = $"{_apiEndpoint}/{endpoint}";
-        var requestUri = QueryHelpers.AddQueryString(fullPath, queryParams);
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", requestUri);
-
-        HttpMethod httpMethod = method ?? HttpMethod.Get;
-        #pragma warning disable CA2000 // HttpClient.SendAsync disposes the request
-        HttpRequestMessage request = new(httpMethod, requestUri);
-        #pragma warning restore CA2000
-
-        // Pass the agentic identity to the handler via request options
-        request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, AgenticIdentity);
-
-        if (httpMethod == HttpMethod.Post && !string.IsNullOrEmpty(body))
+    private BotRequestOptions CreateRequestOptions(string operationDescription, bool returnNullOnNotFound = false) =>
+        new()
         {
-            request.Content = new StringContent(body, Encoding.UTF8, "application/json");
-        }
-
-        HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-        if (response.IsSuccessStatusCode)
-        {
-            var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("API call successful. Status: {StatusCode}", response.StatusCode);
-            return content;
-        }
-        else
-        {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-
-            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                _logger.LogWarning("User Token not found: {Endpoint}", requestUri);
-                return null;
-            }
-            else
-            {
-                _logger.LogError("API call failed. Status: {StatusCode}, Error: {Error}",
-                    response.StatusCode, errorContent);
-                throw new HttpRequestException($"API call failed with status {response.StatusCode}: {errorContent}");
-            }
-        }
-    }
-
-    private async Task<string> CallApiAsync(string endpoint, object body, CancellationToken cancellationToken = default)
-    {
-        var fullPath = $"{_apiEndpoint}/{endpoint}";
-
-        _logger.LogInformation("Calling API endpoint with POST: {Endpoint}", fullPath);
-
-        var jsonContent = JsonSerializer.Serialize(body);
-        StringContent content = new(jsonContent, Encoding.UTF8, "application/json");
-
-        #pragma warning disable CA2000 // HttpClient.SendAsync disposes the request
-        HttpRequestMessage request = new(HttpMethod.Post, fullPath)
-        {
-            Content = content
+            AgenticIdentity = AgenticIdentity,
+            OperationDescription = operationDescription,
+            ReturnNullOnNotFound = returnNullOnNotFound
         };
-        #pragma warning restore CA2000
-
-        request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, AgenticIdentity);
-
-        HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-        if (response.IsSuccessStatusCode)
-        {
-            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            _logger.LogInformation("API call successful. Status: {StatusCode}", response.StatusCode);
-            return responseContent;
-        }
-        else
-        {
-            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            _logger.LogError("API call failed. Status: {StatusCode}, Error: {Error}",
-                response.StatusCode, errorContent);
-            throw new HttpRequestException($"API call failed with status {response.StatusCode}: {errorContent}");
-        }
-    }
 }

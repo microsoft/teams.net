@@ -3,10 +3,8 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Core;
 using Microsoft.Bot.Core.Hosting;
-using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -49,7 +47,7 @@ public class TeamsBotApplicationBuilder
     {
         _webAppBuilder = WebApplication.CreateSlimBuilder();
         _webAppBuilder.Services.AddHttpContextAccessor();
-        _webAppBuilder.Services.AddBotApplication<TeamsBotApplication>();
+        _webAppBuilder.Services.AddTeamsBotApplication();
     }
 
     /// <summary>

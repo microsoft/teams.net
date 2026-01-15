@@ -1,10 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Net.Mime;
-using System.Text;
 using System.Text.Json;
-using Microsoft.Bot.Core.Hosting;
+using Microsoft.Bot.Core.Http;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +18,7 @@ using CustomHeaders = Dictionary<string, string>;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class ConversationClient(HttpClient httpClient, ILogger<ConversationClient> logger = default!)
 {
+    private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
     internal const string ConversationHttpClientName = "BotConversationClient";
 
     /// <summary>
@@ -40,22 +39,29 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
+
+        if (activity.ChannelId == "agents")
+        {
+            logger.LogInformation("Truncating conversation ID for 'agents' channel to comply with length restrictions.");
+            string conversationId = activity.Conversation.Id;
+            string convId = conversationId.Length > 325 ? conversationId[..325] : conversationId;
+            url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities";
+        }
+
         string body = activity.ToJson();
 
         logger?.LogTrace("Sending activity to {Url}: {Activity}", url, body);
 
-        return await SendHttpRequestAsync<SendActivityResponse>(
+        return (await _botHttpClient.SendAsync<SendActivityResponse>(
             HttpMethod.Post,
             url,
             body,
-            activity.From.GetAgenticIdentity(),
-            "sending activity",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(activity.From.GetAgenticIdentity(), "sending activity", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -80,14 +86,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Updating activity at {Url}: {Activity}", url, body);
 
-        return await SendHttpRequestAsync<UpdateActivityResponse>(
+        return (await _botHttpClient.SendAsync<UpdateActivityResponse>(
             HttpMethod.Put,
             url,
             body,
-            activity.From.GetAgenticIdentity(),
-            "updating activity",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(activity.From.GetAgenticIdentity(), "updating activity", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
 
@@ -112,13 +116,11 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Deleting activity at {Url}", url);
 
-        await SendHttpRequestAsync<DeleteActivityResponse>(
+        await _botHttpClient.SendAsync(
             HttpMethod.Delete,
             url,
             body: null,
-            agenticIdentity: agenticIdentity,
-            "deleting activity",
-            customHeaders,
+            CreateRequestOptions(agenticIdentity, "deleting activity", customHeaders),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -166,14 +168,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Getting conversation members from {Url}", url);
 
-        return await SendHttpRequestAsync<IList<ConversationAccount>>(
+        return (await _botHttpClient.SendAsync<IList<ConversationAccount>>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "getting conversation members",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "getting conversation members", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
 
@@ -187,7 +187,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="customHeaders"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<ConversationAccount> GetConversationMemberAsync(string conversationId, string userId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<T> GetConversationMemberAsync<T>(string conversationId, string userId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default) where T : ConversationAccount
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
@@ -197,14 +197,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Getting conversation members from {Url}", url);
 
-        return await SendHttpRequestAsync<ConversationAccount>(
+        return (await _botHttpClient.SendAsync<T>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "getting conversation members",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "getting conversation member", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -229,14 +227,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Getting conversations from {Url}", url);
 
-        return await SendHttpRequestAsync<GetConversationsResponse>(
+        return (await _botHttpClient.SendAsync<GetConversationsResponse>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "getting conversations",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "getting conversations", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -260,14 +256,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Getting activity members from {Url}", url);
 
-        return await SendHttpRequestAsync<IList<ConversationAccount>>(
+        return (await _botHttpClient.SendAsync<IList<ConversationAccount>>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "getting activity members",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "getting activity members", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -289,14 +283,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Creating conversation at {Url} with parameters: {Parameters}", url, JsonSerializer.Serialize(parameters));
 
-        return await SendHttpRequestAsync<CreateConversationResponse>(
+        return (await _botHttpClient.SendAsync<CreateConversationResponse>(
             HttpMethod.Post,
             url,
             JsonSerializer.Serialize(parameters),
-            agenticIdentity,
-            "creating conversation",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "creating conversation", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -334,14 +326,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Getting paged conversation members from {Url}", url);
 
-        return await SendHttpRequestAsync<PagedMembersResult>(
+        return (await _botHttpClient.SendAsync<PagedMembersResult>(
             HttpMethod.Get,
             url,
             body: null,
-            agenticIdentity,
-            "getting paged conversation members",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "getting paged conversation members", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -366,13 +356,11 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Deleting conversation member at {Url}", url);
 
-        await SendHttpRequestAsync<object>(
+        await _botHttpClient.SendAsync(
             HttpMethod.Delete,
             url,
             body: null,
-            agenticIdentity,
-            "deleting conversation member",
-            customHeaders,
+            CreateRequestOptions(agenticIdentity, "deleting conversation member", customHeaders),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -398,14 +386,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Sending conversation history to {Url}: {Transcript}", url, JsonSerializer.Serialize(transcript));
 
-        return await SendHttpRequestAsync<SendConversationHistoryResponse>(
+        return (await _botHttpClient.SendAsync<SendConversationHistoryResponse>(
             HttpMethod.Post,
             url,
             JsonSerializer.Serialize(transcript),
-            agenticIdentity,
-            "sending conversation history",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "sending conversation history", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -430,66 +416,20 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.LogTrace("Uploading attachment to {Url}: {AttachmentData}", url, JsonSerializer.Serialize(attachmentData));
 
-        return await SendHttpRequestAsync<UploadAttachmentResponse>(
+        return (await _botHttpClient.SendAsync<UploadAttachmentResponse>(
             HttpMethod.Post,
             url,
             JsonSerializer.Serialize(attachmentData),
-            agenticIdentity,
-            "uploading attachment",
-            customHeaders,
-            cancellationToken).ConfigureAwait(false);
+            CreateRequestOptions(agenticIdentity, "uploading attachment", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
     }
 
-    private async Task<T> SendHttpRequestAsync<T>(HttpMethod method, string url, string? body, AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders, CancellationToken cancellationToken)
-    {
-        using HttpRequestMessage request = new(method, url);
-
-        if (body is not null)
+    private BotRequestOptions CreateRequestOptions(AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders) =>
+        new()
         {
-            request.Content = new StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json);
-        }
-
-        if (agenticIdentity is not null)
-        {
-            request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, agenticIdentity);
-        }
-
-        // Apply default custom headers
-        foreach (KeyValuePair<string, string> header in DefaultCustomHeaders)
-        {
-            request.Headers.TryAddWithoutValidation(header.Key, header.Value);
-        }
-
-        // Apply method-level custom headers (these override default headers if same key)
-        if (customHeaders is not null)
-        {
-            foreach (KeyValuePair<string, string> header in customHeaders)
-            {
-                request.Headers.Remove(header.Key);
-                request.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-        }
-
-        logger?.LogTrace("Sending HTTP {Method} request to {Url} with body: {Body}", method, url, body);
-
-        using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
-
-        if (resp.IsSuccessStatusCode)
-        {
-            string responseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            if (responseString.Length > 2) // to handle empty response
-            {
-                T? result = JsonSerializer.Deserialize<T>(responseString);
-                return result ?? throw new InvalidOperationException($"Failed to deserialize response for {operationDescription}");
-            }
-            // Empty response - return default value (e.g., for DELETE operations)
-            return default!;
-        }
-        else
-        {
-            string errResponseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            throw new HttpRequestException($"Error {operationDescription} {resp.StatusCode}. {errResponseString}");
-        }
-    }
-
+            AgenticIdentity = agenticIdentity,
+            OperationDescription = operationDescription,
+            DefaultHeaders = DefaultCustomHeaders,
+            CustomHeaders = customHeaders
+        };
 }

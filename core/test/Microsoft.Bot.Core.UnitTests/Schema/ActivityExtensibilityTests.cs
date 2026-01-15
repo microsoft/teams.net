@@ -18,7 +18,7 @@ public class ActivityExtensibilityTests
             CustomField = "CustomValue"
         };
         string json = MyCustomActivity.ToJson<MyCustomActivity>(customActivity);
-        MyCustomActivity deserializedActivity = CoreActivity.FromJsonString<MyCustomActivity>(json);
+        MyCustomActivity deserializedActivity = MyCustomActivity.FromActivity(CoreActivity.FromJsonString(json));
         Assert.NotNull(deserializedActivity);
         Assert.Equal("CustomValue", deserializedActivity.CustomField);
     }
@@ -50,8 +50,8 @@ public class ActivityExtensibilityTests
                 MyChannelId = "12345"
             }
         };
-        string json = MyCustomChannelDataActivity.ToJson<MyCustomChannelDataActivity>(customChannelDataActivity);
-        MyCustomChannelDataActivity deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
+        string json = CoreActivity.ToJson(customChannelDataActivity);
+        MyCustomChannelDataActivity deserializedActivity = MyCustomChannelDataActivity.FromActivity(CoreActivity.FromJsonString(json));
         Assert.NotNull(deserializedActivity);
         Assert.NotNull(deserializedActivity.ChannelData);
         Assert.Equal(ActivityType.Message, deserializedActivity.Type);
@@ -72,7 +72,7 @@ public class ActivityExtensibilityTests
             }
         }
         """;
-        MyCustomChannelDataActivity deserializedActivity = CoreActivity.FromJsonString<MyCustomChannelDataActivity>(json);
+        MyCustomChannelDataActivity deserializedActivity = MyCustomChannelDataActivity.FromActivity(CoreActivity.FromJsonString(json));
         Assert.NotNull(deserializedActivity);
         Assert.NotNull(deserializedActivity.ChannelData);
         Assert.Equal("customFieldValue", deserializedActivity.ChannelData.CustomField);
@@ -82,6 +82,29 @@ public class ActivityExtensibilityTests
 
 public class MyCustomActivity : CoreActivity
 {
+    internal static MyCustomActivity FromActivity(CoreActivity activity)
+    {
+        return new MyCustomActivity
+        {
+            Type = activity.Type,
+            ChannelId = activity.ChannelId,
+            Id = activity.Id,
+            ServiceUrl = activity.ServiceUrl,
+            ChannelData = activity.ChannelData,
+            From = activity.From,
+            Recipient = activity.Recipient,
+            Conversation = activity.Conversation,
+            Entities = activity.Entities,
+            Attachments = activity.Attachments,
+            Value = activity.Value,
+            Properties = activity.Properties,
+            CustomField = activity.Properties.TryGetValue("customField", out object? customFieldObj)
+                && customFieldObj is JsonElement jeCustomField
+                && jeCustomField.ValueKind == JsonValueKind.String
+                    ? jeCustomField.GetString()
+                    : null
+        };
+    }
     [JsonPropertyName("customField")]
     public string? CustomField { get; set; }
 }
@@ -89,6 +112,29 @@ public class MyCustomActivity : CoreActivity
 
 public class MyChannelData : ChannelData
 {
+    public MyChannelData()
+    {
+    }
+    public MyChannelData(ChannelData cd)
+    {
+        if (cd is not null)
+        {
+            if (cd.Properties.TryGetValue("customField", out object? channelIdObj)
+                && channelIdObj is JsonElement jeChannelId
+                && jeChannelId.ValueKind == JsonValueKind.String)
+            {
+                CustomField = jeChannelId.GetString();
+            }
+
+            if (cd.Properties.TryGetValue("myChannelId", out object? mychannelIdObj)
+                && mychannelIdObj is JsonElement jemyChannelId
+                && jemyChannelId.ValueKind == JsonValueKind.String)
+            {
+                MyChannelId = jemyChannelId.GetString();
+            }
+        }
+    }
+
     [JsonPropertyName("customField")]
     public string? CustomField { get; set; }
 
@@ -100,4 +146,22 @@ public class MyCustomChannelDataActivity : CoreActivity
 {
     [JsonPropertyName("channelData")]
     public new MyChannelData? ChannelData { get; set; }
+
+    internal static MyCustomChannelDataActivity FromActivity(CoreActivity coreActivity)
+    {
+        return new MyCustomChannelDataActivity
+        {
+            Type = coreActivity.Type,
+            ChannelId = coreActivity.ChannelId,
+            Id = coreActivity.Id,
+            ServiceUrl = coreActivity.ServiceUrl,
+            ChannelData = new MyChannelData(coreActivity.ChannelData ?? new Core.Schema.ChannelData()),
+            Recipient = coreActivity.Recipient,
+            Conversation = coreActivity.Conversation,
+            Entities = coreActivity.Entities,
+            Attachments = coreActivity.Attachments,
+            Value = coreActivity.Value,
+            Properties = coreActivity.Properties
+        };
+    }
 }

@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
 
@@ -29,8 +31,9 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     /// <param name="json"></param>
     /// <returns></returns>
-    public static new TeamsActivity FromJsonString(string json)
-         => FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity);
+    public static new TeamsActivity FromJsonString(string json) =>
+        FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity)
+        .Rebase();
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
@@ -49,6 +52,9 @@ public class TeamsActivity : CoreActivity
         Recipient = new TeamsConversationAccount();
         Conversation = new TeamsConversation();
     }
+
+    private static TeamsActivity FromJsonString(string json, JsonTypeInfo<TeamsActivity> options)
+        => JsonSerializer.Deserialize(json, options)!;
 
     private TeamsActivity(CoreActivity activity) : base(activity)
     {
@@ -74,7 +80,7 @@ public class TeamsActivity : CoreActivity
     {
         base.Attachments = this.Attachments?.ToJsonArray();
         base.Entities = this.Entities?.ToJsonArray();
-        base.ChannelData = this.ChannelData;
+        base.ChannelData = new TeamsChannelData(this.ChannelData);
         base.From = this.From;
         base.Recipient = this.Recipient;
         base.Conversation = this.Conversation;

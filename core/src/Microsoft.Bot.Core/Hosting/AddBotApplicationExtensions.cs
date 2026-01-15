@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -94,9 +93,9 @@ public static class AddBotApplicationExtensions
         string httpClientName,
         string sectionName) where TClient : class
     {
-        var sp = services.BuildServiceProvider();
-        var configuration = sp.GetRequiredService<IConfiguration>();
-        var logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
+        ServiceProvider sp = services.BuildServiceProvider();
+        IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
+        ILogger logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
         ArgumentNullException.ThrowIfNull(configuration);
 
         string scope = "https://api.botframework.com/.default";
