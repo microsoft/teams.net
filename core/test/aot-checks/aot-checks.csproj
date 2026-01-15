@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Bot.Core\Microsoft.Bot.Core.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Core\Microsoft.Teams.Bot.Core.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

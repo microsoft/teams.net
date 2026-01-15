@@ -3,8 +3,8 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Bot.Core;
-using Microsoft.Bot.Core.Hosting;
+using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

@@ -4,7 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.BotApps.Schema;
 

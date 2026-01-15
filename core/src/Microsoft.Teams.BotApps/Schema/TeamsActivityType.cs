@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.BotApps.Schema;
 

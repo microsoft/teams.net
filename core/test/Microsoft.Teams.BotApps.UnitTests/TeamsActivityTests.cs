@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Nodes;
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
 

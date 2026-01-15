@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Bot.Core;
+using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.BotApps.Handlers;

@@ -2,10 +2,11 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Schema;
+using Microsoft.Teams.Bot.Core;
 
 namespace Microsoft.Bot.Core.Compat;
 
-internal sealed class CompatUserTokenClient(Core.UserTokenClient utc) : Connector.Authentication.UserTokenClient
+internal sealed class CompatUserTokenClient(UserTokenClient utc) : Connector.Authentication.UserTokenClient
 {
     public async override Task<TokenStatus[]> GetTokenStatusAsync(string userId, string channelId, string includeFilter, CancellationToken cancellationToken)
     {

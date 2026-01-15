@@ -4,9 +4,9 @@
 
 #:project ../../src/Microsoft.Bot.Core/Microsoft.Bot.Core.csproj
 
-using Microsoft.Bot.Core.Hosting;
-using Microsoft.Bot.Core;
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Schema;
 
 var builder = Host.CreateApplicationBuilder(args);
 builder.Services.AddBotApplicationClients();

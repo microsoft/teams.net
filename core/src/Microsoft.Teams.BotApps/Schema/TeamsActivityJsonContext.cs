@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Schema.Entities;
 
 namespace Microsoft.Teams.BotApps.Schema;

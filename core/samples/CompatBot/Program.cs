@@ -6,7 +6,7 @@ using CompatBot;
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Core;
+using Microsoft.Teams.Bot.Core;
 using Microsoft.Bot.Core.Compat;
 using Microsoft.Bot.Schema;
 

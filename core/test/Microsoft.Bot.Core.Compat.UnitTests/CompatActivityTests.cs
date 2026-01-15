@@ -3,7 +3,7 @@
 
 using AdaptiveCards;
 using Microsoft.Bot.Builder.Teams;
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Schema;
 
 namespace Microsoft.Bot.Core.Compat.UnitTests

@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Bot.Core\Microsoft.Bot.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.Teams.Bot.Core\Microsoft.Teams.Bot.Core.csproj" />
   </ItemGroup>
 
 </Project>

@@ -3,4 +3,4 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.Bot.Core.Tests")]
+[assembly: InternalsVisibleTo("Microsoft.Teams.Bot.Core.Tests")]

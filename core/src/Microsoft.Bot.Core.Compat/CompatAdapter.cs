@@ -4,7 +4,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.BotApps;
 

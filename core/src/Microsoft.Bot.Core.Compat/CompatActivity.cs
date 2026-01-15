@@ -4,7 +4,7 @@
 using System.Text;
 
 using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.BotApps.Schema;
 using Newtonsoft.Json;
@@ -50,7 +50,7 @@ public static class CompatActivity
     /// </summary>
     /// <param name="account"></param>
     /// <returns></returns>
-    public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Bot.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Teams.Bot.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 

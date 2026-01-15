@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Bot.Core.Hosting;
+using Microsoft.Teams.Bot.Core.Hosting;
 
 using Proactive;
 

@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using Microsoft.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.BotApps.Schema;
 
 namespace Microsoft.Teams.BotApps.Handlers;

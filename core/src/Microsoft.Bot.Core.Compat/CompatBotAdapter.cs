@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.BotApps;
 using Newtonsoft.Json;
 
