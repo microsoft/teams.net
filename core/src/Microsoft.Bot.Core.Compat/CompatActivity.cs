@@ -62,7 +62,6 @@ public static class CompatActivity
                 Id = account.Id,
                 Name = account.Name,
                 AadObjectId = tae.AadObjectId
-                //Properties = JObject.FromObject(account.Properties)
             };
         }
         else
@@ -86,31 +85,26 @@ public static class CompatActivity
 
         if (account.Properties.TryGetValue("userPrincipalName", out object? userPrincipalName))
         {
-            //channelAccount.UserPrincipalName = userPrincipalName?.ToString();
             channelAccount.Properties.Add("userPrincipalName", userPrincipalName?.ToString() ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("givenName", out object? givenName))
         {
-            //channelAccount.GivenName = givenName?.ToString();
             channelAccount.Properties.Add("givenName", givenName?.ToString() ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("surname", out object? surname))
         {
-            //channelAccount.Surname = surname?.ToString();
             channelAccount.Properties.Add("surname", surname?.ToString() ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("email", out object? email))
         {
-            //channelAccount.Email = email?.ToString();
             channelAccount.Properties.Add("email", email?.ToString() ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("tenantId", out object? tenantId))
         {
-            //channelAccount.TenantId = tenantId?.ToString();
             channelAccount.Properties.Add("tenantId", tenantId?.ToString() ?? string.Empty);
         }
 
