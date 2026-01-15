@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Bot.Apps;
 
-namespace Microsoft.Bot.Core.Compat;
+namespace Microsoft.Teams.Bot.Compat;
 
 /// <summary>
 /// Provides extension methods for registering compatibility adapters and related services to support legacy bot hosting

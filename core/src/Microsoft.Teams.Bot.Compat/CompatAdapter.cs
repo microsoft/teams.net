@@ -10,7 +10,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Teams.Bot.Apps;
 
 
-namespace Microsoft.Bot.Core.Compat;
+namespace Microsoft.Teams.Bot.Compat;
 
 /// <summary>
 /// Provides a compatibility adapter for processing bot activities and HTTP requests using legacy middleware and bot
@@ -45,7 +45,7 @@ public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter 
     /// </summary>
     /// <param name="middleware">The middleware component to be invoked during request processing. Cannot be null.</param>
     /// <returns>The current <see cref="CompatAdapter"/> instance, enabling method chaining.</returns>
-    public CompatAdapter Use(Builder.IMiddleware middleware)
+    public CompatAdapter Use(Microsoft.Bot.Builder.IMiddleware middleware)
     {
         MiddlewareSet.Use(middleware);
         return this;
@@ -69,7 +69,7 @@ public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter 
         {
             coreActivity = activity;
             TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());
-            turnContext.TurnState.Add<Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(botApplication.UserTokenClient));
+            turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(botApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversations(botApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             await bot.OnTurnAsync(turnContext, cancellationToken1).ConfigureAwait(false);
@@ -77,7 +77,7 @@ public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter 
 
         try
         {
-            foreach (Builder.IMiddleware? middleware in MiddlewareSet)
+            foreach (Microsoft.Bot.Builder.IMiddleware? middleware in MiddlewareSet)
             {
                 botApplication.Use(new CompatAdapterMiddleware(middleware));
             }

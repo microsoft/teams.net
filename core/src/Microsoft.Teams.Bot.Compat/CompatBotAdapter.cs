@@ -10,7 +10,7 @@ using Microsoft.Teams.Bot.Apps;
 using Newtonsoft.Json;
 
 
-namespace Microsoft.Bot.Core.Compat;
+namespace Microsoft.Teams.Bot.Compat;
 
 /// <summary>
 /// Provides a Bot Framework adapter that enables compatibility between the Bot Framework SDK and a custom bot

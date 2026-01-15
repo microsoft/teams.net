@@ -6,7 +6,7 @@ using Microsoft.Bot.Builder.Teams;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
 
-namespace Microsoft.Bot.Core.Compat.UnitTests
+namespace Microsoft.Teams.Bot.Compat.UnitTests
 {
     public class CompatActivityTests
     {

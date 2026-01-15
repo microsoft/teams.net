@@ -1,6 +1,6 @@
 <Solution>
   <Folder Name="/libs/">
-    <Project Path="../src/Microsoft.Bot.Core.Compat/Microsoft.Bot.Core.Compat.csproj" />
+    <Project Path="../src/Microsoft.Teams.Bot.Compat/Microsoft.Teams.Bot.Compat.csproj" />
     <Project Path="../src/Microsoft.Teams.Bot.Core/Microsoft.Teams.Bot.Core.csproj" />
     <Project Path="../src/Microsoft.Teams.Bot.Apps/Microsoft.Teams.Bot.Apps.csproj" />
   </Folder>

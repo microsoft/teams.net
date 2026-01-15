@@ -16,7 +16,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.4" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Bot.Core.Compat\Microsoft.Bot.Core.Compat.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Compat\Microsoft.Teams.Bot.Compat.csproj" />
   </ItemGroup>
 
   <ItemGroup>

@@ -9,7 +9,7 @@ using Microsoft.Rest;
 
 // TODO: Figure out what to do with Agentic Identities. They're all "nulls" here right now.
 // The identity is dependent on the incoming payload or supplied in for proactive scenarios.
-namespace Microsoft.Bot.Core.Compat
+namespace Microsoft.Teams.Bot.Compat
 {
     internal sealed class CompatConversations(ConversationClient client) : IConversations
     {
@@ -140,7 +140,7 @@ namespace Microsoft.Bot.Core.Compat
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
-            Bot.Schema.PagedMembersResult result = new()
+            Microsoft.Bot.Schema.PagedMembersResult result = new()
             {
                 ContinuationToken = pagedMembers.ContinuationToken,
                 Members = pagedMembers.Members?.Select(m => m.ToCompatChannelAccount()).ToList()

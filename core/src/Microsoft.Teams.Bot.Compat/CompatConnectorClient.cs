@@ -5,7 +5,7 @@ using Microsoft.Bot.Connector;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 
-namespace Microsoft.Bot.Core.Compat
+namespace Microsoft.Teams.Bot.Compat
 {
     internal sealed class CompatConnectorClient(CompatConversations conversations) : IConnectorClient
     {

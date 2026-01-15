@@ -9,7 +9,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Newtonsoft.Json;
 
-namespace Microsoft.Bot.Core.Compat;
+namespace Microsoft.Teams.Bot.Compat;
 
 /// <summary>
 /// Extension methods for converting between Bot Framework Activity and CoreActivity/TeamsActivity.

@@ -6,7 +6,7 @@ using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps;
 
-namespace Microsoft.Bot.Core.Compat;
+namespace Microsoft.Teams.Bot.Compat;
 
 internal sealed class CompatAdapterMiddleware(IMiddleware bfMiddleWare) : ITurnMiddleWare
 {
@@ -19,11 +19,11 @@ internal sealed class CompatAdapterMiddleware(IMiddleware bfMiddleWare) : ITurnM
             TurnContext turnContext = new(new CompatBotAdapter(tba), activity.ToCompatActivity());
 #pragma warning restore CA2000 // Dispose objects before losing scope
 
-            turnContext.TurnState.Add<Connector.Authentication.UserTokenClient>(
+            turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(
                 new CompatUserTokenClient(botApplication.UserTokenClient)
             );
 
-            turnContext.TurnState.Add<Connector.IConnectorClient>(
+            turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(
                 new CompatConnectorClient(
                     new CompatConversations(botApplication.ConversationClient)
                     {

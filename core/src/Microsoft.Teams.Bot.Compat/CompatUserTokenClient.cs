@@ -4,9 +4,9 @@
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.Bot.Core;
 
-namespace Microsoft.Bot.Core.Compat;
+namespace Microsoft.Teams.Bot.Compat;
 
-internal sealed class CompatUserTokenClient(UserTokenClient utc) : Connector.Authentication.UserTokenClient
+internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot.Connector.Authentication.UserTokenClient
 {
     public async override Task<TokenStatus[]> GetTokenStatusAsync(string userId, string channelId, string includeFilter, CancellationToken cancellationToken)
     {
@@ -47,7 +47,7 @@ internal sealed class CompatUserTokenClient(UserTokenClient utc) : Connector.Aut
 
         if (res.TokenExchangeResource != null)
         {
-            signInResource.TokenExchangeResource = new Bot.Schema.TokenExchangeResource
+            signInResource.TokenExchangeResource = new Microsoft.Bot.Schema.TokenExchangeResource
             {
                 Id = res.TokenExchangeResource.Id,
                 Uri = res.TokenExchangeResource.Uri?.ToString(),
@@ -57,7 +57,7 @@ internal sealed class CompatUserTokenClient(UserTokenClient utc) : Connector.Aut
 
         if (res.TokenPostResource != null)
         {
-            signInResource.TokenPostResource = new Bot.Schema.TokenPostResource
+            signInResource.TokenPostResource = new Microsoft.Bot.Schema.TokenPostResource
             {
                 SasUrl = res.TokenPostResource.SasUrl?.ToString()
             };
