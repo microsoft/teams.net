@@ -3,13 +3,14 @@
 
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.Teams;
-using Microsoft.Teams.Bot.Core.Compat;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Teams.Bot.Compat;
+using Microsoft.Teams.Bot.Core;
 
 namespace Microsoft.Bot.Core.Tests
 {
