@@ -3,7 +3,6 @@
 
 using System.Text;
 using System.Text.Json;
-using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Http;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;

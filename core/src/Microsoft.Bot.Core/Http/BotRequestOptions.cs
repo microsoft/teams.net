@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Schema;
 
 namespace Microsoft.Bot.Core.Http;

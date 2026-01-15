@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using Microsoft.Bot.Core.Hosting;
 using Microsoft.Bot.Core.Http;
 using Microsoft.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;
@@ -49,7 +48,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         {
             logger.LogInformation("Truncating conversation ID for 'agents' channel to comply with length restrictions.");
             string conversationId = activity.Conversation.Id;
-            var convId = conversationId.Length > 325 ? conversationId[..325] : conversationId;
+            string convId = conversationId.Length > 325 ? conversationId[..325] : conversationId;
             url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities";
         }
 

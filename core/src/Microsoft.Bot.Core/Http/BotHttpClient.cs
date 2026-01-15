@@ -11,9 +11,6 @@ using Microsoft.Bot.Core.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Bot.Core.Http;
-
-using CustomHeaders = Dictionary<string, string>;
-
 /// <summary>
 /// Provides shared HTTP request functionality for bot clients.
 /// </summary>
@@ -141,19 +138,16 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
     {
         HttpRequestMessage request = new(method, url);
 
-        // Set request body if provided
         if (body is not null)
         {
             request.Content = new StringContent(body, Encoding.UTF8, MediaTypeNames.Application.Json);
         }
 
-        // Set agentic identity for authentication
         if (options.AgenticIdentity is not null)
         {
             request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, options.AgenticIdentity);
         }
 
-        // Apply default headers
         if (options.DefaultHeaders is not null)
         {
             foreach (KeyValuePair<string, string> header in options.DefaultHeaders)
@@ -162,7 +156,6 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
             }
         }
 
-        // Apply custom headers (these override default headers if same key)
         if (options.CustomHeaders is not null)
         {
             foreach (KeyValuePair<string, string> header in options.CustomHeaders)
@@ -187,14 +180,12 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
             return await DeserializeResponseAsync<T>(response, options, cancellationToken).ConfigureAwait(false);
         }
 
-        // Handle 404 with ReturnNullOnNotFound option
         if (response.StatusCode == HttpStatusCode.NotFound && options.ReturnNullOnNotFound)
         {
             logger?.LogWarning("Resource not found: {Url}", url);
             return default;
         }
 
-        // Log and throw for error responses
         string errorContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         string responseHeaders = FormatResponseHeaders(response);
 
@@ -216,16 +207,13 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
     {
         string responseString = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
 
-        // Handle empty responses
         if (string.IsNullOrWhiteSpace(responseString) || responseString.Length <= 2)
         {
             return default;
         }
 
-        // Handle string return type specially
         if (typeof(T) == typeof(string))
         {
-            // Try to deserialize as a quoted JSON string first, then return raw if that fails
             try
             {
                 T? result = JsonSerializer.Deserialize<T>(responseString, DefaultJsonOptions);
@@ -237,7 +225,6 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
             }
         }
 
-        // Standard JSON deserialization
         T? deserializedResult = JsonSerializer.Deserialize<T>(responseString, DefaultJsonOptions);
 
         if (deserializedResult is null)
@@ -253,12 +240,12 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
     {
         StringBuilder sb = new();
 
-        foreach (var header in response.Headers)
+        foreach (KeyValuePair<string, IEnumerable<string>> header in response.Headers)
         {
             sb.AppendLine(CultureInfo.InvariantCulture, $"Response header: {header.Key} : {string.Join(",", header.Value)}");
         }
 
-        foreach (var header in response.TrailingHeaders)
+        foreach (KeyValuePair<string, IEnumerable<string>> header in response.TrailingHeaders)
         {
             sb.AppendLine(CultureInfo.InvariantCulture, $"Response trailing header: {header.Key} : {string.Join(",", header.Value)}");
         }
