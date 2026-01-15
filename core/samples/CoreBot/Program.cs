@@ -20,10 +20,10 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 
     replyText += $"<br /> Received Activity `{activity.Type}`.";
 
-    activity.Properties.Where(kvp => kvp.Key.StartsWith("text")).ToList().ForEach(kvp =>
-    {
-        replyText += $"<br /> {kvp.Key}:`{kvp.Value}` ";
-    });
+    //activity.Properties.Where(kvp => kvp.Key.StartsWith("text")).ToList().ForEach(kvp =>
+    //{
+    //    replyText += $"<br /> {kvp.Key}:`{kvp.Value}` ";
+    //});
 
 
     string? conversationType = "unknown conversation type";

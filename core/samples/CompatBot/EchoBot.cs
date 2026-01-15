@@ -142,13 +142,14 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
                 .WithServiceUrl(new Uri(turnContext.Activity.ServiceUrl))
                 .WithType(ActivityType.Message)
                 .WithText("This message has been updated.")
+                .WithFrom(ta.From)
                 .Build(),
             null,
             cancellationToken);
 
         await Task.Delay(2000, cancellationToken);
 
-        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, new Uri(turnContext.Activity.ServiceUrl), null, null, cancellationToken);
+        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, new Uri(turnContext.Activity.ServiceUrl), AgenticIdentity.FromProperties(ta.From.Properties), null, cancellationToken);
 
         await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
     }

@@ -40,10 +40,19 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
+
+        if (activity.ChannelId == "agents")
+        {
+            logger.LogInformation("Truncating conversation ID for 'agents' channel to comply with length restrictions.");
+            string conversationId = activity.Conversation.Id;
+            var convId = conversationId.Length > 325 ? conversationId[..325] : conversationId;
+            url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities";
+        }
+
         string body = activity.ToJson();
 
         logger?.LogTrace("Sending activity to {Url}: {Activity}", url, body);
@@ -470,7 +479,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             }
         }
 
-        logger?.LogTrace("Sending HTTP {Method} request to {Url} with body: {Body}", method, url, body);
+        logger?.LogTrace("Sending HTTP {Method} \n {Url} \n \n {Body} \n", method, url, body);
 
         using HttpResponseMessage resp = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
@@ -488,7 +497,17 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         else
         {
             string errResponseString = await resp.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
-            throw new HttpRequestException($"Error {operationDescription} {resp.StatusCode}. {errResponseString}");
+            string responseHeader = string.Empty;
+            foreach (var h in resp.Headers)
+            {
+                responseHeader += $"Response header: {h.Key} : {string.Join(",", h.Value)}\n";
+            }
+            foreach (var h in resp.TrailingHeaders)
+            {
+                responseHeader += $"Response trailing header: {h.Key} : {string.Join(",", h.Value)}\n";
+            }
+            logger?.LogWarning("HTTP request error {Method} {Url} \n Status Code: {StatusCode} \n Response Headers: {ResponseHeaders} \n Response Body: {ResponseBody}", method, url, resp.StatusCode, responseHeader, errResponseString);
+            throw new HttpRequestException($"Error {operationDescription} {resp.StatusCode}. {errResponseString}", null, resp.StatusCode);
         }
     }
 
