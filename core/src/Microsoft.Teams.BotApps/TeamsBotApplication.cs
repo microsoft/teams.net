@@ -16,7 +16,7 @@ namespace Microsoft.Teams.BotApps;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class TeamsBotApplication : BotApplication
 {
-    private readonly TeamsAPXClient _teamsAPXClient;
+    private readonly TeamsApiClient _teamsAPXClient;
     private static TeamsBotApplicationBuilder? _botApplicationBuilder;
 
     /// <summary>
@@ -42,7 +42,7 @@ public class TeamsBotApplication : BotApplication
     /// <summary>
     /// Gets the client used to interact with the TeamsAPX service.
     /// </summary>
-    public TeamsAPXClient TeamsAPXClient => _teamsAPXClient;
+    public TeamsApiClient TeamsAPXClient => _teamsAPXClient;
 
     /// <summary>
     /// Handler for conversation update activities.
@@ -59,7 +59,7 @@ public class TeamsBotApplication : BotApplication
     public TeamsBotApplication(
         ConversationClient conversationClient,
         UserTokenClient userTokenClient,
-        TeamsAPXClient teamsAPXClient,
+        TeamsApiClient teamsAPXClient,
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
         ILogger<BotApplication> logger,

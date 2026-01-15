@@ -17,7 +17,7 @@ using CustomHeaders = Dictionary<string, string>;
 /// <param name="httpClient">The HTTP client instance used to send requests to the Teams service. Must not be null.</param>
 /// <param name="logger">The logger instance used for logging. Optional.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
-public class TeamsAPXClient(HttpClient httpClient, ILogger<TeamsAPXClient> logger = default!)
+public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logger = default!)
 {
     private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
     internal const string TeamsHttpClientName = "TeamsAPXClient";

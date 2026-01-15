@@ -32,7 +32,7 @@ public static class TeamsBotApplicationHostingExtensions
         if (!string.IsNullOrEmpty(configuration["Scope"]))
             scope = configuration["Scope"]!;
 
-        services.AddHttpClient<TeamsAPXClient>(TeamsAPXClient.TeamsHttpClientName)
+        services.AddHttpClient<TeamsApiClient>(TeamsApiClient.TeamsHttpClientName)
             .AddHttpMessageHandler(sp =>
                 new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),

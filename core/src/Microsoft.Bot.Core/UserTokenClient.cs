@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Bot.Core.Http;
 using Microsoft.Bot.Core.Schema;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Bot.Core;
@@ -12,15 +13,16 @@ namespace Microsoft.Bot.Core;
 /// <summary>
 /// Client for managing user tokens via HTTP requests.
 /// </summary>
+/// <param name="configuration"></param>
 /// <param name="logger"></param>
 /// <param name="httpClient"></param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
-public class UserTokenClient(HttpClient httpClient, ILogger<UserTokenClient> logger)
+public class UserTokenClient(HttpClient httpClient, IConfiguration configuration, ILogger<UserTokenClient> logger)
 {
     internal const string UserTokenHttpClientName = "BotUserTokenClient";
     private readonly ILogger<UserTokenClient> _logger = logger;
     private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
-    private readonly string _apiEndpoint = "https://token.botframework.com";
+    private readonly string _apiEndpoint = configuration["UserTokenApiEndpoint"] ?? "https://token.botframework.com";
     private readonly JsonSerializerOptions _defaultOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     internal AgenticIdentity? AgenticIdentity { get; set; }

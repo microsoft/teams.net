@@ -28,6 +28,34 @@ internal class Cards
             }
     };
 
+    public static object ReactionsCard(string? reactionsAdded, string? reactionsRemoved) => new
+    {
+        type = "AdaptiveCard",
+        version = "1.4",
+        body = new object[]
+            {
+                    new
+                    {
+                        type = "TextBlock",
+                        text = "Reaction Received",
+                        weight = "Bolder",
+                        size = "Medium"
+                    },
+                    new
+                    {
+                        type = "TextBlock",
+                        text = $"Reactions Added: {reactionsAdded ?? "(empty)"}",
+                        wrap = true
+                    },
+                    new
+                    {
+                        type = "TextBlock",
+                        text = $"Reactions Removed: {reactionsRemoved ?? "(empty)"}",
+                        wrap = true
+                    }
+            }
+    };
+
     public static readonly object FeedbackCardObj = new
     {
         type = "AdaptiveCard",

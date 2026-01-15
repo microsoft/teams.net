@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Bot.Core.Schema;
 using Microsoft.Teams.BotApps;
 using Microsoft.Teams.BotApps.Handlers;
 using Microsoft.Teams.BotApps.Schema;
@@ -23,7 +22,7 @@ teamsApp.OnMessage = async (messageArgs, context, cancellationToken) =>
         .WithText(replyText)
         .Build();
 
-    reply.AddMention(context.Activity.From!, "ridobotlocal", true);
+    reply.AddMention(context.Activity.From!);
 
     await context.SendActivityAsync(reply, cancellationToken);
 
@@ -37,15 +36,17 @@ teamsApp.OnMessage = async (messageArgs, context, cancellationToken) =>
 
 teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>
 {
-    string replyText = $"Message reaction activity of type `{context.Activity.Type}` received.";
-    replyText += args.ReactionsAdded != null
-        ? $"<br /> Reactions Added: {string.Join(", ", args.ReactionsAdded.Select(r => r.Type))}."
-        : string.Empty;
-    replyText += args.ReactionsRemoved != null
-   ? $"<br /> Reactions Removed: {string.Join(", ", args.ReactionsRemoved.Select(r => r.Type))}."
-       : string.Empty;
+    string reactionsAdded = string.Join(", ", args.ReactionsAdded?.Select(r => r.Type) ?? []);
+    string reactionsRemoved = string.Join(", ", args.ReactionsRemoved?.Select(r => r.Type) ?? []);
 
-    await context.SendActivityAsync(replyText, cancellationToken);
+    var reply = TeamsActivity.CreateBuilder()
+        .WithAttachment(TeamsAttachment.CreateBuilder()
+            .WithAdaptiveCard(Cards.ReactionsCard(reactionsAdded, reactionsRemoved))
+            .Build()
+        )
+        .Build();
+
+    await context.SendActivityAsync(reply, cancellationToken);
 };
 
 teamsApp.OnInvoke = async (context, cancellationToken) =>
