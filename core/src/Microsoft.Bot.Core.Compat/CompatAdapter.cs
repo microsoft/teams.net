@@ -7,7 +7,7 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
-using Microsoft.Teams.BotApps;
+using Microsoft.Teams.Bot.Apps;
 
 
 namespace Microsoft.Bot.Core.Compat;

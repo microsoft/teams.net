@@ -4,7 +4,7 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
-using Microsoft.Teams.BotApps;
+using Microsoft.Teams.Bot.Apps;
 
 namespace Microsoft.Bot.Core.Compat;
 

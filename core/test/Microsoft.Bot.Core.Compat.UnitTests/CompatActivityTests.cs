@@ -4,7 +4,7 @@
 using AdaptiveCards;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Teams.Bot.Core.Schema;
-using Microsoft.Teams.BotApps.Schema;
+using Microsoft.Teams.Bot.Apps.Schema;
 
 namespace Microsoft.Bot.Core.Compat.UnitTests
 {

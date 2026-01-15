@@ -6,7 +6,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.BotApps;
+using Microsoft.Teams.Bot.Apps;
 using Newtonsoft.Json;
 
 

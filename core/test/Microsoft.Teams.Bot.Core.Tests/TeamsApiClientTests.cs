@@ -6,7 +6,7 @@ using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Teams.BotApps;
+using Microsoft.Teams.Bot.Apps;
 
 namespace Microsoft.Bot.Core.Tests;
 

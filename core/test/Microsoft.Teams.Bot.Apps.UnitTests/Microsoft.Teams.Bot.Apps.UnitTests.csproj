@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net10.0</TargetFramework>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
@@ -15,7 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Bot.Core.Compat\Microsoft.Bot.Core.Compat.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Apps\Microsoft.Teams.Bot.Apps.csproj" />
   </ItemGroup>
 

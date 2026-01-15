@@ -9,8 +9,8 @@ using Microsoft.Bot.Core.Compat;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Teams.BotApps;
-using Microsoft.Teams.BotApps.Schema;
+using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Apps.Schema;
 using Newtonsoft.Json.Linq;
 
 namespace CompatBot;

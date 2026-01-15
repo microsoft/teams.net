@@ -4,7 +4,7 @@
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Teams.BotApps;
+using Microsoft.Teams.Bot.Apps;
 
 namespace Microsoft.Bot.Core.Compat;
 

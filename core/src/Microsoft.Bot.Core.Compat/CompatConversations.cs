@@ -341,7 +341,7 @@ namespace Microsoft.Bot.Core.Compat
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Teams.BotApps.Schema.TeamsConversationAccount response = await _client.GetConversationMemberAsync<Teams.BotApps.Schema.TeamsConversationAccount>(
+            Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount>(
                 conversationId, userId, new Uri(ServiceUrl), null!, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             return new HttpOperationResponse<ChannelAccount>

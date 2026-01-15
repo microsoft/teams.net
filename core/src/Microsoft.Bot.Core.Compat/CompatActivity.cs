@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
-using Microsoft.Teams.BotApps.Schema;
+using Microsoft.Teams.Bot.Apps.Schema;
 using Newtonsoft.Json;
 
 namespace Microsoft.Bot.Core.Compat;
