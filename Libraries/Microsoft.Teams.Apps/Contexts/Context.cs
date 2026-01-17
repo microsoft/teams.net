@@ -113,6 +113,15 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     public Task<object?> Next();
 
     /// <summary>
+    /// Called to continue the chain of route handlers using the specified context instance.
+    /// Use this overload when you want to invoke the next handler with a different or wrapped
+    /// <see cref="IContext{TActivity}"/> than the current one; if not called, no other handlers
+    /// in the sequence will be executed.
+    /// </summary>
+    /// <param name="context">The context to pass to the next handler in the chain.</param>
+    public Task<object?> Next(IContext<TActivity> context);
+
+    /// <summary>
     /// convert the context to that of another activity type
     /// </summary>
     public IContext<IActivity> ToActivityType();
@@ -168,6 +177,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     }
 
     public Task<object?> Next() => OnNext(ToActivityType());
+    public Task<object?> Next(IContext<TActivity> context) => OnNext(context.ToActivityType());
     public IContext<IActivity> ToActivityType() => ToActivityType<IActivity>();
     public IContext<TToActivity> ToActivityType<TToActivity>() where TToActivity : IActivity
     {

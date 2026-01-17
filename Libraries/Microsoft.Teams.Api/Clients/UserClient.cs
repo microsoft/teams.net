@@ -7,7 +7,12 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class UserClient : Client
 {
-    public UserTokenClient Token { get; }
+    public virtual UserTokenClient Token { get; }
+
+    public UserClient() : base()
+    {
+        Token = new UserTokenClient(_http, _cancellationToken);
+    }
 
     public UserClient(CancellationToken cancellationToken = default) : base(cancellationToken)
     {

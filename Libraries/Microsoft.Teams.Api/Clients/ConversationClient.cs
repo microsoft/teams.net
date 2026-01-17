@@ -11,8 +11,8 @@ namespace Microsoft.Teams.Api.Clients;
 public class ConversationClient : Client
 {
     public readonly string ServiceUrl;
-    public readonly ActivityClient Activities;
-    public readonly MemberClient Members;
+    public virtual ActivityClient Activities { get; }
+    public virtual MemberClient Members { get; }
 
     public ConversationClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
@@ -42,7 +42,7 @@ public class ConversationClient : Client
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
     }
 
-    public async Task<ConversationResource> CreateAsync(CreateRequest request)
+    public virtual async Task<ConversationResource> CreateAsync(CreateRequest request)
     {
         var req = HttpRequest.Post($"{ServiceUrl}v3/conversations", body: request);
         var res = await _http.SendAsync<ConversationResource>(req, _cancellationToken);
