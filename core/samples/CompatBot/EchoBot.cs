@@ -100,7 +100,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         return new InvokeResponse
         {
             Status = 200,
-            Body = "invokes from compat bot"
+            Body = new { value = "invokes from compat bot" }
         };
     }
 

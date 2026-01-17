@@ -2,10 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core.Http;
 using Microsoft.Teams.Bot.Core.Schema;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.Teams.Bot.Apps;
 

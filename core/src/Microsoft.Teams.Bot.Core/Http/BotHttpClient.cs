@@ -7,8 +7,8 @@ using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
-using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Core.Http;
 /// <summary>
