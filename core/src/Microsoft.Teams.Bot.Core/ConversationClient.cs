@@ -178,15 +178,20 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
 
     /// <summary>
-    /// Gets a specific member of a conversation.
+    /// Gets a specific member of a conversation with strongly-typed result.
     /// </summary>
-    /// <param name="conversationId"></param>
-    /// <param name="userId"></param>
-    /// <param name="serviceUrl"></param>
-    /// <param name="agenticIdentity"></param>
-    /// <param name="customHeaders"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type of conversation account to return. Must inherit from <see cref="ConversationAccount"/>.</typeparam>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="userId">The ID of the user to retrieve. Cannot be null or whitespace.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains the conversation member
+    /// of type T with detailed information about the user.
+    /// </returns>
+    /// <exception cref="HttpRequestException">Thrown if the member could not be retrieved successfully.</exception>
     public async Task<T> GetConversationMemberAsync<T>(string conversationId, string userId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default) where T : ConversationAccount
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
