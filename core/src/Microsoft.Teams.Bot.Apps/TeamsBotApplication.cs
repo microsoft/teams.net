@@ -16,7 +16,7 @@ namespace Microsoft.Teams.Bot.Apps;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class TeamsBotApplication : BotApplication
 {
-    private readonly TeamsApiClient _teamsAPXClient;
+    private readonly TeamsApiClient _teamsApiClient;
     private static TeamsBotApplicationBuilder? _botApplicationBuilder;
 
     /// <summary>
@@ -40,9 +40,9 @@ public class TeamsBotApplication : BotApplication
     public InvokeHandler? OnInvoke { get; set; }
 
     /// <summary>
-    /// Gets the client used to interact with the TeamsAPX service.
+    /// Gets the client used to interact with the Teams API service.
     /// </summary>
-    public TeamsApiClient TeamsAPXClient => _teamsAPXClient;
+    public TeamsApiClient TeamsApiClient => _teamsApiClient;
 
     /// <summary>
     /// Handler for conversation update activities.
@@ -51,7 +51,7 @@ public class TeamsBotApplication : BotApplication
 
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
-    /// <param name="teamsAPXClient"></param>
+    /// <param name="teamsApiClient"></param>
     /// <param name="config"></param>
     /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
@@ -59,14 +59,14 @@ public class TeamsBotApplication : BotApplication
     public TeamsBotApplication(
         ConversationClient conversationClient,
         UserTokenClient userTokenClient,
-        TeamsApiClient teamsAPXClient,
+        TeamsApiClient teamsApiClient,
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
         ILogger<BotApplication> logger,
         string sectionName = "AzureAd")
         : base(conversationClient, userTokenClient, config, logger, sectionName)
     {
-        _teamsAPXClient = teamsAPXClient;
+        _teamsApiClient = teamsApiClient;
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogInformation("New {Type} activity received.", activity.Type);

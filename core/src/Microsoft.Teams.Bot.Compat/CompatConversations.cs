@@ -13,7 +13,7 @@ namespace Microsoft.Teams.Bot.Compat
 {
     internal sealed class CompatConversations(ConversationClient client) : IConversations
     {
-        private readonly ConversationClient _client = client;
+        internal readonly ConversationClient _client = client;
         internal string? ServiceUrl { get; set; }
 
         public async Task<HttpOperationResponse<ConversationResourceResponse>> CreateConversationWithHttpMessagesAsync(

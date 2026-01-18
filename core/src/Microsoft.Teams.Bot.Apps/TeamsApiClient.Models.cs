@@ -90,7 +90,7 @@ public class MeetingInfo
     /// Gets or sets the organizer of the meeting.
     /// </summary>
     [JsonPropertyName("organizer")]
-    public ConversationAccount? Organizer { get; set; }
+    public Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount? Organizer { get; set; }
 }
 
 /// <summary>
