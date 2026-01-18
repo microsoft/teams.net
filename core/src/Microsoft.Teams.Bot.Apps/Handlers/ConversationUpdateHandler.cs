@@ -8,18 +8,18 @@ using Microsoft.Teams.Bot.Apps.Schema;
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
-/// Delegate for handling conversation update activities.
+/// Delegate for handling conversation update activities when members are added or removed from a conversation.
 /// </summary>
-/// <param name="conversationUpdateActivity"></param>
-/// <param name="context"></param>
-/// <param name="cancellationToken"></param>
-/// <returns></returns>
+/// <param name="conversationUpdateActivity">The conversation update arguments containing member changes and activity details.</param>
+/// <param name="context">The turn context for sending responses and accessing conversation information.</param>
+/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+/// <returns>A task that represents the asynchronous handler operation.</returns>
 public delegate Task ConversationUpdateHandler(ConversationUpdateArgs conversationUpdateActivity, Context context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Conversation update activity arguments.
+/// Provides arguments for conversation update activities including members added and removed.
 /// </summary>
-/// <param name="act"></param>
+/// <param name="act">The Teams activity containing the conversation update information.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227: Collection Properties should be read only", Justification = "<Pending>")]
 public class ConversationUpdateArgs(TeamsActivity act)
 {
