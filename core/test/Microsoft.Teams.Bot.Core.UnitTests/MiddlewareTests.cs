@@ -5,6 +5,8 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
@@ -230,5 +232,144 @@ public class MiddlewareTests
         httpContext.Request.Body = new MemoryStream(bodyBytes);
         httpContext.Request.ContentType = "application/json";
         return httpContext;
+    }
+
+    [Fact]
+    public void UseMiddleware_ResolvesFromServiceProvider()
+    {
+        // Arrange
+        ServiceCollection services = new();
+        services.AddTransient<TestMiddleware>();
+        IServiceProvider serviceProvider = services.BuildServiceProvider();
+
+        ConversationClient conversationClient = CreateMockConversationClient();
+        UserTokenClient userTokenClient = CreateMockUserTokenClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+
+        // Act
+        BotApplication result = botApp.UseMiddleware<TestMiddleware>(serviceProvider);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Same(botApp, result);
+    }
+
+    [Fact]
+    public async Task UseMiddleware_WithDependencies_InjectsCorrectly()
+    {
+        // Arrange
+        ServiceCollection services = new();
+        services.AddSingleton<TestDependency>();
+        services.AddTransient<MiddlewareWithDependencies>();
+        IServiceProvider serviceProvider = services.BuildServiceProvider();
+
+        ConversationClient conversationClient = CreateMockConversationClient();
+        UserTokenClient userTokenClient = CreateMockUserTokenClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Id = "act123"
+        };
+        activity.Recipient.Properties["appId"] = "test-app-id";
+
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+
+        // Act
+        botApp.UseMiddleware<MiddlewareWithDependencies>(serviceProvider);
+
+        bool onActivityCalled = false;
+        botApp.OnActivity = (act, ct) =>
+        {
+            onActivityCalled = true;
+            return Task.CompletedTask;
+        };
+
+        await botApp.ProcessAsync(httpContext);
+
+        // Assert
+        Assert.True(onActivityCalled);
+        TestDependency dependency = serviceProvider.GetRequiredService<TestDependency>();
+        Assert.True(dependency.WasCalled);
+    }
+
+    [Fact]
+    public void UseMiddleware_ThrowsWhenNotRegistered()
+    {
+        // Arrange
+        ServiceCollection services = new();
+        IServiceProvider serviceProvider = services.BuildServiceProvider();
+
+        ConversationClient conversationClient = CreateMockConversationClient();
+        UserTokenClient userTokenClient = CreateMockUserTokenClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+
+        // Act & Assert
+        Assert.Throws<InvalidOperationException>(() =>
+            botApp.UseMiddleware<TestMiddleware>(serviceProvider));
+    }
+
+    [Fact]
+    public void UseMiddleware_ThrowsWhenAppIsNull()
+    {
+        // Arrange
+        ServiceCollection services = new();
+        IServiceProvider serviceProvider = services.BuildServiceProvider();
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            BotApplicationExtensions.UseMiddleware<TestMiddleware>(null!, serviceProvider));
+    }
+
+    [Fact]
+    public void UseMiddleware_ThrowsWhenServiceProviderIsNull()
+    {
+        // Arrange
+        ConversationClient conversationClient = CreateMockConversationClient();
+        UserTokenClient userTokenClient = CreateMockUserTokenClient();
+        Mock<IConfiguration> mockConfig = new();
+        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
+        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+
+        // Act & Assert
+        Assert.Throws<ArgumentNullException>(() =>
+            botApp.UseMiddleware<TestMiddleware>(null!));
+    }
+
+    // Test middleware and dependencies
+    private class TestMiddleware : ITurnMiddleWare
+    {
+        public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
+        {
+            return nextTurn(cancellationToken);
+        }
+    }
+
+    private class TestDependency
+    {
+        public bool WasCalled { get; set; }
+    }
+
+    private class MiddlewareWithDependencies : ITurnMiddleWare
+    {
+        private readonly TestDependency _dependency;
+
+        public MiddlewareWithDependencies(TestDependency dependency)
+        {
+            _dependency = dependency;
+        }
+
+        public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
+        {
+            _dependency.WasCalled = true;
+            return nextTurn(cancellationToken);
+        }
     }
 }

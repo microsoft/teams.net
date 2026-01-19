@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Core;
 
 namespace Microsoft.Teams.Bot.Compat;
 
@@ -46,5 +48,37 @@ public static class CompatHostingExtensions
         services.AddSingleton<CompatBotAdapter>();
         services.AddSingleton<IBotFrameworkHttpAdapter, CompatAdapter>();
         return services;
+    }
+
+    /// <summary>
+    /// Adds Bot Framework v4 middleware to the bot application's middleware pipeline by wrapping it in a compatibility adapter.
+    /// </summary>
+    /// <param name="app">The bot application to configure.</param>
+    /// <param name="bfMiddleware">The Bot Framework v4 middleware to wrap. Cannot be null.</param>
+    /// <returns>The <see cref="BotApplication"/> instance for method chaining.</returns>
+    /// <remarks>
+    /// This method enables gradual migration from Bot Framework v4 by allowing existing v4 middleware
+    /// to run in the new SDK's middleware pipeline. The middleware is wrapped in a compatibility adapter
+    /// that translates between the new SDK's activity format and Bot Framework v4's activity format.
+    /// <example>
+    /// Wrap existing Bot Framework v4 middleware:
+    /// <code>
+    /// // Existing BF v4 middleware
+    /// var showTypingMiddleware = new ShowTypingMiddleware();
+    ///
+    /// // Wrap for use in new SDK
+    /// botApp.UseCompatMiddleware(showTypingMiddleware);
+    /// </code>
+    /// </example>
+    /// </remarks>
+    public static BotApplication UseCompatMiddleware(
+        this BotApplication app,
+        IMiddleware bfMiddleware)
+    {
+        ArgumentNullException.ThrowIfNull(app);
+        ArgumentNullException.ThrowIfNull(bfMiddleware);
+
+        app.Use(new CompatAdapterMiddleware(bfMiddleware));
+        return app;
     }
 }
