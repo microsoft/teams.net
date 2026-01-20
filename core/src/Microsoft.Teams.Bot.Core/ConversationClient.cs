@@ -5,6 +5,7 @@ using System.Text.Json;
 using Microsoft.Teams.Bot.Core.Http;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;
+using CoreAssemblyInfo;
 
 namespace Microsoft.Teams.Bot.Core;
 
@@ -24,7 +25,10 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <summary>
     /// Gets the default custom headers that will be included in all requests.
     /// </summary>
-    public CustomHeaders DefaultCustomHeaders { get; } = [];
+    public CustomHeaders DefaultCustomHeaders { get; } = new()
+    {
+        ["User-Agent"] = $"{ThisAssembly.AssemblyName}/{ThisAssembly.AssemblyInformationalVersion}"
+    };
 
     /// <summary>
     /// Sends the specified activity to the conversation endpoint asynchronously.

@@ -6,15 +6,31 @@ using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Rest;
+using CompatAssemblyInfo;
 
 // TODO: Figure out what to do with Agentic Identities. They're all "nulls" here right now.
 // The identity is dependent on the incoming payload or supplied in for proactive scenarios.
 namespace Microsoft.Teams.Bot.Compat
 {
-    internal sealed class CompatConversations(ConversationClient client) : IConversations
+    internal sealed class CompatConversations : IConversations
     {
-        private readonly ConversationClient _client = client;
+        private readonly ConversationClient _client;
         internal string? ServiceUrl { get; set; }
+
+        public CompatConversations(ConversationClient client)
+        {
+            _client = client;
+
+            // Append Compat layer info to the wrapped client's User-Agent
+            if (_client.DefaultCustomHeaders.TryGetValue("User-Agent", out var existingUA))
+            {
+                _client.DefaultCustomHeaders["User-Agent"] = $"{ThisAssembly.AssemblyName}/{ThisAssembly.AssemblyInformationalVersion} {existingUA}";
+            }
+            else
+            {
+                _client.DefaultCustomHeaders["User-Agent"] = $"{ThisAssembly.AssemblyName}/{ThisAssembly.AssemblyInformationalVersion}";
+            }
+        }
 
         public async Task<HttpOperationResponse<ConversationResourceResponse>> CreateConversationWithHttpMessagesAsync(
                 Microsoft.Bot.Schema.ConversationParameters parameters,

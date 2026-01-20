@@ -7,8 +7,11 @@ using Microsoft.Teams.Bot.Core.Http;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using CoreAssemblyInfo;
 
 namespace Microsoft.Teams.Bot.Core;
+
+using CustomHeaders = Dictionary<string, string>;
 
 /// <summary>
 /// Client for managing user tokens via HTTP requests.
@@ -26,6 +29,14 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     private readonly JsonSerializerOptions _defaultOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
 
     internal AgenticIdentity? AgenticIdentity { get; set; }
+
+    /// <summary>
+    /// Gets the default custom headers that will be included in all requests.
+    /// </summary>
+    public CustomHeaders DefaultCustomHeaders { get; } = new()
+    {
+        ["User-Agent"] = $"{ThisAssembly.AssemblyName}/{ThisAssembly.AssemblyInformationalVersion}"
+    };
 
     /// <summary>
     /// Gets the token status for each connection for the given user.
@@ -246,6 +257,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         {
             AgenticIdentity = AgenticIdentity,
             OperationDescription = operationDescription,
-            ReturnNullOnNotFound = returnNullOnNotFound
+            ReturnNullOnNotFound = returnNullOnNotFound,
+            DefaultHeaders = DefaultCustomHeaders
         };
 }

@@ -11,6 +11,25 @@ namespace Microsoft.Teams.Bot.Core.UnitTests;
 public class ConversationClientTests
 {
     [Fact]
+    public void ConversationClient_SetsUserAgentHeader()
+    {
+        // Arrange
+        HttpClient httpClient = new();
+
+        // Act
+        ConversationClient conversationClient = new(httpClient);
+
+        // Assert
+        Assert.True(conversationClient.DefaultCustomHeaders.ContainsKey("User-Agent"));
+        var userAgent = conversationClient.DefaultCustomHeaders["User-Agent"];
+        Assert.NotNull(userAgent);
+        Assert.Contains("Microsoft.Teams.Bot.Core", userAgent);
+        Assert.Contains("/", userAgent); // Should have format Name/Version
+        Assert.Matches(@"^[\w\.]+/[\w\.\-\+]+$", userAgent); // Validates RFC 7231 format
+    }
+
+
+    [Fact]
     public async Task SendActivityAsync_WithValidActivity_SendsSuccessfully()
     {
         Mock<HttpMessageHandler> mockHttpMessageHandler = new();

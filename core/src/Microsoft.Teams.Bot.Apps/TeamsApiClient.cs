@@ -6,6 +6,7 @@ using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Http;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;
+using AppsAssemblyInfo;
 
 namespace Microsoft.Teams.Bot.Apps;
 
@@ -25,7 +26,10 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
     /// <summary>
     /// Gets the default custom headers that will be included in all requests.
     /// </summary>
-    public CustomHeaders DefaultCustomHeaders { get; } = [];
+    public CustomHeaders DefaultCustomHeaders { get; } = new()
+    {
+        ["User-Agent"] = $"{ThisAssembly.AssemblyName}/{ThisAssembly.AssemblyInformationalVersion}"
+    };
 
     #region Team Operations
 
