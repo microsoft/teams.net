@@ -6,19 +6,18 @@ using Microsoft.Teams.Bot.Apps.Schema;
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
-/// Delegate for handling installation update activities.
+/// Delegate for handling installation update activities when the bot is installed or uninstalled in a Teams scope.
 /// </summary>
-/// <param name="installationUpdateActivity"></param>
-/// <param name="context"></param>
-/// <param name="cancellationToken"></param>
-/// <returns></returns>
+/// <param name="installationUpdateActivity">The installation update arguments containing action details (add/remove) and selected channel information.</param>
+/// <param name="context">The turn context for sending responses and accessing conversation information.</param>
+/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+/// <returns>A task that represents the asynchronous handler operation.</returns>
 public delegate Task InstallationUpdateHandler(InstallationUpdateArgs installationUpdateActivity, Context context, CancellationToken cancellationToken = default);
 
-
 /// <summary>
-/// Installation update activity arguments.
+/// Provides arguments for installation update activities including installation action and selected channel.
 /// </summary>
-/// <param name="act"></param>
+/// <param name="act">The Teams activity containing the installation update information.</param>
 public class InstallationUpdateArgs(TeamsActivity act)
 {
     /// <summary>

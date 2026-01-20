@@ -8,19 +8,18 @@ using Microsoft.Teams.Bot.Apps.Schema;
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
-/// Delegate for handling message reaction activities.
+/// Delegate for handling message reaction activities when users add or remove emoji reactions to bot messages.
 /// </summary>
-/// <param name="reactionActivity"></param>
-/// <param name="context"></param>
-/// <param name="cancellationToken"></param>
-/// <returns></returns>
+/// <param name="reactionActivity">The message reaction arguments containing reactions added and removed.</param>
+/// <param name="context">The turn context for sending responses and accessing conversation information.</param>
+/// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+/// <returns>A task that represents the asynchronous handler operation.</returns>
 public delegate Task MessageReactionHandler(MessageReactionArgs reactionActivity, Context context, CancellationToken cancellationToken = default);
 
-
 /// <summary>
-/// Message reaction activity arguments.
+/// Provides arguments for message reaction activities including reactions added and removed.
 /// </summary>
-/// <param name="act"></param>
+/// <param name="act">The Teams activity containing the message reaction information.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227: Collection Properties should be read only", Justification = "<Pending>")]
 public class MessageReactionArgs(TeamsActivity act)
 {
