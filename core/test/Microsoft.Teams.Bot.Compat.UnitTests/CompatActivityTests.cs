@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using AdaptiveCards;
-using Microsoft.Bot.Builder.Teams;
+using Microsoft.Bot.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Newtonsoft.Json;
 
 namespace Microsoft.Teams.Bot.Compat.UnitTests
 {
@@ -13,25 +13,29 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         [Fact]
         public void FromCompatActivity()
         {
-            CoreActivity coreActivity = CoreActivity.FromJsonString(compatActivityJson);
+            Activity botActivity = JsonConvert.DeserializeObject<Activity>(compatActivityJson)!;
+            Assert.NotNull(botActivity);
+
+            CoreActivity coreActivity = botActivity.FromCompatActivity();
             Assert.NotNull(coreActivity);
             Assert.NotNull(coreActivity.Attachments);
             Assert.Single(coreActivity.Attachments);
-            TeamsActivity teamsActivity = TeamsActivity.FromActivity(coreActivity);
-            Assert.NotNull(teamsActivity);
-            Assert.NotNull(teamsActivity.Attachments);
-            Assert.Single(teamsActivity.Attachments);
-            var attachment = teamsActivity.Attachments[0];
-            Assert.Equal("application/vnd.microsoft.card.adaptive", attachment.ContentType);
-            var content = attachment.Content;
-            var card = AdaptiveCard.FromJson(System.Text.Json.JsonSerializer.Serialize(content)).Card;
+
+            var attachmentNode = coreActivity.Attachments[0];
+            Assert.NotNull(attachmentNode);
+            var attachmentObj = attachmentNode.AsObject();
+
+            var contentType = attachmentObj["contentType"]?.GetValue<string>();
+            Assert.Equal("application/vnd.microsoft.card.adaptive", contentType);
+
+            var content = attachmentObj["content"];
+            Assert.NotNull(content);
+            var card = AdaptiveCard.FromJson(content.ToJsonString()).Card;
             Assert.Equal(2, card.Body.Count);
             var firstTextBlock = card.Body[0] as AdaptiveTextBlock;
             Assert.NotNull(firstTextBlock);
             Assert.Equal("Mention a user by User Principle Name: Hello <at>Rido UPN</at>", firstTextBlock.Text);
-
         }
-
 
         string compatActivityJson = """
             {
@@ -96,7 +100,16 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                         }
                     }
                 ],
-                "entities": [],
+                "entities": [
+                    {
+                        "type": "https://schema.org/Message",
+                        "@context": "https://schema.org",
+                        "@type": "Message",
+                        "additionalType": [
+                            "AIGeneratedContent"
+                        ]
+                    },
+                ],
                 "replyToId": "f:d1c5de53-9e8b-b5c3-c24d-07c2823079cf"
             }
             """;

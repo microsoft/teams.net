@@ -94,6 +94,29 @@ public class EntitiesTest
         Assert.Contains("\"id\": \"user1\"", serialized);
         Assert.Contains("\"name\": \"User One\"", serialized);
         Assert.Contains("\"text\": \"\\u003Cat\\u003EUser One\\u003C/at\\u003E\"", serialized);
+    }
 
+    [Fact]
+    public void Test_Unknown_Entity()
+    {
+        string json = """
+        {
+            "type": "message",
+            "entities": [
+                {
+                    "type": "unknownEntityType",
+                    "someProperty": "someValue"
+                }
+            ]
+        }
+        """;
+        CoreActivity activity = CoreActivity.FromJsonString(json);
+        Assert.NotNull(activity);
+        Assert.NotNull(activity.Entities);
+        Assert.Single(activity.Entities);
+        JsonNode? e1 = activity.Entities[0];
+        Assert.NotNull(e1);
+        Assert.Equal("unknownEntityType", e1["type"]?.ToString());
+        Assert.Equal("someValue", e1["someProperty"]?.ToString());
     }
 }
