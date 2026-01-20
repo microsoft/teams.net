@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Connector;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Rest;
+using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Schema;
 
 // TODO: Figure out what to do with Agentic Identities. They're all "nulls" here right now.
 // The identity is dependent on the incoming payload or supplied in for proactive scenarios.

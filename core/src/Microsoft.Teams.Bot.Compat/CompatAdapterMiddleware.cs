@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Builder;
+using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
-using Microsoft.Teams.Bot.Apps;
 
 namespace Microsoft.Teams.Bot.Compat;
 

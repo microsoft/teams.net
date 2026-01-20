@@ -3,10 +3,10 @@
 
 using System.Text;
 using System.Text.Json;
-using Microsoft.Teams.Bot.Core.Http;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core.Http;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Core;
 

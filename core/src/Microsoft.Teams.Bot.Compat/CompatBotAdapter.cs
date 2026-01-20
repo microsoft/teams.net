@@ -1,12 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Core;
 using Newtonsoft.Json;
 
 
@@ -25,6 +26,8 @@ namespace Microsoft.Teams.Bot.Compat;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class CompatBotAdapter(TeamsBotApplication botApplication, IHttpContextAccessor httpContextAccessor = default!, ILogger<CompatBotAdapter> logger = default!) : BotAdapter
 {
+    private readonly JsonSerializerOptions _writeIndentedJsonOptions = new() { WriteIndented = true };
+
     /// <summary>
     /// Deletes an activity from the conversation.
     /// </summary>
@@ -99,9 +102,11 @@ public class CompatBotAdapter(TeamsBotApplication botApplication, IHttpContextAc
         HttpResponse? response = httpContextAccessor?.HttpContext?.Response;
         if (response is not null && !response.HasStarted)
         {
+            response.StatusCode = invokeResponse.Status;
             using StreamWriter httpResponseStreamWriter = new(response.BodyWriter.AsStream());
             using JsonTextWriter httpResponseJsonWriter = new(httpResponseStreamWriter);
-            Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse);
+            logger.LogTrace("Sending Invoke Response: \n {InvokeResponse} \n", System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions));
+            Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
         }
         else
         {
