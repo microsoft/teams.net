@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Reflection;
-
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -46,8 +44,7 @@ public partial class App
     {
         get
         {
-            var version = ThisAssembly.AssemblyFileVersion;
-            version ??= "0.0.0";
+            var version = ThisAssembly.NuGetPackageVersion;
             return $"teams.net[apps]/{version}";
         }
     }
