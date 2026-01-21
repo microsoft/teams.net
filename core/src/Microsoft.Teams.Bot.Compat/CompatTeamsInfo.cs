@@ -9,6 +9,7 @@ using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
 using BotFrameworkTeams = Microsoft.Bot.Schema.Teams;
 using AppsTeams = Microsoft.Teams.Bot.Apps;
+using Microsoft.Bot.Schema.Teams;
 
 namespace Microsoft.Teams.Bot.Compat;
 
@@ -353,7 +354,8 @@ public static class CompatTeamsInfo
 
         // Convert Bot Framework MeetingNotificationBase to Core MeetingNotificationBase using JSON round-trip
         var json = Newtonsoft.Json.JsonConvert.SerializeObject(notification);
-        var coreNotification = System.Text.Json.JsonSerializer.Deserialize<AppsTeams.MeetingNotificationBase>(json, s_jsonOptions);
+        var coreNotification = System.Text.Json.JsonSerializer.Deserialize<AppsTeams.TargetedMeetingNotification>(json, s_jsonOptions);
+
 
         var result = await client.SendMeetingNotificationAsync(
             meetingId, coreNotification!, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);

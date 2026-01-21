@@ -169,7 +169,7 @@ namespace Microsoft.Bot.Core.Tests
                     var result = await CompatTeamsInfo.GetPagedTeamMembersAsync(
                         turnContext,
                         _teamId,
-                        pageSize: 10,
+                        pageSize: 5,
                         cancellationToken: cancellationToken);
 
                     Assert.NotNull(result);
@@ -242,7 +242,24 @@ namespace Microsoft.Bot.Core.Tests
                     {
                         Value = new TargetedMeetingNotificationValue
                         {
-                            Recipients = new List<string> { _userId }
+                            Recipients = new List<string> { _userId },
+                            Surfaces = new List<Surface>
+                            {
+                                new MeetingStageSurface<TaskModuleContinueResponse>()
+                                {
+                                    ContentType = ContentType.Task,
+                                    Content = new TaskModuleContinueResponse
+                                    {
+                                        Value = new TaskModuleTaskInfo
+                                        {
+                                            Title = "Test Notification",
+                                            Url = "https://www.example.com",
+                                            Height = 200,
+                                            Width = 400
+                                        }
+                                    }
+                                }
+                            }
                         }
                     };
 
@@ -324,7 +341,12 @@ namespace Microsoft.Bot.Core.Tests
                     };
                     var members = new List<TeamMember>
                     {
+                        new TeamMember(_userId),
+                        new TeamMember(_userId),
+                        new TeamMember(_userId),
+                        new TeamMember(_userId),
                         new TeamMember(_userId)
+
                     };
 
                     var operationId = await CompatTeamsInfo.SendMessageToListOfUsersAsync(
@@ -470,7 +492,7 @@ namespace Microsoft.Bot.Core.Tests
         {
             var adapter = InitializeCompatAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
-            var operationId = "test-operation-id";
+            var operationId = "amer_9e0e3ba8-c562-440f-ba9d-10603ee31837";
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
