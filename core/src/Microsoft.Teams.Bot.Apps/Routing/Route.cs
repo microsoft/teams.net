@@ -26,8 +26,9 @@ public abstract class RouteBase
     /// Invokes the route handler if the activity matches the expected type
     /// </summary>
     /// <param name="ctx"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public abstract Task<object?> Invoke (Context<TeamsActivity> ctx);
+    public abstract Task InvokeRoute(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -54,7 +55,7 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <summary>
     /// Handler function to process the activity
     /// </summary>
-    public Func<Context<TActivity>, Task<object?>> Handler { get; set; } = _ => Task.FromResult<object?>(null);
+    public Func<Context<TActivity>, CancellationToken, Task> Handler { get; set; } = (_, __) => Task.CompletedTask;
 
     /// <summary>
     /// Determines if the route matches the given activity
@@ -70,15 +71,15 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// Invokes the route handler if the activity matches the expected type
     /// </summary>
     /// <param name="ctx"></param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public override async Task<object?> Invoke(Context<TeamsActivity> ctx)
+    public override async Task InvokeRoute(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
         if (ctx.Activity is TActivity typedActivity)
         {
             Context<TActivity> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-            return await Handler(typedContext).ConfigureAwait(false);
+            await Handler(typedContext, cancellationToken).ConfigureAwait(false);
         }
-        return null;
     }
 }

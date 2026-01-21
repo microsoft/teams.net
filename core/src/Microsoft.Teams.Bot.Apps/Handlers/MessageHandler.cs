@@ -29,15 +29,15 @@ public static class MessageExtensions
     /// <returns></returns>
     public static TeamsBotApplication OnMessage(this TeamsBotApplication app, MessageHandler handler)
     {
-        TeamsBotApplication.Router.Register(new Route<MessageActivity>
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageActivity>
         {
 
             Name = ActivityType.Message,
             Selector = _ => true,
-            Handler = async ctx =>
+            Handler = async (ctx, cancellationToken) =>
             {
-                await handler(ctx).ConfigureAwait(false);
-                return null;
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
             }
         });
 
@@ -53,16 +53,16 @@ public static class MessageExtensions
     /// <returns></returns>
     public static TeamsBotApplication OnMessage(this TeamsBotApplication app, string pattern, MessageHandler handler)
     {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
         var regex = new Regex(pattern);
 
-        TeamsBotApplication.Router.Register(new Route<MessageActivity>
+        app.Router.Register(new Route<MessageActivity>
         {
             Name = ActivityType.Message,
             Selector = msg => regex.IsMatch(msg.Text ?? ""),
-            Handler = async ctx =>
+            Handler = async (ctx, cancellationToken) =>
             {
-                await handler(ctx).ConfigureAwait(false);
-                return null;
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
             }
         });
 
@@ -78,14 +78,14 @@ public static class MessageExtensions
     /// <returns></returns>
     public static TeamsBotApplication OnMessage(this TeamsBotApplication app, Regex regex, MessageHandler handler)
     {
-        TeamsBotApplication.Router.Register(new Route<MessageActivity>
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageActivity>
         {
             Name = ActivityType.Message,
             Selector = msg => regex.IsMatch(msg.Text ?? ""),
-            Handler = async ctx =>
+            Handler = async (ctx, cancellationToken) =>
             {
-                await handler(ctx).ConfigureAwait(false);
-                return null;
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
             }
         });
 

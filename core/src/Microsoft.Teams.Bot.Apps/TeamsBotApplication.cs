@@ -19,7 +19,7 @@ public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsAPXClient;
     private static TeamsBotApplicationBuilder? _botApplicationBuilder;
-    internal static Router Router = new Router();
+    internal Router Router = new();
     
     /// <summary>
     /// Gets the client used to interact with the TeamsAPX service.
@@ -50,7 +50,7 @@ public class TeamsBotApplication : BotApplication
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
-            await Router.DispatchAsync(defaultContext).ConfigureAwait(false);
+            await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
         };
     }
 

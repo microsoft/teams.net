@@ -51,7 +51,7 @@ public class Router
     /// Dispatches the activity to the first matching route.
     /// Routes are checked in registration order.
     /// </summary>
-    public async Task DispatchAsync(Context<TeamsActivity> ctx)
+    public async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
         // TODO : support multiple routes?
@@ -59,7 +59,7 @@ public class Router
         {
             if (route.Matches(ctx.Activity))
             {
-                await route.Invoke(ctx).ConfigureAwait(false);
+                await route.InvokeRoute(ctx, cancellationToken).ConfigureAwait(false);
                 return;
             }
         }
