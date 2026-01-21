@@ -41,7 +41,7 @@ public class MeetingClient : Client
 
     public async Task<MeetingParticipant> GetParticipantAsync(string meetingId, string id, string tenantId)
     {
-        var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={tenantId}");
+        var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}");
         var response = await _http.SendAsync<MeetingParticipant>(request, _cancellationToken);
         return response.Body;
     }
@@ -58,17 +58,33 @@ public class MeetingParticipant
     [JsonPropertyName("user")]
     public Account? User { get; set; }
 
+    /// <summary>
+    /// Gets or sets information about the associated meeting.
+    /// </summary>
     [JsonPropertyName("meeting")]
     public MeetingInfo? Meeting { get; set; }
 
+    /// <summary>
+    /// Gets or sets the conversation associated with this object.
+    /// </summary>
     [JsonPropertyName("conversation")]
     public Conversation? Conversation { get; set; }
 }
 
+/// <summary>
+/// Represents information about a participant's role and meeting status within a meeting context.
+/// </summary>
 public class MeetingInfo
 {
+    /// <summary>
+    /// Gets or sets the role associated with the entity.
+    /// </summary>
     [JsonPropertyName("role")]
     public string? Role { get; set; }
+
+    /// <summary>
+    /// Gets or sets a value indicating whether the user is currently in a meeting.
+    /// </summary>
     [JsonPropertyName("inMeeting")]
     public bool? InMeeting { get; set; }
 }
