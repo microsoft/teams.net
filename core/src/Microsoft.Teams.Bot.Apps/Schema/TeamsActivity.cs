@@ -80,6 +80,7 @@ public class TeamsActivity : CoreActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected TeamsActivity(CoreActivity activity) : base(activity)
     {
+        ArgumentNullException.ThrowIfNull(activity);
         // Convert base types to Teams-specific types
         if (activity.ChannelData is not null)
         {
