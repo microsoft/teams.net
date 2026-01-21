@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Configuration;
@@ -41,9 +39,7 @@ namespace Microsoft.Bot.Core.Tests
             _tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? "test-tenant-id";
         }
 
-        #region Member & Participant Tests
-
-        [Fact(Skip = "Requires live service credentials")]
+        [Fact]
         public async Task GetMemberAsync_WithValidUserId_ReturnsMember()
         {
             var adapter = InitializeCompatAdapter();
@@ -54,7 +50,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    TeamsChannelAccount member = await TeamsInfo.GetMemberAsync(
+                    TeamsChannelAccount member = await CompatTeamsInfo.GetMemberAsync(
                         turnContext,
                         _userId,
                         cancellationToken);
@@ -65,7 +61,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials")]
+        [Fact]
         public async Task GetMembersAsync_ReturnsMembers()
         {
             var adapter = InitializeCompatAdapter();
@@ -77,7 +73,7 @@ namespace Microsoft.Bot.Core.Tests
                 async (turnContext, cancellationToken) =>
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                    var members = await TeamsInfo.GetMembersAsync(turnContext, cancellationToken);
+                    var members = await CompatTeamsInfo.GetMembersAsync(turnContext, cancellationToken);
 #pragma warning restore CS0618 // Type or member is obsolete
 
                     Assert.NotNull(members);
@@ -97,7 +93,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var result = await TeamsInfo.GetPagedMembersAsync(
+                    var result = await CompatTeamsInfo.GetPagedMembersAsync(
                         turnContext,
                         pageSize: 10,
                         cancellationToken: cancellationToken);
@@ -112,18 +108,18 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials and team context")]
+        [Fact]
         public async Task GetTeamMemberAsync_WithValidUserId_ReturnsMember()
         {
             var adapter = InitializeCompatAdapter();
-            var conversationReference = CreateConversationReference(_teamId);
+            var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var member = await TeamsInfo.GetTeamMemberAsync(
+                    var member = await CompatTeamsInfo.GetTeamMemberAsync(
                         turnContext,
                         _userId,
                         _teamId,
@@ -135,11 +131,11 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials and team context")]
+        [Fact]
         public async Task GetTeamMembersAsync_ReturnsTeamMembers()
         {
             var adapter = InitializeCompatAdapter();
-            var conversationReference = CreateConversationReference(_teamId);
+            var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
@@ -147,7 +143,7 @@ namespace Microsoft.Bot.Core.Tests
                 async (turnContext, cancellationToken) =>
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                    var members = await TeamsInfo.GetTeamMembersAsync(
+                    var members = await CompatTeamsInfo.GetTeamMembersAsync(
                         turnContext,
                         _teamId,
                         cancellationToken);
@@ -159,18 +155,18 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials and team context")]
+        [Fact]
         public async Task GetPagedTeamMembersAsync_ReturnsPagedResult()
         {
             var adapter = InitializeCompatAdapter();
-            var conversationReference = CreateConversationReference(_teamId);
+            var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var result = await TeamsInfo.GetPagedTeamMembersAsync(
+                    var result = await CompatTeamsInfo.GetPagedTeamMembersAsync(
                         turnContext,
                         _teamId,
                         pageSize: 10,
@@ -182,11 +178,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        #endregion
-
-        #region Meeting Tests
-
-        [Fact(Skip = "Requires live service credentials and meeting context")]
+        [Fact]
         public async Task GetMeetingInfoAsync_WithMeetingId_ReturnsMeetingInfo()
         {
             var adapter = InitializeCompatAdapter();
@@ -197,7 +189,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var meetingInfo = await TeamsInfo.GetMeetingInfoAsync(
+                    var meetingInfo = await CompatTeamsInfo.GetMeetingInfoAsync(
                         turnContext,
                         _meetingId,
                         cancellationToken);
@@ -208,7 +200,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials and meeting context")]
+        [Fact]
         public async Task GetMeetingParticipantAsync_WithParticipantId_ReturnsParticipant()
         {
             var adapter = InitializeCompatAdapter();
@@ -219,7 +211,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var participant = await TeamsInfo.GetMeetingParticipantAsync(
+                    var participant = await CompatTeamsInfo.GetMeetingParticipantAsync(
                         turnContext,
                         _meetingId,
                         _userId,
@@ -232,7 +224,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials and meeting context")]
+        [Fact]
         public async Task SendMeetingNotificationAsync_SendsNotification()
         {
             var adapter = InitializeCompatAdapter();
@@ -254,7 +246,7 @@ namespace Microsoft.Bot.Core.Tests
                         }
                     };
 
-                    var response = await TeamsInfo.SendMeetingNotificationAsync(
+                    var response = await CompatTeamsInfo.SendMeetingNotificationAsync(
                         turnContext,
                         notification,
                         _meetingId,
@@ -265,22 +257,18 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        #endregion
-
-        #region Team & Channel Tests
-
-        [Fact(Skip = "Requires live service credentials and team context")]
+        [Fact]
         public async Task GetTeamDetailsAsync_WithTeamId_ReturnsTeamDetails()
         {
             var adapter = InitializeCompatAdapter();
-            var conversationReference = CreateConversationReference(_teamId);
+            var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var teamDetails = await TeamsInfo.GetTeamDetailsAsync(
+                    var teamDetails = await CompatTeamsInfo.GetTeamDetailsAsync(
                         turnContext,
                         _teamId,
                         cancellationToken);
@@ -292,18 +280,18 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials and team context")]
+        [Fact]
         public async Task GetTeamChannelsAsync_WithTeamId_ReturnsChannels()
         {
             var adapter = InitializeCompatAdapter();
-            var conversationReference = CreateConversationReference(_teamId);
+            var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var channels = await TeamsInfo.GetTeamChannelsAsync(
+                    var channels = await CompatTeamsInfo.GetTeamChannelsAsync(
                         turnContext,
                         _teamId,
                         cancellationToken);
@@ -318,11 +306,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        #endregion
-
-        #region Batch Messaging Tests
-
-        [Fact(Skip = "Requires live service credentials")]
+        [Fact]
         public async Task SendMessageToListOfUsersAsync_ReturnsOperationId()
         {
             var adapter = InitializeCompatAdapter();
@@ -343,7 +327,7 @@ namespace Microsoft.Bot.Core.Tests
                         new TeamMember(_userId)
                     };
 
-                    var operationId = await TeamsInfo.SendMessageToListOfUsersAsync(
+                    var operationId = await CompatTeamsInfo.SendMessageToListOfUsersAsync(
                         turnContext,
                         activity,
                         members,
@@ -356,7 +340,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials")]
+        [Fact]
         public async Task SendMessageToListOfChannelsAsync_ReturnsOperationId()
         {
             var adapter = InitializeCompatAdapter();
@@ -377,7 +361,7 @@ namespace Microsoft.Bot.Core.Tests
                         new TeamMember(_channelId)
                     };
 
-                    var operationId = await TeamsInfo.SendMessageToListOfChannelsAsync(
+                    var operationId = await CompatTeamsInfo.SendMessageToListOfChannelsAsync(
                         turnContext,
                         activity,
                         channels,
@@ -390,11 +374,11 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials")]
+        [Fact]
         public async Task SendMessageToAllUsersInTeamAsync_ReturnsOperationId()
         {
             var adapter = InitializeCompatAdapter();
-            var conversationReference = CreateConversationReference(_teamId);
+            var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
@@ -407,7 +391,7 @@ namespace Microsoft.Bot.Core.Tests
                         Text = "Test message to team"
                     };
 
-                    var operationId = await TeamsInfo.SendMessageToAllUsersInTeamAsync(
+                    var operationId = await CompatTeamsInfo.SendMessageToAllUsersInTeamAsync(
                         turnContext,
                         activity,
                         _teamId,
@@ -420,7 +404,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials")]
+        [Fact]
         public async Task SendMessageToAllUsersInTenantAsync_ReturnsOperationId()
         {
             var adapter = InitializeCompatAdapter();
@@ -437,7 +421,7 @@ namespace Microsoft.Bot.Core.Tests
                         Text = "Test message to tenant"
                     };
 
-                    var operationId = await TeamsInfo.SendMessageToAllUsersInTenantAsync(
+                    var operationId = await CompatTeamsInfo.SendMessageToAllUsersInTenantAsync(
                         turnContext,
                         activity,
                         _tenantId,
@@ -449,7 +433,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials")]
+        [Fact]
         public async Task SendMessageToTeamsChannelAsync_CreatesConversationAndSendsMessage()
         {
             var adapter = InitializeCompatAdapter();
@@ -467,7 +451,7 @@ namespace Microsoft.Bot.Core.Tests
                     };
                     var botAppId = Environment.GetEnvironmentVariable("MicrosoftAppId") ?? string.Empty;
 
-                    var result = await TeamsInfo.SendMessageToTeamsChannelAsync(
+                    var result = await CompatTeamsInfo.SendMessageToTeamsChannelAsync(
                         turnContext,
                         activity,
                         _channelId,
@@ -481,11 +465,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        #endregion
-
-        #region Batch Operation Management Tests
-
-        [Fact(Skip = "Requires live service credentials and valid operation ID")]
+        [Fact]
         public async Task GetOperationStateAsync_WithOperationId_ReturnsState()
         {
             var adapter = InitializeCompatAdapter();
@@ -497,7 +477,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var state = await TeamsInfo.GetOperationStateAsync(
+                    var state = await CompatTeamsInfo.GetOperationStateAsync(
                         turnContext,
                         operationId,
                         cancellationToken);
@@ -508,7 +488,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials and valid operation ID")]
+        [Fact]
         public async Task GetPagedFailedEntriesAsync_WithOperationId_ReturnsFailedEntries()
         {
             var adapter = InitializeCompatAdapter();
@@ -520,7 +500,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var response = await TeamsInfo.GetPagedFailedEntriesAsync(
+                    var response = await CompatTeamsInfo.GetPagedFailedEntriesAsync(
                         turnContext,
                         operationId,
                         cancellationToken: cancellationToken);
@@ -530,7 +510,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Requires live service credentials and valid operation ID")]
+        [Fact]
         public async Task CancelOperationAsync_WithOperationId_CancelsOperation()
         {
             var adapter = InitializeCompatAdapter();
@@ -542,7 +522,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    await TeamsInfo.CancelOperationAsync(
+                    await CompatTeamsInfo.CancelOperationAsync(
                         turnContext,
                         operationId,
                         cancellationToken);
@@ -552,10 +532,6 @@ namespace Microsoft.Bot.Core.Tests
                 },
                 CancellationToken.None);
         }
-
-        #endregion
-
-        #region Helper Methods
 
         private CompatAdapter InitializeCompatAdapter()
         {
@@ -589,7 +565,5 @@ namespace Microsoft.Bot.Core.Tests
                 }
             };
         }
-
-        #endregion
     }
 }
