@@ -29,13 +29,13 @@ public static class ActivityMentionExtensions
     }
 
     /// <summary>
-    /// Adds a mention to the activity.
+    /// Adds a mention (@ mention) of a user or bot to the activity.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <param name="account"></param>
-    /// <param name="text"></param>
-    /// <param name="addText"></param>
-    /// <returns></returns>
+    /// <param name="activity">The activity to add the mention to. Cannot be null.</param>
+    /// <param name="account">The conversation account being mentioned. Cannot be null.</param>
+    /// <param name="text">Optional custom text for the mention. If null, uses the account name.</param>
+    /// <param name="addText">If true, prepends the mention text to the activity's existing text content. Defaults to true.</param>
+    /// <returns>The created MentionEntity that was added to the activity.</returns>
     public static MentionEntity AddMention(this TeamsActivity activity, ConversationAccount account, string? text = null, bool addText = true)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -67,8 +67,8 @@ public class MentionEntity : Entity
     /// <summary>
     /// Creates a new instance of <see cref="MentionEntity"/> with the specified mentioned account and text.
     /// </summary>
-    /// <param name="mentioned"></param>
-    /// <param name="text"></param>
+    /// <param name="mentioned">The conversation account being mentioned.</param>
+    /// <param name="text">The text representation of the mention, typically formatted as "&lt;at&gt;name&lt;/at&gt;".</param>
     public MentionEntity(ConversationAccount mentioned, string? text) : base("mention")
     {
         Mentioned = mentioned;
