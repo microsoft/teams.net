@@ -1,11 +1,10 @@
-using System.Diagnostics;
+using System.Text.Json;
 
 using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Activities.Events;
+using Microsoft.Teams.Api.Meetings;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Activities.Events;
-using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Cards;
 using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
@@ -132,4 +131,34 @@ teams.OnMessage(async context =>
     await context.Send($"you said '{context.Activity.Text}'");
 });
 
+teams.OnConversationUpdate(async context =>
+{
+    string? teamsMeetingId = GetMeetingId(context.Activity);
+    var members = await context.Api.Conversations.Members.GetAsync(context.Activity.Conversation.Id);
+    foreach (var member in members)
+    {
+        var participant = await context.Api.Meetings.GetParticipantAsync(teamsMeetingId!, member.Id, context.Activity!.ChannelData!.Tenant!.Id);
+    }
+});
+
 app.Run();
+
+static string? GetMeetingId(IActivity activity)
+{
+    if (activity.ChannelData?.Properties != null && activity.ChannelData.Properties.TryGetValue("meeting", out var meetingNode))
+    {
+        if (meetingNode is JsonElement jel)
+        {
+            try
+            {
+                var meetingData = jel.Deserialize<Meeting>(new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return meetingData?.Id;
+            }
+            catch (Exception)
+            {
+                // Log error if necessary
+            }
+        }
+    }
+    return null;
+}

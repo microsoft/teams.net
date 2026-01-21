@@ -55,11 +55,9 @@ public class MeetingClientTests
                 StatusCode = HttpStatusCode.OK,
                 Body = new MeetingParticipant
                 {
-                    Id = "participant1",
                     User = new Account { Id = "user1", Name = "John Doe" },
-                    Role = "Presenter",
-                    IsOrganizer = true,
-                    JoinTime = DateTime.UtcNow
+                    Meeting = new MeetingInfo { Role = "Presenter", InMeeting = true },
+                    Conversation = new Conversation { Id = "conversation1", Name = "General" }
                 }
             });
 
@@ -68,15 +66,14 @@ public class MeetingClientTests
         string participantId = "participant1";
         var meetingClient = new MeetingClient(serviceUrl, mockHandler.Object);
 
-        var result = await meetingClient.GetParticipantAsync(meetingId, participantId);
+        var result = await meetingClient.GetParticipantAsync(meetingId, participantId, "tenant-id");
 
-        Assert.Equal("participant1", result.Id);
         Assert.Equal("user1", result.User?.Id);
         Assert.Equal("John Doe", result.User?.Name);
-        Assert.Equal("Presenter", result.Role);
-        Assert.True(result.IsOrganizer);
+        Assert.Equal("Presenter", result.Meeting?.Role);
+        Assert.True(result.Meeting?.InMeeting);
 
-        string expectedUrl = "https://serviceurl.com/v1/meetings/meeting123/participants/participant1";
+        string expectedUrl = "https://serviceurl.com/v1/meetings/meeting123/participants/participant1?tenantId=tenant-id";
         HttpMethod expectedMethod = HttpMethod.Get;
         mockHandler.Verify(x => x.SendAsync<MeetingParticipant>(
             It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
