@@ -156,7 +156,7 @@ public class CoreActivity
     /// Serializes the current activity to a JSON string.
     /// </summary>
     /// <returns>A JSON string representation of the activity.</returns>
-    public virtual string ToJson()
+    public string ToJson()
         => JsonSerializer.Serialize(this, CoreActivityJsonContext.Default.CoreActivity);
 
     /// <summary>

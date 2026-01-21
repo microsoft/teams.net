@@ -198,7 +198,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The configured TeamsActivity.</returns>
     public override TeamsActivity Build()
     {
-        //_activity.Rebase();
+        _activity.Rebase();
         return _activity;
     }
 

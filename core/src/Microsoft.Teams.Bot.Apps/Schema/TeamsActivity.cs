@@ -37,14 +37,14 @@ public class TeamsActivity : CoreActivity
     /// <param name="json"></param>
     /// <returns></returns>
     public static new TeamsActivity FromJsonString(string json) =>
-        FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity);
-        //.Rebase();
+        FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity)
+        .Rebase();
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
     /// </summary>
     /// <returns></returns>
-    public override string ToJson()
+    public new string ToJson()
         => ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
 
     /// <summary>
@@ -91,65 +91,56 @@ public class TeamsActivity : CoreActivity
         Conversation = new TeamsConversation(activity.Conversation);
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
         Entities = EntityList.FromJsonArray(activity.Entities);
+
+        Rebase();
+    }
+
+    /// <summary>
+    /// Resets shadow properties in base class
+    /// </summary>
+    /// <returns></returns>
+    internal TeamsActivity Rebase()
+    {
+        base.Attachments = this.Attachments?.ToJsonArray();
+        base.Entities = this.Entities?.ToJsonArray();
+        base.ChannelData = new TeamsChannelData(this.ChannelData);
+        base.From = this.From;
+        base.Recipient = this.Recipient;
+        base.Conversation = this.Conversation;
+
+        return this;
     }
 
 
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.
     /// </summary>
-    [JsonPropertyName("from")]
-    public new TeamsConversationAccount From
-    {
-        get => (TeamsConversationAccount)base.From;
-        set => base.From = value;
-    }
+    [JsonPropertyName("from")] public new TeamsConversationAccount From { get; set; }
 
     /// <summary>
     /// Gets or sets the account information for the recipient of the Teams conversation.
     /// </summary>
-    [JsonPropertyName("recipient")]
-    public new TeamsConversationAccount Recipient
-    {
-        get => (TeamsConversationAccount)base.Recipient;
-        set => base.Recipient = value;
-    }
+    [JsonPropertyName("recipient")] public new TeamsConversationAccount Recipient { get; set; }
 
     /// <summary>
     /// Gets or sets the conversation information for the Teams conversation.
     /// </summary>
-    [JsonPropertyName("conversation")]
-    public new TeamsConversation Conversation
-    {
-        get => (TeamsConversation)base.Conversation;
-        set => base.Conversation = value;
-    }
+    [JsonPropertyName("conversation")] public new TeamsConversation Conversation { get; set; }
 
     /// <summary>
     /// Gets or sets the Teams-specific channel data associated with this activity.
     /// </summary>
-    [JsonPropertyName("channelData")]
-    public new TeamsChannelData? ChannelData {
-        get => (TeamsChannelData?)base.ChannelData;
-        set => base.ChannelData = value;
-    }
+    [JsonPropertyName("channelData")] public new TeamsChannelData? ChannelData { get; set; }
 
     /// <summary>
     /// Gets or sets the entities specific to Teams.
     /// </summary>
-    [JsonPropertyName("entities")]
-    public new EntityList? Entities {
-        get => (EntityList.FromJsonArray(base.Entities));
-        set => base.Entities = value?.ToJsonArray();
-    }
+    [JsonPropertyName("entities")] public new EntityList? Entities { get; set; }
 
     /// <summary>
     /// Attachments specific to Teams.
     /// </summary>
-    [JsonPropertyName("attachments")]
-    public new IList<TeamsAttachment>? Attachments {
-        get => TeamsAttachment.FromJArray(base.Attachments);
-        set => base.Attachments = value?.ToJsonArray();
-    }
+    [JsonPropertyName("attachments")] public new IList<TeamsAttachment>? Attachments { get; set; }
 
     /// <summary>
     /// Adds an entity to the activity's Entities collection.
