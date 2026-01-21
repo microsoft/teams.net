@@ -32,15 +32,14 @@ public static class CompatActivity
     /// </summary>
     /// <param name="activity"></param>
     /// <returns></returns>
-    public static TeamsActivity FromCompatActivity(this Activity activity)
+    public static CoreActivity FromCompatActivity(this Activity activity)
     {
         StringBuilder sb = new();
         using StringWriter stringWriter = new(sb);
         using JsonTextWriter json = new(stringWriter);
         BotMessageHandlerBase.BotMessageSerializer.Serialize(json, activity);
         string jsonString = sb.ToString();
-        CoreActivity coreActivity = CoreActivity.FromJsonString(jsonString);
-        return TeamsActivity.FromActivity(coreActivity);
+        return CoreActivity.FromJsonString(jsonString);
     }
 
 
