@@ -44,7 +44,7 @@ public partial class App
     {
         get
         {
-            var version = ThisAssembly.NuGetPackageVersion;
+            var version = ThisAssembly.NuGetPackageVersion ?? "0.0.0";
             return $"teams.net[apps]/{version}";
         }
     }
