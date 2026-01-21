@@ -26,7 +26,7 @@ public class MeetingParticipantLeaveActivityTests
                 Members = new List<Member>() {
                     new Member()
                     {
-                        User = new Account()
+                        User = new TeamsChannelAccount()
                         {
                             Id = "userId",
                             Name = "userName"
@@ -39,7 +39,7 @@ public class MeetingParticipantLeaveActivityTests
                     },
                     new Member()
                     {
-                        User = new Account()
+                        User = new TeamsChannelAccount()
                         {
                             Id = "botId",
                             Name = "BotUser"
