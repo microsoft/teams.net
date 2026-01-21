@@ -49,7 +49,7 @@ public static class ActivityMentionExtensions
         activity.Entities ??= [];
         MentionEntity mentionEntity = new(account, $"<at>{mentionText}</at>");
         activity.Entities.Add(mentionEntity);
-        activity.Rebase();
+        //activity.Rebase();
         return mentionEntity;
     }
 }

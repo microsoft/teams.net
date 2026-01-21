@@ -5,8 +5,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Routing;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps;
 
@@ -18,36 +19,13 @@ public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsAPXClient;
     private static TeamsBotApplicationBuilder? _botApplicationBuilder;
-
-    /// <summary>
-    /// Handler for message activities.
-    /// </summary>
-    public MessageHandler? OnMessage { get; set; }
-
-    /// <summary>
-    /// Handler for message reaction activities.
-    /// </summary>
-    public MessageReactionHandler? OnMessageReaction { get; set; }
-
-    /// <summary>
-    /// Handler for installation update activities.
-    /// </summary>
-    public InstallationUpdateHandler? OnInstallationUpdate { get; set; }
-
-    /// <summary>
-    /// Handler for invoke activities.
-    /// </summary>
-    public InvokeHandler? OnInvoke { get; set; }
-
+    internal static Router Router = new Router();
+    
     /// <summary>
     /// Gets the client used to interact with the TeamsAPX service.
     /// </summary>
     public TeamsApiClient TeamsAPXClient => _teamsAPXClient;
 
-    /// <summary>
-    /// Handler for conversation update activities.
-    /// </summary>
-    public ConversationUpdateHandler? OnConversationUpdate { get; set; }
 
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
@@ -71,34 +49,8 @@ public class TeamsBotApplication : BotApplication
         {
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
-            Context context = new(this, teamsActivity);
-            if (teamsActivity.Type == TeamsActivityType.Message && OnMessage is not null)
-            {
-                await OnMessage.Invoke(new MessageArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
-            }
-            if (teamsActivity.Type == TeamsActivityType.InstallationUpdate && OnInstallationUpdate is not null)
-            {
-                await OnInstallationUpdate.Invoke(new InstallationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
-
-            }
-            if (teamsActivity.Type == TeamsActivityType.MessageReaction && OnMessageReaction is not null)
-            {
-                await OnMessageReaction.Invoke(new MessageReactionArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
-            }
-            if (teamsActivity.Type == TeamsActivityType.ConversationUpdate && OnConversationUpdate is not null)
-            {
-                await OnConversationUpdate.Invoke(new ConversationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
-            }
-            if (teamsActivity.Type == TeamsActivityType.Invoke && OnInvoke is not null)
-            {
-                CoreInvokeResponse invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
-                HttpContext? httpContext = httpContextAccessor.HttpContext;
-                if (httpContext is not null)
-                {
-                    httpContext.Response.StatusCode = invokeResponse.Status;
-                    await httpContext.Response.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
-                }
-            }
+            Context<TeamsActivity> defaultContext = new(this, teamsActivity);
+            await Router.DispatchAsync(defaultContext).ConfigureAwait(false);
         };
     }
 
@@ -125,4 +77,5 @@ public class TeamsBotApplication : BotApplication
 
         _botApplicationBuilder.WebApplication.Run();
     }
+
 }
