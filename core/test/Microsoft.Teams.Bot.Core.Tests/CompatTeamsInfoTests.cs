@@ -515,7 +515,7 @@ namespace Microsoft.Bot.Core.Tests
         {
             var adapter = InitializeCompatAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
-            var operationId = "test-operation-id";
+            var operationId = "amer_9e0e3ba8-c562-440f-ba9d-10603ee31837";
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
@@ -537,7 +537,7 @@ namespace Microsoft.Bot.Core.Tests
         {
             var adapter = InitializeCompatAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
-            var operationId = "test-operation-id";
+            var operationId = "amer_9e0e3ba8-c562-440f-ba9d-10603ee31837";
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
