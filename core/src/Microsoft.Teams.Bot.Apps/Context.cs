@@ -15,7 +15,7 @@ namespace Microsoft.Teams.Bot.Apps;
 /// </summary>
 /// <param name="botApplication"></param>
 /// <param name="activity"></param>
-public class Context(TeamsBotApplication botApplication, TeamsActivity activity)
+public class Context<TActivity>(TeamsBotApplication botApplication, TActivity activity) where TActivity : TeamsActivity
 {
     /// <summary>
     /// Base bot application.
@@ -25,7 +25,7 @@ public class Context(TeamsBotApplication botApplication, TeamsActivity activity)
     /// <summary>
     /// Current activity.
     /// </summary>
-    public TeamsActivity Activity { get; } = activity;
+    public TActivity Activity { get; } = activity;
 
     /// <summary>
     /// Sends a message activity as a reply.

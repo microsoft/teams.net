@@ -1,55 +1,95 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
-using Microsoft.Teams.Bot.Apps.Schema;
+using System.Text.RegularExpressions;
+using Microsoft.Teams.Bot.Apps.Routing;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
-
-// TODO: Handlers should just have context instead of args + context.
 
 /// <summary>
 /// Delegate for handling message activities.
 /// </summary>
-/// <param name="messageArgs"></param>
 /// <param name="context"></param>
 /// <param name="cancellationToken"></param>
 /// <returns></returns>
-public delegate Task MessageHandler(MessageArgs messageArgs, Context context, CancellationToken cancellationToken = default);
-
+public delegate Task MessageHandler(Context<MessageActivity> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Message activity arguments.
+/// Extension methods for registering message activity handlers.
 /// </summary>
-/// <param name="act"></param>
-public class MessageArgs(TeamsActivity act)
+public static class MessageExtensions
 {
     /// <summary>
-    /// Activity for the message.
+    /// Registers a handler for message activities.
     /// </summary>
-    public TeamsActivity Activity { get; set; } = act;
+    /// <param name="app"></param>
+    /// <param name="handler"></param>
+    /// <returns></returns>
+    public static TeamsBotApplication OnMessage(this TeamsBotApplication app, MessageHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageActivity>
+        {
+
+            Name = ActivityType.Message,
+            Selector = _ => true,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
 
     /// <summary>
-    /// Gets or sets the text content of the message.
+    /// Registers a handler for message activities matching the specified pattern.
     /// </summary>
-    public string? Text { get; set; } =
-        act.Properties.TryGetValue("text", out object? value)
-            && value is JsonElement je
-            && je.ValueKind == JsonValueKind.String
-                ? je.GetString()
-                : act.Properties.TryGetValue("text", out object? value2)
-                    ? value2?.ToString()
-                    : null;
+    /// <param name="app"></param>
+    /// <param name="pattern"></param>
+    /// <param name="handler"></param>
+    /// <returns></returns>
+    public static TeamsBotApplication OnMessage(this TeamsBotApplication app, string pattern, MessageHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        var regex = new Regex(pattern);
+
+        app.Router.Register(new Route<MessageActivity>
+        {
+            Name = ActivityType.Message,
+            Selector = msg => regex.IsMatch(msg.Text ?? ""),
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
 
     /// <summary>
-    /// Gets or sets the text format of the message (e.g., "plain", "markdown", "xml").
+    /// Registers a handler for message activities matching the specified regex.
     /// </summary>
-    public string? TextFormat { get; set; } =
-        act.Properties.TryGetValue("textFormat", out object? value)
-            && value is JsonElement je
-            && je.ValueKind == JsonValueKind.String
-                ? je.GetString()
-                : act.Properties.TryGetValue("textFormat", out object? value2)
-                    ? value2?.ToString()
-                    : null;
+    /// <param name="app"></param>
+    /// <param name="regex"></param>
+    /// <param name="handler"></param>
+    /// <returns></returns>
+    public static TeamsBotApplication OnMessage(this TeamsBotApplication app, Regex regex, MessageHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageActivity>
+        {
+            Name = ActivityType.Message,
+            Selector = msg => regex.IsMatch(msg.Text ?? ""),
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
 }
+

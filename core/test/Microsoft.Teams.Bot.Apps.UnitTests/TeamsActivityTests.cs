@@ -57,6 +57,22 @@ public class TeamsActivityTests
     }
 
     [Fact]
+    public void DownCastTeamsActivity_To_CoreActivity_FromBuilder()
+    {
+
+        TeamsActivity teamsActivity = TeamsActivity
+            .CreateBuilder()
+            .WithConversation(new Conversation() { Id = "19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856" })
+            .Build();
+
+        static void AssertCid(CoreActivity a)
+        {
+            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
+        }
+        AssertCid(teamsActivity);
+    }
+
+    [Fact]
     public void DownCastTeamsActivity_To_CoreActivity_FromJsonString()
     {
 

@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -23,7 +24,12 @@ public class TeamsActivity : CoreActivity
     public static TeamsActivity FromActivity(CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return new(activity);
+
+        return activity.Type switch
+        {
+            ActivityType.Message => MessageActivity.FromActivity(activity),
+            _ => new TeamsActivity(activity)  // Fallback to base type
+        };
     }
 
     /// <summary>
@@ -43,6 +49,18 @@ public class TeamsActivity : CoreActivity
         => ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
 
     /// <summary>
+    /// Constructor with type parameter.
+    /// </summary>
+    /// <param name="type"></param>
+    public TeamsActivity(string type)
+    {
+        Type = type;
+        From = new TeamsConversationAccount();
+        Recipient = new TeamsConversationAccount();
+        Conversation = new TeamsConversation();
+    }
+
+    /// <summary>
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
@@ -56,8 +74,14 @@ public class TeamsActivity : CoreActivity
     private static TeamsActivity FromJsonString(string json, JsonTypeInfo<TeamsActivity> options)
         => JsonSerializer.Deserialize(json, options)!;
 
-    private TeamsActivity(CoreActivity activity) : base(activity)
+    /// <summary>
+    /// Protected constructor to create TeamsActivity from CoreActivity.
+    /// Allows derived classes to call via base(activity).
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    protected TeamsActivity(CoreActivity activity) : base(activity)
     {
+        ArgumentNullException.ThrowIfNull(activity);
         // Convert base types to Teams-specific types
         if (activity.ChannelData is not null)
         {
@@ -87,6 +111,7 @@ public class TeamsActivity : CoreActivity
 
         return this;
     }
+
 
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.

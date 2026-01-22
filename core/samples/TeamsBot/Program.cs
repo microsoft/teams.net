@@ -5,21 +5,20 @@ using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using TeamsBot;
 
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();
 
-
-
-
-teamsApp.OnMessage = async (messageArgs, context, cancellationToken) =>
+teamsApp.OnMessage(async (context, cancellationToken) =>
 {
     await context.SendTypingActivityAsync(cancellationToken);
 
-    string replyText = $"You sent: `{messageArgs.Text}` in activity of type `{context.Activity.Type}`.";
+    string replyText = $"You sent: `{context.Activity.Text}` in activity of type `{context.Activity.Type}`.";
 
     TeamsActivity reply = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
         .WithText(replyText)
         .Build();
 
@@ -28,13 +27,14 @@ teamsApp.OnMessage = async (messageArgs, context, cancellationToken) =>
     await context.SendActivityAsync(reply, cancellationToken);
 
     TeamsActivity feedbackCard = TeamsActivity.CreateBuilder()
+    .WithType(TeamsActivityType.Message)
         .WithAttachment(TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.FeedbackCardObj)
             .Build())
         .Build();
     await context.SendActivityAsync(feedbackCard, cancellationToken);
-};
-
+});
+/*
 teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>
 {
     string reactionsAdded = string.Join(", ", args.ReactionsAdded?.Select(r => r.Type) ?? []);
@@ -79,6 +79,7 @@ teamsApp.OnInvoke = async (context, cancellationToken) =>
 //        .Build();
 //    await teamsApp.SendActivityAsync(reply, ct);
 //};
+*/
 
 
 teamsApp.Run();

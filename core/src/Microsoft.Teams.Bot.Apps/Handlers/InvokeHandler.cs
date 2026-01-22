@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
@@ -13,7 +14,7 @@ namespace Microsoft.Teams.Bot.Apps.Handlers;
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation. The default value is <see
 /// cref="CancellationToken.None"/>.</param>
 /// <returns>A task that represents the asynchronous operation. The task result contains the response to the invocation.</returns>
-public delegate Task<CoreInvokeResponse> InvokeHandler(Context context, CancellationToken cancellationToken = default);
+public delegate Task<CoreInvokeResponse> InvokeHandler(Context<TeamsActivity> context, CancellationToken cancellationToken = default);
 
 
 
