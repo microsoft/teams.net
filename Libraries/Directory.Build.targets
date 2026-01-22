@@ -1,0 +1,10 @@
+<Project>
+	<!--https://github.com/dotnet/Nerdbank.GitVersioning/issues/409#issuecomment-823362561-->
+	<Target Name="AddNuGetPackageVersionToThisAssembly"
+			DependsOnTargets="GetBuildVersion"
+			BeforeTargets="GenerateAssemblyNBGVVersionInfo">
+		<ItemGroup>
+			<AdditionalThisAssemblyFields Include="NuGetPackageVersion" String="$(NuGetPackageVersion)" />
+		</ItemGroup>
+	</Target>
+</Project>
