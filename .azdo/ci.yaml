@@ -19,10 +19,10 @@ stages:
     steps:
 
       - task: UseDotNet@2
-        displayName: 'Use .NET 9'
+        displayName: 'Use .NET 10'
         inputs:
           packageType: 'sdk'
-          version: '9.0.x'
+          version: '10.0.x'
 
       - script: dotnet restore 
         displayName: 'Restore'
