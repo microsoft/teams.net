@@ -4,8 +4,7 @@ using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 using Deprecated.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddTeams();
-builder.AddTeamsDevTools();
+builder.AddTeams().AddTeamsDevTools();
 #pragma warning disable CS0612 // Type or member is obsolete
 builder.Services.AddTransient<MainController>();
 #pragma warning restore CS0612 // Type or member is obsolete
