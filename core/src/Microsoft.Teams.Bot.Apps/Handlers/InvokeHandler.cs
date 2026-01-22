@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
@@ -13,18 +14,20 @@ namespace Microsoft.Teams.Bot.Apps.Handlers;
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation. The default value is <see
 /// cref="CancellationToken.None"/>.</param>
 /// <returns>A task that represents the asynchronous operation. The task result contains the response to the invocation.</returns>
-public delegate Task<CoreInvokeResponse> InvokeHandler(Context context, CancellationToken cancellationToken = default);
+public delegate Task<CoreInvokeResponse> InvokeHandler(Context<TeamsActivity> context, CancellationToken cancellationToken = default);
 
 
 
 /// <summary>
-/// Represents the response returned from an invocation handler.
+/// Represents the response returned from an invocation handler, typically used for Adaptive Card actions and task module operations.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="CoreInvokeResponse"/> class with the specified status code and optional body.
+/// This class encapsulates the HTTP-style response sent back to Teams when handling invoke activities.
+/// Common status codes include 200 for success, 400 for bad request, and 500 for errors.
+/// The Body property contains the response payload, which is serialized to JSON and returned to the client.
 /// </remarks>
-/// <param name="status"></param>
-/// <param name="body"></param>
+/// <param name="status">The HTTP status code indicating the result of the invoke operation (e.g., 200 for success).</param>
+/// <param name="body">Optional response payload that will be serialized and sent to the client.</param>
 public class CoreInvokeResponse(int status, object? body = null)
 {
     /// <summary>

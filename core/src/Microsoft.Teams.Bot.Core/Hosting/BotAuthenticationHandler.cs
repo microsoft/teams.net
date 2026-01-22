@@ -2,12 +2,11 @@
 // Licensed under the MIT License.
 
 using System.Net.Http.Headers;
-
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Core.Hosting;
 

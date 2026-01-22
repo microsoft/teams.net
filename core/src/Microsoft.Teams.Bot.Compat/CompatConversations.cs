@@ -2,20 +2,46 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Connector;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Rest;
+using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Schema;
 
 // TODO: Figure out what to do with Agentic Identities. They're all "nulls" here right now.
 // The identity is dependent on the incoming payload or supplied in for proactive scenarios.
 namespace Microsoft.Teams.Bot.Compat
 {
+    /// <summary>
+    /// Provides a compatibility adapter that bridges the Teams Bot Core <see cref="ConversationClient"/> to the
+    /// Bot Framework's <see cref="IConversations"/> interface.
+    /// </summary>
+    /// <remarks>
+    /// This adapter enables legacy Bot Framework bots to use the new Teams Bot Core conversation management
+    /// without code changes. It converts between Bot Framework and Core activity formats, handles HTTP operation
+    /// responses, and manages custom header translations. All operations delegate to the underlying Core ConversationClient.
+    /// </remarks>
+    /// <param name="client">The underlying Teams Bot Core ConversationClient that performs the actual conversation operations.</param>
     internal sealed class CompatConversations(ConversationClient client) : IConversations
     {
-        internal readonly ConversationClient _client = client;
+        private readonly ConversationClient _client = client;
+
+        /// <summary>
+        /// Gets or sets the service URL for the bot service endpoint.
+        /// This URL is used for all conversation operations and must be set before making API calls.
+        /// </summary>
         internal string? ServiceUrl { get; set; }
 
+        /// <summary>
+        /// Creates a new conversation with the specified parameters.
+        /// </summary>
+        /// <param name="parameters">The conversation parameters including members and activity. Cannot be null.</param>
+        /// <param name="customHeaders">Optional custom HTTP headers to include in the request.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains an HTTP operation response with
+        /// a <see cref="ConversationResourceResponse"/> containing the conversation ID, activity ID, and service URL.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when <see cref="ServiceUrl"/> is null or whitespace.</exception>
         public async Task<HttpOperationResponse<ConversationResourceResponse>> CreateConversationWithHttpMessagesAsync(
                 Microsoft.Bot.Schema.ConversationParameters parameters,
                 Dictionary<string, List<string>>? customHeaders = null,
@@ -50,7 +76,15 @@ namespace Microsoft.Teams.Bot.Compat
             };
         }
 
-
+        /// <summary>
+        /// Deletes an existing activity from a conversation.
+        /// </summary>
+        /// <param name="conversationId">The unique identifier of the conversation. Cannot be null or whitespace.</param>
+        /// <param name="activityId">The unique identifier of the activity to delete. Cannot be null or whitespace.</param>
+        /// <param name="customHeaders">Optional custom HTTP headers to include in the request.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains an HTTP operation response.</returns>
+        /// <exception cref="ArgumentException">Thrown when <see cref="ServiceUrl"/> is null or whitespace.</exception>
         public async Task<HttpOperationResponse> DeleteActivityWithHttpMessagesAsync(string conversationId, string activityId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
@@ -103,6 +137,17 @@ namespace Microsoft.Teams.Bot.Compat
             };
         }
 
+        /// <summary>
+        /// Retrieves the list of members participating in a conversation.
+        /// </summary>
+        /// <param name="conversationId">The unique identifier of the conversation. Cannot be null or whitespace.</param>
+        /// <param name="customHeaders">Optional custom HTTP headers to include in the request.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains an HTTP operation response with
+        /// a list of <see cref="ChannelAccount"/> objects representing the conversation members.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when <see cref="ServiceUrl"/> is null or whitespace.</exception>
         public async Task<HttpOperationResponse<IList<ChannelAccount>>> GetConversationMembersWithHttpMessagesAsync(string conversationId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
@@ -243,6 +288,17 @@ namespace Microsoft.Teams.Bot.Compat
             };
         }
 
+        /// <summary>
+        /// Sends an activity to an existing conversation.
+        /// </summary>
+        /// <param name="conversationId">The unique identifier of the conversation. Cannot be null or whitespace.</param>
+        /// <param name="activity">The activity to send. Cannot be null.</param>
+        /// <param name="customHeaders">Optional custom HTTP headers to include in the request.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains an HTTP operation response with
+        /// a <see cref="ResourceResponse"/> containing the ID of the sent activity.
+        /// </returns>
         public async Task<HttpOperationResponse<ResourceResponse>> SendToConversationWithHttpMessagesAsync(string conversationId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
@@ -266,6 +322,18 @@ namespace Microsoft.Teams.Bot.Compat
             };
         }
 
+        /// <summary>
+        /// Updates an existing activity in a conversation.
+        /// </summary>
+        /// <param name="conversationId">The unique identifier of the conversation. Cannot be null or whitespace.</param>
+        /// <param name="activityId">The unique identifier of the activity to update. Cannot be null or whitespace.</param>
+        /// <param name="activity">The updated activity content. Cannot be null.</param>
+        /// <param name="customHeaders">Optional custom HTTP headers to include in the request.</param>
+        /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains an HTTP operation response with
+        /// a <see cref="ResourceResponse"/> containing the ID of the updated activity.
+        /// </returns>
         public async Task<HttpOperationResponse<ResourceResponse>> UpdateActivityWithHttpMessagesAsync(string conversationId, string activityId, Activity activity, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);

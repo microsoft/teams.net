@@ -100,7 +100,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         return new InvokeResponse
         {
             Status = 200,
-            Body = "invokes from compat bot"
+            Body = new { value = "invokes from compat bot" }
         };
     }
 
@@ -128,9 +128,9 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         reply.ApplyConversationReference(cr, isIncoming: false);
         reply.Text = "This is a proactive message sent using the Conversations API.";
 
-        TeamsActivity ta = reply.FromCompatActivity();
+        CoreActivity ca = reply.FromCompatActivity();
 
-        var res = await conversationClient.SendActivityAsync(ta, null, cancellationToken);
+        var res = await conversationClient.SendActivityAsync(ca, null, cancellationToken);
 
         await Task.Delay(2000, cancellationToken);
 
@@ -142,14 +142,14 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
                 .WithServiceUrl(new Uri(turnContext.Activity.ServiceUrl))
                 .WithType(ActivityType.Message)
                 .WithText("This message has been updated.")
-                .WithFrom(ta.From)
+                .WithFrom(ca.From)
                 .Build(),
             null,
             cancellationToken);
 
         await Task.Delay(2000, cancellationToken);
 
-        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, new Uri(turnContext.Activity.ServiceUrl), AgenticIdentity.FromProperties(ta.From.Properties), null, cancellationToken);
+        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, new Uri(turnContext.Activity.ServiceUrl), AgenticIdentity.FromProperties(ca.From.Properties), null, cancellationToken);
 
         await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
     }

@@ -12,14 +12,14 @@ namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
 public static class ActivityClientInfoExtensions
 {
     /// <summary>
-    /// Adds a client info to the activity.
+    /// Adds client information to the activity's entity collection.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <param name="platform"></param>
-    /// <param name="country"></param>
-    /// <param name="timeZone"></param>
-    /// <param name="locale"></param>
-    /// <returns></returns>
+    /// <param name="activity">The activity to add client information to. Cannot be null.</param>
+    /// <param name="platform">The platform identifier (e.g., "web", "desktop", "mobile").</param>
+    /// <param name="country">The country code (e.g., "US", "GB").</param>
+    /// <param name="timeZone">The time zone identifier (e.g., "America/New_York").</param>
+    /// <param name="locale">The locale identifier (e.g., "en-US", "fr-FR").</param>
+    /// <returns>The created ClientInfoEntity that was added to the activity.</returns>
     public static ClientInfoEntity AddClientInfo(this TeamsActivity activity, string platform, string country, string timeZone, string locale)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -32,10 +32,10 @@ public static class ActivityClientInfoExtensions
     }
 
     /// <summary>
-    /// Gets the client info from the activity's entities.
+    /// Retrieves the client information entity from the activity's entity collection.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
+    /// <param name="activity">The activity to extract client information from. Cannot be null.</param>
+    /// <returns>The ClientInfoEntity if found in the activity's entities; otherwise, null.</returns>
     public static ClientInfoEntity? GetClientInfo(this TeamsActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -64,12 +64,12 @@ public class ClientInfoEntity : Entity
 
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ClientInfoEntity"/> class with specified parameters.
+    /// Initializes a new instance of the <see cref="ClientInfoEntity"/> class with specified client information.
     /// </summary>
-    /// <param name="platform"></param>
-    /// <param name="country"></param>
-    /// <param name="timezone"></param>
-    /// <param name="locale"></param>
+    /// <param name="platform">The platform identifier (e.g., "web", "desktop", "mobile").</param>
+    /// <param name="country">The country code (e.g., "US", "GB").</param>
+    /// <param name="timezone">The time zone identifier (e.g., "America/New_York").</param>
+    /// <param name="locale">The locale identifier (e.g., "en-US", "fr-FR").</param>
     public ClientInfoEntity(string platform, string country, string timezone, string locale) : base("clientInfo")
     {
         Locale = locale;

@@ -2,12 +2,11 @@
 // Licensed under the MIT License.
 
 using System.Text;
-
 using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 using Newtonsoft.Json;
 
 namespace Microsoft.Teams.Bot.Compat;
@@ -34,15 +33,14 @@ public static class CompatActivity
     /// </summary>
     /// <param name="activity"></param>
     /// <returns></returns>
-    public static TeamsActivity FromCompatActivity(this Activity activity)
+    public static CoreActivity FromCompatActivity(this Activity activity)
     {
         StringBuilder sb = new();
         using StringWriter stringWriter = new(sb);
         using JsonTextWriter json = new(stringWriter);
         BotMessageHandlerBase.BotMessageSerializer.Serialize(json, activity);
         string jsonString = sb.ToString();
-        CoreActivity coreActivity = CoreActivity.FromJsonString(jsonString);
-        return TeamsActivity.FromActivity(coreActivity);
+        return CoreActivity.FromJsonString(jsonString);
     }
 
 

@@ -4,10 +4,10 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Schema;
 
 
 namespace Microsoft.Teams.Bot.Compat;
@@ -54,11 +54,11 @@ public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter 
     /// <summary>
     /// Processes an incoming HTTP request and generates an appropriate HTTP response using the provided bot instance.
     /// </summary>
-    /// <param name="httpRequest"></param>
-    /// <param name="httpResponse"></param>
-    /// <param name="bot"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="httpRequest">The incoming HTTP request containing the bot activity. Cannot be null.</param>
+    /// <param name="httpResponse">The HTTP response to write results to. Cannot be null.</param>
+    /// <param name="bot">The bot instance that will process the activity. Cannot be null.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous processing operation.</returns>
     public async Task ProcessAsync(HttpRequest httpRequest, HttpResponse httpResponse, IBot bot, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpRequest);
