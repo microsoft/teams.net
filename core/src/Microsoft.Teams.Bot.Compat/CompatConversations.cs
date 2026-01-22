@@ -23,7 +23,7 @@ namespace Microsoft.Teams.Bot.Compat
     /// <param name="client">The underlying Teams Bot Core ConversationClient that performs the actual conversation operations.</param>
     internal sealed class CompatConversations(ConversationClient client) : IConversations
     {
-        private readonly ConversationClient _client = client;
+        internal readonly ConversationClient _client = client;
 
         /// <summary>
         /// Gets or sets the service URL for the bot service endpoint.

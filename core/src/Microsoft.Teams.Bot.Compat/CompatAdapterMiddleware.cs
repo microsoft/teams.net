@@ -50,6 +50,8 @@ internal sealed class CompatAdapterMiddleware(IMiddleware bfMiddleWare) : ITurnM
                 )
             );
 
+            turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(tba.TeamsApiClient);
+
             return bfMiddleWare.OnTurnAsync(turnContext, (activity)
                     => nextTurn(cancellationToken), cancellationToken);
         }

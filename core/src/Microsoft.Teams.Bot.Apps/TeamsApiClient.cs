@@ -155,7 +155,7 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains information about failed recipients.</returns>
     /// <exception cref="HttpRequestException">Thrown if the notification could not be sent successfully.</exception>
-    public async Task<MeetingNotificationResponse> SendMeetingNotificationAsync(string meetingId, MeetingNotificationBase notification, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public async Task<MeetingNotificationResponse> SendMeetingNotificationAsync(string meetingId, TargetedMeetingNotification notification, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(meetingId);
         ArgumentNullException.ThrowIfNull(notification);

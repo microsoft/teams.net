@@ -134,12 +134,12 @@ public class TeamsApiClientTests
             => _teamsClient.FetchMeetingInfoAsync("invalid-meeting-id", _serviceUrl));
     }
 
-    [Fact(Skip = "Requires active meeting context")]
+    [Fact]
     public async Task FetchParticipant()
     {
         string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
         string participantId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
-        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set");
 
         MeetingParticipant result = await _teamsClient.FetchParticipantAsync(
             meetingId,
