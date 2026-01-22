@@ -5,7 +5,7 @@ namespace Microsoft.Teams.Common.Extensions;
 
 public static class TaskExtensions
 {
-    public static async Task<T> Retry<T>(Func<Task<T>> taskFactory, int max = 3, int delay = 200)
+    public static async Task<T> Retry<T>(Func<Task<T>> taskFactory, int max = 3, int delay = 500)
     {
         try
         {
