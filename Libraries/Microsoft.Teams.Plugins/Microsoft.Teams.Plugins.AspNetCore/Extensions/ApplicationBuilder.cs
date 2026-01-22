@@ -28,7 +28,9 @@ public static partial class ApplicationBuilderExtensions
 
         foreach (var type in types)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             var attribute = type.GetCustomAttribute<TeamsControllerAttribute>();
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (attribute is null)
             {
@@ -39,7 +41,9 @@ public static partial class ApplicationBuilderExtensions
 
             if (controller is not null)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 app.AddController(controller);
+#pragma warning restore CS0618 // Type or member is obsolete
             }
         }
 
