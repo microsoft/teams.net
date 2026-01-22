@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -11,6 +12,102 @@ namespace Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 /// </summary>
 public class MessageActivity : TeamsActivity
 {
+
+    /// <summary>
+    /// Convenience method to create a MessageActivity from a CoreActivity.
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    /// <returns>A MessageActivity instance.</returns>
+    public static new MessageActivity FromActivity(CoreActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return new MessageActivity(activity);
+    }
+
+    /// <summary>
+    /// Deserializes a JSON string into a MessageActivity instance.
+    /// </summary>
+    /// <param name="json">The JSON string to deserialize.</param>
+    /// <returns>A MessageActivity instance.</returns>
+    public static new MessageActivity FromJsonString(string json)
+    {
+        MessageActivity activity = JsonSerializer.Deserialize(
+            json, TeamsActivityJsonContext.Default.MessageActivity)!;
+        activity.Rebase();
+        return activity;
+    }
+
+    /// <summary>
+    /// Serializes the MessageActivity to JSON with all message-specific properties.
+    /// </summary>
+    /// <returns>JSON string representation of the MessageActivity</returns>
+    public new string ToJson()
+        => ToJson(TeamsActivityJsonContext.Default.MessageActivity);
+
+    /// <summary>
+    /// Default constructor.
+    /// </summary>
+    [JsonConstructor]
+    public MessageActivity() : base(ActivityType.Message)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
+    /// </summary>
+    /// <param name="text">The text content of the message.</param>
+    public MessageActivity(string text) : base(ActivityType.Message)
+    {
+        Text = text;
+    }
+
+    /// <summary>
+    /// Internal constructor to create MessageActivity from CoreActivity.
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    protected MessageActivity(CoreActivity activity) : base(activity)
+    {
+        if (activity.Properties.TryGetValue("text", out var text))
+        {
+            Text = text?.ToString();
+        }
+        if (activity.Properties.TryGetValue("speak", out var speak))
+        {
+            Speak = speak?.ToString();
+        }
+        if (activity.Properties.TryGetValue("inputHint", out var inputHint))
+        {
+            InputHint = inputHint?.ToString();
+        }
+        if (activity.Properties.TryGetValue("summary", out var summary))
+        {
+            Summary = summary?.ToString();
+        }
+        if (activity.Properties.TryGetValue("textFormat", out var textFormat))
+        {
+            TextFormat = textFormat?.ToString();
+        }
+        if (activity.Properties.TryGetValue("attachmentLayout", out var attachmentLayout))
+        {
+            AttachmentLayout = attachmentLayout?.ToString();
+        }
+        if (activity.Properties.TryGetValue("importance", out var importance))
+        {
+            Importance = importance?.ToString();
+        }
+        if (activity.Properties.TryGetValue("deliveryMode", out var deliveryMode))
+        {
+            DeliveryMode = deliveryMode?.ToString();
+        }
+        if (activity.Properties.TryGetValue("expiration", out var expiration) && expiration != null)
+        {
+            if (DateTime.TryParse(expiration.ToString(), out var expirationDate))
+            {
+                Expiration = expirationDate;
+            }
+        }
+    }
+
     /// <summary>
     /// Gets or sets the text content of the message.
     /// </summary>
@@ -64,76 +161,6 @@ public class MessageActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("expiration")]
     public DateTime? Expiration { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MessageActivity"/> class.
-    /// </summary>
-    public MessageActivity() : base(ActivityType.Message)
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
-    /// </summary>
-    /// <param name="text">The text content of the message.</param>
-    public MessageActivity(string text) : base(ActivityType.Message)
-    {
-        Text = text;
-    }
-
-    /// <summary>
-    /// Serializes the MessageActivity to JSON with all message-specific properties.
-    /// </summary>
-    /// <returns>JSON string representation of the MessageActivity</returns>
-    public new string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.MessageActivity);
-
-    /// <summary>
-    /// Internal constructor to create MessageActivity from CoreActivity.
-    /// </summary>
-    /// <param name="activity">The CoreActivity to convert.</param>
-    internal MessageActivity(CoreActivity activity) : base(activity)
-    {
-        if (activity.Properties.TryGetValue("text", out var text))
-        {
-            Text = text?.ToString();
-        }
-        if (activity.Properties.TryGetValue("speak", out var speak))
-        {
-            Speak = speak?.ToString();
-        }
-        if (activity.Properties.TryGetValue("inputHint", out var inputHint))
-        {
-            InputHint = inputHint?.ToString();
-        }
-        if (activity.Properties.TryGetValue("summary", out var summary))
-        {
-            Summary = summary?.ToString();
-        }
-        if (activity.Properties.TryGetValue("textFormat", out var textFormat))
-        {
-            TextFormat = textFormat?.ToString();
-        }
-        if (activity.Properties.TryGetValue("attachmentLayout", out var attachmentLayout))
-        {
-            AttachmentLayout = attachmentLayout?.ToString();
-        }
-        if (activity.Properties.TryGetValue("importance", out var importance))
-        {
-            Importance = importance?.ToString();
-        }
-        if (activity.Properties.TryGetValue("deliveryMode", out var deliveryMode))
-        {
-            DeliveryMode = deliveryMode?.ToString();
-        }
-        if (activity.Properties.TryGetValue("expiration", out var expiration) && expiration != null)
-        {
-            if (DateTime.TryParse(expiration.ToString(), out var expirationDate))
-            {
-                Expiration = expirationDate;
-            }
-        }
-    }
 }
 
 /// <summary>

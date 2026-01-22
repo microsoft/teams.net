@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -26,7 +27,7 @@ public class TeamsActivity : CoreActivity
 
         return activity.Type switch
         {
-            ActivityType.Message => new MessageActivities.MessageActivity(activity),
+            ActivityType.Message => MessageActivity.FromActivity(activity),
             _ => new TeamsActivity(activity)  // Fallback to base type
         };
     }
