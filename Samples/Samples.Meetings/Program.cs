@@ -1,7 +1,3 @@
-using System.Text.Json;
-
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Meetings;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Activities.Events;
