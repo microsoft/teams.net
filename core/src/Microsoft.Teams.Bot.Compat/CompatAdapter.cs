@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -20,10 +21,24 @@ namespace Microsoft.Teams.Bot.Compat;
 /// The adapter allows registration of middleware and error handling delegates, and supports processing HTTP requests
 /// and continuing conversations. Thread safety is not guaranteed; instances should not be shared across concurrent
 /// requests.</remarks>
-/// <param name="botApplication">The bot application instance that handles activity processing and manages user token operations.</param>
-/// <param name="compatBotAdapter">The underlying bot adapter used to interact with the bot framework and create turn contexts.</param>
-public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter compatBotAdapter) : IBotFrameworkHttpAdapter
+public class CompatAdapter : IBotFrameworkHttpAdapter
 {
+    private readonly TeamsBotApplication _teamsBotApplication;
+    private readonly CompatBotAdapter _compatBotAdapter;
+    private readonly IServiceProvider _sp;
+
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="CompatAdapter"/> class.
+    /// </summary>
+    /// <param name="sp"></param>
+    public CompatAdapter(IServiceProvider sp)
+    {
+        _sp = sp;
+        _teamsBotApplication = sp.GetRequiredService<TeamsBotApplication>();
+        _compatBotAdapter = sp.GetRequiredService<CompatBotAdapter>();
+    }
+
     /// <summary>
     /// Gets the collection of middleware components configured for the application.
     /// </summary>
@@ -64,26 +79,28 @@ public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter 
         ArgumentNullException.ThrowIfNull(httpRequest);
         ArgumentNullException.ThrowIfNull(httpResponse);
         ArgumentNullException.ThrowIfNull(bot);
+
         CoreActivity? coreActivity = null;
-        botApplication.OnActivity = async (activity, cancellationToken1) =>
+        _teamsBotApplication.OnActivity = async (activity, cancellationToken1) =>
         {
             coreActivity = activity;
-            TurnContext turnContext = new(compatBotAdapter, activity.ToCompatActivity());
-            turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(botApplication.UserTokenClient));
-            CompatConnectorClient connectionClient = new(new CompatConversations(botApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
+            TurnContext turnContext = new(_compatBotAdapter, activity.ToCompatActivity());
+            turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
+            CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
-            turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(botApplication.TeamsApiClient);
+            turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
             await bot.OnTurnAsync(turnContext, cancellationToken1).ConfigureAwait(false);
         };
+        
 
         try
         {
             foreach (Microsoft.Bot.Builder.IMiddleware? middleware in MiddlewareSet)
             {
-                botApplication.Use(new CompatAdapterMiddleware(middleware));
+                _teamsBotApplication.Use(new CompatAdapterMiddleware(middleware, _sp));
             }
 
-            await botApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
+            await _teamsBotApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -92,7 +109,7 @@ public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter 
                 if (ex is BotHandlerException aex)
                 {
                     coreActivity = aex.Activity;
-                    using TurnContext turnContext = new(compatBotAdapter, coreActivity!.ToCompatActivity());
+                    using TurnContext turnContext = new(_compatBotAdapter, coreActivity!.ToCompatActivity());
                     await OnTurnError(turnContext, ex).ConfigureAwait(false);
                 }
                 else
@@ -124,9 +141,9 @@ public class CompatAdapter(TeamsBotApplication botApplication, CompatBotAdapter 
         ArgumentNullException.ThrowIfNull(reference);
         ArgumentNullException.ThrowIfNull(callback);
 
-        using TurnContext turnContext = new(compatBotAdapter, reference.GetContinuationActivity());
-        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(botApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl }));
-        turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(botApplication.TeamsApiClient);
+        using TurnContext turnContext = new(_compatBotAdapter, reference.GetContinuationActivity());
+        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl }));
+        turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
         await callback(turnContext, cancellationToken).ConfigureAwait(false);
     }
 }
