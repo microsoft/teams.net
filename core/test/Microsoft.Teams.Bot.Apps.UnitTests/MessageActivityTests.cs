@@ -14,14 +14,14 @@ public class MessageActivityTests
     public void Constructor_Default_SetsMessageType()
     {
         MessageActivity activity = new();
-        Assert.Equal(ActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityType.Message, activity.Type);
     }
 
     [Fact]
     public void Constructor_WithText_SetsTextAndMessageType()
     {
         MessageActivity activity = new("Hello World");
-        Assert.Equal(ActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityType.Message, activity.Type);
         Assert.Equal("Hello World", activity.Text);
     }
 
@@ -30,7 +30,7 @@ public class MessageActivityTests
     {
         MessageActivity activity = MessageActivity.FromJsonString(jsonMessageWithAllProps);
 
-        Assert.Equal("message", activity.Type);
+        Assert.Equal(TeamsActivityType.Message, activity.Type);
         Assert.Equal("Hello World", activity.Text);
         Assert.Equal("This is a summary", activity.Summary);
         Assert.Equal("plain", activity.TextFormat);
@@ -45,7 +45,7 @@ public class MessageActivityTests
     public void MessageActivity_FromCoreActivity_MapsAllProperties()
     {
         CoreActivity coreActivity = CoreActivity.FromJsonString(jsonMessageWithAllProps);
-        MessageActivity messageActivity = (MessageActivity)TeamsActivity.FromActivity(coreActivity);
+        MessageActivity messageActivity = MessageActivity.FromActivity(coreActivity);
 
         Assert.Equal("Hello World", messageActivity.Text);
         Assert.Equal("This is a summary", messageActivity.Summary);
@@ -134,7 +134,7 @@ public class MessageActivityTests
     [Fact]
     public void MessageActivity_Constants_InputHints()
     {
-        MessageActivity activity = new MessageActivity("Test")
+        MessageActivity activity = new("Test")
         {
             InputHint = InputHints.AcceptingInput
         };

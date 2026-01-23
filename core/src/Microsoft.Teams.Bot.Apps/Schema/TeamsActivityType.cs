@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -24,21 +25,28 @@ public static class TeamsActivityType
     public const string Typing = ActivityType.Typing;
 
     /// <summary>
-    /// Represents an invoke activity.
+    /// Represents a message reaction activity.
     /// </summary>
-    public const string Invoke = "invoke";
+    public const string MessageReaction = ActivityType.MessageReaction;
 
     /// <summary>
-    /// Conversation update activity type.
+    /// Represents a message update activity.
     /// </summary>
-    public static readonly string ConversationUpdate = "conversationUpdate";
-    /// <summary>
-    /// Installation update activity type.
-    /// </summary>
-    public static readonly string InstallationUpdate = "installationUpdate";
-    /// <summary>
-    /// Message reaction activity type.
-    /// </summary>
-    public static readonly string MessageReaction = "messageReaction";
+    public const string MessageUpdate = ActivityType.MessageUpdate;
 
+    /// <summary>
+    /// Represents a message delete activity.
+    /// </summary>
+    public const string MessageDelete = ActivityType.MessageDelete;
+
+    /// <summary>
+    /// Registry of activity type factories for creating specialized activity instances.
+    /// </summary>
+    internal static readonly Dictionary<string, (Func<CoreActivity, TeamsActivity> FromActivity, Func<string, TeamsActivity> FromJson)> ActivityDeserializerMap = new()
+    {
+        [TeamsActivityType.Message] = (MessageActivity.FromActivity, MessageActivity.FromJsonString),
+        [TeamsActivityType.MessageReaction] = (MessageReactionActivity.FromActivity, MessageReactionActivity.FromJsonString),
+        [TeamsActivityType.MessageUpdate] = (MessageUpdateActivity.FromActivity, MessageUpdateActivity.FromJsonString),
+        [TeamsActivityType.MessageDelete] = (MessageDeleteActivity.FromActivity, MessageDeleteActivity.FromJsonString),
+    };
 }
