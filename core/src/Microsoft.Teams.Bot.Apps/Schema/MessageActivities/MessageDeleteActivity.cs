@@ -30,10 +30,7 @@ public class MessageDeleteActivity : TeamsActivity
     /// <returns>A MessageDeleteActivity instance.</returns>
     public static new MessageDeleteActivity FromJsonString(string json)
     {
-        MessageDeleteActivity activity = JsonSerializer.Deserialize(
-            json, TeamsActivityJsonContext.Default.MessageDeleteActivity)!;
-        activity.Rebase();
-        return activity;
+        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageDeleteActivity);
     }
 
     /// <summary>

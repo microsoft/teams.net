@@ -85,7 +85,7 @@ public class MessageReactionActivityTests
     {
         var coreActivity = new CoreActivity
         {
-            Type = ActivityType.MessageReaction
+            Type = TeamsActivityType.MessageReaction
         };
         coreActivity.Properties["reactionsAdded"] = System.Text.Json.JsonSerializer.SerializeToElement(new[]
         {
@@ -95,7 +95,7 @@ public class MessageReactionActivityTests
 
         MessageReactionActivity activity = MessageReactionActivity.FromActivity(coreActivity);
         Assert.NotNull(activity);
-        Assert.Equal(ActivityType.MessageReaction, activity.Type);
+        Assert.Equal(TeamsActivityType.MessageReaction, activity.Type);
         Assert.NotNull(activity.ReactionsAdded);
         Assert.Equal(2, activity.ReactionsAdded!.Count);
     }

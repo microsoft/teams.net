@@ -18,16 +18,4 @@ public static class ActivityType
     /// Represents a typing indicator activity.
     /// </summary>
     public const string Typing = "typing";
-    /// <summary>
-    /// Represents a message reaction activity.
-    /// </summary>
-    public const string MessageReaction = "messageReaction";
-    /// <summary>
-    /// Represents a message update activity.
-    /// </summary>
-    public const string MessageUpdate = "messageUpdate";
-    /// <summary>
-    /// Represents a message delete activity.
-    /// </summary>
-    public const string MessageDelete = "messageDelete";
 }

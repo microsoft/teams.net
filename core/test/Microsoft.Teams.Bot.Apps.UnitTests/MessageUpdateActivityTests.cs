@@ -13,14 +13,14 @@ public class MessageUpdateActivityTests
     public void Constructor_Default_SetsMessageUpdateType()
     {
         MessageUpdateActivity activity = new();
-        Assert.Equal(ActivityType.MessageUpdate, activity.Type);
+        Assert.Equal(TeamsActivityType.MessageUpdate, activity.Type);
     }
 
     [Fact]
     public void Constructor_WithText_SetsTextAndMessageUpdateType()
     {
         MessageUpdateActivity activity = new("Updated text");
-        Assert.Equal(ActivityType.MessageUpdate, activity.Type);
+        Assert.Equal(TeamsActivityType.MessageUpdate, activity.Type);
         Assert.Equal("Updated text", activity.Text);
     }
 
@@ -78,13 +78,13 @@ public class MessageUpdateActivityTests
     {
         var coreActivity = new CoreActivity
         {
-            Type = ActivityType.MessageUpdate
+            Type = TeamsActivityType.MessageUpdate
         };
         coreActivity.Properties["text"] = "Test message";
 
         MessageUpdateActivity messageUpdate = MessageUpdateActivity.FromActivity(coreActivity);
         Assert.NotNull(messageUpdate);
-        Assert.Equal(ActivityType.MessageUpdate, messageUpdate.Type);
+        Assert.Equal(TeamsActivityType.MessageUpdate, messageUpdate.Type);
         Assert.Equal("Test message", messageUpdate.Text);
     }
 
@@ -106,7 +106,7 @@ public class MessageUpdateActivityTests
         Assert.IsType<MessageUpdateActivity>(activity);
         MessageUpdateActivity? mua = activity as MessageUpdateActivity;
         Assert.NotNull(mua);
-        Assert.Equal(ActivityType.MessageUpdate, activity.Type);
+        Assert.Equal(TeamsActivityType.MessageUpdate, activity.Type);
         Assert.Equal("Updated content", mua.Text);
         Assert.Equal("markdown", mua.TextFormat);
     }
@@ -125,7 +125,7 @@ public class MessageUpdateActivityTests
     {
         MessageUpdateActivity messageUpdateActivity = new("Message update text")
         {
-            Type = ActivityType.MessageUpdate,
+            Type = TeamsActivityType.MessageUpdate,
             ServiceUrl = new Uri("https://test.service.url/"),
             Speak = "Message update spoken"
         };

@@ -31,10 +31,7 @@ public class MessageActivity : TeamsActivity
     /// <returns>A MessageActivity instance.</returns>
     public static new MessageActivity FromJsonString(string json)
     {
-        MessageActivity activity = JsonSerializer.Deserialize(
-            json, TeamsActivityJsonContext.Default.MessageActivity)!;
-        activity.Rebase();
-        return activity;
+        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageActivity);
     }
 
     /// <summary>

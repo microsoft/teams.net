@@ -13,7 +13,7 @@ public class MessageDeleteActivityTests
     public void Constructor_Default_SetsMessageDeleteType()
     {
         MessageDeleteActivity activity = new();
-        Assert.Equal(ActivityType.MessageDelete, activity.Type);
+        Assert.Equal(TeamsActivityType.MessageDelete, activity.Type);
     }
 
     [Fact]
@@ -53,13 +53,13 @@ public class MessageDeleteActivityTests
     {
         var coreActivity = new CoreActivity
         {
-            Type = ActivityType.MessageDelete,
+            Type = TeamsActivityType.MessageDelete,
             Id = "deleted-msg-id"
         };
 
         MessageDeleteActivity messageDelete = MessageDeleteActivity.FromActivity(coreActivity);
         Assert.NotNull(messageDelete);
-        Assert.Equal(ActivityType.MessageDelete, messageDelete.Type);
+        Assert.Equal(TeamsActivityType.MessageDelete, messageDelete.Type);
         Assert.Equal("deleted-msg-id", messageDelete.Id);
     }
 

@@ -30,10 +30,7 @@ public class MessageUpdateActivity : MessageActivity
     /// <returns>A MessageUpdateActivity instance.</returns>
     public static new MessageUpdateActivity FromJsonString(string json)
     {
-        MessageUpdateActivity activity = JsonSerializer.Deserialize(
-            json, TeamsActivityJsonContext.Default.MessageUpdateActivity)!;
-        activity.Rebase();
-        return activity;
+        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageUpdateActivity);
     }
 
     /// <summary>

@@ -27,17 +27,15 @@ public static class TeamsActivityType
     /// <summary>
     /// Represents a message reaction activity.
     /// </summary>
-    public const string MessageReaction = ActivityType.MessageReaction;
-
+    public const string MessageReaction = "messageReaction";
     /// <summary>
     /// Represents a message update activity.
     /// </summary>
-    public const string MessageUpdate = ActivityType.MessageUpdate;
-
+    public const string MessageUpdate = "messageUpdate";
     /// <summary>
     /// Represents a message delete activity.
     /// </summary>
-    public const string MessageDelete = ActivityType.MessageDelete;
+    public const string MessageDelete = "messageDelete";
 
     /// <summary>
     /// Registry of activity type factories for creating specialized activity instances.

@@ -43,8 +43,23 @@ public class TeamsActivity : CoreActivity
 
         return type != null && TeamsActivityType.ActivityDeserializerMap.TryGetValue(type, out var factory)
             ? factory.FromJson(json)
-            : FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity).Rebase();
+            : FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity);
     }
+
+    /// <summary>
+    /// Creates a new instance of the specified activity type from JSON string.
+    /// </summary>
+    /// <typeparam name="T">The expected activity type.</typeparam>
+    /// <param name="json">The JSON string to deserialize.</param>
+    /// <param name="typeInfo">The JSON type info for deserialization.</param>
+    /// <returns>An activity of type T.</returns>
+    public static T FromJsonString<T>(string json, JsonTypeInfo<T> typeInfo) where T : TeamsActivity
+    {
+        T activity = JsonSerializer.Deserialize(json, typeInfo)!;
+        activity.Rebase();
+        return activity;
+    }
+
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
@@ -75,9 +90,6 @@ public class TeamsActivity : CoreActivity
         Recipient = new TeamsConversationAccount();
         Conversation = new TeamsConversation();
     }
-
-    private static TeamsActivity FromJsonString(string json, JsonTypeInfo<TeamsActivity> options)
-        => JsonSerializer.Deserialize(json, options)!;
 
     /// <summary>
     /// Protected constructor to create TeamsActivity from CoreActivity.
