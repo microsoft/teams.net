@@ -72,12 +72,9 @@ public class TeamsActivity : CoreActivity
     /// Constructor with type parameter.
     /// </summary>
     /// <param name="type"></param>
-    public TeamsActivity(string type)
+    protected TeamsActivity(string type) : this()
     {
         Type = type;
-        From = new TeamsConversationAccount();
-        Recipient = new TeamsConversationAccount();
-        Conversation = new TeamsConversation();
     }
 
     /// <summary>
