@@ -47,7 +47,7 @@ public class MessageDeleteActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageDeleteActivity() : base(ActivityType.MessageDelete)
+    public MessageDeleteActivity() : base(TeamsActivityType.MessageDelete)
     {
     }
 

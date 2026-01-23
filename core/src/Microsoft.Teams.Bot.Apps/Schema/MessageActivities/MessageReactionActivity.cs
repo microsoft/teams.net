@@ -49,7 +49,7 @@ public class MessageReactionActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageReactionActivity() : base(ActivityType.MessageReaction)
+    public MessageReactionActivity() : base(TeamsActivityType.MessageReaction)
     {
     }
 
