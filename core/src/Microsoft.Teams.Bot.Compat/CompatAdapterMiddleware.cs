@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -18,7 +20,8 @@ namespace Microsoft.Teams.Bot.Compat;
 /// This allows gradual migration from Bot Framework SDK to Teams Bot Core while preserving existing middleware investments.
 /// </remarks>
 /// <param name="bfMiddleWare">The Bot Framework middleware component to adapt into the Teams Bot Core pipeline.</param>
-internal sealed class CompatAdapterMiddleware(IMiddleware bfMiddleWare) : ITurnMiddleWare
+/// <param name="sp">The service provider used to resolve required services such as HTTP context accessor and logger.</param>
+internal sealed class CompatAdapterMiddleware(IMiddleware bfMiddleWare, IServiceProvider sp) : ITurnMiddleWare
 {
     /// <summary>
     /// Processes a turn by converting the CoreActivity to Bot Framework format and invoking the wrapped middleware.
@@ -30,13 +33,14 @@ internal sealed class CompatAdapterMiddleware(IMiddleware bfMiddleWare) : ITurnM
     /// <returns>A task that represents the asynchronous operation.</returns>
     public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
     {
+        AspNetCore.Http.IHttpContextAccessor httpContextAccessor = sp.GetRequiredService<AspNetCore.Http.IHttpContextAccessor >();
+        ILogger<CompatBotAdapter> logger = sp.GetRequiredService<ILogger<CompatBotAdapter>>();
 
         if (botApplication is TeamsBotApplication tba)
         {
 #pragma warning disable CA2000 // Dispose objects before losing scope
-            TurnContext turnContext = new(new CompatBotAdapter(tba), activity.ToCompatActivity());
+            TurnContext turnContext = new(new CompatBotAdapter(tba, httpContextAccessor, logger), activity.ToCompatActivity());
 #pragma warning restore CA2000 // Dispose objects before losing scope
-
             turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(
                 new CompatUserTokenClient(botApplication.UserTokenClient)
             );
