@@ -112,7 +112,7 @@ public class MessageUpdateActivityTests
     }
 
     [Fact]
-    public void MessageUpdateActivity_Constructor_CallsRebaseAndCopiesTextToProperties()
+    public void MessageUpdateActivity_Constructor_CopiesTextToProperties()
     {
         MessageUpdateActivity activity = new("Updated message text");
 
@@ -123,13 +123,20 @@ public class MessageUpdateActivityTests
     [Fact]
     public void MessageUpdateActivity_SerializedAsCoreActivity_IncludesText()
     {
-        MessageUpdateActivity messageUpdateActivity = new("Message update text"); ;
+        MessageUpdateActivity messageUpdateActivity = new("Message update text")
+        {
+            Type = ActivityType.MessageUpdate,
+            ServiceUrl = new Uri("https://test.service.url/"),
+            Speak = "Message update spoken"
+        };
 
         CoreActivity coreActivity = messageUpdateActivity;
         string json = coreActivity.ToJson();
 
         Assert.Contains("Message update text", json);
         Assert.Contains("\"text\"", json);
+        Assert.Contains("Message update spoken", json);
+        Assert.Contains("\"speak\"", json);
         Assert.Contains("messageUpdate", json);
     }
 }

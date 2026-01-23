@@ -74,18 +74,27 @@ public class MentionEntity : Entity
     {
         Mentioned = mentioned;
         Text = text;
-        ToProperties();
     }
 
     /// <summary>
     /// Mentioned conversation account.
     /// </summary>
-    [JsonPropertyName("mentioned")] public ConversationAccount? Mentioned { get; set; }
+    [JsonPropertyName("mentioned")]
+    public ConversationAccount? Mentioned
+    {
+        get => base.Properties.TryGetValue("mentioned", out var value) ? value as ConversationAccount : null;
+        set => base.Properties["mentioned"] = value;
+    }
 
     /// <summary>
     /// Text of the mention.
     /// </summary>
-    [JsonPropertyName("text")] public string? Text { get; set; }
+    [JsonPropertyName("text")]
+    public string? Text
+    {
+        get => base.Properties.TryGetValue("text", out var value) ? value?.ToString() : null;
+        set => base.Properties["text"] = value;
+    }
 
     /// <summary>
     /// Creates a new instance of the MentionEntity class from the specified JSON node.
@@ -104,16 +113,6 @@ public class MentionEntity : Entity
                 : throw new ArgumentNullException(nameof(jsonNode), "mentioned property is required"),
             Text = jsonNode?["text"]?.GetValue<string>()
         };
-        res.ToProperties();
         return res;
-    }
-
-    /// <summary>
-    /// Adds custom fields as properties.
-    /// </summary>
-    public override void ToProperties()
-    {
-        base.Properties.Add("mentioned", Mentioned);
-        base.Properties.Add("text", Text);
     }
 }

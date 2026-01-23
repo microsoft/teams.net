@@ -19,17 +19,32 @@ public class SensitiveUsageEntity : OMessageEntity
     /// <summary>
     /// Gets or sets the name of the sensitive usage.
     /// </summary>
-    [JsonPropertyName("name")] public required string Name { get; set; }
+    [JsonPropertyName("name")]
+    public required string Name
+    {
+        get => base.Properties.TryGetValue("name", out var value) ? value?.ToString() ?? string.Empty : string.Empty;
+        set => base.Properties["name"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the description of the sensitive usage.
     /// </summary>
-    [JsonPropertyName("description")] public string? Description { get; set; }
+    [JsonPropertyName("description")]
+    public string? Description
+    {
+        get => base.Properties.TryGetValue("description", out var value) ? value?.ToString() : null;
+        set => base.Properties["description"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the pattern associated with the sensitive usage.
     /// </summary>
-    [JsonPropertyName("pattern")] public DefinedTerm? Pattern { get; set; }
+    [JsonPropertyName("pattern")]
+    public DefinedTerm? Pattern
+    {
+        get => base.Properties.TryGetValue("pattern", out var value) ? value as DefinedTerm : null;
+        set => base.Properties["pattern"] = value;
+    }
 }
 
 /// <summary>

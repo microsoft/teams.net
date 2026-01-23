@@ -23,6 +23,11 @@ namespace Microsoft.Teams.Bot.Apps.Schema.Entities
         /// <summary>
         /// Gets or sets the additional type.
         /// </summary>
-        [JsonPropertyName("additionalType")] public IList<string>? AdditionalType { get; set; }
+        [JsonPropertyName("additionalType")]
+        public IList<string>? AdditionalType
+        {
+            get => base.Properties.TryGetValue("additionalType", out var value) ? value as IList<string> : null;
+            set => base.Properties["additionalType"] = value;
+        }
     }
 }

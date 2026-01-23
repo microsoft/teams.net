@@ -88,6 +88,27 @@ public class TeamsActivityTests
 
     }
 
+    //TODO :fix this 
+    /*
+    [Fact]
+    public void DownCastTeamsActivity_To_CoreActivity_From()
+    {
+        TeamsActivity teamsActivity = new TeamsActivity() { 
+            Conversation = new TeamsConversation()
+            {
+                Id = "19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856"
+            }
+        };
+        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", teamsActivity.Conversation!.Id);
+
+        static void AssertCid(CoreActivity a)
+        {
+            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
+        }
+        AssertCid(teamsActivity);
+
+    }*/
+
 
     [Fact]
     public void AddMentionEntity_To_TeamsActivity()

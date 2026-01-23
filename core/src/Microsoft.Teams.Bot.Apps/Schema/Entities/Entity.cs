@@ -113,9 +113,10 @@ public class Entity(string type)
     /// <summary>
     /// Adds properties to the Properties dictionary.
     /// </summary>
+    [Obsolete("This method is no longer needed. Properties now automatically sync to the Properties dictionary via property getters/setters.")]
     public virtual void ToProperties()
     {
-        throw new NotImplementedException();
+        // No-op: Properties are now automatically synced via property getters/setters
     }
 
 }
