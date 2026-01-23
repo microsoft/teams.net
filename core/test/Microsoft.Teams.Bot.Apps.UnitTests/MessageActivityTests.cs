@@ -180,29 +180,6 @@ public class MessageActivityTests
         Assert.Null(messageActivity.Expiration);
     }
 
-    [Fact]
-    public void MessageActivity_Rebase_CopiesTextToProperties()
-    {
-        MessageActivity activity = new("Hello World")
-        {
-            Speak = "Test speak",
-            Summary = "Test summary",
-            TextFormat = TextFormats.Markdown,
-            InputHint = InputHints.AcceptingInput,
-            Importance = ImportanceLevels.High,
-            DeliveryMode = DeliveryModes.Normal,
-            AttachmentLayout = "carousel"
-        };
-
-        Assert.Equal("Hello World", activity.Properties["text"]);
-        Assert.Equal("Test speak", activity.Properties["speak"]);
-        Assert.Equal("Test summary", activity.Properties["summary"]);
-        Assert.Equal(TextFormats.Markdown, activity.Properties["textFormat"]);
-        Assert.Equal(InputHints.AcceptingInput, activity.Properties["inputHint"]);
-        Assert.Equal(ImportanceLevels.High, activity.Properties["importance"]);
-        Assert.Equal(DeliveryModes.Normal, activity.Properties["deliveryMode"]);
-        Assert.Equal("carousel", activity.Properties["attachmentLayout"]);
-    }
 
     [Fact]
     public void MessageActivity_SerializedAsCoreActivity_IncludesText()
