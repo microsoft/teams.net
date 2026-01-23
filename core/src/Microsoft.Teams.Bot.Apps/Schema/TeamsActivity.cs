@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -36,10 +37,20 @@ public class TeamsActivity : CoreActivity
     /// <returns></returns>
     public static new TeamsActivity FromJsonString(string json)
     {
-        using JsonDocument doc = JsonDocument.Parse(json);
-        string? type = doc.RootElement.TryGetProperty("type", out JsonElement typeElement)
-            ? typeElement.GetString()
-            : null;
+        string? type = null;
+        var jsonBytes = Encoding.UTF8.GetBytes(json);
+        var reader = new Utf8JsonReader(jsonBytes);
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.PropertyName &&
+                reader.ValueTextEquals("type"u8))
+            {
+                reader.Read();
+                type = reader.GetString();
+                break;
+            }
+        }
 
         return type != null && TeamsActivityType.ActivityDeserializerMap.TryGetValue(type, out var factory)
             ? factory.FromJson(json)
