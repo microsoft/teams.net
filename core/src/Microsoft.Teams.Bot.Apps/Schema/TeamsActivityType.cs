@@ -23,18 +23,21 @@ public static class TeamsActivityType
     /// Represents a typing indicator activity.
     /// </summary>
     public const string Typing = ActivityType.Typing;
+
     /// <summary>
     /// Represents a message reaction activity.
     /// </summary>
-    public const string MessageReaction = "messageReaction";
+    public const string MessageReaction = ActivityType.MessageReaction;
+
     /// <summary>
     /// Represents a message update activity.
     /// </summary>
-    public const string MessageUpdate = "messageUpdate";
+    public const string MessageUpdate = ActivityType.MessageUpdate;
+
     /// <summary>
     /// Represents a message delete activity.
     /// </summary>
-    public const string MessageDelete = "messageDelete";
+    public const string MessageDelete = ActivityType.MessageDelete;
 
     /// <summary>
     /// Registry of activity type factories for creating specialized activity instances.
