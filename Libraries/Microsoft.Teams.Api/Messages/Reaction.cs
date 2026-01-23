@@ -9,30 +9,73 @@ namespace Microsoft.Teams.Api.Messages;
 
 /// <summary>
 /// The type of reaction given to the
-/// message. Possible values include: 'like', 'heart', 'laugh', 'surprised',
-/// 'sad', 'angry', 'plusOne'
 /// </summary>
 [JsonConverter(typeof(JsonConverter<ReactionType>))]
 public class ReactionType(string value) : StringEnum(value)
 {
+    /// <summary>
+    /// 👍
+    /// </summary>
     public static readonly ReactionType Like = new("like");
     public bool IsLike => Like.Equals(Value);
 
+    /// <summary>
+    /// ❤️
+    /// </summary>
     public static readonly ReactionType Heart = new("heart");
     public bool IsHeart => Heart.Equals(Value);
 
+    /// <summary>
+    /// ✅
+    /// </summary>
+    public static readonly ReactionType Checkmark = new("checkmark");
+    public bool IsCheckmark => Checkmark.Equals(Value);
+
+    /// <summary>
+    /// ⏳
+    /// </summary>
+    public static readonly ReactionType Hourglass = new("hourglass");
+    public bool IsHourglass => Hourglass.Equals(Value);
+
+    /// <summary>
+    /// 📌
+    /// </summary>
+    public static readonly ReactionType Pushpin = new("pushpin");
+    public bool IsPushpin => Pushpin.Equals(Value);
+
+    /// <summary>
+    /// ❗
+    /// </summary>
+    public static readonly ReactionType Exclamation = new("exclamation");
+    public bool IsExclamation => Exclamation.Equals(Value);
+
+    /// <summary>
+    /// 😆
+    /// </summary>
     public static readonly ReactionType Laugh = new("laugh");
     public bool IsLaugh => Laugh.Equals(Value);
 
+    /// <summary>
+    /// 😮
+    /// </summary>
     public static readonly ReactionType Surprise = new("surprise");
     public bool IsSurprise => Surprise.Equals(Value);
 
+    /// <summary>
+    /// 🙁
+    /// </summary>
     public static readonly ReactionType Sad = new("sad");
     public bool IsSad => Sad.Equals(Value);
 
+    /// <summary>
+    /// 😠
+    /// </summary>
     public static readonly ReactionType Angry = new("angry");
     public bool IsAngry => Angry.Equals(Value);
 
+    /// <summary>
+    /// plus-one
+    /// </summary>
     public static readonly ReactionType PlusOne = new("plusOne");
     public bool IsPlusOne => PlusOne.Equals(Value);
 }
