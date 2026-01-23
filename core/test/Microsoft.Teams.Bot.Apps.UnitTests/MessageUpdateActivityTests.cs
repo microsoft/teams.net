@@ -102,10 +102,41 @@ public class MessageUpdateActivityTests
         }
         """;
 
-        MessageUpdateActivity activity = MessageUpdateActivity.FromJsonString(json);
-        Assert.NotNull(activity);
+        TeamsActivity activity = TeamsActivity.FromJsonString(json);
+        Assert.IsType<MessageUpdateActivity>(activity);
+        MessageUpdateActivity? mua = activity as MessageUpdateActivity;
+        Assert.NotNull(mua);
         Assert.Equal(ActivityType.MessageUpdate, activity.Type);
-        Assert.Equal("Updated content", activity.Text);
-        Assert.Equal("markdown", activity.TextFormat);
+        Assert.Equal("Updated content", mua.Text);
+        Assert.Equal("markdown", mua.TextFormat);
+    }
+
+    [Fact]
+    public void MessageUpdateActivity_Constructor_CallsRebaseAndCopiesTextToProperties()
+    {
+        MessageUpdateActivity activity = new("Updated message text");
+
+        Assert.Equal("Updated message text", activity.Text);
+        Assert.Equal("Updated message text", activity.Properties["text"]);
+    }
+
+    [Fact]
+    public void MessageUpdateActivity_SerializedAsCoreActivity_IncludesText()
+    {
+        MessageUpdateActivity messageUpdateActivity = new("Message update text")
+        {
+            Type = ActivityType.MessageUpdate,
+            ServiceUrl = new Uri("https://test.service.url/"),
+            Speak = "Message update spoken"
+        };
+
+        CoreActivity coreActivity = messageUpdateActivity;
+        string json = coreActivity.ToJson();
+
+        Assert.Contains("Message update text", json);
+        Assert.Contains("\"text\"", json);
+        Assert.Contains("Message update spoken", json);
+        Assert.Contains("\"speak\"", json);
+        Assert.Contains("messageUpdate", json);
     }
 }

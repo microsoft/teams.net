@@ -59,6 +59,7 @@ public class MessageActivity : TeamsActivity
     public MessageActivity(string text) : base(TeamsActivityType.Message)
     {
         Text = text;
+        Rebase();
     }
 
 
@@ -117,6 +118,31 @@ public class MessageActivity : TeamsActivity
                 Expiration = expirationDate;
             }
         }
+
+        Rebase();
+    }
+
+    /// <summary>
+    /// Resets shadow properties in base class, including message-specific properties.
+    /// </summary>
+    /// <returns></returns>
+    internal new MessageActivity Rebase()
+    {
+        base.Rebase();
+
+        // Copy message-specific properties to base Properties dictionary
+        // so they are serialized when the activity is treated as CoreActivity
+        if (Text != null) base.Properties["text"] = Text;
+        if (Speak != null) base.Properties["speak"] = Speak;
+        if (InputHint != null) base.Properties["inputHint"] = InputHint;
+        if (Summary != null) base.Properties["summary"] = Summary;
+        if (TextFormat != null) base.Properties["textFormat"] = TextFormat;
+        if (AttachmentLayout != null) base.Properties["attachmentLayout"] = AttachmentLayout;
+        if (Importance != null) base.Properties["importance"] = Importance;
+        if (DeliveryMode != null) base.Properties["deliveryMode"] = DeliveryMode;
+        if (Expiration != null) base.Properties["expiration"] = Expiration;
+
+        return this;
     }
 
     /// <summary>
@@ -172,6 +198,7 @@ public class MessageActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("expiration")]
     public DateTime? Expiration { get; set; }
+
 }
 
 /// <summary>

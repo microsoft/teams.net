@@ -76,9 +76,11 @@ public class MessageDeleteActivityTests
         }
         """;
 
-        MessageDeleteActivity activity = MessageDeleteActivity.FromJsonString(json);
-        Assert.NotNull(activity);
-        Assert.Equal(ActivityType.MessageDelete, activity.Type);
+        TeamsActivity activity = TeamsActivity.FromJsonString(json);
+        Assert.IsType<MessageDeleteActivity>(activity);
+        MessageDeleteActivity? mda = activity as MessageDeleteActivity;
+        Assert.NotNull(mda);
+        Assert.Equal(TeamsActivityType.MessageDelete, mda.Type);
         Assert.Equal("test-id", activity.Id);
     }
 }

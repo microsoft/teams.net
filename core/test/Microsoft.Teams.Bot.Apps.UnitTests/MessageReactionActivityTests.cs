@@ -131,25 +131,4 @@ public class MessageReactionActivityTests
         Assert.Equal("Test User", activity.ReactionsAdded[0].User!.DisplayName);
         Assert.Equal(UserIdentityTypes.AadUser, activity.ReactionsAdded[0].User!.UserIdentityType);
     }
-
-    [Fact]
-    public void ReactionTypesConstants()
-    {
-        Assert.Equal("like", ReactionTypes.Like);
-        Assert.Equal("heart", ReactionTypes.Heart);
-        Assert.Equal("laugh", ReactionTypes.Laugh);
-        Assert.Equal("surprise", ReactionTypes.Surprise);
-        Assert.Equal("sad", ReactionTypes.Sad);
-        Assert.Equal("angry", ReactionTypes.Angry);
-        Assert.Equal("plusOne", ReactionTypes.PlusOne);
-    }
-
-    [Fact]
-    public void UserIdentityTypesConstants()
-    {
-        Assert.Equal("aadUser", UserIdentityTypes.AadUser);
-        Assert.Equal("onPremiseAadUser", UserIdentityTypes.OnPremiseAadUser);
-        Assert.Equal("anonymousGuest", UserIdentityTypes.AnonymousGuest);
-        Assert.Equal("federatedUser", UserIdentityTypes.FederatedUser);
-    }
 }

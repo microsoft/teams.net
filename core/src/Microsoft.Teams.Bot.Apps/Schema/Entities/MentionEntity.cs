@@ -44,11 +44,7 @@ public static class ActivityMentionExtensions
         string? mentionText = text ?? account.Name;
         if (addText)
         {
-            string? currentText = activity switch
-            {
-                MessageActivity msg => msg.Text,
-                _ => activity.Properties.TryGetValue("text", out var t) ? t?.ToString() : null
-            };
+            string? currentText = activity.Properties.TryGetValue("text", out var t) ? t?.ToString() : null;
             activity.Properties["text"] = $"<at>{mentionText}</at> {currentText}";
         }
         activity.Entities ??= [];
