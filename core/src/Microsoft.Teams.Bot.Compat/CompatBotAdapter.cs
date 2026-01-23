@@ -112,8 +112,11 @@ public class CompatBotAdapter(TeamsBotApplication botApplication, IHttpContextAc
             response.StatusCode = invokeResponse.Status;
             using StreamWriter httpResponseStreamWriter = new(response.BodyWriter.AsStream());
             using JsonTextWriter httpResponseJsonWriter = new(httpResponseStreamWriter);
-            logger.LogTrace("Sending Invoke Response: \n {InvokeResponse} \n", System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions));
-            Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
+            logger.LogTrace("Sending Invoke Response: \n {InvokeResponse} with status: {Status} \n", System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions), invokeResponse.Status);
+            if (invokeResponse.Body is not null)
+            {
+                Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
+            }
         }
         else
         {
