@@ -109,10 +109,6 @@ public class TeamsActivity : CoreActivity
     {
         base.Attachments = this.Attachments?.ToJsonArray();
         base.Entities = this.Entities?.ToJsonArray();
-        base.ChannelData = new TeamsChannelData(this.ChannelData);
-        base.From = this.From;
-        base.Recipient = this.Recipient;
-        base.Conversation = this.Conversation;
 
         return this;
     }
@@ -121,22 +117,42 @@ public class TeamsActivity : CoreActivity
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.
     /// </summary>
-    [JsonPropertyName("from")] public new TeamsConversationAccount From { get; set; }
+    [JsonPropertyName("from")]
+    public new TeamsConversationAccount From
+    {
+        get => (base.From as TeamsConversationAccount) ?? new TeamsConversationAccount(base.From);
+        set => base.From = value;
+    }
 
     /// <summary>
     /// Gets or sets the account information for the recipient of the Teams conversation.
     /// </summary>
-    [JsonPropertyName("recipient")] public new TeamsConversationAccount Recipient { get; set; }
+    [JsonPropertyName("recipient")]
+    public new TeamsConversationAccount Recipient
+    {
+        get => (base.Recipient as TeamsConversationAccount) ?? new TeamsConversationAccount(base.Recipient);
+        set => base.Recipient = value;
+    }
 
     /// <summary>
     /// Gets or sets the conversation information for the Teams conversation.
     /// </summary>
-    [JsonPropertyName("conversation")] public new TeamsConversation Conversation { get; set; }
+    [JsonPropertyName("conversation")]
+    public new TeamsConversation Conversation
+    {
+        get => (base.Conversation as TeamsConversation) ?? new TeamsConversation(base.Conversation);
+        set => base.Conversation = value;
+    }
 
     /// <summary>
     /// Gets or sets the Teams-specific channel data associated with this activity.
     /// </summary>
-    [JsonPropertyName("channelData")] public new TeamsChannelData? ChannelData { get; set; }
+    [JsonPropertyName("channelData")]
+    public new TeamsChannelData? ChannelData
+    {
+        get => base.ChannelData as TeamsChannelData;
+        set => base.ChannelData = value;
+    }
 
     /// <summary>
     /// Gets or sets the entities specific to Teams.

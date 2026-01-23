@@ -88,10 +88,8 @@ public class TeamsActivityTests
 
     }
 
-    //TODO :fix this 
-    /*
     [Fact]
-    public void DownCastTeamsActivity_To_CoreActivity_From()
+    public void DownCastTeamsActivity_To_CoreActivity_WithoutRebase()
     {
         TeamsActivity teamsActivity = new TeamsActivity() { 
             Conversation = new TeamsConversation()
@@ -107,7 +105,7 @@ public class TeamsActivityTests
         }
         AssertCid(teamsActivity);
 
-    }*/
+    }
 
 
     [Fact]
