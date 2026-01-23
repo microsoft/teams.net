@@ -54,6 +54,7 @@ public class Router
     public async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
+
         // TODO : support multiple routes?
         foreach (var route in _routes)
         {

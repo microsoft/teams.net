@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
@@ -43,7 +44,11 @@ public static class ActivityMentionExtensions
         string? mentionText = text ?? account.Name;
         if (addText)
         {
-            string? currentText = activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
+            string? currentText = activity switch
+            {
+                MessageActivity msg => msg.Text,
+                _ => activity.Properties.TryGetValue("text", out var t) ? t?.ToString() : null
+            };
             activity.Properties["text"] = $"<at>{mentionText}</at> {currentText}";
         }
         activity.Entities ??= [];

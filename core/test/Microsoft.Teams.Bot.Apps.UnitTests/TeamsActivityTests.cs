@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
 
@@ -149,7 +150,7 @@ public class TeamsActivityTests
     public void TeamsActivityBuilder_FluentAPI()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
+            .WithType(TeamsActivityType.Message)
             .WithText("Hello World")
             .WithChannelId("msteams")
             .AddMention(new ConversationAccount
@@ -386,4 +387,44 @@ public class TeamsActivityTests
               "localTimezone": "America/Los_Angeles"
             }
             """;
+
+    [Fact]
+    public void FromJsonString_ReturnsDerivedType_WhenRegistered()
+    {
+        string json = """{"type": "message", "text": "Hello World"}""";
+        TeamsActivity activity = TeamsActivity.FromJsonString(json);
+
+        Assert.IsType<MessageActivity>(activity);
+        MessageActivity messageActivity = (MessageActivity)activity;
+        Assert.Equal("Hello World", messageActivity.Text);
+    }
+
+    [Fact]
+    public void FromJsonString_ReturnsBaseType_WhenNotRegistered()
+    {
+        string json = """{"type": "unknownType"}""";
+        TeamsActivity activity = TeamsActivity.FromJsonString(json);
+
+        Assert.Equal(typeof(TeamsActivity), activity.GetType());
+        Assert.Equal("unknownType", activity.Type);
+    }
+
+    [Fact]
+    public void FromActivity_ReturnsDerivedType_WhenRegistered()
+    {
+        CoreActivity coreActivity = new CoreActivity(ActivityType.Message);
+        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.IsType<MessageActivity>(activity);
+    }
+
+    [Fact]
+    public void FromActivity_ReturnsBaseType_WhenNotRegistered()
+    {
+        CoreActivity coreActivity = new CoreActivity("unknownType");
+        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.Equal(typeof(TeamsActivity), activity.GetType());
+        Assert.Equal("unknownType", activity.Type);
+    }
 }

@@ -11,45 +11,52 @@ using TeamsBot;
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();
 
+
+teamsApp.OnMessageUpdate(async (context, cancellationToken) =>
+{
+    string updatedText = context.Activity.Text ?? "<no text>";
+    MessageActivity reply = new($"I saw that you updated your message to: `{updatedText}`");
+    await context.SendActivityAsync(reply, cancellationToken);
+});
+
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
     await context.SendTypingActivityAsync(cancellationToken);
 
     string replyText = $"You sent: `{context.Activity.Text}` in activity of type `{context.Activity.Type}`.";
 
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
-        .WithText(replyText)
-        .Build();
-
+    MessageActivity reply = new(replyText);
     reply.AddMention(context.Activity.From!);
 
     await context.SendActivityAsync(reply, cancellationToken);
 
-    TeamsActivity feedbackCard = TeamsActivity.CreateBuilder()
-    .WithType(TeamsActivityType.Message)
-        .WithAttachment(TeamsAttachment.CreateBuilder()
+    TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.FeedbackCardObj)
-            .Build())
-        .Build();
-    await context.SendActivityAsync(feedbackCard, cancellationToken);
+            .Build();
+    MessageActivity feedbackActivity = new([feedbackCard]);
+    await context.SendActivityAsync(feedbackActivity, cancellationToken);
 });
-/*
-teamsApp.OnMessageReaction = async (args, context, cancellationToken) =>
-{
-    string reactionsAdded = string.Join(", ", args.ReactionsAdded?.Select(r => r.Type) ?? []);
-    string reactionsRemoved = string.Join(", ", args.ReactionsRemoved?.Select(r => r.Type) ?? []);
 
-    var reply = TeamsActivity.CreateBuilder()
-        .WithAttachment(TeamsAttachment.CreateBuilder()
+teamsApp.OnMessageReaction( async (context, cancellationToken) =>
+{
+    string reactionsAdded = string.Join(", ", context.Activity.ReactionsAdded?.Select(r => r.Type) ?? []);
+    string reactionsRemoved = string.Join(", ", context.Activity.ReactionsRemoved?.Select(r => r.Type) ?? []);
+
+    TeamsAttachment reactionsCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.ReactionsCard(reactionsAdded, reactionsRemoved))
-            .Build()
-        )
-        .Build();
+            .Build();
+    MessageActivity reply = new([reactionsCard]);
 
     await context.SendActivityAsync(reply, cancellationToken);
-};
+});
 
+teamsApp.OnMessageDelete(async (context, cancellationToken) =>
+{
+
+    await context.SendActivityAsync("I saw that message you deleted", cancellationToken);
+});
+
+/*
 teamsApp.OnInvoke = async (context, cancellationToken) =>
 {
     var valueNode = context.Activity.Value;
@@ -70,16 +77,6 @@ teamsApp.OnInvoke = async (context, cancellationToken) =>
         Body = "Invokes are great !!"
     };
 };
-
-//teamsApp.OnActivity = async (activity, ct) =>
-//{
-//    var reply = CoreActivity.CreateBuilder()
-//        .WithConversationReference(activity)
-//        .WithProperty("text", "yo")
-//        .Build();
-//    await teamsApp.SendActivityAsync(reply, ct);
-//};
 */
-
 
 teamsApp.Run();

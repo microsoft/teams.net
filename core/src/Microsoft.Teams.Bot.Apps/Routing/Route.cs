@@ -64,7 +64,8 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <returns></returns>
     public override bool Matches(TeamsActivity activity)
     {
-        return activity is TActivity typedActivity && Selector(typedActivity);
+        ArgumentNullException.ThrowIfNull(activity);
+        return (activity.Type.Equals(Name, StringComparison.Ordinal)) && Selector((TActivity)activity);
     }
 
     /// <summary>

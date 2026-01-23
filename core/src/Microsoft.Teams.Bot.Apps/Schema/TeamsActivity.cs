@@ -5,7 +5,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -25,11 +24,9 @@ public class TeamsActivity : CoreActivity
     {
         ArgumentNullException.ThrowIfNull(activity);
 
-        return activity.Type switch
-        {
-            ActivityType.Message => MessageActivity.FromActivity(activity),
-            _ => new TeamsActivity(activity)  // Fallback to base type
-        };
+        return TeamsActivityType.ActivityDeserializerMap.TryGetValue(activity.Type, out var factory)
+            ? factory.FromActivity(activity)
+            : new TeamsActivity(activity);  // Fallback to base type
     }
 
     /// <summary>
@@ -37,9 +34,17 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     /// <param name="json"></param>
     /// <returns></returns>
-    public static new TeamsActivity FromJsonString(string json) =>
-        FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity)
-        .Rebase();
+    public static new TeamsActivity FromJsonString(string json)
+    {
+        using JsonDocument doc = JsonDocument.Parse(json);
+        string? type = doc.RootElement.TryGetProperty("type", out JsonElement typeElement)
+            ? typeElement.GetString()
+            : null;
+
+        return type != null && TeamsActivityType.ActivityDeserializerMap.TryGetValue(type, out var factory)
+            ? factory.FromJson(json)
+            : FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity).Rebase();
+    }
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
