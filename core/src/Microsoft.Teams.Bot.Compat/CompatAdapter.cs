@@ -89,17 +89,11 @@ public class CompatAdapter : IBotFrameworkHttpAdapter
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
-            await bot.OnTurnAsync(turnContext, cancellationToken1).ConfigureAwait(false);
+            await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, cancellationToken).ConfigureAwait(false);
         };
-        
 
         try
         {
-            foreach (Microsoft.Bot.Builder.IMiddleware? middleware in MiddlewareSet)
-            {
-                _teamsBotApplication.Use(new CompatAdapterMiddleware(middleware, _sp));
-            }
-
             await _teamsBotApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)

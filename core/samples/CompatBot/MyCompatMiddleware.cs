@@ -7,11 +7,14 @@ namespace CompatBot
 {
     public class MyCompatMiddleware : Microsoft.Bot.Builder.IMiddleware
     {
-        public Task OnTurnAsync(ITurnContext turnContext, NextDelegate next, CancellationToken cancellationToken = default)
+        public async Task OnTurnAsync(ITurnContext turnContext, NextDelegate next, CancellationToken cancellationToken = default)
         {
             Console.WriteLine("MyCompatMiddleware: OnTurnAsync");
             Console.WriteLine(turnContext.Activity.Text);
-            return next(cancellationToken);
+
+            await turnContext.SendActivityAsync(MessageFactory.Text("Hello from MyCompatMiddleware!"), cancellationToken);
+
+            await next(cancellationToken).ConfigureAwait(false);
         }
     }
 }
