@@ -15,8 +15,6 @@ using Microsoft.Teams.Apps.Plugins;
 using Microsoft.Teams.Common.Http;
 using Microsoft.Teams.Common.Logging;
 
-using static Microsoft.Teams.Plugins.AspNetCore.Extensions.HostApplicationBuilderExtensions;
-
 using HttpRequest = Microsoft.AspNetCore.Http.HttpRequest;
 
 namespace Microsoft.Teams.Plugins.AspNetCore;
