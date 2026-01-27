@@ -42,15 +42,13 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {
-        WebApplication? webApp = builder as WebApplication;
-        ArgumentNullException.ThrowIfNull(webApp, nameof(builder));
-
-        webApp.MapPost("/api/messages", async (HttpContext httpContext, AspNetCorePlugin plugin, CancellationToken cancellationToken) =>
+        return builder.UseEndpoints(endpoints =>
         {
-            return await plugin.Do(httpContext, cancellationToken);
-        }).RequireAuthorization(TeamsTokenAuthConstants.AuthorizationPolicy);
-
-        return builder;
+            endpoints.MapPost("/api/messages", async (HttpContext httpContext, AspNetCorePlugin plugin, CancellationToken cancellationToken) =>
+            {
+                return await plugin.Do(httpContext, cancellationToken);
+            }).RequireAuthorization(TeamsTokenAuthConstants.AuthorizationPolicy);
+        });
     }
 
     public Task OnInit(App app, CancellationToken cancellationToken = default)
