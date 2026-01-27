@@ -28,7 +28,7 @@ public class TeamsActivityTests
         TeamsChannelData tcd = activity.ChannelData!;
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.TeamsChannelId);
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.Channel!.Id);
-        Assert.Equal("b15a9416-0ad3-4172-9210-7beb711d3f70", activity.From.AadObjectId);
+        Assert.Equal("b15a9416-0ad3-4172-9210-7beb711d3f70", activity.From!.AadObjectId);
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", activity.Conversation.Id);
 
         Assert.NotNull(activity.Attachments);

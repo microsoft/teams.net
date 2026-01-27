@@ -149,7 +149,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
 
         await Task.Delay(2000, cancellationToken);
 
-        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, new Uri(turnContext.Activity.ServiceUrl), AgenticIdentity.FromProperties(ca.From.Properties), null, cancellationToken);
+        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, new Uri(turnContext.Activity.ServiceUrl), AgenticIdentity.FromProperties(ca.From?.Properties), null, cancellationToken);
 
         await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
     }

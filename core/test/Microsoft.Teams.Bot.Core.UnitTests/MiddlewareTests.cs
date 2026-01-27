@@ -66,7 +66,8 @@ public class MiddlewareTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Id = "act123"
+            Id = "act123",
+            Recipient = new ConversationAccount()
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
@@ -112,7 +113,8 @@ public class MiddlewareTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Id = "act123"
+            Id = "act123",
+            Recipient = new ConversationAccount()
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
@@ -156,7 +158,8 @@ public class MiddlewareTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Id = "act123"
+            Id = "act123",
+            Recipient = new ConversationAccount()
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
@@ -196,7 +199,8 @@ public class MiddlewareTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Id = "act123"
+            Id = "act123",
+            Recipient = new ConversationAccount()
         };
         activity.Recipient.Properties["appId"] = "test-app-id";
 
