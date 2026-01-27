@@ -65,10 +65,13 @@ public static partial class ApplicationBuilderExtensions
         {
             builder.UseRouting();
             builder.UseAuthorization();
+            
+            // Get AspNetCorePlugin for endpoint registration
+            var aspNetCorePlugin = plugins.OfType<AspNetCorePlugin>().FirstOrDefault();
+            
             builder.UseEndpoints(endpoints =>
             {
                 // Map AspNetCorePlugin endpoint
-                var aspNetCorePlugin = plugins.OfType<AspNetCorePlugin>().FirstOrDefault();
                 if (aspNetCorePlugin is not null)
                 {
                     endpoints.MapPost("/api/messages", async (HttpContext httpContext, CancellationToken cancellationToken) =>
