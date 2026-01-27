@@ -19,6 +19,7 @@ public partial class App
 {
     internal IRouter Router { get; } = new Router();
 
+    [Obsolete("Use Minimal APIs instead.")]
     public App AddController<T>(T controller) where T : class
     {
         var type = controller.GetType();
