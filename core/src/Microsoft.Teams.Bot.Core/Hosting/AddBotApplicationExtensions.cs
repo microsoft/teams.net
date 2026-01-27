@@ -1,11 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
@@ -30,9 +32,9 @@ public static class AddBotApplicationExtensions
     /// Configures the application to handle bot messages at the specified route and returns the registered bot
     /// application instance.
     /// </summary>
-    /// <remarks>This method maps a POST endpoint for bot messages. The endpoint requires authorization.
-    /// Ensure that the bot application is registered in the service container and that UseAuthentication()
-    /// and UseAuthorization() middleware are called before endpoint mapping.</remarks>
+    /// <remarks>This method adds authentication and authorization middleware to the HTTP pipeline and maps
+    /// a POST endpoint for bot messages. The endpoint requires authorization. Ensure that the bot application
+    /// is registered in the service container before calling this method.</remarks>
     /// <typeparam name="TApp">The type of the bot application to use. Must inherit from BotApplication.</typeparam>
     /// <param name="endpoints">The endpoint route builder used to configure endpoints.</param>
     /// <param name="routePath">The route path at which to listen for incoming bot messages. Defaults to "api/messages".</param>
@@ -44,13 +46,22 @@ public static class AddBotApplicationExtensions
            where TApp : BotApplication
     {
         ArgumentNullException.ThrowIfNull(endpoints);
-        TApp app = endpoints.ServiceProvider.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
+
+        // Add authentication and authorization middleware to the pipeline
+        // This is safe because WebApplication implements both IEndpointRouteBuilder and IApplicationBuilder
+        if (endpoints is IApplicationBuilder app)
+        {
+            app.UseAuthentication();
+            app.UseAuthorization();
+        }
+
+        TApp botApp = endpoints.ServiceProvider.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
 
         endpoints.MapPost(routePath, (HttpContext httpContext, CancellationToken cancellationToken)
-            => app.ProcessAsync(httpContext, cancellationToken)
+            => botApp.ProcessAsync(httpContext, cancellationToken)
         ).RequireAuthorization();
 
-        return app;
+        return botApp;
     }
 
     /// <summary>
@@ -62,7 +73,12 @@ public static class AddBotApplicationExtensions
     /// <returns></returns>
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
     {
-        ILogger logger = services.BuildServiceProvider().GetRequiredService<ILogger<BotApplication>>();
+        // Extract ILoggerFactory from service collection to create logger without BuildServiceProvider
+        var loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        var loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
+        ILogger logger = loggerFactory?.CreateLogger<BotApplication>()
+            ?? (ILogger)Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+
         services.AddAuthorization(logger, sectionName);
         services.AddConversationClient(sectionName);
         services.AddUserTokenClient(sectionName);
@@ -93,16 +109,17 @@ public static class AddBotApplicationExtensions
         string httpClientName,
         string sectionName) where TClient : class
     {
-        ServiceProvider sp = services.BuildServiceProvider();
-        IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-        ILogger logger = sp.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
-        ArgumentNullException.ThrowIfNull(configuration);
-
-        string scope = "https://api.botframework.com/.default";
-        if (!string.IsNullOrEmpty(configuration[$"{sectionName}:Scope"]))
-            scope = configuration[$"{sectionName}:Scope"]!;
-        if (!string.IsNullOrEmpty(configuration["Scope"]))
-            scope = configuration["Scope"]!;
+        // Register options to defer scope configuration reading
+        services.AddOptions<BotClientOptions>()
+            .Configure<IConfiguration>((options, configuration) =>
+            {
+                options.Scope = "https://api.botframework.com/.default";
+                if (!string.IsNullOrEmpty(configuration[$"{sectionName}:Scope"]))
+                    options.Scope = configuration[$"{sectionName}:Scope"]!;
+                if (!string.IsNullOrEmpty(configuration["Scope"]))
+                    options.Scope = configuration["Scope"]!;
+                options.SectionName = sectionName;
+            });
 
         services
             .AddHttpClient()
@@ -110,15 +127,40 @@ public static class AddBotApplicationExtensions
             .AddInMemoryTokenCaches()
             .AddAgentIdentities();
 
-        if (services.ConfigureMSAL(configuration, sectionName))
+        // Get configuration and logger to configure MSAL during registration
+        // Try to get from service descriptors first
+        var configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+        IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
+
+        var loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        var loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
+        ILogger logger = loggerFactory?.CreateLogger(typeof(AddBotApplicationExtensions))
+            ?? (ILogger)Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+
+        // If configuration not available as instance, build temporary provider
+        if (configuration == null)
+        {
+            using var tempProvider = services.BuildServiceProvider();
+            configuration = tempProvider.GetRequiredService<IConfiguration>();
+            if (loggerFactory == null)
+            {
+                logger = tempProvider.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
+            }
+        }
+
+        // Configure MSAL during registration (not deferred)
+        if (services.ConfigureMSAL(configuration, sectionName, logger))
         {
             services.AddHttpClient<TClient>(httpClientName)
                 .AddHttpMessageHandler(sp =>
-                new BotAuthenticationHandler(
-                    sp.GetRequiredService<IAuthorizationHeaderProvider>(),
-                    sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                    scope,
-                    sp.GetService<IOptions<ManagedIdentityOptions>>()));
+                {
+                    var botOptions = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
+                    return new BotAuthenticationHandler(
+                        sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                        sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
+                        botOptions.Scope,
+                        sp.GetService<IOptions<ManagedIdentityOptions>>());
+                });
         }
         else
         {
@@ -129,10 +171,9 @@ public static class AddBotApplicationExtensions
         return services;
     }
 
-    private static bool ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName)
+    private static bool ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        ILogger logger = services.BuildServiceProvider().GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
 
         if (configuration["MicrosoftAppId"] is not null)
         {

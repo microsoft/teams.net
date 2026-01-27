@@ -23,22 +23,28 @@ public static class TeamsBotApplicationHostingExtensions
     /// <returns>The updated WebApplicationBuilder instance.</returns>
     public static IServiceCollection AddTeamsBotApplication(this IServiceCollection services, string sectionName = "AzureAd")
     {
-        ServiceProvider sp = services.BuildServiceProvider();
-        IConfiguration configuration = sp.GetRequiredService<IConfiguration>();
-
-        string scope = "https://api.botframework.com/.default";
-        if (!string.IsNullOrEmpty(configuration[$"{sectionName}:Scope"]))
-            scope = configuration[$"{sectionName}:Scope"]!;
-        if (!string.IsNullOrEmpty(configuration["Scope"]))
-            scope = configuration["Scope"]!;
+        // Register options to defer configuration reading until ServiceProvider is built
+        services.AddOptions<BotClientOptions>()
+            .Configure<IConfiguration>((options, configuration) =>
+            {
+                options.Scope = "https://api.botframework.com/.default";
+                if (!string.IsNullOrEmpty(configuration[$"{sectionName}:Scope"]))
+                    options.Scope = configuration[$"{sectionName}:Scope"]!;
+                if (!string.IsNullOrEmpty(configuration["Scope"]))
+                    options.Scope = configuration["Scope"]!;
+                options.SectionName = sectionName;
+            });
 
         services.AddHttpClient<TeamsApiClient>(TeamsApiClient.TeamsHttpClientName)
             .AddHttpMessageHandler(sp =>
-                new BotAuthenticationHandler(
+            {
+                var options = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
+                return new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                    scope,
-                    sp.GetService<IOptions<ManagedIdentityOptions>>()));
+                    options.Scope,
+                    sp.GetService<IOptions<ManagedIdentityOptions>>());
+            });
 
         services.AddBotApplication<TeamsBotApplication>();
         return services;
