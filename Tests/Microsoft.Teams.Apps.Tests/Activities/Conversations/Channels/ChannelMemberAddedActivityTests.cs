@@ -6,6 +6,7 @@ using Microsoft.Teams.Apps.Testing.Plugins;
 
 namespace Microsoft.Teams.Apps.Tests.Activities;
 
+[Obsolete]
 public class ChannelMemberAddedActivityTests
 {
     private readonly App _app = new();
@@ -79,6 +80,7 @@ public class ChannelMemberAddedActivityTests
     }
 
     [TeamsController]
+    [Obsolete]
     public class Controller
     {
         public int Calls { get; private set; } = 0;

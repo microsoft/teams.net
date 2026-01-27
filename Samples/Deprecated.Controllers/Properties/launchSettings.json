@@ -4,8 +4,9 @@
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": false,
+      "launchBrowser": true,
       "applicationUrl": "http://localhost:3978",
+      "launchUrl": "devtools",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Local"
       }
