@@ -12,93 +12,101 @@ public partial interface IContext<TActivity>
     /// </summary>
     /// <param name="activity">activity activity to send</param>
     /// <param name="isTargeted">whether the activity is targeted</param>
+    /// <param name="cancellationToken">cancellation token</param>
     /// <remarks>
     /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
     /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
     /// </remarks>
-    public Task<T> Send<T>(T activity, bool isTargeted = false) where T : IActivity;
+    public Task<T> Send<T>(T activity, bool isTargeted = false, CancellationToken cancellationToken = default) where T : IActivity;
 
     /// <summary>
     /// send a message activity to the conversation
     /// </summary>
     /// <param name="text">the text to send</param>
     /// <param name="isTargeted">whether the activity is targeted</param>
+    /// <param name="cancellationToken">cancellation token</param>
     /// <remarks>
     /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
     /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
     /// </remarks>
-    public Task<MessageActivity> Send(string text, bool isTargeted = false);
+    public Task<MessageActivity> Send(string text, bool isTargeted = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
     /// <param name="isTargeted">whether the activity is targeted</param>
+    /// <param name="cancellationToken">cancellation token</param>
     /// <remarks>
     /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
     /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
     /// </remarks>
-    public Task<MessageActivity> Send(Cards.AdaptiveCard card, bool isTargeted = false);
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card, bool isTargeted = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// send an activity to the conversation as a reply
     /// </summary>
     /// <param name="activity">activity activity to send</param>
     /// <param name="isTargeted">whether the activity is targeted</param>
+    /// <param name="cancellationToken">cancellation token</param>
     /// <remarks>
     /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
     /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
     /// </remarks>
-    public Task<T> Reply<T>(T activity, bool isTargeted = false) where T : IActivity;
+    public Task<T> Reply<T>(T activity, bool isTargeted = false, CancellationToken cancellationToken = default) where T : IActivity;
 
     /// <summary>
     /// send a message activity to the conversation as a reply
     /// </summary>
     /// <param name="text">the text to send</param>
     /// <param name="isTargeted">whether the activity is targeted</param>
+    /// <param name="cancellationToken">cancellation token</param>
     /// <remarks>
     /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
     /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
     /// </remarks>
-    public Task<MessageActivity> Reply(string text, bool isTargeted = false);
+    public Task<MessageActivity> Reply(string text, bool isTargeted = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// send a message activity with a card attachment as a reply
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
     /// <param name="isTargeted">whether the activity is targeted</param>
+    /// <param name="cancellationToken">cancellation token</param>
     /// <remarks>
     /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
     /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
     /// </remarks>
-    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, bool isTargeted = false);
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, bool isTargeted = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// send a typing activity
     /// </summary>
-    public Task<TypingActivity> Typing(string? text = null);
+    /// <param name="text">optional text for the typing activity</param>
+    /// <param name="cancellationToken">cancellation token</param>
+    public Task<TypingActivity> Typing(string? text = null, CancellationToken cancellationToken = default);
 }
 
 public partial class Context<TActivity> : IContext<TActivity>
 {
-    public async Task<T> Send<T>(T activity, bool isTargeted = false) where T : IActivity
+    public async Task<T> Send<T>(T activity, bool isTargeted = false, CancellationToken cancellationToken = default) where T : IActivity
     {
-        var res = await Sender.Send(activity, Ref, isTargeted, CancellationToken);
+        var res = await Sender.Send(activity, Ref, isTargeted, cancellationToken);
         await OnActivitySent(res, ToActivityType<IActivity>());
         return res;
     }
 
-    public Task<MessageActivity> Send(string text, bool isTargeted = false)
+    public Task<MessageActivity> Send(string text, bool isTargeted = false, CancellationToken cancellationToken = default)
     {
-        return Send(new MessageActivity(text), isTargeted);
+        return Send(new MessageActivity(text), isTargeted, cancellationToken);
     }
 
-    public Task<MessageActivity> Send(Cards.AdaptiveCard card, bool isTargeted = false)
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card, bool isTargeted = false, CancellationToken cancellationToken = default)
     {
-        return Send(new MessageActivity().AddAttachment(card), isTargeted);
+        return Send(new MessageActivity().AddAttachment(card), isTargeted, cancellationToken);
     }
 
-    public Task<T> Reply<T>(T activity, bool isTargeted = false) where T : IActivity
+    public Task<T> Reply<T>(T activity, bool isTargeted = false, CancellationToken cancellationToken = default) where T : IActivity
     {
         activity.Conversation = Ref.Conversation.Copy();
         activity.Conversation.Id = Ref.Conversation.ThreadId;
@@ -111,20 +119,20 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]);
         }
 
-        return Send(activity, isTargeted);
+        return Send(activity, isTargeted, cancellationToken);
     }
 
-    public Task<MessageActivity> Reply(string text, bool isTargeted = false)
+    public Task<MessageActivity> Reply(string text, bool isTargeted = false, CancellationToken cancellationToken = default)
     {
-        return Reply(new MessageActivity(text), isTargeted);
+        return Reply(new MessageActivity(text), isTargeted, cancellationToken);
     }
 
-    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, bool isTargeted = false)
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, bool isTargeted = false, CancellationToken cancellationToken = default)
     {
-        return Reply(new MessageActivity().AddAttachment(card), isTargeted);
+        return Reply(new MessageActivity().AddAttachment(card), isTargeted, cancellationToken);
     }
 
-    public Task<TypingActivity> Typing(string? text = null)
+    public Task<TypingActivity> Typing(string? text = null, CancellationToken cancellationToken = default)
     {
         var activity = new TypingActivity();
 
@@ -133,6 +141,6 @@ public partial class Context<TActivity> : IContext<TActivity>
             activity.Text = text;
         }
 
-        return Send(activity);
+        return Send(activity, false, cancellationToken);
     }
 }
