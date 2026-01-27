@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -29,24 +30,23 @@ public static class AddBotApplicationExtensions
     /// Configures the application to handle bot messages at the specified route and returns the registered bot
     /// application instance.
     /// </summary>
-    /// <remarks>This method adds authentication and authorization middleware to the request pipeline and maps
-    /// a POST endpoint for bot messages. The endpoint requires authorization. Ensure that the bot application is
-    /// registered in the service container before calling this method.</remarks>
+    /// <remarks>This method maps a POST endpoint for bot messages. The endpoint requires authorization.
+    /// Ensure that the bot application is registered in the service container and that UseAuthentication()
+    /// and UseAuthorization() middleware are called before endpoint mapping.</remarks>
     /// <typeparam name="TApp">The type of the bot application to use. Must inherit from BotApplication.</typeparam>
-    /// <param name="builder">The application builder used to configure the request pipeline.</param>
+    /// <param name="endpoints">The endpoint route builder used to configure endpoints.</param>
     /// <param name="routePath">The route path at which to listen for incoming bot messages. Defaults to "api/messages".</param>
     /// <returns>The registered bot application instance of type TApp.</returns>
-    /// <exception cref="ApplicationException">Thrown if the bot application of type TApp is not registered in the application's service container.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if the bot application of type TApp is not registered in the application's service container.</exception>
     public static TApp UseBotApplication<TApp>(
-       this IApplicationBuilder builder,
+       this IEndpointRouteBuilder endpoints,
        string routePath = "api/messages")
            where TApp : BotApplication
     {
-        ArgumentNullException.ThrowIfNull(builder);
-        TApp app = builder.ApplicationServices.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
-        WebApplication? webApp = builder as WebApplication;
-        ArgumentNullException.ThrowIfNull(webApp);
-        webApp.MapPost(routePath, (HttpContext httpContext, CancellationToken cancellationToken)
+        ArgumentNullException.ThrowIfNull(endpoints);
+        TApp app = endpoints.ServiceProvider.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
+
+        endpoints.MapPost(routePath, (HttpContext httpContext, CancellationToken cancellationToken)
             => app.ProcessAsync(httpContext, cancellationToken)
         ).RequireAuthorization();
 
