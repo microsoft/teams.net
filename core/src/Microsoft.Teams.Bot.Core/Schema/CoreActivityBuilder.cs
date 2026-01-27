@@ -37,17 +37,13 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     public TBuilder WithConversationReference(TActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        ArgumentNullException.ThrowIfNull(activity.ChannelId);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNull(activity.From);
         ArgumentNullException.ThrowIfNull(activity.Recipient);
-
+        
         WithServiceUrl(activity.ServiceUrl);
-        WithChannelId(activity.ChannelId);
         SetConversation(activity.Conversation);
         SetFrom(activity.Recipient);
-        SetRecipient(activity.From);
 
         return (TBuilder)this;
     }
@@ -128,9 +124,12 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="from">The sender account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithFrom(ConversationAccount from)
+    public TBuilder WithFrom(ConversationAccount? from)
     {
-        SetFrom(from);
+        if (from is not null)
+        {
+            SetFrom(from);
+        }
         return (TBuilder)this;
     }
 
@@ -163,7 +162,10 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// <returns>The builder instance for chaining.</returns>
     public virtual TBuilder WithChannelData(ChannelData? channelData)
     {
-        _activity.ChannelData = channelData;
+        if (channelData is not null)
+        {
+            _activity.ChannelData = channelData;
+        }
         return (TBuilder)this;
     }
 
