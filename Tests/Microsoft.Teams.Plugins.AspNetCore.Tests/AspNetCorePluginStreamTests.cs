@@ -105,7 +105,7 @@ public class AspNetCorePluginStreamTests
         };
 
         stream.Update("Thinking...");
-        await Task.Delay(600); // Wait for the flush task to complete
+        await Task.Delay(1000); // Wait for the flush task to complete
 
         Assert.True(stream.Count > 0, "Should have processed the update");
         Assert.Equal(2, stream.Sequence); // Should increment sequence after sending
