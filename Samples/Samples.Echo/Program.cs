@@ -18,7 +18,7 @@ teams.OnMessage(async context =>
 {
     context.Log.Info("hit!");
     await context.Typing();
-    await context.Send($"you said '{context.Activity.Text}'4");
+    await context.Send($"you said '{context.Activity.Text}'5");
 });
 
 app.Run();
