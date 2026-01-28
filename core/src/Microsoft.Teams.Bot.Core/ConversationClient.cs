@@ -51,6 +51,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             string convId = conversationId.Length > 325 ? conversationId[..325] : conversationId;
             url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities";
         }
+        activity.ServiceUrl = null; // do not serialize in the outgoing payload
 
         string body = activity.ToJson();
 
@@ -60,7 +61,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             HttpMethod.Post,
             url,
             body,
-            CreateRequestOptions(activity.From.GetAgenticIdentity(), "sending activity", customHeaders),
+            CreateRequestOptions(activity.From?.GetAgenticIdentity(), "sending activity", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -90,7 +91,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             HttpMethod.Put,
             url,
             body,
-            CreateRequestOptions(activity.From.GetAgenticIdentity(), "updating activity", customHeaders),
+            CreateRequestOptions(activity.From?.GetAgenticIdentity(), "updating activity", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -144,7 +145,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             activity.Conversation.Id,
             activity.Id,
             activity.ServiceUrl,
-            activity.From.GetAgenticIdentity(),
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken).ConfigureAwait(false);
     }

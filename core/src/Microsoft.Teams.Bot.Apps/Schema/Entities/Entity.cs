@@ -45,9 +45,9 @@ public class EntityList : List<Entity>
     /// <returns></returns>
     public static EntityList FromJsonArray(JsonArray? jsonArray, JsonSerializerOptions? options = null)
     {
-        if (jsonArray == null)
+        if (jsonArray is null)
         {
-            return [];
+            return null!;
         }
         EntityList entities = [];
         foreach (JsonNode? item in jsonArray)

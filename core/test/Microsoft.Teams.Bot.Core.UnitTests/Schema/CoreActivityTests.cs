@@ -115,7 +115,7 @@ public class CoreCoreActivityTests
         Assert.Equal("message", act.Type);
         Assert.NotNull(act.From);
         Assert.IsType<ConversationAccount>(act.From);
-        Assert.Equal("1", act.From!.Id);
+        Assert.Equal("1", act.From.Id);
         Assert.Equal("tester", act.From.Name);
         Assert.True(act.From.Properties.ContainsKey("aadObjectId"));
         Assert.Equal("123", act.From.Properties["aadObjectId"]?.ToString());
@@ -287,14 +287,13 @@ public class CoreCoreActivityTests
         Assert.NotNull(reply);
         Assert.Equal(ActivityType.Message, reply.Type);
         Assert.Equal("reply", reply.Properties["text"]);
-        Assert.Equal("channel1", reply.ChannelId);
         Assert.NotNull(reply.ServiceUrl);
         Assert.Equal("http://service.url/", reply.ServiceUrl.ToString());
         Assert.Equal("conversation1", reply.Conversation.Id);
+        Assert.NotNull(reply.From);
         Assert.Equal("bot1", reply.From.Id);
         Assert.Equal("Bot One", reply.From.Name);
-        Assert.Equal("user1", reply.Recipient.Id);
-        Assert.Equal("User One", reply.Recipient.Name);
+        Assert.Null(reply.Recipient);
     }
 
     [Fact]

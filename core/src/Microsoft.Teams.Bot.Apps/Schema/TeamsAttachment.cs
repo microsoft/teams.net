@@ -35,7 +35,7 @@ public class TeamsAttachment
     {
         if (jsonArray is null)
         {
-            return [];
+            return null!;
         }
         List<TeamsAttachment> attachments = [];
         foreach (JsonNode? item in jsonArray)

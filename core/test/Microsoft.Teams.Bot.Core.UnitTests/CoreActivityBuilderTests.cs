@@ -14,8 +14,6 @@ public class CoreActivityBuilderTests
         CoreActivity activity = builder.Build();
 
         Assert.NotNull(activity);
-        Assert.NotNull(activity.From);
-        Assert.NotNull(activity.Recipient);
         Assert.NotNull(activity.Conversation);
     }
 
@@ -104,6 +102,7 @@ public class CoreActivityBuilderTests
             .WithFrom(fromAccount)
             .Build();
 
+        Assert.NotNull(activity.From);
         Assert.Equal("sender-id", activity.From.Id);
         Assert.Equal("Sender Name", activity.From.Name);
     }
@@ -121,6 +120,7 @@ public class CoreActivityBuilderTests
             .WithRecipient(recipientAccount)
             .Build();
 
+        Assert.NotNull(activity.Recipient);
         Assert.Equal("recipient-id", activity.Recipient.Id);
         Assert.Equal("Recipient Name", activity.Recipient.Name);
     }
@@ -181,7 +181,9 @@ public class CoreActivityBuilderTests
         Assert.Equal("activity-123", activity.Id);
         Assert.Equal("msteams", activity.ChannelId);
         Assert.Equal("Test message", activity.Properties["text"]?.ToString());
+        Assert.NotNull(activity.From);
         Assert.Equal("sender-id", activity.From.Id);
+        Assert.NotNull(activity.Recipient);
         Assert.Equal("recipient-id", activity.Recipient.Id);
         Assert.Equal("conv-id", activity.Conversation.Id);
     }
@@ -238,7 +240,7 @@ public class CoreActivityBuilderTests
     }
 
     [Fact]
-    public void WithConversationReference_WithNullChannelId_ThrowsArgumentNullException()
+    public void WithConversationReference_WithNullChannelId_DoesNotThrow()
     {
         CoreActivityBuilder builder = new();
         CoreActivity sourceActivity = new()
@@ -250,7 +252,9 @@ public class CoreActivityBuilderTests
             Recipient = new ConversationAccount()
         };
 
-        Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(sourceActivity));
+        CoreActivity activity = builder.WithConversationReference(sourceActivity).Build();
+        // ChannelId is not set by WithConversationReference when null
+        Assert.Equal(ActivityType.Message, activity.Type);
     }
 
     [Fact]
@@ -286,7 +290,7 @@ public class CoreActivityBuilderTests
     }
 
     [Fact]
-    public void WithConversationReference_WithNullFrom_ThrowsArgumentNullException()
+    public void WithConversationReference_WithNullFrom_SetsFromToRecipient()
     {
         CoreActivityBuilder builder = new();
         CoreActivity sourceActivity = new()
@@ -295,10 +299,12 @@ public class CoreActivityBuilderTests
             ServiceUrl = new Uri("https://test.com"),
             Conversation = new Conversation(),
             From = null!,
-            Recipient = new ConversationAccount()
+            Recipient = new ConversationAccount { Id = "bot-1", Name = "Bot" }
         };
 
-        Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(sourceActivity));
+        CoreActivity activity = builder.WithConversationReference(sourceActivity).Build();
+        Assert.NotNull(activity.From);
+        Assert.Equal("bot-1", activity.From.Id);
     }
 
     [Fact]
@@ -333,17 +339,16 @@ public class CoreActivityBuilderTests
             .WithConversationReference(sourceActivity)
             .Build();
 
-        Assert.Equal("msteams", activity.ChannelId);
         Assert.Equal(new Uri("https://smba.trafficmanager.net/teams/"), activity.ServiceUrl);
         Assert.Equal("conv-123", activity.Conversation.Id);
+        Assert.NotNull(activity.From);
         Assert.Equal("bot-1", activity.From.Id);
         Assert.Equal("Bot", activity.From.Name);
-        Assert.Equal("user-1", activity.Recipient.Id);
-        Assert.Equal("User One", activity.Recipient.Name);
+        Assert.Null(activity.Recipient);
     }
 
     [Fact]
-    public void WithConversationReference_SwapsFromAndRecipient()
+    public void WithConversationReference_SetsFromFromRecipient()
     {
         CoreActivity incomingActivity = new()
         {
@@ -358,21 +363,21 @@ public class CoreActivityBuilderTests
             .WithConversationReference(incomingActivity)
             .Build();
 
+        Assert.NotNull(replyActivity.From);
         Assert.Equal("bot-id", replyActivity.From.Id);
         Assert.Equal("Bot", replyActivity.From.Name);
-        Assert.Equal("user-id", replyActivity.Recipient.Id);
-        Assert.Equal("User", replyActivity.Recipient.Name);
+        Assert.Null(replyActivity.Recipient);
     }
 
     [Fact]
-    public void WithChannelData_WithNullValue_SetsToNull()
+    public void WithChannelData_WithNullValue_DoesNotOverwrite()
     {
         CoreActivity activity = new CoreActivityBuilder()
             .WithChannelData(new ChannelData())
             .WithChannelData(null)
             .Build();
 
-        Assert.Null(activity.ChannelData);
+        Assert.NotNull(activity.ChannelData);
     }
 
     [Fact]
@@ -423,8 +428,9 @@ public class CoreActivityBuilderTests
             .Build();
 
         Assert.Equal(ActivityType.Message, activity.Type);
+        Assert.NotNull(activity.From);
         Assert.Equal("bot-1", activity.From.Id);
-        Assert.Equal("user-1", activity.Recipient.Id);
+        Assert.Null(activity.Recipient);
     }
 
     [Fact]
@@ -475,7 +481,9 @@ public class CoreActivityBuilderTests
         Assert.Equal("msg-001", activity.Id);
         Assert.Equal(serviceUrl, activity.ServiceUrl);
         Assert.Equal("msteams", activity.ChannelId);
+        Assert.NotNull(activity.From);
         Assert.Equal("bot-id", activity.From.Id);
+        Assert.NotNull(activity.Recipient);
         Assert.Equal("user-id", activity.Recipient.Id);
         Assert.Equal("conv-001", activity.Conversation.Id);
         Assert.NotNull(activity.ChannelData);

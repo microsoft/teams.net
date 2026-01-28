@@ -87,9 +87,18 @@ public class TeamsActivity : CoreActivity
         {
             ChannelData = new TeamsChannelData(activity.ChannelData);
         }
-        From = new TeamsConversationAccount(activity.From);
-        Recipient = new TeamsConversationAccount(activity.Recipient);
+
+        if (activity.From is not null)
+        {
+            From = new TeamsConversationAccount(activity.From);
+        }
+
+        if (activity.Recipient is not null)
+        {
+            Recipient = new TeamsConversationAccount(activity.Recipient);
+        }
         Conversation = new TeamsConversation(activity.Conversation);
+
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
         Entities = EntityList.FromJsonArray(activity.Entities);
 
@@ -104,7 +113,10 @@ public class TeamsActivity : CoreActivity
     {
         base.Attachments = this.Attachments?.ToJsonArray();
         base.Entities = this.Entities?.ToJsonArray();
-        base.ChannelData = new TeamsChannelData(this.ChannelData);
+        if (this.ChannelData is not null)
+        {
+            base.ChannelData = new TeamsChannelData(this.ChannelData);
+        }
         base.From = this.From;
         base.Recipient = this.Recipient;
         base.Conversation = this.Conversation;
@@ -116,12 +128,12 @@ public class TeamsActivity : CoreActivity
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.
     /// </summary>
-    [JsonPropertyName("from")] public new TeamsConversationAccount From { get; set; }
+    [JsonPropertyName("from")] public new TeamsConversationAccount? From { get; set; }
 
     /// <summary>
     /// Gets or sets the account information for the recipient of the Teams conversation.
     /// </summary>
-    [JsonPropertyName("recipient")] public new TeamsConversationAccount Recipient { get; set; }
+    [JsonPropertyName("recipient")] public new TeamsConversationAccount? Recipient { get; set; }
 
     /// <summary>
     /// Gets or sets the conversation information for the Teams conversation.
