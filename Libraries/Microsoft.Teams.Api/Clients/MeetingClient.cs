@@ -39,9 +39,9 @@ public class MeetingClient : Client
         return response.Body;
     }
 
-    public async Task<MeetingParticipant> GetParticipantAsync(string meetingId, string id)
+    public async Task<MeetingParticipant> GetParticipantAsync(string meetingId, string id, string tenantId)
     {
-        var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{meetingId}/participants/{id}");
+        var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}");
         var response = await _http.SendAsync<MeetingParticipant>(request, _cancellationToken);
         return response.Body;
     }
@@ -53,37 +53,38 @@ public class MeetingClient : Client
 public class MeetingParticipant
 {
     /// <summary>
-    /// Unique identifier for the participant
-    /// </summary>
-    [JsonPropertyName("id")]
-    [JsonPropertyOrder(0)]
-    public required string Id { get; set; }
-
-    /// <summary>
     /// The participant's user information
     /// </summary>
     [JsonPropertyName("user")]
-    [JsonPropertyOrder(1)]
     public Account? User { get; set; }
 
     /// <summary>
-    /// The participant's role in the meeting
+    /// Gets or sets information about the associated meeting.
+    /// </summary>
+    [JsonPropertyName("meeting")]
+    public MeetingInfo? Meeting { get; set; }
+
+    /// <summary>
+    /// Gets or sets the conversation associated with this object.
+    /// </summary>
+    [JsonPropertyName("conversation")]
+    public Conversation? Conversation { get; set; }
+}
+
+/// <summary>
+/// Represents information about a participant's role and meeting status within a meeting context.
+/// </summary>
+public class MeetingInfo
+{
+    /// <summary>
+    /// Gets or sets the role associated with the entity.
     /// </summary>
     [JsonPropertyName("role")]
-    [JsonPropertyOrder(2)]
     public string? Role { get; set; }
 
     /// <summary>
-    /// Whether the participant is an organizer
+    /// Gets or sets a value indicating whether the user is currently in a meeting.
     /// </summary>
-    [JsonPropertyName("isOrganizer")]
-    [JsonPropertyOrder(3)]
-    public bool IsOrganizer { get; set; }
-
-    /// <summary>
-    /// The time when the participant joined the meeting
-    /// </summary>
-    [JsonPropertyName("joinTime")]
-    [JsonPropertyOrder(4)]
-    public DateTime? JoinTime { get; set; }
+    [JsonPropertyName("inMeeting")]
+    public bool? InMeeting { get; set; }
 }

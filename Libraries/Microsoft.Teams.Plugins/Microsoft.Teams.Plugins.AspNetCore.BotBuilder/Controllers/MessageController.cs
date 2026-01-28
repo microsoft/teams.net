@@ -10,6 +10,7 @@ using Microsoft.Extensions.Hosting;
 namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
 {
     [ApiController]
+    [Obsolete("Use Minimal APIs instead.")]
     public class MessageController : ControllerBase
     {
         private readonly IBotFrameworkHttpAdapter _adapter;
