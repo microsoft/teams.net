@@ -8,6 +8,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+using Microsoft.Teams.Bot.Apps.Handlers;
+using Microsoft.Identity.Client;
 
 namespace Microsoft.Teams.Bot.Apps;
 
@@ -50,7 +52,22 @@ public class TeamsBotApplication : BotApplication
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
-            await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+
+            if (teamsActivity.Type != TeamsActivityType.Invoke)
+            {
+                await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+            }
+            else // invokes
+            {
+                CoreInvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+                HttpContext? httpContext = httpContextAccessor.HttpContext;
+                if (httpContext is not null && invokeResponse is not null)
+                {
+                    httpContext.Response.StatusCode = invokeResponse.Status;
+                    await httpContext.Response.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
+
+                }
+            }
         };
     }
 

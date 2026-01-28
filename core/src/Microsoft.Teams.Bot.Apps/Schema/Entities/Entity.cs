@@ -110,14 +110,6 @@ public class Entity(string type)
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
 
-    /// <summary>
-    /// Adds properties to the Properties dictionary.
-    /// </summary>
-    public virtual void ToProperties()
-    {
-        throw new NotImplementedException();
-    }
-
 }
 
 /// <summary>

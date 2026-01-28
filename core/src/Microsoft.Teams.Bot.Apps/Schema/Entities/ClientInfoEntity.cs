@@ -59,7 +59,6 @@ public class ClientInfoEntity : Entity
     /// </summary>
     public ClientInfoEntity() : base("clientInfo")
     {
-        ToProperties();
     }
 
 
@@ -76,36 +75,45 @@ public class ClientInfoEntity : Entity
         Country = country;
         Platform = platform;
         Timezone = timezone;
-        ToProperties();
     }
+
     /// <summary>
     /// Gets or sets the locale information.
     /// </summary>
-    [JsonPropertyName("locale")] public string? Locale { get; set; }
+    [JsonPropertyName("locale")]
+    public string? Locale
+    {
+        get => base.Properties.TryGetValue("locale", out var value) ? value?.ToString() : null;
+        set => base.Properties["locale"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the country information.
     /// </summary>
-    [JsonPropertyName("country")] public string? Country { get; set; }
+    [JsonPropertyName("country")]
+    public string? Country
+    {
+        get => base.Properties.TryGetValue("country", out var value) ? value?.ToString() : null;
+        set => base.Properties["country"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the platform information.
     /// </summary>
-    [JsonPropertyName("platform")] public string? Platform { get; set; }
+    [JsonPropertyName("platform")]
+    public string? Platform
+    {
+        get => base.Properties.TryGetValue("platform", out var value) ? value?.ToString() : null;
+        set => base.Properties["platform"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the timezone information.
     /// </summary>
-    [JsonPropertyName("timezone")] public string? Timezone { get; set; }
-
-    /// <summary>
-    /// Adds custom fields as properties.
-    /// </summary>
-    public override void ToProperties()
+    [JsonPropertyName("timezone")]
+    public string? Timezone
     {
-        base.Properties.Add("locale", Locale);
-        base.Properties.Add("country", Country);
-        base.Properties.Add("platform", Platform);
-        base.Properties.Add("timezone", Timezone);
+        get => base.Properties.TryGetValue("timezone", out var value) ? value?.ToString() : null;
+        set => base.Properties["timezone"] = value;
     }
 }

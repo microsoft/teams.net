@@ -18,17 +18,34 @@ public class StreamInfoEntity : Entity
     /// <summary>
     /// Gets or sets the stream id.
     /// </summary>
-    [JsonPropertyName("streamId")] public string? StreamId { get; set; }
+    [JsonPropertyName("streamId")]
+    public string? StreamId
+    {
+        get => base.Properties.TryGetValue("streamId", out var value) ? value?.ToString() : null;
+        set => base.Properties["streamId"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the stream type. See <see cref="StreamType"/> for possible values.
     /// </summary>
-    [JsonPropertyName("streamType")] public string? StreamType { get; set; }
+    [JsonPropertyName("streamType")]
+    public string? StreamType
+    {
+        get => base.Properties.TryGetValue("streamType", out var value) ? value?.ToString() : null;
+        set => base.Properties["streamType"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the stream sequence.
     /// </summary>
-    [JsonPropertyName("streamSequence")] public int? StreamSequence { get; set; }
+    [JsonPropertyName("streamSequence")]
+    public int? StreamSequence
+    {
+        get => base.Properties.TryGetValue("streamSequence", out var value) && value != null
+            ? (int.TryParse(value.ToString(), out var intVal) ? intVal : null)
+            : null;
+        set => base.Properties["streamSequence"] = value;
+    }
 }
 
 /// <summary>

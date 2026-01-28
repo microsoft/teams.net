@@ -31,10 +31,7 @@ public class MessageActivity : TeamsActivity
     /// <returns>A MessageActivity instance.</returns>
     public static new MessageActivity FromJsonString(string json)
     {
-        MessageActivity activity = JsonSerializer.Deserialize(
-            json, TeamsActivityJsonContext.Default.MessageActivity)!;
-        activity.Rebase();
-        return activity;
+        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageActivity);
     }
 
     /// <summary>
@@ -48,7 +45,7 @@ public class MessageActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageActivity() : base(ActivityType.Message)
+    public MessageActivity() : base(TeamsActivityType.Message)
     {
     }
 
@@ -56,9 +53,19 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="text">The text content of the message.</param>
-    public MessageActivity(string text) : base(ActivityType.Message)
+    public MessageActivity(string text) : base(TeamsActivityType.Message)
     {
         Text = text;
+    }
+
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
+    /// </summary>
+    /// <param name="attachments">The list of attachments for the message.</param>
+    public MessageActivity(IList<TeamsAttachment> attachments) : base(TeamsActivityType.Message)
+    {
+        Attachments = attachments;
     }
 
     /// <summary>
@@ -67,100 +74,100 @@ public class MessageActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageActivity(CoreActivity activity) : base(activity)
     {
-        if (activity.Properties.TryGetValue("text", out var text))
-        {
-            Text = text?.ToString();
-        }
-        if (activity.Properties.TryGetValue("speak", out var speak))
-        {
-            Speak = speak?.ToString();
-        }
-        if (activity.Properties.TryGetValue("inputHint", out var inputHint))
-        {
-            InputHint = inputHint?.ToString();
-        }
-        if (activity.Properties.TryGetValue("summary", out var summary))
-        {
-            Summary = summary?.ToString();
-        }
-        if (activity.Properties.TryGetValue("textFormat", out var textFormat))
-        {
-            TextFormat = textFormat?.ToString();
-        }
-        if (activity.Properties.TryGetValue("attachmentLayout", out var attachmentLayout))
-        {
-            AttachmentLayout = attachmentLayout?.ToString();
-        }
-        if (activity.Properties.TryGetValue("importance", out var importance))
-        {
-            Importance = importance?.ToString();
-        }
-        if (activity.Properties.TryGetValue("deliveryMode", out var deliveryMode))
-        {
-            DeliveryMode = deliveryMode?.ToString();
-        }
-        if (activity.Properties.TryGetValue("expiration", out var expiration) && expiration != null)
-        {
-            if (DateTime.TryParse(expiration.ToString(), out var expirationDate))
-            {
-                Expiration = expirationDate;
-            }
-        }
     }
 
     /// <summary>
     /// Gets or sets the text content of the message.
     /// </summary>
     [JsonPropertyName("text")]
-    public string? Text { get; set; }
+    public string? Text
+    {
+        get => base.Properties.TryGetValue("text", out var value) ? value?.ToString() : null;
+        set => base.Properties["text"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the SSML speak content of the message.
     /// </summary>
     [JsonPropertyName("speak")]
-    public string? Speak { get; set; }
+    public string? Speak
+    {
+        get => base.Properties.TryGetValue("speak", out var value) ? value?.ToString() : null;
+        set => base.Properties["speak"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the input hint. See <see cref="InputHints"/> for common values.
     /// </summary>
     [JsonPropertyName("inputHint")]
-    public string? InputHint { get; set; }
+    public string? InputHint
+    {
+        get => base.Properties.TryGetValue("inputHint", out var value) ? value?.ToString() : null;
+        set => base.Properties["inputHint"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the summary of the message.
     /// </summary>
     [JsonPropertyName("summary")]
-    public string? Summary { get; set; }
+    public string? Summary
+    {
+        get => base.Properties.TryGetValue("summary", out var value) ? value?.ToString() : null;
+        set => base.Properties["summary"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
     /// </summary>
     [JsonPropertyName("textFormat")]
-    public string? TextFormat { get; set; }
+    public string? TextFormat
+    {
+        get => base.Properties.TryGetValue("textFormat", out var value) ? value?.ToString() : null;
+        set => base.Properties["textFormat"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the attachment layout.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout { get; set; }
+    public string? AttachmentLayout
+    {
+        get => base.Properties.TryGetValue("attachmentLayout", out var value) ? value?.ToString() : null;
+        set => base.Properties["attachmentLayout"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the importance. See <see cref="ImportanceLevels"/> for common values.
     /// </summary>
     [JsonPropertyName("importance")]
-    public string? Importance { get; set; }
+    public string? Importance
+    {
+        get => base.Properties.TryGetValue("importance", out var value) ? value?.ToString() : null;
+        set => base.Properties["importance"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the delivery mode. See <see cref="DeliveryModes"/> for common values.
     /// </summary>
     [JsonPropertyName("deliveryMode")]
-    public string? DeliveryMode { get; set; }
+    public string? DeliveryMode
+    {
+        get => base.Properties.TryGetValue("deliveryMode", out var value) ? value?.ToString() : null;
+        set => base.Properties["deliveryMode"] = value;
+    }
 
     /// <summary>
     /// Gets or sets the expiration time of the message.
     /// </summary>
     [JsonPropertyName("expiration")]
-    public DateTime? Expiration { get; set; }
+    public DateTime? Expiration
+    {
+        get => base.Properties.TryGetValue("expiration", out var value) && value != null
+            ? (DateTime.TryParse(value.ToString(), out var date) ? date : null)
+            : null;
+        set => base.Properties["expiration"] = value;
+    }
+
 }
 
 /// <summary>
