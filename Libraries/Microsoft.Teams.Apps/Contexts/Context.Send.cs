@@ -11,67 +11,37 @@ public partial interface IContext<TActivity>
     /// send an activity to the conversation
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    /// <param name="isTargeted">whether the activity is targeted</param>
-    /// <remarks>
-    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
-    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
-    /// </remarks>
-    public Task<T> Send<T>(T activity, bool isTargeted = false) where T : IActivity;
+    public Task<T> Send<T>(T activity) where T : IActivity;
 
     /// <summary>
     /// send a message activity to the conversation
     /// </summary>
     /// <param name="text">the text to send</param>
-    /// <param name="isTargeted">whether the activity is targeted</param>
-    /// <remarks>
-    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
-    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
-    /// </remarks>
-    public Task<MessageActivity> Send(string text, bool isTargeted = false);
+    public Task<MessageActivity> Send(string text);
 
     /// <summary>
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    /// <param name="isTargeted">whether the activity is targeted</param>
-    /// <remarks>
-    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
-    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
-    /// </remarks>
-    public Task<MessageActivity> Send(Cards.AdaptiveCard card, bool isTargeted = false);
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card);
 
     /// <summary>
     /// send an activity to the conversation as a reply
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    /// <param name="isTargeted">whether the activity is targeted</param>
-    /// <remarks>
-    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
-    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
-    /// </remarks>
-    public Task<T> Reply<T>(T activity, bool isTargeted = false) where T : IActivity;
+    public Task<T> Reply<T>(T activity) where T : IActivity;
 
     /// <summary>
     /// send a message activity to the conversation as a reply
     /// </summary>
     /// <param name="text">the text to send</param>
-    /// <param name="isTargeted">whether the activity is targeted</param>
-    /// <remarks>
-    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
-    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
-    /// </remarks>
-    public Task<MessageActivity> Reply(string text, bool isTargeted = false);
+    public Task<MessageActivity> Reply(string text);
 
     /// <summary>
     /// send a message activity with a card attachment as a reply
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    /// <param name="isTargeted">whether the activity is targeted</param>
-    /// <remarks>
-    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
-    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
-    /// </remarks>
-    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, bool isTargeted = false);
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card);
 
     /// <summary>
     /// send a typing activity
@@ -81,24 +51,24 @@ public partial interface IContext<TActivity>
 
 public partial class Context<TActivity> : IContext<TActivity>
 {
-    public async Task<T> Send<T>(T activity, bool isTargeted = false) where T : IActivity
+    public async Task<T> Send<T>(T activity) where T : IActivity
     {
-        var res = await Sender.Send(activity, Ref, isTargeted, CancellationToken);
+        var res = await Sender.Send(activity, Ref, CancellationToken);
         await OnActivitySent(res, ToActivityType<IActivity>());
         return res;
     }
 
-    public Task<MessageActivity> Send(string text, bool isTargeted = false)
+    public Task<MessageActivity> Send(string text)
     {
-        return Send(new MessageActivity(text), isTargeted);
+        return Send(new MessageActivity(text));
     }
 
-    public Task<MessageActivity> Send(Cards.AdaptiveCard card, bool isTargeted = false)
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card)
     {
-        return Send(new MessageActivity().AddAttachment(card), isTargeted);
+        return Send(new MessageActivity().AddAttachment(card));
     }
 
-    public Task<T> Reply<T>(T activity, bool isTargeted = false) where T : IActivity
+    public Task<T> Reply<T>(T activity) where T : IActivity
     {
         activity.Conversation = Ref.Conversation.Copy();
         activity.Conversation.Id = Ref.Conversation.ThreadId;
@@ -111,17 +81,17 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]);
         }
 
-        return Send(activity, isTargeted);
+        return Send(activity);
     }
 
-    public Task<MessageActivity> Reply(string text, bool isTargeted = false)
+    public Task<MessageActivity> Reply(string text)
     {
-        return Reply(new MessageActivity(text), isTargeted);
+        return Reply(new MessageActivity(text));
     }
 
-    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, bool isTargeted = false)
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card)
     {
-        return Reply(new MessageActivity().AddAttachment(card), isTargeted);
+        return Reply(new MessageActivity().AddAttachment(card));
     }
 
     public Task<TypingActivity> Typing(string? text = null)
