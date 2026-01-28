@@ -38,13 +38,21 @@ public static class TeamsActivityType
     public const string MessageDelete = "messageDelete";
 
     /// <summary>
+    /// Represents the string value "invoke" used to identify an invoke operation or action.
+    /// </summary>
+    public const string Invoke = "invoke";
+
+    /// <summary>
     /// Registry of activity type factories for creating specialized activity instances.
     /// </summary>
-    internal static readonly Dictionary<string, (Func<CoreActivity, TeamsActivity> FromActivity, Func<string, TeamsActivity> FromJson)> ActivityDeserializerMap = new()
+    internal static readonly Dictionary<string, (
+        Func<CoreActivity, TeamsActivity> FromActivity,
+        Func<string, TeamsActivity> FromJson)> ActivityDeserializerMap = new()
     {
         [TeamsActivityType.Message] = (MessageActivity.FromActivity, MessageActivity.FromJsonString),
         [TeamsActivityType.MessageReaction] = (MessageReactionActivity.FromActivity, MessageReactionActivity.FromJsonString),
         [TeamsActivityType.MessageUpdate] = (MessageUpdateActivity.FromActivity, MessageUpdateActivity.FromJsonString),
         [TeamsActivityType.MessageDelete] = (MessageDeleteActivity.FromActivity, MessageDeleteActivity.FromJsonString),
+        [TeamsActivityType.Invoke] = (InvokeActivity.FromActivity, InvokeActivity.FromJsonString),
     };
 }

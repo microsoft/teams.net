@@ -56,8 +56,8 @@ teamsApp.OnMessageDelete(async (context, cancellationToken) =>
     await context.SendActivityAsync("I saw that message you deleted", cancellationToken);
 });
 
-/*
-teamsApp.OnInvoke = async (context, cancellationToken) =>
+
+teamsApp.OnInvoke(async (context, cancellationToken) =>
 {
     var valueNode = context.Activity.Value;
     string? feedbackValue = valueNode?["action"]?["data"]?["feedback"]?.GetValue<string>();
@@ -76,7 +76,7 @@ teamsApp.OnInvoke = async (context, cancellationToken) =>
         Type = "application/vnd.microsoft.activity.message",
         Body = "Invokes are great !!"
     };
-};
-*/
+});
+
 
 teamsApp.Run();

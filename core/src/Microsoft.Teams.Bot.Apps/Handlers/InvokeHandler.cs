@@ -2,7 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
@@ -14,9 +16,34 @@ namespace Microsoft.Teams.Bot.Apps.Handlers;
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation. The default value is <see
 /// cref="CancellationToken.None"/>.</param>
 /// <returns>A task that represents the asynchronous operation. The task result contains the response to the invocation.</returns>
-public delegate Task<CoreInvokeResponse> InvokeHandler(Context<TeamsActivity> context, CancellationToken cancellationToken = default);
+public delegate Task<CoreInvokeResponse> InvokeHandler(Context<InvokeActivity> context, CancellationToken cancellationToken = default);
 
-
+/// <summary>
+/// Provides extension methods for registering handlers for invoke activities in a Teams bot application.
+/// </summary>
+public static class InvokeExtensions
+{
+    /// <summary>
+    /// Registers a handler for invoke activities.
+    /// </summary>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The invoke handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnInvoke(this TeamsBotApplication app, InvokeHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<InvokeActivity>
+        {
+            Name = TeamsActivityType.Invoke,
+            Selector = _ => true,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+        return app;
+    }
+}
 
 /// <summary>
 /// Represents the response returned from an invocation handler, typically used for Adaptive Card actions and task module operations.
