@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Json.Schema;
-
 namespace Microsoft.Teams.AI.Prompts;
 
 public partial class ChatPrompt<TOptions>
@@ -17,8 +15,8 @@ public partial class ChatPrompt<TOptions>
         Functions.Add(new Function(
             prompt.Name,
             prompt.Description,
-            new JsonSchemaBuilder().Properties(
-                ("text", new JsonSchemaBuilder().Type(SchemaValueType.String).Description("text to send"))
+            JsonSchemaWrapper.CreateObjectSchema(
+                ("text", JsonSchemaWrapper.String("text to send"), true)
             ),
             async (string text) =>
             {

@@ -3,11 +3,7 @@
 
 using System.Reflection;
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-
-using Json.Schema;
-using Json.Schema.Generation;
 
 using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Messages;
@@ -38,7 +34,7 @@ public interface IFunction
     /// the Json Schema representing what
     /// parameters the function accepts
     /// </summary>
-    public JsonSchema? Parameters { get; }
+    public IJsonSchema? Parameters { get; }
 }
 
 /// <summary>
@@ -57,7 +53,7 @@ public class Function : IFunction
 
     [JsonPropertyName("parameters")]
     [JsonPropertyOrder(2)]
-    public JsonSchema? Parameters { get; set; }
+    public IJsonSchema? Parameters { get; set; }
 
     [JsonIgnore]
     public Delegate Handler { get; set; }
@@ -70,7 +66,7 @@ public class Function : IFunction
         Parameters = GenerateParametersSchema(handler);
     }
 
-    public Function(string name, string? description, JsonSchema parameters, Delegate handler)
+    public Function(string name, string? description, IJsonSchema parameters, Delegate handler)
     {
         Name = name;
         Description = description;
@@ -82,13 +78,13 @@ public class Function : IFunction
     {
         if (call.Arguments is not null && Parameters is not null)
         {
-            var valid = Parameters.Evaluate(JsonNode.Parse(call.Arguments), new() { EvaluateAs = SpecVersion.DraftNext });
+            var result = Parameters.Validate(call.Arguments);
 
-            if (!valid.IsValid)
+            if (!result.IsValid)
             {
-                Console.WriteLine(JsonSerializer.Serialize(valid));
+                Console.WriteLine(string.Join("\n", result.Errors.Select(e => $"{e.Path} => {e.Message}")));
                 throw new ArgumentException(
-                    string.Join("\n", valid.Errors?.Select(e => $"{e.Key} => {e.Value}") ?? [])
+                    string.Join("\n", result.Errors.Select(e => $"{e.Path} => {e.Message}"))
                 );
             }
         }
@@ -128,7 +124,7 @@ public class Function : IFunction
     /// <summary>
     /// Generates a JsonSchema for the parameters of a delegate handler using reflection
     /// </summary>
-    private static JsonSchema? GenerateParametersSchema(Delegate handler)
+    private static IJsonSchema? GenerateParametersSchema(Delegate handler)
     {
         var method = handler.GetMethodInfo();
         var methodParams = method.GetParameters();
@@ -141,15 +137,11 @@ public class Function : IFunction
         var parameters = methodParams.Select(p =>
         {
             var paramName = p.GetCustomAttribute<ParamAttribute>()?.Name ?? p.Name ?? p.Position.ToString();
-            var schema = new JsonSchemaBuilder().FromType(p.ParameterType).Build();
+            var schema = JsonSchemaWrapper.FromType(p.ParameterType);
             var required = !p.IsOptional;
             return (paramName, schema, required);
-        });
+        }).ToArray();
 
-        return new JsonSchemaBuilder()
-            .Type(SchemaValueType.Object)
-            .Properties(parameters.Select(item => (item.paramName, item.schema)).ToArray())
-            .Required(parameters.Where(item => item.required).Select(item => item.paramName))
-            .Build();
+        return JsonSchemaWrapper.CreateObjectSchema(parameters);
     }
 }
