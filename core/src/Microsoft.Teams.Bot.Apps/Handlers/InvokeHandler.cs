@@ -36,9 +36,9 @@ public static class InvokeExtensions
         {
             Name = TeamsActivityType.Invoke,
             Selector = _ => true,
-            Handler = async (ctx, cancellationToken) =>
+            HandlerWithReturn = async (ctx, cancellationToken) =>
             {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
+                return await handler(ctx, cancellationToken).ConfigureAwait(false);
             }
         });
         return app;

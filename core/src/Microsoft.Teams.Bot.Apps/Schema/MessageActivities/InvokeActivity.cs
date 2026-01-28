@@ -36,18 +36,21 @@ public class InvokeActivity : TeamsActivity
     /// Gets or sets the name of the operation. See <see cref="InvokeNames"/> for common values.
     /// </summary>
     [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    public string? Name
+    {
+        get => base.Properties.TryGetValue("name", out var value) ? value?.ToString() : null;
+        set => base.Properties["name"] = value;
+    }
+        ///// <summary>
+        ///// Gets or sets a value that is associated with the activity.
+        ///// </summary>
+        //[JsonPropertyName("value")]
+        //public object? Value { get; set; }
 
-    ///// <summary>
-    ///// Gets or sets a value that is associated with the activity.
-    ///// </summary>
-    //[JsonPropertyName("value")]
-    //public object? Value { get; set; }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InvokeActivity"/> class.
-    /// </summary>
-    [JsonConstructor]
+        /// <summary>
+        /// Initializes a new instance of the <see cref="InvokeActivity"/> class.
+        /// </summary>
+        [JsonConstructor]
     public InvokeActivity() : base(TeamsActivityType.Invoke)
     {
     }
@@ -76,6 +79,7 @@ public class InvokeActivity : TeamsActivity
         this.Conversation = new TeamsConversation(activity.Conversation);
         this.From = new TeamsConversationAccount(activity.From);
         this.Recipient = new TeamsConversationAccount(activity.Recipient);
+        this.Properties = activity.Properties;
     }
 }
 

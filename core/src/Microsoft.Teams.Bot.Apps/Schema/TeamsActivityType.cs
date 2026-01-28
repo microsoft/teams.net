@@ -53,6 +53,6 @@ public static class TeamsActivityType
         [TeamsActivityType.MessageReaction] = (MessageReactionActivity.FromActivity, MessageReactionActivity.FromJsonString),
         [TeamsActivityType.MessageUpdate] = (MessageUpdateActivity.FromActivity, MessageUpdateActivity.FromJsonString),
         [TeamsActivityType.MessageDelete] = (MessageDeleteActivity.FromActivity, MessageDeleteActivity.FromJsonString),
-        [TeamsActivityType.Invoke] = (InvokeActivity.FromActivity, InvokeActivity.FromJsonString),
-    };
+        [TeamsActivityType.Invoke] = (InvokeActivity.FromActivity, InvokeActivity.FromJsonString), 
+    }; // TODO: Review if we need FromJson in this map
 }
