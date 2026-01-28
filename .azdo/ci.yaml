@@ -7,8 +7,6 @@ pr:
     exclude:
       - core/**
 
-trigger: none
-
 pool:
   vmImage: 'ubuntu-22.04'
 
