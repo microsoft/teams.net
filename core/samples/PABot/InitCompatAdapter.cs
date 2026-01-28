@@ -20,7 +20,7 @@ namespace PABot
             ILogger logger = GetOrCreateLogger(services);
             IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
 
-            services.AddAuthorization(logger, "TeamsInABS");
+            services.AddAuthorization(logger, "TeamsInAPX");
 
             var msalABSConfigSection = configuration.GetSection("TeamsABS");
             var scopeAbs = msalABSConfigSection.GetValue<string>("Scope") ?? "https://api.botframework.com/.default";
@@ -40,10 +40,10 @@ namespace PABot
                .AddHttpMessageHandler(sp =>
                {
                    return new PACustomAuthHandler(
-                       "MsalABS",
+                       "MsalAPX",
                        sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                        sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
-                       scopeAbs);
+                       scopeApx);
                });
 
             services.AddHttpClient<UserTokenClient>("BotUserTokenClient")
@@ -60,7 +60,7 @@ namespace PABot
                 .AddHttpMessageHandler(sp =>
                 {
                     return new PACustomAuthHandler(
-                        "MsalAPX",
+                        "MsalABS",
                         sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                         sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
                         scopeAbs);

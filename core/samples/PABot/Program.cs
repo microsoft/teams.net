@@ -17,6 +17,7 @@ builder.Services.AddSingleton<ConversationState>();
 builder.Services.AddSingleton<MainDialog>();
 builder.Services.AddTransient<IBot, TeamsBot<MainDialog>>();
 //builder.Services.AddTransient<IBot, EchoBot>();
+//builder.Services.AddTransient<IBot, SsoBot>();
 var app = builder.Build();
 
 var adapter = app.Services.GetRequiredService<IBotFrameworkHttpAdapter>();
