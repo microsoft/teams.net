@@ -3,8 +3,6 @@
 
 using Humanizer;
 
-using Json.Schema;
-
 using Microsoft.Teams.AI.Messages;
 
 namespace Microsoft.Teams.AI.Prompts;
@@ -26,7 +24,7 @@ public partial class ChatPrompt<TOptions>
         return this;
     }
 
-    public ChatPrompt<TOptions> Function(string name, string? description, JsonSchema parameters, Delegate handler)
+    public ChatPrompt<TOptions> Function(string name, string? description, IJsonSchema parameters, Delegate handler)
     {
         var func = new Function(name, description, parameters, handler);
         Functions.Add(func);
