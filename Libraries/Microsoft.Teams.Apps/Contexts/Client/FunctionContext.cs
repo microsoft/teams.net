@@ -34,19 +34,22 @@ public interface IFunctionContext<T> : IClientContext
     /// send an activity to the conversation
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    public Task<TActivity> Send<TActivity>(TActivity activity) where TActivity : IActivity;
+    /// <param name="cancellationToken">cancellation token</param>
+    public Task<TActivity> Send<TActivity>(TActivity activity, CancellationToken cancellationToken = default) where TActivity : IActivity;
 
     /// <summary>
     /// send a message activity to the conversation
     /// </summary>
     /// <param name="text">the text to send</param>
-    public Task<MessageActivity> Send(string text);
+    /// <param name="cancellationToken">cancellation token</param>
+    public Task<MessageActivity> Send(string text, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public Task<MessageActivity> Send(AdaptiveCard card);
+    /// <param name="cancellationToken">cancellation token</param>
+    public Task<MessageActivity> Send(AdaptiveCard card, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -59,7 +62,7 @@ public class FunctionContext<T>(App app) : ClientContext, IFunctionContext<T>
     public required ILogger Log { get; set; }
     public required T Data { get; set; }
 
-    public async Task<TActivity> Send<TActivity>(TActivity activity) where TActivity : IActivity
+    public async Task<TActivity> Send<TActivity>(TActivity activity, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
         var conversationId = ConversationId ?? activity.Conversation?.Id;
 
@@ -91,16 +94,16 @@ public class FunctionContext<T>(App app) : ClientContext, IFunctionContext<T>
             conversationId = res.Id;
         }
 
-        return await app.Send(conversationId, activity);
+        return await app.Send(conversationId, activity, null, null, false, cancellationToken);
     }
 
-    public Task<MessageActivity> Send(string text)
+    public Task<MessageActivity> Send(string text, CancellationToken cancellationToken = default)
     {
-        return Send(new MessageActivity(text));
+        return Send(new MessageActivity(text), cancellationToken);
     }
 
-    public Task<MessageActivity> Send(AdaptiveCard card)
+    public Task<MessageActivity> Send(AdaptiveCard card, CancellationToken cancellationToken = default)
     {
-        return Send(new MessageActivity().AddAttachment(card));
+        return Send(new MessageActivity().AddAttachment(card), cancellationToken);
     }
 }
