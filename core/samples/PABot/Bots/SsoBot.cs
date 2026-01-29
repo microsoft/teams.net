@@ -21,7 +21,7 @@ namespace PABot.Bots
 
             TokenStatus[] tokenStatus = await utc.GetTokenStatusAsync(turnContext.Activity.From.Id, turnContext.Activity.ChannelId, string.Empty, cancellationToken);
 
-            //logger.LogInformation("Token status count: {Count}", tokenStatus.Count);
+            logger.LogInformation("Token status count");
             //logger.LogInformation(JsonConvert.SerializeObject(tokenStatus));
             await turnContext.SendActivityAsync($"Token status count: {tokenStatus.Length}");
 
@@ -38,7 +38,7 @@ namespace PABot.Bots
                     //logger.LogInformation("No token for connection '{ConnectionName}'", ts.ConnectionName);
                     await turnContext.SendActivityAsync(MessageFactory.Text($"No token for connection '{ts.ConnectionName}'"), cancellationToken);
 
-                    Activity a = turnContext.Activity as Activity;
+                    Activity? a = turnContext.Activity as Activity;
                     var signInResource = await utc.GetSignInResourceAsync(ts.ConnectionName, a, string.Empty, cancellationToken);
                             //logger.LogInformation("Sign-in resource for connection '{ConnectionName}': {SignInLink}", ts.ConnectionName, signInResource.SignInLink);
                     await turnContext.SendActivityAsync(MessageFactory.Text($"Sign-in resource for connection '{ts.ConnectionName}': {signInResource.SignInLink}"), cancellationToken);
