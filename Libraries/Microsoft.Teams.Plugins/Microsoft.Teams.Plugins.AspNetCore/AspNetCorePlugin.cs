@@ -226,9 +226,13 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         }
     }
 
-    public JsonWebToken ExtractToken(HttpRequest httpRequest)
+    public JsonWebToken? ExtractToken(HttpRequest httpRequest)
     {
-        var authHeader = httpRequest.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
+        var authHeader = httpRequest.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrEmpty(authHeader))
+        {
+            return null;
+        }
         return new JsonWebToken(authHeader.Replace("Bearer ", ""));
     }
 
