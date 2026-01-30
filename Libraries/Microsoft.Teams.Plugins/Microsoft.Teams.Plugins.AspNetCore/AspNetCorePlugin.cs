@@ -165,9 +165,9 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 return Results.BadRequest("Missing activity");
             }
 
-            // If no token was extracted, create an anonymous token with serviceUrl from the activity
+            // If no token was extracted, create an anonymous token with serviceUrl from the activity (or default)
             // This matches Python/TypeScript SDK behavior for skipAuth scenarios
-            IToken resolvedToken = (IToken?)token ?? new AnonymousToken(activity.ServiceUrl ?? string.Empty);
+            IToken resolvedToken = (IToken?)token ?? new AnonymousToken(activity.ServiceUrl ?? "https://smba.trafficmanager.net/teams");
 
             var data = new Dictionary<string, object?>
             {

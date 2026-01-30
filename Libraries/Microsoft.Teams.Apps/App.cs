@@ -306,7 +306,7 @@ public partial class App
 
         var reference = new ConversationReference()
         {
-            ServiceUrl = @event.Activity.ServiceUrl ?? @event.Token?.ServiceUrl,
+            ServiceUrl = @event.Activity.ServiceUrl ?? @event.Token?.ServiceUrl ?? string.Empty,
             ChannelId = @event.Activity.ChannelId,
             Bot = @event.Activity.Recipient,
             User = @event.Activity.From,
