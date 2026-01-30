@@ -234,7 +234,10 @@ public class AspNetCorePluginTests
             if (name == "activity")
             {
                 var activityEvent = (ActivityEvent)payload;
-                Assert.Null(activityEvent.Token); // Token should be null when no auth header
+                // Token should be an AnonymousToken when no auth header (matches Python/TypeScript behavior)
+                Assert.NotNull(activityEvent.Token);
+                Assert.IsType<AnonymousToken>(activityEvent.Token);
+                Assert.Equal(string.Empty, activityEvent.Token.AppId);
                 return Task.FromResult<object?>(coreResponse);
             }
             return Task.FromResult<object?>(null);

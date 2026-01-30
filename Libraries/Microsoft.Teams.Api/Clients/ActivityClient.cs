@@ -14,22 +14,22 @@ public class ActivityClient : Client
 
     public ActivityClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public ActivityClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public ActivityClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public ActivityClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public async Task<Resource?> CreateAsync(string conversationId, IActivity activity, bool isTargeted = false)
