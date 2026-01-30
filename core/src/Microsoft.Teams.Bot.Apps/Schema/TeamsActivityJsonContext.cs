@@ -3,7 +3,9 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Bot.Apps.Schema.InstallActivities;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -22,6 +24,9 @@ namespace Microsoft.Teams.Bot.Apps.Schema;
 [JsonSerializable(typeof(MessageReactionActivity))]
 [JsonSerializable(typeof(MessageUpdateActivity))]
 [JsonSerializable(typeof(MessageDeleteActivity))]
+[JsonSerializable(typeof(ConversationUpdateActivity))]
+[JsonSerializable(typeof(EndOfConversationActivity))]
+[JsonSerializable(typeof(InstallUpdateActivity))]
 [JsonSerializable(typeof(InvokeActivity))]
 [JsonSerializable(typeof(Entity))]
 [JsonSerializable(typeof(EntityList))]
@@ -32,7 +37,12 @@ namespace Microsoft.Teams.Bot.Apps.Schema;
 [JsonSerializable(typeof(TeamsConversationAccount))]
 [JsonSerializable(typeof(TeamsConversation))]
 [JsonSerializable(typeof(ExtendedPropertiesDictionary))]
+[JsonSerializable(typeof(TeamsAttachment))]
 [JsonSerializable(typeof(System.Text.Json.JsonElement))]
+[JsonSerializable(typeof(System.Text.Json.Nodes.JsonObject))]
+[JsonSerializable(typeof(System.Text.Json.Nodes.JsonNode))]
+[JsonSerializable(typeof(System.Text.Json.Nodes.JsonArray))]
+[JsonSerializable(typeof(System.Text.Json.Nodes.JsonValue))]
 [JsonSerializable(typeof(System.Int32))]
 [JsonSerializable(typeof(System.Boolean))]
 [JsonSerializable(typeof(System.Int64))]

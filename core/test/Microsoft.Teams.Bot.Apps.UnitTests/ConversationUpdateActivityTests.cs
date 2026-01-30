@@ -2,13 +2,20 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Bot.Core.Schema;
-using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
 
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
 
 public class ConversationUpdateActivityTests
 {
+    [Fact]
+    public void Constructor_Default_SetsConversationUpdateType()
+    {
+        ConversationUpdateActivity activity = new();
+        Assert.Equal(TeamsActivityType.ConversationUpdate, activity.Type);
+    }
+
     [Fact]
     public void AsConversationUpdate_MembersAdded()
     {
@@ -30,19 +37,13 @@ public class ConversationUpdateActivityTests
             ]
         }
         """;
-        TeamsActivity act = TeamsActivity.FromJsonString(json);
+        ConversationUpdateActivity act = ConversationUpdateActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("conversationUpdate", act.Type);
-        /*
-        ConversationUpdateArgs? cua = new(act);
-
-        Assert.NotNull(cua);
-        Assert.NotNull(cua.MembersAdded);
-        Assert.Equal(2, cua.MembersAdded!.Count);
-        Assert.Equal("user1", cua.MembersAdded[0].Id);
-        Assert.Equal("User One", cua.MembersAdded[0].Name);
-        Assert.Equal("bot1", cua.MembersAdded[1].Id);
-        Assert.Equal("Bot One", cua.MembersAdded[1].Name);*/
+        Assert.NotNull(act.MembersAdded);
+        Assert.Equal(2, act.MembersAdded!.Count);
+        Assert.Equal("user1", act.MembersAdded[0].Id);
+        Assert.Equal("bot1", act.MembersAdded[1].Id);
     }
 
     [Fact]
@@ -62,17 +63,12 @@ public class ConversationUpdateActivityTests
             ]
         }
         """;
-        TeamsActivity act = TeamsActivity.FromJsonString(json);
+        ConversationUpdateActivity act = ConversationUpdateActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("conversationUpdate", act.Type);
-        /*
-        ConversationUpdateArgs? cua = new(act);
-
-        Assert.NotNull(cua);
-        Assert.NotNull(cua.MembersRemoved);
-        Assert.Single(cua.MembersRemoved!);
-        Assert.Equal("user2", cua.MembersRemoved[0].Id);
-        Assert.Equal("User Two", cua.MembersRemoved[0].Name);*/
+        Assert.NotNull(act.MembersRemoved);
+        Assert.Single(act.MembersRemoved!);
+        Assert.Equal("user2", act.MembersRemoved[0].Id);
     }
 
     [Fact]
@@ -98,18 +94,70 @@ public class ConversationUpdateActivityTests
             ]
         }
         """;
-        TeamsActivity act = TeamsActivity.FromJsonString(json);
+        ConversationUpdateActivity act = ConversationUpdateActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("conversationUpdate", act.Type);
-        /*
-        ConversationUpdateArgs? cua = new(act);
+        Assert.NotNull(act.MembersAdded);
+        Assert.NotNull(act.MembersRemoved);
+        Assert.Single(act.MembersAdded!);
+        Assert.Single(act.MembersRemoved!);
+        Assert.Equal("newuser", act.MembersAdded[0].Id);
+        Assert.Equal("olduser", act.MembersRemoved[0].Id);
+    }
 
-        Assert.NotNull(cua);
-        Assert.NotNull(cua.MembersAdded);
-        Assert.NotNull(cua.MembersRemoved);
-        Assert.Single(cua.MembersAdded!);
-        Assert.Single(cua.MembersRemoved!);
-        Assert.Equal("newuser", cua.MembersAdded[0].Id);
-        Assert.Equal("olduser", cua.MembersRemoved[0].Id);*/
+    [Fact]
+    public void SerializeConversationUpdateToJson()
+    {
+        var activity = new ConversationUpdateActivity
+        {
+            TopicName = "Test Topic",
+            HistoryDisclosed = true
+        };
+
+        string json = activity.ToJson();
+        Assert.Contains("\"type\": \"conversationUpdate\"", json);
+        Assert.Contains("\"topicName\": \"Test Topic\"", json);
+        Assert.Contains("\"historyDisclosed\": true", json);
+    }
+
+    [Fact]
+    public void FromActivityConvertsCorrectly()
+    {
+        var coreActivity = new CoreActivity
+        {
+            Type = TeamsActivityType.ConversationUpdate
+        };
+        coreActivity.Properties["topicName"] = "Converted Topic";
+
+        ConversationUpdateActivity activity = ConversationUpdateActivity.FromActivity(coreActivity);
+        Assert.NotNull(activity);
+        Assert.Equal(TeamsActivityType.ConversationUpdate, activity.Type);
+        Assert.Equal("Converted Topic", activity.TopicName);
+    }
+
+    [Fact]
+    public void ConversationUpdateActivity_SerializedAsCoreActivity_IncludesProperties()
+    {
+        ConversationUpdateActivity conversationUpdateActivity = new()
+        {
+            TopicName = "New Topic",
+            HistoryDisclosed = true,
+            MembersAdded = new List<TeamsConversationAccount>
+            {
+                new() { Id = "user1", Name = "User One" }
+            },
+            Type = TeamsActivityType.ConversationUpdate,
+            ServiceUrl = new Uri("https://test.service.url/")
+        };
+
+        CoreActivity coreActivity = conversationUpdateActivity;
+        string json = coreActivity.ToJson();
+
+        Assert.Contains("\"topicName\"", json);
+        Assert.Contains("New Topic", json);
+        Assert.Contains("\"historyDisclosed\": true", json);
+        Assert.Contains("\"membersAdded\"", json);
+        Assert.Contains("user1", json);
+        Assert.Contains("\"type\": \"conversationUpdate\"", json);
     }
 }

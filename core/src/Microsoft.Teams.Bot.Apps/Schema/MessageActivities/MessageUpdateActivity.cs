@@ -37,7 +37,7 @@ public class MessageUpdateActivity : MessageActivity
     /// Serializes the MessageUpdateActivity to JSON with all message update-specific properties.
     /// </summary>
     /// <returns>JSON string representation of the MessageUpdateActivity</returns>
-    public new string ToJson()
+    public override string ToJson()
         => ToJson(TeamsActivityJsonContext.Default.MessageUpdateActivity);
 
     /// <summary>

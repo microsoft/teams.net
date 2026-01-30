@@ -62,25 +62,4 @@ public class MessageDeleteActivityTests
         Assert.Equal(TeamsActivityType.MessageDelete, messageDelete.Type);
         Assert.Equal("deleted-msg-id", messageDelete.Id);
     }
-
-    [Fact]
-    public void FromJsonStringCreatesCorrectType()
-    {
-        string json = """
-        {
-            "type": "messageDelete",
-            "id": "test-id",
-            "conversation": {
-                "id": "conv-123"
-            }
-        }
-        """;
-
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
-        Assert.IsType<MessageDeleteActivity>(activity);
-        MessageDeleteActivity? mda = activity as MessageDeleteActivity;
-        Assert.NotNull(mda);
-        Assert.Equal(TeamsActivityType.MessageDelete, mda.Type);
-        Assert.Equal("test-id", activity.Id);
-    }
 }

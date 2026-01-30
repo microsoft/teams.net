@@ -27,9 +27,8 @@ public class TeamsConversationAccount : ConversationAccount
     [JsonConstructor]
     public TeamsConversationAccount()
     {
+        //TODO : delete ConversationAccount, do we need it ?
         ConversationAccount = new ConversationAccount();
-        Id = string.Empty;
-        Name = string.Empty;
     }
 
     /// <summary>
@@ -44,8 +43,8 @@ public class TeamsConversationAccount : ConversationAccount
         ArgumentNullException.ThrowIfNull(conversationAccount);
         ConversationAccount = conversationAccount;
         Properties = conversationAccount.Properties;
-        Id = conversationAccount.Id ?? string.Empty;
-        Name = conversationAccount.Name ?? string.Empty;
+        Id = conversationAccount.Id;
+        Name = conversationAccount.Name;
 
         // Extract properties from the Properties dictionary
         if (conversationAccount.Properties.TryGetValue("aadObjectId", out object? aadObj)

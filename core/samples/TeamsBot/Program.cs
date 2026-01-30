@@ -11,6 +11,7 @@ using TeamsBot;
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();
 
+// ==================== MESSAGE HANDLERS ====================
 
 teamsApp.OnMessageUpdate(async (context, cancellationToken) =>
 {
@@ -56,6 +57,7 @@ teamsApp.OnMessageDelete(async (context, cancellationToken) =>
     await context.SendActivityAsync("I saw that message you deleted", cancellationToken);
 });
 
+// ==================== INVOKE ====================
 
 teamsApp.OnInvoke(async (context, cancellationToken) =>
 {
@@ -76,6 +78,46 @@ teamsApp.OnInvoke(async (context, cancellationToken) =>
         Type = "application/vnd.microsoft.activity.message",
         Body = "Invokes are great !!"
     };
+});
+
+// ==================== CONVERSATION UPDATE HANDLERS ====================
+
+teamsApp.OnMembersAdded(async (context, cancellationToken) =>
+{
+    Console.WriteLine($"[MembersAdded] {context.Activity.MembersAdded?.Count ?? 0} member(s) added");
+
+    var memberNames = string.Join(", ", context.Activity.MembersAdded?.Select(m => m.Name ?? m.Id) ?? []);
+    await context.SendActivityAsync($"Welcome! Members added: {memberNames}", cancellationToken);
+});
+
+teamsApp.OnMembersRemoved(async (context, cancellationToken) =>
+{
+    Console.WriteLine($"[MembersRemoved] {context.Activity.MembersRemoved?.Count ?? 0} member(s) removed");
+
+    var memberNames = string.Join(", ", context.Activity.MembersRemoved?.Select(m => m.Name ?? m.Id) ?? []);
+    await context.SendActivityAsync($"Goodbye! Members removed: {memberNames}", cancellationToken);
+});
+
+// ==================== INSTALL UPDATE HANDLERS ====================
+
+teamsApp.OnInstallUpdate(async (context, cancellationToken) =>
+{
+    var action = context.Activity.Action ?? "unknown";
+    Console.WriteLine($"[InstallUpdate] Installation action: {action}");
+    await context.SendActivityAsync($"Installation update: {action}", cancellationToken);
+});
+
+teamsApp.OnInstall(async (context, cancellationToken) =>
+{
+    Console.WriteLine($"[InstallAdd] Bot was installed");
+    await context.SendActivityAsync("Thanks for installing me! I'm ready to help.", cancellationToken);
+});
+
+teamsApp.OnUnInstall((context, cancellationToken) =>
+{
+    Console.WriteLine($"[InstallRemove] Bot was uninstalled");
+    //TODO : Discuss if we should have void overloads
+    return Task.CompletedTask;
 });
 
 
