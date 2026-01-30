@@ -9,7 +9,10 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "Teams__TenantId": "",
         "Teams__ClientId": "",
-        "Teams__ClientSecret": ""
+        "Teams__ClientSecret": "",
+        "AzureOpenAIModel": "YOUR_AZURE_OPENAI_MODEL",  
+        "AzureOpenAIEndpoint": "https://your-azure-openai-endpoint/",  
+        "AzureOpenAIKey": "YOUR_AZURE_OPENAI_KEY"  
       }
     }
   }

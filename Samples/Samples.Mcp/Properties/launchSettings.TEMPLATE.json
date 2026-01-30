@@ -9,7 +9,9 @@
         "ASPNETCORE_ENVIRONMENT": "Development",
         "Teams__TenantId": "",
         "Teams__ClientId": "",
-        "Teams__ClientSecret": ""
+        "Teams__ClientSecret": "",
+        "OpenAI__Model": "",
+        "OpenAI__ApiKey": ""
       }
     }
   }
