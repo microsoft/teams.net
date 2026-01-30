@@ -80,20 +80,10 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public Task<IActivity> Send(IActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default)
     {
-        return Send<IActivity>(activity, reference, isTargeted: false, cancellationToken);
+        return Send<IActivity>(activity, reference, cancellationToken);
     }
 
-    public Task<IActivity> Send(IActivity activity, Api.ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default)
-    {
-        return Send<IActivity>(activity, reference, isTargeted, cancellationToken);
-    }
-
-    public Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
-    {
-        return Send<TActivity>(activity, reference, isTargeted: false, cancellationToken);
-    }
-
-    public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default) where TActivity : IActivity
+    public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
         var client = new ApiClient(reference.ServiceUrl, Client, cancellationToken);
 
@@ -107,7 +97,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
             await client
                 .Conversations
                 .Activities
-                .UpdateAsync(reference.Conversation.Id, activity.Id, activity, isTargeted);
+                .UpdateAsync(reference.Conversation.Id, activity.Id, activity);
 
             return activity;
         }
@@ -115,7 +105,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         var res = await client
             .Conversations
             .Activities
-            .CreateAsync(reference.Conversation.Id, activity, isTargeted);
+            .CreateAsync(reference.Conversation.Id, activity);
 
         activity.Id = res?.Id;
         return activity;
@@ -127,7 +117,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         {
             Send = async activity =>
             {
-                var res = await Send(activity, reference, false, cancellationToken);
+                var res = await Send(activity, reference, cancellationToken);
                 return res;
             }
         };
