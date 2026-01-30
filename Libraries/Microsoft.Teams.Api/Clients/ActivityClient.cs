@@ -32,15 +32,12 @@ public class ActivityClient : Client
         ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
-    public async Task<Resource?> CreateAsync(string conversationId, IActivity activity, bool isTargeted = false)
+    public async Task<Resource?> CreateAsync(string conversationId, IActivity activity)
     {
-        var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities";
-        if (isTargeted)
-        {
-            url += "?isTargetedActivity=true";
-        }
-
-        var req = HttpRequest.Post(url, body: activity);
+        var req = HttpRequest.Post(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities",
+            body: activity
+        );
 
         var res = await _http.SendAsync(req, _cancellationToken);
 
@@ -50,15 +47,12 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task<Resource?> UpdateAsync(string conversationId, string id, IActivity activity, bool isTargeted = false)
+    public async Task<Resource?> UpdateAsync(string conversationId, string id, IActivity activity)
     {
-        var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
-        if (isTargeted)
-        {
-            url += "?isTargetedActivity=true";
-        }
-
-        var req = HttpRequest.Put(url, body: activity);
+        var req = HttpRequest.Put(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}",
+            body: activity
+        );
 
         var res = await _http.SendAsync(req, _cancellationToken);
 
@@ -68,17 +62,13 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task<Resource?> ReplyAsync(string conversationId, string id, IActivity activity, bool isTargeted = false)
+    public async Task<Resource?> ReplyAsync(string conversationId, string id, IActivity activity)
     {
         activity.ReplyToId = id;
-
-        var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
-        if (isTargeted)
-        {
-            url += "?isTargetedActivity=true";
-        }
-
-        var req = HttpRequest.Post(url, body: activity);
+        var req = HttpRequest.Post(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}",
+            body: activity
+        );
 
         var res = await _http.SendAsync(req, _cancellationToken);
 
@@ -88,15 +78,11 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task DeleteAsync(string conversationId, string id, bool isTargeted = false)
+    public async Task DeleteAsync(string conversationId, string id)
     {
-        var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
-        if (isTargeted)
-        {
-            url += "?isTargetedActivity=true";
-        }
-
-        var req = HttpRequest.Delete(url);
+        var req = HttpRequest.Delete(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}"
+        );
 
         await _http.SendAsync(req, _cancellationToken);
     }
