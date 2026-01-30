@@ -94,7 +94,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.Equal(2, card.Body.Count);
             var firstTextBlock = card.Body[0] as AdaptiveTextBlock;
             Assert.NotNull(firstTextBlock);
-            Assert.Equal("Mention a user by User Principle Name: Hello <at>Rido UPN</at>", firstTextBlock.Text);
+            Assert.Equal("Mention a user by User Principle Name: Hello <at>Test User UPN</at>", firstTextBlock.Text);
         }
 
         [Fact]

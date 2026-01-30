@@ -2,11 +2,11 @@
   "type": "message",
   "serviceUrl": "https://smba.trafficmanager.net/teams",
   "from": {
-    "id": "c630c212-c981-46ed-b778-d1af27298e99"
+    "id": "a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6"
   },
   "recipient": {},
   "conversation": {
-    "id": "19:wROcPjTn7b43WMyXliuKTsJkkgayap8oyMO3YM6bd-I1@thread.tacv2"
+    "id": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
   },
   "text": "Hi there.\n\nI'm working on a status report and will share it in this chat shortly. You'll be able to make edits, and once it's ready, send it to the channel.\n\n\n\nYou can add more reviewers anytime.",
   "inputHint": "acceptingInput",
@@ -40,7 +40,7 @@
                     },
                     {
                       "name": "channelId",
-                      "value": "19:wROcPjTn7b43WMyXliuKTsJkkgayap8oyMO3YM6bd-I1@thread.tacv2"
+                      "value": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
                     },
                     {
                       "name": "recurrence",
@@ -67,7 +67,7 @@
                     },
                     {
                       "name": "chatId",
-                      "value": "19:wROcPjTn7b43WMyXliuKTsJkkgayap8oyMO3YM6bd-I1@thread.tacv2"
+                      "value": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
                     },
                     {
                       "name": "displayText",
@@ -115,7 +115,7 @@
                     },
                     {
                       "name": "channelId",
-                      "value": "19:wROcPjTn7b43WMyXliuKTsJkkgayap8oyMO3YM6bd-I1@thread.tacv2"
+                      "value": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
                     },
                     {
                       "name": "recurrence",
@@ -142,7 +142,7 @@
                     },
                     {
                       "name": "chatId",
-                      "value": "19:wROcPjTn7b43WMyXliuKTsJkkgayap8oyMO3YM6bd-I1@thread.tacv2"
+                      "value": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
                     },
                     {
                       "name": "displayText",
@@ -198,7 +198,7 @@
                       "initializationCompleted": false
                     },
                     "displayName": "PA Test",
-                    "id": "28:c630c212-c981-46ed-b778-d1af27298e99",
+                    "id": "28:a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6",
                     "appId": ""
                   }
                 },
@@ -236,5 +236,5 @@
   "channelData": {
     "feedbackLoopEnabled": true
   },
-  "replyToId": "dee2fbe1-2f3a-440a-8299-c6d2ec45cf47"
+  "replyToId": "f7e8d9c0-b1a2-4536-9271-a8b9c0d1e2f3"
 }

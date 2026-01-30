@@ -1,20 +1,20 @@
 {
   "type": "message",
-  "serviceUrl": "https://smba.trafficmanager.net/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/",
+  "serviceUrl": "https://smba.trafficmanager.net/amer/1a2b3c4d-5e6f-4789-a0b1-c2d3e4f5a6b7/",
   "channelId": "msteams",
   "from": {
-    "id": "28:fa45fe59-200c-493c-aa4c-80c17ad6f307",
-    "name": "ridodev-local"
+    "id": "28:b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+    "name": "testbot-local"
   },
   "conversation": {
     "conversationType": "personal",
-    "id": "a:188cfPEO2ZNiFxoCSq-2QwCkQTBywkMID0Y2704RpFR2QjMx8217cpDunnnI-rx95Qn_1ce11juGEelMnscuyEQvHTh_wRRRKR_WxbV8ZS4-1qFwb0l8T0Zrd9uiTCtLX",
-    "tenantId": "9a9b49fd-1dc5-4217-88b3-ecf855e91b0e"
+    "id": "a:1AbCdEfGhIjKlMnOpQrStUvWxYz2AbCdEfGhIjKlMnOpQrStUvWxYz3AbCdEfGhIjKlMnOpQrStUvWxYz4AbCdEfGhIjKlMnOpQrStUvWxYz5AbCdEf",
+    "tenantId": "1a2b3c4d-5e6f-4789-a0b1-c2d3e4f5a6b7"
   },
   "recipient": {
-    "id": "29:1zIP3NcdoJbnv2Rp-x-7ukmDhrgy6JqXcDgYB4mFxGCtBRvVT7V0Iwu0obPlWlBd14M2qEa4p5qqJde0HTYy4cw",
-    "name": "Rido",
-    "aadObjectId": "16de8f24-f65d-4f6b-a837-3a7e638ab6e1"
+    "id": "29:9xYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAb",
+    "name": "Test User",
+    "aadObjectId": "7f8e9d0c-1b2a-4354-6758-9a0b1c2d3e4f"
   },
   "attachmentLayout": "list",
   "locale": "en-US",
@@ -26,33 +26,33 @@
         "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
         "type": "AdaptiveCard",
         "version": "1.5",
-        "speak": "This card mentions a user by User Principle Name: Hello Rido",
+        "speak": "This card mentions a user by User Principle Name: Hello Test User",
         "body": [
           {
             "type": "TextBlock",
-            "text": "Mention a user by User Principle Name: Hello <at>Rido UPN</at>"
+            "text": "Mention a user by User Principle Name: Hello <at>Test User UPN</at>"
           },
           {
             "type": "TextBlock",
-            "text": "Mention a user by AAD Object Id: Hello <at>Rido AAD</at>"
+            "text": "Mention a user by AAD Object Id: Hello <at>Test User AAD</at>"
           }
         ],
         "msteams": {
           "entities": [
             {
               "type": "mention",
-              "text": "<at>Rido UPN</at>",
+              "text": "<at>Test User UPN</at>",
               "mentioned": {
-                "id": "rido@tsdk1.onmicrosoft.com",
-                "name": "Rido"
+                "id": "testuser@example.onmicrosoft.com",
+                "name": "Test User"
               }
             },
             {
               "type": "mention",
-              "text": "<at>Rido AAD</at>",
+              "text": "<at>Test User AAD</at>",
               "mentioned": {
-                "id": "16de8f24-f65d-4f6b-a837-3a7e638ab6e1",
-                "name": "Rido"
+                "id": "7f8e9d0c-1b2a-4354-6758-9a0b1c2d3e4f",
+                "name": "Test User"
               }
             }
           ]
@@ -70,5 +70,5 @@
       ]
     }
   ],
-  "replyToId": "f:d1c5de53-9e8b-b5c3-c24d-07c2823079cf"
+  "replyToId": "f:a1b2c3d4-e5f6-4789-a0b1-c2d3e4f5a6b7"
 }
