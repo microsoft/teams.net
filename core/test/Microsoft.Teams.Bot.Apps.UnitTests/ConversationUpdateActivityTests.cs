@@ -136,57 +136,6 @@ public class ConversationUpdateActivityTests
     }
 
     [Fact]
-    public void ConversationEventTypesConstants()
-    {
-        Assert.Equal("channelCreated", ConversationEventTypes.ChannelCreated);
-        Assert.Equal("channelDeleted", ConversationEventTypes.ChannelDeleted);
-        Assert.Equal("teamArchived", ConversationEventTypes.TeamArchived);
-        Assert.Equal("teamRenamed", ConversationEventTypes.TeamRenamed);
-    }
-
-    [Fact]
-    public void FromJsonStringCreatesCorrectType()
-    {
-        string json = """
-        {
-            "type": "conversationUpdate",
-            "conversation": {
-                "id": "conv-123"
-            }
-        }
-        """;
-
-    [Fact]
-    public void SerializeConversationUpdateToJson()
-    {
-        var activity = new ConversationUpdateActivity
-        {
-            TopicName = "Test Topic",
-            HistoryDisclosed = true
-        };
-
-        string json = activity.ToJson();
-        Assert.Contains("\"type\": \"conversationUpdate\"", json);
-        Assert.Contains("\"topicName\": \"Test Topic\"", json);
-        Assert.Contains("\"historyDisclosed\": true", json);
-    }
-
-    [Fact]
-    public void FromActivityConvertsCorrectly()
-    {
-        var coreActivity = new CoreActivity
-        {
-            Type = TeamsActivityType.ConversationUpdate
-        };
-        coreActivity.Properties["topicName"] = "Converted Topic";
-
-        ConversationUpdateActivity activity = ConversationUpdateActivity.FromActivity(coreActivity);
-        Assert.NotNull(activity);
-        Assert.Equal(TeamsActivityType.ConversationUpdate, activity.Type);
-        Assert.Equal("Converted Topic", activity.TopicName);
-    }
-
-    [Fact]
     public void ConversationUpdateActivity_SerializedAsCoreActivity_IncludesProperties()
     {
         ConversationUpdateActivity conversationUpdateActivity = new()

@@ -99,9 +99,7 @@ public class ConversationUpdateActivity : TeamsActivity
                 {
                 MembersRemoved = membersRemoved as IList<TeamsConversationAccount>;
             }
-            return null;
         }
-        set => base.Properties["historyDisclosed"] = value;
     }
 
     /// <summary>
