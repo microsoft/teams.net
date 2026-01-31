@@ -124,7 +124,9 @@ public class CompatAdapter(IServiceProvider sp) : IBotFrameworkHttpAdapter
     /// cancellation token.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
+#pragma warning disable IDE0060 // Remove unused parameter - botId is kept for API compatibility
     public async Task ContinueConversationAsync(string botId, ConversationReference reference, BotCallbackHandler callback, CancellationToken cancellationToken)
+#pragma warning restore IDE0060
     {
         ArgumentNullException.ThrowIfNull(reference);
         ArgumentNullException.ThrowIfNull(callback);
