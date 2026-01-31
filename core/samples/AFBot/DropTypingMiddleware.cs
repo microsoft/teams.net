@@ -10,7 +10,7 @@ internal class DropTypingMiddleware : ITurnMiddleWare
 {
     public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
     {
-        if (activity.Type == ActivityType.Typing) return Task.CompletedTask;
+        if (activity.Type == "typing") return Task.CompletedTask;
         return nextTurn(cancellationToken);
     }
 }

@@ -119,6 +119,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         var tokenExchangeState = new
         {
             ConnectionName = connectionName,
+            ChannelId = channelId, // not needed but kept for backward compatibility
             Conversation = new
             {
                 User = new ConversationAccount { Id = userId },

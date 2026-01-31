@@ -32,13 +32,9 @@ public static class MessageExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<MessageActivity>
         {
-
             Name = TeamsActivityType.Message,
             Selector = _ => true,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
-            }
+            Handler = (ctx, cancellationToken) => handler(ctx, cancellationToken)
         });
 
         return app;

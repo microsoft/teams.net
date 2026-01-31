@@ -33,10 +33,7 @@ public static class MessageUpdateExtensions
         {
             Name = TeamsActivityType.MessageUpdate,
             Selector = _ => true,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
-            }
+            Handler = (ctx, cancellationToken) => handler(ctx, cancellationToken)
         });
 
         return app;

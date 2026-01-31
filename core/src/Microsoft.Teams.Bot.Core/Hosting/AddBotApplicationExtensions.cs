@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
@@ -73,11 +71,7 @@ public static class AddBotApplicationExtensions
     /// <returns></returns>
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
     {
-        // Extract ILoggerFactory from service collection to create logger without BuildServiceProvider
-        var loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        var loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
-        ILogger logger = loggerFactory?.CreateLogger<BotApplication>()
-            ?? (ILogger)Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+        (ILogger? logger, IConfiguration _) = GetConfigAndLogger(services);
 
         services.AddAuthorization(logger, sectionName);
         services.AddConversationClient(sectionName);
@@ -129,24 +123,7 @@ public static class AddBotApplicationExtensions
 
         // Get configuration and logger to configure MSAL during registration
         // Try to get from service descriptors first
-        var configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-        IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
-
-        var loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        var loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
-        ILogger logger = loggerFactory?.CreateLogger(typeof(AddBotApplicationExtensions))
-            ?? (ILogger)Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
-
-        // If configuration not available as instance, build temporary provider
-        if (configuration == null)
-        {
-            using var tempProvider = services.BuildServiceProvider();
-            configuration = tempProvider.GetRequiredService<IConfiguration>();
-            if (loggerFactory == null)
-            {
-                logger = tempProvider.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
-            }
-        }
+        (ILogger? logger, IConfiguration? configuration) = GetConfigAndLogger(services);
 
         // Configure MSAL during registration (not deferred)
         if (services.ConfigureMSAL(configuration, sectionName, logger))
@@ -154,7 +131,7 @@ public static class AddBotApplicationExtensions
             services.AddHttpClient<TClient>(httpClientName)
                 .AddHttpMessageHandler(sp =>
                 {
-                    var botOptions = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
+                    BotClientOptions botOptions = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
                     return new BotAuthenticationHandler(
                         sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                         sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
@@ -169,6 +146,40 @@ public static class AddBotApplicationExtensions
         }
 
         return services;
+    }
+
+    private static (ILogger, IConfiguration) GetConfigAndLogger(IServiceCollection services)
+    {
+        GetOrCreateLogger(services, out ILoggerFactory? loggerFactory, out ILogger logger);
+
+        // If configuration not available as instance, build temporary provider
+        IConfiguration configuration = GetOrCreateConfiguration(services, loggerFactory, ref logger);
+
+        return (logger, configuration);
+    }
+
+    private static IConfiguration GetOrCreateConfiguration(IServiceCollection services, ILoggerFactory? loggerFactory, ref ILogger logger)
+    {
+        ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+        if (configDescriptor?.ImplementationInstance is not IConfiguration configuration)
+        {
+            using ServiceProvider tempProvider = services.BuildServiceProvider();
+            configuration = tempProvider.GetRequiredService<IConfiguration>();
+            if (loggerFactory == null)
+            {
+                logger = tempProvider.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
+            }
+        }
+
+        return configuration;
+    }
+
+    private static void GetOrCreateLogger(IServiceCollection services, out ILoggerFactory? loggerFactory, out ILogger logger)
+    {
+        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
+        logger = loggerFactory?.CreateLogger(typeof(AddBotApplicationExtensions))
+            ?? Extensions.Logging.Abstractions.NullLogger.Instance;
     }
 
     private static bool ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName, ILogger logger)

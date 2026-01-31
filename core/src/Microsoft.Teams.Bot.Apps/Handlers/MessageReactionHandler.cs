@@ -33,10 +33,7 @@ public static class MessageReactionExtensions
         {
             Name = TeamsActivityType.MessageReaction,
             Selector = _ => true,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
-            }
+            Handler = (ctx, cancellationToken) => handler(ctx, cancellationToken)
         });
 
         return app;

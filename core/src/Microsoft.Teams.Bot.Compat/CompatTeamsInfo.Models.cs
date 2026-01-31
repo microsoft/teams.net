@@ -16,7 +16,7 @@ internal static class CompatTeamsInfoModels
     public static TeamsMeetingInfo? TeamsGetMeetingInfo(this IActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        var channelData = activity.GetChannelData<Microsoft.Bot.Schema.Teams.TeamsChannelData>();
+        TeamsChannelData channelData = activity.GetChannelData<Microsoft.Bot.Schema.Teams.TeamsChannelData>();
         return channelData?.Meeting;
     }
 
@@ -29,7 +29,7 @@ internal static class CompatTeamsInfoModels
     {
         ArgumentNullException.ThrowIfNull(state);
 
-        var result = new Microsoft.Bot.Schema.Teams.BatchOperationState
+        BatchOperationState result = new()
         {
             State = state.State,
             RetryAfter = state.RetryAfter?.DateTime,
@@ -73,7 +73,7 @@ internal static class CompatTeamsInfoModels
     {
         ArgumentNullException.ThrowIfNull(response);
 
-        var result = new Microsoft.Bot.Schema.Teams.BatchFailedEntriesResponse
+        BatchFailedEntriesResponse result = new()
         {
             ContinuationToken = response.ContinuationToken
         };
@@ -81,7 +81,7 @@ internal static class CompatTeamsInfoModels
         // FailedEntries is a read-only property with private setter, populate via the collection
         if (response.FailedEntries != null)
         {
-            foreach (var entry in response.FailedEntries)
+            foreach (Apps.BatchFailedEntry entry in response.FailedEntries)
             {
                 result.FailedEntries.Add(entry.ToCompatBatchFailedEntry());
             }

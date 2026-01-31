@@ -38,7 +38,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         cancellationToken, new CancellationTokenSource(TimeSpan.FromSeconds(15)).Token);
 
     CoreActivity typing = CoreActivity.CreateBuilder()
-        .WithType(ActivityType.Typing)
+        .WithType("typing")
         .WithConversationReference(activity)
         .Build();
     await botApp.SendActivityAsync(typing, cancellationToken);

@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -116,7 +115,7 @@ public class BotApplication
         {
             try
             {
-                var token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
+                CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
                 await MiddleWare.RunPipelineAsync(this, activity, activityHandler, 0, token).ConfigureAwait(false);
 
             }
