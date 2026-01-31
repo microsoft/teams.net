@@ -4,12 +4,12 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Identity.Client;
 
 namespace Microsoft.Teams.Bot.Apps;
 
@@ -20,8 +20,7 @@ namespace Microsoft.Teams.Bot.Apps;
 public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsApiClient;
-    private static TeamsBotApplicationBuilder? _botApplicationBuilder;
-    internal Router Router = new();
+    internal Router Router { get; } = new();
     
     /// <summary>
     /// Gets the client used to interact with the Teams API service.
@@ -74,25 +73,31 @@ public class TeamsBotApplication : BotApplication
     /// <summary>
     /// Creates a new instance of the TeamsBotApplicationBuilder to configure and build a Teams bot application.
     /// </summary>
-    /// <returns></returns>
-    public static TeamsBotApplicationBuilder CreateBuilder()
-    {
-        _botApplicationBuilder = new TeamsBotApplicationBuilder();
-        return _botApplicationBuilder;
-    }
+    /// <returns>A new <see cref="TeamsBotApplicationBuilder"/> instance.</returns>
+    public static TeamsBotApplicationBuilder CreateBuilder() => new();
 
     /// <summary>
     /// Runs the web application configured by the bot application builder.
     /// </summary>
-    /// <remarks>Call CreateBuilder() before invoking this method to ensure the bot application builder is
-    /// initialized. This method blocks the calling thread until the web application shuts down.</remarks>
-#pragma warning disable CA1822 // Mark members as static
-    public void Run()
-#pragma warning restore CA1822 // Mark members as static
+    /// <param name="builder">The bot application builder containing the configured web application.</param>
+    /// <remarks>This method blocks the calling thread until the web application shuts down.</remarks>
+    public static void Run(TeamsBotApplicationBuilder builder)
     {
-        ArgumentNullException.ThrowIfNull(_botApplicationBuilder, "BotApplicationBuilder not initialized. Call CreateBuilder() first.");
+        ArgumentNullException.ThrowIfNull(builder);
+        builder.WebApplication.Run();
+    }
 
-        _botApplicationBuilder.WebApplication.Run();
+    /// <summary>
+    /// Runs the web application asynchronously.
+    /// </summary>
+    /// <param name="builder">The bot application builder containing the configured web application.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public static Task RunAsync(TeamsBotApplicationBuilder builder, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        // Use IHost.RunAsync extension which accepts CancellationToken
+        return HostingAbstractionsHostExtensions.RunAsync(builder.WebApplication, cancellationToken);
     }
 
 }

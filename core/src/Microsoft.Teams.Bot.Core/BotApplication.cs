@@ -73,12 +73,30 @@ public class BotApplication
     /// <summary>
     /// Processes an incoming HTTP request containing a bot activity.
     /// </summary>
-    /// <param name="httpContext"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="BotHandlerException"></exception>
-    public async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
+    /// <param name="httpContext">The HTTP context containing the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the activity is invalid.</exception>
+    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity.</exception>
+    public Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
+    {
+        return ProcessAsync(httpContext, this.OnActivity, cancellationToken);
+    }
+
+    /// <summary>
+    /// Processes an incoming HTTP request containing a bot activity using the specified activity handler.
+    /// </summary>
+    /// <remarks>
+    /// This overload is thread-safe for concurrent requests as it accepts the handler directly
+    /// instead of using the shared <see cref="OnActivity"/> property.
+    /// </remarks>
+    /// <param name="httpContext">The HTTP context containing the request.</param>
+    /// <param name="activityHandler">The delegate to invoke for processing the activity.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the activity is invalid.</exception>
+    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity.</exception>
+    public async Task ProcessAsync(HttpContext httpContext, Func<CoreActivity, CancellationToken, Task>? activityHandler, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(_conversationClient);
@@ -99,7 +117,7 @@ public class BotApplication
             try
             {
                 var token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
-                await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
+                await MiddleWare.RunPipelineAsync(this, activity, activityHandler, 0, token).ConfigureAwait(false);
 
             }
             catch (Exception ex)

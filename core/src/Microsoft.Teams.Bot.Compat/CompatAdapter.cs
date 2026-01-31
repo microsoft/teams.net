@@ -81,20 +81,23 @@ public class CompatAdapter : IBotFrameworkHttpAdapter
         ArgumentNullException.ThrowIfNull(bot);
 
         CoreActivity? coreActivity = null;
-        _teamsBotApplication.OnActivity = async (activity, cancellationToken1) =>
+
+        // Use the thread-safe overload that accepts the handler directly,
+        // avoiding race conditions from concurrent requests overwriting OnActivity
+        async Task ActivityHandler(CoreActivity activity, CancellationToken ct)
         {
             coreActivity = activity;
-            TurnContext turnContext = new(_compatBotAdapter, activity.ToCompatActivity());
+            using TurnContext turnContext = new(_compatBotAdapter, activity.ToCompatActivity());
             turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
-            await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, cancellationToken).ConfigureAwait(false);
-        };
+            await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
+        }
 
         try
         {
-            await _teamsBotApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
+            await _teamsBotApplication.ProcessAsync(httpRequest.HttpContext, ActivityHandler, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

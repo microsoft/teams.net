@@ -11,7 +11,6 @@ using TeamsBot;
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();
 
-
 teamsApp.OnMessageUpdate(async (context, cancellationToken) =>
 {
     string updatedText = context.Activity.Text ?? "<no text>";
@@ -78,5 +77,4 @@ teamsApp.OnInvoke(async (context, cancellationToken) =>
     };
 });
 
-
-teamsApp.Run();
+TeamsBotApplication.Run(builder);

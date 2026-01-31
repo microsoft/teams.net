@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
@@ -23,10 +22,9 @@ namespace Microsoft.Teams.Bot.Compat;
 /// <param name="botApplication">The bot application instance used to process and send activities within the adapter.</param>
 /// <param name="httpContextAccessor">The HTTP context accessor used to retrieve the current HTTP context for writing invoke responses.</param>
 /// <param name="logger">The logger instance for recording adapter operations and diagnostics.</param>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "Compat layer - matching existing patterns")]
 public class CompatBotAdapter(TeamsBotApplication botApplication, IHttpContextAccessor httpContextAccessor = default!, ILogger<CompatBotAdapter> logger = default!) : BotAdapter
 {
-    private readonly JsonSerializerOptions _writeIndentedJsonOptions = new() { WriteIndented = true };
 
     /// <summary>
     /// Deletes an activity from the conversation.
@@ -69,7 +67,7 @@ public class CompatBotAdapter(TeamsBotApplication botApplication, IHttpContextAc
 
             if (activity.Type == "invokeResponse")
             {
-                WriteInvokeResponseToHttpResponse(activity.Value as InvokeResponse);
+                await WriteInvokeResponseToHttpResponseAsync(activity.Value as InvokeResponse, cancellationToken).ConfigureAwait(false);
                 return [new ResourceResponse() { Id = null }];
             }
 
@@ -103,19 +101,28 @@ public class CompatBotAdapter(TeamsBotApplication botApplication, IHttpContextAc
         return new ResourceResponse() { Id = res.Id };
     }
 
-    private void WriteInvokeResponseToHttpResponse(InvokeResponse? invokeResponse)
+    private async Task WriteInvokeResponseToHttpResponseAsync(InvokeResponse? invokeResponse, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(invokeResponse);
         HttpResponse? response = httpContextAccessor?.HttpContext?.Response;
         if (response is not null && !response.HasStarted)
         {
             response.StatusCode = invokeResponse.Status;
-            using StreamWriter httpResponseStreamWriter = new(response.BodyWriter.AsStream());
-            using JsonTextWriter httpResponseJsonWriter = new(httpResponseStreamWriter);
-            logger.LogTrace("Sending Invoke Response: \n {InvokeResponse} with status: {Status} \n", System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions), invokeResponse.Status);
+
             if (invokeResponse.Body is not null)
             {
-                Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
+                // Serialize to string in memory (Newtonsoft.Json for Bot Framework compatibility)
+                using StringWriter stringWriter = new();
+                using JsonTextWriter jsonWriter = new(stringWriter);
+                Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(jsonWriter, invokeResponse.Body);
+                await jsonWriter.FlushAsync(cancellationToken).ConfigureAwait(false);
+                string json = stringWriter.ToString();
+
+                logger.LogTrace("Sending Invoke Response: \n {InvokeResponse} with status: {Status} \n", json, invokeResponse.Status);
+
+                // Write asynchronously to HTTP response
+                response.ContentType = "application/json; charset=utf-8";
+                await response.WriteAsync(json, cancellationToken).ConfigureAwait(false);
             }
         }
         else
