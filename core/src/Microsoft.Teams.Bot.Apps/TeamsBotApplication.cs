@@ -21,7 +21,11 @@ public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsApiClient;
     private static TeamsBotApplicationBuilder? _botApplicationBuilder;
-    internal Router Router = new();
+
+    /// <summary>
+    /// Gets the router for dispatching Teams activities to registered routes.
+    /// </summary>
+    internal Router Router { get; }
     
     /// <summary>
     /// Gets the client used to interact with the Teams API service.
@@ -35,6 +39,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="config"></param>
     /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
+    /// <param name="router"></param>
     /// <param name="sectionName"></param>
     public TeamsBotApplication(
         ConversationClient conversationClient,
@@ -43,10 +48,12 @@ public class TeamsBotApplication : BotApplication
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
         ILogger<BotApplication> logger,
+        Router router,
         string sectionName = "AzureAd")
         : base(conversationClient, userTokenClient, config, logger, sectionName)
     {
         _teamsApiClient = teamsApiClient;
+        Router = router;
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogInformation("New {Type} activity received.", activity.Type);

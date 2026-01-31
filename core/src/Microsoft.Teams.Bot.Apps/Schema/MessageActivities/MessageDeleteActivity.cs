@@ -37,7 +37,7 @@ public class MessageDeleteActivity : TeamsActivity
     /// Serializes the MessageDeleteActivity to JSON with all message delete-specific properties.
     /// </summary>
     /// <returns>JSON string representation of the MessageDeleteActivity</returns>
-    public new string ToJson()
+    public override string ToJson()
         => ToJson(TeamsActivityJsonContext.Default.MessageDeleteActivity);
 
     /// <summary>

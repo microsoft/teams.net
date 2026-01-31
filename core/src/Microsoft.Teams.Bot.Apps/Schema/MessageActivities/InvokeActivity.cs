@@ -33,14 +33,17 @@ public class InvokeActivity : TeamsActivity
     }
 
     /// <summary>
+    /// Serializes the InvokeActivity to JSON.
+    /// </summary>
+    /// <returns>JSON string representation of the InvokeActivity</returns>
+    public override string ToJson()
+        => ToJson(TeamsActivityJsonContext.Default.InvokeActivity);
+
+    /// <summary>
     /// Gets or sets the name of the operation. See <see cref="InvokeNames"/> for common values.
     /// </summary>
     [JsonPropertyName("name")]
-    public string? Name
-    {
-        get => base.Properties.TryGetValue("name", out var value) ? value?.ToString() : null;
-        set => base.Properties["name"] = value;
-    }
+    public string? Name { get; set; }
         ///// <summary>
         ///// Gets or sets a value that is associated with the activity.
         ///// </summary>
@@ -69,17 +72,11 @@ public class InvokeActivity : TeamsActivity
     /// Initializes a new instance of the InvokeActivity class with the specified core activity.
     /// </summary>
     /// <param name="activity">The core activity to be invoked. Cannot be null.</param>
-    protected InvokeActivity(CoreActivity activity) : base(TeamsActivityType.Invoke)
+    protected InvokeActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        this.Value = activity.Value;
-        this.ChannelId = activity.ChannelId;
-        this.ChannelData = new TeamsChannelData(activity.ChannelData);
-        this.ServiceUrl = activity.ServiceUrl;
-        this.Conversation = new TeamsConversation(activity.Conversation);
-        this.From = new TeamsConversationAccount(activity.From);
-        this.Recipient = new TeamsConversationAccount(activity.Recipient);
-        this.Properties = activity.Properties;
+        if (activity.Properties.TryGetValue("name", out var name))
+            Name = name?.ToString();
     }
 }
 

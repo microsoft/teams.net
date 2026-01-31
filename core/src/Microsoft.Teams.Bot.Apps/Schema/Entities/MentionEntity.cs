@@ -42,10 +42,9 @@ public static class ActivityMentionExtensions
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(account);
         string? mentionText = text ?? account.Name;
-        if (addText)
+        if (addText && activity is MessageActivity msg)
         {
-            string? currentText = activity.Properties.TryGetValue("text", out var t) ? t?.ToString() : null;
-            activity.Properties["text"] = $"<at>{mentionText}</at> {currentText}";
+            msg.Text = $"<at>{mentionText}</at> {msg.Text}";
         }
         activity.Entities ??= [];
         MentionEntity mentionEntity = new(account, $"<at>{mentionText}</at>");

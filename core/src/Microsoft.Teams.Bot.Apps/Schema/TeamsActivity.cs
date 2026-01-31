@@ -44,7 +44,7 @@ public class TeamsActivity : CoreActivity
         while (reader.Read())
         {
             if (reader.TokenType == JsonTokenType.PropertyName &&
-                reader.ValueTextEquals("type"u8))
+                reader.ValueTextEquals("type"))
             {
                 reader.Read();
                 type = reader.GetString();
@@ -76,7 +76,7 @@ public class TeamsActivity : CoreActivity
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
     /// </summary>
     /// <returns></returns>
-    public new string ToJson()
+    public override string ToJson()
         => ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
 
     /// <summary>

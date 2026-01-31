@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
+using Microsoft.Teams.Bot.Apps.Schema.InstallActivities;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -38,6 +40,21 @@ public static class TeamsActivityType
     public const string MessageDelete = "messageDelete";
 
     /// <summary>
+    /// Represents a conversation update activity.
+    /// </summary>
+    public const string ConversationUpdate = "conversationUpdate";
+
+    /// <summary>
+    /// Represents an end of conversation activity.
+    /// </summary>
+    public const string EndOfConversation = "endOfConversation";
+
+    /// <summary>
+    /// Represents an installation update activity.
+    /// </summary>
+    public const string InstallationUpdate = "installationUpdate";
+
+    /// <summary>
     /// Represents the string value "invoke" used to identify an invoke operation or action.
     /// </summary>
     public const string Invoke = "invoke";
@@ -53,6 +70,9 @@ public static class TeamsActivityType
         [TeamsActivityType.MessageReaction] = (MessageReactionActivity.FromActivity, MessageReactionActivity.FromJsonString),
         [TeamsActivityType.MessageUpdate] = (MessageUpdateActivity.FromActivity, MessageUpdateActivity.FromJsonString),
         [TeamsActivityType.MessageDelete] = (MessageDeleteActivity.FromActivity, MessageDeleteActivity.FromJsonString),
-        [TeamsActivityType.Invoke] = (InvokeActivity.FromActivity, InvokeActivity.FromJsonString), 
+        [TeamsActivityType.ConversationUpdate] = (ConversationUpdateActivity.FromActivity, ConversationUpdateActivity.FromJsonString),
+        [TeamsActivityType.EndOfConversation] = (EndOfConversationActivity.FromActivity, EndOfConversationActivity.FromJsonString),
+        [TeamsActivityType.InstallationUpdate] = (InstallUpdateActivity.FromActivity, InstallUpdateActivity.FromJsonString),
+        [TeamsActivityType.Invoke] = (InvokeActivity.FromActivity, InvokeActivity.FromJsonString),
     }; // TODO: Review if we need FromJson in this map
 }

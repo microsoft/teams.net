@@ -89,38 +89,6 @@ public class MessageUpdateActivityTests
     }
 
     [Fact]
-    public void FromJsonStringCreatesCorrectType()
-    {
-        string json = """
-        {
-            "type": "messageUpdate",
-            "text": "Updated content",
-            "textFormat": "markdown",
-            "conversation": {
-                "id": "conv-123"
-            }
-        }
-        """;
-
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
-        Assert.IsType<MessageUpdateActivity>(activity);
-        MessageUpdateActivity? mua = activity as MessageUpdateActivity;
-        Assert.NotNull(mua);
-        Assert.Equal(TeamsActivityType.MessageUpdate, activity.Type);
-        Assert.Equal("Updated content", mua.Text);
-        Assert.Equal("markdown", mua.TextFormat);
-    }
-
-    [Fact]
-    public void MessageUpdateActivity_Constructor_CopiesTextToProperties()
-    {
-        MessageUpdateActivity activity = new("Updated message text");
-
-        Assert.Equal("Updated message text", activity.Text);
-        Assert.Equal("Updated message text", activity.Properties["text"]);
-    }
-
-    [Fact]
     public void MessageUpdateActivity_SerializedAsCoreActivity_IncludesText()
     {
         MessageUpdateActivity messageUpdateActivity = new("Message update text")

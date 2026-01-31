@@ -39,7 +39,7 @@ public class MessageReactionActivity : TeamsActivity
     /// Serializes the MessageReactionActivity to JSON with all message reaction-specific properties.
     /// </summary>
     /// <returns>JSON string representation of the MessageReactionActivity</returns>
-    public new string ToJson()
+    public override string ToJson()
         => ToJson(TeamsActivityJsonContext.Default.MessageReactionActivity);
 
     /// <summary>
@@ -56,15 +56,27 @@ public class MessageReactionActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageReactionActivity(CoreActivity activity) : base(activity)
     {
-        if (activity.Properties.TryGetValue("reactionsAdded", out var reactionsAdded))
+        if (activity.Properties.TryGetValue("reactionsAdded", out var reactionsAdded) && reactionsAdded != null)
         {
-            ReactionsAdded = JsonSerializer.Deserialize<List<MessageReaction>>(
-                reactionsAdded?.ToString() ?? "[]");
+            if (reactionsAdded is JsonElement je)
+            {
+                ReactionsAdded = JsonSerializer.Deserialize<List<MessageReaction>>(je.GetRawText());
+            }
+            else
+            {
+                ReactionsAdded = reactionsAdded as IList<MessageReaction>;
+            }
         }
-        if (activity.Properties.TryGetValue("reactionsRemoved", out var reactionsRemoved))
+        if (activity.Properties.TryGetValue("reactionsRemoved", out var reactionsRemoved) && reactionsRemoved != null)
         {
-            ReactionsRemoved = JsonSerializer.Deserialize<List<MessageReaction>>(
-                reactionsRemoved?.ToString() ?? "[]");
+            if (reactionsRemoved is JsonElement je)
+            {
+                ReactionsRemoved = JsonSerializer.Deserialize<List<MessageReaction>>(je.GetRawText());
+            }
+            else
+            {
+                ReactionsRemoved = reactionsRemoved as IList<MessageReaction>;
+            }
         }
     }
 

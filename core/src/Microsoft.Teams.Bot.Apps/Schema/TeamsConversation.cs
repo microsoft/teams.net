@@ -34,7 +34,6 @@ public class TeamsConversation : Conversation
     [JsonConstructor]
     public TeamsConversation()
     {
-        Id = string.Empty;
     }
 
     /// <summary>
@@ -44,7 +43,7 @@ public class TeamsConversation : Conversation
     public TeamsConversation(Conversation conversation)
     {
         ArgumentNullException.ThrowIfNull(conversation);
-        Id = conversation.Id ?? string.Empty;
+        Id = conversation.Id;
         if (conversation.Properties == null)
         {
             return;
