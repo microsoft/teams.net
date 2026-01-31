@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 
@@ -12,6 +14,16 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 public class Router
 {
     private readonly List<RouteBase> _routes = [];
+    private readonly ILogger<Router> _logger;
+
+    /// <summary>
+    /// Initializes a new instance of the Router class.
+    /// </summary>
+    /// <param name="logger">Logger for router diagnostics. Optional.</param>
+    public Router(ILogger<Router>? logger = null)
+    {
+        _logger = logger ?? NullLogger<Router>.Instance;
+    }
 
     /// <summary>
     /// Routes registered in the router.
@@ -21,31 +33,13 @@ public class Router
     /// <summary>
     /// Registers a route. Routes are checked in registration order.
     /// IMPORTANT: Register specific routes before general catch-all routes.
+    /// Call Next() in handlers to continue to the next matching route.
     /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     public Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
     {
         _routes.Add(route);
         return this;
-    }
-
-    /// <summary>
-    /// Selects the first matching route for the given activity.
-    /// </summary>
-    public Route<TActivity>? Select<TActivity>(TActivity activity) where TActivity : TeamsActivity
-    {
-        return _routes
-            .OfType<Route<TActivity>>()
-            .FirstOrDefault(r => r.Selector(activity));
-    }
-
-    /// <summary>
-    /// Selects all matching routes for the given activity.
-    /// </summary>
-    public IEnumerable<Route<TActivity>> SelectAll<TActivity>(TActivity activity) where TActivity : TeamsActivity
-    {
-        return _routes
-            .OfType<Route<TActivity>>()
-            .Where(r => r.Selector(activity));
     }
 
     /// <summary>
@@ -56,15 +50,28 @@ public class Router
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
-        // TODO : support multiple routes?
-        foreach (var route in _routes)
+        var matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
+
+        if (matchingRoutes.Count == 0)
         {
-            if (route.Matches(ctx.Activity))
-            {
-                await route.InvokeRoute(ctx, cancellationToken).ConfigureAwait(false);
-                return;
-            }
+            _logger.LogDebug(
+                "No routes matched activity type '{Type}'",
+                ctx.Activity.Type
+            );
+            return;
         }
+
+        if (matchingRoutes.Count > 1)
+        {
+            _logger.LogWarning(
+                "Activity type '{Type}' matched {Count} routes: [{Routes}]. Only the first route will execute without Next().",
+                ctx.Activity.Type,
+                matchingRoutes.Count,
+                string.Join(", ", matchingRoutes.Select(r => r.Name))
+            );
+        }
+
+        await matchingRoutes[0].InvokeRoute(ctx, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -78,15 +85,27 @@ public class Router
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
-        // TODO : support multiple routes?
-        foreach (var route in _routes)
+        var matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
+
+        if (matchingRoutes.Count == 0)
         {
-            if (route.Matches(ctx.Activity))
-            {
-                return await route.InvokeRouteWithReturn(ctx, cancellationToken).ConfigureAwait(false);
-            }
+            _logger.LogWarning(
+                "No routes matched activity type '{Type}'",
+                ctx.Activity.Type
+            );
+            return null!; // TODO : return appropriate response
         }
 
-        return null!; // TODO : return appropriate response
+        if (matchingRoutes.Count > 1)
+        {
+            _logger.LogWarning(
+                "Activity type '{Type}' matched {Count} routes: [{Routes}]. Only the first route will execute without Next().",
+                ctx.Activity.Type,
+                matchingRoutes.Count,
+                string.Join(", ", matchingRoutes.Select(r => r.Name))
+            );
+        }
+
+        return await matchingRoutes[0].InvokeRouteWithReturn(ctx, cancellationToken).ConfigureAwait(false);
     }
 }

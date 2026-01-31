@@ -53,7 +53,7 @@ public static class MessageReactionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<MessageReactionActivity>
         {
-            Name = TeamsActivityType.MessageReaction,
+            Name = string.Join("/", [TeamsActivityType.MessageReaction, "reactionsAdded"]),
             Selector = activity => activity.ReactionsAdded?.Count > 0,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -75,7 +75,7 @@ public static class MessageReactionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<MessageReactionActivity>
         {
-            Name = TeamsActivityType.MessageReaction,
+            Name = string.Join("/", [TeamsActivityType.MessageReaction, "reactionsRemoved"]),
             Selector = activity => activity.ReactionsRemoved?.Count > 0,
             Handler = async (ctx, cancellationToken) =>
             {

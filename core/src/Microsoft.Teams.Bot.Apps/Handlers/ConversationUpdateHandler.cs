@@ -53,7 +53,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, "membersAdded"]),
             Selector = activity => activity.MembersAdded?.Count > 0,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -75,7 +75,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, "membersRemoved"]),
             Selector = activity => activity.MembersRemoved?.Count > 0,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -99,7 +99,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelCreated]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelCreated,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -121,7 +121,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelDeleted]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelDeleted,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -143,7 +143,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelRenamed]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelRenamed,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -165,7 +165,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelRestored]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelRestored,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -187,7 +187,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelShared]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelShared,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -209,7 +209,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelUnShared]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelUnShared,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -231,7 +231,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelMemberAdded]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelMemberAdded,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -253,7 +253,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelMemberRemoved]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelMemberRemoved,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -277,7 +277,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.TeamMemberAdded]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamMemberAdded,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -299,7 +299,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.TeamMemberRemoved]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamMemberRemoved,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -321,7 +321,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.TeamArchived]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamArchived,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -343,7 +343,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.TeamDeleted]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamDeleted,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -365,7 +365,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.TeamHardDeleted]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamHardDeleted,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -387,7 +387,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.TeamRenamed]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamRenamed,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -409,7 +409,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.TeamRestored]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamRestored,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -431,7 +431,7 @@ public static class ConversationUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<ConversationUpdateActivity>
         {
-            Name = TeamsActivityType.ConversationUpdate,
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.TeamUnarchived]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.TeamUnarchived,
             Handler = async (ctx, cancellationToken) =>
             {

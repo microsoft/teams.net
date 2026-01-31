@@ -116,7 +116,6 @@ teamsApp.OnInstall(async (context, cancellationToken) =>
 teamsApp.OnUnInstall((context, cancellationToken) =>
 {
     Console.WriteLine($"[InstallRemove] Bot was uninstalled");
-    //TODO : Discuss if we should have void overloads
     return Task.CompletedTask;
 });
 

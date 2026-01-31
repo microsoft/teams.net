@@ -58,7 +58,7 @@ public static class MessageExtensions
 
         app.Router.Register(new Route<MessageActivity>
         {
-            Name = TeamsActivityType.Message,
+            Name = string.Join("/", [TeamsActivityType.Message, pattern]),
             Selector = msg => regex.IsMatch(msg.Text ?? ""),
             Handler = async (ctx, cancellationToken) =>
             {
@@ -81,7 +81,7 @@ public static class MessageExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<MessageActivity>
         {
-            Name = TeamsActivityType.Message,
+            Name = string.Join("/", [TeamsActivityType.Message, regex.ToString()]),
             Selector = msg => regex.IsMatch(msg.Text ?? ""),
             Handler = async (ctx, cancellationToken) =>
             {
