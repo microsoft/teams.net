@@ -27,6 +27,7 @@ public class TeamsChannelData : ChannelData
     {
         if (cd is not null)
         {
+            //TODO : is channel id needed ? what is this
             if (cd.Properties.TryGetValue("teamsChannelId", out object? channelIdObj)
                 && channelIdObj is JsonElement jeChannelId
                 && jeChannelId.ValueKind == JsonValueKind.String)
@@ -46,6 +47,20 @@ public class TeamsChannelData : ChannelData
                 && je.ValueKind == JsonValueKind.Object)
             {
                 Tenant = JsonSerializer.Deserialize<TeamsChannelDataTenant>(je.GetRawText());
+            }
+
+            if (cd.Properties.TryGetValue("eventType", out object? eventTypeObj)
+                && eventTypeObj is JsonElement jeEventType
+                && jeEventType.ValueKind == JsonValueKind.String)
+            {
+                EventType = jeEventType.GetString();
+            }
+
+            if (cd.Properties.TryGetValue("team", out object? teamObj)
+                && teamObj is JsonElement teamObjJE
+                && teamObjJE.ValueKind == JsonValueKind.Object)
+            {
+                Team = JsonSerializer.Deserialize<Team?>(teamObjJE.GetRawText());
             }
         }
     }
@@ -80,5 +95,10 @@ public class TeamsChannelData : ChannelData
     /// Tenant information.
     /// </summary>
     [JsonPropertyName("tenant")] public TeamsChannelDataTenant? Tenant { get; set; }
+
+    /// <summary>
+    /// Gets or sets the event type for conversation updates. See <see cref="ConversationActivities.ConversationEventTypes"/> for known values.
+    /// </summary>
+    [JsonPropertyName("eventType")] public string? EventType { get; set; }
 
 }
