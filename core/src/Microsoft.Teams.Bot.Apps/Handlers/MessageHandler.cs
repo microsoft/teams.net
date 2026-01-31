@@ -79,6 +79,7 @@ public static class MessageExtensions
     public static TeamsBotApplication OnMessage(this TeamsBotApplication app, Regex regex, MessageHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
+        ArgumentNullException.ThrowIfNull(regex, nameof(regex));
         app.Router.Register(new Route<MessageActivity>
         {
             Name = string.Join("/", [TeamsActivityType.Message, regex.ToString()]),

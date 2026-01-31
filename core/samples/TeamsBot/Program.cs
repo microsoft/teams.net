@@ -6,12 +6,41 @@ using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+using System.Text.RegularExpressions;
 using TeamsBot;
 
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();
 
 // ==================== MESSAGE HANDLERS ====================
+
+// Pattern-based handler: matches "hello" (case-insensitive)
+teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
+{
+    await context.SendActivityAsync("Hi there! 👋 You said hello!", cancellationToken);
+});
+
+// Regex-based handler: matches commands starting with "/"
+var commandRegex = new Regex(@"^/(\w+)(.*)$", RegexOptions.Compiled);
+teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
+{
+    var match = commandRegex.Match(context.Activity.Text ?? "");
+    if (match.Success)
+    {
+        string command = match.Groups[1].Value;
+        string args = match.Groups[2].Value.Trim();
+
+        string response = command.ToLower() switch
+        {
+            "help" => "Available commands: /help, /about, /time",
+            "about" => "I'm a Teams bot built with the Microsoft Teams Bot SDK!",
+            "time" => $"Current server time: {DateTime.Now:yyyy-MM-dd HH:mm:ss}",
+            _ => $"Unknown command: /{command}. Type /help for available commands."
+        };
+
+        await context.SendActivityAsync(response, cancellationToken);
+    }
+});
 
 teamsApp.OnMessageUpdate(async (context, cancellationToken) =>
 {

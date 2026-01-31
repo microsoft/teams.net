@@ -11,6 +11,8 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// <summary>
 /// Router for dispatching Teams activities to registered routes
 /// </summary>
+[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
+
 public class Router
 {
     private readonly List<RouteBase> _routes = [];
@@ -35,7 +37,6 @@ public class Router
     /// IMPORTANT: Register specific routes before general catch-all routes.
     /// Call Next() in handlers to continue to the next matching route.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     public Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
     {
         _routes.Add(route);
