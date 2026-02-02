@@ -4,6 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
@@ -29,13 +30,13 @@ public static class ActivityMentionExtensions
     }
 
     /// <summary>
-    /// Adds a mention to the activity.
+    /// Adds a mention (@ mention) of a user or bot to the activity.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <param name="account"></param>
-    /// <param name="text"></param>
-    /// <param name="addText"></param>
-    /// <returns></returns>
+    /// <param name="activity">The activity to add the mention to. Cannot be null.</param>
+    /// <param name="account">The conversation account being mentioned. Cannot be null.</param>
+    /// <param name="text">Optional custom text for the mention. If null, uses the account name.</param>
+    /// <param name="addText">If true, prepends the mention text to the activity's existing text content. Defaults to true.</param>
+    /// <returns>The created MentionEntity that was added to the activity.</returns>
     public static MentionEntity AddMention(this TeamsActivity activity, ConversationAccount account, string? text = null, bool addText = true)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -43,7 +44,7 @@ public static class ActivityMentionExtensions
         string? mentionText = text ?? account.Name;
         if (addText)
         {
-            string? currentText = activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
+            string? currentText = activity.Properties.TryGetValue("text", out var t) ? t?.ToString() : null;
             activity.Properties["text"] = $"<at>{mentionText}</at> {currentText}";
         }
         activity.Entities ??= [];
@@ -67,24 +68,33 @@ public class MentionEntity : Entity
     /// <summary>
     /// Creates a new instance of <see cref="MentionEntity"/> with the specified mentioned account and text.
     /// </summary>
-    /// <param name="mentioned"></param>
-    /// <param name="text"></param>
+    /// <param name="mentioned">The conversation account being mentioned.</param>
+    /// <param name="text">The text representation of the mention, typically formatted as "&lt;at&gt;name&lt;/at&gt;".</param>
     public MentionEntity(ConversationAccount mentioned, string? text) : base("mention")
     {
         Mentioned = mentioned;
         Text = text;
-        ToProperties();
     }
 
     /// <summary>
     /// Mentioned conversation account.
     /// </summary>
-    [JsonPropertyName("mentioned")] public ConversationAccount? Mentioned { get; set; }
+    [JsonPropertyName("mentioned")]
+    public ConversationAccount? Mentioned
+    {
+        get => base.Properties.TryGetValue("mentioned", out var value) ? value as ConversationAccount : null;
+        set => base.Properties["mentioned"] = value;
+    }
 
     /// <summary>
     /// Text of the mention.
     /// </summary>
-    [JsonPropertyName("text")] public string? Text { get; set; }
+    [JsonPropertyName("text")]
+    public string? Text
+    {
+        get => base.Properties.TryGetValue("text", out var value) ? value?.ToString() : null;
+        set => base.Properties["text"] = value;
+    }
 
     /// <summary>
     /// Creates a new instance of the MentionEntity class from the specified JSON node.
@@ -103,16 +113,6 @@ public class MentionEntity : Entity
                 : throw new ArgumentNullException(nameof(jsonNode), "mentioned property is required"),
             Text = jsonNode?["text"]?.GetValue<string>()
         };
-        res.ToProperties();
         return res;
-    }
-
-    /// <summary>
-    /// Adds custom fields as properties.
-    /// </summary>
-    public override void ToProperties()
-    {
-        base.Properties.Add("mentioned", Mentioned);
-        base.Properties.Add("text", Text);
     }
 }

@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps;
 
@@ -90,7 +90,7 @@ public class MeetingInfo
     /// Gets or sets the organizer of the meeting.
     /// </summary>
     [JsonPropertyName("organizer")]
-    public ConversationAccount? Organizer { get; set; }
+    public Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount? Organizer { get; set; }
 }
 
 /// <summary>

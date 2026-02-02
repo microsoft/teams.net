@@ -6,6 +6,7 @@ using Microsoft.Teams.Apps.Annotations;
 
 namespace Samples.McpClient;
 
+[Obsolete]
 [TeamsController]
 public class Controller(Func<OpenAIChatPrompt> _promptFactory)
 {

@@ -1,11 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
 
@@ -23,7 +24,10 @@ public class TeamsActivity : CoreActivity
     public static TeamsActivity FromActivity(CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return new(activity);
+
+        return TeamsActivityType.ActivityDeserializerMap.TryGetValue(activity.Type, out var factory)
+            ? factory.FromActivity(activity)
+            : new TeamsActivity(activity);  // Fallback to base type
     }
 
     /// <summary>
@@ -31,9 +35,42 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     /// <param name="json"></param>
     /// <returns></returns>
-    public static new TeamsActivity FromJsonString(string json) =>
-        FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity)
-        .Rebase();
+    public static new TeamsActivity FromJsonString(string json)
+    {
+        string? type = null;
+        var jsonBytes = Encoding.UTF8.GetBytes(json);
+        var reader = new Utf8JsonReader(jsonBytes);
+
+        while (reader.Read())
+        {
+            if (reader.TokenType == JsonTokenType.PropertyName &&
+                reader.ValueTextEquals("type"u8))
+            {
+                reader.Read();
+                type = reader.GetString();
+                break;
+            }
+        }
+
+        return type != null && TeamsActivityType.ActivityDeserializerMap.TryGetValue(type, out var factory)
+            ? factory.FromJson(json)
+            : FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity);
+    }
+
+    /// <summary>
+    /// Creates a new instance of the specified activity type from JSON string.
+    /// </summary>
+    /// <typeparam name="T">The expected activity type.</typeparam>
+    /// <param name="json">The JSON string to deserialize.</param>
+    /// <param name="typeInfo">The JSON type info for deserialization.</param>
+    /// <returns>An activity of type T.</returns>
+    public static T FromJsonString<T>(string json, JsonTypeInfo<T> typeInfo) where T : TeamsActivity
+    {
+        T activity = JsonSerializer.Deserialize(json, typeInfo)!;
+        activity.Rebase();
+        return activity;
+    }
+
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
@@ -41,6 +78,15 @@ public class TeamsActivity : CoreActivity
     /// <returns></returns>
     public new string ToJson()
         => ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
+
+    /// <summary>
+    /// Constructor with type parameter.
+    /// </summary>
+    /// <param name="type"></param>
+    protected TeamsActivity(string type) : this()
+    {
+        Type = type;
+    }
 
     /// <summary>
     /// Default constructor.
@@ -53,11 +99,14 @@ public class TeamsActivity : CoreActivity
         Conversation = new TeamsConversation();
     }
 
-    private static TeamsActivity FromJsonString(string json, JsonTypeInfo<TeamsActivity> options)
-        => JsonSerializer.Deserialize(json, options)!;
-
-    private TeamsActivity(CoreActivity activity) : base(activity)
+    /// <summary>
+    /// Protected constructor to create TeamsActivity from CoreActivity.
+    /// Allows derived classes to call via base(activity).
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    protected TeamsActivity(CoreActivity activity) : base(activity)
     {
+        ArgumentNullException.ThrowIfNull(activity);
         // Convert base types to Teams-specific types
         if (activity.ChannelData is not null)
         {
@@ -80,33 +129,50 @@ public class TeamsActivity : CoreActivity
     {
         base.Attachments = this.Attachments?.ToJsonArray();
         base.Entities = this.Entities?.ToJsonArray();
-        base.ChannelData = new TeamsChannelData(this.ChannelData);
-        base.From = this.From;
-        base.Recipient = this.Recipient;
-        base.Conversation = this.Conversation;
 
         return this;
     }
 
+
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.
     /// </summary>
-    [JsonPropertyName("from")] public new TeamsConversationAccount From { get; set; }
+    [JsonPropertyName("from")]
+    public new TeamsConversationAccount From
+    {
+        get => (base.From as TeamsConversationAccount) ?? new TeamsConversationAccount(base.From);
+        set => base.From = value;
+    }
 
     /// <summary>
     /// Gets or sets the account information for the recipient of the Teams conversation.
     /// </summary>
-    [JsonPropertyName("recipient")] public new TeamsConversationAccount Recipient { get; set; }
+    [JsonPropertyName("recipient")]
+    public new TeamsConversationAccount Recipient
+    {
+        get => (base.Recipient as TeamsConversationAccount) ?? new TeamsConversationAccount(base.Recipient);
+        set => base.Recipient = value;
+    }
 
     /// <summary>
     /// Gets or sets the conversation information for the Teams conversation.
     /// </summary>
-    [JsonPropertyName("conversation")] public new TeamsConversation Conversation { get; set; }
+    [JsonPropertyName("conversation")]
+    public new TeamsConversation Conversation
+    {
+        get => (base.Conversation as TeamsConversation) ?? new TeamsConversation(base.Conversation);
+        set => base.Conversation = value;
+    }
 
     /// <summary>
     /// Gets or sets the Teams-specific channel data associated with this activity.
     /// </summary>
-    [JsonPropertyName("channelData")] public new TeamsChannelData? ChannelData { get; set; }
+    [JsonPropertyName("channelData")]
+    public new TeamsChannelData? ChannelData
+    {
+        get => base.ChannelData as TeamsChannelData;
+        set => base.ChannelData = value;
+    }
 
     /// <summary>
     /// Gets or sets the entities specific to Teams.

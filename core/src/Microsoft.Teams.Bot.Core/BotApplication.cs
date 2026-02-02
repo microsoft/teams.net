@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Core;
 
@@ -96,7 +98,9 @@ public class BotApplication
         {
             try
             {
-                await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, cancellationToken).ConfigureAwait(false);
+                var token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
+                await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
+
             }
             catch (Exception ex)
             {

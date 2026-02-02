@@ -2,6 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Routing;
+using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
@@ -13,18 +16,45 @@ namespace Microsoft.Teams.Bot.Apps.Handlers;
 /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation. The default value is <see
 /// cref="CancellationToken.None"/>.</param>
 /// <returns>A task that represents the asynchronous operation. The task result contains the response to the invocation.</returns>
-public delegate Task<CoreInvokeResponse> InvokeHandler(Context context, CancellationToken cancellationToken = default);
-
-
+public delegate Task<CoreInvokeResponse> InvokeHandler(Context<InvokeActivity> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Represents the response returned from an invocation handler.
+/// Provides extension methods for registering handlers for invoke activities in a Teams bot application.
+/// </summary>
+public static class InvokeExtensions
+{
+    /// <summary>
+    /// Registers a handler for invoke activities.
+    /// </summary>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The invoke handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnInvoke(this TeamsBotApplication app, InvokeHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<InvokeActivity>
+        {
+            Name = TeamsActivityType.Invoke,
+            Selector = _ => true,
+            HandlerWithReturn = async (ctx, cancellationToken) =>
+            {
+                return await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+        return app;
+    }
+}
+
+/// <summary>
+/// Represents the response returned from an invocation handler, typically used for Adaptive Card actions and task module operations.
 /// </summary>
 /// <remarks>
-/// Creates a new instance of the <see cref="CoreInvokeResponse"/> class with the specified status code and optional body.
+/// This class encapsulates the HTTP-style response sent back to Teams when handling invoke activities.
+/// Common status codes include 200 for success, 400 for bad request, and 500 for errors.
+/// The Body property contains the response payload, which is serialized to JSON and returned to the client.
 /// </remarks>
-/// <param name="status"></param>
-/// <param name="body"></param>
+/// <param name="status">The HTTP status code indicating the result of the invoke operation (e.g., 200 for success).</param>
+/// <param name="body">Optional response payload that will be serialized and sent to the client.</param>
 public class CoreInvokeResponse(int status, object? body = null)
 {
     /// <summary>

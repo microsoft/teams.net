@@ -10,7 +10,7 @@
     <InternalsVisibleTo Include="Microsoft.Teams.Bot.Compat.UnitTests" />
   </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.23.1" />
+        <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.3" />
     </ItemGroup>
     <ItemGroup>
       <ProjectReference Include="..\Microsoft.Teams.Bot.Apps\Microsoft.Teams.Bot.Apps.csproj" />

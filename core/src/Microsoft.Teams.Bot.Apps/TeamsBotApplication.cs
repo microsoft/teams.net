@@ -5,8 +5,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Routing;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+using Microsoft.Teams.Bot.Apps.Handlers;
+using Microsoft.Identity.Client;
 
 namespace Microsoft.Teams.Bot.Apps;
 
@@ -16,42 +19,19 @@ namespace Microsoft.Teams.Bot.Apps;
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class TeamsBotApplication : BotApplication
 {
-    private readonly TeamsApiClient _teamsAPXClient;
+    private readonly TeamsApiClient _teamsApiClient;
     private static TeamsBotApplicationBuilder? _botApplicationBuilder;
-
+    internal Router Router = new();
+    
     /// <summary>
-    /// Handler for message activities.
+    /// Gets the client used to interact with the Teams API service.
     /// </summary>
-    public MessageHandler? OnMessage { get; set; }
+    public TeamsApiClient TeamsApiClient => _teamsApiClient;
 
-    /// <summary>
-    /// Handler for message reaction activities.
-    /// </summary>
-    public MessageReactionHandler? OnMessageReaction { get; set; }
-
-    /// <summary>
-    /// Handler for installation update activities.
-    /// </summary>
-    public InstallationUpdateHandler? OnInstallationUpdate { get; set; }
-
-    /// <summary>
-    /// Handler for invoke activities.
-    /// </summary>
-    public InvokeHandler? OnInvoke { get; set; }
-
-    /// <summary>
-    /// Gets the client used to interact with the TeamsAPX service.
-    /// </summary>
-    public TeamsApiClient TeamsAPXClient => _teamsAPXClient;
-
-    /// <summary>
-    /// Handler for conversation update activities.
-    /// </summary>
-    public ConversationUpdateHandler? OnConversationUpdate { get; set; }
 
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
-    /// <param name="teamsAPXClient"></param>
+    /// <param name="teamsApiClient"></param>
     /// <param name="config"></param>
     /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
@@ -59,44 +39,33 @@ public class TeamsBotApplication : BotApplication
     public TeamsBotApplication(
         ConversationClient conversationClient,
         UserTokenClient userTokenClient,
-        TeamsApiClient teamsAPXClient,
+        TeamsApiClient teamsApiClient,
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
         ILogger<BotApplication> logger,
         string sectionName = "AzureAd")
         : base(conversationClient, userTokenClient, config, logger, sectionName)
     {
-        _teamsAPXClient = teamsAPXClient;
+        _teamsApiClient = teamsApiClient;
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
-            Context context = new(this, teamsActivity);
-            if (teamsActivity.Type == TeamsActivityType.Message && OnMessage is not null)
-            {
-                await OnMessage.Invoke(new MessageArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
-            }
-            if (teamsActivity.Type == TeamsActivityType.InstallationUpdate && OnInstallationUpdate is not null)
-            {
-                await OnInstallationUpdate.Invoke(new InstallationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
+            Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
-            }
-            if (teamsActivity.Type == TeamsActivityType.MessageReaction && OnMessageReaction is not null)
+            if (teamsActivity.Type != TeamsActivityType.Invoke)
             {
-                await OnMessageReaction.Invoke(new MessageReactionArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
+                await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
             }
-            if (teamsActivity.Type == TeamsActivityType.ConversationUpdate && OnConversationUpdate is not null)
+            else // invokes
             {
-                await OnConversationUpdate.Invoke(new ConversationUpdateArgs(teamsActivity), context, cancellationToken).ConfigureAwait(false);
-            }
-            if (teamsActivity.Type == TeamsActivityType.Invoke && OnInvoke is not null)
-            {
-                CoreInvokeResponse invokeResponse = await OnInvoke.Invoke(context, cancellationToken).ConfigureAwait(false);
+                CoreInvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
                 HttpContext? httpContext = httpContextAccessor.HttpContext;
-                if (httpContext is not null)
+                if (httpContext is not null && invokeResponse is not null)
                 {
                     httpContext.Response.StatusCode = invokeResponse.Status;
                     await httpContext.Response.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
+
                 }
             }
         };
@@ -125,4 +94,5 @@ public class TeamsBotApplication : BotApplication
 
         _botApplicationBuilder.WebApplication.Run();
     }
+
 }

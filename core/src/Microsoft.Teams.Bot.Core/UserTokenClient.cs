@@ -3,22 +3,27 @@
 
 using System.Text;
 using System.Text.Json;
-using Microsoft.Teams.Bot.Core.Http;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using CoreAssemblyInfo;
+using Microsoft.Teams.Bot.Core.Http;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Core;
 
 using CustomHeaders = Dictionary<string, string>;
 
 /// <summary>
-/// Client for managing user tokens via HTTP requests.
+/// Client for managing user tokens via HTTP requests to the Bot Framework Token Service.
 /// </summary>
-/// <param name="configuration"></param>
-/// <param name="logger"></param>
-/// <param name="httpClient"></param>
+/// <remarks>
+/// This client provides methods for OAuth token management including retrieving tokens, exchanging tokens,
+/// signing out users, and managing AAD tokens. The client communicates with the Bot Framework Token Service
+/// API endpoint (defaults to https://token.botframework.com but can be configured via UserTokenApiEndpoint).
+/// </remarks>
+/// <param name="httpClient">The HTTP client for making requests to the token service.</param>
+/// <param name="configuration">Configuration containing the UserTokenApiEndpoint setting and other bot configuration.</param>
+/// <param name="logger">Logger for diagnostic information and request tracking.</param>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class UserTokenClient(HttpClient httpClient, IConfiguration configuration, ILogger<UserTokenClient> logger)
 {
@@ -188,12 +193,13 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     }
 
     /// <summary>
-    /// Signs the user out of a connection.
-    /// <param name="userId">The user ID.</param>
-    /// <param name="connectionName">The connection name.</param>
-    /// <param name="channelId">The channel ID.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
+    /// Signs the user out of a connection, revoking their OAuth token.
     /// </summary>
+    /// <param name="userId">The unique identifier of the user to sign out. Cannot be null or empty.</param>
+    /// <param name="connectionName">Optional name of the OAuth connection to sign out from. If null, signs out from all connections.</param>
+    /// <param name="channelId">Optional channel identifier. If provided, limits sign-out to tokens for this channel.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that represents the asynchronous sign-out operation.</returns>
     public async Task SignOutUserAsync(string userId, string? connectionName = null, string? channelId = null, CancellationToken cancellationToken = default)
     {
         Dictionary<string, string?> queryParams = new()

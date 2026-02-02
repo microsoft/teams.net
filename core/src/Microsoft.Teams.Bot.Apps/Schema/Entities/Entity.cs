@@ -58,6 +58,7 @@ public class EntityList : List<Entity>
                 && typeValue.GetValue<string>() is string typeString)
             {
 
+                // TODO: Should be able to support unknown types (PA uses BotMessageMetadata).
                 // TODO: Investigate if there is any way for Parent to avoid
                 // Knowing the children.
                 // Maybe a registry pattern, or Converters?
@@ -108,14 +109,6 @@ public class Entity(string type)
 #pragma warning disable CA2227 // Collection properties should be read only
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
 #pragma warning restore CA2227 // Collection properties should be read only
-
-    /// <summary>
-    /// Adds properties to the Properties dictionary.
-    /// </summary>
-    public virtual void ToProperties()
-    {
-        throw new NotImplementedException();
-    }
 
 }
 

@@ -1,62 +1,88 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
 /// Delegate for handling message reaction activities.
 /// </summary>
-/// <param name="reactionActivity"></param>
 /// <param name="context"></param>
 /// <param name="cancellationToken"></param>
 /// <returns></returns>
-public delegate Task MessageReactionHandler(MessageReactionArgs reactionActivity, Context context, CancellationToken cancellationToken = default);
-
-
-/// <summary>
-/// Message reaction activity arguments.
-/// </summary>
-/// <param name="act"></param>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227: Collection Properties should be read only", Justification = "<Pending>")]
-public class MessageReactionArgs(TeamsActivity act)
-{
-    /// <summary>
-    /// Activity for the message reaction.
-    /// </summary>
-    public TeamsActivity Activity { get; set; } = act;
-
-    /// <summary>
-    /// Reactions added to the message.
-    /// </summary>
-    public IList<MessageReaction>? ReactionsAdded { get; set; } =
-        act.Properties.TryGetValue("reactionsAdded", out object? value)
-            && value is JsonElement je
-            && je.ValueKind == JsonValueKind.Array
-                ? JsonSerializer.Deserialize<IList<MessageReaction>>(je.GetRawText())
-                : null;
-
-    /// <summary>
-    /// Reactions removed from the message.
-    /// </summary>
-    public IList<MessageReaction>? ReactionsRemoved { get; set; } =
-        act.Properties.TryGetValue("reactionsRemoved", out object? value2)
-            && value2 is JsonElement je2
-            && je2.ValueKind == JsonValueKind.Array
-                ? JsonSerializer.Deserialize<IList<MessageReaction>>(je2.GetRawText())
-                : null;
-}
+public delegate Task MessageReactionHandler(Context<MessageReactionActivity> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Message reaction schema.
+/// Extension methods for registering message reaction activity handlers.
 /// </summary>
-public class MessageReaction
+public static class MessageReactionExtensions
 {
     /// <summary>
-    /// Type of the reaction (e.g., "like", "heart").
+    /// Registers a handler for message reaction activities.
     /// </summary>
-    [JsonPropertyName("type")] public string? Type { get; set; }
+    /// <param name="app"></param>
+    /// <param name="handler"></param>
+    /// <returns></returns>
+    public static TeamsBotApplication OnMessageReaction(this TeamsBotApplication app, MessageReactionHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageReactionActivity>
+        {
+            Name = TeamsActivityType.MessageReaction,
+            Selector = _ => true,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Registers a handler for message reaction activities where reactions were added.
+    /// </summary>
+    /// <param name="app"></param>
+    /// <param name="handler"></param>
+    /// <returns></returns>
+    public static TeamsBotApplication OnMessageReactionAdded(this TeamsBotApplication app, MessageReactionHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageReactionActivity>
+        {
+            Name = TeamsActivityType.MessageReaction,
+            Selector = activity => activity.ReactionsAdded?.Count > 0,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /// <summary>
+    /// Registers a handler for message reaction activities where reactions were removed.
+    /// </summary>
+    /// <param name="app"></param>
+    /// <param name="handler"></param>
+    /// <returns></returns>
+    public static TeamsBotApplication OnMessageReactionRemoved(this TeamsBotApplication app, MessageReactionHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<MessageReactionActivity>
+        {
+            Name = TeamsActivityType.MessageReaction,
+            Selector = activity => activity.ReactionsRemoved?.Count > 0,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
 }

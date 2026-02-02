@@ -1,11 +1,6 @@
-using System.Diagnostics;
-
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Activities.Events;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Activities.Events;
-using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Cards;
 using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;

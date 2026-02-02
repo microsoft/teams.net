@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -72,18 +73,32 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// </summary>
         /// <param name="services">The service collection to add authorization to.</param>
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
-        /// <param name="logger">The logger instance for logging.</param>
+        /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
         /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
-        public static AuthorizationBuilder AddAuthorization(this IServiceCollection services, ILogger logger, string aadSectionName = "AzureAd")
+        public static AuthorizationBuilder AddAuthorization(this IServiceCollection services, ILogger? logger = null, string aadSectionName = "AzureAd")
         {
-            IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-            string azureScope = configuration[$"Scope"]!;
-            bool useAgentAuth = false;
+            // Use NullLogger if no logger provided
+            logger ??= Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
-            if (string.Equals(azureScope, AgentScope, StringComparison.OrdinalIgnoreCase))
+            // We need IConfiguration to determine which authentication scheme to register (Bot vs Agent)
+            // This is a registration-time decision that cannot be deferred
+            // Try to get it from service descriptors first (fast path)
+            var configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+            IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
+
+            // If not available as ImplementationInstance, build a temporary ServiceProvider
+            // NOTE: This is generally an anti-pattern, but acceptable here because:
+            // 1. We need configuration at registration time to select auth scheme
+            // 2. We properly dispose the temporary ServiceProvider immediately
+            // 3. This only happens once during application startup
+            if (configuration == null)
             {
-                useAgentAuth = true;
+                using var tempProvider = services.BuildServiceProvider();
+                configuration = tempProvider.GetRequiredService<IConfiguration>();
             }
+
+            string? azureScope = configuration["Scope"];
+            bool useAgentAuth = string.Equals(azureScope, AgentScope, StringComparison.OrdinalIgnoreCase);
 
             services.AddBotAuthentication(configuration, useAgentAuth, logger, aadSectionName);
             AuthorizationBuilder authorizationBuilder = services
@@ -103,7 +118,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             return authorizationBuilder;
         }
 
-        private static AuthenticationBuilder AddCustomJwtBearer(this AuthenticationBuilder builder, string schemeName, string[] validIssuers, string audience, ILogger logger)
+        private static AuthenticationBuilder AddCustomJwtBearer(this AuthenticationBuilder builder, string schemeName, string[] validIssuers, string audience, ILogger? logger)
         {
             builder.AddJwtBearer(schemeName, jwtOptions =>
             {
@@ -124,7 +139,13 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                 {
                     OnMessageReceived = async context =>
                     {
-                        logger.LogDebug("OnMessageReceived invoked for scheme: {Scheme}", schemeName);
+                        // Resolve logger at runtime from request services to ensure we always have proper logging
+                        var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                        var requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
+                            ?? logger
+                            ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+
+                        requestLogger.LogDebug("OnMessageReceived invoked for scheme: {Scheme}", schemeName);
                         string authorizationHeader = context.Request.Headers.Authorization.ToString();
 
                         if (string.IsNullOrEmpty(authorizationHeader))
@@ -132,7 +153,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                             // Default to AadTokenValidation handling
                             context.Options.TokenValidationParameters.ConfigurationManager ??= jwtOptions.ConfigurationManager as BaseConfigurationManager;
                             await Task.CompletedTask.ConfigureAwait(false);
-                            logger.LogWarning("Authorization header is missing.");
+                            requestLogger.LogWarning("Authorization header is missing for scheme: {Scheme}", schemeName);
                             return;
                         }
 
@@ -142,7 +163,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                             // Default to AadTokenValidation handling
                             context.Options.TokenValidationParameters.ConfigurationManager ??= jwtOptions.ConfigurationManager as BaseConfigurationManager;
                             await Task.CompletedTask.ConfigureAwait(false);
-                            logger.LogWarning("Invalid authorization header format.");
+                            requestLogger.LogWarning("Invalid authorization header format for scheme: {Scheme}", schemeName);
                             return;
                         }
 
@@ -153,7 +174,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                         string oidcAuthority = issuer.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
                             ? BotOIDC : $"{AgentOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
 
-                        logger.LogDebug("Using OIDC Authority: {OidcAuthority} for issuer: {Issuer}", oidcAuthority, issuer);
+                        requestLogger.LogDebug("Using OIDC Authority: {OidcAuthority} for issuer: {Issuer}", oidcAuthority, issuer);
 
                         jwtOptions.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
                             oidcAuthority,
@@ -168,17 +189,93 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     },
                     OnTokenValidated = context =>
                     {
-                        logger.LogInformation("Token validated successfully for scheme: {Scheme}", schemeName);
+                        // Resolve logger at runtime
+                        var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                        var requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
+                            ?? logger
+                            ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+
+                        requestLogger.LogInformation("Token validated successfully for scheme: {Scheme}", schemeName);
                         return Task.CompletedTask;
                     },
                     OnForbidden = context =>
                     {
-                        logger.LogWarning("Forbidden response for scheme: {Scheme}", schemeName);
+                        // Resolve logger at runtime
+                        var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                        var requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
+                            ?? logger
+                            ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+
+                        requestLogger.LogWarning("Forbidden response for scheme: {Scheme}", schemeName);
                         return Task.CompletedTask;
                     },
                     OnAuthenticationFailed = context =>
                     {
-                        logger.LogWarning("Authentication failed for scheme: {Scheme}. Exception: {Exception}", schemeName, context.Exception);
+                        // Resolve logger at runtime to ensure authentication failures are always logged
+                        var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                        var requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
+                            ?? logger
+                            ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+
+                        // Extract detailed information for troubleshooting
+                        string? tokenAudience = null;
+                        string? tokenIssuer = null;
+                        string? tokenExpiration = null;
+                        string? tokenSubject = null;
+
+                        try
+                        {
+                            // Try to parse the token to extract claims
+                            string authHeader = context.Request.Headers.Authorization.ToString();
+                            if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                            {
+                                string tokenString = authHeader.Substring("Bearer ".Length).Trim();
+                                var token = new JwtSecurityToken(tokenString);
+
+                                tokenAudience = token.Audiences?.FirstOrDefault();
+                                tokenIssuer = token.Issuer;
+                                tokenExpiration = token.ValidTo.ToString("o");
+                                tokenSubject = token.Subject;
+                            }
+                        }
+#pragma warning disable CA1031 // Do not catch general exception types - we want to continue logging even if token parsing fails
+                        catch
+                        {
+                            // If we can't parse the token, continue with logging the exception
+                        }
+#pragma warning restore CA1031
+
+                        // Get configured validation parameters
+                        var validationParams = context.Options?.TokenValidationParameters;
+                        string configuredAudience = validationParams?.ValidAudience ?? "null";
+                        string configuredAudiences = validationParams?.ValidAudiences != null
+                            ? string.Join(", ", validationParams.ValidAudiences)
+                            : "null";
+                        string configuredIssuers = validationParams?.ValidIssuers != null
+                            ? string.Join(", ", validationParams.ValidIssuers)
+                            : "null";
+
+                        // Log detailed failure information
+                        requestLogger.LogError(context.Exception,
+                            "JWT Authentication failed for scheme: {Scheme}\n" +
+                            "  Failure Reason: {ExceptionMessage}\n" +
+                            "  Token Audience: {TokenAudience}\n" +
+                            "  Expected Audience: {ConfiguredAudience}\n" +
+                            "  Expected Audiences: {ConfiguredAudiences}\n" +
+                            "  Token Issuer: {TokenIssuer}\n" +
+                            "  Valid Issuers: {ConfiguredIssuers}\n" +
+                            "  Token Expiration: {TokenExpiration}\n" +
+                            "  Token Subject: {TokenSubject}",
+                            schemeName,
+                            context.Exception.Message,
+                            tokenAudience ?? "Unable to parse",
+                            configuredAudience,
+                            configuredAudiences,
+                            tokenIssuer ?? "Unable to parse",
+                            configuredIssuers,
+                            tokenExpiration ?? "Unable to parse",
+                            tokenSubject ?? "Unable to parse");
+
                         return Task.CompletedTask;
                     }
                 };
