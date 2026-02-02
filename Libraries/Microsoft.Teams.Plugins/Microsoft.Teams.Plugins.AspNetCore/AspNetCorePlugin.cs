@@ -107,36 +107,24 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
             if (isTargeted)
             {
                 await client
-                    .Conversations
-                    .Activities
-                    .UpdateTargetedAsync(reference.Conversation.Id, activity.Id, activity);
+                .Conversations
+                .Activities
+                .UpdateTargetedAsync(reference.Conversation.Id, activity.Id, activity);
             }
             else
             {
                 await client
-                    .Conversations
-                    .Activities
-                    .UpdateAsync(reference.Conversation.Id, activity.Id, activity);
+                .Conversations
+                .Activities
+                .UpdateAsync(reference.Conversation.Id, activity.Id, activity);
             }
 
             return activity;
         }
 
-        Api.Resource? res;
-        if (isTargeted)
-        {
-            res = await client
-                .Conversations
-                .Activities
-                .CreateTargetedAsync(reference.Conversation.Id, activity);
-        }
-        else
-        {
-            res = await client
-                .Conversations
-                .Activities
-                .CreateAsync(reference.Conversation.Id, activity);
-        }
+        var res = isTargeted
+            ? await client.Conversations.Activities.CreateTargetedAsync(reference.Conversation.Id, activity)
+            : await client.Conversations.Activities.CreateAsync(reference.Conversation.Id, activity);
 
         activity.Id = res?.Id;
         return activity;
