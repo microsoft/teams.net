@@ -159,7 +159,7 @@ public static class CompatActivity
                 Id = meetingInfo.Conversation.Id,
                 Name = meetingInfo.Conversation.Name
             } : null,
-            Organizer = meetingInfo.Organizer != null ? meetingInfo.Organizer.ToCompatTeamsChannelAccount() : null
+            Organizer = meetingInfo.Organizer?.ToCompatTeamsChannelAccount()
         };
     }
 
@@ -174,7 +174,7 @@ public static class CompatActivity
 
         return new Microsoft.Bot.Schema.Teams.TeamsMeetingParticipant
         {
-            User = participant.User != null ? participant.User.ToCompatTeamsChannelAccount() : null,
+            User = participant.User?.ToCompatTeamsChannelAccount(),
             Meeting = participant.Meeting != null ? new Microsoft.Bot.Schema.Teams.MeetingParticipantInfo
             {
                 Role = participant.Meeting.Role,
@@ -228,7 +228,7 @@ public static class CompatActivity
     {
         ArgumentNullException.ThrowIfNull(account);
 
-        var teamsChannelAccount = new Microsoft.Bot.Schema.Teams.TeamsChannelAccount
+        TeamsChannelAccount teamsChannelAccount = new()
         {
             Id = account.Id,
             Name = account.Name
@@ -276,9 +276,9 @@ public static class CompatActivity
     public static TeamInfo? TeamsGetTeamInfo(this IActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        var channelData = activity.GetChannelData<Microsoft.Bot.Schema.Teams.TeamsChannelData>();
+        Microsoft.Bot.Schema.Teams.TeamsChannelData channelData = activity.GetChannelData<Microsoft.Bot.Schema.Teams.TeamsChannelData>();
         return channelData?.Team;
     }
 
-  
+
 }

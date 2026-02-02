@@ -265,7 +265,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             Microsoft.Teams.Bot.Core.Transcript coreTranscript = new()
             {
-                Activities = transcript.Activities?.Select(a => a.FromCompatActivity() as CoreActivity).ToList()
+                Activities = transcript.Activities?.Select(a => a.FromCompatActivity()).ToList()
             };
 
             SendConversationHistoryResponse response = await _client.SendConversationHistoryAsync(

@@ -4,12 +4,13 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
+using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
-using BotFrameworkTeams = Microsoft.Bot.Schema.Teams;
 using AppsTeams = Microsoft.Teams.Bot.Apps;
-using Microsoft.Bot.Schema.Teams;
+using BotFrameworkTeams = Microsoft.Bot.Schema.Teams;
 
 namespace Microsoft.Teams.Bot.Compat;
 
@@ -28,7 +29,7 @@ public static class CompatTeamsInfo
 
     private static ConversationClient GetConversationClient(ITurnContext turnContext)
     {
-        var connectorClient = turnContext.TurnState.Get<IConnectorClient>()
+        IConnectorClient connectorClient = turnContext.TurnState.Get<IConnectorClient>()
             ?? throw new InvalidOperationException("This method requires a connector client.");
 
         if (connectorClient is CompatConnectorClient compatClient)
@@ -53,7 +54,7 @@ public static class CompatTeamsInfo
 
     private static AgenticIdentity GetIdentity(ITurnContext turnContext)
     {
-        var coreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
+        CoreActivity coreActivity = turnContext.Activity.FromCompatActivity();
         return AgenticIdentity.FromProperties(coreActivity.From.Properties) ?? new AgenticIdentity();
     }
 
@@ -75,7 +76,7 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        var teamInfo = turnContext.Activity.TeamsGetTeamInfo();
+        TeamInfo? teamInfo = turnContext.Activity.TeamsGetTeamInfo();
 
         if (teamInfo?.Id != null)
         {
@@ -83,7 +84,7 @@ public static class CompatTeamsInfo
         }
         else
         {
-            var conversationId = turnContext.Activity?.Conversation?.Id
+            string conversationId = turnContext.Activity?.Conversation?.Id
                 ?? throw new InvalidOperationException("The GetMember operation needs a valid conversation Id.");
 
             if (userId == null)
@@ -91,11 +92,11 @@ public static class CompatTeamsInfo
                 throw new InvalidOperationException("The GetMember operation needs a valid user Id.");
             }
 
-            var client = GetConversationClient(turnContext);
+            ConversationClient client = GetConversationClient(turnContext);
             var serviceUrl = new Uri(GetServiceUrl(turnContext));
-            var identity = GetIdentity(turnContext);
+            AgenticIdentity identity = GetIdentity(turnContext);
 
-            var result = await client.GetConversationMemberAsync<Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount>(
+            TeamsConversationAccount result = await client.GetConversationMemberAsync<Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount>(
                 conversationId, userId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
             return result.ToCompatTeamsChannelAccount();
@@ -114,7 +115,7 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        var teamInfo = turnContext.Activity.TeamsGetTeamInfo();
+        TeamInfo? teamInfo = turnContext.Activity.TeamsGetTeamInfo();
 
         if (teamInfo?.Id != null)
         {
@@ -122,14 +123,14 @@ public static class CompatTeamsInfo
         }
         else
         {
-            var conversationId = turnContext.Activity?.Conversation?.Id
+            string conversationId = turnContext.Activity?.Conversation?.Id
                 ?? throw new InvalidOperationException("The GetMembers operation needs a valid conversation Id.");
 
-            var client = GetConversationClient(turnContext);
+            ConversationClient client = GetConversationClient(turnContext);
             var serviceUrl = new Uri(GetServiceUrl(turnContext));
-            var identity = GetIdentity(turnContext);
+            AgenticIdentity identity = GetIdentity(turnContext);
 
-            var members = await client.GetConversationMembersAsync(
+            IList<Core.Schema.ConversationAccount> members = await client.GetConversationMembersAsync(
                 conversationId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
             return members.Select(m => m.ToCompatTeamsChannelAccount());
@@ -151,7 +152,7 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        var teamInfo = turnContext.Activity.TeamsGetTeamInfo();
+        TeamInfo? teamInfo = turnContext.Activity.TeamsGetTeamInfo();
 
         if (teamInfo?.Id != null)
         {
@@ -159,14 +160,14 @@ public static class CompatTeamsInfo
         }
         else
         {
-            var conversationId = turnContext.Activity?.Conversation?.Id
+            string conversationId = turnContext.Activity?.Conversation?.Id
                 ?? throw new InvalidOperationException("The GetMembers operation needs a valid conversation Id.");
 
-            var client = GetConversationClient(turnContext);
+            ConversationClient client = GetConversationClient(turnContext);
             var serviceUrl = new Uri(GetServiceUrl(turnContext));
-            var identity = GetIdentity(turnContext);
+            AgenticIdentity identity = GetIdentity(turnContext);
 
-            var pagedMembers = await client.GetConversationPagedMembersAsync(
+            Core.PagedMembersResult pagedMembers = await client.GetConversationPagedMembersAsync(
                 conversationId, serviceUrl, pageSize, continuationToken, identity, null, cancellationToken).ConfigureAwait(false);
 
             return pagedMembers.ToCompatTeamsPagedMembersResult();
@@ -188,7 +189,7 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        var t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
+        string t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
         if (userId == null)
@@ -196,11 +197,11 @@ public static class CompatTeamsInfo
             throw new InvalidOperationException("The GetMember operation needs a valid user Id.");
         }
 
-        var client = GetConversationClient(turnContext);
+        ConversationClient client = GetConversationClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
-        var result = await client.GetConversationMemberAsync<Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount>(
+        TeamsConversationAccount result = await client.GetConversationMemberAsync<Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount>(
             t, userId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatTeamsChannelAccount();
@@ -221,14 +222,14 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        var t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
+        string t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
-        var client = GetConversationClient(turnContext);
+        ConversationClient client = GetConversationClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
-        var members = await client.GetConversationMembersAsync(
+        IList<Core.Schema.ConversationAccount> members = await client.GetConversationMembersAsync(
             t, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return members.Select(m => m.ToCompatTeamsChannelAccount());
@@ -252,14 +253,14 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        var t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
+        string t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
-        var client = GetConversationClient(turnContext);
+        ConversationClient client = GetConversationClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
-        var pagedMembers = await client.GetConversationPagedMembersAsync(
+        Core.PagedMembersResult pagedMembers = await client.GetConversationPagedMembersAsync(
             t, serviceUrl, pageSize, continuationToken, identity, null, cancellationToken).ConfigureAwait(false);
 
         return pagedMembers.ToCompatTeamsPagedMembersResult();
@@ -285,11 +286,11 @@ public static class CompatTeamsInfo
         meetingId ??= turnContext.Activity.TeamsGetMeetingInfo()?.Id
             ?? throw new InvalidOperationException("The meetingId can only be null if turnContext is within the scope of a MS Teams Meeting.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
-        var result = await client.FetchMeetingInfoAsync(
+        AppsTeams.MeetingInfo result = await client.FetchMeetingInfoAsync(
             meetingId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatMeetingInfo();
@@ -319,11 +320,11 @@ public static class CompatTeamsInfo
         tenantId ??= turnContext.Activity.GetChannelData<BotFrameworkTeams.TeamsChannelData>()?.Tenant?.Id
             ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
-        var result = await client.FetchParticipantAsync(
+        MeetingParticipant result = await client.FetchParticipantAsync(
             meetingId, participantId, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatTeamsMeetingParticipant();
@@ -348,16 +349,16 @@ public static class CompatTeamsInfo
             ?? throw new InvalidOperationException("This method is only valid within the scope of a MS Teams Meeting.");
         notification = notification ?? throw new InvalidOperationException($"{nameof(notification)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
         // Convert Bot Framework MeetingNotificationBase to Core MeetingNotificationBase using JSON round-trip
-        var json = Newtonsoft.Json.JsonConvert.SerializeObject(notification);
-        var coreNotification = System.Text.Json.JsonSerializer.Deserialize<AppsTeams.TargetedMeetingNotification>(json, s_jsonOptions);
+        string json = Newtonsoft.Json.JsonConvert.SerializeObject(notification);
+        AppsTeams.TargetedMeetingNotification? coreNotification = System.Text.Json.JsonSerializer.Deserialize<AppsTeams.TargetedMeetingNotification>(json, s_jsonOptions);
 
 
-        var result = await client.SendMeetingNotificationAsync(
+        AppsTeams.MeetingNotificationResponse result = await client.SendMeetingNotificationAsync(
             meetingId, coreNotification!, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatMeetingNotificationResponse();
@@ -380,14 +381,14 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        var t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
+        string t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
-        var result = await client.FetchTeamDetailsAsync(
+        AppsTeams.TeamDetails result = await client.FetchTeamDetailsAsync(
             t, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatTeamDetails();
@@ -407,14 +408,14 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        var t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
+        string t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
-        var channelList = await client.FetchChannelListAsync(
+        ChannelList channelList = await client.FetchChannelListAsync(
             t, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return channelList.Channels?.Select(c => c.ToCompatChannelInfo()).ToList() ?? [];
@@ -445,10 +446,10 @@ public static class CompatTeamsInfo
         teamsMembers = teamsMembers ?? throw new InvalidOperationException($"{nameof(teamsMembers)} is required.");
         tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
-        var coreActivity = ((Activity)activity).FromCompatActivity();
+        AgenticIdentity identity = GetIdentity(turnContext);
+        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
 
         var coreTeamsMembers = teamsMembers.Select(m => m.FromCompatTeamMember()).ToList();
 
@@ -477,10 +478,10 @@ public static class CompatTeamsInfo
         channelsMembers = channelsMembers ?? throw new InvalidOperationException($"{nameof(channelsMembers)} is required.");
         tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
-        var coreActivity = ((Activity)activity).FromCompatActivity();
+        AgenticIdentity identity = GetIdentity(turnContext);
+        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
 
         var coreChannelsMembers = channelsMembers.Select(m => m.FromCompatTeamMember()).ToList();
 
@@ -509,10 +510,10 @@ public static class CompatTeamsInfo
         teamId = teamId ?? throw new InvalidOperationException($"{nameof(teamId)} is required.");
         tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
-        var coreActivity = ((Activity)activity).FromCompatActivity();
+        AgenticIdentity identity = GetIdentity(turnContext);
+        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
 
         return await client.SendMessageToAllUsersInTeamAsync(
             coreActivity, teamId, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
@@ -536,10 +537,10 @@ public static class CompatTeamsInfo
         activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
         tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
-        var coreActivity = ((Activity)activity).FromCompatActivity();
+        AgenticIdentity identity = GetIdentity(turnContext);
+        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
 
         return await client.SendMessageToAllUsersInTenantAsync(
             coreActivity, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
@@ -572,8 +573,8 @@ public static class CompatTeamsInfo
         ArgumentException.ThrowIfNullOrWhiteSpace(teamsChannelId);
 
         ConversationReference? conversationReference = null;
-        var newActivityId = string.Empty;
-        var serviceUrl = turnContext.Activity.ServiceUrl;
+        string newActivityId = string.Empty;
+        string serviceUrl = turnContext.Activity.ServiceUrl;
         var conversationParameters = new Microsoft.Bot.Schema.ConversationParameters
         {
             IsGroup = true,
@@ -617,11 +618,11 @@ public static class CompatTeamsInfo
         ArgumentNullException.ThrowIfNull(turnContext);
         operationId = operationId ?? throw new InvalidOperationException($"{nameof(operationId)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
-        var result = await client.GetOperationStateAsync(
+        AppsTeams.BatchOperationState result = await client.GetOperationStateAsync(
             operationId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatBatchOperationState();
@@ -644,11 +645,11 @@ public static class CompatTeamsInfo
         ArgumentNullException.ThrowIfNull(turnContext);
         operationId = operationId ?? throw new InvalidOperationException($"{nameof(operationId)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
-        var result = await client.GetPagedFailedEntriesAsync(
+        AppsTeams.BatchFailedEntriesResponse result = await client.GetPagedFailedEntriesAsync(
             operationId, serviceUrl, continuationToken, identity, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatBatchFailedEntriesResponse();
@@ -669,9 +670,9 @@ public static class CompatTeamsInfo
         ArgumentNullException.ThrowIfNull(turnContext);
         operationId = operationId ?? throw new InvalidOperationException($"{nameof(operationId)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        TeamsApiClient client = GetTeamsApiClient(turnContext);
         var serviceUrl = new Uri(GetServiceUrl(turnContext));
-        var identity = GetIdentity(turnContext);
+        AgenticIdentity identity = GetIdentity(turnContext);
 
         await client.CancelOperationAsync(
             operationId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);

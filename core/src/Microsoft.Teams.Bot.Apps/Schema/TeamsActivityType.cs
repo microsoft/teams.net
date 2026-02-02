@@ -22,7 +22,7 @@ public static class TeamsActivityType
     /// <summary>
     /// Represents a typing indicator activity.
     /// </summary>
-    public const string Typing = ActivityType.Typing;
+    public const string Typing = "typing";
 
     /// <summary>
     /// Represents a message reaction activity.

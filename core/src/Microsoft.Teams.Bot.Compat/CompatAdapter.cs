@@ -21,23 +21,14 @@ namespace Microsoft.Teams.Bot.Compat;
 /// The adapter allows registration of middleware and error handling delegates, and supports processing HTTP requests
 /// and continuing conversations. Thread safety is not guaranteed; instances should not be shared across concurrent
 /// requests.</remarks>
-public class CompatAdapter : IBotFrameworkHttpAdapter
+/// <remarks>
+/// Creates a new instance of the <see cref="CompatAdapter"/> class.
+/// </remarks>
+/// <param name="sp"></param>
+public class CompatAdapter(IServiceProvider sp) : IBotFrameworkHttpAdapter
 {
-    private readonly TeamsBotApplication _teamsBotApplication;
-    private readonly CompatBotAdapter _compatBotAdapter;
-    private readonly IServiceProvider _sp;
-
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="CompatAdapter"/> class.
-    /// </summary>
-    /// <param name="sp"></param>
-    public CompatAdapter(IServiceProvider sp)
-    {
-        _sp = sp;
-        _teamsBotApplication = sp.GetRequiredService<TeamsBotApplication>();
-        _compatBotAdapter = sp.GetRequiredService<CompatBotAdapter>();
-    }
+    private readonly TeamsBotApplication _teamsBotApplication = sp.GetRequiredService<TeamsBotApplication>();
+    private readonly CompatBotAdapter _compatBotAdapter = sp.GetRequiredService<CompatBotAdapter>();
 
     /// <summary>
     /// Gets the collection of middleware components configured for the application.
@@ -81,20 +72,23 @@ public class CompatAdapter : IBotFrameworkHttpAdapter
         ArgumentNullException.ThrowIfNull(bot);
 
         CoreActivity? coreActivity = null;
-        _teamsBotApplication.OnActivity = async (activity, cancellationToken1) =>
+
+        // Use the thread-safe overload that accepts the handler directly,
+        // avoiding race conditions from concurrent requests overwriting OnActivity
+        async Task ActivityHandler(CoreActivity activity, CancellationToken ct)
         {
             coreActivity = activity;
-            TurnContext turnContext = new(_compatBotAdapter, activity.ToCompatActivity());
+            using TurnContext turnContext = new(_compatBotAdapter, activity.ToCompatActivity());
             turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
-            await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, cancellationToken).ConfigureAwait(false);
-        };
+            await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
+        }
 
         try
         {
-            await _teamsBotApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
+            await _teamsBotApplication.ProcessAsync(httpRequest.HttpContext, ActivityHandler, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -130,7 +124,9 @@ public class CompatAdapter : IBotFrameworkHttpAdapter
     /// cancellation token.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
+#pragma warning disable IDE0060 // Remove unused parameter - botId is kept for API compatibility
     public async Task ContinueConversationAsync(string botId, ConversationReference reference, BotCallbackHandler callback, CancellationToken cancellationToken)
+#pragma warning restore IDE0060
     {
         ArgumentNullException.ThrowIfNull(reference);
         ArgumentNullException.ThrowIfNull(callback);
