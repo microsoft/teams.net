@@ -176,6 +176,15 @@ public partial class App
             throw new InvalidOperationException("app not started");
         }
 
+        // Validate targeted messages in proactive context
+        if (activity is MessageActivity messageActivity && messageActivity.IsTargeted == true)
+        {
+            if (messageActivity.Recipient is null)
+            {
+                throw new InvalidOperationException("Targeted messages sent proactively must specify an explicit recipient ID using WithTargetedRecipient(recipientId)");
+            }
+        }
+
         var reference = new ConversationReference()
         {
             ChannelId = ChannelId.MsTeams,

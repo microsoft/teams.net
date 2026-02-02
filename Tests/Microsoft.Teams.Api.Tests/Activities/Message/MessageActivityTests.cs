@@ -473,4 +473,60 @@ public class MessageActivityTests
         Assert.NotNull(mention);
         Assert.Equal("<at>Custom Name</at>", mention.Text);
     }
+
+    [Fact]
+    public void WithTargetedRecipient_Bool_SetsIsTargeted()
+    {
+        var activity = new MessageActivity("hello").WithTargetedRecipient(true);
+
+        Assert.True(activity.IsTargeted);
+        Assert.Null(activity.Recipient);
+    }
+
+    [Fact]
+    public void WithTargetedRecipient_String_SetsIsTargetedAndRecipient()
+    {
+        var activity = new MessageActivity("hello").WithTargetedRecipient("user-123");
+
+        Assert.True(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-123", activity.Recipient.Id);
+        Assert.Equal(string.Empty, activity.Recipient.Name);
+        Assert.Equal(Role.User, activity.Recipient.Role);
+    }
+
+    [Fact]
+    public void WithTargetedRecipient_IsChainable()
+    {
+        var activity = new MessageActivity("hello")
+            .WithImportance(Importance.High)
+            .WithTargetedRecipient("user-456")
+            .WithDeliveryMode(DeliveryMode.Notification);
+
+        Assert.Equal("hello", activity.Text);
+        Assert.Equal(Importance.High, activity.Importance);
+        Assert.Equal(DeliveryMode.Notification, activity.DeliveryMode);
+        Assert.True(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-456", activity.Recipient.Id);
+    }
+
+    [Fact]
+    public void JsonSerialize_WithIsTargeted()
+    {
+        var activity = new MessageActivity("targeted message").WithTargetedRecipient(true);
+        activity.Id = "1";
+        activity.From = new() { Id = "1", Name = "test", Role = Role.User };
+        activity.Conversation = new() { Id = "1", Type = ConversationType.Personal };
+
+        var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            IndentSize = 4,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        });
+
+        Assert.Contains("\"isTargeted\": true", json);
+        Assert.Contains("\"text\": \"targeted message\"", json);
+    }
 }
