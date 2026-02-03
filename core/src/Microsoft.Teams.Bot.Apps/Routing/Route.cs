@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Routing;
@@ -29,6 +30,14 @@ public abstract class RouteBase
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public abstract Task InvokeRoute(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Invokes the route handler if the activity matches the expected type and returns a response
+    /// </summary>
+    /// <param name="ctx"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public abstract Task<CoreInvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -55,7 +64,12 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <summary>
     /// Handler function to process the activity
     /// </summary>
-    public Func<Context<TActivity>, CancellationToken, Task> Handler { get; set; } = (_, __) => Task.CompletedTask;
+    public Func<Context<TActivity>, CancellationToken, Task>? Handler { get; set; }
+
+    /// <summary>
+    /// Handler function to process the activity and return a response
+    /// </summary>
+    public Func<Context<TActivity>, CancellationToken, Task<CoreInvokeResponse>>? HandlerWithReturn { get; set; }
 
     /// <summary>
     /// Determines if the route matches the given activity
@@ -64,7 +78,8 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <returns></returns>
     public override bool Matches(TeamsActivity activity)
     {
-        return activity is TActivity typedActivity && Selector(typedActivity);
+        ArgumentNullException.ThrowIfNull(activity);
+        return (activity.Type.Equals(Name, StringComparison.Ordinal)) && Selector((TActivity)activity);
     }
 
     /// <summary>
@@ -79,7 +94,31 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
         if (ctx.Activity is TActivity typedActivity)
         {
             Context<TActivity> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-            await Handler(typedContext, cancellationToken).ConfigureAwait(false);
+            if (Handler is not null)
+            {
+                await Handler(typedContext, cancellationToken).ConfigureAwait(false);
+            }
         }
+    }
+
+    /// <summary>
+    /// Invokes the route handler if the activity matches the expected type and returns a response
+    /// </summary>
+    /// <param name="ctx"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="NotImplementedException"></exception>
+    public override async Task<CoreInvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(ctx);
+        if (ctx.Activity is TActivity typedActivity)
+        {
+            Context<TActivity> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+            if (HandlerWithReturn is not null)
+            {
+                return await HandlerWithReturn(typedContext, cancellationToken).ConfigureAwait(false);
+            }
+        }
+        return null!; // TODO: throw?
     }
 }

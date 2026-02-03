@@ -17,16 +17,14 @@ public class ProductInfoEntity : Entity
     /// Creates a new instance of <see cref="ProductInfoEntity"/>.
     /// </summary>
     public ProductInfoEntity() : base("ProductInfo") { }
-    /// <summary>
-    /// Ids the product id.
-    /// </summary>
-    [JsonPropertyName("id")] public string? Id { get; set; }
 
     /// <summary>
-    /// Adds custom fields as properties.
+    /// Gets or sets the product id.
     /// </summary>
-    public override void ToProperties()
+    [JsonPropertyName("id")]
+    public string? Id
     {
-
+        get => base.Properties.TryGetValue("id", out var value) ? value?.ToString() : null;
+        set => base.Properties["id"] = value;
     }
 }

@@ -87,7 +87,7 @@ public partial class Context<TActivity> : IContext<TActivity>
             reference.Conversation.Id = id;
             reference.Conversation.IsGroup = false;
 
-            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, false, CancellationToken);
+            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, CancellationToken);
             await OnActivitySent(oauthCardActivity, ToActivityType());
         }
 
@@ -113,7 +113,7 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]
         });
 
-        var res = await Sender.Send(activity, reference, false, CancellationToken);
+        var res = await Sender.Send(activity, reference, CancellationToken);
         await OnActivitySent(res, ToActivityType());
         return null;
     }
@@ -138,7 +138,7 @@ public partial class Context<TActivity> : IContext<TActivity>
             reference.Conversation.Id = id;
             reference.Conversation.IsGroup = false;
 
-            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, false, CancellationToken);
+            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, CancellationToken);
             await OnActivitySent(oauthCardActivity, ToActivityType());
         }
 
@@ -163,7 +163,7 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]
         });
 
-        var res = await Sender.Send(activity, reference, false, CancellationToken);
+        var res = await Sender.Send(activity, reference, CancellationToken);
         await OnActivitySent(res, ToActivityType());
     }
 

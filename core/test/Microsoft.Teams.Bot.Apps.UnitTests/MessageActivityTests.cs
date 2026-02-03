@@ -14,14 +14,14 @@ public class MessageActivityTests
     public void Constructor_Default_SetsMessageType()
     {
         MessageActivity activity = new();
-        Assert.Equal(ActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityType.Message, activity.Type);
     }
 
     [Fact]
     public void Constructor_WithText_SetsTextAndMessageType()
     {
         MessageActivity activity = new("Hello World");
-        Assert.Equal(ActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityType.Message, activity.Type);
         Assert.Equal("Hello World", activity.Text);
     }
 
@@ -30,7 +30,7 @@ public class MessageActivityTests
     {
         MessageActivity activity = MessageActivity.FromJsonString(jsonMessageWithAllProps);
 
-        Assert.Equal("message", activity.Type);
+        Assert.Equal(TeamsActivityType.Message, activity.Type);
         Assert.Equal("Hello World", activity.Text);
         Assert.Equal("This is a summary", activity.Summary);
         Assert.Equal("plain", activity.TextFormat);
@@ -45,7 +45,7 @@ public class MessageActivityTests
     public void MessageActivity_FromCoreActivity_MapsAllProperties()
     {
         CoreActivity coreActivity = CoreActivity.FromJsonString(jsonMessageWithAllProps);
-        MessageActivity messageActivity = (MessageActivity)TeamsActivity.FromActivity(coreActivity);
+        MessageActivity messageActivity = MessageActivity.FromActivity(coreActivity);
 
         Assert.Equal("Hello World", messageActivity.Text);
         Assert.Equal("This is a summary", messageActivity.Summary);
@@ -134,7 +134,7 @@ public class MessageActivityTests
     [Fact]
     public void MessageActivity_Constants_InputHints()
     {
-        MessageActivity activity = new MessageActivity("Test")
+        MessageActivity activity = new("Test")
         {
             InputHint = InputHints.AcceptingInput
         };
@@ -164,44 +164,6 @@ public class MessageActivityTests
     }
 
     [Fact]
-    public void MessageActivity_Constants_ImportanceLevels()
-    {
-        MessageActivity activity = new("Test")
-        {
-            Importance = ImportanceLevels.Low
-        };
-        Assert.Equal("low", activity.Importance);
-
-        activity.Importance = ImportanceLevels.Normal;
-        Assert.Equal("normal", activity.Importance);
-
-        activity.Importance = ImportanceLevels.High;
-        Assert.Equal("high", activity.Importance);
-
-        activity.Importance = ImportanceLevels.Urgent;
-        Assert.Equal("urgent", activity.Importance);
-    }
-
-    [Fact]
-    public void MessageActivity_Constants_DeliveryModes()
-    {
-        MessageActivity activity = new("Test")
-        {
-            DeliveryMode = DeliveryModes.Normal
-        };
-        Assert.Equal("normal", activity.DeliveryMode);
-
-        activity.DeliveryMode = DeliveryModes.Notification;
-        Assert.Equal("notification", activity.DeliveryMode);
-
-        activity.DeliveryMode = DeliveryModes.Ephemeral;
-        Assert.Equal("ephemeral", activity.DeliveryMode);
-
-        activity.DeliveryMode = DeliveryModes.ExpectedReplies;
-        Assert.Equal("expectReplies", activity.DeliveryMode);
-    }
-
-    [Fact]
     public void MessageActivity_FromCoreActivity_WithMissingProperties_HandlesGracefully()
     {
         CoreActivity coreActivity = new(ActivityType.Message);
@@ -216,6 +178,47 @@ public class MessageActivityTests
         Assert.Null(messageActivity.Importance);
         Assert.Null(messageActivity.DeliveryMode);
         Assert.Null(messageActivity.Expiration);
+    }
+
+    [Fact]
+    public void MessageActivity_CopiesTextToProperties()
+    {
+        MessageActivity activity = new("Hello World")
+        {
+            Speak = "Test speak",
+            Summary = "Test summary",
+            TextFormat = TextFormats.Markdown,
+            InputHint = InputHints.AcceptingInput,
+            Importance = ImportanceLevels.High,
+            DeliveryMode = DeliveryModes.Normal,
+            AttachmentLayout = "carousel"
+        };
+
+        Assert.Equal("Hello World", activity.Properties["text"]);
+        Assert.Equal("Test speak", activity.Properties["speak"]);
+        Assert.Equal("Test summary", activity.Properties["summary"]);
+        Assert.Equal(TextFormats.Markdown, activity.Properties["textFormat"]);
+        Assert.Equal(InputHints.AcceptingInput, activity.Properties["inputHint"]);
+        Assert.Equal(ImportanceLevels.High, activity.Properties["importance"]);
+        Assert.Equal(DeliveryModes.Normal, activity.Properties["deliveryMode"]);
+        Assert.Equal("carousel", activity.Properties["attachmentLayout"]);
+    }
+
+
+    [Fact]
+    public void MessageActivity_SerializedAsCoreActivity_IncludesText()
+    {
+        MessageActivity messageActivity = new("Hello World")
+        {
+            Type = ActivityType.Message,
+            ServiceUrl = new Uri("https://test.service.url/")
+        };
+
+        CoreActivity coreActivity = messageActivity;
+        string json = coreActivity.ToJson();
+
+        Assert.Contains("Hello World", json);
+        Assert.Contains("\"text\"", json);
     }
 
     private const string jsonMessageWithAllProps = """

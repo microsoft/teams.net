@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Routing;
@@ -54,6 +55,7 @@ public class Router
     public async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
+
         // TODO : support multiple routes?
         foreach (var route in _routes)
         {
@@ -63,5 +65,28 @@ public class Router
                 return;
             }
         }
+    }
+
+    /// <summary>
+    /// Dispatches the specified activity context to all matching routes and returns the result of the invocation.
+    /// </summary>
+    /// <param name="ctx">The activity context to dispatch. Cannot be null.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a response object with the outcome
+    /// of the invocation.</returns>
+    public async Task<CoreInvokeResponse> DispatchWithReturnAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(ctx);
+
+        // TODO : support multiple routes?
+        foreach (var route in _routes)
+        {
+            if (route.Matches(ctx.Activity))
+            {
+                return await route.InvokeRouteWithReturn(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        }
+
+        return null!; // TODO : return appropriate response
     }
 }

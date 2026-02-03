@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
@@ -9,31 +8,30 @@ using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
-/// Delegate for handling message activities.
+/// Delegate for handling message reaction activities.
 /// </summary>
 /// <param name="context"></param>
 /// <param name="cancellationToken"></param>
 /// <returns></returns>
-public delegate Task MessageHandler(Context<MessageActivity> context, CancellationToken cancellationToken = default);
+public delegate Task MessageReactionHandler(Context<MessageReactionActivity> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Extension methods for registering message activity handlers.
+/// Extension methods for registering message reaction activity handlers.
 /// </summary>
-public static class MessageExtensions
+public static class MessageReactionExtensions
 {
     /// <summary>
-    /// Registers a handler for message activities.
+    /// Registers a handler for message reaction activities.
     /// </summary>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
-    public static TeamsBotApplication OnMessage(this TeamsBotApplication app, MessageHandler handler)
+    public static TeamsBotApplication OnMessageReaction(this TeamsBotApplication app, MessageReactionHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<MessageActivity>
+        app.Router.Register(new Route<MessageReactionActivity>
         {
-
-            Name = TeamsActivityType.Message,
+            Name = TeamsActivityType.MessageReaction,
             Selector = _ => true,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -45,21 +43,18 @@ public static class MessageExtensions
     }
 
     /// <summary>
-    /// Registers a handler for message activities matching the specified pattern.
+    /// Registers a handler for message reaction activities where reactions were added.
     /// </summary>
     /// <param name="app"></param>
-    /// <param name="pattern"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
-    public static TeamsBotApplication OnMessage(this TeamsBotApplication app, string pattern, MessageHandler handler)
+    public static TeamsBotApplication OnMessageReactionAdded(this TeamsBotApplication app, MessageReactionHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
-        var regex = new Regex(pattern);
-
-        app.Router.Register(new Route<MessageActivity>
+        app.Router.Register(new Route<MessageReactionActivity>
         {
-            Name = TeamsActivityType.Message,
-            Selector = msg => regex.IsMatch(msg.Text ?? ""),
+            Name = TeamsActivityType.MessageReaction,
+            Selector = activity => activity.ReactionsAdded?.Count > 0,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -70,19 +65,18 @@ public static class MessageExtensions
     }
 
     /// <summary>
-    /// Registers a handler for message activities matching the specified regex.
+    /// Registers a handler for message reaction activities where reactions were removed.
     /// </summary>
     /// <param name="app"></param>
-    /// <param name="regex"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
-    public static TeamsBotApplication OnMessage(this TeamsBotApplication app, Regex regex, MessageHandler handler)
+    public static TeamsBotApplication OnMessageReactionRemoved(this TeamsBotApplication app, MessageReactionHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<MessageActivity>
+        app.Router.Register(new Route<MessageReactionActivity>
         {
-            Name = TeamsActivityType.Message,
-            Selector = msg => regex.IsMatch(msg.Text ?? ""),
+            Name = TeamsActivityType.MessageReaction,
+            Selector = activity => activity.ReactionsRemoved?.Count > 0,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -92,4 +86,3 @@ public static class MessageExtensions
         return app;
     }
 }
-
