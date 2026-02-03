@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json.Nodes;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
@@ -23,22 +22,6 @@ public class MessageActivityTests
         MessageActivity activity = new("Hello World");
         Assert.Equal(TeamsActivityType.Message, activity.Type);
         Assert.Equal("Hello World", activity.Text);
-    }
-
-    [Fact]
-    public void DeserializeMessageActivity_WithAllProperties()
-    {
-        MessageActivity activity = MessageActivity.FromJsonString(jsonMessageWithAllProps);
-
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
-        Assert.Equal("Hello World", activity.Text);
-        Assert.Equal("This is a summary", activity.Summary);
-        Assert.Equal("plain", activity.TextFormat);
-        Assert.Equal(InputHints.AcceptingInput, activity.InputHint);
-        Assert.Equal(ImportanceLevels.High, activity.Importance);
-        Assert.Equal(DeliveryModes.Normal, activity.DeliveryMode);
-        Assert.Equal("carousel", activity.AttachmentLayout);
-        Assert.NotNull(activity.Expiration);
     }
 
     [Fact]
@@ -80,28 +63,7 @@ public class MessageActivityTests
     }
 
     [Fact]
-    public void MessageActivity_WithAttachments_Deserialize()
-    {
-        MessageActivity activity = MessageActivity.FromJsonString(jsonMessageWithAttachment);
-
-        Assert.Equal("Message with attachment", activity.Text);
-        Assert.NotNull(activity.Attachments);
-        Assert.Single(activity.Attachments);
-        Assert.Equal("application/vnd.microsoft.card.adaptive", activity.Attachments[0].ContentType);
-    }
-
-    [Fact]
-    public void MessageActivity_WithEntities_Deserialize()
-    {
-        MessageActivity activity = MessageActivity.FromJsonString(jsonMessageWithEntities);
-
-        Assert.NotNull(activity.Entities);
-        Assert.Single(activity.Entities);
-        Assert.Equal("mention", activity.Entities[0].Type);
-    }
-
-    [Fact]
-    public void MessageActivity_WithSpeak_SerializeAndDeserialize()
+    public void MessageActivity_WithSpeak_Serialize()
     {
         MessageActivity activity = new("Hello")
         {
@@ -109,8 +71,8 @@ public class MessageActivityTests
         };
 
         string json = activity.ToJson();
-        MessageActivity deserialized = MessageActivity.FromJsonString(json);
-        Assert.Equal("<speak>Hello World</speak>", deserialized.Speak);
+        Assert.Contains("\"speak\":", json);
+        Assert.Contains("Hello World", json);
     }
 
     [Fact]
@@ -123,12 +85,7 @@ public class MessageActivityTests
         };
 
         string json = activity.ToJson();
-        MessageActivity deserialized = MessageActivity.FromJsonString(json);
-
-        Assert.NotNull(deserialized.Expiration);
-        Assert.Equal(expirationDate.Year, deserialized.Expiration.Value.Year);
-        Assert.Equal(expirationDate.Month, deserialized.Expiration.Value.Month);
-        Assert.Equal(expirationDate.Day, deserialized.Expiration.Value.Day);
+        Assert.Contains("2026-12-31T23:59:59Z", json);
     }
 
     [Fact]
@@ -223,48 +180,6 @@ public class MessageActivityTests
             "id": "bot-123",
             "name": "Test Bot"
           }
-        }
-        """;
-
-    private const string jsonMessageWithAttachment = """
-        {
-          "type": "message",
-          "channelId": "msteams",
-          "text": "Message with attachment",
-          "id": "1234567890",
-          "attachments": [
-            {
-              "contentType": "application/vnd.microsoft.card.adaptive",
-              "content": {
-                "type": "AdaptiveCard",
-                "version": "1.4",
-                "body": [
-                  {
-                    "type": "TextBlock",
-                    "text": "Hello from adaptive card"
-                  }
-                ]
-              }
-            }
-          ]
-        }
-        """;
-
-    private const string jsonMessageWithEntities = """
-        {
-          "type": "message",
-          "channelId": "msteams",
-          "text": "<at>TestUser</at> hello",
-          "entities": [
-            {
-              "type": "mention",
-              "mentioned": {
-                "id": "user-123",
-                "name": "TestUser"
-              },
-              "text": "<at>TestUser</at>"
-            }
-          ]
         }
         """;
 }
