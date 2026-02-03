@@ -227,7 +227,7 @@ public class MessageActivity : Activity
     /// When using true, this must be sent within an activity context (not proactively).
     /// For proactive sends, use the overload that accepts an explicit recipient ID.
     /// </remarks>
-    public MessageActivity WithTargetedRecipient(bool isTargeted)
+    public MessageActivity WithTargetedRecipient(bool isTargeted = true)
     {
         IsTargeted = isTargeted;
         return this;
