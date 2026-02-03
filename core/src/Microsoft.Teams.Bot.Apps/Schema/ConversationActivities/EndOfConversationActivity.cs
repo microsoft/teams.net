@@ -24,13 +24,6 @@ public class EndOfConversationActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Serializes the EndOfConversationActivity to JSON.
-    /// </summary>
-    /// <returns>JSON string representation of the EndOfConversationActivity</returns>
-    public override string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.EndOfConversationActivity);
-
-    /// <summary>
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
