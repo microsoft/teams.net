@@ -66,9 +66,9 @@ public class MessageActivity : Activity
 
     /// <summary>
     /// Indicates if this is a targeted message visible only to a specific recipient.
+    /// Used internally by the SDK for routing - not serialized to the service.
     /// </summary>
-    [JsonPropertyName("isTargeted")]
-    [JsonPropertyOrder(44)]
+    [JsonIgnore]
     public bool? IsTargeted { get; set; }
 
     [JsonIgnore]
