@@ -4,7 +4,7 @@
 using System.Text.Json.Nodes;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+using Microsoft.Teams.Bot.Apps.Handlers;
 
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
 

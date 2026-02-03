@@ -3,10 +3,8 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Apps.Schema.InstallActivities;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+using Microsoft.Teams.Bot.Apps.Handlers;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
 

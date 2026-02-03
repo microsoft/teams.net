@@ -97,7 +97,7 @@ public class TeamsChannelData : ChannelData
     [JsonPropertyName("tenant")] public TeamsChannelDataTenant? Tenant { get; set; }
 
     /// <summary>
-    /// Gets or sets the event type for conversation updates. See <see cref="ConversationActivities.ConversationEventTypes"/> for known values.
+    /// Gets or sets the event type for conversation updates. See <see cref="Handlers.ConversationEventTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("eventType")] public string? EventType { get; set; }
 
