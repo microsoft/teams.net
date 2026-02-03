@@ -57,7 +57,6 @@ public class TeamsBotApplication : BotApplication
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogInformation("New {Type} activity received.", activity.Type);
-            Console.WriteLine($"activity received : {activity.ToJson()}");
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
