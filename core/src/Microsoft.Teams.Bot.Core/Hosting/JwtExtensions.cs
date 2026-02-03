@@ -53,7 +53,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             if (!useAgentAuth)
             {
                 string[] validIssuers = ["https://api.botframework.com"];
-                builder.AddCustomJwtBearer(BotScheme, validIssuers, audience, logger);
+                builder.AddCustomJwtBearer($"BotScheme_{aadSectionName}", validIssuers, audience, logger);
             }
             else
             {
@@ -103,11 +103,11 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             services.AddBotAuthentication(configuration, useAgentAuth, logger, aadSectionName);
             AuthorizationBuilder authorizationBuilder = services
                 .AddAuthorizationBuilder()
-                .AddDefaultPolicy("DefaultPolicy", policy =>
+                .AddDefaultPolicy(aadSectionName, policy =>
                 {
                     if (!useAgentAuth)
                     {
-                        policy.AuthenticationSchemes.Add(BotScheme);
+                        policy.AuthenticationSchemes.Add($"BotScheme_{aadSectionName}");
                     }
                     else
                     {

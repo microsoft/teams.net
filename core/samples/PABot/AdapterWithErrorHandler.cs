@@ -18,10 +18,11 @@ namespace PABot
             IHttpClientFactory httpClientFactory,
             ILogger<IBotFrameworkHttpAdapter> logger,
             IStorage storage,
-            ConversationState conversationState)
-            : base(sp)
+            ConversationState conversationState,
+            string keyName = "AzureAd")
+            : base(sp, keyName)
         {
-            base.Use(new TeamsSSOTokenExchangeMiddleware(storage, configuration["ConnectionName"]));
+            base.Use(new TeamsSSOTokenExchangeMiddleware(storage, configuration["ConnectionName"] ?? "graph"));
 
             OnTurnError = async (turnContext, exception) =>
             {

@@ -9,20 +9,49 @@ using PABot.Bots;
 using PABot.Dialogs;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddCustomCompatAdapter();
-builder.Services.AddSingleton<IBotFrameworkHttpAdapter, AdapterWithErrorHandler>();
+
+builder.Services.AddKeyedSingleton<IBotFrameworkHttpAdapter>("RidoABSOne", (sp, keyName) =>
+{
+    return new AdapterWithErrorHandler(
+        sp,
+        sp.GetRequiredService<IConfiguration>(),
+        sp.GetRequiredService<IHttpClientFactory>(),
+        sp.GetRequiredService<ILogger<IBotFrameworkHttpAdapter>>(),
+        sp.GetRequiredService<IStorage>(),
+        sp.GetRequiredService<ConversationState>(),
+        "RidoABSOne");
+});
+
+builder.Services.AddKeyedSingleton<IBotFrameworkHttpAdapter>("RidoABSTwo", (sp, keyName) =>
+{
+    return new AdapterWithErrorHandler(
+        sp,
+        sp.GetRequiredService<IConfiguration>(),
+        sp.GetRequiredService<IHttpClientFactory>(),
+        sp.GetRequiredService<ILogger<IBotFrameworkHttpAdapter>>(),
+        sp.GetRequiredService<IStorage>(),
+        sp.GetRequiredService<ConversationState>(),
+        "RidoABSTwo");
+});
+
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
 builder.Services.AddSingleton<UserState>();
 builder.Services.AddSingleton<ConversationState>();
 builder.Services.AddSingleton<MainDialog>();
-builder.Services.AddTransient<IBot, TeamsBot<MainDialog>>();
-//builder.Services.AddTransient<IBot, EchoBot>();
-//builder.Services.AddTransient<IBot, SsoBot>();
+//builder.Services.AddKeyedTransient<IBot, TeamsBot<MainDialog>>("TeamsBot");
+builder.Services.AddKeyedTransient<IBot, EchoBot>("TeamsBot");
+builder.Services.AddKeyedTransient<IBot, EchoBot>("EchoBot");
 var app = builder.Build();
 
-var adapter = app.Services.GetRequiredService<IBotFrameworkHttpAdapter>();
+var adapterOne = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("RidoABSOne");
+var adapterTwo = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("RidoABSTwo");
 
-app.MapPost("/api/messages", (HttpRequest request, HttpResponse response, IBot bot, CancellationToken ct) =>
-    adapter.ProcessAsync(request, response, bot, ct)).RequireAuthorization();
+app.MapPost("/api/ridoabsone", (HttpRequest request, HttpResponse response, [FromKeyedServices("TeamsBot")]IBot bot, CancellationToken ct) =>
+    adapterOne.ProcessAsync(request, response, bot, ct)).RequireAuthorization("RidoABSOne");
+
+app.MapPost("/api/ridoabstwo", (HttpRequest request, HttpResponse response, [FromKeyedServices("EchoBot")]IBot bot, CancellationToken ct) =>
+    adapterTwo.ProcessAsync(request, response, bot, ct)).RequireAuthorization("RidoABSTwo");
 
 app.Run();

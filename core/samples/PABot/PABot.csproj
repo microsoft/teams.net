@@ -7,7 +7,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.23.1" />
+		<PackageReference Include="Microsoft.Bot.Builder.Dialogs" Version="4.22.3" />
 		<PackageReference Include="Microsoft.Graph" Version="5.101.0" />
 	</ItemGroup>
 

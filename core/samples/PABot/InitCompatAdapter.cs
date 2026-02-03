@@ -16,19 +16,20 @@ namespace PABot
     {
         public static IServiceCollection AddCustomCompatAdapter(this IServiceCollection services)
         {
-            
+
             ILogger logger = GetOrCreateLogger(services);
             IConfiguration configuration = services.BuildServiceProvider().GetRequiredService<IConfiguration>();
 
-            services.AddAuthorization(logger, "TeamsInAPX");
+            services.AddAuthorization(logger, "RidoABSOne");
+            services.AddAuthorization(logger, "RidoABSTwo");
 
-            var msalABSConfigSection = configuration.GetSection("TeamsABS");
+            var msalABSConfigSection = configuration.GetSection("RidoABSOne");
             var scopeAbs = msalABSConfigSection.GetValue<string>("Scope") ?? "https://api.botframework.com/.default";
-            services.Configure<MicrosoftIdentityApplicationOptions>("MsalABS", msalABSConfigSection!);
+            services.Configure<MicrosoftIdentityApplicationOptions>("RidoABSOne", msalABSConfigSection!);
 
-            var msalAPXConfigSection = configuration.GetSection("TeamsAPX");
-            var scopeApx = msalAPXConfigSection.GetValue<string>("Scope") ?? "https://botapi.skype.com/.default";
-            services.Configure<MicrosoftIdentityApplicationOptions>("MsalAPX", msalAPXConfigSection!);
+            var msalABSConfigSection2 = configuration.GetSection("RidoABSTwo");
+            var scopeAbs2 = msalABSConfigSection2.GetValue<string>("Scope") ?? "https://api.botframework.com/.default";
+            services.Configure<MicrosoftIdentityApplicationOptions>("RidoABSTwo", msalABSConfigSection2!);
 
             services
                 .AddHttpClient()
@@ -36,39 +37,89 @@ namespace PABot
                 .AddInMemoryTokenCaches()
                 .AddAgentIdentities();
 
+            // === RidoABSOne ===
             services.AddHttpClient<ConversationClient>("BotConversationClient")
                .AddHttpMessageHandler(sp =>
                {
                    return new PACustomAuthHandler(
-                       "MsalAPX",
-                       sp.GetRequiredService<IAuthorizationHeaderProvider>(),
-                       sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
-                       scopeApx);
-               });
-
-            services.AddHttpClient<UserTokenClient>("BotUserTokenClient")
-               .AddHttpMessageHandler(sp =>
-               {
-                   return new PACustomAuthHandler(
-                       "MsalABS",
+                       "RidoABSOne",
                        sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                        sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
                        scopeAbs);
                });
 
-            services.AddHttpClient<TeamsApiClient>("TeamsAPXClient")
+            services.AddHttpClient<UserTokenClient>("BotConversationClient")
+               .AddHttpMessageHandler(sp =>
+               {
+                   return new PACustomAuthHandler(
+                       "RidoABSOne",
+                       sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                       sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
+                       scopeAbs);
+               });
+
+            services.AddHttpClient<TeamsApiClient>("BotConversationClient")
+               .AddHttpMessageHandler(sp =>
+               {
+                   return new PACustomAuthHandler(
+                       "RidoABSOne",
+                       sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                       sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
+                       scopeAbs);
+               });
+
+            services.AddKeyedSingleton<TeamsBotApplication>("RidoABSOne");
+            services.AddKeyedSingleton<CompatBotAdapter>("RidoABSOne", (sp, keyName) =>
+            {
+                return new CompatBotAdapter(
+                    sp,
+                    sp.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>(),
+                    sp.GetRequiredService<ILogger<CompatBotAdapter>>(),
+                    keyName.ToString()!);
+            });
+            //services.AddKeyedSingleton<IBotFrameworkHttpAdapter, CompatAdapter>("RidoABSOne");
+
+            // === RidoABSTwo ===
+            services.AddHttpClient<ConversationClient>("BotConversationClient")
+                 .AddHttpMessageHandler(sp =>
+                 {
+                     return new PACustomAuthHandler(
+                         "RidoABSTwo",
+                         sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                         sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
+                         scopeAbs2);
+                 });
+
+            services.AddHttpClient<UserTokenClient>("BotConversationClient")
                 .AddHttpMessageHandler(sp =>
                 {
                     return new PACustomAuthHandler(
-                        "MsalABS",
+                        "RidoABSTwo",
                         sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                         sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
-                        scopeAbs);
+                        scopeAbs2);
                 });
 
-            services.AddSingleton<TeamsBotApplication>();
-            services.AddSingleton<CompatBotAdapter>();
-            services.AddSingleton<IBotFrameworkHttpAdapter, CompatAdapter>();
+            services.AddHttpClient<TeamsApiClient>("BotConversationClient")
+                .AddHttpMessageHandler(sp =>
+                {
+                    return new PACustomAuthHandler(
+                        "RidoABSTwo",
+                        sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                        sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
+                        scopeAbs2);
+                });
+
+            services.AddKeyedSingleton<TeamsBotApplication>("RidoABSTwo");
+            services.AddKeyedSingleton<CompatBotAdapter>("RidoABSTwo", (sp, keyName) =>
+            {
+                return new CompatBotAdapter(
+                    sp,
+                    sp.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>(),
+                    sp.GetRequiredService<ILogger<CompatBotAdapter>>(),
+                    keyName.ToString()!);
+            });
+            //services.AddKeyedSingleton<IBotFrameworkHttpAdapter, CompatAdapter>("RidoABSTwo");
             return services;
         }
 

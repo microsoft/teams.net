@@ -32,11 +32,12 @@ public class CompatAdapter : IBotFrameworkHttpAdapter
     /// Creates a new instance of the <see cref="CompatAdapter"/> class.
     /// </summary>
     /// <param name="sp"></param>
-    public CompatAdapter(IServiceProvider sp)
+    /// <param name="keyName"></param>
+    public CompatAdapter(IServiceProvider sp, string keyName = "AzureAd")
     {
         _sp = sp;
-        _teamsBotApplication = sp.GetRequiredService<TeamsBotApplication>();
-        _compatBotAdapter = sp.GetRequiredService<CompatBotAdapter>();
+        _teamsBotApplication = sp.GetRequiredKeyedService<TeamsBotApplication>(keyName);
+        _compatBotAdapter = sp.GetRequiredKeyedService<CompatBotAdapter>(keyName);
     }
 
     /// <summary>
