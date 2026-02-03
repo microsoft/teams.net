@@ -526,7 +526,10 @@ public class MessageActivityTests
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
-        Assert.Contains("\"isTargeted\": true", json);
+        // IsTargeted is not serialized (JsonIgnore) - it's only used internally for SDK routing
+        Assert.DoesNotContain("\"isTargeted\"", json);
         Assert.Contains("\"text\": \"targeted message\"", json);
+        // Verify the property is still set on the object
+        Assert.True(activity.IsTargeted);
     }
 }
