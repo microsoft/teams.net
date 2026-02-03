@@ -44,7 +44,7 @@ app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string 
         Conversation = new() { Id = cid },
         ServiceUrl = "https://smba.trafficmanager.net/teams"
     };
-    await ((CompatAdapter)adapter).ContinueConversationAsync(
+    await ((BotAdapter)adapter).ContinueConversationAsync(
         string.Empty,
         proactive.GetConversationReference(),
         async (turnContext, ct) =>
