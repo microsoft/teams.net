@@ -23,16 +23,6 @@ public class InvokeActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Convenience method to deserialize a JSON string into an InvokeActivity instance.
-    /// </summary>
-    /// <param name="json"></param>
-    /// <returns></returns>
-    public static new InvokeActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.InvokeActivity);
-    }
-
-    /// <summary>
     /// Serializes the InvokeActivity to JSON.
     /// </summary>
     /// <returns>JSON string representation of the InvokeActivity</returns>

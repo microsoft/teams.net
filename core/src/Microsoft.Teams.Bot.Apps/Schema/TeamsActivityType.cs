@@ -62,17 +62,15 @@ public static class TeamsActivityType
     /// <summary>
     /// Registry of activity type factories for creating specialized activity instances.
     /// </summary>
-    internal static readonly Dictionary<string, (
-        Func<CoreActivity, TeamsActivity> FromActivity,
-        Func<string, TeamsActivity> FromJson)> ActivityDeserializerMap = new()
+    internal static readonly Dictionary<string, Func<CoreActivity, TeamsActivity>> ActivityDeserializerMap = new()
     {
-        [TeamsActivityType.Message] = (MessageActivity.FromActivity, MessageActivity.FromJsonString),
-        [TeamsActivityType.MessageReaction] = (MessageReactionActivity.FromActivity, MessageReactionActivity.FromJsonString),
-        [TeamsActivityType.MessageUpdate] = (MessageUpdateActivity.FromActivity, MessageUpdateActivity.FromJsonString),
-        [TeamsActivityType.MessageDelete] = (MessageDeleteActivity.FromActivity, MessageDeleteActivity.FromJsonString),
-        [TeamsActivityType.ConversationUpdate] = (ConversationUpdateActivity.FromActivity, ConversationUpdateActivity.FromJsonString),
-        [TeamsActivityType.EndOfConversation] = (EndOfConversationActivity.FromActivity, EndOfConversationActivity.FromJsonString),
-        [TeamsActivityType.InstallationUpdate] = (InstallUpdateActivity.FromActivity, InstallUpdateActivity.FromJsonString),
-        [TeamsActivityType.Invoke] = (InvokeActivity.FromActivity, InvokeActivity.FromJsonString),
-    }; // TODO: Review if we need FromJson in this map
+        [TeamsActivityType.Message] = MessageActivity.FromActivity,
+        [TeamsActivityType.MessageReaction] = MessageReactionActivity.FromActivity,
+        [TeamsActivityType.MessageUpdate] = MessageUpdateActivity.FromActivity,
+        [TeamsActivityType.MessageDelete] = MessageDeleteActivity.FromActivity,
+        [TeamsActivityType.ConversationUpdate] = ConversationUpdateActivity.FromActivity,
+        [TeamsActivityType.EndOfConversation] = EndOfConversationActivity.FromActivity,
+        [TeamsActivityType.InstallationUpdate] = InstallUpdateActivity.FromActivity,
+        [TeamsActivityType.Invoke] = InvokeActivity.FromActivity,
+    };
 }

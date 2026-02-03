@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
@@ -26,35 +25,8 @@ public class TeamsActivity : CoreActivity
         ArgumentNullException.ThrowIfNull(activity);
 
         return TeamsActivityType.ActivityDeserializerMap.TryGetValue(activity.Type, out var factory)
-            ? factory.FromActivity(activity)
+            ? factory(activity)
             : new TeamsActivity(activity);  // Fallback to base type
-    }
-
-    /// <summary>
-    /// Creates a new instance of the TeamsActivity class from the specified Activity object.
-    /// </summary>
-    /// <param name="json"></param>
-    /// <returns></returns>
-    public static new TeamsActivity FromJsonString(string json)
-    {
-        string? type = null;
-        var jsonBytes = Encoding.UTF8.GetBytes(json);
-        var reader = new Utf8JsonReader(jsonBytes);
-
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonTokenType.PropertyName &&
-                reader.ValueTextEquals("type"))
-            {
-                reader.Read();
-                type = reader.GetString();
-                break;
-            }
-        }
-
-        return type != null && TeamsActivityType.ActivityDeserializerMap.TryGetValue(type, out var factory)
-            ? factory.FromJson(json)
-            : FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity);
     }
 
     /// <summary>

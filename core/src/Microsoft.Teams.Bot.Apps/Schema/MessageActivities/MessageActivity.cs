@@ -25,16 +25,6 @@ public class MessageActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Deserializes a JSON string into a MessageActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A MessageActivity instance.</returns>
-    public static new MessageActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageActivity);
-    }
-
-    /// <summary>
     /// Serializes the MessageActivity to JSON with all message-specific properties.
     /// </summary>
     /// <returns>JSON string representation of the MessageActivity</returns>

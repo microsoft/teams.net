@@ -24,23 +24,6 @@ public class MessageDeleteActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Deserializes a JSON string into a MessageDeleteActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A MessageDeleteActivity instance.</returns>
-    public static new MessageDeleteActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageDeleteActivity);
-    }
-
-    /// <summary>
-    /// Serializes the MessageDeleteActivity to JSON with all message delete-specific properties.
-    /// </summary>
-    /// <returns>JSON string representation of the MessageDeleteActivity</returns>
-    public override string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.MessageDeleteActivity);
-
-    /// <summary>
     /// Default constructor.
     /// </summary>
     [JsonConstructor]

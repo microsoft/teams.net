@@ -24,16 +24,6 @@ public class EndOfConversationActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Deserializes a JSON string into an EndOfConversationActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>An EndOfConversationActivity instance.</returns>
-    public static new EndOfConversationActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.EndOfConversationActivity);
-    }
-
-    /// <summary>
     /// Serializes the EndOfConversationActivity to JSON.
     /// </summary>
     /// <returns>JSON string representation of the EndOfConversationActivity</returns>

@@ -23,23 +23,6 @@ public class InstallUpdateActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Deserializes a JSON string into an InstallUpdateActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>An InstallUpdateActivity instance.</returns>
-    public static new InstallUpdateActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.InstallUpdateActivity);
-    }
-
-    /// <summary>
-    /// Serializes the InstallUpdateActivity to JSON.
-    /// </summary>
-    /// <returns>JSON string representation of the InstallUpdateActivity</returns>
-    public override string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.InstallUpdateActivity);
-
-    /// <summary>
     /// Default constructor.
     /// </summary>
     [JsonConstructor]

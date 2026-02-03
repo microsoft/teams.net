@@ -26,7 +26,7 @@ public class TeamsBotApplication : BotApplication
     /// Gets the router for dispatching Teams activities to registered routes.
     /// </summary>
     internal Router Router { get; }
-    
+
     /// <summary>
     /// Gets the client used to interact with the Teams API service.
     /// </summary>
@@ -57,6 +57,7 @@ public class TeamsBotApplication : BotApplication
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogInformation("New {Type} activity received.", activity.Type);
+            Console.WriteLine($"activity received : {activity.ToJson()}");
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 

@@ -25,23 +25,6 @@ public class ConversationUpdateActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Deserializes a JSON string into a ConversationUpdateActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A ConversationUpdateActivity instance.</returns>
-    public static new ConversationUpdateActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.ConversationUpdateActivity);
-    }
-
-    /// <summary>
-    /// Serializes the ConversationUpdateActivity to JSON.
-    /// </summary>
-    /// <returns>JSON string representation of the ConversationUpdateActivity</returns>
-    public override string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.ConversationUpdateActivity);
-
-    /// <summary>
     /// Default constructor.
     /// </summary>
     [JsonConstructor]

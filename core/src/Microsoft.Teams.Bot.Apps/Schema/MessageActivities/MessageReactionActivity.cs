@@ -26,23 +26,6 @@ public class MessageReactionActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Deserializes a JSON string into a MessageReactionActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A MessageReactionActivity instance.</returns>
-    public static new MessageReactionActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageReactionActivity);
-    }
-
-    /// <summary>
-    /// Serializes the MessageReactionActivity to JSON with all message reaction-specific properties.
-    /// </summary>
-    /// <returns>JSON string representation of the MessageReactionActivity</returns>
-    public override string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.MessageReactionActivity);
-
-    /// <summary>
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
