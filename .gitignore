@@ -8,6 +8,8 @@
 
 # local app settings files
 appsettings.Local.json
+appsettings.Development.json
+launchsettings.json
 
 # User-specific files
 *.rsuser
