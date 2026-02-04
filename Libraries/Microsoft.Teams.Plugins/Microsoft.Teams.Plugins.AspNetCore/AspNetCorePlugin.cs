@@ -184,6 +184,10 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 return Results.BadRequest("Missing activity");
             }
 
+            // If no token was extracted, create an anonymous token with serviceUrl from the activity (or default)
+            // This matches Python/TypeScript SDK behavior for skipAuth scenarios
+            IToken resolvedToken = (IToken?)token ?? new AnonymousToken(activity.ServiceUrl ?? "https://smba.trafficmanager.net/teams");
+
             var data = new Dictionary<string, object?>
             {
                 ["Request.TraceId"] = httpContext.TraceIdentifier
@@ -200,7 +204,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
             var res = await Do(new ActivityEvent()
             {
-                Token = token,
+                Token = resolvedToken,
                 Activity = activity,
                 Extra = data,
                 Services = httpContext.RequestServices
@@ -235,9 +239,13 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         }
     }
 
-    public JsonWebToken ExtractToken(HttpRequest httpRequest)
+    public JsonWebToken? ExtractToken(HttpRequest httpRequest)
     {
-        var authHeader = httpRequest.Headers.Authorization.FirstOrDefault() ?? throw new UnauthorizedAccessException();
+        var authHeader = httpRequest.Headers.Authorization.FirstOrDefault();
+        if (string.IsNullOrEmpty(authHeader))
+        {
+            return null;
+        }
         return new JsonWebToken(authHeader.Replace("Bearer ", ""));
     }
 

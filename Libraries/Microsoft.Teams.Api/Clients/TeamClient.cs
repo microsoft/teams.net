@@ -11,22 +11,22 @@ public class TeamClient : Client
 
     public TeamClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public TeamClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public TeamClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public TeamClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public async Task<Team> GetByIdAsync(string id)
