@@ -173,6 +173,44 @@ public class TeamsActivityTests
         Assert.Equal("test invokes", feedback);
     }
 
+    [Fact]
+    public void Serialize_Does_Not_Repeat_AAdObjectId()
+    {
+        var coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "recipient": {
+                    "id": "rec1",
+                    "name": "recname",
+                    "aadObjectId": "rec-aadId-1"
+                }
+            }
+            """);
+        var teamsActivity = TeamsActivity.FromActivity(coreActivity);
+        string json = teamsActivity.ToJson();
+        string[] found = json.Split("aadObjectId");
+        Assert.Equal(1, found.Length - 1); // only one occurrence
+    }
+
+    [Fact]
+    public void FromActivity_Overrides_Recipient()
+    {
+        var coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "recipient": {
+                    "id": "rec1",
+                    "name": "recname",
+                    "aadObjectId": "rec-aadId-1"
+                }
+            }
+            """);
+        var teamsActivity = TeamsActivity.FromActivity(coreActivity);
+        Assert.Equal("rec1", teamsActivity.Recipient?.Id);
+        Assert.Equal("recname", teamsActivity.Recipient?.Name);
+        Assert.Equal("rec-aadId-1", teamsActivity.Recipient?.AadObjectId);
+    }
+
     private const string jsonInvoke = """
           {
           "type": "invoke",

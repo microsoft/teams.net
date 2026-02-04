@@ -34,7 +34,6 @@ public class TeamsConversationAccount : ConversationAccount
     public TeamsConversationAccount(ConversationAccount conversationAccount)
     {
         ArgumentNullException.ThrowIfNull(conversationAccount);
-        Properties = conversationAccount.Properties;
         Id = conversationAccount.Id;
         Name = conversationAccount.Name;
 
