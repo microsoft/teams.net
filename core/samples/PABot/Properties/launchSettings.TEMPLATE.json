@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "ridotest-local-msal": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "ConnectionName": "graph",
+        "TeamsABS__Scope": "https://api.botframework.com/.default",
+        "TeamsABS__Instance": "https://login.microsoftonline.com/",
+        "TeamsABS__TenantId": "",
+        "TeamsABS__ClientId": "",
+        "TeamsABS__ClientCredentials__0__SourceType": "ClientSecret",
+        "TeamsABS__ClientCredentials__0__ClientSecret": "",
+        "TeamsAPX__Scope": "https://botapi.skype.com/.default",
+        "TeamsAPX__Instance": "https://login.microsoftonline.com/",
+        "TeamsAPX__TenantId": "",
+        "TeamsAPX__ClientId": "",
+        "TeamsAPX__ClientCredentials__0__SourceType": "ClientSecret",
+        "TeamsAPX__ClientCredentials__0__ClientSecret": "",
+        "TeamsIn__Instance": "https://login.microsoftonline.com/",
+        "TeamsInABS__TenantId": "",
+        "TeamsInABS__ClientId": "",
+        "TeamsInAPX__TenantId": "",
+        "TeamsInAPX__ClientId": ""
+      }
+    }
+  }
+ }
