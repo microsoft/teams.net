@@ -78,7 +78,7 @@ public class MessageActivityTests
     [Fact]
     public void MessageActivity_WithExpiration_SerializeAndDeserialize()
     {
-        DateTime expirationDate = new DateTime(2026, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+        string expirationDate = "2026-12-31T23:59:59Z";
         MessageActivity activity = new("Expiring message")
         {
             Expiration = expirationDate
