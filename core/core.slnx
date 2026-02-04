@@ -36,5 +36,6 @@
   </Folder>
   <Project Path="src/Microsoft.Teams.Bot.Compat/Microsoft.Teams.Bot.Compat.csproj" Id="42d14898-dcc0-43a4-bb61-60e289f63c44" />
   <Project Path="src/Microsoft.Teams.Bot.Core/Microsoft.Teams.Bot.Core.csproj" />
+  <Project Path="src/Microsoft.Agents.Hosting.BotCore/Microsoft.Agents.Hosting.BotCore.csproj" />
   <Project Path="src/Microsoft.Teams.Bot.Apps/Microsoft.Teams.Bot.Apps.csproj" Id="0e993a63-8a1a-4cdf-8a29-cc8c59bd6c30" />
 </Solution>
