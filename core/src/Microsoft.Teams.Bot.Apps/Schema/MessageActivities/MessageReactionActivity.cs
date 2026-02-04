@@ -49,6 +49,7 @@ public class MessageReactionActivity : TeamsActivity
             {
                 ReactionsAdded = reactionsAdded as IList<MessageReaction>;
             }
+            activity.Properties.Remove("reactionsAdded");
         }
         if (activity.Properties.TryGetValue("reactionsRemoved", out var reactionsRemoved) && reactionsRemoved != null)
         {
@@ -60,6 +61,7 @@ public class MessageReactionActivity : TeamsActivity
             {
                 ReactionsRemoved = reactionsRemoved as IList<MessageReaction>;
             }
+            activity.Properties.Remove("reactionsRemoved");
         }
     }
 
@@ -91,7 +93,7 @@ public class MessageReaction
     /// Gets or sets the date and time when the reaction was created.
     /// </summary>
     [JsonPropertyName("createdDateTime")]
-    public DateTime? CreatedDateTime { get; set; }
+    public string? CreatedDateTime { get; set; }
 
     /// <summary>
     /// Gets or sets the user who created the reaction.

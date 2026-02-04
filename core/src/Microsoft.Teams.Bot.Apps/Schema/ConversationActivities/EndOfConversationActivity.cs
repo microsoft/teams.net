@@ -38,9 +38,15 @@ public class EndOfConversationActivity : TeamsActivity
     protected EndOfConversationActivity(CoreActivity activity) : base(activity)
     {
         if (activity.Properties.TryGetValue("code", out var code))
+        {
             Code = code?.ToString();
+            activity.Properties.Remove("code");
+        }
         if (activity.Properties.TryGetValue("text", out var text))
+        {
             Text = text?.ToString();
+            activity.Properties.Remove("text");
+        }
     }
 
     /// <summary>

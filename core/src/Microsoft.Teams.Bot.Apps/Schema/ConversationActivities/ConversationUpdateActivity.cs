@@ -39,49 +39,55 @@ public class ConversationUpdateActivity : TeamsActivity
     protected ConversationUpdateActivity(CoreActivity activity) : base(activity)
     {
         if (activity.Properties.TryGetValue("topicName", out var topicName))
+        {
             TopicName = topicName?.ToString();
+            activity.Properties.Remove("topicName");
+        }
 
         if (activity.Properties.TryGetValue("historyDisclosed", out var historyDisclosed) && historyDisclosed != null)
-    {
+        {
             if (historyDisclosed is JsonElement je)
             {
                 if (je.ValueKind == JsonValueKind.True)
                     HistoryDisclosed = true;
                 else if (je.ValueKind == JsonValueKind.False)
                     HistoryDisclosed = false;
-    }
+            }
             else if (historyDisclosed is bool boolValue)
-    {
+            {
                 HistoryDisclosed = boolValue;
             }
             else if (bool.TryParse(historyDisclosed.ToString(), out var result))
-        {
+            {
                 HistoryDisclosed = result;
             }
+            activity.Properties.Remove("historyDisclosed");
         }
 
         if (activity.Properties.TryGetValue("membersAdded", out var membersAdded) && membersAdded != null)
-            {
+        {
             if (membersAdded is JsonElement je)
-                {
+            {
                 MembersAdded = JsonSerializer.Deserialize<IList<TeamsConversationAccount>>(je.GetRawText());
-                }
+            }
             else
-                {
+            {
                 MembersAdded = membersAdded as IList<TeamsConversationAccount>;
-                }
+            }
+            activity.Properties.Remove("membersAdded");
         }
 
         if (activity.Properties.TryGetValue("membersRemoved", out var membersRemoved) && membersRemoved != null)
-                {
+        {
             if (membersRemoved is JsonElement je)
             {
                 MembersRemoved = JsonSerializer.Deserialize<IList<TeamsConversationAccount>>(je.GetRawText());
-                }
+            }
             else
-                {
+            {
                 MembersRemoved = membersRemoved as IList<TeamsConversationAccount>;
             }
+            activity.Properties.Remove("membersRemoved");
         }
     }
 

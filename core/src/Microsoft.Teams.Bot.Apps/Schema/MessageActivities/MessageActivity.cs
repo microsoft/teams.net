@@ -65,32 +65,49 @@ public class MessageActivity : TeamsActivity
     protected MessageActivity(CoreActivity activity) : base(activity)
     {
         if (activity.Properties.TryGetValue("text", out var text))
-            Text = text?.ToString();
-        if (activity.Properties.TryGetValue("speak", out var speak))
-            Speak = speak?.ToString();
-        if (activity.Properties.TryGetValue("inputHint", out var inputHint))
-            InputHint = inputHint?.ToString();
-        if (activity.Properties.TryGetValue("summary", out var summary))
-            Summary = summary?.ToString();
-        if (activity.Properties.TryGetValue("textFormat", out var textFormat))
-            TextFormat = textFormat?.ToString();
-        if (activity.Properties.TryGetValue("attachmentLayout", out var attachmentLayout))
-            AttachmentLayout = attachmentLayout?.ToString();
-        if (activity.Properties.TryGetValue("importance", out var importance))
-            Importance = importance?.ToString();
-        if (activity.Properties.TryGetValue("deliveryMode", out var deliveryMode))
-            DeliveryMode = deliveryMode?.ToString();
-        if (activity.Properties.TryGetValue("expiration", out var expiration) && expiration != null)
         {
-            if (expiration is JsonElement je && je.ValueKind == JsonValueKind.String)
-            {
-                if (DateTime.TryParse(je.GetString(), out var date))
-                    Expiration = date;
-            }
-            else if (DateTime.TryParse(expiration.ToString(), out var date))
-            {
-                Expiration = date;
-            }
+            Text = text?.ToString();
+            activity.Properties.Remove("text");
+        }
+        if (activity.Properties.TryGetValue("speak", out var speak))
+        {
+            Speak = speak?.ToString();
+            activity.Properties.Remove("speak");
+        }
+        if (activity.Properties.TryGetValue("inputHint", out var inputHint))
+        {
+            InputHint = inputHint?.ToString();
+            activity.Properties.Remove("inputHint");
+        }
+        if (activity.Properties.TryGetValue("summary", out var summary))
+        {
+            Summary = summary?.ToString();
+            activity.Properties.Remove("summary");
+        }
+        if (activity.Properties.TryGetValue("textFormat", out var textFormat))
+        {
+            TextFormat = textFormat?.ToString();
+            activity.Properties.Remove("textFormat");
+        }
+        if (activity.Properties.TryGetValue("attachmentLayout", out var attachmentLayout))
+        {
+            AttachmentLayout = attachmentLayout?.ToString();
+            activity.Properties.Remove("attachmentLayout");
+        }
+        if (activity.Properties.TryGetValue("importance", out var importance))
+        {
+            Importance = importance?.ToString();
+            activity.Properties.Remove("importance");
+        }
+        if (activity.Properties.TryGetValue("deliveryMode", out var deliveryMode))
+        {
+            DeliveryMode = deliveryMode?.ToString();
+            activity.Properties.Remove("deliveryMode");
+        }
+        if (activity.Properties.TryGetValue("expiration", out var expiration))
+        {
+            Expiration = expiration?.ToString();
+            activity.Properties.Remove("expiration");
         }
     }
 
@@ -146,7 +163,7 @@ public class MessageActivity : TeamsActivity
     /// Gets or sets the expiration time of the message.
     /// </summary>
     [JsonPropertyName("expiration")]
-    public DateTime? Expiration { get; set; }
+    public string? Expiration { get; set; }
 
 }
 

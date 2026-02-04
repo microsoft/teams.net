@@ -66,7 +66,10 @@ public class InvokeActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(activity);
         if (activity.Properties.TryGetValue("name", out var name))
+        {
             Name = name?.ToString();
+            activity.Properties.Remove("name");
+        }
     }
 }
 

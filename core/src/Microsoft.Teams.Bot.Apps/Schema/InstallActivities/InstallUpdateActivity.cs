@@ -37,7 +37,10 @@ public class InstallUpdateActivity : TeamsActivity
     protected InstallUpdateActivity(CoreActivity activity) : base(activity)
     {
         if (activity.Properties.TryGetValue("action", out var action))
+        {
             Action = action?.ToString();
+            activity.Properties.Remove("action");
+        }
     }
 
     /// <summary>
