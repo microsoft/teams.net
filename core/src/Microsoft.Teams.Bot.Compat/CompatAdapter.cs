@@ -21,7 +21,7 @@ namespace Microsoft.Teams.Bot.Compat;
 /// The adapter allows registration of middleware and error handling delegates, and supports processing HTTP requests
 /// and continuing conversations. Thread safety is not guaranteed; instances should not be shared across concurrent
 /// requests.</remarks>
-public class CompatAdapter : IBotFrameworkHttpAdapter
+public class CompatAdapter : ICompatAdapter
 {
     private readonly TeamsBotApplication _teamsBotApplication;
     private readonly CompatBotAdapter _compatBotAdapter;
