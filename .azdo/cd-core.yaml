@@ -1,3 +1,8 @@
+# =============================================================================
+# For core/ builds, this pipeline (BotCore-CD) runs on PRs and pushes to next/* branches (core/** paths only).
+# It builds, tests, and packs the code. Pushes to internal preview feed if PushToADOFeed=true.
+# =============================================================================
+
 pr:
   branches:
     include:

@@ -1,3 +1,8 @@
+# =============================================================================
+# For public releases, this pipeline (teams.net) is triggered manually.
+# It builds, tests, signs (Authenticode + NuGet), and packs the code, then pushes to nuget.org (requires approval).
+# =============================================================================
+
 trigger: none
 
 pr: none
