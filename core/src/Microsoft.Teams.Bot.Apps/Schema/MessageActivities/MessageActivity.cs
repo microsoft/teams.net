@@ -26,13 +26,6 @@ public class MessageActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Serializes the MessageActivity to JSON with all message-specific properties.
-    /// </summary>
-    /// <returns>JSON string representation of the MessageActivity</returns>
-    public override string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.MessageActivity);
-
-    /// <summary>
     /// Default constructor.
     /// </summary>
     [JsonConstructor]

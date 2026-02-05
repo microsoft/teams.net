@@ -29,10 +29,15 @@ public class TeamsActivity : CoreActivity
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
+    /// Uses the activity type serializer map to select the appropriate JSON type info.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A JSON string representation of the activity using the type-specific serializer.</returns>
     public override string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
+    {
+        return TeamsActivityType.ActivitySerializerMap.TryGetValue(Type, out var serializer)
+            ? serializer(this)
+            : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);  // Fallback to base type
+    }
 
     /// <summary>
     /// Constructor with type parameter.

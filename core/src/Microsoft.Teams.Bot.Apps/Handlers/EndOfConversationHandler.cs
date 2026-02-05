@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+#if false
+
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
@@ -42,3 +44,4 @@ public static class EndOfConversationExtensions
         return app;
     }
 }
+#endif

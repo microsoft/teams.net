@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Core;
 using Moq;
 
@@ -81,6 +82,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             var userTokenClient = new UserTokenClient(httpClient, mockConfig.Object, NullLogger<UserTokenClient>.Instance);
             var teamsApiClient = new TeamsApiClient(httpClient, NullLogger<TeamsApiClient>.Instance);
+            var router = new Router(NullLogger<Router>.Instance);
 
             var teamsBotApplication = new TeamsBotApplication(
                 conversationClient,
@@ -88,7 +90,8 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 teamsApiClient,
                 mockConfig.Object,
                 Mock.Of<IHttpContextAccessor>(),
-                NullLogger<BotApplication>.Instance);
+                NullLogger<BotApplication>.Instance,
+                router);
 
             var mockServiceProvider = new Mock<IServiceProvider>();
             mockServiceProvider

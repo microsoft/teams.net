@@ -1,7 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
+//TODO : review whole activity
+#if false
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -97,3 +98,4 @@ public static class EndOfConversationCodes
     /// </summary>
     public const string ChannelFailed = "channelFailed";
 }
+#endif

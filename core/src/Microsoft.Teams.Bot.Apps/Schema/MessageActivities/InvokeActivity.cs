@@ -19,15 +19,8 @@ public class InvokeActivity : TeamsActivity
     public static new InvokeActivity FromActivity(CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return new InvokeActivity(activity);    
+        return new InvokeActivity(activity);
     }
-
-    /// <summary>
-    /// Serializes the InvokeActivity to JSON.
-    /// </summary>
-    /// <returns>JSON string representation of the InvokeActivity</returns>
-    public override string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.InvokeActivity);
 
     /// <summary>
     /// Gets or sets the name of the operation. See <see cref="InvokeNames"/> for common values.

@@ -69,8 +69,18 @@ public static class TeamsActivityType
         [TeamsActivityType.MessageUpdate] = MessageUpdateActivity.FromActivity,
         [TeamsActivityType.MessageDelete] = MessageDeleteActivity.FromActivity,
         [TeamsActivityType.ConversationUpdate] = ConversationUpdateActivity.FromActivity,
-        [TeamsActivityType.EndOfConversation] = EndOfConversationActivity.FromActivity,
+        //[TeamsActivityType.EndOfConversation] = EndOfConversationActivity.FromActivity,
         [TeamsActivityType.InstallationUpdate] = InstallUpdateActivity.FromActivity,
         [TeamsActivityType.Invoke] = InvokeActivity.FromActivity,
+    };
+
+    /// <summary>
+    /// Registry of serialization functions for specialized activity instances.
+    /// Maps activity types to functions that serialize the activity using the appropriate JsonTypeInfo.
+    /// </summary>
+    internal static readonly Dictionary<string, Func<TeamsActivity, string>> ActivitySerializerMap = new()
+    {
+        [TeamsActivityType.Message] = activity => activity.ToJson(TeamsActivityJsonContext.Default.MessageActivity),
+        [TeamsActivityType.Invoke] = activity => activity.ToJson(TeamsActivityJsonContext.Default.InvokeActivity),
     };
 }

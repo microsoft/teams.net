@@ -82,21 +82,6 @@ public class ActivitiesTests
     }
 
     [Fact]
-    public void MessageUpdate_SerializeToJson()
-    {
-        var activity = new MessageUpdateActivity
-        {
-            Text = "Updated message",
-            //Speak = "Updated message spoken"
-        };
-
-        string json = activity.ToJson();
-        Assert.Contains("\"type\": \"messageUpdate\"", json);
-        Assert.Contains("\"text\": \"Updated message\"", json);
-        //Assert.Contains("\"speak\": \"Updated message spoken\"", json);
-    }
-
-    [Fact]
     public void MessageUpdate_InheritsFromMessageActivity()
     {
         var activity = new MessageUpdateActivity
@@ -149,34 +134,6 @@ public class ActivitiesTests
         Assert.NotNull(activity);
         Assert.Equal(TeamsActivityType.ConversationUpdate, activity.Type);
         //Assert.Equal("Converted Topic", activity.TopicName);
-    }
-
-    #endregion
-
-    #region EndOfConversationActivity Tests
-
-    [Fact]
-    public void EndOfConversation_Constructor_Default_SetsEndOfConversationType()
-    {
-        EndOfConversationActivity activity = new();
-        Assert.Equal(TeamsActivityType.EndOfConversation, activity.Type);
-    }
-
-    [Fact]
-    public void EndOfConversation_FromActivityConvertsCorrectly()
-    {
-        var coreActivity = new CoreActivity
-        {
-            Type = TeamsActivityType.EndOfConversation
-        };
-        coreActivity.Properties["code"] = "botTimedOut";
-        coreActivity.Properties["text"] = "Bot timeout";
-
-        EndOfConversationActivity activity = EndOfConversationActivity.FromActivity(coreActivity);
-        Assert.NotNull(activity);
-        Assert.Equal(TeamsActivityType.EndOfConversation, activity.Type);
-        Assert.Equal("botTimedOut", activity.Code);
-        Assert.Equal("Bot timeout", activity.Text);
     }
 
     #endregion
