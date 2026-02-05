@@ -43,7 +43,6 @@ public static class CompatHostingExtensions
     public static IServiceCollection AddCompatAdapter(this IServiceCollection services)
     {
         services.AddTeamsBotApplication();
-        services.AddSingleton<CompatBotAdapter>();
         services.AddSingleton<IBotFrameworkHttpAdapter, CompatAdapter>();
         return services;
     }

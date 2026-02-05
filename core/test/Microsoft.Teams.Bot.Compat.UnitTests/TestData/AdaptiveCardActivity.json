@@ -1,0 +1,74 @@
+{
+  "type": "message",
+  "serviceUrl": "https://smba.trafficmanager.net/amer/1a2b3c4d-5e6f-4789-a0b1-c2d3e4f5a6b7/",
+  "channelId": "msteams",
+  "from": {
+    "id": "28:b1c2d3e4-f5a6-4b7c-8d9e-0f1a2b3c4d5e",
+    "name": "testbot-local"
+  },
+  "conversation": {
+    "conversationType": "personal",
+    "id": "a:1AbCdEfGhIjKlMnOpQrStUvWxYz2AbCdEfGhIjKlMnOpQrStUvWxYz3AbCdEfGhIjKlMnOpQrStUvWxYz4AbCdEfGhIjKlMnOpQrStUvWxYz5AbCdEf",
+    "tenantId": "1a2b3c4d-5e6f-4789-a0b1-c2d3e4f5a6b7"
+  },
+  "recipient": {
+    "id": "29:9xYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAbCdEfGhIjKlMnOpQrStUvWxYzAb",
+    "name": "Test User",
+    "aadObjectId": "7f8e9d0c-1b2a-4354-6758-9a0b1c2d3e4f"
+  },
+  "attachmentLayout": "list",
+  "locale": "en-US",
+  "inputHint": "acceptingInput",
+  "attachments": [
+    {
+      "contentType": "application/vnd.microsoft.card.adaptive",
+      "content": {
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "type": "AdaptiveCard",
+        "version": "1.5",
+        "speak": "This card mentions a user by User Principle Name: Hello Test User",
+        "body": [
+          {
+            "type": "TextBlock",
+            "text": "Mention a user by User Principle Name: Hello <at>Test User UPN</at>"
+          },
+          {
+            "type": "TextBlock",
+            "text": "Mention a user by AAD Object Id: Hello <at>Test User AAD</at>"
+          }
+        ],
+        "msteams": {
+          "entities": [
+            {
+              "type": "mention",
+              "text": "<at>Test User UPN</at>",
+              "mentioned": {
+                "id": "testuser@example.onmicrosoft.com",
+                "name": "Test User"
+              }
+            },
+            {
+              "type": "mention",
+              "text": "<at>Test User AAD</at>",
+              "mentioned": {
+                "id": "7f8e9d0c-1b2a-4354-6758-9a0b1c2d3e4f",
+                "name": "Test User"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "entities": [
+    {
+      "type": "https://schema.org/Message",
+      "@context": "https://schema.org",
+      "@type": "Message",
+      "additionalType": [
+        "AIGeneratedContent"
+      ]
+    }
+  ],
+  "replyToId": "f:a1b2c3d4-e5f6-4789-a0b1-c2d3e4f5a6b7"
+}
