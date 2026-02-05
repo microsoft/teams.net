@@ -379,8 +379,6 @@ public static class ConversationUpdateExtensions
     }
 
     /// <summary>
-
-    /// <summary>
     /// Registers a handler for team unarchived events.
     /// </summary>
     /// <param name="app"></param>

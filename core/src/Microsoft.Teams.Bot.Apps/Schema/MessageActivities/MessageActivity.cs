@@ -197,10 +197,10 @@ public static class TextFormats
 }
 
 
+/*
 /// <summary>
 /// String constants for input hints.
 /// </summary>
-/*
 public static class InputHints
 {
     /// <summary>
@@ -218,12 +218,10 @@ public static class InputHints
     /// </summary>
     public const string ExpectingInput = "expectingInput";
 }
-*/
 
 /// <summary>
 /// String constants for importance levels.
 /// </summary>
-/*
 public static class ImportanceLevels
 {
     /// <summary>
@@ -246,12 +244,10 @@ public static class ImportanceLevels
     /// </summary>
     public const string Urgent = "urgent";
 }
-*/
 
 /// <summary>
 /// String constants for delivery modes.
 /// </summary>
-/*
 public static class DeliveryModes
 {
     /// <summary>
@@ -274,9 +270,9 @@ public static class DeliveryModes
     /// </summary>
     public const string ExpectedReplies = "expectReplies";
 }
-*/
 
-/*public class SuggestedActions
+
+public class SuggestedActions
 {
     /// <summary>
     /// Ids of the recipients that the actions should be shown to.  These Ids are relative to the
