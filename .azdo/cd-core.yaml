@@ -71,5 +71,5 @@ stages:
         displayName: 'Publish NuGet Packages as Pipeline Artifact'
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)'
-          artifact: 'nuget-packages'
+          artifact: Packages
           publishLocation: 'pipeline'
