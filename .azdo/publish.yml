@@ -43,7 +43,7 @@ stages:
       - script: dotnet build --no-restore --configuration $(buildConfiguration)
         displayName: 'Build'
 
-      - script: dotnet test --no-restore --verbosity normal --logger trx --configuration $(buildConfiguration)
+      - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
         displayName: 'Test'
 
       - task: EsrpCodeSigning@5
@@ -136,11 +136,12 @@ stages:
           MaxRetryAttempts: '5'
           PendingAnalysisWaitTimeoutMinutes: '5'
 
-      - task: PublishBuildArtifacts@1
+      - task: PublishPipelineArtifact@1
         displayName: 'Publish NuGet Artifacts'
         inputs:
-          PathToPublish: '$(Build.ArtifactStagingDirectory)'
-          ArtifactName: 'Packages'
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifact: 'Packages'
+          publishLocation: 'pipeline'
 
 - stage: PushToNuGet
   displayName: 'Push NuGet Packages to nuget.org'
