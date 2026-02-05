@@ -6,6 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
+using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Apps;
@@ -46,7 +47,7 @@ public static class TeamsBotApplicationHostingExtensions
                     sp.GetService<IOptions<ManagedIdentityOptions>>());
             });
 
-        services.AddSingleton<Routing.Router>();
+        services.AddSingleton<Router>();
         services.AddBotApplication<TeamsBotApplication>();
         return services;
     }

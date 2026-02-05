@@ -13,19 +13,9 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 
-public class Router
+public class Router(ILogger<Router> logger)
 {
     private readonly List<RouteBase> _routes = [];
-    private readonly ILogger<Router> _logger;
-
-    /// <summary>
-    /// Initializes a new instance of the Router class.
-    /// </summary>
-    /// <param name="logger">Logger for router diagnostics. Optional.</param>
-    public Router(ILogger<Router>? logger = null)
-    {
-        _logger = logger ?? NullLogger<Router>.Instance;
-    }
 
     /// <summary>
     /// Routes registered in the router.
@@ -55,7 +45,7 @@ public class Router
 
         if (matchingRoutes.Count == 0)
         {
-            _logger.LogDebug(
+            logger.LogDebug(
                 "No routes matched activity type '{Type}'",
                 ctx.Activity.Type
             );
@@ -64,7 +54,7 @@ public class Router
 
         if (matchingRoutes.Count > 1)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 "Activity type '{Type}' matched {Count} routes: [{Routes}]. Only the first route will execute without Next().",
                 ctx.Activity.Type,
                 matchingRoutes.Count,
@@ -90,7 +80,7 @@ public class Router
 
         if (matchingRoutes.Count == 0)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 "No routes matched activity type '{Type}'",
                 ctx.Activity.Type
             );
@@ -99,7 +89,7 @@ public class Router
 
         if (matchingRoutes.Count > 1)
         {
-            _logger.LogWarning(
+            logger.LogWarning(
                 "Activity type '{Type}' matched {Count} routes: [{Routes}]. Only the first route will execute without Next().",
                 ctx.Activity.Type,
                 matchingRoutes.Count,

@@ -44,10 +44,12 @@ public static class TeamsActivityType
     /// </summary>
     public const string ConversationUpdate = "conversationUpdate";
 
+    /*
     /// <summary>
     /// Represents an end of conversation activity.
     /// </summary>
     public const string EndOfConversation = "endOfConversation";
+    */
 
     /// <summary>
     /// Represents an installation update activity.
