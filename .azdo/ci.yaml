@@ -1,8 +1,20 @@
 # =============================================================================
-# For preview builds, this pipeline (teams.net-pr) runs on PRs to main or release branches.
+# For preview builds, this pipeline (teams.net-pr) runs on PRs/merges to main or release branches.
+#   - PR: Runs on pull requests targeting 'main' or 'release/*' branches (build/test/sign/pack only)
+#   - CI: Runs on pushes to `main` branch (enables PushToNuGet stage after PR merge).
 # It builds, tests, signs, and packs the code. Pushes to nuget.org (only on approval) on main branch.
 # =============================================================================
 
+# CI trigger: runs after PRs are merged to main
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    exclude:
+      - core/**
+
+# PR trigger: runs on PRs to main or release branches
 pr:
   branches:
     include:
