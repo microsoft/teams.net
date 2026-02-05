@@ -6,7 +6,7 @@ This document describes how to release packages for the Teams SDK for .NET.
 
 | Pipeline | File | Trigger | Signing | Destination | Approval |
 |----------|------|---------|---------|-------------|----------|
-| **teams.net-pr** | ci.yaml | PR to `main`/`release` | Yes | nuget.org | Required |
+| **teams.net-pr** | ci.yaml | PR to `main`/`release/*` | Yes | nuget.org (`main` only) | Required (for public previews) |
 | **teams.net** | publish.yml | Manual | Yes | nuget.org | Required |
 | **BotCore-CD** | cd-core.yaml | PR/push to next/* (core/**) | No | Internal feed | Auto (`next/core` branch) |
 
@@ -53,13 +53,15 @@ dotnet restore
 
 ### Preview Releases (teams.net-pr pipeline)
 
-Preview packages are automatically built when PRs are merged to `main` or `release/*` branches.
+The `teams.net-pr` pipeline runs on **every PR** to `main` or `release/*` branches to build, test, sign, and pack preview packages.
 
-1. Merge PR to `main`
-2. Pipeline runs: Build > Test > Sign > Pack
-3. **PushToNuGet stage** waits for approval (main branch only)
-4. Approver reviews in ADO and clicks **Approve**
-5. Packages are pushed to nuget.org
+1. Open or update a PR targeting `main` or `release/*`
+1. Pipeline runs: Build > Test > Sign > Pack
+1. Signed packages are produced as pipeline artifacts and can be downloaded as described in [Downloading Preview Packages from Pipeline Artifacts](#downloading-preview-packages-from-pipeline-artifacts)
+1. `main` only: After PR merge, `PushToNuGet` stage triggered
+1. **PushToNuGet stage** waits for approval (main branch only)
+1. Approver reviews in ADO and clicks **Approve**
+1. Packages are pushed to nuget.org
 
 ### Production Releases (teams.net pipeline)
 
