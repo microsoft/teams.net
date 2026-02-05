@@ -46,6 +46,12 @@ stages:
       - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
         displayName: 'Test'
 
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results'
+        inputs:
+          testResultsFormat: 'VSTest'
+          testResultsFiles: '**/*.trx'
+
       - task: EsrpCodeSigning@5
         displayName: "Authenticode Sign DLLs"
         inputs:
