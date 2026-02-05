@@ -38,6 +38,7 @@ public class ConversationUpdateActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected ConversationUpdateActivity(CoreActivity activity) : base(activity)
     {
+        /*
         if (activity.Properties.TryGetValue("topicName", out var topicName))
         {
             TopicName = topicName?.ToString();
@@ -63,6 +64,7 @@ public class ConversationUpdateActivity : TeamsActivity
             }
             activity.Properties.Remove("historyDisclosed");
         }
+        */
 
         if (activity.Properties.TryGetValue("membersAdded", out var membersAdded) && membersAdded != null)
         {
@@ -91,6 +93,8 @@ public class ConversationUpdateActivity : TeamsActivity
         }
     }
 
+    //TODO : review properties
+    /*
     /// <summary>
     /// Gets or sets the updated topic name of the conversation.
     /// </summary>
@@ -102,6 +106,7 @@ public class ConversationUpdateActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("historyDisclosed")]
     public bool? HistoryDisclosed { get; set; }
+    */
 
     /// <summary>
     /// Gets or sets the collection of members added to the conversation.
@@ -136,6 +141,8 @@ public static class ConversationEventTypes
     /// </summary>
     public const string ChannelRenamed = "channelRenamed";
 
+    //TODO : review these events
+    /*
     /// <summary>
     /// Channel restored event.
     /// </summary>
@@ -160,6 +167,7 @@ public static class ConversationEventTypes
     /// Channel member removed event.
     /// </summary>
     public const string ChannelMemberRemoved = "channelMemberRemoved";
+    */
 
     /// <summary>
     /// Team member added event.
@@ -182,22 +190,24 @@ public static class ConversationEventTypes
     public const string TeamDeleted = "teamDeleted";
 
     /// <summary>
-    /// Team hard deleted event.
-    /// </summary>
-    public const string TeamHardDeleted = "teamHardDeleted";
-
-    /// <summary>
     /// Team renamed event.
     /// </summary>
     public const string TeamRenamed = "teamRenamed";
 
     /// <summary>
-    /// Team restored event.
-    /// </summary>
-    public const string TeamRestored = "teamRestored";
-
-    /// <summary>
     /// Team unarchived event.
     /// </summary>
     public const string TeamUnarchived = "teamUnarchived";
+
+    /*TODO : review these events
+    /// <summary>
+    /// Team hard deleted event.
+    /// </summary>
+    public const string TeamHardDeleted = "teamHardDeleted";
+
+    /// <summary>
+    /// Team restored event.
+    /// </summary>
+    public const string TeamRestored = "teamRestored";
+    */
 }

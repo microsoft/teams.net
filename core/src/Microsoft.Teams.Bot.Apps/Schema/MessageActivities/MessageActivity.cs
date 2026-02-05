@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -69,6 +70,17 @@ public class MessageActivity : TeamsActivity
             Text = text?.ToString();
             activity.Properties.Remove("text");
         }
+        if (activity.Properties.TryGetValue("textFormat", out var textFormat))
+        {
+            TextFormat = textFormat?.ToString();
+            activity.Properties.Remove("textFormat");
+        }
+        if (activity.Properties.TryGetValue("attachmentLayout", out var attachmentLayout))
+        {
+            AttachmentLayout = attachmentLayout?.ToString();
+            activity.Properties.Remove("attachmentLayout");
+        }
+        /*
         if (activity.Properties.TryGetValue("speak", out var speak))
         {
             Speak = speak?.ToString();
@@ -83,16 +95,6 @@ public class MessageActivity : TeamsActivity
         {
             Summary = summary?.ToString();
             activity.Properties.Remove("summary");
-        }
-        if (activity.Properties.TryGetValue("textFormat", out var textFormat))
-        {
-            TextFormat = textFormat?.ToString();
-            activity.Properties.Remove("textFormat");
-        }
-        if (activity.Properties.TryGetValue("attachmentLayout", out var attachmentLayout))
-        {
-            AttachmentLayout = attachmentLayout?.ToString();
-            activity.Properties.Remove("attachmentLayout");
         }
         if (activity.Properties.TryGetValue("importance", out var importance))
         {
@@ -109,6 +111,7 @@ public class MessageActivity : TeamsActivity
             Expiration = expiration?.ToString();
             activity.Properties.Remove("expiration");
         }
+        */
     }
 
     /// <summary>
@@ -116,7 +119,20 @@ public class MessageActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("text")]
     public string? Text { get; set; }
+    /// <summary>
+    /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
+    /// </summary>
+    [JsonPropertyName("textFormat")]
+    public string? TextFormat { get; set; }
 
+    /// <summary>
+    /// Gets or sets the attachment layout.
+    /// </summary>
+    [JsonPropertyName("attachmentLayout")]
+    public string? AttachmentLayout { get; set; }
+
+    //TODO : Review properties
+    /*
     /// <summary>
     /// Gets or sets the SSML speak content of the message.
     /// </summary>
@@ -136,18 +152,6 @@ public class MessageActivity : TeamsActivity
     public string? Summary { get; set; }
 
     /// <summary>
-    /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
-    /// </summary>
-    [JsonPropertyName("textFormat")]
-    public string? TextFormat { get; set; }
-
-    /// <summary>
-    /// Gets or sets the attachment layout.
-    /// </summary>
-    [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout { get; set; }
-
-    /// <summary>
     /// Gets or sets the importance. See <see cref="ImportanceLevels"/> for common values.
     /// </summary>
     [JsonPropertyName("importance")]
@@ -165,27 +169,10 @@ public class MessageActivity : TeamsActivity
     [JsonPropertyName("expiration")]
     public string? Expiration { get; set; }
 
-}
+    [JsonPropertyName("suggestedActions")]
+    public SuggestedActions? SuggestedActions { get; set; }
+    */
 
-/// <summary>
-/// String constants for input hints.
-/// </summary>
-public static class InputHints
-{
-    /// <summary>
-    /// Accepting input hint.
-    /// </summary>
-    public const string AcceptingInput = "acceptingInput";
-
-    /// <summary>
-    /// Ignoring input hint.
-    /// </summary>
-    public const string IgnoringInput = "ignoringInput";
-
-    /// <summary>
-    /// Expecting input hint.
-    /// </summary>
-    public const string ExpectingInput = "expectingInput";
 }
 
 /// <summary>
@@ -209,9 +196,34 @@ public static class TextFormats
     public const string Xml = "xml";
 }
 
+
+/// <summary>
+/// String constants for input hints.
+/// </summary>
+/*
+public static class InputHints
+{
+    /// <summary>
+    /// Accepting input hint.
+    /// </summary>
+    public const string AcceptingInput = "acceptingInput";
+
+    /// <summary>
+    /// Ignoring input hint.
+    /// </summary>
+    public const string IgnoringInput = "ignoringInput";
+
+    /// <summary>
+    /// Expecting input hint.
+    /// </summary>
+    public const string ExpectingInput = "expectingInput";
+}
+*/
+
 /// <summary>
 /// String constants for importance levels.
 /// </summary>
+/*
 public static class ImportanceLevels
 {
     /// <summary>
@@ -234,10 +246,12 @@ public static class ImportanceLevels
     /// </summary>
     public const string Urgent = "urgent";
 }
+*/
 
 /// <summary>
 /// String constants for delivery modes.
 /// </summary>
+/*
 public static class DeliveryModes
 {
     /// <summary>
@@ -260,3 +274,21 @@ public static class DeliveryModes
     /// </summary>
     public const string ExpectedReplies = "expectReplies";
 }
+*/
+
+/*public class SuggestedActions
+{
+    /// <summary>
+    /// Ids of the recipients that the actions should be shown to.  These Ids are relative to the
+    /// channelId and a subset of all recipients of the activity
+    /// </summary>
+    [JsonPropertyName("to")]
+    public IList<string> To { get; set; } = [];
+
+    /// <summary>
+    /// Actions that can be shown to the user
+    /// </summary>
+    [JsonPropertyName("actions")]
+    public IList<Cards.Action> Actions { get; set; } = [];
+}
+*/

@@ -87,13 +87,13 @@ public class ActivitiesTests
         var activity = new MessageUpdateActivity
         {
             Text = "Updated message",
-            Speak = "Updated message spoken"
+            //Speak = "Updated message spoken"
         };
 
         string json = activity.ToJson();
         Assert.Contains("\"type\": \"messageUpdate\"", json);
         Assert.Contains("\"text\": \"Updated message\"", json);
-        Assert.Contains("\"speak\": \"Updated message spoken\"", json);
+        //Assert.Contains("\"speak\": \"Updated message spoken\"", json);
     }
 
     [Fact]
@@ -102,12 +102,11 @@ public class ActivitiesTests
         var activity = new MessageUpdateActivity
         {
             Text = "Updated",
-            InputHint = InputHints.AcceptingInput,
             TextFormat = TextFormats.Markdown
         };
 
         Assert.Equal("Updated", activity.Text);
-        Assert.Equal(InputHints.AcceptingInput, activity.InputHint);
+        //Assert.Equal(InputHints.AcceptingInput, activity.InputHint);
         Assert.Equal(TextFormats.Markdown, activity.TextFormat);
     }
 
@@ -144,12 +143,12 @@ public class ActivitiesTests
         {
             Type = TeamsActivityType.ConversationUpdate
         };
-        coreActivity.Properties["topicName"] = "Converted Topic";
+        //coreActivity.Properties["topicName"] = "Converted Topic";
 
         ConversationUpdateActivity activity = ConversationUpdateActivity.FromActivity(coreActivity);
         Assert.NotNull(activity);
         Assert.Equal(TeamsActivityType.ConversationUpdate, activity.Type);
-        Assert.Equal("Converted Topic", activity.TopicName);
+        //Assert.Equal("Converted Topic", activity.TopicName);
     }
 
     #endregion

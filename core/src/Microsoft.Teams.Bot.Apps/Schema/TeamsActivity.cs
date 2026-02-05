@@ -1,9 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -28,21 +26,6 @@ public class TeamsActivity : CoreActivity
             ? factory(activity)
             : new TeamsActivity(activity);  // Fallback to base type
     }
-
-    /// <summary>
-    /// Creates a new instance of the specified activity type from JSON string.
-    /// </summary>
-    /// <typeparam name="T">The expected activity type.</typeparam>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="typeInfo">The JSON type info for deserialization.</param>
-    /// <returns>An activity of type T.</returns>
-    public static T FromJsonString<T>(string json, JsonTypeInfo<T> typeInfo) where T : TeamsActivity
-    {
-        T activity = JsonSerializer.Deserialize(json, typeInfo)!;
-        activity.Rebase();
-        return activity;
-    }
-
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.

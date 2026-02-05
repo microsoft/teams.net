@@ -89,6 +89,7 @@ public class MessageReaction
     [JsonPropertyName("type")]
     public string? Type { get; set; }
 
+    /*
     /// <summary>
     /// Gets or sets the date and time when the reaction was created.
     /// </summary>
@@ -100,30 +101,7 @@ public class MessageReaction
     /// </summary>
     [JsonPropertyName("user")]
     public ReactionUser? User { get; set; }
-}
-
-/// <summary>
-/// Represents a user who created a reaction.
-/// </summary>
-public class ReactionUser
-{
-    /// <summary>
-    /// Gets or sets the user identifier.
-    /// </summary>
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets the user identity type.
-    /// </summary>
-    [JsonPropertyName("userIdentityType")]
-    public string? UserIdentityType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the display name of the user.
-    /// </summary>
-    [JsonPropertyName("displayName")]
-    public string? DisplayName { get; set; }
+    */
 }
 
 /// <summary>
@@ -167,6 +145,31 @@ public static class ReactionTypes
     public const string PlusOne = "plusOne";
 }
 
+/*
+/// <summary>
+/// Represents a user who created a reaction.
+/// </summary>
+public class ReactionUser
+{
+    /// <summary>
+    /// Gets or sets the user identifier.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user identity type.
+    /// </summary>
+    [JsonPropertyName("userIdentityType")]
+    public string? UserIdentityType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the display name of the user.
+    /// </summary>
+    [JsonPropertyName("displayName")]
+    public string? DisplayName { get; set; }
+}
+
 /// <summary>
 /// String constants for user identity types.
 /// </summary>
@@ -192,3 +195,4 @@ public static class UserIdentityTypes
     /// </summary>
     public const string FederatedUser = "federatedUser";
 }
+*/

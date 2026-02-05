@@ -21,6 +21,11 @@ public static class ConversationType
     /// Group chat conversation.
     /// </summary>
     public const string GroupChat = "groupChat";
+
+    /// <summary>
+    /// Channel conversation
+    /// </summary>
+    public const string Channel = "channel";
 }
 
 /// <summary>
@@ -56,6 +61,17 @@ public class TeamsConversation : Conversation
         {
             ConversationType = je2.GetString();
         }
+        if (conversation.Properties.TryGetValue("isGroup", out object? isGroupObj) && isGroupObj is JsonElement je3)
+        {
+            if (je3.ValueKind == JsonValueKind.True)
+            {
+                IsGroup = true;
+            }
+            else if (je3.ValueKind == JsonValueKind.False)
+            {
+                IsGroup = false;
+            }
+        }
     }
 
     /// <summary>
@@ -67,4 +83,9 @@ public class TeamsConversation : Conversation
     /// Conversation Type. See <see cref="Schema.ConversationType"/> for known values.
     /// </summary>
     [JsonPropertyName("conversationType")] public string? ConversationType { get; set; }
+
+    /// <summary>
+    /// Indicates whether the conversation is a group conversation.
+    /// </summary>
+    [JsonPropertyName("isGroup")] public bool? IsGroup { get; set; }
 }
