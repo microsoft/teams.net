@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 
@@ -13,7 +12,7 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 
-public class Router(ILogger<Router> logger)
+public class Router(ILogger<Router>? logger = null)
 {
     private readonly List<RouteBase> _routes = [];
 
@@ -45,7 +44,7 @@ public class Router(ILogger<Router> logger)
 
         if (matchingRoutes.Count == 0)
         {
-            logger.LogDebug(
+            logger?.LogDebug(
                 "No routes matched activity type '{Type}'",
                 ctx.Activity.Type
             );
@@ -54,7 +53,7 @@ public class Router(ILogger<Router> logger)
 
         if (matchingRoutes.Count > 1)
         {
-            logger.LogWarning(
+            logger?.LogWarning(
                 "Activity type '{Type}' matched {Count} routes: [{Routes}]. Only the first route will execute without Next().",
                 ctx.Activity.Type,
                 matchingRoutes.Count,
@@ -80,7 +79,7 @@ public class Router(ILogger<Router> logger)
 
         if (matchingRoutes.Count == 0)
         {
-            logger.LogWarning(
+            logger?.LogWarning(
                 "No routes matched activity type '{Type}'",
                 ctx.Activity.Type
             );
@@ -89,7 +88,7 @@ public class Router(ILogger<Router> logger)
 
         if (matchingRoutes.Count > 1)
         {
-            logger.LogWarning(
+            logger?.LogWarning(
                 "Activity type '{Type}' matched {Count} routes: [{Routes}]. Only the first route will execute without Next().",
                 ctx.Activity.Type,
                 matchingRoutes.Count,
