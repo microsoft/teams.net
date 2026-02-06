@@ -20,6 +20,47 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
     await context.SendActivityAsync("Hi there! 👋 You said hello!", cancellationToken);
 });
 
+// Markdown handler: matches "markdown" (case-insensitive)
+teamsApp.OnMessage("(?i)markdown", async (context, cancellationToken) =>
+{
+    var markdownMessage = new MessageActivity("""
+# Markdown Examples
+
+Here are some **markdown** formatting examples:
+
+## Text Formatting
+- **Bold text**
+- *Italic text*
+- ~~Strikethrough~~
+- `inline code`
+
+## Lists
+1. First item
+2. Second item
+3. Third item
+
+## Code Block
+```csharp
+public class Example
+{
+    public string Name { get; set; }
+}
+```
+
+## Links
+[Visit Microsoft](https://www.microsoft.com)
+
+## Quotes
+> This is a blockquote
+> It can span multiple lines
+""")
+    {
+        TextFormat = TextFormats.Markdown
+    };
+
+    await context.SendActivityAsync(markdownMessage, cancellationToken);
+});
+
 // Regex-based handler: matches commands starting with "/"
 var commandRegex = new Regex(@"^/(\w+)(.*)$", RegexOptions.Compiled);
 teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>

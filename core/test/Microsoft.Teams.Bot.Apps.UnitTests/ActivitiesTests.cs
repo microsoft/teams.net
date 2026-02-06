@@ -14,8 +14,6 @@ namespace Microsoft.Teams.Bot.Apps.UnitTests;
 /// </summary>
 public class ActivitiesTests
 {
-    #region MessageReactionActivity Tests
-
     [Fact]
     public void MessageReaction_FromActivityConvertsCorrectly()
     {
@@ -35,10 +33,6 @@ public class ActivitiesTests
         Assert.NotNull(activity.ReactionsAdded);
         Assert.Equal(2, activity.ReactionsAdded!.Count);
     }
-
-    #endregion
-
-    #region MessageDeleteActivity Tests
 
     [Fact]
     public void MessageDelete_Constructor_Default_SetsMessageDeleteType()
@@ -61,10 +55,6 @@ public class ActivitiesTests
         Assert.Equal(TeamsActivityType.MessageDelete, messageDelete.Type);
         Assert.Equal("deleted-msg-id", messageDelete.Id);
     }
-
-    #endregion
-
-    #region MessageUpdateActivity Tests
 
     [Fact]
     public void MessageUpdate_Constructor_Default_SetsMessageUpdateType()
@@ -110,10 +100,6 @@ public class ActivitiesTests
         Assert.Equal("Test message", messageUpdate.Text);
     }
 
-    #endregion
-
-    #region ConversationUpdateActivity Tests
-
     [Fact]
     public void ConversationUpdate_Constructor_Default_SetsConversationUpdateType()
     {
@@ -136,10 +122,6 @@ public class ActivitiesTests
         //Assert.Equal("Converted Topic", activity.TopicName);
     }
 
-    #endregion
-
-    #region InstallUpdateActivity Tests
-
     [Fact]
     public void InstallUpdate_Constructor_Default_SetsInstallationUpdateType()
     {
@@ -161,6 +143,4 @@ public class ActivitiesTests
         Assert.Equal(TeamsActivityType.InstallationUpdate, activity.Type);
         Assert.Equal("remove", activity.Action);
     }
-
-    #endregion
 }

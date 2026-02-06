@@ -12,7 +12,7 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 
-public class Router(ILogger<Router>? logger = null)
+public class Router(ILogger<Router> logger)
 {
     private readonly List<RouteBase> _routes = [];
 
@@ -42,18 +42,18 @@ public class Router(ILogger<Router>? logger = null)
 
         var matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
 
-        if (matchingRoutes.Count == 0)
-        {
-            logger?.LogDebug(
-                "No routes matched activity type '{Type}'",
-                ctx.Activity.Type
-            );
+        if (matchingRoutes.Count == 0 && _routes.Count > 0)
+            {
+                logger.LogDebug(
+                    "No routes matched activity type '{Type}'",
+                    ctx.Activity.Type
+                );
             return;
         }
 
         if (matchingRoutes.Count > 1)
         {
-            logger?.LogWarning(
+            logger.LogWarning(
                 "Activity type '{Type}' matched {Count} routes: [{Routes}]. Only the first route will execute without Next().",
                 ctx.Activity.Type,
                 matchingRoutes.Count,
@@ -77,9 +77,9 @@ public class Router(ILogger<Router>? logger = null)
 
         var matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
 
-        if (matchingRoutes.Count == 0)
+        if (matchingRoutes.Count == 0 && _routes.Count > 0)
         {
-            logger?.LogWarning(
+            logger.LogWarning(
                 "No routes matched activity type '{Type}'",
                 ctx.Activity.Type
             );
@@ -88,7 +88,7 @@ public class Router(ILogger<Router>? logger = null)
 
         if (matchingRoutes.Count > 1)
         {
-            logger?.LogWarning(
+            logger.LogWarning(
                 "Activity type '{Type}' matched {Count} routes: [{Routes}]. Only the first route will execute without Next().",
                 ctx.Activity.Type,
                 matchingRoutes.Count,
