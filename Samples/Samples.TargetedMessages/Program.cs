@@ -21,7 +21,7 @@ teams.OnMessage(async context =>
 {
     var activity = context.Activity;
     var text = activity.Text?.ToLowerInvariant() ?? "";
-    
+
     context.Log.Info($"[MESSAGE] Received: {text}");
 
     if (text.Contains("send"))
@@ -31,7 +31,7 @@ teams.OnMessage(async context =>
             new MessageActivity("👋 This is a **targeted message** - only YOU can see this!")
                 .WithTargetedRecipient(true)
         );
-        
+
         context.Log.Info($"[SEND] Sent targeted message");
     }
     else if (text.Contains("update"))
@@ -39,27 +39,27 @@ teams.OnMessage(async context =>
         // UPDATE: Send a targeted message, then update it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
         var userId = activity.From?.Id ?? "";
-        
+
         var response = await context.Send(
             new MessageActivity("📝 This message will be **updated** in 3 seconds...")
                 .WithTargetedRecipient(true)
         );
-        
+
         if (response?.Id != null)
         {
             var messageId = response.Id;
-            
+
             _ = Task.Run(async () =>
             {
                 await Task.Delay(3000);
-                
+
                 try
                 {
                     var updatedMessage = new MessageActivity($"✏️ **Updated!** This message was modified at {DateTime.UtcNow:HH:mm:ss}")
                         .WithTargetedRecipient(userId);
-                    
+
                     await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updatedMessage);
-                    
+
                     Console.WriteLine($"[UPDATE] Updated targeted message");
                 }
                 catch (Exception ex)
@@ -68,31 +68,31 @@ teams.OnMessage(async context =>
                 }
             });
         }
-        
+
         context.Log.Info($"[UPDATE] Scheduled update in 3 seconds");
     }
     else if (text.Contains("delete"))
     {
         // DELETE: Send a targeted message, then delete it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
-        
+
         var response = await context.Send(
             new MessageActivity("🗑️ This message will be **deleted** in 3 seconds...")
                 .WithTargetedRecipient(true)
         );
-        
+
         if (response?.Id != null)
         {
             var messageId = response.Id;
-            
+
             _ = Task.Run(async () =>
             {
                 await Task.Delay(3000);
-                
+
                 try
                 {
                     await context.Api.Conversations.Activities.DeleteTargetedAsync(conversationId, messageId);
-                    
+
                     Console.WriteLine($"[DELETE] Deleted targeted message");
                 }
                 catch (Exception ex)
@@ -101,7 +101,7 @@ teams.OnMessage(async context =>
                 }
             });
         }
-        
+
         context.Log.Info($"[DELETE] Scheduled delete in 3 seconds");
     }
     else if (text.Contains("reply"))
@@ -111,7 +111,7 @@ teams.OnMessage(async context =>
             new MessageActivity("💬 This is a **targeted reply** - threaded and private!")
                 .WithTargetedRecipient(true)
         );
-        
+
         context.Log.Info("[REPLY] Sent targeted reply");
     }
     else if (text.Contains("help"))

@@ -22,7 +22,7 @@ teams.Use(async context =>
     {
         await context.Next();
     }
-    catch(Exception e)
+    catch (Exception e)
     {
         context.Log.Error(e);
         context.Log.Error("error occurred during activity processing");
