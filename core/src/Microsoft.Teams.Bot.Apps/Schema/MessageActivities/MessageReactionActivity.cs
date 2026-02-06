@@ -26,23 +26,6 @@ public class MessageReactionActivity : TeamsActivity
     }
 
     /// <summary>
-    /// Deserializes a JSON string into a MessageReactionActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A MessageReactionActivity instance.</returns>
-    public static new MessageReactionActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageReactionActivity);
-    }
-
-    /// <summary>
-    /// Serializes the MessageReactionActivity to JSON with all message reaction-specific properties.
-    /// </summary>
-    /// <returns>JSON string representation of the MessageReactionActivity</returns>
-    public new string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.MessageReactionActivity);
-
-    /// <summary>
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
@@ -56,15 +39,29 @@ public class MessageReactionActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageReactionActivity(CoreActivity activity) : base(activity)
     {
-        if (activity.Properties.TryGetValue("reactionsAdded", out var reactionsAdded))
+        if (activity.Properties.TryGetValue("reactionsAdded", out var reactionsAdded) && reactionsAdded != null)
         {
-            ReactionsAdded = JsonSerializer.Deserialize<List<MessageReaction>>(
-                reactionsAdded?.ToString() ?? "[]");
+            if (reactionsAdded is JsonElement je)
+            {
+                ReactionsAdded = JsonSerializer.Deserialize<List<MessageReaction>>(je.GetRawText());
+            }
+            else
+            {
+                ReactionsAdded = reactionsAdded as IList<MessageReaction>;
+            }
+            activity.Properties.Remove("reactionsAdded");
         }
-        if (activity.Properties.TryGetValue("reactionsRemoved", out var reactionsRemoved))
+        if (activity.Properties.TryGetValue("reactionsRemoved", out var reactionsRemoved) && reactionsRemoved != null)
         {
-            ReactionsRemoved = JsonSerializer.Deserialize<List<MessageReaction>>(
-                reactionsRemoved?.ToString() ?? "[]");
+            if (reactionsRemoved is JsonElement je)
+            {
+                ReactionsRemoved = JsonSerializer.Deserialize<List<MessageReaction>>(je.GetRawText());
+            }
+            else
+            {
+                ReactionsRemoved = reactionsRemoved as IList<MessageReaction>;
+            }
+            activity.Properties.Remove("reactionsRemoved");
         }
     }
 
@@ -92,41 +89,19 @@ public class MessageReaction
     [JsonPropertyName("type")]
     public string? Type { get; set; }
 
+    /*
     /// <summary>
     /// Gets or sets the date and time when the reaction was created.
     /// </summary>
     [JsonPropertyName("createdDateTime")]
-    public DateTime? CreatedDateTime { get; set; }
+    public string? CreatedDateTime { get; set; }
 
     /// <summary>
     /// Gets or sets the user who created the reaction.
     /// </summary>
     [JsonPropertyName("user")]
     public ReactionUser? User { get; set; }
-}
-
-/// <summary>
-/// Represents a user who created a reaction.
-/// </summary>
-public class ReactionUser
-{
-    /// <summary>
-    /// Gets or sets the user identifier.
-    /// </summary>
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
-    /// <summary>
-    /// Gets or sets the user identity type.
-    /// </summary>
-    [JsonPropertyName("userIdentityType")]
-    public string? UserIdentityType { get; set; }
-
-    /// <summary>
-    /// Gets or sets the display name of the user.
-    /// </summary>
-    [JsonPropertyName("displayName")]
-    public string? DisplayName { get; set; }
+    */
 }
 
 /// <summary>
@@ -170,6 +145,31 @@ public static class ReactionTypes
     public const string PlusOne = "plusOne";
 }
 
+/*
+/// <summary>
+/// Represents a user who created a reaction.
+/// </summary>
+public class ReactionUser
+{
+    /// <summary>
+    /// Gets or sets the user identifier.
+    /// </summary>
+    [JsonPropertyName("id")]
+    public string? Id { get; set; }
+
+    /// <summary>
+    /// Gets or sets the user identity type.
+    /// </summary>
+    [JsonPropertyName("userIdentityType")]
+    public string? UserIdentityType { get; set; }
+
+    /// <summary>
+    /// Gets or sets the display name of the user.
+    /// </summary>
+    [JsonPropertyName("displayName")]
+    public string? DisplayName { get; set; }
+}
+
 /// <summary>
 /// String constants for user identity types.
 /// </summary>
@@ -195,3 +195,4 @@ public static class UserIdentityTypes
     /// </summary>
     public const string FederatedUser = "federatedUser";
 }
+*/
