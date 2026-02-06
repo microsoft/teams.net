@@ -6,11 +6,11 @@ This document describes how to release packages for the Teams SDK for .NET. It a
 
 | Pipeline | File | Trigger | Signing | Destination | Approval |
 |----------|------|---------|---------|-------------|----------|
-| **teams.net-pr** | ci.yaml | PR to `main`/`release/*` | Yes | nuget.org (`main` only) | Required (for public previews) |
+| **teams.net-pr** | ci.yaml | PR to `main`/`release/*` | After approval | Internal feed & nuget.org (`main` only) | Required |
 | **teams.net** | publish.yml | Manual | Yes | nuget.org | Required |
 | **BotCore-CD** | cd-core.yaml | PR/push to next/* (core/**) | No | Internal feed | Auto (`next/core` branch) |
 
-Note: `next/core` releases are not made available publicly. For information on internal feed consumption, please contact a teams-sdk team member internally.
+Note: Public packages are available on nuget.org. Internal feed packages are for Microsoft internal use.
 
 ## Versioning
 
@@ -76,14 +76,13 @@ The `teams.net-pr` pipeline runs on PRs and merges to `main` or `release/*` bran
 
 **On PR (build validation):**
 1. Open or update a PR targeting `main` or `release/*`
-2. Pipeline runs: Build > Test > Sign > Pack
-3. Signed packages are produced as pipeline artifacts
+2. Pipeline runs: Build > Test > Pack
+3. Unsigned packages are produced as pipeline artifacts (for local testing)
 
 **After merge to `main` (publish):**
-1. `PushToNuGet` stage is triggered
-2. **PushToNuGet stage** waits for approval
-3. Approver reviews in ADO and clicks **Approve**
-4. Packages are pushed to nuget.org
+1. `PushToNuGet` stage is triggered (requires approval)
+2. Approver reviews in ADO and clicks **Approve**
+3. Stage builds, signs (Authenticode + NuGet), and pushes to internal feed & nuget.org
 
 #### Installing Published Preview Packages
 
