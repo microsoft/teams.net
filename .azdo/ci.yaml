@@ -2,7 +2,7 @@
 # For preview builds, this pipeline (teams.net-pr) runs on PRs/merges to main or release branches.
 #   - PR: Runs on pull requests targeting 'main' or 'release/*' branches (build/test/pack only)
 #   - CI: Runs on pushes to main branch (adds PushToNuGet stage after PR merge).
-#         PushToNuGet stage (main only, after approval) signs DLLs & packages, then pushes to nuget.org
+#         PushToNuGet stage (main only, after approval) builds, signs, pushes to internal feed & nuget.org
 # =============================================================================
 
 # CI trigger: runs after PRs are merged to main
@@ -81,13 +81,6 @@ stages:
           arguments: '/p:SymbolPackageFormat=snupkg'
 
       - task: PublishPipelineArtifact@1
-        displayName: 'Publish Build Outputs (DLLs for signing)'
-        inputs:
-          targetPath: '$(folderPath)/Libraries'
-          artifact: 'BuildOutputs'
-          publishLocation: 'pipeline'
-
-      - task: PublishPipelineArtifact@1
         displayName: 'Publish NuGet Artifacts (unsigned)'
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)'
@@ -109,9 +102,6 @@ stages:
           steps:
           - checkout: self
 
-          - download: current
-            artifact: BuildOutputs
-
           - task: UseDotNet@2
             displayName: 'Use .NET 8'
             inputs:
@@ -127,6 +117,9 @@ stages:
           - script: dotnet restore
             displayName: 'Restore'
 
+          - script: dotnet build --no-restore --configuration $(buildConfiguration)
+            displayName: 'Build'
+
           - task: EsrpCodeSigning@5
             displayName: 'Authenticode Sign DLLs'
             inputs:
@@ -137,8 +130,8 @@ stages:
               EsrpClientId: '$(authenticodeSignId)'
               AuthAKVName: esrp-teams
               UseMSIAuthentication: true
-              FolderPath: '$(Pipeline.Workspace)/BuildOutputs'
-              Pattern: '**/*.dll'
+              FolderPath: '$(Build.SourcesDirectory)'
+              Pattern: 'Libraries/**/*.dll'
               UseMinimatch: true
               signConfigType: 'inlineSignParams'
               inlineOperation: |
@@ -173,7 +166,7 @@ stages:
             inputs:
               command: pack
               packagesToPack: '$(Build.SourcesDirectory)/Libraries/**/*.csproj'
-              packDestination: '$(Pipeline.Workspace)/SignedPackages'
+              packDestination: '$(Build.ArtifactStagingDirectory)'
               includeSymbols: false
               nobuild: true
               configuration: '$(buildConfiguration)'
@@ -189,7 +182,7 @@ stages:
               EsrpClientId: '$(nugetSignId)'
               AuthAKVName: esrp-teams
               UseMSIAuthentication: true
-              FolderPath: '$(Pipeline.Workspace)/SignedPackages'
+              FolderPath: '$(Build.ArtifactStagingDirectory)'
               Pattern: |
                 *.nupkg
                 *.snupkg
@@ -218,9 +211,17 @@ stages:
               PendingAnalysisWaitTimeoutMinutes: '5'
 
           - task: NuGetCommand@2
-            displayName: 'Push NuGet Packages'
+            displayName: 'Push to Internal Feed'
             inputs:
               command: push
-              packagesToPush: '$(Pipeline.Workspace)/SignedPackages/*.nupkg'
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+              nuGetFeedType: internal
+              publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
+
+          - task: NuGetCommand@2
+            displayName: 'Push to nuget.org'
+            inputs:
+              command: push
+              packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
               nuGetFeedType: external
               publishFeedCredentials: 'Microsoft.Teams.*'
