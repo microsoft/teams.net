@@ -1,8 +1,8 @@
 # =============================================================================
 # For preview builds, this pipeline (teams.net-pr) runs on PRs/merges to main or release branches.
-#   - PR: Runs on pull requests targeting 'main' or 'release/*' branches (build/test/sign/pack only)
-#   - CI: Runs on pushes to `main` branch (enables PushToNuGet stage after PR merge).
-# It builds, tests, signs, and packs the code. Pushes to nuget.org (only on approval) on main branch.
+#   - PR: Runs on pull requests targeting 'main' or 'release/*' branches (build/test/pack only)
+#   - CI: Runs on pushes to main branch (adds PushToNuGet stage after PR merge).
+#         PushToNuGet stage (main only, after approval) signs DLLs & packages, then pushes to nuget.org
 # =============================================================================
 
 # CI trigger: runs after PRs are merged to main
@@ -35,11 +35,12 @@ variables:
   nugetSignId: 'a94a770a-9a7b-4888-a3ea-24584b851e49'
 
 stages:
-- stage: Build_Test_Sign_Pack
+- stage: Build_Test_Pack
   jobs:
-  - job: BuildTestSignPack
-    displayName: 'Build, Test, Sign, and Pack'
+  - job: BuildTestPack
+    displayName: 'Build, Test, and Pack'
     steps:
+      - checkout: self
 
       - task: UseDotNet@2
         displayName: 'Use .NET 8'
@@ -68,49 +69,8 @@ stages:
           testResultsFormat: 'VSTest'
           testResultsFiles: '**/*.trx'
 
-      - task: EsrpCodeSigning@5
-        displayName: "Authenticode Sign DLLs"
-        inputs:
-          ConnectedServiceName: 'TeamsESRP-CP-230012'
-          AppRegistrationTenantId: '$(appRegistrationTenantId)'
-          AppRegistrationClientId: '$(authenticodeSignId)'
-          AuthSignCertName: '$(authenticodeSignId)'
-          EsrpClientId: '$(authenticodeSignId)'
-          AuthAKVName: esrp-teams
-          UseMSIAuthentication: true
-          FolderPath: '$(folderPath)'
-          Pattern: 'Libraries/**/*.dll'
-          UseMinimatch: true
-          signConfigType: 'inlineSignParams'
-          inlineOperation: |
-            [
-              {
-                  "KeyCode": "CP-230012",
-                  "OperationCode": "SigntoolSign",
-                  "Parameters": {
-                      "OpusName": "Microsoft",
-                      "OpusInfo": "http://www.microsoft.com",
-                      "FileDigest": "/fd \"SHA256\"",
-                      "PageHash": "/NPH",
-                      "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
-                  },
-                  "ToolName": "sign",
-                  "ToolVersion": "1.0"
-              },
-              {
-                "KeyCode": "CP-230012",
-                "OperationCode": "SigntoolVerify",
-                "Parameters": {},
-                "ToolName": "sign",
-                "ToolVersion": "1.0"
-              }
-            ]
-          SessionTimeout: '60'
-          MaxConcurrency: '50'
-          MaxRetryAttempts: '5'
-
       - task: DotNetCoreCLI@2
-        displayName: 'Pack NuGet Packages'
+        displayName: 'Pack NuGet Packages (unsigned)'
         inputs:
           command: pack
           packagesToPack: '$(folderPath)/Libraries/**/*.csproj'
@@ -120,46 +80,15 @@ stages:
           configuration: '$(buildConfiguration)'
           arguments: '/p:SymbolPackageFormat=snupkg'
 
-      - task: EsrpCodeSigning@5
-        displayName: 'Sign NuGet Packages'
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish Build Outputs (DLLs for signing)'
         inputs:
-          ConnectedServiceName: 'TeamsESRP-CP-401405'
-          AppRegistrationTenantId: '$(appRegistrationTenantId)'
-          AppRegistrationClientId: '$(nugetSignId)'
-          AuthSignCertName: '$(nugetSignId)'
-          EsrpClientId: '$(nugetSignId)'
-          AuthAKVName: esrp-teams
-          UseMSIAuthentication: true
-          FolderPath: '$(Build.ArtifactStagingDirectory)'
-          Pattern: |
-            *.nupkg
-            *.snupkg
-          UseMinimatch: true
-          signConfigType: 'inlineSignParams'
-          inlineOperation: |
-            [
-              {
-                "KeyCode": "CP-401405",
-                "OperationCode": "NuGetSign",
-                "ToolName": "sign",
-                "ToolVersion": "1.0",
-                "Parameters": {}
-              },
-              {
-                "KeyCode": "CP-401405",
-                "OperationCode": "NuGetVerify",
-                "Parameters": {},
-                "ToolName": "sign",
-                "ToolVersion": "1.0"
-              }
-            ]
-          SessionTimeout: '20'
-          MaxConcurrency: '50'
-          MaxRetryAttempts: '5'
-          PendingAnalysisWaitTimeoutMinutes: '5'
+          targetPath: '$(folderPath)/Libraries'
+          artifact: 'BuildOutputs'
+          publishLocation: 'pipeline'
 
       - task: PublishPipelineArtifact@1
-        displayName: 'Publish NuGet Artifacts'
+        displayName: 'Publish NuGet Artifacts (unsigned)'
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)'
           artifact: 'Packages'
@@ -167,7 +96,7 @@ stages:
 
 - stage: PushToNuGet
   displayName: 'Push Preview Packages to nuget.org'
-  dependsOn: Build_Test_Sign_Pack
+  dependsOn: Build_Test_Pack
   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
   jobs:
   - deployment: PushPackages
@@ -178,13 +107,120 @@ stages:
       runOnce:
         deploy:
           steps:
+          - checkout: self
+
           - download: current
-            artifact: Packages
+            artifact: BuildOutputs
+
+          - task: UseDotNet@2
+            displayName: 'Use .NET 8'
+            inputs:
+              packageType: 'sdk'
+              version: '8.0.x'
+
+          - task: UseDotNet@2
+            displayName: 'Use .NET 10'
+            inputs:
+              packageType: 'sdk'
+              version: '10.0.x'
+
+          - script: dotnet restore
+            displayName: 'Restore'
+
+          - task: EsrpCodeSigning@5
+            displayName: 'Authenticode Sign DLLs'
+            inputs:
+              ConnectedServiceName: 'TeamsESRP-CP-230012'
+              AppRegistrationTenantId: '$(appRegistrationTenantId)'
+              AppRegistrationClientId: '$(authenticodeSignId)'
+              AuthSignCertName: '$(authenticodeSignId)'
+              EsrpClientId: '$(authenticodeSignId)'
+              AuthAKVName: esrp-teams
+              UseMSIAuthentication: true
+              FolderPath: '$(Pipeline.Workspace)/BuildOutputs'
+              Pattern: '**/*.dll'
+              UseMinimatch: true
+              signConfigType: 'inlineSignParams'
+              inlineOperation: |
+                [
+                  {
+                      "KeyCode": "CP-230012",
+                      "OperationCode": "SigntoolSign",
+                      "Parameters": {
+                          "OpusName": "Microsoft",
+                          "OpusInfo": "http://www.microsoft.com",
+                          "FileDigest": "/fd \"SHA256\"",
+                          "PageHash": "/NPH",
+                          "TimeStamp": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                      },
+                      "ToolName": "sign",
+                      "ToolVersion": "1.0"
+                  },
+                  {
+                    "KeyCode": "CP-230012",
+                    "OperationCode": "SigntoolVerify",
+                    "Parameters": {},
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                  }
+                ]
+              SessionTimeout: '60'
+              MaxConcurrency: '50'
+              MaxRetryAttempts: '5'
+
+          - task: DotNetCoreCLI@2
+            displayName: 'Pack NuGet Packages (with signed DLLs)'
+            inputs:
+              command: pack
+              packagesToPack: '$(Build.SourcesDirectory)/Libraries/**/*.csproj'
+              packDestination: '$(Pipeline.Workspace)/SignedPackages'
+              includeSymbols: false
+              nobuild: true
+              configuration: '$(buildConfiguration)'
+              arguments: '/p:SymbolPackageFormat=snupkg'
+
+          - task: EsrpCodeSigning@5
+            displayName: 'Sign NuGet Packages'
+            inputs:
+              ConnectedServiceName: 'TeamsESRP-CP-401405'
+              AppRegistrationTenantId: '$(appRegistrationTenantId)'
+              AppRegistrationClientId: '$(nugetSignId)'
+              AuthSignCertName: '$(nugetSignId)'
+              EsrpClientId: '$(nugetSignId)'
+              AuthAKVName: esrp-teams
+              UseMSIAuthentication: true
+              FolderPath: '$(Pipeline.Workspace)/SignedPackages'
+              Pattern: |
+                *.nupkg
+                *.snupkg
+              UseMinimatch: true
+              signConfigType: 'inlineSignParams'
+              inlineOperation: |
+                [
+                  {
+                    "KeyCode": "CP-401405",
+                    "OperationCode": "NuGetSign",
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0",
+                    "Parameters": {}
+                  },
+                  {
+                    "KeyCode": "CP-401405",
+                    "OperationCode": "NuGetVerify",
+                    "Parameters": {},
+                    "ToolName": "sign",
+                    "ToolVersion": "1.0"
+                  }
+                ]
+              SessionTimeout: '20'
+              MaxConcurrency: '50'
+              MaxRetryAttempts: '5'
+              PendingAnalysisWaitTimeoutMinutes: '5'
 
           - task: NuGetCommand@2
             displayName: 'Push NuGet Packages'
             inputs:
               command: push
-              packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
+              packagesToPush: '$(Pipeline.Workspace)/SignedPackages/*.nupkg'
               nuGetFeedType: external
               publishFeedCredentials: 'Microsoft.Teams.*'
