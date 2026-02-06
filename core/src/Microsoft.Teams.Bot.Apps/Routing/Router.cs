@@ -12,7 +12,7 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// </summary>
 [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 
-public class Router(ILogger<Router> logger)
+public sealed class Router(ILogger<Router> logger)
 {
     private readonly List<RouteBase> _routes = [];
 
@@ -26,7 +26,7 @@ public class Router(ILogger<Router> logger)
     /// IMPORTANT: Register specific routes before general catch-all routes.
     /// Call Next() in handlers to continue to the next matching route.
     /// </summary>
-    public Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
+    internal Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
     {
         _routes.Add(route);
         return this;
@@ -36,7 +36,7 @@ public class Router(ILogger<Router> logger)
     /// Dispatches the activity to the first matching route.
     /// Routes are checked in registration order.
     /// </summary>
-    public async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    internal async Task DispatchAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
@@ -71,7 +71,7 @@ public class Router(ILogger<Router> logger)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a response object with the outcome
     /// of the invocation.</returns>
-    public async Task<CoreInvokeResponse> DispatchWithReturnAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    internal async Task<CoreInvokeResponse> DispatchWithReturnAsync(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
