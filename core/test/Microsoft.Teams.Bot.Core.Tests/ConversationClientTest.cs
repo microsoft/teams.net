@@ -766,9 +766,9 @@ public class ConversationClientTest
 
     private ConversationAccount GetConversationAccountWithAgenticProperties()
     {
-        string agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
-        string agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
-        string agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId");
+        var agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
+        var agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
+        var agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId");
 
         if (string.IsNullOrEmpty(agenticUserId))
         {
@@ -791,9 +791,9 @@ public class ConversationClientTest
 
     private AgenticIdentity GetAgenticIdentity()
     {
-        string agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
-        string agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
-        string agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId");
+        var agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
+        var agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
+        var agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId");
 
         if (string.IsNullOrEmpty(agenticUserId))
         {
