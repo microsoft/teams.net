@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Tests;
 using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests;
@@ -49,7 +50,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            From = GetConversationAccountWithAgenticProperties(),
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
@@ -70,7 +71,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            From = GetConversationAccountWithAgenticProperties(),
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
@@ -90,7 +91,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            From = GetConversationAccountWithAgenticProperties(),
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CHANNELID") ?? throw new InvalidOperationException("TEST_CHANNELID environment variable not set")
@@ -109,7 +110,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            From = GetConversationAccountWithAgenticProperties(),
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = "a:1"
@@ -129,7 +130,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Original message from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            From = GetConversationAccountWithAgenticProperties(),
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
@@ -145,7 +146,7 @@ public class ConversationClientTest
         {
             Type = ActivityType.Message,
             Properties = { { "text", $"Updated message from Automated tests at `{DateTime.UtcNow:s}`" } },
-            From = GetConversationAccountWithAgenticProperties(),
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             ServiceUrl = _serviceUrl,
         };
 
@@ -168,7 +169,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message to delete from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            From = GetConversationAccountWithAgenticProperties(),
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
@@ -187,7 +188,7 @@ public class ConversationClientTest
             activity.Conversation.Id,
             sendResponse.Id,
             _serviceUrl,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         // If no exception was thrown, the delete was successful
@@ -201,7 +202,7 @@ public class ConversationClientTest
         IList<ConversationAccount> members = await _conversationClient.GetConversationMembersAsync(
             conversationId,
             _serviceUrl,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(members);
@@ -227,7 +228,7 @@ public class ConversationClientTest
             conversationId,
             userId,
             _serviceUrl,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(member);
@@ -248,7 +249,7 @@ public class ConversationClientTest
         IList<ConversationAccount> members = await _conversationClient.GetConversationMembersAsync(
             channelId,
             _serviceUrl,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(members);
@@ -273,7 +274,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message for GetActivityMembers test at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            From = GetConversationAccountWithAgenticProperties(),
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
@@ -289,7 +290,7 @@ public class ConversationClientTest
             activity.Conversation.Id,
             sendResponse.Id,
             _serviceUrl,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(members);
@@ -357,7 +358,7 @@ public class ConversationClientTest
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
@@ -411,7 +412,7 @@ public class ConversationClientTest
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
@@ -512,7 +513,7 @@ public class ConversationClientTest
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
@@ -547,7 +548,7 @@ public class ConversationClientTest
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
@@ -566,7 +567,7 @@ public class ConversationClientTest
             _serviceUrl,
             10,
             null!,
-            GetAgenticIdentity(),
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -764,48 +765,5 @@ public class ConversationClientTest
         testOutput.WriteLine($"  Size: {fileBytes.Length} bytes");
     }
 
-    private ConversationAccount GetConversationAccountWithAgenticProperties()
-    {
-        var agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
-        var agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
-        var agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId");
-
-        if (string.IsNullOrEmpty(agenticUserId))
-        {
-            return new ConversationAccount();
-        }
-
-        ConversationAccount account = new()
-        {
-            Id = agenticUserId,
-            Name = "Agentic User",
-            Properties =
-            {
-                { "agenticUserId", agenticUserId },
-                { "agenticAppId", agenticAppId },
-                { "agenticAppBlueprintId", agenticAppBlueprintId }
-            }
-        };
-        return account;
-    }
-
-    private AgenticIdentity GetAgenticIdentity()
-    {
-        var agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
-        var agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
-        var agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId");
-
-        if (string.IsNullOrEmpty(agenticUserId))
-        {
-            return null!;
-        }    
-
-        AgenticIdentity identity = new()
-        {
-            AgenticUserId = agenticUserId,
-            AgenticAppId = agenticAppId,
-            AgenticAppBlueprintId = agenticAppBlueprintId
-        };
-        return identity;
-    }
+   
 }
