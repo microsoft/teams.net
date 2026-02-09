@@ -210,7 +210,6 @@ public static class AddBotApplicationExtensions
 
         services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
-            // TODO: Make Instance configurable
             options.Instance = "https://login.microsoftonline.com/";
             options.TenantId = tenantId;
             options.ClientId = clientId;
@@ -241,7 +240,6 @@ public static class AddBotApplicationExtensions
 
         services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
-            // TODO: Make Instance configurable
             options.Instance = "https://login.microsoftonline.com/";
             options.TenantId = tenantId;
             options.ClientId = clientId;
@@ -268,7 +266,6 @@ public static class AddBotApplicationExtensions
 
         services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
-            // TODO: Make Instance configurable
             options.Instance = "https://login.microsoftonline.com/";
             options.TenantId = tenantId;
             options.ClientId = clientId;

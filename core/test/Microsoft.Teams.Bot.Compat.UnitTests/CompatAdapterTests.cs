@@ -90,7 +90,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 teamsApiClient,
                 mockConfig.Object,
                 Mock.Of<IHttpContextAccessor>(),
-                NullLogger<BotApplication>.Instance,
+                NullLogger<TeamsBotApplication>.Instance,
                 router);
 
             var mockServiceProvider = new Mock<IServiceProvider>();

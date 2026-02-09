@@ -45,7 +45,7 @@ public class TeamsBotApplication : BotApplication
         TeamsApiClient teamsApiClient,
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<BotApplication> logger,
+        ILogger<TeamsBotApplication> logger,
         Router router,
         string sectionName = "AzureAd")
         : base(conversationClient, userTokenClient, config, logger, sectionName)
@@ -54,7 +54,6 @@ public class TeamsBotApplication : BotApplication
         Router = router;
         OnActivity = async (activity, cancellationToken) =>
         {
-            logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 

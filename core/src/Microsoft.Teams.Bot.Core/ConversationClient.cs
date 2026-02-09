@@ -52,9 +52,11 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities";
         }
 
+        logger?.LogInformation("Sending activity to {Url}", url);
+
         string body = activity.ToJson();
 
-        logger?.LogTrace("Sending activity to {Url}: {Activity}", url, body);
+        logger?.LogTrace("Outgoing Activity :\r {Activity}", body);
 
         return (await _botHttpClient.SendAsync<SendActivityResponse>(
             HttpMethod.Post,
