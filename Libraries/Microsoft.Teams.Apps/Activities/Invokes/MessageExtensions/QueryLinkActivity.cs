@@ -60,4 +60,47 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnQueryLink(this App app, Func<IContext<MessageExtensions.QueryLinkActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.QueryLinkActivity
+        });
+
+        return app;
+    }
+
+    public static App OnQueryLink(this App app, Func<IContext<MessageExtensions.QueryLinkActivity>, CancellationToken, Task<Response<Api.MessageExtensions.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>(), context.CancellationToken),
+            Selector = activity => activity is MessageExtensions.QueryLinkActivity
+        });
+
+        return app;
+    }
+
+    public static App OnQueryLink(this App app, Func<IContext<MessageExtensions.QueryLinkActivity>, CancellationToken, Task<Api.MessageExtensions.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryLinkActivity>(), context.CancellationToken),
+            Selector = activity => activity is MessageExtensions.QueryLinkActivity
+        });
+
+        return app;
+    }
 }
