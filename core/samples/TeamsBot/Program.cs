@@ -9,7 +9,7 @@ using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using System.Text.RegularExpressions;
 using TeamsBot;
 
-var builder = TeamsBotApplication.CreateBuilder();
+var builder = TeamsBotApplication.CreateBuilder(args);
 var teamsApp = builder.Build();
 
 // ==================== MESSAGE HANDLERS ====================

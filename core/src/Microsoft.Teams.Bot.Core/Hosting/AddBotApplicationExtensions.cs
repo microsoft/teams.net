@@ -65,6 +65,15 @@ public static class AddBotApplicationExtensions
     }
 
     /// <summary>
+    /// Adds a bot application to the service collection with the default configuration section name "AzureAd".
+    /// </summary>
+    /// <param name="services"></param>
+    /// <param name="sectionName"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddBotApplication(this IServiceCollection services, string sectionName = "AzureAd")
+        => services.AddBotApplication<BotApplication>(sectionName);
+
+    /// <summary>
     /// Adds a bot application to the service collection.
     /// </summary>
     /// <typeparam name="TApp"></typeparam>
