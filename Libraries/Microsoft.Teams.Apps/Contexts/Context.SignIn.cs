@@ -25,20 +25,23 @@ public partial interface IContext<TActivity>
     /// trigger user OAuth signin flow for the activity sender
     /// </summary>
     /// <param name="options">option overrides</param>
+    /// <param name="cancellationToken">optional cancellation token</param>
     /// <returns>the existing user token if found</returns>
-    public Task<string?> SignIn(OAuthOptions? options = null);
+    public Task<string?> SignIn(OAuthOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// trigger user SSO signin flow for the activity sender
     /// </summary>
     /// <param name="options">option overrides</param>
-    public Task SignIn(SSOOptions options);
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task SignIn(SSOOptions options, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// trigger user signin flow for the activity sender
     /// </summary>
     /// <param name="connectionName">the connection name</param>
-    public Task SignOut(string? connectionName = null);
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default);
 }
 
 public partial class Context<TActivity> : IContext<TActivity>
@@ -46,10 +49,11 @@ public partial class Context<TActivity> : IContext<TActivity>
     public bool IsSignedIn { get; set; } = false;
     public required string ConnectionName { get; set; }
 
-    public async Task<string?> SignIn(OAuthOptions? options = null)
+    public async Task<string?> SignIn(OAuthOptions? options = null, CancellationToken cancellationToken = default)
     {
         options ??= new OAuthOptions();
         var reference = Ref.Copy();
+        var token = cancellationToken == default ? CancellationToken : cancellationToken;
 
         try
         {
@@ -87,7 +91,7 @@ public partial class Context<TActivity> : IContext<TActivity>
             reference.Conversation.Id = id;
             reference.Conversation.IsGroup = false;
 
-            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, CancellationToken);
+            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, token);
             await OnActivitySent(oauthCardActivity, ToActivityType());
         }
 
@@ -113,13 +117,14 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]
         });
 
-        var res = await Sender.Send(activity, reference, CancellationToken);
+        var res = await Sender.Send(activity, reference, token);
         await OnActivitySent(res, ToActivityType());
         return null;
     }
 
-    public async Task SignIn(SSOOptions options)
+    public async Task SignIn(SSOOptions options, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken == default ? CancellationToken : cancellationToken;
         var signInLink = $"{options.SignInLink}?scope={Uri.EscapeDataString(string.Join(" ", options.Scopes))}&clientId={AppId}&tenantId={TenantId}";
         var reference = Ref.Copy();
 
@@ -138,7 +143,7 @@ public partial class Context<TActivity> : IContext<TActivity>
             reference.Conversation.Id = id;
             reference.Conversation.IsGroup = false;
 
-            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, CancellationToken);
+            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, token);
             await OnActivitySent(oauthCardActivity, ToActivityType());
         }
 
@@ -163,11 +168,11 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]
         });
 
-        var res = await Sender.Send(activity, reference, CancellationToken);
+        var res = await Sender.Send(activity, reference, token);
         await OnActivitySent(res, ToActivityType());
     }
 
-    public async Task SignOut(string? connectionName = null)
+    public async Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default)
     {
         await Api.Users.Token.SignOutAsync(new()
         {

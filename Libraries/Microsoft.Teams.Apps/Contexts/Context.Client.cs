@@ -66,20 +66,23 @@ public partial interface IContext
         /// trigger user signin flow for the activity sender
         /// </summary>
         /// <param name="options">option overrides</param>
+        /// <param name="cancellationToken">optional cancellation token</param>
         /// <returns>the existing user token if found</returns>
-        public Task<string?> SignIn(OAuthOptions? options = null) => context.SignIn(options);
+        public Task<string?> SignIn(OAuthOptions? options = null, CancellationToken cancellationToken = default) => context.SignIn(options, cancellationToken);
 
         /// <summary>
         /// trigger user SSO signin flow for the activity sender
         /// </summary>
         /// <param name="options">option overrides</param>
-        public Task SignIn(SSOOptions options) => context.SignIn(options);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task SignIn(SSOOptions options, CancellationToken cancellationToken = default) => context.SignIn(options, cancellationToken);
 
         /// <summary>
         /// trigger user signin flow for the activity sender
         /// </summary>
         /// <param name="connectionName">the connection name</param>
-        public Task SignOut(string? connectionName = null) => context.SignOut(connectionName);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default) => context.SignOut(connectionName, cancellationToken);
     }
 
     /// <summary>

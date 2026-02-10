@@ -292,7 +292,7 @@ public partial class App
         var routes = Router.Select(@event.Activity);
         JsonWebToken? userToken = null;
 
-        var api = new ApiClient(Api);
+        var api = new ApiClient(Api, cancellationToken);
 
         try
         {
