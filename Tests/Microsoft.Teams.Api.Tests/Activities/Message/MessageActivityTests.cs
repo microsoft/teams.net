@@ -532,4 +532,39 @@ public class MessageActivityTests
         // Verify the property is still set on the object
         Assert.True(activity.IsTargeted);
     }
+
+    [Fact]
+    public void Validate_FluentAPI()
+    {
+        var msg = new MessageActivity("Hello")
+            .WithTargetedRecipient("user-123")
+            .WithDeliveryMode(DeliveryMode.Notification)
+            .WithRecipient(new Account() { Id = "user-123", Name = "Test User", Role = Role.User })
+            .WithImportance(Importance.High); 
+
+        Assert.Equal("Hello", msg.Text);
+        Assert.True(msg.IsTargeted);
+        Assert.NotNull(msg.Recipient);
+        Assert.Equal("user-123", msg.Recipient.Id);
+        Assert.Equal("Test User", msg.Recipient.Name);
+        Assert.Equal(Role.User, msg.Recipient.Role);
+    }
+
+
+    [Fact]
+    public void Validate_FluentAPI_With_Different_Recipient()
+    {
+        var msg = new MessageActivity("Hello")
+            .WithRecipient(new Account() { Id = "user-999", Name = "Another User", Role = Role.User })
+            .WithTargetedRecipient("user-123")
+            .WithDeliveryMode(DeliveryMode.Notification)
+            .WithImportance(Importance.High);
+
+        Assert.Equal("Hello", msg.Text);
+        Assert.True(msg.IsTargeted);
+        Assert.NotNull(msg.Recipient);
+        Assert.Equal("user-123", msg.Recipient.Id);
+        Assert.Equal("Test User", msg.Recipient.Name);
+        Assert.Equal(Role.User, msg.Recipient.Role);
+    }
 }

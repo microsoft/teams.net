@@ -153,6 +153,12 @@ public class MessageActivity : Activity
         return this;
     }
 
+    public new MessageActivity WithRecipient(Account value)
+    {
+        Recipient = value;
+        return this;
+    }
+
     public MessageActivity AddAttachment(params Attachment[] value)
     {
         Attachments ??= [];
