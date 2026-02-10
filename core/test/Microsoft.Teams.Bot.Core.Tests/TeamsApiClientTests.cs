@@ -110,7 +110,7 @@ public class TeamsApiClientTests
 
     #region Meeting Operations Tests
 
-    [Fact(Skip = "Batch operations require special permissions")]
+    [Fact]
     public async Task FetchMeetingInfo()
     {
         string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
@@ -177,7 +177,7 @@ public class TeamsApiClientTests
         }
     }
 
-    [Fact(Skip = "Requires active meeting context")]
+    [Fact]
     public async Task SendMeetingNotification()
     {
         string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
@@ -224,10 +224,10 @@ public class TeamsApiClientTests
 
     #region Batch Message Operations Tests
 
-    [Fact(Skip = "Batch operations require special permissions")]
+    [Fact]
     public async Task SendMessageToListOfUsers()
     {
-        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set");
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
 
         CoreActivity activity = new()
@@ -238,6 +238,11 @@ public class TeamsApiClientTests
 
         IList<TeamMember> members =
         [
+            new TeamMember(userId),
+            new TeamMember(userId),
+            new TeamMember(userId),
+            new TeamMember(userId),
+            new TeamMember(userId),
             new TeamMember(userId)
         ];
 
@@ -255,10 +260,10 @@ public class TeamsApiClientTests
         testOutput.WriteLine($"Batch message sent. Operation ID: {operationId}");
     }
 
-    [Fact(Skip = "Batch operations require special permissions")]
+    [Fact]
     public async Task SendMessageToAllUsersInTenant()
     {
-        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set");
 
         CoreActivity activity = new()
         {
@@ -279,10 +284,10 @@ public class TeamsApiClientTests
         testOutput.WriteLine($"Tenant-wide message sent. Operation ID: {operationId}");
     }
 
-    [Fact(Skip = "Batch operations require special permissions")]
+    [Fact]
     public async Task SendMessageToAllUsersInTeam()
     {
-        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set");
         string teamId = Environment.GetEnvironmentVariable("TEST_TEAMID") ?? throw new InvalidOperationException("TEST_TEAMID environment variable not set");
 
         CoreActivity activity = new()
@@ -340,10 +345,10 @@ public class TeamsApiClientTests
 
     #region Batch Operation Management Tests
 
-    [Fact(Skip = "Requires valid operation ID from batch operation")]
+    [Fact]
     public async Task GetOperationState()
     {
-        string operationId = Environment.GetEnvironmentVariable("TEST_OPERATION_ID") ?? throw new InvalidOperationException("TEST_OPERATION_ID environment variable not set");
+        string operationId = "amer_9d3424a5-6ce6-477f-934d-59e8ea5f7f27"; // Environment.GetEnvironmentVariable("TEST_OPERATION_ID") ?? throw new InvalidOperationException("TEST_OPERATION_ID environment variable not set");
 
         BatchOperationState result = await _teamsClient.GetOperationStateAsync(
             operationId,
