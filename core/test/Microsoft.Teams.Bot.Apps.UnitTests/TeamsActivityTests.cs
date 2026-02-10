@@ -46,7 +46,8 @@ public class TeamsActivityTests
     [Fact]
     public void DownCastTeamsActivity_To_CoreActivity_WithoutRebase()
     {
-        TeamsActivity teamsActivity = new TeamsActivity() { 
+        TeamsActivity teamsActivity = new TeamsActivity()
+        {
             Conversation = new TeamsConversation()
             {
                 Id = "19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856"
@@ -201,14 +202,20 @@ public class TeamsActivityTests
                 "recipient": {
                     "id": "rec1",
                     "name": "recname",
-                    "aadObjectId": "rec-aadId-1"
+                    "agenticUserId": "0d5eb8a3-1642-4e63-9ccc-a89aa461716c",
+                    "agenticAppId": "3fc62d4f-b04e-4c71-878b-02a2fa395fe2",
+                    "agenticAppBlueprintId": "24fff850-d7fb-4d32-a6e7-a1178874430e"
                 }
             }
             """);
         var teamsActivity = TeamsActivity.FromActivity(coreActivity);
         Assert.Equal("rec1", teamsActivity.Recipient?.Id);
         Assert.Equal("recname", teamsActivity.Recipient?.Name);
-        Assert.Equal("rec-aadId-1", teamsActivity.Recipient?.AadObjectId);
+        var agenticIdentity = AgenticIdentity.FromProperties(teamsActivity.Recipient?.Properties);
+        Assert.NotNull(agenticIdentity);
+        Assert.Equal("0d5eb8a3-1642-4e63-9ccc-a89aa461716c", agenticIdentity.AgenticUserId);
+        Assert.Equal("3fc62d4f-b04e-4c71-878b-02a2fa395fe2", agenticIdentity.AgenticAppId);
+        Assert.Equal("24fff850-d7fb-4d32-a6e7-a1178874430e", agenticIdentity.AgenticAppBlueprintId);
     }
 
     private const string jsonInvoke = """

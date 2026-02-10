@@ -43,9 +43,9 @@ public class TeamsBotApplicationBuilder
     /// <summary>
     /// Creates a new instance of the BotApplicationBuilder with default configuration and registered bot services.
     /// </summary>
-    public TeamsBotApplicationBuilder()
+    public TeamsBotApplicationBuilder(string[] args)
     {
-        _webAppBuilder = WebApplication.CreateSlimBuilder();
+        _webAppBuilder = WebApplication.CreateSlimBuilder(args);
         _webAppBuilder.Services.AddHttpContextAccessor();
         _webAppBuilder.Services.AddTeamsBotApplication();
     }

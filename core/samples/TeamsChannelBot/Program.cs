@@ -4,7 +4,7 @@
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 
-var builder = TeamsBotApplication.CreateBuilder();
+var builder = TeamsBotApplication.CreateBuilder(args);
 var app = builder.Build();
 
 

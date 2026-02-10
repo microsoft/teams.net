@@ -14,7 +14,6 @@ namespace Microsoft.Teams.Bot.Apps;
 /// <summary>
 /// Teams specific Bot Application
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsApiClient;
@@ -45,7 +44,7 @@ public class TeamsBotApplication : BotApplication
         TeamsApiClient teamsApiClient,
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<BotApplication> logger,
+        ILogger<TeamsBotApplication> logger,
         Router router,
         string sectionName = "AzureAd")
         : base(conversationClient, userTokenClient, config, logger, sectionName)
@@ -54,7 +53,6 @@ public class TeamsBotApplication : BotApplication
         Router = router;
         OnActivity = async (activity, cancellationToken) =>
         {
-            logger.LogInformation("New {Type} activity received.", activity.Type);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
@@ -70,7 +68,6 @@ public class TeamsBotApplication : BotApplication
                 {
                     httpContext.Response.StatusCode = invokeResponse.Status;
                     await httpContext.Response.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
-
                 }
             }
         };
@@ -80,9 +77,9 @@ public class TeamsBotApplication : BotApplication
     /// Creates a new instance of the TeamsBotApplicationBuilder to configure and build a Teams bot application.
     /// </summary>
     /// <returns></returns>
-    public static TeamsBotApplicationBuilder CreateBuilder()
+    public static TeamsBotApplicationBuilder CreateBuilder(string[] args)
     {
-        _botApplicationBuilder = new TeamsBotApplicationBuilder();
+        _botApplicationBuilder = new TeamsBotApplicationBuilder(args);
         return _botApplicationBuilder;
     }
 

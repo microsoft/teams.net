@@ -16,12 +16,12 @@
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.22" NoWarn="NU1605" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" NoWarn="NU1605" />
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.0" NoWarn="NU1605" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" NoWarn="NU1605" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="10.0.2" NoWarn="NU1605" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.Identity.Web.UI" Version="4.1.1" />
-        <PackageReference Include="Microsoft.Identity.Web.AgentIdentities" Version="4.1.1" />
+        <PackageReference Include="Microsoft.Identity.Web.UI" Version="4.3.0" />
+        <PackageReference Include="Microsoft.Identity.Web.AgentIdentities" Version="4.3.0" />
     </ItemGroup>
     <ItemGroup>
         <Using Include="System.Text.Json.Serialization" />

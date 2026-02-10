@@ -49,7 +49,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
         ArgumentNullException.ThrowIfNull(bot);
 
         CoreActivity? coreActivity = null;
-        _teamsBotApplication.OnActivity = async (activity, cancellationToken1) =>
+        _teamsBotApplication.OnActivity = async (activity, ct) =>
         {
             coreActivity = activity;
             TurnContext turnContext = new(this, activity.ToCompatActivity());
@@ -57,7 +57,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
-            await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, cancellationToken).ConfigureAwait(false);
+            await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
         };
 
         try
