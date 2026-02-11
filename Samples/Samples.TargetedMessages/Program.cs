@@ -38,7 +38,6 @@ teams.OnMessage(async context =>
     {
         // UPDATE: Send a targeted message, then update it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
-        var userId = activity.From?.Id ?? "";
         
         var response = await context.Send(
             new MessageActivity("📝 This message will be **updated** in 3 seconds...")

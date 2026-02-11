@@ -94,7 +94,7 @@ Targeted messages (also known as "user-specific views" or "private messages in g
 The simplest way to send a targeted message in a reactive context (responding to a user's message):
 
 ```csharp
-// Target the sender of the incoming message automatically
+// Target the sender of the incoming message
 await context.Send(
     new MessageActivity("Only you can see this!")
         .WithRecipient(context.Activity.From, true)  
@@ -110,7 +110,7 @@ When sending proactively (bot-initiated), you must specify the recipient explici
 await teams.Send(
     conversationId,
     new MessageActivity("This is for you specifically!")
-        .WithRecipient(new Account { Id = "user-id" }, true)  // Must provide explicit user ID
+        .WithRecipient(new Account { Id = userId }, true)  // Must provide explicit user ID
 );
 ```
 

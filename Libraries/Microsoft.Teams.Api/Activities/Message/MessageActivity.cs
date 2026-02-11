@@ -146,7 +146,7 @@ public class MessageActivity : Activity
         return this;
     }
 
-    public new MessageActivity WithRecipient(Account value, bool isTargeted = false)
+    public override MessageActivity WithRecipient(Account value, bool isTargeted = false)
     {
         Recipient = value;
         IsTargeted = isTargeted;

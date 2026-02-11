@@ -416,8 +416,12 @@ public partial class Activity : IActivity
         Locale ??= from.Locale;
         Timestamp ??= from.Timestamp;
         LocalTimestamp ??= from.LocalTimestamp;
-        IsTargeted = from.IsTargeted;
         AddEntity(from.Entities?.ToArray() ?? []);
+
+        if (from.IsTargeted)
+        {
+            IsTargeted = true;
+        }
 
         if (from.ChannelData is not null)
         {

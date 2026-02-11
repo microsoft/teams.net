@@ -179,7 +179,7 @@ public partial class App
         // Validate targeted messages in proactive context
         if (activity is MessageActivity messageActivity && messageActivity.IsTargeted == true && messageActivity.Recipient is null)
         {
-            throw new InvalidOperationException("Targeted messages sent proactively must specify an explicit recipient ID");
+            throw new InvalidOperationException("Targeted messages sent proactively must specify an explicit recipient ID. Use WithRecipient(recipientId, true) with an explicit recipient.");
         }
 
         var reference = new ConversationReference()
