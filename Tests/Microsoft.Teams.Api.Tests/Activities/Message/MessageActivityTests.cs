@@ -475,7 +475,7 @@ public class MessageActivityTests
     }
 
     [Fact]
-    public void WithRecipient_DoNotSetTargeted()
+    public void WithRecipient_DefaultsToNotTargeted()
     {
         var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "1" });
 
