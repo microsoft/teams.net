@@ -5,6 +5,7 @@ using System.Text.Json;
 
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Clients;
 
 namespace Microsoft.Teams.Apps;
 
@@ -54,10 +55,11 @@ public partial class Context<TActivity> : IContext<TActivity>
         options ??= new OAuthOptions();
         var reference = Ref.Copy();
         var token = cancellationToken == default ? CancellationToken : cancellationToken;
+        var api = new ApiClient(Api, token);
 
         try
         {
-            var tokenResponse = await Api.Users.Token.GetAsync(new()
+            var tokenResponse = await api.Users.Token.GetAsync(new()
             {
                 UserId = Activity.From.Id,
                 ChannelId = Activity.ChannelId,
@@ -80,7 +82,7 @@ public partial class Context<TActivity> : IContext<TActivity>
         {
             // create new 1:1 conversation with user to do SSO
             // because groupchats don't support it.
-            var (id, _, _) = await Api.Conversations.CreateAsync(new()
+            var (id, _, _) = await api.Conversations.CreateAsync(new()
             {
                 TenantId = Ref.Conversation.TenantId,
                 IsGroup = false,
@@ -96,7 +98,7 @@ public partial class Context<TActivity> : IContext<TActivity>
         }
 
         var state = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(tokenExchangeState));
-        var resource = await Api.Bots.SignIn.GetResourceAsync(new() { State = state });
+        var resource = await api.Bots.SignIn.GetResourceAsync(new() { State = state });
         var activity = new MessageActivity();
 
         activity.InputHint = InputHint.AcceptingInput;
@@ -174,7 +176,9 @@ public partial class Context<TActivity> : IContext<TActivity>
 
     public async Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default)
     {
-        await Api.Users.Token.SignOutAsync(new()
+        var token = cancellationToken == default ? CancellationToken : cancellationToken;
+        var api = new ApiClient(Api, token);
+        await api.Users.Token.SignOutAsync(new()
         {
             ChannelId = Ref.ChannelId,
             UserId = Activity.From.Id,
