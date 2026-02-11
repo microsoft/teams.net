@@ -14,6 +14,10 @@
     <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.22" NoWarn="NU1605" />
         <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.22" NoWarn="NU1605" />
+        <!-- Pin to 8.0.1 to avoid NU1903 vulnerability in transitive dependency System.Formats.Asn1 8.0.0
+             from Microsoft.Identity.Web.AgentIdentities v4.3.0
+             See: https://github.com/advisories/GHSA-447r-wph3-92pm -->
+        <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.1" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net10.0'">
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.2" NoWarn="NU1605" />

@@ -36,7 +36,6 @@ public class TeamsBotApplication : BotApplication
     /// <param name="config"></param>
     /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
-    /// <param name="router"></param>
     /// <param name="sectionName"></param>
     public TeamsBotApplication(
         ConversationClient conversationClient,
@@ -45,12 +44,11 @@ public class TeamsBotApplication : BotApplication
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
-        Router router,
         string sectionName = "AzureAd")
         : base(conversationClient, userTokenClient, config, logger, sectionName)
     {
         _teamsApiClient = teamsApiClient;
-        Router = router;
+        Router = new Router(logger);
         OnActivity = async (activity, cancellationToken) =>
         {
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
@@ -88,9 +86,7 @@ public class TeamsBotApplication : BotApplication
     /// </summary>
     /// <remarks>Call CreateBuilder() before invoking this method to ensure the bot application builder is
     /// initialized. This method blocks the calling thread until the web application shuts down.</remarks>
-#pragma warning disable CA1822 // Mark members as static
     public void Run()
-#pragma warning restore CA1822 // Mark members as static
     {
         ArgumentNullException.ThrowIfNull(_botApplicationBuilder, "BotApplicationBuilder not initialized. Call CreateBuilder() first.");
 
