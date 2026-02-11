@@ -86,7 +86,9 @@ public class TeamsBotApplication : BotApplication
     /// </summary>
     /// <remarks>Call CreateBuilder() before invoking this method to ensure the bot application builder is
     /// initialized. This method blocks the calling thread until the web application shuts down.</remarks>
+#pragma warning disable CA1822 // Mark members as static
     public void Run()
+#pragma warning restore CA1822 // Mark members as static
     {
         ArgumentNullException.ThrowIfNull(_botApplicationBuilder, "BotApplicationBuilder not initialized. Call CreateBuilder() first.");
 
