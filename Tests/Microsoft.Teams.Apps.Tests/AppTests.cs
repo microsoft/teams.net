@@ -313,7 +313,6 @@ public class AppTests
         var targetedMessage = new MessageActivity("Hello");
         targetedMessage.IsTargeted = true;
 
-
         // act & assert
         var exception = await Assert.ThrowsAsync<InvalidOperationException>(
             () => app.Send("conversationId", targetedMessage));
