@@ -146,6 +146,11 @@ public class MessageActivity : Activity
         return this;
     }
 
+    public override MessageActivity WithRecipient(Account value)
+    {
+        return (MessageActivity)base.WithRecipient(value);
+    }
+
     public override MessageActivity WithRecipient(Account value, bool isTargeted = false)
     {
         Recipient = value;
