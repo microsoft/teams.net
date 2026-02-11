@@ -505,6 +505,21 @@ public class MessageActivityTests
     }
 
     [Fact]
+    public void WithRecipient_MaintainsFluentChaining()
+    {
+        // This test ensures that WithRecipient(account) returns MessageActivity, not Activity
+        // If it returned Activity, the call to AddText would not compile
+        var activity = new MessageActivity("hello")
+            .WithRecipient(new Account() { Id = "user-123" })
+            .AddText(" world");
+
+        Assert.Equal("hello world", activity.Text);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-123", activity.Recipient.Id);
+        Assert.False(activity.IsTargeted);
+    }
+
+    [Fact]
     public void JsonSerialize_WithIsTargeted()
     {
         var activity = new MessageActivity("targeted message").WithRecipient(new Account() { Id = "user-123" }, true);

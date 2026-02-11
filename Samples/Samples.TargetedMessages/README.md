@@ -156,8 +156,8 @@ The `MessageActivity.Recipient` property must be set to the target user's accoun
 
 | Scenario | Description | Recipient Setting |
 |----------|-------------|-------------------|
-| **Reactive** | Bot responds to a user message | `WithTargetedRecipient(true)` - auto-uses `Activity.From` |
-| **Proactive** | Bot initiates message (timer, webhook, etc.) | `WithTargetedRecipient(userId)` - must be explicit |
+| **Reactive** | Bot responds to a user message | `WithRecipient(context.Activity.From, true)` - uses incoming sender |
+| **Proactive** | Bot initiates message (timer, webhook, etc.) | `WithRecipient(new Account { Id = userId }, true)` - must be explicit |
 
 ## Limitations
 
