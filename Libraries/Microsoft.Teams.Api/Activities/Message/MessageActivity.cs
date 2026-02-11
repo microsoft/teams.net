@@ -153,9 +153,7 @@ public class MessageActivity : Activity
 
     public override MessageActivity WithRecipient(Account value, bool isTargeted = false)
     {
-        Recipient = value;
-        IsTargeted = isTargeted;
-        return this;
+        return (MessageActivity)base.WithRecipient(value, isTargeted);
     }
 
     public MessageActivity AddAttachment(params Attachment[] value)
