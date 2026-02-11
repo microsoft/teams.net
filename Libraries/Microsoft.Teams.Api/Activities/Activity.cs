@@ -224,7 +224,12 @@ public partial class Activity : IActivity
         return this;
     }
 
-    public virtual Activity WithRecipient(Account value, bool isTargeted = false)
+    public virtual Activity WithRecipient(Account value)
+    {
+        return WithRecipient(value, false);
+    }
+
+    public virtual Activity WithRecipient(Account value, bool isTargeted)
     {
         Recipient = value;
         IsTargeted = isTargeted;
