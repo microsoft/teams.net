@@ -1,3 +1,4 @@
+using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Extensions;
@@ -26,11 +27,18 @@ teams.OnMessage(async context =>
 
     if (text.Contains("send"))
     {
-        // SEND: Create a new targeted message
-        await context.Send(
-            new MessageActivity("👋 This is a **targeted message** - only YOU can see this!")
-                .WithRecipient(context.Activity.From, true)
-        );
+        var members = await context.Api.Conversations.Members.GetAsync(activity.Conversation?.Id ?? "");
+
+        foreach (var member in members)
+        {
+            context.Log.Info($"[MEMBER] {member.Name} (ID: {member.Id})");
+
+            // SEND: Create a new targeted message
+            await context.Send(
+                new MessageActivity($"👋 {member.Name} This is a **targeted message** - only YOU can see this!")
+                    .WithRecipient(new Account() { Id = member.Id, Name = member.Name, Role = Role.User }, true)
+            );
+        }
         
         context.Log.Info($"[SEND] Sent targeted message");
     }
