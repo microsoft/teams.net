@@ -17,6 +17,9 @@ pr:
 pool:
   vmImage: 'ubuntu-22.04'
 
+variables:
+  buildConfiguration: 'Release'
+
 stages:
 - stage: Build_Test_Pack
   jobs:
@@ -39,10 +42,10 @@ stages:
       - script: dotnet restore 
         displayName: 'Restore'
 
-      - script: dotnet build --no-restore --configuration Release
+      - script: dotnet build --no-restore --configuration $(buildConfiguration)
         displayName: 'Build'
 
-      - script: dotnet test --no-build --configuration Release --logger trx
+      - script: dotnet test --no-build --configuration $(buildConfiguration) --logger trx
         displayName: 'Test'
 
       - task: PublishTestResults@2
@@ -53,7 +56,7 @@ stages:
           testResultsFiles: '**/*.trx'
           mergeTestResults: true
 
-      - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration Release
+      - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration $(buildConfiguration)
         displayName: 'Pack'
 
       - task: PublishPipelineArtifact@1
