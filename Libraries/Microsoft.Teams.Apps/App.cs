@@ -388,7 +388,7 @@ public partial class App
         }
 
         var res = await Next(context);
-        await stream.Close();
+        await stream.Close(cancellationToken);
 
         var response = res is Response value
             ? value
