@@ -29,7 +29,7 @@ teams.OnMessage(async context =>
         // SEND: Create a new targeted message
         await context.Send(
             new MessageActivity("👋 This is a **targeted message** - only YOU can see this!")
-                .WithTargetedRecipient(true)
+                .WithRecipient(context.Activity.From, true)
         );
         
         context.Log.Info($"[SEND] Sent targeted message");
@@ -42,7 +42,7 @@ teams.OnMessage(async context =>
         
         var response = await context.Send(
             new MessageActivity("📝 This message will be **updated** in 3 seconds...")
-                .WithTargetedRecipient(true)
+                .WithRecipient(context.Activity.From, true)
         );
         
         if (response?.Id != null)
@@ -56,8 +56,8 @@ teams.OnMessage(async context =>
                 try
                 {
                     var updatedMessage = new MessageActivity($"✏️ **Updated!** This message was modified at {DateTime.UtcNow:HH:mm:ss}")
-                        .WithTargetedRecipient(userId);
-                    
+                        .WithRecipient(context.Activity.From, true);
+
                     await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updatedMessage);
                     
                     Console.WriteLine($"[UPDATE] Updated targeted message");
@@ -78,7 +78,7 @@ teams.OnMessage(async context =>
         
         var response = await context.Send(
             new MessageActivity("🗑️ This message will be **deleted** in 3 seconds...")
-                .WithTargetedRecipient(true)
+                .WithRecipient(context.Activity.From, true)
         );
         
         if (response?.Id != null)
@@ -109,7 +109,7 @@ teams.OnMessage(async context =>
         // REPLY: Send a targeted reply to the user's message
         await context.Reply(
             new MessageActivity("💬 This is a **targeted reply** - threaded and private!")
-                .WithTargetedRecipient(true)
+                .WithRecipient(context.Activity.From, true)
         );
         
         context.Log.Info("[REPLY] Sent targeted reply");

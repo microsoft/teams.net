@@ -97,7 +97,7 @@ The simplest way to send a targeted message in a reactive context (responding to
 // Target the sender of the incoming message automatically
 await context.Send(
     new MessageActivity("Only you can see this!")
-        .WithTargetedRecipient(true)  // Uses Activity.From as recipient
+        .WithRecipient(context.Activity.From, true)  
 );
 ```
 
@@ -110,7 +110,7 @@ When sending proactively (bot-initiated), you must specify the recipient explici
 await teams.Send(
     conversationId,
     new MessageActivity("This is for you specifically!")
-        .WithTargetedRecipient(userId)  // Must provide explicit user ID
+        .WithRecipient(new Account { Id = "user-id" }, true)  // Must provide explicit user ID
 );
 ```
 
@@ -120,7 +120,7 @@ Use the API client to update an existing targeted message:
 
 ```csharp
 var updatedMessage = new MessageActivity("Updated content!")
-    .WithTargetedRecipient(userId);
+    .WithRecipient(new Account { Id = userId }, true);
 
 await context.Api.Conversations.Activities.UpdateTargetedAsync(
     conversationId, 

@@ -53,13 +53,6 @@ public partial class Context<TActivity> : IContext<TActivity>
 {
     public async Task<T> Send<T>(T activity) where T : IActivity
     {
-        // For targeted send, set the recipient if not already set.
-        // For targeted update (activity.Id exists), we don't update recipient since recipient cannot be changed.
-        if (activity is MessageActivity messageActivity && messageActivity.IsTargeted == true && activity.Id is null && messageActivity.Recipient is null)
-        {
-            messageActivity.Recipient = Activity.From;
-        }
-
         var res = await Sender.Send(activity, Ref, CancellationToken);
         await OnActivitySent(res, ToActivityType<IActivity>());
         return res;
