@@ -97,6 +97,7 @@ public static partial class AppActivityExtensions
 
     public static App OnMessage(this App app, string pattern, Func<IContext<MessageActivity>, CancellationToken, Task> handler)
     {
+        var regex = new Regex(pattern);
         app.Router.Register(new Route()
         {
             Name = ActivityType.Message,
@@ -110,7 +111,7 @@ public static partial class AppActivityExtensions
             {
                 if (activity is MessageActivity message)
                 {
-                    return new Regex(pattern).IsMatch(message.Text);
+                    return regex.IsMatch(message.Text);
                 }
 
                 return false;
