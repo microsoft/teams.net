@@ -17,7 +17,7 @@ teams.OnActivity(async context =>
 });
 
 // Handle incoming messages
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
     var activity = context.Activity;
     var text = activity.Text?.ToLowerInvariant() ?? "";
@@ -29,8 +29,7 @@ teams.OnMessage(async context =>
         // SEND: Create a new targeted message
         await context.Send(
             new MessageActivity("👋 This is a **targeted message** - only YOU can see this!")
-                .WithTargetedRecipient(true)
-        );
+                .WithTargetedRecipient(true), cancellationToken);
         
         context.Log.Info($"[SEND] Sent targeted message");
     }
@@ -42,8 +41,7 @@ teams.OnMessage(async context =>
         
         var response = await context.Send(
             new MessageActivity("📝 This message will be **updated** in 3 seconds...")
-                .WithTargetedRecipient(true)
-        );
+                .WithTargetedRecipient(true), cancellationToken);
         
         if (response?.Id != null)
         {
@@ -78,8 +76,7 @@ teams.OnMessage(async context =>
         
         var response = await context.Send(
             new MessageActivity("🗑️ This message will be **deleted** in 3 seconds...")
-                .WithTargetedRecipient(true)
-        );
+                .WithTargetedRecipient(true), cancellationToken);
         
         if (response?.Id != null)
         {
@@ -109,8 +106,7 @@ teams.OnMessage(async context =>
         // REPLY: Send a targeted reply to the user's message
         await context.Reply(
             new MessageActivity("💬 This is a **targeted reply** - threaded and private!")
-                .WithTargetedRecipient(true)
-        );
+                .WithTargetedRecipient(true), cancellationToken);
         
         context.Log.Info("[REPLY] Sent targeted reply");
     }
@@ -123,13 +119,13 @@ teams.OnMessage(async context =>
             "- `update` - Send a message, then update it after 3 seconds\n" +
             "- `delete` - Send a message, then delete it after 3 seconds\n" +
             "- `reply` - Get a targeted reply (threaded)\n\n" +
-            "_Targeted messages are only visible to you, even in group chats!_"
+            "_Targeted messages are only visible to you, even in group chats!_", cancellationToken
         );
     }
     else
     {
         await context.Typing();
-        await context.Send($"You said: '{activity.Text}'\n\nType `help` to see available commands.");
+        await context.Send($"You said: '{activity.Text}'\n\nType `help` to see available commands.", cancellationToken);
     }
 });
 

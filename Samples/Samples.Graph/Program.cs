@@ -34,19 +34,19 @@ teams.Use(async context =>
     context.Log.Debug($"request took {(DateTime.UtcNow - start).TotalMilliseconds}ms");
 });
 
-teams.OnMessage("/signout", async context =>
+teams.OnMessage("/signout", async (context, cancellationToken) =>
 {
     if (!context.IsSignedIn)
     {
-        await context.Send("you are not signed in!");
+        await context.Send("you are not signed in!", cancellationToken);
         return;
     }
 
-    await context.SignOut(); // call `SignOut()` for your auth connection...
-    await context.Send("you have been signed out!");
+    await context.SignOut(cancellationToken: cancellationToken); // call `SignOut()` for your auth connection...
+    await context.Send("you have been signed out!", cancellationToken);
 });
 
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
     if (!context.IsSignedIn)
     {
@@ -55,23 +55,23 @@ teams.OnMessage(async context =>
             // Customize the OAuth card text (only applies to OAuth flow, not SSO)
             OAuthCardText = "Sign in to your account",
             SignInButtonText = "Sign In"
-        }); // call `SignIn() for your auth connection...
+        }, cancellationToken); // call `SignIn() for your auth connection...
 
         return;
     }
 
     // If user is not signed in then `GetUserGraphClient` will throw an exception
-    var me = await context.GetUserGraphClient().Me.GetAsync();
-    await context.Send($"user '{me!.DisplayName}' is already signed in!");
+    var me = await context.GetUserGraphClient().Me.GetAsync(cancellationToken: cancellationToken);
+    await context.Send($"user '{me!.DisplayName}' is already signed in!", cancellationToken);
 });
 
-teams.OnSignIn(async (_, @event) =>
+teams.OnSignIn(async (_, @event, cancellationToken) =>
 {
     var token = @event.Token;
     var context = @event.Context;
 
-    var me = await context.GetUserGraphClient().Me.GetAsync();
-    await context.Send($"user \"{me!.DisplayName}\" signed in. Here's the token: {token.Token}");
+    var me = await context.GetUserGraphClient().Me.GetAsync(cancellationToken: cancellationToken);
+    await context.Send($"user \"{me!.DisplayName}\" signed in. Here's the token: {token.Token}", cancellationToken);
 });
 
 app.Run();

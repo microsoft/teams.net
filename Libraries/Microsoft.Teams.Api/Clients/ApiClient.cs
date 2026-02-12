@@ -64,4 +64,14 @@ public class ApiClient : Client
         Meetings = client.Meetings;
         _cancellationToken = client._cancellationToken;
     }
+
+    public ApiClient(ApiClient client, CancellationToken cancellationToken) : base(client._http, cancellationToken)
+    {
+        ServiceUrl = client.ServiceUrl;
+        Bots = new BotClient(_http, cancellationToken);
+        Conversations = new ConversationClient(ServiceUrl, _http, cancellationToken);
+        Users = new UserClient(_http, cancellationToken);
+        Teams = new TeamClient(ServiceUrl, _http, cancellationToken);
+        Meetings = new MeetingClient(ServiceUrl, _http, cancellationToken);
+    }
 }
