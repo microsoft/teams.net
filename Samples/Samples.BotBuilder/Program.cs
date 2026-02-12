@@ -16,10 +16,10 @@ var app = builder.Build();
 
 var teams = app.UseTeams();
 
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
-    await context.Typing();
-    await context.Send("hi from teams...");
+    await context.Typing(cancellationToken: cancellationToken);
+    await context.Send("hi from teams...", cancellationToken);
 });
 
 app.Run();
