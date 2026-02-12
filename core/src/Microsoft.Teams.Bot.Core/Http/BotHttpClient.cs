@@ -16,7 +16,6 @@ namespace Microsoft.Teams.Bot.Core.Http;
 /// </summary>
 /// <param name="httpClient">The HTTP client instance used to send requests.</param>
 /// <param name="logger">The logger instance used for logging. Optional.</param>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
 {
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()

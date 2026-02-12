@@ -11,7 +11,6 @@ namespace Microsoft.Teams.Bot.Apps.Schema.Invokes;
 /// Represents the individual message within a chat or channel where a message
 /// action is taken.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "<Pending>")]
 public class MessagePayload
 {
     /// <summary>

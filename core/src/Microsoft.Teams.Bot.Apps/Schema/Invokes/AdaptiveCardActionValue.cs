@@ -34,7 +34,6 @@ public class AdaptiveCardActionValue
 /// Defines the structure that arrives in the Activity.Value.Action for Invoke
 /// activity with Name of 'adaptiveCard/action'.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "<Pending>")]
 public class AdaptiveCardAction
 {
     /// <summary>

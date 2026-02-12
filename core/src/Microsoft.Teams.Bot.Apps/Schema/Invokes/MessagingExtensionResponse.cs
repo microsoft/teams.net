@@ -66,6 +66,7 @@ public class ComposeExtension
     /// <summary>
     /// Type of result.
     /// See <see cref="MessagingExtensionResponseType"/> for common values.
+    /// </summary>
     [JsonPropertyName("type")]
     public string? Type { get; set; }
 
@@ -81,7 +82,7 @@ public class ComposeExtension
     /// </summary>
     // TODO : there is an extra preview field but when is it used ?
     [JsonPropertyName("attachments")]
-    public TeamsAttachment[]? Attachments { get; set; }
+    public IList<TeamsAttachment>? Attachments { get; set; }
 
     /// <summary>
     /// Text to display.
@@ -112,7 +113,7 @@ public class MessagingExtensionSuggestedAction
     /// Array of actions.
     /// </summary>
     [JsonPropertyName("actions")]
-    public MessagingExtensionAction[]? Actions { get; set; }
+    public IList<MessagingExtensionAction>? Actions { get; set; }
 }
 
 /// <summary>

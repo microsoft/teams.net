@@ -12,7 +12,9 @@ indent_style = space
 indent_size = 4
 nullable = enable
 #dotnet_diagnostic.CS1591.severity = none ## Suppress missing XML comment warnings
-dotnet_diagnostic.CA1848.severity = warning
+dotnet_diagnostic.CA1848.severity = none # Suppress LoggerMessage delegates performance warnings
+dotnet_diagnostic.CA1873.severity = none # Suppress expensive logging argument evaluation warnings
+dotnet_diagnostic.CA2227.severity = none # Suppress collection properties should be read only warnings
 
 #### Nullable Reference Types ####
 # Make nullable warnings strict

@@ -1,0 +1,177 @@
+{
+  "activities": [
+    {
+      "name": "TypingActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/TypingActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/TypingActivity.cs"
+    },
+    {
+      "name": "EventActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/EventActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Events/EventActivity.cs"
+    },
+    {
+      "name": "MeetingStartActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MeetingStartActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Events/MeetingStartActivity.cs"
+    },
+    {
+      "name": "MeetingEndActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MeetingEndActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Events/MeetingEndActivity.cs"
+    },
+    {
+      "name": "MeetingParticipantJoinActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MeetingParticipantJoinActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Events/MeetingJoinActivity.cs"
+    },
+    {
+      "name": "MeetingParticipantLeaveActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MeetingParticipantLeaveActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Events/MeetingLeaveActivity.cs"
+    },
+    {
+      "name": "ReadReceiptActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/ReadReceiptActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Events/ReadReceiptActivity.cs"
+    },
+    {
+      "name": "InstallUpdateActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/InstallUpdateActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Installs/InstallUpdateActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "CommandActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/CommandActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/CommandActivity.cs"
+    },
+    {
+      "name": "CommandResultActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/CommandResultActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/CommandResultActivity.cs"
+    },
+    {
+      "name": "ConversationUpdateActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/ConversationUpdateActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Conversations/ConversationUpdateActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "EndOfConversationActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/EndOfConversationActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Conversations/ConversationEndActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "MessageActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MessageActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Messages/MessageActivity.cs",
+      "status": "completed",
+      "note": "Already implemented in current codebase"
+    },
+    {
+      "name": "MessageDeleteActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MessageDeleteActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Messages/MessageDeleteActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "MessageReactionActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MessageReactionActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Messages/MessageReactionActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "MessageUpdateActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MessageUpdateActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Messages/MessageUpdateActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "InvokeActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/InvokeActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/InvokeActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "ExecuteActionActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/ExecuteActionActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/ExecuteActionActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "FileConsentActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/FileConsentActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/FileConsentActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "HandoffActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/HandoffActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/HandoffActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "SearchActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/SearchActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/Search/SearchActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "AdaptiveCardActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/AdaptiveCardActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/AdaptiveCards/ActionActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "ConfigActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/ConfigActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/Configs/FetchActivity.cs",
+      "note": "May include both Fetch and Submit",
+      "status": "completed"
+    },
+    {
+      "name": "TabActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/TabActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/Tabs/FetchActivity.cs",
+      "note": "May include both Fetch and Submit",
+      "status": "completed"
+    },
+    {
+      "name": "TaskActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/TaskActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/Tasks/FetchActivity.cs",
+      "note": "May include both Fetch and Submit",
+      "status": "completed"
+    },
+    {
+      "name": "SignInActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/SignInActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/SignIn/TokenExchangeActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "MessageInvokeActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MessageInvokeActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/Messages/SubmitActionActivity.cs",
+      "status": "completed"
+    },
+    {
+      "name": "MessageExtensionActivity",
+      "pr_schema_path": "core/src/Microsoft.Bot.Core/Activities/MessageExtensionActivity.cs",
+      "reference_handler_path": "c:/users/mehakbindra/teams.net/Libraries/Microsoft.Teams.Apps/Activities/Invokes/MessageExtensions/QueryActivity.cs",
+      "note": "May include multiple message extension types",
+      "status": "completed"
+    }
+  ],
+  "notes": [
+    "Completed: MessageActivity, MessageReactionActivity, MessageUpdateActivity, MessageDeleteActivity, ConversationUpdateActivity, EndOfConversationActivity, InstallUpdateActivity (7 message/conversation activities)",
+    "Completed: InvokeActivity, ExecuteActionActivity, FileConsentActivity, HandoffActivity, SearchActivity, AdaptiveCardActivity, ConfigActivity, TabActivity, TaskActivity, SignInActivity, MessageInvokeActivity, MessageExtensionActivity (12 invoke activities)",
+    "Total completed: 19 activities",
+    "Remaining: 9 activities",
+    "Some PR activities may consolidate multiple reference handler files",
+    "Handler files in reference use older App.OnX pattern, migrated to new TeamsBotApplication.OnX pattern",
+    "Activities are organized in subdirectories: MessageActivities/, InstallActivities/, ConversationActivities/, InvokeActivities/"
+  ]
+}

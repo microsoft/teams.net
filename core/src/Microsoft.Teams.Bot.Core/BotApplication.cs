@@ -13,7 +13,6 @@ namespace Microsoft.Teams.Bot.Core;
 /// <summary>
 /// Represents a bot application.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class BotApplication
 {
     private readonly ILogger<BotApplication> _logger;

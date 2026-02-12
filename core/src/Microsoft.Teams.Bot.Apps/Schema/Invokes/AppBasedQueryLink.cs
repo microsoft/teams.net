@@ -14,7 +14,7 @@ public class AppBasedQueryLink
     /// URL queried by user.
     /// </summary>
     [JsonPropertyName("url")]
-    public string? Url { get; set; }
+    public Uri? Url { get; set; }
 
     //TODO : review
     /*

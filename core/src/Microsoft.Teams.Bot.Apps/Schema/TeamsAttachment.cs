@@ -157,9 +157,7 @@ public class TeamsAttachment
     /// <summary>
     /// Extension data for additional properties not explicitly defined by the type.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Creates a builder for constructing a <see cref="TeamsAttachment"/> instance.
