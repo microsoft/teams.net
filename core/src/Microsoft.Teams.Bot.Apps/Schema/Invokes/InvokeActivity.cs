@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+namespace Microsoft.Teams.Bot.Apps.Schema.Invokes;
 
 /// <summary>
 /// Represents an invoke activity.
@@ -27,16 +28,11 @@ public class InvokeActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("name")]
     public string? Name { get; set; }
-        ///// <summary>
-        ///// Gets or sets a value that is associated with the activity.
-        ///// </summary>
-        //[JsonPropertyName("value")]
-        //public object? Value { get; set; }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="InvokeActivity"/> class.
-        /// </summary>
-        [JsonConstructor]
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InvokeActivity"/> class.
+    /// </summary>
+    [JsonConstructor]
     public InvokeActivity() : base(TeamsActivityType.Invoke)
     {
     }
@@ -45,7 +41,7 @@ public class InvokeActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class with the specified name.
     /// </summary>
     /// <param name="name">The invoke operation name.</param>
-        
+
     public InvokeActivity(string name) : base(TeamsActivityType.Invoke)
     {
         Name = name;
@@ -62,6 +58,46 @@ public class InvokeActivity : TeamsActivity
         {
             Name = name?.ToString();
             activity.Properties.Remove("name");
+        }
+    }
+}
+
+/// <summary>
+/// Represents an invoke activity with a strongly-typed value.
+/// </summary>
+/// <typeparam name="TValue">The type of the value payload.</typeparam>
+public class InvokeActivity<TValue> : InvokeActivity
+{
+    /// <summary>
+    /// Gets or sets the strongly-typed value associated with the invoke activity.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public new TValue? Value { get; set; }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InvokeActivity{TValue}"/> class.
+    /// </summary>
+    public InvokeActivity() : base()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InvokeActivity{TValue}"/> class with the specified name.
+    /// </summary>
+    /// <param name="name">The invoke operation name.</param>
+    public InvokeActivity(string name) : base(name)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InvokeActivity{TValue}"/> class from an InvokeActivity.
+    /// </summary>
+    /// <param name="activity">The invoke activity.</param>
+    public InvokeActivity(InvokeActivity activity) : base(activity)
+    {
+        if (activity.Value != null)
+        {
+            Value = JsonSerializer.Deserialize<TValue>(activity.Value.ToJsonString());
         }
     }
 }

@@ -3,6 +3,7 @@
 
 using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
 using Microsoft.Teams.Bot.Apps.Schema.InstallActivities;
+using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -74,15 +75,5 @@ public static class TeamsActivityType
         //[TeamsActivityType.EndOfConversation] = EndOfConversationActivity.FromActivity,
         [TeamsActivityType.InstallationUpdate] = InstallUpdateActivity.FromActivity,
         [TeamsActivityType.Invoke] = InvokeActivity.FromActivity,
-    };
-
-    /// <summary>
-    /// Registry of serialization functions for specialized activity instances.
-    /// Maps activity types to functions that serialize the activity using the appropriate JsonTypeInfo.
-    /// </summary>
-    internal static readonly Dictionary<string, Func<TeamsActivity, string>> ActivitySerializerMap = new()
-    {
-        [TeamsActivityType.Message] = activity => activity.ToJson(TeamsActivityJsonContext.Default.MessageActivity),
-        [TeamsActivityType.Invoke] = activity => activity.ToJson(TeamsActivityJsonContext.Default.InvokeActivity),
     };
 }

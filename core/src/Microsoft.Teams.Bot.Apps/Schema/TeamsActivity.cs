@@ -29,13 +29,13 @@ public class TeamsActivity : CoreActivity
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
-    /// Uses the activity type serializer map to select the appropriate JSON type info.
+    /// Uses the appropriate JSON type info based on the activity type.
     /// </summary>
     /// <returns>A JSON string representation of the activity using the type-specific serializer.</returns>
     public override string ToJson()
     {
-        return TeamsActivityType.ActivitySerializerMap.TryGetValue(Type, out var serializer)
-            ? serializer(this)
+        return Type == TeamsActivityType.Message
+            ? ToJson(TeamsActivityJsonContext.Default.MessageActivity)
             : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);  // Fallback to base type
     }
 
@@ -143,6 +143,30 @@ public class TeamsActivity : CoreActivity
     /// Attachments specific to Teams.
     /// </summary>
     [JsonPropertyName("attachments")] public new IList<TeamsAttachment>? Attachments { get; set; }
+
+    /// <summary>
+    /// UTC timestamp of when the activity was sent.
+    /// </summary>
+    [JsonPropertyName("timestamp")]
+    public string? Timestamp { get; set; }
+
+    /// <summary>
+    /// Local timestamp of when the activity was sent, including timezone offset.
+    /// </summary>
+    [JsonPropertyName("localTimestamp")]
+    public string? LocalTimestamp { get; set; }
+
+    /// <summary>
+    /// Locale of the activity set by the client (e.g., "en-US").
+    /// </summary>
+    [JsonPropertyName("locale")]
+    public string? Locale { get; set; }
+
+    /// <summary>
+    /// Local timezone of the client (e.g., "America/Los_Angeles").
+    /// </summary>
+    [JsonPropertyName("localTimezone")]
+    public string? LocalTimezone { get; set; }
 
     /// <summary>
     /// Adds an entity to the activity's Entities collection.
