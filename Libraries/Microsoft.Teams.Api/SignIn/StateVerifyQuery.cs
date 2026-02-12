@@ -41,7 +41,7 @@ public class StateVerifyQuery
         }
 
         // Otherwise, return the JSON representation
-        return element.ToString();
+        return JsonSerializer.Serialize(element);
     }
 
     /// <summary>
