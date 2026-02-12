@@ -16,7 +16,7 @@ public class VerifyStateSignInActivityTests
         {
             Value = new StateVerifyQuery()
             {
-                State = "success"
+                State = JsonSerializer.SerializeToElement("success")
             },
             Conversation = new Api.Conversation()
             {
@@ -146,5 +146,149 @@ public class VerifyStateSignInActivityTests
 
         Assert.NotNull(activity);
         Assert.Equal(expected.ToString(), activity.ToString());
+    }
+
+    [Fact]
+    public void setupSignInVerifyStateActivity_StateAsString()
+    {
+        var activity = SetupSignInValidStateActivity();
+        
+        Assert.NotNull(activity.Value.State);
+        Assert.Equal(JsonValueKind.String, activity.Value.State.Value.ValueKind);
+        Assert.Equal("success", activity.Value.GetStateAsString());
+        
+        Assert.True(activity.Value.TryGetStateAsString(out var stateString));
+        Assert.Equal("success", stateString);
+    }
+
+    [Fact]
+    public void setupSignInVerifyStateActivity_JsonDeserialize_StateAsObject()
+    {
+        // Test JSON with state as an object (Android/iOS scenario)
+        var jsonWithObjectState = @"{
+  ""type"": ""invoke"",
+  ""channelId"": ""msteams"",
+  ""name"": ""signin/verifyState"",
+  ""value"": {
+    ""state"": {
+      ""token"": ""abc123"",
+      ""userId"": ""user123""
+    }
+  },
+  ""from"": {
+    ""id"": ""botId"",
+    ""aadObjectId"": ""aadObjectId"",
+    ""name"": ""User Name""
+  },
+  ""recipient"": {
+    ""id"": ""recipientId"",
+    ""name"": ""Recipient Name""
+  },
+  ""conversation"": {
+    ""id"": ""conversationId"",
+    ""conversationType"": ""groupChat""
+  }
+}";
+
+        var activity = JsonSerializer.Deserialize<VerifyStateActivity>(jsonWithObjectState);
+
+        Assert.NotNull(activity);
+        Assert.NotNull(activity.Value);
+        Assert.NotNull(activity.Value.State);
+        Assert.Equal(JsonValueKind.Object, activity.Value.State.Value.ValueKind);
+        
+        // Verify we can get the state as a string (JSON representation)
+        var stateString = activity.Value.GetStateAsString();
+        Assert.NotNull(stateString);
+        Assert.Contains("token", stateString);
+        Assert.Contains("abc123", stateString);
+        
+        // Verify TryGetStateAsString returns false for object state
+        Assert.False(activity.Value.TryGetStateAsString(out _));
+    }
+
+    [Fact]
+    public void setupSignInVerifyStateActivity_JsonDeserialize_StateAsObject_ViaSignInActivity()
+    {
+        // Test JSON with state as an object through SignInActivity
+        var jsonWithObjectState = @"{
+  ""type"": ""invoke"",
+  ""channelId"": ""msteams"",
+  ""name"": ""signin/verifyState"",
+  ""value"": {
+    ""state"": {
+      ""sessionId"": ""session-456"",
+      ""redirectUrl"": ""https://example.com/callback""
+    }
+  },
+  ""from"": {
+    ""id"": ""botId"",
+    ""aadObjectId"": ""aadObjectId"",
+    ""name"": ""User Name""
+  },
+  ""recipient"": {
+    ""id"": ""recipientId"",
+    ""name"": ""Recipient Name""
+  },
+  ""conversation"": {
+    ""id"": ""conversationId"",
+    ""conversationType"": ""groupChat""
+  }
+}";
+
+        var activity = JsonSerializer.Deserialize<SignInActivity>(jsonWithObjectState);
+
+        Assert.NotNull(activity);
+        var verifyStateActivity = activity.ToVerifyState();
+        Assert.NotNull(verifyStateActivity);
+        Assert.NotNull(verifyStateActivity.Value.State);
+        Assert.Equal(JsonValueKind.Object, verifyStateActivity.Value.State.Value.ValueKind);
+        
+        // Verify we can access the state
+        var stateString = verifyStateActivity.Value.GetStateAsString();
+        Assert.NotNull(stateString);
+        Assert.Contains("sessionId", stateString);
+        Assert.Contains("session-456", stateString);
+    }
+
+    [Fact]
+    public void setupSignInVerifyStateActivity_JsonDeserialize_StateAsObject_ViaActivity()
+    {
+        // Test JSON with state as an object through Activity
+        var jsonWithObjectState = @"{
+  ""type"": ""invoke"",
+  ""channelId"": ""msteams"",
+  ""name"": ""signin/verifyState"",
+  ""value"": {
+    ""state"": {
+      ""code"": ""auth-code-789""
+    }
+  },
+  ""from"": {
+    ""id"": ""botId"",
+    ""aadObjectId"": ""aadObjectId"",
+    ""name"": ""User Name""
+  },
+  ""recipient"": {
+    ""id"": ""recipientId"",
+    ""name"": ""Recipient Name""
+  },
+  ""conversation"": {
+    ""id"": ""conversationId"",
+    ""conversationType"": ""groupChat""
+  }
+}";
+
+        var activity = JsonSerializer.Deserialize<Activity>(jsonWithObjectState);
+
+        Assert.NotNull(activity);
+        Assert.True(activity is InvokeActivity);
+        var invokeActivity = (InvokeActivity)activity;
+        Assert.True(invokeActivity is SignInActivity);
+        var signInActivity = (SignInActivity)invokeActivity;
+        var verifyStateActivity = signInActivity.ToVerifyState();
+        
+        Assert.NotNull(verifyStateActivity.Value.State);
+        Assert.Equal(JsonValueKind.Object, verifyStateActivity.Value.State.Value.ValueKind);
     }
 }
