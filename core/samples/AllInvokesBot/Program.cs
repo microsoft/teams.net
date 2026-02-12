@@ -9,7 +9,7 @@ using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
-var builder = TeamsBotApplication.CreateBuilder();
+var builder = TeamsBotApplication.CreateBuilder(args);
 var bot = builder.Build();
 
 // ==================== MESSAGE - SEND SIMPLE CARD ====================
@@ -102,9 +102,9 @@ bot.OnFileConsent(async (context, cancellationToken) =>
         Console.WriteLine($"  File accepted!");
 
         // Upload the file
-        string? uploadUrl = uploadInfo?.UploadUrl;
+        string? uploadUrl = uploadInfo?.UploadUrl?.ToString();
         string? fileName = uploadInfo?.Name;
-        string? contentUrl = uploadInfo?.ContentUrl;
+        string? contentUrl = uploadInfo?.ContentUrl?.ToString();
         string? uniqueId = uploadInfo?.UniqueId;
 
         if (uploadUrl!=null && contentUrl != null)

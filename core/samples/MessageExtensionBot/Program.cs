@@ -9,7 +9,7 @@ using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
-var builder = TeamsBotApplication.CreateBuilder();
+var builder = TeamsBotApplication.CreateBuilder(args);
 var bot = builder.Build();
 
 // ==================== MESSAGE EXTENSION QUERY ====================
@@ -149,8 +149,8 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     }
 
     var data = action?.Data as JsonElement?;
-    string? title = data.Value.TryGetProperty("title", out var t) ? t.GetString() : "Untitled";
-    string? description = data.Value.TryGetProperty("description", out var d) ? d.GetString() : "No description";
+    string? title = data !=null && data.Value.TryGetProperty("title", out var t) ? t.GetString() : "Untitled";
+    string? description = data != null && data.Value.TryGetProperty("description", out var d) ? d.GetString() : "No description";
 
     var previewCard = Cards.CreateSubmitActionCard(title, description);
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(previewCard).Build();
@@ -170,7 +170,7 @@ bot.OnQueryLink(async (context, cancellationToken) =>
 
     var queryLink = context.Activity.Value;
 
-    var card = Cards.CreateLinkUnfurlCard(queryLink?.Url);
+    var card = Cards.CreateLinkUnfurlCard(queryLink?.Url?.ToString());
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
 
@@ -195,7 +195,7 @@ bot.OnAnonQueryLink(async (context, cancellationToken) =>
         Console.WriteLine($"  URL: '{anonQueryLink.Url}'");
     }
 
-    var card = Cards.CreateLinkUnfurlCard(anonQueryLink?.Url);
+    var card = Cards.CreateLinkUnfurlCard(anonQueryLink?.Url?.ToString());
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
 
