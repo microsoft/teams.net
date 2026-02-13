@@ -94,10 +94,10 @@ Targeted messages (also known as "user-specific views" or "private messages in g
 The simplest way to send a targeted message in a reactive context (responding to a user's message):
 
 ```csharp
-// Target the sender of the incoming message automatically
+// Target the sender of the incoming message
 await context.Send(
     new MessageActivity("Only you can see this!")
-        .WithTargetedRecipient(true)  // Uses Activity.From as recipient
+        .WithRecipient(context.Activity.From, true)  
 );
 ```
 
@@ -110,7 +110,7 @@ When sending proactively (bot-initiated), you must specify the recipient explici
 await teams.Send(
     conversationId,
     new MessageActivity("This is for you specifically!")
-        .WithTargetedRecipient(userId)  // Must provide explicit user ID
+        .WithRecipient(new Account { Id = userId }, true)  // Must provide explicit user ID
 );
 ```
 
@@ -120,7 +120,7 @@ Use the API client to update an existing targeted message:
 
 ```csharp
 var updatedMessage = new MessageActivity("Updated content!")
-    .WithTargetedRecipient(userId);
+    .WithRecipient(new Account { Id = userId }, true);
 
 await context.Api.Conversations.Activities.UpdateTargetedAsync(
     conversationId, 
@@ -156,8 +156,8 @@ The `MessageActivity.Recipient` property must be set to the target user's accoun
 
 | Scenario | Description | Recipient Setting |
 |----------|-------------|-------------------|
-| **Reactive** | Bot responds to a user message | `WithTargetedRecipient(true)` - auto-uses `Activity.From` |
-| **Proactive** | Bot initiates message (timer, webhook, etc.) | `WithTargetedRecipient(userId)` - must be explicit |
+| **Reactive** | Bot responds to a user message | `WithRecipient(context.Activity.From, true)` - uses incoming sender |
+| **Proactive** | Bot initiates message (timer, webhook, etc.) | `WithRecipient(new Account { Id = userId }, true)` - must be explicit |
 
 ## Limitations
 

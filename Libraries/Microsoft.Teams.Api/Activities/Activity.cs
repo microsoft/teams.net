@@ -145,6 +145,9 @@ public partial class Activity : IActivity
     [JsonPropertyOrder(130)]
     public ChannelData? ChannelData { get; set; }
 
+    [JsonIgnore]
+    public bool IsTargeted { get; set; }
+
     [JsonExtensionData]
     public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
 
@@ -223,7 +226,13 @@ public partial class Activity : IActivity
 
     public virtual Activity WithRecipient(Account value)
     {
+        return WithRecipient(value, false);
+    }
+
+    public virtual Activity WithRecipient(Account value, bool isTargeted)
+    {
         Recipient = value;
+        IsTargeted = isTargeted;
         return this;
     }
 
@@ -413,6 +422,11 @@ public partial class Activity : IActivity
         Timestamp ??= from.Timestamp;
         LocalTimestamp ??= from.LocalTimestamp;
         AddEntity(from.Entities?.ToArray() ?? []);
+
+        if (from.IsTargeted)
+        {
+            IsTargeted = true;
+        }
 
         if (from.ChannelData is not null)
         {
