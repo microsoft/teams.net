@@ -12,7 +12,18 @@
 			"bicepVersion": "latest"
 		},
 		"ghcr.io/dotnet/aspire-devcontainer-feature/dotnetaspire:1": {
-			"version": "9.0"
+			"version": "latest"
+		},
+		"ghcr.io/devcontainers/features/dotnet:2": {
+			"version": "10.0"
+		},
+		"ghcr.io/devcontainers/features/docker-in-docker:2": {
+			"moby": true,
+			"azureDnsAutoDetection": true,
+			"installDockerBuildx": true,
+			"installDockerComposeSwitch": true,
+			"version": "latest",
+			"dockerDashComposeVersion": "v2"
 		}
 	}
 
