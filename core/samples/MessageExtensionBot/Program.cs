@@ -191,7 +191,6 @@ bot.OnAnonQueryLink(async (context, cancellationToken) =>
 });
 
 
-//TODO : i can trigger this, but no response shows up
 // ==================== MESSAGE EXTENSION QUERY SETTING URL ====================
 bot.OnQuerySettingUrl(async (context, cancellationToken) =>
 {
@@ -202,13 +201,12 @@ bot.OnQuerySettingUrl(async (context, cancellationToken) =>
     var action = new
     {
         Type = "openUrl",
-        Value = "https://www.microsoft.com",
-        Title = "Configure Extension"
+        Value = "https://www.microsoft.com"    
     };
 
     return MessageExtensionResponse.CreateBuilder()
         .WithType(MessageExtensionResponseType.Config)
-        .WithSuggestedActions(action)
+        .WithSuggestedActions([action])
         .Build();
 });
 

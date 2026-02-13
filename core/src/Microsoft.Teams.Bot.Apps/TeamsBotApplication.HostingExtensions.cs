@@ -47,7 +47,6 @@ public static class TeamsBotApplicationHostingExtensions
                     sp.GetService<IOptions<ManagedIdentityOptions>>());
             });
 
-        services.AddSingleton<Router>();
         services.AddBotApplication<TeamsBotApplication>();
         return services;
     }

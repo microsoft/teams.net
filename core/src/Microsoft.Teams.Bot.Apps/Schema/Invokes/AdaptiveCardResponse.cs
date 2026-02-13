@@ -64,7 +64,7 @@ public class AdaptiveCardResponse
     {
         return new InvokeResponse<AdaptiveCardResponse>(statusCode, new AdaptiveCardResponse
         {
-            StatusCode = 200,
+            StatusCode = statusCode,
             Type = AdaptiveCardResponseType.Message,
             Value = message
         });
@@ -79,7 +79,7 @@ public class AdaptiveCardResponse
     {
         return new InvokeResponse<AdaptiveCardResponse>(statusCode, new AdaptiveCardResponse
         {
-            StatusCode = 200,
+            StatusCode = statusCode,
             Type = AdaptiveCardResponseType.Card,
             Value = card
         });
@@ -124,10 +124,9 @@ public class AdaptiveCardResponseBuilder
     /// <summary>
     /// Builds the AdaptiveCardResponse and wraps it in a InvokeResponse.
     /// </summary>
-    /// <param name="statusCode">The HTTP status code for InvokeResponse (default: 200).</param>
-    public InvokeResponse<AdaptiveCardResponse> Build(int statusCode = 200)
+    public InvokeResponse<AdaptiveCardResponse> Build()
     {
-        return new InvokeResponse<AdaptiveCardResponse>(statusCode, new AdaptiveCardResponse
+        return new InvokeResponse<AdaptiveCardResponse>(_statusCode, new AdaptiveCardResponse
         {
             StatusCode = _statusCode,
             Type = _type,

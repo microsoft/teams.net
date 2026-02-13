@@ -163,22 +163,18 @@ public class TaskModuleResponseBuilder
     /// <summary>
     /// Builds the TaskModuleResponse.
     /// </summary>
-    internal TaskModuleResponse Validate()
+    private TaskModuleResponse Validate()
     {
+        if (string.IsNullOrEmpty(_type))
+        {
+            throw new InvalidOperationException("Type must be set. Use WithType() to specify TaskModuleResponseType.Continue or TaskModuleResponseType.Message.");
+        }
+
         object? value = _type switch
         {
-            TaskModuleResponseType.Continue => new
-            {
-                title = _title,
-                height = _height,
-                width = _width,
-                card = _card,
-                //url = _url,
-                //fallbackUrl = _fallbackUrl,
-                //completionBotId = _completionBotId
-            },
-            TaskModuleResponseType.Message => _message,
-            _ => null
+            TaskModuleResponseType.Continue => ValidateContinueType(),
+            TaskModuleResponseType.Message => ValidateMessageType(),
+            _ => throw new InvalidOperationException($"Unknown task module response type: {_type}")
         };
 
         return new TaskModuleResponse
@@ -189,6 +185,50 @@ public class TaskModuleResponseBuilder
                 Value = value
             }
         };
+    }
+
+    private object ValidateContinueType()
+    {
+        if (_card == null)
+        {
+            throw new InvalidOperationException("Card must be set for Continue type. Use WithCard().");
+        }
+
+        if (!string.IsNullOrEmpty(_message))
+        {
+            throw new InvalidOperationException("Message cannot be set for Continue type. Message is only used with Message type.");
+        }
+
+        return new
+        {
+            title = _title,
+            height = _height,
+            width = _width,
+            card = _card,
+            //url = _url,
+            //fallbackUrl = _fallbackUrl,
+            //completionBotId = _completionBotId
+        };
+    }
+
+    private string ValidateMessageType()
+    {
+        if (string.IsNullOrEmpty(_message))
+        {
+            throw new InvalidOperationException("Message must be set for Message type. Use WithMessage().");
+        }
+
+        if (!string.IsNullOrEmpty(_title))
+        {
+            throw new InvalidOperationException("Title cannot be set for Message type. Title is only used with Continue type.");
+        }
+
+        if (_card != null)
+        {
+            throw new InvalidOperationException("Card cannot be set for Message type. Card is only used with Continue type.");
+        }
+
+        return _message;
     }
 
     /// <summary>
@@ -210,7 +250,7 @@ public class Response
     /// Type of result.
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public required string Type { get; set; }
 
     /// <summary>
     /// Value 

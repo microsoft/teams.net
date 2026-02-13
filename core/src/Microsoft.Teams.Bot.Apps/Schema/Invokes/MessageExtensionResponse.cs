@@ -25,6 +25,11 @@ public static class MessageExtensionResponseType
     /// </summary>
     public const string BotMessagePreview = "botMessagePreview";
 
+    /// <summary>
+    /// Config type - prompts the user to set up the message extension.
+    /// </summary>
+    public const string Config = "config";
+
     //TODO : review
     /*
     /// <summary>
@@ -32,12 +37,6 @@ public static class MessageExtensionResponseType
     /// </summary>
     public const string Auth = "auth";
     */
-
-    //TODO : review 
-    /// <summary>
-    /// Config type - prompts the user to set up the message extension.
-    /// </summary>
-    public const string Config = "config";
 }
 
 /// <summary>
@@ -190,22 +189,171 @@ public class MessageExtensionResponseBuilder
     }
 
     /// <summary>
-    /// Builds the MessagingExtensionResponse and wraps it in a InvokeResponse.
+    /// Validates and builds the MessagingExtensionResponse.
     /// </summary>
-    /// <param name="statusCode">The HTTP status code (default: 200).</param>
-    public InvokeResponse<MessageExtensionResponse> Build(int statusCode = 200)
+    private MessageExtensionResponse Validate()
     {
-        return new InvokeResponse<MessageExtensionResponse>(statusCode, new MessageExtensionResponse
+        if (string.IsNullOrEmpty(_type))
+        {
+            throw new InvalidOperationException("Type must be set. Use WithType() to specify MessageExtensionResponseType.Result, Message, BotMessagePreview, or Config.");
+        }
+
+        return _type switch
+        {
+            MessageExtensionResponseType.Result => ValidateResultType(),
+            MessageExtensionResponseType.Message => ValidateMessageType(),
+            MessageExtensionResponseType.BotMessagePreview => ValidateBotMessagePreviewType(),
+            MessageExtensionResponseType.Config => ValidateConfigType(),
+            _ => throw new InvalidOperationException($"Unknown message extension response type: {_type}")
+        };
+    }
+
+    private MessageExtensionResponse ValidateResultType()
+    {
+        if (_attachments == null || _attachments.Length == 0)
+        {
+            throw new InvalidOperationException("Attachments must be set for Result type. Use WithAttachments().");
+        }
+
+        if (!string.IsNullOrEmpty(_text))
+        {
+            throw new InvalidOperationException("Text cannot be set for Result type. Text is only used with Message type.");
+        }
+
+        if (_activityPreview != null)
+        {
+            throw new InvalidOperationException("ActivityPreview cannot be set for Result type. ActivityPreview is only used with BotMessagePreview type.");
+        }
+
+        if (_suggestedActions != null)
+        {
+            throw new InvalidOperationException("SuggestedActions cannot be set for Result type. SuggestedActions is only used with Config type.");
+        }
+
+        return new MessageExtensionResponse
         {
             ComposeExtension = new ComposeExtension
             {
                 Type = _type,
                 AttachmentLayout = _attachmentLayout,
-                Attachments = _attachments,
-                ActivityPreview = _activityPreview,
-                SuggestedActions = _suggestedActions != null ? new MessageExtensionSuggestedAction { Actions = _suggestedActions } : null,
+                Attachments = _attachments
+            }
+        };
+    }
+
+    private MessageExtensionResponse ValidateMessageType()
+    {
+        if (string.IsNullOrEmpty(_text))
+        {
+            throw new InvalidOperationException("Text must be set for Message type. Use WithText().");
+        }
+
+        if (_attachments != null)
+        {
+            throw new InvalidOperationException("Attachments cannot be set for Message type. Attachments is only used with Result or BotMessagePreview type.");
+        }
+
+        if (!string.IsNullOrEmpty(_attachmentLayout))
+        {
+            throw new InvalidOperationException("AttachmentLayout cannot be set for Message type. AttachmentLayout is only used with Result type.");
+        }
+
+        if (_activityPreview != null)
+        {
+            throw new InvalidOperationException("ActivityPreview cannot be set for Message type. ActivityPreview is only used with BotMessagePreview type.");
+        }
+
+        if (_suggestedActions != null)
+        {
+            throw new InvalidOperationException("SuggestedActions cannot be set for Message type. SuggestedActions is only used with Config type.");
+        }
+
+        return new MessageExtensionResponse
+        {
+            ComposeExtension = new ComposeExtension
+            {
+                Type = _type,
                 Text = _text
             }
-        });
+        };
+    }
+
+    private MessageExtensionResponse ValidateBotMessagePreviewType()
+    {
+        if (_activityPreview == null)
+        {
+            throw new InvalidOperationException("ActivityPreview must be set for BotMessagePreview type. Use WithActivityPreview().");
+        }
+
+        if (!string.IsNullOrEmpty(_text))
+        {
+            throw new InvalidOperationException("Text cannot be set for BotMessagePreview type. Text is only used with Message type.");
+        }
+
+        if (!string.IsNullOrEmpty(_attachmentLayout))
+        {
+            throw new InvalidOperationException("AttachmentLayout cannot be set for BotMessagePreview type. AttachmentLayout is only used with Result type.");
+        }
+
+        if (_suggestedActions != null)
+        {
+            throw new InvalidOperationException("SuggestedActions cannot be set for BotMessagePreview type. SuggestedActions is only used with Config type.");
+        }
+
+        return new MessageExtensionResponse
+        {
+            ComposeExtension = new ComposeExtension
+            {
+                Type = _type,
+                ActivityPreview = _activityPreview,
+                Attachments = _attachments
+            }
+        };
+    }
+
+    private MessageExtensionResponse ValidateConfigType()
+    {
+        if (_suggestedActions == null || _suggestedActions.Length == 0)
+        {
+            throw new InvalidOperationException("SuggestedActions must be set for Config type. Use WithSuggestedActions().");
+        }
+
+        if (_attachments != null)
+        {
+            throw new InvalidOperationException("Attachments cannot be set for Config type. Attachments is only used with Result or BotMessagePreview type.");
+        }
+
+        if (!string.IsNullOrEmpty(_attachmentLayout))
+        {
+            throw new InvalidOperationException("AttachmentLayout cannot be set for Config type. AttachmentLayout is only used with Result type.");
+        }
+
+        if (!string.IsNullOrEmpty(_text))
+        {
+            throw new InvalidOperationException("Text cannot be set for Config type. Text is only used with Message type.");
+        }
+
+        if (_activityPreview != null)
+        {
+            throw new InvalidOperationException("ActivityPreview cannot be set for Config type. ActivityPreview is only used with BotMessagePreview type.");
+        }
+
+        return new MessageExtensionResponse
+        {
+            ComposeExtension = new ComposeExtension
+            {
+                Type = _type,
+                SuggestedActions = new MessageExtensionSuggestedAction { Actions = _suggestedActions }
+            }
+        };
+    }
+
+    /// <summary>
+    /// Builds the MessagingExtensionResponse and wraps it in a InvokeResponse.
+    /// </summary>
+    /// <param name="statusCode">The HTTP status code (default: 200).</param>
+    public InvokeResponse<MessageExtensionResponse> Build(int statusCode = 200)
+    {
+        return new InvokeResponse<MessageExtensionResponse>(statusCode, Validate());
     }
 }
