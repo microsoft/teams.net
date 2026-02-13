@@ -44,7 +44,7 @@ public class StateVerifyQuery
 
             // For any other token type (object, array, number, etc.), read as JsonElement and serialize
             using var doc = JsonDocument.ParseValue(ref reader);
-            return JsonSerializer.Serialize(doc.RootElement, options);
+            return JsonSerializer.Serialize(doc.RootElement);
         }
 
         public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options)
