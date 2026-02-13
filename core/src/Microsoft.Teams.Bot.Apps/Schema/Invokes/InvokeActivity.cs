@@ -65,14 +65,23 @@ public class InvokeActivity : TeamsActivity
 /// <summary>
 /// Represents an invoke activity with a strongly-typed value.
 /// </summary>
+/// <remarks>
+/// The strongly-typed Value property provides compile-time type safety while maintaining a single storage location
+/// through the base class. Both the typed and untyped Value properties access the same underlying JsonNode value.
+/// </remarks>
 /// <typeparam name="TValue">The type of the value payload.</typeparam>
 public class InvokeActivity<TValue> : InvokeActivity
 {
     /// <summary>
     /// Gets or sets the strongly-typed value associated with the invoke activity.
+    /// This property shadows the base class Value property but uses the same underlying storage,
+    /// ensuring no synchronization issues between typed and untyped access.
     /// </summary>
-    [JsonPropertyName("value")]
-    public new TValue? Value { get; set; }
+    public new TValue? Value
+    {
+        get => base.Value != null ? JsonSerializer.Deserialize<TValue>(base.Value.ToJsonString()) : default;
+        set => base.Value = value != null ? JsonSerializer.SerializeToNode(value) : null;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InvokeActivity{TValue}"/> class.
@@ -95,10 +104,6 @@ public class InvokeActivity<TValue> : InvokeActivity
     /// <param name="activity">The invoke activity.</param>
     public InvokeActivity(InvokeActivity activity) : base(activity)
     {
-        if (activity.Value != null)
-        {
-            Value = JsonSerializer.Deserialize<TValue>(activity.Value.ToJsonString());
-        }
     }
 }
 
@@ -108,39 +113,14 @@ public class InvokeActivity<TValue> : InvokeActivity
 public static class InvokeNames
 {
     /// <summary>
-    /// Execute action invoke name.
-    /// </summary>
-    public const string ExecuteAction = "actionableMessage/executeAction";
-
-    /// <summary>
     /// File consent invoke name.
     /// </summary>
     public const string FileConsent = "fileConsent/invoke";
 
     /// <summary>
-    /// Handoff invoke name.
-    /// </summary>
-    public const string Handoff = "handoff/action";
-
-    /// <summary>
-    /// Search invoke name.
-    /// </summary>
-    public const string Search = "search";
-
-    /// <summary>
     /// Adaptive card action invoke name.
     /// </summary>
     public const string AdaptiveCardAction = "adaptiveCard/action";
-
-    /// <summary>
-    /// Config fetch invoke name.
-    /// </summary>
-    public const string ConfigFetch = "config/fetch";
-
-    /// <summary>
-    /// Config submit invoke name.
-    /// </summary>
-    public const string ConfigSubmit = "config/submit";
 
     /// <summary>
     /// Tab fetch invoke name.
@@ -173,19 +153,9 @@ public static class InvokeNames
     public const string SignInVerifyState = "signin/verifyState";
 
     /// <summary>
-    /// Message submit action invoke name.
-    /// </summary>
-    public const string MessageSubmitAction = "message/submitAction";
-
-    /// <summary>
     /// Message extension anonymous query link invoke name.
     /// </summary>
     public const string MessageExtensionAnonQueryLink = "composeExtension/anonymousQueryLink";
-
-    /// <summary>
-    /// Message extension card button clicked invoke name.
-    /// </summary>
-    public const string MessageExtensionCardButtonClicked = "composeExtension/onCardButtonClicked";
 
     /// <summary>
     /// Message extension fetch task invoke name.
@@ -213,12 +183,49 @@ public static class InvokeNames
     public const string MessageExtensionSelectItem = "composeExtension/selectItem";
 
     /// <summary>
-    /// Message extension setting invoke name.
-    /// </summary>
-    public const string MessageExtensionSetting = "composeExtension/setting";
-
-    /// <summary>
     /// Message extension submit action invoke name.
     /// </summary>
     public const string MessageExtensionSubmitAction = "composeExtension/submitAction";
+
+    //TODO : review 
+     /*
+     /// <summary>
+     /// Execute action invoke name.
+     /// </summary>
+     public const string ExecuteAction = "actionableMessage/executeAction";
+
+     /// <summary>
+     /// Handoff invoke name.
+     /// </summary>
+     public const string Handoff = "handoff/action";
+
+     /// <summary>
+     /// Search invoke name.
+     /// </summary>
+     public const string Search = "search";
+     /// <summary>
+     /// Config fetch invoke name.
+     /// </summary>
+     public const string ConfigFetch = "config/fetch";
+
+     /// <summary>
+     /// Config submit invoke name.
+     /// </summary>
+     public const string ConfigSubmit = "config/submit";
+
+      /// <summary>
+      /// Message submit action invoke name.
+      /// </summary>
+      public const string MessageSubmitAction = "message/submitAction";
+
+      /// <summary>
+      /// Message extension card button clicked invoke name.
+      /// </summary>
+      public const string MessageExtensionCardButtonClicked = "composeExtension/onCardButtonClicked";
+
+      /// <summary>
+      /// Message extension setting invoke name.
+      /// </summary>
+      public const string MessageExtensionSetting = "composeExtension/setting";
+      */
 }

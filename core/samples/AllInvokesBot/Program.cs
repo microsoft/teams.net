@@ -47,7 +47,7 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
             .WithName("file_consent.json").Build();
         await context.SendActivityAsync(new MessageActivity([fileConsentCardResponse]), cancellationToken);
 
-        return new CoreInvokeResponse(200, AdaptiveCardInvokeResponse.CreateMessageResponse("File consent request sent!"));
+        return AdaptiveCardResponse.CreateMessageResponse("File Consent requested!");
     }
 
     string? message = data != null && data.TryGetValue("message", out var msgValue) ? msgValue?.ToString() : null;
@@ -56,22 +56,22 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
     TeamsAttachment adaptiveActionCardResponse = TeamsAttachment.CreateBuilder().WithAdaptiveCard(adaptiveActionCard).Build();
     await context.SendActivityAsync(new MessageActivity([adaptiveActionCardResponse]), cancellationToken);
 
-    return new CoreInvokeResponse(200, AdaptiveCardInvokeResponse.CreateMessageResponse("Action submitted!"));
+    return AdaptiveCardResponse.CreateMessageResponse("Action submitted!");
 });
 
 // ==================== TASK MODULE - FETCH ====================
 bot.OnTaskFetch(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnTaskFetch");
-    TaskModuleResponse response = TaskModuleResponse.CreateBuilder()
+    TeamsAttachment taskModuleCardResponse = TeamsAttachment.CreateBuilder()
+        .WithAdaptiveCard(Cards.CreateTaskModuleCard()).Build();
+    return TaskModuleResponse.CreateBuilder()
         .WithType(TaskModuleResponseType.Continue)
         .WithTitle("Task")
         .WithHeight("medium")
         .WithWidth("medium")
-        .WithCard(Cards.CreateTaskModuleCard())
+        .WithCard(taskModuleCardResponse)
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 
 });
 
@@ -79,12 +79,10 @@ bot.OnTaskFetch(async (context, cancellationToken) =>
 bot.OnTaskSubmit(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnTaskSubmit");
-    var response = TaskModuleResponse.CreateBuilder()
+    return TaskModuleResponse.CreateBuilder()
         .WithType(TaskModuleResponseType.Message)
         .WithMessage("Done")
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 });
 
 // ==================== FILE CONSENT ====================
@@ -153,9 +151,9 @@ bot.OnFileConsent(async (context, cancellationToken) =>
         Console.WriteLine($"  Context: {JsonSerializer.Serialize(consentContext)}");
     }
 
-    return new CoreInvokeResponse(200, AdaptiveCardInvokeResponse.CreateBuilder()
+    return AdaptiveCardResponse.CreateBuilder()
         .WithStatusCode(200)
-        .Build());
+        .Build();
 });
 
 /*

@@ -8,9 +8,9 @@ using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
-/// Delegate for handling adaptive card action invoke activities.
+/// Delegate for handling adaptive card action invoke activities with strongly-typed response.
 /// </summary>
-public delegate Task<CoreInvokeResponse> AdaptiveCardActionHandler(Context<InvokeActivity<AdaptiveCardActionValue>> context, CancellationToken cancellationToken = default);
+public delegate Task<InvokeResponse> AdaptiveCardActionHandler(Context<InvokeActivity<AdaptiveCardActionValue>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Extension methods for registering adaptive card action invoke handlers.
@@ -18,7 +18,7 @@ public delegate Task<CoreInvokeResponse> AdaptiveCardActionHandler(Context<Invok
 public static class AdaptiveCardExtensions
 {
     /// <summary>
-    /// Registers a handler for adaptive card action invoke activities.
+    /// Registers a handler for adaptive card action invoke activities with strongly-typed response.
     /// </summary>
     public static TeamsBotApplication OnAdaptiveCardAction(this TeamsBotApplication app, AdaptiveCardActionHandler handler)
     {

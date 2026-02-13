@@ -16,16 +16,6 @@ public static class MessageExtensionResponseType
     public const string Result = "result";
 
     /// <summary>
-    /// Auth type - prompts the user to authenticate.
-    /// </summary>
-    public const string Auth = "auth";
-
-    /// <summary>
-    /// Config type - prompts the user to set up the message extension.
-    /// </summary>
-    public const string Config = "config";
-
-    /// <summary>
     /// Message type - displays a plain text message.
     /// </summary>
     public const string Message = "message";
@@ -34,6 +24,20 @@ public static class MessageExtensionResponseType
     /// Bot message preview type - shows a preview that can be edited before sending.
     /// </summary>
     public const string BotMessagePreview = "botMessagePreview";
+
+    //TODO : review
+    /*
+    /// <summary>
+    /// Auth type - prompts the user to authenticate.
+    /// </summary>
+    public const string Auth = "auth";
+    */
+
+    //TODO : review 
+    /// <summary>
+    /// Config type - prompts the user to set up the message extension.
+    /// </summary>
+    public const string Config = "config";
 }
 
 /// <summary>
@@ -42,9 +46,10 @@ public static class MessageExtensionResponseType
 public class MessageExtensionResponse
 {
     /// <summary>
-    /// The compose extension result.
+    /// The compose extension result (for message extension results, auth, config, etc.).
     /// </summary>
     [JsonPropertyName("composeExtension")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public ComposeExtension? ComposeExtension { get; set; }
 
     /// <summary>
@@ -185,11 +190,12 @@ public class MessageExtensionResponseBuilder
     }
 
     /// <summary>
-    /// Builds the MessagingExtensionResponse.
+    /// Builds the MessagingExtensionResponse and wraps it in a InvokeResponse.
     /// </summary>
-    public MessageExtensionResponse Build()
+    /// <param name="statusCode">The HTTP status code (default: 200).</param>
+    public InvokeResponse<MessageExtensionResponse> Build(int statusCode = 200)
     {
-        return new MessageExtensionResponse
+        return new InvokeResponse<MessageExtensionResponse>(statusCode, new MessageExtensionResponse
         {
             ComposeExtension = new ComposeExtension
             {
@@ -200,6 +206,6 @@ public class MessageExtensionResponseBuilder
                 SuggestedActions = _suggestedActions != null ? new MessageExtensionSuggestedAction { Actions = _suggestedActions } : null,
                 Text = _text
             }
-        };
+        });
     }
 }

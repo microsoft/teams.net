@@ -144,7 +144,7 @@ teamsApp.OnInvoke(async (context, cancellationToken) =>
 
     await context.SendActivityAsync(reply, cancellationToken);
 
-    return new CoreInvokeResponse(200, AdaptiveCardInvokeResponse.CreateMessageResponse("Invokes are great!!"));
+    return AdaptiveCardResponse.CreateMessageResponse("Invokes are great!!");
 });
 
 // ==================== CONVERSATION UPDATE HANDLERS ====================

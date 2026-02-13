@@ -8,7 +8,7 @@ namespace Microsoft.Teams.Bot.Apps.Schema.Invokes;
 /// <summary>
 /// App-based query link payload for link unfurling.
 /// </summary>
-public class AppBasedQueryLink
+public class MessageExtensionQueryLink
 {
     /// <summary>
     /// URL queried by user.

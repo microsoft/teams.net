@@ -109,29 +109,25 @@ public static class Cards
     {
         return new JsonObject
         {
-            ["contentType"] = AttachmentContentType.AdaptiveCard,
-            ["content"] = new JsonObject
+            ["type"] = "AdaptiveCard",
+            ["version"] = "1.4",
+            ["body"] = new JsonArray
             {
-                ["type"] = "AdaptiveCard",
-                ["version"] = "1.4",
-                ["body"] = new JsonArray
+                new JsonObject
                 {
-                    new JsonObject
-                    {
-                        ["type"] = "TextBlock",
-                        ["text"] = "Task Module"
-                    }
-                },
-                ["actions"] = new JsonArray
+                    ["type"] = "TextBlock",
+                    ["text"] = "Task Module"
+                }
+            },
+            ["actions"] = new JsonArray
+            {
+                new JsonObject
                 {
-                    new JsonObject
-                    {
-                        ["type"] = "Action.Submit",
-                        ["title"] = "Submit"
-                    }
+                    ["type"] = "Action.Submit",
+                    ["title"] = "Submit"
                 }
             }
-        };
+       };
     }
 
     public static JsonObject CreateFileInfoCard(string? uniqueId, string? fileType)

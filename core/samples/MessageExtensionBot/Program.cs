@@ -25,26 +25,22 @@ bot.OnQuery(async (context, cancellationToken) =>
 
     if (searchText.Equals("help", StringComparison.OrdinalIgnoreCase))
     {
-        MessageExtensionResponse messageResponse = MessageExtensionResponse.CreateBuilder()
+        return MessageExtensionResponse.CreateBuilder()
             .WithType(MessageExtensionResponseType.Message)
             .WithText("💡 Search for any keyword to see results.")
             .Build();
-
-        return new CoreInvokeResponse(200, messageResponse);
     }
 
     // Create results with tap actions to trigger OnSelectItem
     var cards = Cards.CreateQueryResultCards(searchText);
-    TeamsAttachment[] attachments = cards.Select(card => TeamsAttachment.CreateBuilder().WithContent(card)
-        .WithContentType(AttachmentContentType.ThumbnailCard).Build()).ToArray();
+    TeamsAttachment[] attachments = [.. cards.Select(card => TeamsAttachment.CreateBuilder().WithContent(card)
+        .WithContentType(AttachmentContentType.ThumbnailCard).Build())];
 
-    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+    return MessageExtensionResponse.CreateBuilder()
         .WithType(MessageExtensionResponseType.Result)
         .WithAttachmentLayout(TeamsAttachmentLayout.List)
         .WithAttachments(attachments)
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 });
 
 // ==================== MESSAGE EXTENSION SELECT ITEM ====================
@@ -61,13 +57,11 @@ bot.OnSelectItem(async (context, cancellationToken) =>
     var card = Cards.CreateSelectItemCard(itemId, title, description);
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(card).Build();
 
-    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+    return MessageExtensionResponse.CreateBuilder()
         .WithType(MessageExtensionResponseType.Result)
         .WithAttachmentLayout(TeamsAttachmentLayout.List)
         .WithAttachments(attachment)
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 });
 
 // ==================== MESSAGE EXTENSION FETCH TASK ====================
@@ -78,13 +72,11 @@ bot.OnFetchTask(async (context, cancellationToken) =>
     MessageExtensionAction? action = context.Activity.Value;
 
     var card = Cards.CreateFetchTaskCard(action?.CommandId ?? "unknown");
-    var response = TaskModuleResponse.CreateBuilder()
+    return TaskModuleResponse.CreateBuilder()
         .WithType(TaskModuleResponseType.Continue)
         .WithTitle("Task Module")
         .WithCard(card)
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 });
 
 // Helper: Extract title and description from preview card
@@ -119,13 +111,11 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
         var (previewTitle, previewDescription) = GetDataFromPreview(action.BotActivityPreview?.FirstOrDefault());
 
         var card = Cards.CreateEditFormCard(previewTitle, previewDescription);
-        TaskModuleResponse response = TaskModuleResponse.CreateBuilder()
+        return TaskModuleResponse.CreateBuilder()
             .WithType(TaskModuleResponseType.Continue)
             .WithTitle("Edit Card")
             .WithCard(card)
             .Build();
-
-        return new CoreInvokeResponse(200, response);
     }
 
     // Handle "send" - user clicked send on the preview, finalize the card
@@ -139,13 +129,11 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
         var card = Cards.CreateSubmitActionCard(previewTitle, previewDescription);
         TeamsAttachment attachment2 = TeamsAttachment.CreateBuilder().WithAdaptiveCard(card).Build();
 
-        MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+        return MessageExtensionResponse.CreateBuilder()
             .WithType(MessageExtensionResponseType.Result)
             .WithAttachmentLayout(TeamsAttachmentLayout.List)
             .WithAttachments(attachment2)
             .Build();
-
-        return new CoreInvokeResponse(200, response);
     }
 
     var data = action?.Data as JsonElement?;
@@ -155,32 +143,28 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     var previewCard = Cards.CreateSubmitActionCard(title, description);
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(previewCard).Build();
 
-    MessageExtensionResponse previewResponse = MessageExtensionResponse.CreateBuilder()
+    return MessageExtensionResponse.CreateBuilder()
         .WithType(MessageExtensionResponseType.BotMessagePreview)
         .WithActivityPreview(new MessageActivity([attachment]))
         .Build();
-
-    return new CoreInvokeResponse(200, previewResponse);
 });
 
 // ==================== MESSAGE EXTENSION QUERY LINK ====================
 bot.OnQueryLink(async (context, cancellationToken) =>
 {
-    Console.WriteLine("✓ OnMessageExtensionQueryLink");
+    Console.WriteLine("✓ OnQueryLink");
 
-    var queryLink = context.Activity.Value;
+    MessageExtensionQueryLink? queryLink = context.Activity.Value;
 
     var card = Cards.CreateLinkUnfurlCard(queryLink?.Url?.ToString());
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
 
-    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+    return MessageExtensionResponse.CreateBuilder()
         .WithType(MessageExtensionResponseType.Result)
         .WithAttachmentLayout(TeamsAttachmentLayout.List)
         .WithAttachments(attachment)
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 });
 
 // ==================== MESSAGE EXTENSION ANON QUERY LINK ====================
@@ -189,7 +173,7 @@ bot.OnAnonQueryLink(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnAnonQueryLink");
 
-    var anonQueryLink = context.Activity.Value;
+    MessageExtensionQueryLink? anonQueryLink = context.Activity.Value;
     if (anonQueryLink != null)
     {
         Console.WriteLine($"  URL: '{anonQueryLink.Url}'");
@@ -199,13 +183,11 @@ bot.OnAnonQueryLink(async (context, cancellationToken) =>
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
 
-    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+    return MessageExtensionResponse.CreateBuilder()
         .WithType(MessageExtensionResponseType.Result)
         .WithAttachmentLayout(TeamsAttachmentLayout.List)
         .WithAttachments(attachment)
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 });
 
 
@@ -224,12 +206,10 @@ bot.OnQuerySettingUrl(async (context, cancellationToken) =>
         Title = "Configure Extension"
     };
 
-    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+    return MessageExtensionResponse.CreateBuilder()
         .WithType(MessageExtensionResponseType.Config)
         .WithSuggestedActions(action)
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 });
 
 
@@ -268,7 +248,7 @@ bot.OnSetting(async (context, cancellationToken) =>
         .WithSuggestedActions(action)
         .Build();
 
-    return new CoreInvokeResponse(200, response);
+    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
 });
 
 // ==================== CONFIG FETCH ====================
@@ -305,7 +285,7 @@ bot.OnConfigFetch(async (context, cancellationToken) =>
         .WithCard(card)
         .Build();
 
-    return new CoreInvokeResponse(200, response);
+    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
 });
 
 // ==================== CONFIG SUBMIT ====================
@@ -324,7 +304,7 @@ bot.OnConfigSubmit(async (context, cancellationToken) =>
         .WithMessage("Settings saved successfully!")
         .Build();
 
-    return new CoreInvokeResponse(200, response);
+    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
 });
 */
 
