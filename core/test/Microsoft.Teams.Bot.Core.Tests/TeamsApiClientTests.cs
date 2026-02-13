@@ -268,7 +268,11 @@ public class TeamsApiClientTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"Tenant-wide message from Automated tests at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"Tenant-wide message from Automated tests at `{DateTime.UtcNow:s}`" } },
+            Conversation = new()
+            {
+                Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
+            }
         };
 
         string operationId = await _teamsClient.SendMessageToAllUsersInTenantAsync(
