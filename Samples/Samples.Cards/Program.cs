@@ -24,7 +24,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 var teams = app.UseTeams();
 
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
     var activity = context.Activity;
     context.Log.Info($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
@@ -36,50 +36,50 @@ teams.OnMessage(async context =>
     {
         context.Log.Info("[CARD] Basic card requested");
         var card = CreateBasicAdaptiveCard();
-        await context.Send(card);
+        await context.Send(card, cancellationToken);
     }
     else if (text.Contains("profile"))
     {
         context.Log.Info("[PROFILE] Profile card requested");
         var card = CreateProfileCard();
-        await context.Send(card);
+        await context.Send(card, cancellationToken);
     }
     else if (text.Contains("validation"))
     {
         context.Log.Info("[VALIDATION] Validation card requested");
         var card = CreateProfileCardWithValidation();
-        await context.Send(card);
+        await context.Send(card, cancellationToken);
     }
     else if (text.Contains("feedback"))
     {
         context.Log.Info("[FEEDBACK] Feedback card requested");
         var card = CreateFeedbackCard();
-        await context.Send(card);
+        await context.Send(card, cancellationToken);
     }
     else if (text.Contains("form"))
     {
         context.Log.Info("[FORM] Task form card requested");
         var card = CreateTaskFormCard();
-        await context.Send(card);
+        await context.Send(card, cancellationToken);
     }
     else if (text.Contains("json"))
     {
         context.Log.Info("[JSON] JSON deserialization card requested");
         var card = CreateCardFromJson();
-        await context.Send(card);
+        await context.Send(card, cancellationToken);
     }
     else if (text.Contains("reply"))
     {
-        await context.Send("Hello! How can I assist you today?");
+        await context.Send("Hello! How can I assist you today?", cancellationToken);
     }
     else
     {
-        await context.Typing();
-        await context.Send($"You said '{activity.Text}'. Try typing: card, profile, validation, feedback, form, json, or reply");
+        await context.Typing(cancellationToken: cancellationToken);
+        await context.Send($"You said '{activity.Text}'. Try typing: card, profile, validation, feedback, form, json, or reply", cancellationToken);
     }
 });
 
-teams.OnAdaptiveCardAction(async context =>
+teams.OnAdaptiveCardAction(async (context, cancellationToken) =>
 {
     var activity = context.Activity;
     context.Log.Info("[CARD_ACTION] Card action received");
@@ -118,19 +118,19 @@ teams.OnAdaptiveCardAction(async context =>
     {
         case "submit_basic":
             var notifyValue = GetFormValue("notify") ?? "false";
-            await context.Send($"Basic card submitted! Notify setting: {notifyValue}");
+            await context.Send($"Basic card submitted! Notify setting: {notifyValue}", cancellationToken);
             break;
 
         case "submit_feedback":
             var feedbackText = GetFormValue("feedback") ?? "No feedback provided";
-            await context.Send($"Feedback received: {feedbackText}");
+            await context.Send($"Feedback received: {feedbackText}", cancellationToken);
             break;
 
         case "create_task":
             var title = GetFormValue("title") ?? "Untitled";
             var priority = GetFormValue("priority") ?? "medium";
             var dueDate = GetFormValue("due_date") ?? "No date";
-            await context.Send($"Task created!\nTitle: {title}\nPriority: {priority}\nDue: {dueDate}");
+            await context.Send($"Task created!\nTitle: {title}\nPriority: {priority}\nDue: {dueDate}", cancellationToken);
             break;
 
         case "save_profile":
@@ -146,11 +146,11 @@ teams.OnAdaptiveCardAction(async context =>
             if (location != "Not specified")
                 response += $"\nLocation: {location}";
 
-            await context.Send(response);
+            await context.Send(response, cancellationToken);
             break;
 
         case "test_json":
-            await context.Send("JSON deserialization test successful!");
+            await context.Send("JSON deserialization test successful!", cancellationToken);
             break;
 
         default:

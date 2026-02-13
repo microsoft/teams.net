@@ -19,23 +19,23 @@ var promptFactory = app.Services.GetRequiredService<Func<OpenAIChatPrompt>>();
 
 var teams = app.UseTeams();
 
-teams.OnMessage("/history", async context =>
+teams.OnMessage("/history", async (context, cancellationToken) =>
 {
     var state = State.From(context);
     await context.Send(JsonSerializer.Serialize(state.Messages, new JsonSerializerOptions()
     {
         WriteIndented = true
-    }));
+    }), cancellationToken);
 });
 
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
     var state = State.From(context);
     var prompt = promptFactory();
     await prompt.Send(context.Activity.Text, new() { Messages = state.Messages }, (chunk) => Task.Run(() =>
     {
         context.Stream.Emit(chunk);
-    }), context.CancellationToken);
+    }), cancellationToken);
 
     state.Save(context);
 });
