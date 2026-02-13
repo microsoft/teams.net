@@ -147,7 +147,7 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     }
 
     var data = action?.Data as JsonElement?;
-    string? title = data !=null && data.Value.TryGetProperty("title", out var t) ? t.GetString() : "Untitled";
+    string? title = data != null && data.Value.TryGetProperty("title", out var t) ? t.GetString() : "Untitled";
     string? description = data != null && data.Value.TryGetProperty("description", out var d) ? d.GetString() : "No description";
 
     var previewCard = Cards.CreateSubmitActionCard(title, description);
