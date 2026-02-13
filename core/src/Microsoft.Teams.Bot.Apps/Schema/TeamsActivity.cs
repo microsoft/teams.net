@@ -10,7 +10,6 @@ namespace Microsoft.Teams.Bot.Apps.Schema;
 /// <summary>
 /// Teams Activity schema.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227: Collection Properties should be read only", Justification = "<Pending>")]
 public class TeamsActivity : CoreActivity
 {
     /// <summary>

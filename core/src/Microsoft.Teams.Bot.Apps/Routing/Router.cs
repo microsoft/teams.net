@@ -10,8 +10,6 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// <summary>
 /// Router for dispatching Teams activities to registered routes
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
-
 public sealed class Router(ILogger<Router> logger)
 {
     private readonly List<RouteBase> _routes = [];
