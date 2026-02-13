@@ -16,7 +16,6 @@ namespace Microsoft.Teams.Bot.Core.Http;
 /// </summary>
 /// <param name="httpClient">The HTTP client instance used to send requests.</param>
 /// <param name="logger">The logger instance used for logging. Optional.</param>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
 {
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
@@ -35,7 +34,6 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized response, or null if the response is empty or 404 (when ReturnNullOnNotFound is true).</returns>
     /// <exception cref="HttpRequestException">Thrown if the request fails and the failure is not handled by options.</exception>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "String URLs are used for consistency with existing API patterns")]
     public async Task<T?> SendAsync<T>(
         HttpMethod method,
         string url,
@@ -67,7 +65,6 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the deserialized response, or null if the response is empty or 404 (when ReturnNullOnNotFound is true).</returns>
     /// <exception cref="HttpRequestException">Thrown if the request fails and the failure is not handled by options.</exception>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "String URLs are used for consistency with existing API patterns")]
     public async Task<T?> SendAsync<T>(
         HttpMethod method,
         string baseUrl,
@@ -98,7 +95,6 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the request fails.</exception>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "String URLs are used for consistency with existing API patterns")]
     public async Task SendAsync(
         HttpMethod method,
         string url,
@@ -121,7 +117,6 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the request fails.</exception>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1054:URI-like parameters should not be strings", Justification = "String URLs are used for consistency with existing API patterns")]
     public async Task SendAsync(
         HttpMethod method,
         string baseUrl,
