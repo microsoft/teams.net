@@ -6,8 +6,6 @@ using MessageExtensionBot;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Invokes;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 var builder = TeamsBotApplication.CreateBuilder(args);
 var bot = builder.Build();
@@ -25,8 +23,8 @@ bot.OnQuery(async (context, cancellationToken) =>
 
     if (searchText.Equals("help", StringComparison.OrdinalIgnoreCase))
     {
-        MessagingExtensionResponse messageResponse = MessagingExtensionResponse.CreateBuilder()
-            .WithType(MessagingExtensionResponseType.Message)
+        MessageExtensionResponse messageResponse = MessageExtensionResponse.CreateBuilder()
+            .WithType(MessageExtensionResponseType.Message)
             .WithText("💡 Search for any keyword to see results.")
             .Build();
 
@@ -38,8 +36,8 @@ bot.OnQuery(async (context, cancellationToken) =>
     TeamsAttachment[] attachments = cards.Select(card => TeamsAttachment.CreateBuilder().WithContent(card)
         .WithContentType(AttachmentContentType.ThumbnailCard).Build()).ToArray();
 
-    MessagingExtensionResponse response = MessagingExtensionResponse.CreateBuilder()
-        .WithType(MessagingExtensionResponseType.Result)
+    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+        .WithType(MessageExtensionResponseType.Result)
         .WithAttachmentLayout(TeamsAttachmentLayout.List)
         .WithAttachments(attachments)
         .Build();
@@ -61,8 +59,8 @@ bot.OnSelectItem(async (context, cancellationToken) =>
     var card = Cards.CreateSelectItemCard(itemId, title, description);
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(card).Build();
 
-    var response = MessagingExtensionResponse.CreateBuilder()
-        .WithType(MessagingExtensionResponseType.Result)
+    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+        .WithType(MessageExtensionResponseType.Result)
         .WithAttachmentLayout(TeamsAttachmentLayout.List)
         .WithAttachments(attachment)
         .Build();
@@ -139,8 +137,8 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
         var card = Cards.CreateSubmitActionCard(previewTitle, previewDescription);
         TeamsAttachment attachment2 = TeamsAttachment.CreateBuilder().WithAdaptiveCard(card).Build();
 
-        MessagingExtensionResponse response = MessagingExtensionResponse.CreateBuilder()
-            .WithType(MessagingExtensionResponseType.Result)
+        MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+            .WithType(MessageExtensionResponseType.Result)
             .WithAttachmentLayout(TeamsAttachmentLayout.List)
             .WithAttachments(attachment2)
             .Build();
@@ -155,8 +153,8 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     var previewCard = Cards.CreateSubmitActionCard(title, description);
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(previewCard).Build();
 
-    MessagingExtensionResponse previewResponse = MessagingExtensionResponse.CreateBuilder()
-        .WithType(MessagingExtensionResponseType.BotMessagePreview)
+    MessageExtensionResponse previewResponse = MessageExtensionResponse.CreateBuilder()
+        .WithType(MessageExtensionResponseType.BotMessagePreview)
         .WithActivityPreview(new MessageActivity([attachment]))
         .Build();
 
@@ -174,8 +172,8 @@ bot.OnQueryLink(async (context, cancellationToken) =>
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
 
-    MessagingExtensionResponse response = MessagingExtensionResponse.CreateBuilder()
-        .WithType(MessagingExtensionResponseType.Result)
+    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+        .WithType(MessageExtensionResponseType.Result)
         .WithAttachmentLayout(TeamsAttachmentLayout.List)
         .WithAttachments(attachment)
         .Build();
@@ -199,8 +197,8 @@ bot.OnAnonQueryLink(async (context, cancellationToken) =>
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
 
-    MessagingExtensionResponse response = MessagingExtensionResponse.CreateBuilder()
-        .WithType(MessagingExtensionResponseType.Result)
+    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+        .WithType(MessageExtensionResponseType.Result)
         .WithAttachmentLayout(TeamsAttachmentLayout.List)
         .WithAttachments(attachment)
         .Build();
@@ -217,15 +215,15 @@ bot.OnQuerySettingUrl(async (context, cancellationToken) =>
 
     var query = context.Activity.Value;
 
-    var action = new MessagingExtensionAction
+    var action = new 
     {
         Type = "openUrl",
         Value = "https://www.microsoft.com",
         Title = "Configure Extension"
     };
 
-    MessagingExtensionResponse response = MessagingExtensionResponse.CreateBuilder()
-        .WithType(MessagingExtensionResponseType.Config)
+    MessageExtensionResponse response = MessageExtensionResponse.CreateBuilder()
+        .WithType(MessageExtensionResponseType.Config)
         .WithSuggestedActions(action)
         .Build();
 

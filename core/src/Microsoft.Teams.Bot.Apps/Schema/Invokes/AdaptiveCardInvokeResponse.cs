@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Invokes;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Adaptive card invoke response types.

@@ -5,9 +5,6 @@ using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Apps.Schema.Invokes;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using TeamsBot;
 
 var builder = TeamsBotApplication.CreateBuilder(args);

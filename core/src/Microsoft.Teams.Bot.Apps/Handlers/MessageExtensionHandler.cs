@@ -4,7 +4,6 @@
 using System.Text.Json;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 /// <summary>

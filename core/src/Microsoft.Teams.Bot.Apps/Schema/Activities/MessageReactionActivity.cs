@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents a message reaction activity.
@@ -62,6 +61,18 @@ public class MessageReactionActivity : TeamsActivity
             }
             activity.Properties.Remove("reactionsRemoved");
         }
+        if (activity.Properties.TryGetValue("replyToId", out var replyToId) && replyToId != null)
+        {
+            if (replyToId is JsonElement jeReplyToId && jeReplyToId.ValueKind == JsonValueKind.String)
+            {
+                ReplyToId = jeReplyToId.GetString();
+            }
+            else
+            {
+                ReplyToId = replyToId.ToString();
+            }
+            activity.Properties.Remove("replyToId");
+        }
     }
 
     /// <summary>
@@ -75,6 +86,12 @@ public class MessageReactionActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("reactionsRemoved")]
     public IList<MessageReaction>? ReactionsRemoved { get; set; }
+
+    /// <summary>
+    /// Gets or sets the ID of the message being reacted to.
+    /// </summary>
+    [JsonPropertyName("replyToId")]
+    public string? ReplyToId { get; set; }
 }
 
 /// <summary>

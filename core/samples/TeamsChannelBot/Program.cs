@@ -20,21 +20,21 @@ var app = builder.Build();
 
 app.OnChannelCreated(async (context, cancellationToken) =>
 {
-    var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
+    string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelCreated] Channel '{channelName}' was created");
     await context.SendActivityAsync($"New channel created: {channelName}", cancellationToken);
 });
 
 app.OnChannelDeleted(async (context, cancellationToken) =>
 {
-    var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
+    string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelDeleted] Channel '{channelName}' was deleted");
     await context.SendActivityAsync($"Channel deleted: {channelName}", cancellationToken);
 });
 
 app.OnChannelRenamed(async (context, cancellationToken) =>
 {
-    var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
+    string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelRenamed] Channel renamed to '{channelName}'");
     await context.SendActivityAsync($"Channel renamed to: {channelName}", cancellationToken);
 });
@@ -95,28 +95,28 @@ app.OnTeamMemberRemoved(async (context, cancellationToken) =>
 
 app.OnTeamArchived((context, cancellationToken) =>
 {
-    var teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
+    string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
     Console.WriteLine($"[TeamArchived] Team '{teamName}' was archived");
     return Task.CompletedTask;
 });
 
 app.OnTeamDeleted((context, cancellationToken) =>
 {
-    var teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
+    string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
     Console.WriteLine($"[TeamDeleted] Team '{teamName}' was deleted");
     return Task.CompletedTask;
 });
 
 app.OnTeamRenamed(async (context, cancellationToken) =>
 {
-    var teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
+    string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
     Console.WriteLine($"[TeamRenamed] Team renamed to '{teamName}'");
     await context.SendActivityAsync($"Team renamed to: {teamName}", cancellationToken);
 });
 
 app.OnTeamUnarchived(async (context, cancellationToken) =>
 {
-    var teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
+    string teamName = context.Activity.ChannelData?.Team?.Name ?? "unknown";
     Console.WriteLine($"[TeamUnarchived] Team '{teamName}' was unarchived");
     await context.SendActivityAsync($"Team unarchived: {teamName}", cancellationToken);
 });

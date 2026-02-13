@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
+
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -86,8 +86,8 @@ public class TeamsActivity : CoreActivity
     /// <returns></returns>
     internal TeamsActivity Rebase()
     {
-        base.Attachments = this.Attachments?.ToJsonArray();
-        base.Entities = this.Entities?.ToJsonArray();
+        base.Attachments = Attachments?.ToJsonArray();
+        base.Entities = Entities?.ToJsonArray();
 
         return this;
     }
@@ -99,7 +99,7 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("from")]
     public new TeamsConversationAccount From
     {
-        get => (base.From as TeamsConversationAccount) ?? new TeamsConversationAccount(base.From);
+        get => base.From as TeamsConversationAccount ?? new TeamsConversationAccount(base.From);
         set => base.From = value;
     }
 
@@ -109,7 +109,7 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("recipient")]
     public new TeamsConversationAccount Recipient
     {
-        get => (base.Recipient as TeamsConversationAccount) ?? new TeamsConversationAccount(base.Recipient);
+        get => base.Recipient as TeamsConversationAccount ?? new TeamsConversationAccount(base.Recipient);
         set => base.Recipient = value;
     }
 
@@ -119,7 +119,7 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("conversation")]
     public new TeamsConversation Conversation
     {
-        get => (base.Conversation as TeamsConversation) ?? new TeamsConversation(base.Conversation);
+        get => base.Conversation as TeamsConversation ?? new TeamsConversation(base.Conversation);
         set => base.Conversation = value;
     }
 

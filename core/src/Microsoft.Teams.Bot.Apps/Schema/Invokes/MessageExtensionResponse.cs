@@ -1,15 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Invokes;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Messaging extension response types.
 /// </summary>
-public static class MessagingExtensionResponseType
+public static class MessageExtensionResponseType
 {
     /// <summary>
     /// Result type - displays a list of search results.
@@ -40,7 +39,7 @@ public static class MessagingExtensionResponseType
 /// <summary>
 /// Messaging extension response wrapper.
 /// </summary>
-public class MessagingExtensionResponse
+public class MessageExtensionResponse
 {
     /// <summary>
     /// The compose extension result.
@@ -51,9 +50,9 @@ public class MessagingExtensionResponse
     /// <summary>
     /// Creates a new builder for MessagingExtensionResponse.
     /// </summary>
-    public static MessagingExtensionResponseBuilder CreateBuilder()
+    public static MessageExtensionResponseBuilder CreateBuilder()
     {
-        return new MessagingExtensionResponseBuilder();
+        return new MessageExtensionResponseBuilder();
     }
 }
 
@@ -65,7 +64,7 @@ public class ComposeExtension
 {
     /// <summary>
     /// Type of result.
-    /// See <see cref="MessagingExtensionResponseType"/> for common values.
+    /// See <see cref="MessageExtensionResponseType"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
     public string? Type { get; set; }
@@ -101,62 +100,40 @@ public class ComposeExtension
     /// Suggested actions for config type.
     /// </summary>
     [JsonPropertyName("suggestedActions")]
-    public MessagingExtensionSuggestedAction? SuggestedActions { get; set; }
+    public MessageExtensionSuggestedAction? SuggestedActions { get; set; }
 }
 
 /// <summary>
 /// Suggested actions for messaging extension configuration.
 /// </summary>
-public class MessagingExtensionSuggestedAction
+public class MessageExtensionSuggestedAction
 {
+    //TODO : this should come from cards package
+
     /// <summary>
     /// Array of actions.
     /// </summary>
     [JsonPropertyName("actions")]
-    public IList<MessagingExtensionAction>? Actions { get; set; }
+    public IList<object>? Actions { get; set; }
 }
 
-/// <summary>
-/// Action for messaging extension.
-/// </summary>
-//TODO : this should come from cards package
-public class MessagingExtensionAction
-{
-    /// <summary>
-    /// Type of action. Common values: "openUrl", "imBack".
-    /// </summary>
-    [JsonPropertyName("type")]
-    public string? Type { get; set; }
-
-    /// <summary>
-    /// Value associated with the action.
-    /// </summary>
-    [JsonPropertyName("value")]
-    public string? Value { get; set; }
-
-    /// <summary>
-    /// Title to display for the action.
-    /// </summary>
-    [JsonPropertyName("title")]
-    public string? Title { get; set; }
-}
 
 /// <summary>
 /// Builder for MessagingExtensionResponse.
 /// </summary>
-public class MessagingExtensionResponseBuilder
+public class MessageExtensionResponseBuilder
 {
     private string? _type;
     private string? _attachmentLayout;
     private TeamsAttachment[]? _attachments;
     private TeamsActivity? _activityPreview;
-    private MessagingExtensionAction[]? _suggestedActions;
+    private object[]? _suggestedActions;
     private string? _text;
 
     /// <summary>
     /// Sets the type of the response. Common values: "result", "auth", "config", "message", "botMessagePreview".
     /// </summary>
-    public MessagingExtensionResponseBuilder WithType(string type)
+    public MessageExtensionResponseBuilder WithType(string type)
     {
         _type = type;
         return this;
@@ -165,7 +142,7 @@ public class MessagingExtensionResponseBuilder
     /// <summary>
     /// Sets the attachment layout. Common values: "list", "grid".
     /// </summary>
-    public MessagingExtensionResponseBuilder WithAttachmentLayout(string layout)
+    public MessageExtensionResponseBuilder WithAttachmentLayout(string layout)
     {
         _attachmentLayout = layout;
         return this;
@@ -174,7 +151,7 @@ public class MessagingExtensionResponseBuilder
     /// <summary>
     /// Sets the attachments for the response.
     /// </summary>
-    public MessagingExtensionResponseBuilder WithAttachments(params TeamsAttachment[] attachments)
+    public MessageExtensionResponseBuilder WithAttachments(params TeamsAttachment[] attachments)
     {
         _attachments = attachments;
         return this;
@@ -183,7 +160,7 @@ public class MessagingExtensionResponseBuilder
     /// <summary>
     /// Sets the activity preview for bot message preview type.
     /// </summary>
-    public MessagingExtensionResponseBuilder WithActivityPreview(TeamsActivity activityPreview)
+    public MessageExtensionResponseBuilder WithActivityPreview(TeamsActivity activityPreview)
     {
         _activityPreview = activityPreview;
         return this;
@@ -192,7 +169,7 @@ public class MessagingExtensionResponseBuilder
     /// <summary>
     /// Sets suggested actions for config type.
     /// </summary>
-    public MessagingExtensionResponseBuilder WithSuggestedActions(params MessagingExtensionAction[] actions)
+    public MessageExtensionResponseBuilder WithSuggestedActions(params object[] actions)
     {
         _suggestedActions = actions;
         return this;
@@ -201,7 +178,7 @@ public class MessagingExtensionResponseBuilder
     /// <summary>
     /// Sets the text message for message type.
     /// </summary>
-    public MessagingExtensionResponseBuilder WithText(string text)
+    public MessageExtensionResponseBuilder WithText(string text)
     {
         _text = text;
         return this;
@@ -210,9 +187,9 @@ public class MessagingExtensionResponseBuilder
     /// <summary>
     /// Builds the MessagingExtensionResponse.
     /// </summary>
-    public MessagingExtensionResponse Build()
+    public MessageExtensionResponse Build()
     {
-        return new MessagingExtensionResponse
+        return new MessageExtensionResponse
         {
             ComposeExtension = new ComposeExtension
             {
@@ -220,7 +197,7 @@ public class MessagingExtensionResponseBuilder
                 AttachmentLayout = _attachmentLayout,
                 Attachments = _attachments,
                 ActivityPreview = _activityPreview,
-                SuggestedActions = _suggestedActions != null ? new MessagingExtensionSuggestedAction { Actions = _suggestedActions } : null,
+                SuggestedActions = _suggestedActions != null ? new MessageExtensionSuggestedAction { Actions = _suggestedActions } : null,
                 Text = _text
             }
         };

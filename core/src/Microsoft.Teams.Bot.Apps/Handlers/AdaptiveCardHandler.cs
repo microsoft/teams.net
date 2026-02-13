@@ -3,7 +3,6 @@
 
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
@@ -29,7 +28,7 @@ public static class AdaptiveCardExtensions
             Selector = activity => activity.Name == InvokeNames.AdaptiveCardAction,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
-                var typedActivity = new InvokeActivity<AdaptiveCardActionValue>(ctx.Activity);
+                InvokeActivity<AdaptiveCardActionValue> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<AdaptiveCardActionValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }

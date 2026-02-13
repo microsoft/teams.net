@@ -1,12 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
-using Microsoft.Teams.Bot.Apps.Schema.InstallActivities;
-using Microsoft.Teams.Bot.Apps.Schema.Invokes;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
 
