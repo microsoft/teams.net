@@ -18,7 +18,7 @@ teams.OnActivity(async context =>
 });
 
 // Handle incoming messages
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
     var activity = context.Activity;
     var text = activity.Text?.ToLowerInvariant() ?? "";
@@ -130,13 +130,13 @@ teams.OnMessage(async context =>
             "- `update` - Send a message, then update it after 3 seconds\n" +
             "- `delete` - Send a message, then delete it after 3 seconds\n" +
             "- `reply` - Get a targeted reply (threaded)\n\n" +
-            "_Targeted messages are only visible to you, even in group chats!_"
+            "_Targeted messages are only visible to you, even in group chats!_", cancellationToken
         );
     }
     else
     {
         await context.Typing();
-        await context.Send($"You said: '{activity.Text}'\n\nType `help` to see available commands.");
+        await context.Send($"You said: '{activity.Text}'\n\nType `help` to see available commands.", cancellationToken);
     }
 });
 

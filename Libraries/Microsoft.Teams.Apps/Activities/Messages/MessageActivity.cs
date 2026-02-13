@@ -53,6 +53,23 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    public static App OnMessage(this App app, Func<IContext<MessageActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.Message,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is MessageActivity
+        });
+
+        return app;
+    }
+
     public static App OnMessage(this App app, string pattern, Func<IContext<MessageActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -78,6 +95,32 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    public static App OnMessage(this App app, string pattern, Func<IContext<MessageActivity>, CancellationToken, Task> handler)
+    {
+        var regex = new Regex(pattern);
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.Message,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is MessageActivity message)
+                {
+                    return regex.IsMatch(message.Text);
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
     public static App OnMessage(this App app, Regex regex, Func<IContext<MessageActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -87,6 +130,31 @@ public static partial class AppActivityExtensions
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageActivity>());
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is MessageActivity message)
+                {
+                    return regex.IsMatch(message.Text);
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnMessage(this App app, Regex regex, Func<IContext<MessageActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.Message,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageActivity>(), context.CancellationToken);
                 return null;
             },
             Selector = activity =>

@@ -43,4 +43,21 @@ public static partial class AppEventActivityExtensions
 
         return app;
     }
+
+    public static App OnReadReceipt(this App app, Func<IContext<ReadReceiptActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Event, Name.ReadReceipt]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ReadReceiptActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is ReadReceiptActivity
+        });
+
+        return app;
+    }
 }

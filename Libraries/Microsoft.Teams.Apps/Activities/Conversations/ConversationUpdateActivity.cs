@@ -43,4 +43,21 @@ public static partial class AppActivityExtensions
 
         return app;
     }
+
+    public static App OnConversationUpdate(this App app, Func<IContext<ConversationUpdateActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.ConversationUpdate,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ConversationUpdateActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is ConversationUpdateActivity
+        });
+
+        return app;
+    }
 }

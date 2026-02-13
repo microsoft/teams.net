@@ -292,7 +292,7 @@ public partial class App
         var routes = Router.Select(@event.Activity);
         JsonWebToken? userToken = null;
 
-        var api = new ApiClient(Api);
+        var api = new ApiClient(Api, cancellationToken);
 
         try
         {
@@ -388,7 +388,7 @@ public partial class App
         }
 
         var res = await Next(context);
-        await stream.Close();
+        await stream.Close(cancellationToken);
 
         var response = res is Response value
             ? value
