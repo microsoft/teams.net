@@ -62,8 +62,7 @@ teams.OnMessage(async (context, cancellationToken) =>
                 
                 try
                 {
-                    var updatedMessage = new MessageActivity($"✏️ **Updated!** This message was modified at {DateTime.UtcNow:HH:mm:ss}")
-                        .WithRecipient(context.Activity.From, true);
+                    var updatedMessage = new MessageActivity($"✏️ **Updated!** This message was modified at {DateTime.UtcNow:HH:mm:ss}");
 
                     await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updatedMessage);
                     
