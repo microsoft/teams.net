@@ -16,7 +16,7 @@ public class VerifyStateSignInActivityTests
         {
             Value = new StateVerifyQuery()
             {
-                State = JsonSerializer.SerializeToElement("success")
+                State = "success"
             },
             Conversation = new Api.Conversation()
             {
@@ -154,11 +154,7 @@ public class VerifyStateSignInActivityTests
         var activity = SetupSignInValidStateActivity();
         
         Assert.NotNull(activity.Value.State);
-        Assert.Equal(JsonValueKind.String, activity.Value.State.Value.ValueKind);
-        Assert.Equal("success", activity.Value.GetStateAsString());
-        
-        Assert.True(activity.Value.TryGetStateAsString(out var stateString));
-        Assert.Equal("success", stateString);
+        Assert.Equal("success", activity.Value.State);
     }
 
     [Fact]
@@ -195,16 +191,12 @@ public class VerifyStateSignInActivityTests
         Assert.NotNull(activity);
         Assert.NotNull(activity.Value);
         Assert.NotNull(activity.Value.State);
-        Assert.Equal(JsonValueKind.Object, activity.Value.State.Value.ValueKind);
         
-        // Verify we can get the state as a string (JSON representation)
-        var stateString = activity.Value.GetStateAsString();
-        Assert.NotNull(stateString);
-        Assert.Contains("token", stateString);
-        Assert.Contains("abc123", stateString);
-        
-        // Verify TryGetStateAsString returns false for object state
-        Assert.False(activity.Value.TryGetStateAsString(out _));
+        // Verify the state was serialized to a JSON string
+        Assert.Contains("token", activity.Value.State);
+        Assert.Contains("abc123", activity.Value.State);
+        Assert.Contains("userId", activity.Value.State);
+        Assert.Contains("user123", activity.Value.State);
     }
 
     [Fact]
@@ -242,13 +234,10 @@ public class VerifyStateSignInActivityTests
         var verifyStateActivity = activity.ToVerifyState();
         Assert.NotNull(verifyStateActivity);
         Assert.NotNull(verifyStateActivity.Value.State);
-        Assert.Equal(JsonValueKind.Object, verifyStateActivity.Value.State.Value.ValueKind);
         
-        // Verify we can access the state
-        var stateString = verifyStateActivity.Value.GetStateAsString();
-        Assert.NotNull(stateString);
-        Assert.Contains("sessionId", stateString);
-        Assert.Contains("session-456", stateString);
+        // Verify the state was serialized to a JSON string
+        Assert.Contains("sessionId", verifyStateActivity.Value.State);
+        Assert.Contains("session-456", verifyStateActivity.Value.State);
     }
 
     [Fact]
@@ -289,6 +278,7 @@ public class VerifyStateSignInActivityTests
         var verifyStateActivity = signInActivity.ToVerifyState();
         
         Assert.NotNull(verifyStateActivity.Value.State);
-        Assert.Equal(JsonValueKind.Object, verifyStateActivity.Value.State.Value.ValueKind);
+        Assert.Contains("code", verifyStateActivity.Value.State);
+        Assert.Contains("auth-code-789", verifyStateActivity.Value.State);
     }
 }

@@ -141,7 +141,7 @@ public partial class App
                 ChannelId = context.Activity.ChannelId,
                 UserId = context.Activity.From.Id,
                 ConnectionName = OAuth.DefaultConnectionName,
-                Code = context.Activity.Value.GetStateAsString()
+                Code = context.Activity.Value.State
             });
 
             context.UserGraphToken = new JsonWebToken(res);

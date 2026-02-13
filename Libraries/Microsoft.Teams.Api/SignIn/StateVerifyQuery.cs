@@ -12,60 +12,51 @@ namespace Microsoft.Teams.Api.SignIn;
 public class StateVerifyQuery
 {
     /// <summary>
-    /// The state value originally received when the
+    /// The state string originally received when the
     /// signin web flow is finished with a state posted back to client via tab SDK
     /// microsoftTeams.authentication.notifySuccess(state).
     /// Can be either a string or a JSON object depending on the platform (Android/iOS may send objects).
+    /// When a JSON object is received, it is automatically serialized to a JSON string.
     /// </summary>
     [JsonPropertyName("state")]
     [JsonPropertyOrder(0)]
-    public JsonElement? State { get; set; }
+    [JsonConverter(typeof(StringOrObjectConverter))]
+    public string? State { get; set; }
 
     /// <summary>
-    /// Gets the state as a string if it is a string value, otherwise returns the JSON representation.
+    /// Custom JSON converter that handles both string and object values for the State property.
+    /// When deserializing, if the value is a string, it returns the string value.
+    /// If the value is a JSON object (or any other type), it serializes it to a JSON string.
     /// </summary>
-    /// <returns>The state as a string, or null if State is null.</returns>
-    public string? GetStateAsString()
+    private class StringOrObjectConverter : JsonConverter<string?>
     {
-        if (State == null)
+        public override string? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return null;
+            if (reader.TokenType == JsonTokenType.Null)
+            {
+                return null;
+            }
+
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                return reader.GetString();
+            }
+
+            // For any other token type (object, array, number, etc.), read as JsonElement and serialize
+            using var doc = JsonDocument.ParseValue(ref reader);
+            return JsonSerializer.Serialize(doc.RootElement, options);
         }
 
-        var element = State.Value;
-        
-        // If it's a string, return the string value
-        if (element.ValueKind == JsonValueKind.String)
+        public override void Write(Utf8JsonWriter writer, string? value, JsonSerializerOptions options)
         {
-            return element.GetString();
+            if (value == null)
+            {
+                writer.WriteNullValue();
+            }
+            else
+            {
+                writer.WriteStringValue(value);
+            }
         }
-
-        // Otherwise, return the JSON representation
-        return JsonSerializer.Serialize(element);
-    }
-
-    /// <summary>
-    /// Tries to get the state as a string value.
-    /// </summary>
-    /// <param name="stateString">The state as a string if it is a string value.</param>
-    /// <returns>True if the state is a string value, false otherwise.</returns>
-    public bool TryGetStateAsString(out string? stateString)
-    {
-        stateString = null;
-
-        if (State == null)
-        {
-            return false;
-        }
-
-        var element = State.Value;
-
-        if (element.ValueKind == JsonValueKind.String)
-        {
-            stateString = element.GetString();
-            return true;
-        }
-
-        return false;
     }
 }
