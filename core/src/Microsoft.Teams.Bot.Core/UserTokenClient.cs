@@ -21,7 +21,6 @@ namespace Microsoft.Teams.Bot.Core;
 /// <param name="httpClient">The HTTP client for making requests to the token service.</param>
 /// <param name="configuration">Configuration containing the UserTokenApiEndpoint setting and other bot configuration.</param>
 /// <param name="logger">Logger for diagnostic information and request tracking.</param>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class UserTokenClient(HttpClient httpClient, IConfiguration configuration, ILogger<UserTokenClient> logger)
 {
     internal const string UserTokenHttpClientName = "BotUserTokenClient";

@@ -10,7 +10,6 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// <summary>
 /// Router for dispatching Teams activities to registered routes
 /// </summary>
-/// TODO: Revisit logging strategy for objects not registered through DI
 public sealed class Router(ILogger logger)
 {
     private readonly List<RouteBase> _routes = [];
