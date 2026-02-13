@@ -21,4 +21,4 @@ using System.Diagnostics.CodeAnalysis;
     "CA2227:Collection properties should be read only",
     Justification = "<Pending>",
     Scope = "namespaceanddescendants",
-    Target = "~N:Microsoft.Teams.Bot.Apps.Schema")]
+    Target = "~N:Microsoft.Teams.Bot.Apps")]

@@ -22,3 +22,9 @@ using System.Diagnostics.CodeAnalysis;
     Justification = "String URLs are used for consistency with existing API patterns",
     Scope = "namespaceanddescendants",
     Target = "~N:Microsoft.Teams.Bot.Core.Http")]
+
+[assembly: SuppressMessage("Usage",
+    "CA2227:Collection properties should be read only",
+    Justification = "<Pending>",
+    Scope = "namespaceanddescendants",
+    Target = "~N:Microsoft.Teams.Bot.Core")]
