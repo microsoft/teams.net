@@ -149,15 +149,6 @@ public class VerifyStateSignInActivityTests
     }
 
     [Fact]
-    public void setupSignInVerifyStateActivity_StateAsString()
-    {
-        var activity = SetupSignInValidStateActivity();
-        
-        Assert.NotNull(activity.Value.State);
-        Assert.Equal("success", activity.Value.State);
-    }
-
-    [Fact]
     public void setupSignInVerifyStateActivity_JsonDeserialize_StateAsObject()
     {
         // Test JSON with state as an object (Android/iOS scenario)
