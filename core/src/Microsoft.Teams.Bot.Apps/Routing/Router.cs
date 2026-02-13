@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// <summary>
 /// Router for dispatching Teams activities to registered routes
 /// </summary>
-public sealed class Router(ILogger<Router> logger)
+public sealed class Router(ILogger logger)
 {
     private readonly List<RouteBase> _routes = [];
 
