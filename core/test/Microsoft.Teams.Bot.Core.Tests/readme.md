@@ -8,6 +8,9 @@ To run these tests we need to configure the environment variables using a `.runs
 <RunSettings>
   <RunConfiguration>
     <EnvironmentVariables>
+      <TEST_AGENTIC_USERID>0d5eb8a3-1642-4e63-9ccc-a89aa461716c</TEST_AGENTIC_USERID>
+	  <TEST_AGENTIC_APPID>3fc62d4f-b04e-4c71-878b-02a2fa395fe2</TEST_AGENTIC_APPID>
+	  <Scope>https://botapi.skype.com/.default</Scope>
       <TEST_ConversationId>a:17vxw6pGQOb3Zfh8acXT8m_PqHycYpaFgzu2mFMUfkT-h0UskMctq5ZPPc7FIQxn2bx7rBSm5yE_HeUXsCcKZBrv77RgorB3_1_pAdvMhi39ClxQgawzyQ9GBFkdiwOxT</TEST_ConversationId>
       <AzureAd__Instance>https://login.microsoftonline.com/</AzureAd__Instance>
       <AzureAd__ClientId></AzureAd__ClientId>
