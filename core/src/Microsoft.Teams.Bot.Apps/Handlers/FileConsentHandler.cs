@@ -8,7 +8,7 @@ using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
-/// Delegate for handling file consent invoke activities with strongly-typed response.
+/// Delegate for handling file consent invoke activities.
 /// </summary>
 public delegate Task<InvokeResponse<AdaptiveCardResponse>> FileConsentValueHandler(Context<InvokeActivity<FileConsentValue>> context, CancellationToken cancellationToken = default);
 
@@ -19,7 +19,7 @@ public static class FileConsentExtensions
 {
 
     /// <summary>
-    /// Registers a handler for file consent invoke activities with strongly-typed response.
+    /// Registers a handler for file consent invoke activities.
     /// </summary>
     public static TeamsBotApplication OnFileConsent(this TeamsBotApplication app, FileConsentValueHandler handler)
     {

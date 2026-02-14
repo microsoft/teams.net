@@ -8,7 +8,7 @@ using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
-/// Delegate for handling task module invoke activities with strongly-typed value and response.
+/// Delegate for handling task module invoke activities.
 /// </summary>
 public delegate Task<InvokeResponse<TaskModuleResponse>> TaskModuleHandler(Context<InvokeActivity<TaskModuleRequest>> context, CancellationToken cancellationToken = default);
 
@@ -19,7 +19,7 @@ public static class TaskExtensions
 {
 
     /// <summary>
-    /// Registers a handler for task module fetch invoke activities with strongly-typed value and response.
+    /// Registers a handler for task module fetch invoke activities.
     /// </summary>
     public static TeamsBotApplication OnTaskFetch(this TeamsBotApplication app, TaskModuleHandler handler)
     {
@@ -32,8 +32,7 @@ public static class TaskExtensions
             {
                 InvokeActivity<TaskModuleRequest> typedActivity = new (ctx.Activity);
                 Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                InvokeResponse<TaskModuleResponse> typedResponse = await handler(typedContext, cancellationToken).ConfigureAwait(false);
-                return typedResponse;
+                return await handler(typedContext, cancellationToken).ConfigureAwait(false);;
             }
         });
 
@@ -54,8 +53,7 @@ public static class TaskExtensions
             {
                 InvokeActivity<TaskModuleRequest> typedActivity = new (ctx.Activity);
                 Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                InvokeResponse<TaskModuleResponse> typedResponse = await handler(typedContext, cancellationToken).ConfigureAwait(false);
-                return typedResponse;
+                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
 
