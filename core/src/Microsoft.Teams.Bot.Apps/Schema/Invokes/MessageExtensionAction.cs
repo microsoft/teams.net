@@ -2,10 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Invokes;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Message extension command context values.
@@ -107,7 +105,6 @@ public class MessageExtensionAction
     [JsonPropertyName("context")]
     public MessageExtensionContext? Context { get; set; }
 }
-
 
 /// <summary>
 /// Represents the individual message within a chat or channel where a message

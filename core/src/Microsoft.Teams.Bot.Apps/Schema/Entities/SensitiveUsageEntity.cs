@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents an entity that describes the usage of sensitive content, including its name, description, and associated

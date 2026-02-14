@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Invokes;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents a response from a message extension action that can contain either a task module or compose extension response.

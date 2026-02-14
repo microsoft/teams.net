@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Invokes;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents an invoke activity.

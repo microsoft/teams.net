@@ -124,7 +124,7 @@ public class TeamsAttachment
         List<TeamsAttachment> attachments = [];
         foreach (JsonNode? item in jsonArray)
         {
-            attachments.Add(JsonSerializer.Deserialize<TeamsAttachment>(item)!);
+            attachments.Add(item.Deserialize<TeamsAttachment>()!);
         }
         return attachments;
     }

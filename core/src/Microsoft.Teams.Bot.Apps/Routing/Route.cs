@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 
 namespace Microsoft.Teams.Bot.Apps.Routing;
 

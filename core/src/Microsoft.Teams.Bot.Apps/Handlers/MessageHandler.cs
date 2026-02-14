@@ -4,7 +4,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
