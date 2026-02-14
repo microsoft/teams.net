@@ -45,9 +45,7 @@ public class TeamsChannelDataSettings
     /// <remarks>This property stores extra JSON fields encountered during deserialization that do not map to
     /// known properties. It enables round-tripping of unknown or custom data without loss. The dictionary keys
     /// correspond to the property names in the JSON payload.</remarks>
-#pragma warning disable CA2227 // Collection properties should be read only
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>

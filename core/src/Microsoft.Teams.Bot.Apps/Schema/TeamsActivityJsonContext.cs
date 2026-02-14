@@ -19,7 +19,6 @@ namespace Microsoft.Teams.Bot.Apps.Schema;
 [JsonSerializable(typeof(CoreActivity))]
 [JsonSerializable(typeof(TeamsActivity))]
 [JsonSerializable(typeof(MessageActivity))]
-[JsonSerializable(typeof(InvokeActivity))]
 [JsonSerializable(typeof(Entity))]
 [JsonSerializable(typeof(EntityList))]
 [JsonSerializable(typeof(MentionEntity))]

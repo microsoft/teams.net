@@ -106,9 +106,7 @@ public class Entity(string type)
     /// <summary>
     /// Extended properties dictionary.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 
 }
 

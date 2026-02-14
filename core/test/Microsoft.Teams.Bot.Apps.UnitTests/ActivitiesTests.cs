@@ -5,6 +5,7 @@ using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
 using Microsoft.Teams.Bot.Apps.Schema.InstallActivities;
+using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.UnitTests;

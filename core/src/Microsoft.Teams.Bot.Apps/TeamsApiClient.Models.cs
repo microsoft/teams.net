@@ -16,9 +16,7 @@ public class ChannelList
     /// Gets or sets the list of channel conversations.
     /// </summary>
     [JsonPropertyName("conversations")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<TeamsChannel>? Channels { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>
@@ -220,17 +218,13 @@ public class TargetedMeetingNotificationValue
     /// Gets or sets the list of recipients for the notification.
     /// </summary>
     [JsonPropertyName("recipients")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<string>? Recipients { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets or sets the surface configurations for the notification.
     /// </summary>
     [JsonPropertyName("surfaces")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<MeetingNotificationSurface>? Surfaces { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>
@@ -266,9 +260,7 @@ public class MeetingNotificationResponse
     /// Gets or sets the list of recipients for whom the notification failed.
     /// </summary>
     [JsonPropertyName("recipientsFailureInfo")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<MeetingNotificationRecipientFailureInfo>? RecipientsFailureInfo { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>
@@ -398,9 +390,7 @@ public class BatchFailedEntriesResponse
     /// Gets or sets the list of failed entries.
     /// </summary>
     [JsonPropertyName("failedEntries")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<BatchFailedEntry>? FailedEntries { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>
