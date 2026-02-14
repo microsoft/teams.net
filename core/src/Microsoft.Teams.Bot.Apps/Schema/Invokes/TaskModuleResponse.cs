@@ -51,7 +51,7 @@ public class TaskModuleResponse
     /// The task module result.
     /// </summary>
     [JsonPropertyName("task")]
-    public TaskResponse? Task { get; set; }
+    public Response? Task { get; set; }
 
     /// <summary>
     /// Creates a new builder for TaskModuleResponse.
@@ -163,130 +163,98 @@ public class TaskModuleResponseBuilder
     /// <summary>
     /// Builds the TaskModuleResponse.
     /// </summary>
-    public TaskModuleResponse Build()
+    internal TaskModuleResponse Validate()
     {
+        if (string.IsNullOrEmpty(_type))
+        {
+            throw new InvalidOperationException("Type must be set. Use WithType() to specify TaskModuleResponseType.Continue or TaskModuleResponseType.Message.");
+        }
+
         object? value = _type switch
         {
-            TaskModuleResponseType.Continue => new
-            {
-                title = _title,
-                height = _height,
-                width = _width,
-                card = _card,
-                //url = _url,
-                //fallbackUrl = _fallbackUrl,
-                //completionBotId = _completionBotId
-            },
-            TaskModuleResponseType.Message => _message,
-            _ => null
+            TaskModuleResponseType.Continue => ValidateContinueType(),
+            TaskModuleResponseType.Message => ValidateMessageType(),
+            _ => throw new InvalidOperationException($"Unknown task module response type: {_type}")
         };
 
         return new TaskModuleResponse
         {
-            Task = new TaskResponse
+            Task = new Response
             {
                 Type = _type,
                 Value = value
             }
         };
     }
+
+    private object ValidateContinueType()
+    {
+        if (_card == null)
+        {
+            throw new InvalidOperationException("Card must be set for Continue type. Use WithCard().");
+        }
+
+        if (!string.IsNullOrEmpty(_message))
+        {
+            throw new InvalidOperationException("Message cannot be set for Continue type. Message is only used with Message type.");
+        }
+
+        return new
+        {
+            title = _title,
+            height = _height,
+            width = _width,
+            card = _card,
+            //url = _url,
+            //fallbackUrl = _fallbackUrl,
+            //completionBotId = _completionBotId
+        };
+    }
+
+    private string ValidateMessageType()
+    {
+        if (string.IsNullOrEmpty(_message))
+        {
+            throw new InvalidOperationException("Message must be set for Message type. Use WithMessage().");
+        }
+
+        if (!string.IsNullOrEmpty(_title))
+        {
+            throw new InvalidOperationException("Title cannot be set for Message type. Title is only used with Continue type.");
+        }
+
+        if (_card != null)
+        {
+            throw new InvalidOperationException("Card cannot be set for Message type. Card is only used with Continue type.");
+        }
+
+        return _message;
+    }
+
+    /// <summary>
+    /// Builds the TaskModuleResponse and wraps it in a InvokeResponse.
+    /// </summary>
+    /// <param name="statusCode">The HTTP status code (default: 200).</param>
+    public InvokeResponse<TaskModuleResponse> Build(int statusCode = 200)
+    {
+        return new InvokeResponse<TaskModuleResponse>(statusCode, Validate());
+    }
 }
 
 /// <summary>
 /// Task module result.
 /// </summary>
-public class TaskResponse
+public class Response
 {
     /// <summary>
     /// Type of result.
     /// </summary>
     [JsonPropertyName("type")]
-    public string? Type { get; set; }
+    public required string Type { get; set; }
 
     /// <summary>
     /// Value 
     /// </summary>
     [JsonPropertyName("value")]
     public object? Value { get; set; }
-}
-
-/// <summary>
-/// Task module continue response value.
-/// </summary>
-public class TaskModuleContinueResponse
-{
-    /// <summary>
-    /// Title of the task module.
-    /// </summary>
-    [JsonPropertyName("title")]
-    public string? Title { get; set; }
-
-    /// <summary>
-    /// Height of the task module. Can be a number (pixels) or "small", "medium", "large".
-    /// </summary>
-    [JsonPropertyName("height")]
-    public object? Height { get; set; }
-
-    /// <summary>
-    /// Width of the task module. Can be a number (pixels) or "small", "medium", "large".
-    /// </summary>
-    [JsonPropertyName("width")]
-    public object? Width { get; set; }
-
-    /// <summary>
-    /// Card to display in the task module.
-    /// </summary>
-    [JsonPropertyName("card")]
-    public TaskModuleCardResponse? Card { get; set; }
-
-    //TODO : Review 
-    /*
-    /// <summary>
-    /// URL to display in an iframe.
-    /// </summary>
-    [JsonPropertyName("url")]
-    public string? Url { get; set; }
-
-    /// <summary>
-    /// Fallback URL if the card cannot be displayed.
-    /// </summary>
-    [JsonPropertyName("fallbackUrl")]
-    public string? FallbackUrl { get; set; }
-
-    /// <summary>
-    /// Completion bot ID.
-    /// </summary>
-    [JsonPropertyName("completionBotId")]
-    public string? CompletionBotId { get; set; }
-    */
-}
-
-/// <summary>
-/// Task module card response.
-/// </summary>
-public class TaskModuleCardResponse
-{
-    /// <summary>
-    /// Content type of the card. Common value: "application/vnd.microsoft.card.adaptive".
-    /// </summary>
-    [JsonPropertyName("contentType")]
-    public string? ContentType { get; set; }
-
-    /// <summary>
-    /// Content of the card (the actual adaptive card).
-    /// </summary>
-    [JsonPropertyName("content")]
-    public object? Content { get; set; }
-}
-
-/// <summary>
-/// Task module message response (for type "message").
-/// </summary>
-public class TaskModuleMessageResponse
-{
-    /// <summary>
-    /// Message to display.
-    /// </summary>
-    [JsonPropertyName("value")]
-    public string? Value { get; set; }
 }

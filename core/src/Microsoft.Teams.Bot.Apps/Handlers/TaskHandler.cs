@@ -7,9 +7,9 @@ using Microsoft.Teams.Bot.Apps.Schema;
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
-/// Delegate for handling task module invoke activities with strongly-typed value.
+/// Delegate for handling task module invoke activities with strongly-typed value and response.
 /// </summary>
-public delegate Task<CoreInvokeResponse> TaskModuleHandler(Context<InvokeActivity<TaskModuleRequest>> context, CancellationToken cancellationToken = default);
+public delegate Task<InvokeResponse<TaskModuleResponse>> TaskModuleHandler(Context<InvokeActivity<TaskModuleRequest>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
 /// Extension methods for registering task module invoke handlers.
@@ -18,7 +18,7 @@ public static class TaskExtensions
 {
 
     /// <summary>
-    /// Registers a handler for task module fetch invoke activities with strongly-typed value.
+    /// Registers a handler for task module fetch invoke activities with strongly-typed value and response.
     /// </summary>
     public static TeamsBotApplication OnTaskFetch(this TeamsBotApplication app, TaskModuleHandler handler)
     {
@@ -31,7 +31,8 @@ public static class TaskExtensions
             {
                 InvokeActivity<TaskModuleRequest> typedActivity = new (ctx.Activity);
                 Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
+                InvokeResponse<TaskModuleResponse> typedResponse = await handler(typedContext, cancellationToken).ConfigureAwait(false);
+                return typedResponse;
             }
         });
 
@@ -39,7 +40,7 @@ public static class TaskExtensions
     }
 
     /// <summary>
-    /// Registers a handler for task module submit invoke activities with strongly-typed value.
+    /// Registers a handler for task module submit invoke activities with strongly-typed value and response.
     /// </summary>
     public static TeamsBotApplication OnTaskSubmit(this TeamsBotApplication app, TaskModuleHandler handler)
     {
@@ -52,7 +53,8 @@ public static class TaskExtensions
             {
                 InvokeActivity<TaskModuleRequest> typedActivity = new (ctx.Activity);
                 Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
+                InvokeResponse<TaskModuleResponse> typedResponse = await handler(typedContext, cancellationToken).ConfigureAwait(false);
+                return typedResponse;
             }
         });
 

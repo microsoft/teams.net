@@ -45,7 +45,7 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
             .WithName("file_consent.json").Build();
         await context.SendActivityAsync(new MessageActivity([fileConsentCardResponse]), cancellationToken);
 
-        return new CoreInvokeResponse(200, AdaptiveCardInvokeResponse.CreateMessageResponse("File consent request sent!"));
+        return AdaptiveCardResponse.CreateMessageResponse("File Consent requested!");
     }
 
     string? message = data != null && data.TryGetValue("message", out var msgValue) ? msgValue?.ToString() : null;
@@ -54,22 +54,22 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
     TeamsAttachment adaptiveActionCardResponse = TeamsAttachment.CreateBuilder().WithAdaptiveCard(adaptiveActionCard).Build();
     await context.SendActivityAsync(new MessageActivity([adaptiveActionCardResponse]), cancellationToken);
 
-    return new CoreInvokeResponse(200, AdaptiveCardInvokeResponse.CreateMessageResponse("Action submitted!"));
+    return AdaptiveCardResponse.CreateMessageResponse("Action submitted!");
 });
 
 // ==================== TASK MODULE - FETCH ====================
 bot.OnTaskFetch(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnTaskFetch");
-    TaskModuleResponse response = TaskModuleResponse.CreateBuilder()
+    TeamsAttachment taskModuleCardResponse = TeamsAttachment.CreateBuilder()
+        .WithAdaptiveCard(Cards.CreateTaskModuleCard()).Build();
+    return TaskModuleResponse.CreateBuilder()
         .WithType(TaskModuleResponseType.Continue)
         .WithTitle("Task")
         .WithHeight("medium")
         .WithWidth("medium")
-        .WithCard(Cards.CreateTaskModuleCard())
+        .WithCard(taskModuleCardResponse)
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 
 });
 
@@ -77,12 +77,10 @@ bot.OnTaskFetch(async (context, cancellationToken) =>
 bot.OnTaskSubmit(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnTaskSubmit");
-    var response = TaskModuleResponse.CreateBuilder()
+    return TaskModuleResponse.CreateBuilder()
         .WithType(TaskModuleResponseType.Message)
         .WithMessage("Done")
         .Build();
-
-    return new CoreInvokeResponse(200, response);
 });
 
 // ==================== FILE CONSENT ====================
@@ -151,9 +149,9 @@ bot.OnFileConsent(async (context, cancellationToken) =>
         Console.WriteLine($"  Context: {JsonSerializer.Serialize(consentContext)}");
     }
 
-    return new CoreInvokeResponse(200, AdaptiveCardInvokeResponse.CreateBuilder()
+    return AdaptiveCardResponse.CreateBuilder()
         .WithStatusCode(200)
-        .Build());
+        .Build();
 });
 
 /*
@@ -223,6 +221,62 @@ bot.OnMessageSubmitAction(async (context, cancellationToken) =>
     };
 
     return new CoreInvokeResponse(200, responseBody);
+});
+
+// ==================== CONFIG FETCH ====================
+bot.OnConfigFetch(async (context, cancellationToken) =>
+{
+    Console.WriteLine("✓ OnConfigFetch");
+
+    var card = new
+    {
+        contentType = AttachmentContentType.AdaptiveCard,
+        content = new
+        {
+            type = "AdaptiveCard",
+            version = "1.4",
+            body = new object[]
+            {
+                new { type = "TextBlock", text = "Extension Settings", size = "large", weight = "bolder" },
+                new { type = "TextBlock", text = "Configure your messaging extension settings below:", wrap = true },
+                new { type = "Input.Text", id = "apiKey", label = "API Key", placeholder = "Enter your API key" },
+                new { type = "Input.Toggle", id = "enableNotifications", label = "Enable Notifications", value = "true" }
+            },
+            actions = new object[]
+            {
+                new { type = "Action.Submit", title = "Save Settings" }
+            }
+        }
+    };
+
+    var response = TaskModuleResponse.CreateBuilder()
+        .WithType(TaskModuleResponseType.Continue)
+        .WithTitle("Configure Messaging Extension")
+        .WithHeight(TaskModuleSize.Medium)
+        .WithWidth(TaskModuleSize.Medium)
+        .WithCard(card)
+        .Build();
+
+    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
+});
+
+// ==================== CONFIG SUBMIT ====================
+bot.OnConfigSubmit(async (context, cancellationToken) =>
+{
+    Console.WriteLine("✓ OnConfigSubmit");
+
+    var data = context.Activity.Value;
+    Console.WriteLine($"  Config data: {System.Text.Json.JsonSerializer.Serialize(data)}");
+
+    // In a real app, you would save these settings to a database
+    // associated with the user/team
+
+    var response = TaskModuleResponse.CreateBuilder()
+        .WithType(TaskModuleResponseType.Message)
+        .WithMessage("Settings saved successfully!")
+        .Build();
+
+    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
 });
 */
 
