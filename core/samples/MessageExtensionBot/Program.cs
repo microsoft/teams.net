@@ -71,12 +71,15 @@ bot.OnFetchTask(async (context, cancellationToken) =>
 
     MessageExtensionAction? action = context.Activity.Value;
 
-    var card = Cards.CreateFetchTaskCard(action?.CommandId ?? "unknown");
-    return TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseType.Continue)
-        .WithTitle("Task Module")
-        .WithCard(card)
-        .Build();
+    var fetchTaskCard = Cards.CreateFetchTaskCard(action?.CommandId ?? "unknown");
+    TeamsAttachment fetchTaskCardResponse = TeamsAttachment.CreateBuilder()
+        .WithAdaptiveCard(fetchTaskCard).Build();
+    return MessageExtensionActionResponse.CreateBuilder()
+            .WithTask(TaskModuleResponse.CreateBuilder()
+                .WithType(TaskModuleResponseType.Continue)
+                .WithTitle("Task Module")
+                .WithCard(fetchTaskCardResponse))
+            .Build();
 });
 
 // Helper: Extract title and description from preview card
@@ -110,11 +113,14 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
         Console.WriteLine("Handling EDIT action - returning to form");
         var (previewTitle, previewDescription) = GetDataFromPreview(action.BotActivityPreview?.FirstOrDefault());
 
-        var card = Cards.CreateEditFormCard(previewTitle, previewDescription);
-        return TaskModuleResponse.CreateBuilder()
-            .WithType(TaskModuleResponseType.Continue)
-            .WithTitle("Edit Card")
-            .WithCard(card)
+        var editFormCard = Cards.CreateEditFormCard(previewTitle, previewDescription);
+        TeamsAttachment editFormCardResponse = TeamsAttachment.CreateBuilder()
+            .WithAdaptiveCard(editFormCard).Build();
+        return MessageExtensionActionResponse.CreateBuilder()
+            .WithTask(TaskModuleResponse.CreateBuilder()
+                .WithType(TaskModuleResponseType.Continue)
+                .WithTitle("Edit Card")
+                .WithCard(editFormCardResponse))
             .Build();
     }
 
@@ -124,17 +130,18 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     {
         Console.WriteLine("Handling SEND action - finalizing card");
         var (previewTitle, previewDescription) = GetDataFromPreview(action.BotActivityPreview?.FirstOrDefault());
-        Console.WriteLine($"  Title: {previewTitle}, Description: {previewDescription}");
 
         var card = Cards.CreateSubmitActionCard(previewTitle, previewDescription);
         TeamsAttachment attachment2 = TeamsAttachment.CreateBuilder().WithAdaptiveCard(card).Build();
 
-        return MessageExtensionResponse.CreateBuilder()
-            .WithType(MessageExtensionResponseType.Result)
-            .WithAttachmentLayout(TeamsAttachmentLayout.List)
-            .WithAttachments(attachment2)
+        return MessageExtensionActionResponse.CreateBuilder()
+            .WithComposeExtension(MessageExtensionResponse.CreateBuilder()
+                .WithType(MessageExtensionResponseType.Result)
+                .WithAttachmentLayout(TeamsAttachmentLayout.List)
+                .WithAttachments(attachment2))
             .Build();
     }
+
 
     var data = action?.Data as JsonElement?;
     string? title = data != null && data.Value.TryGetProperty("title", out var t) ? t.GetString() : "Untitled";
@@ -143,10 +150,12 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     var previewCard = Cards.CreateSubmitActionCard(title, description);
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(previewCard).Build();
 
-    return MessageExtensionResponse.CreateBuilder()
-        .WithType(MessageExtensionResponseType.BotMessagePreview)
-        .WithActivityPreview(new MessageActivity([attachment]))
-        .Build();
+    return MessageExtensionActionResponse.CreateBuilder()
+            .WithComposeExtension(MessageExtensionResponse.CreateBuilder()
+                .WithType(MessageExtensionResponseType.BotMessagePreview)
+                .WithActivityPreview(new MessageActivity([attachment]))
+                )
+            .Build();
 });
 
 // ==================== MESSAGE EXTENSION QUERY LINK ====================
@@ -248,63 +257,6 @@ bot.OnSetting(async (context, cancellationToken) =>
 
     return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
 });
-
-// ==================== CONFIG FETCH ====================
-bot.OnConfigFetch(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnConfigFetch");
-
-    var card = new
-    {
-        contentType = AttachmentContentType.AdaptiveCard,
-        content = new
-        {
-            type = "AdaptiveCard",
-            version = "1.4",
-            body = new object[]
-            {
-                new { type = "TextBlock", text = "Extension Settings", size = "large", weight = "bolder" },
-                new { type = "TextBlock", text = "Configure your messaging extension settings below:", wrap = true },
-                new { type = "Input.Text", id = "apiKey", label = "API Key", placeholder = "Enter your API key" },
-                new { type = "Input.Toggle", id = "enableNotifications", label = "Enable Notifications", value = "true" }
-            },
-            actions = new object[]
-            {
-                new { type = "Action.Submit", title = "Save Settings" }
-            }
-        }
-    };
-
-    var response = TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseType.Continue)
-        .WithTitle("Configure Messaging Extension")
-        .WithHeight(TaskModuleSize.Medium)
-        .WithWidth(TaskModuleSize.Medium)
-        .WithCard(card)
-        .Build();
-
-    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
-});
-
-// ==================== CONFIG SUBMIT ====================
-bot.OnConfigSubmit(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnConfigSubmit");
-
-    var data = context.Activity.Value;
-    Console.WriteLine($"  Config data: {System.Text.Json.JsonSerializer.Serialize(data)}");
-
-    // In a real app, you would save these settings to a database
-    // associated with the user/team
-
-    var response = TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseType.Message)
-        .WithMessage("Settings saved successfully!")
-        .Build();
-
-    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
-});
 */
-
 
 bot.Run();

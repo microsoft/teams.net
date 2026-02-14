@@ -191,7 +191,7 @@ public class MessageExtensionResponseBuilder
     /// <summary>
     /// Validates and builds the MessagingExtensionResponse.
     /// </summary>
-    private MessageExtensionResponse Validate()
+    internal MessageExtensionResponse Validate()
     {
         if (string.IsNullOrEmpty(_type))
         {

@@ -7,39 +7,41 @@ using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Invokes;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
+
 /// <summary>
-/// Delegate for handling message extension query invoke activities with strongly-typed response.
+/// Delegate for handling message extension query invoke activities.
 /// </summary>
 public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionQueryHandler(Context<InvokeActivity<MessageExtensionQuery>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Delegate for handling message extension submit action invoke activities with strongly-typed response.
+/// Delegate for handling message extension submit action invoke activities.
+/// Can return either a TaskModuleResponse or MessageExtensionResponse.
 /// </summary>
-public delegate Task<InvokeResponse> MessageExtensionSubmitActionHandler(Context<InvokeActivity<MessageExtensionAction>> context, CancellationToken cancellationToken = default);
+public delegate Task<InvokeResponse<MessageExtensionActionResponse>> MessageExtensionSubmitActionHandler(Context<InvokeActivity<MessageExtensionAction>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Delegate for handling message extension fetch task invoke activities with strongly-typed response.
-/// Returns a task module response to show a dialog.
+/// Delegate for handling message extension fetch task invoke activities.
+/// Can return either a TaskModuleResponse or MessageExtensionResponse.
 /// </summary>
-public delegate Task<InvokeResponse> MessageExtensionFetchTaskHandler(Context<InvokeActivity<MessageExtensionAction>> context, CancellationToken cancellationToken = default);
+public delegate Task<InvokeResponse<MessageExtensionActionResponse>> MessageExtensionFetchTaskHandler(Context<InvokeActivity<MessageExtensionAction>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Delegate for handling message extension query link invoke activities with strongly-typed response.
+/// Delegate for handling message extension query link invoke activities.
 /// </summary>
 public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionQueryLinkHandler(Context<InvokeActivity<MessageExtensionQueryLink>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Delegate for handling message extension anonymous query link invoke activities with strongly-typed response.
+/// Delegate for handling message extension anonymous query link invoke activities.
 /// </summary>
 public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionAnonQueryLinkHandler(Context<InvokeActivity<MessageExtensionQueryLink>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Delegate for handling message extension select item invoke activities with strongly-typed response.
+/// Delegate for handling message extension select item invoke activities.
 /// </summary>
 public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionSelectItemHandler(Context<InvokeActivity<JsonElement>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Delegate for handling message extension query setting URL invoke activities with strongly-typed response.
+/// Delegate for handling message extension query setting URL invoke activities.
 /// </summary>
 public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionQuerySettingUrlHandler(Context<InvokeActivity<MessageExtensionQuery>> context, CancellationToken cancellationToken = default);
 
@@ -50,7 +52,7 @@ public delegate Task<InvokeResponse<MessageExtensionResponse>> MessageExtensionQ
 public delegate Task<InvokeResponse> MessageExtensionCardButtonClickedHandler(Context<InvokeActivity<JsonElement>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
-/// Delegate for handling message extension setting invoke activities with.
+/// Delegate for handling message extension setting invoke activities.
 /// </summary>
 public delegate Task<InvokeResponse> MessageExtensionSettingHandler(Context<InvokeActivity<Query>> context, CancellationToken cancellationToken = default);
 */
@@ -62,6 +64,7 @@ public static class MessageExtensionExtensions
 {
     //TODO : add msg ext prefix to handlers ? very confusing right now as we have both onFetchTask and onTaskFetch.
     //onSubmitAction is confusing as it is similar to adaptive cards
+
     /// <summary>
     /// Registers a handler for message extension query invoke activities with strongly-typed response.
     /// </summary>
@@ -76,8 +79,7 @@ public static class MessageExtensionExtensions
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                InvokeResponse<MessageExtensionResponse> typedResponse = await handler(typedContext, cancellationToken).ConfigureAwait(false);
-                return typedResponse;
+                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
 

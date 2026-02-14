@@ -224,6 +224,62 @@ bot.OnMessageSubmitAction(async (context, cancellationToken) =>
 
     return new CoreInvokeResponse(200, responseBody);
 });
+
+// ==================== CONFIG FETCH ====================
+bot.OnConfigFetch(async (context, cancellationToken) =>
+{
+    Console.WriteLine("✓ OnConfigFetch");
+
+    var card = new
+    {
+        contentType = AttachmentContentType.AdaptiveCard,
+        content = new
+        {
+            type = "AdaptiveCard",
+            version = "1.4",
+            body = new object[]
+            {
+                new { type = "TextBlock", text = "Extension Settings", size = "large", weight = "bolder" },
+                new { type = "TextBlock", text = "Configure your messaging extension settings below:", wrap = true },
+                new { type = "Input.Text", id = "apiKey", label = "API Key", placeholder = "Enter your API key" },
+                new { type = "Input.Toggle", id = "enableNotifications", label = "Enable Notifications", value = "true" }
+            },
+            actions = new object[]
+            {
+                new { type = "Action.Submit", title = "Save Settings" }
+            }
+        }
+    };
+
+    var response = TaskModuleResponse.CreateBuilder()
+        .WithType(TaskModuleResponseType.Continue)
+        .WithTitle("Configure Messaging Extension")
+        .WithHeight(TaskModuleSize.Medium)
+        .WithWidth(TaskModuleSize.Medium)
+        .WithCard(card)
+        .Build();
+
+    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
+});
+
+// ==================== CONFIG SUBMIT ====================
+bot.OnConfigSubmit(async (context, cancellationToken) =>
+{
+    Console.WriteLine("✓ OnConfigSubmit");
+
+    var data = context.Activity.Value;
+    Console.WriteLine($"  Config data: {System.Text.Json.JsonSerializer.Serialize(data)}");
+
+    // In a real app, you would save these settings to a database
+    // associated with the user/team
+
+    var response = TaskModuleResponse.CreateBuilder()
+        .WithType(TaskModuleResponseType.Message)
+        .WithMessage("Settings saved successfully!")
+        .Build();
+
+    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
+});
 */
 
 bot.Run();

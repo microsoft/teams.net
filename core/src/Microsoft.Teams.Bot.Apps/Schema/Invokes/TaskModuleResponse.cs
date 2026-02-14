@@ -163,7 +163,7 @@ public class TaskModuleResponseBuilder
     /// <summary>
     /// Builds the TaskModuleResponse.
     /// </summary>
-    private TaskModuleResponse Validate()
+    internal TaskModuleResponse Validate()
     {
         if (string.IsNullOrEmpty(_type))
         {
