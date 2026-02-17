@@ -22,7 +22,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 {
     var activity = context.Activity;
     var text = activity.Text?.ToLowerInvariant() ?? "";
-    
+
     context.Log.Info($"[MESSAGE] Received: {text}");
 
     if (text.Contains("send"))
@@ -45,7 +45,7 @@ teams.OnMessage(async (context, cancellationToken) =>
     {
         // UPDATE: Send a targeted message, then update it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
-        
+
         var response = await context.Send(
             new MessageActivity("📝 This message will be **updated** in 3 seconds...")
                 .WithRecipient(context.Activity.From, true), cancellationToken);
@@ -53,17 +53,17 @@ teams.OnMessage(async (context, cancellationToken) =>
         if (response?.Id != null)
         {
             var messageId = response.Id;
-            
+
             _ = Task.Run(async () =>
             {
                 await Task.Delay(3000);
-                
+
                 try
                 {
                     var updatedMessage = new MessageActivity($"✏️ **Updated!** This message was modified at {DateTime.UtcNow:HH:mm:ss}");
 
                     await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updatedMessage);
-                    
+
                     Console.WriteLine($"[UPDATE] Updated targeted message");
                 }
                 catch (Exception ex)
@@ -72,14 +72,14 @@ teams.OnMessage(async (context, cancellationToken) =>
                 }
             });
         }
-        
+
         context.Log.Info($"[UPDATE] Scheduled update in 3 seconds");
     }
     else if (text.Contains("delete"))
     {
         // DELETE: Send a targeted message, then delete it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
-        
+
         var response = await context.Send(
             new MessageActivity("🗑️ This message will be **deleted** in 3 seconds...")
                 .WithRecipient(context.Activity.From, true), cancellationToken);
@@ -87,15 +87,15 @@ teams.OnMessage(async (context, cancellationToken) =>
         if (response?.Id != null)
         {
             var messageId = response.Id;
-            
+
             _ = Task.Run(async () =>
             {
                 await Task.Delay(3000);
-                
+
                 try
                 {
                     await context.Api.Conversations.Activities.DeleteTargetedAsync(conversationId, messageId);
-                    
+
                     Console.WriteLine($"[DELETE] Deleted targeted message");
                 }
                 catch (Exception ex)
@@ -104,7 +104,7 @@ teams.OnMessage(async (context, cancellationToken) =>
                 }
             });
         }
-        
+
         context.Log.Info($"[DELETE] Scheduled delete in 3 seconds");
     }
     else if (text.Contains("reply"))
