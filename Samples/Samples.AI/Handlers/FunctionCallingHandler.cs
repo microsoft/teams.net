@@ -1,4 +1,5 @@
 using System.Text.Json;
+
 using Microsoft.Teams.AI.Annotations;
 using Microsoft.Teams.AI.Models.OpenAI;
 using Microsoft.Teams.AI.Prompts;
@@ -61,7 +62,7 @@ public static class FunctionCallingHandler
     /// <summary>
     /// Handle single function calling - Pokemon search
     /// </summary>
-    public static async Task HandlePokemonSearch(OpenAIChatModel model, IContext<MessageActivity> context)
+    public static async Task HandlePokemonSearch(OpenAIChatModel model, IContext<MessageActivity> context, CancellationToken cancellationToken = default)
     {
         Console.WriteLine($"[HANDLER] Pokemon search handler invoked with text: '{context.Activity.Text}'");
 
@@ -78,7 +79,7 @@ public static class FunctionCallingHandler
         );
 
         Console.WriteLine("[HANDLER] Registered pokemon_search function, sending prompt to AI...");
-        var result = await prompt.Send(context.Activity.Text);
+        var result = await prompt.Send(context.Activity.Text, cancellationToken);
 
         if (result.Content != null)
         {
@@ -87,12 +88,12 @@ public static class FunctionCallingHandler
             {
                 Text = result.Content,
             }.AddAIGenerated();
-            await context.Send(message);
+            await context.Send(message, cancellationToken);
         }
         else
         {
             Console.WriteLine("[HANDLER] No content received from AI");
-            await context.Reply("Sorry I could not find that pokemon");
+            await context.Reply("Sorry I could not find that pokemon", cancellationToken);
         }
     }
 

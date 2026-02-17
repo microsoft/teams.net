@@ -1,9 +1,24 @@
+# =============================================================================
+# This pipeline (teams.net-pr) builds, tests, and packs the SDK (excluding core/).
+# PR trigger: main and release/* branches. No CI trigger.
+# =============================================================================
+
+trigger: none
+
 pr:
-- main
-- release/*
+  branches:
+    include:
+      - main
+      - release/*
+  paths:
+    exclude:
+      - core/**
 
 pool:
   vmImage: 'ubuntu-22.04'
+
+variables:
+  buildConfiguration: 'Release'
 
 stages:
 - stage: Build_Test_Pack
@@ -13,30 +28,40 @@ stages:
     steps:
 
       - task: UseDotNet@2
-        displayName: 'Use .NET 9'
+        displayName: 'Use .NET 8'
         inputs:
           packageType: 'sdk'
-          version: '9.0.x'
+          version: '8.0.x'
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET 10'
+        inputs:
+          packageType: 'sdk'
+          version: '10.0.x'
 
       - script: dotnet restore 
         displayName: 'Restore'
 
-      - script: dotnet build --no-restore --configuration Release
+      - script: dotnet build --no-restore --configuration $(buildConfiguration)
         displayName: 'Build'
 
-      - script: dotnet test --no-build --configuration Release
+      - script: dotnet test --no-build --configuration $(buildConfiguration) --logger trx
         displayName: 'Test'
 
-      - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration Release
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results'
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFormat: 'VSTest'
+          testResultsFiles: '**/*.trx'
+          mergeTestResults: true
+
+      - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration $(buildConfiguration)
         displayName: 'Pack'
 
-      - task: NuGetCommand@2
-        displayName: 'Push NuGet Packages'
-        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish NuGet Packages as Pipeline Artifact'
         inputs:
-          command: push
-          packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-          nuGetFeedType: internal
-          publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
-
-      
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifact: 'Packages'
+          publishLocation: 'pipeline'

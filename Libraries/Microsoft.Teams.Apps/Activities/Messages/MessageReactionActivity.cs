@@ -62,6 +62,23 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    public static App OnMessageReaction(this App app, Func<IContext<MessageReactionActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.MessageReaction,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageReactionActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is MessageReactionActivity
+        });
+
+        return app;
+    }
+
     public static App OnMessageReactionAdded(this App app, Func<IContext<MessageReactionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -87,6 +104,31 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    public static App OnMessageReactionAdded(this App app, Func<IContext<MessageReactionActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.MessageReaction,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageReactionActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is MessageReactionActivity messageReaction)
+                {
+                    return messageReaction.ReactionsAdded?.Count > 0;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
     public static App OnMessageReactionRemoved(this App app, Func<IContext<MessageReactionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -96,6 +138,31 @@ public static partial class AppActivityExtensions
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageReactionActivity>());
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is MessageReactionActivity messageReaction)
+                {
+                    return messageReaction.ReactionsRemoved?.Count > 0;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnMessageReactionRemoved(this App app, Func<IContext<MessageReactionActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.MessageReaction,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageReactionActivity>(), context.CancellationToken);
                 return null;
             },
             Selector = activity =>

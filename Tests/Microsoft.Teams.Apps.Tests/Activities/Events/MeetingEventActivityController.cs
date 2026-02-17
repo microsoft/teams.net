@@ -7,6 +7,7 @@ using static Microsoft.Teams.Apps.Activities.Events.Event;
 namespace Microsoft.Teams.Apps.Tests.Activities.Events;
 
 [TeamsController]
+[Obsolete("Use Minimal APIs instead.")]
 public class MeetingActivityController
 {
     public string MethodCalled { get; set; } = string.Empty;

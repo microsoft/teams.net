@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Reflection;
-
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -46,8 +44,7 @@ public partial class App
     {
         get
         {
-            var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString();
-            version ??= "0.0.0";
+            var version = ThisAssembly.NuGetPackageVersion ?? "0.0.0";
             return $"teams.net[apps]/{version}";
         }
     }
@@ -174,23 +171,15 @@ public partial class App
     /// <param name="activity">activity activity to send</param>
     public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
     {
-        return await Send(conversationId, activity, conversationType, serviceUrl, false, cancellationToken);
-    }
-
-    /// <summary>
-    /// send an activity to the conversation
-    /// </summary>
-    /// <param name="activity">activity activity to send</param>
-    /// <param name="isTargeted">when true, sends the message privately to the specified recipient; when false, sends to all conversation participants</param>
-    /// <remarks>
-    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
-    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
-    /// </remarks>
-    public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType, string? serviceUrl, bool isTargeted = false, CancellationToken cancellationToken = default) where T : IActivity
-    {
         if (Id is null)
         {
             throw new InvalidOperationException("app not started");
+        }
+
+        // Validate targeted messages in proactive context
+        if (activity is MessageActivity messageActivity && messageActivity.IsTargeted == true && messageActivity.Recipient is null)
+        {
+            throw new InvalidOperationException("Targeted messages sent proactively must specify an explicit recipient ID using WithTargetedRecipient(recipientId)");
         }
 
         var reference = new ConversationReference()
@@ -217,7 +206,7 @@ public partial class App
             throw new Exception("no plugin that can send activities was found");
         }
 
-        var res = await sender.Send(activity, reference, isTargeted, cancellationToken);
+        var res = await sender.Send(activity, reference, cancellationToken);
 
         await Events.Emit(
             sender,
@@ -235,21 +224,7 @@ public partial class App
     /// <param name="text">the text to send</param>
     public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
-        return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, false, cancellationToken);
-    }
-
-    /// <summary>
-    /// send a message activity to the conversation
-    /// </summary>
-    /// <param name="text">the text to send</param>
-    /// <param name="isTargeted">when true, sends the message privately to the specified recipient; when false, sends to all conversation participants</param>
-    /// <remarks>
-    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
-    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
-    /// </remarks>
-    public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType, string? serviceUrl, bool isTargeted = false, CancellationToken cancellationToken = default)
-    {
-        return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, isTargeted, cancellationToken);
+        return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, cancellationToken);
     }
 
     /// <summary>
@@ -258,21 +233,7 @@ public partial class App
     /// <param name="card">the card to send as an attachment</param>
     public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
-        return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, false, cancellationToken);
-    }
-
-    /// <summary>
-    /// send a message activity with a card attachment
-    /// </summary>
-    /// <param name="card">the card to send as an attachment</param>
-    /// <param name="isTargeted">when true, sends the message privately to the specified recipient; when false, sends to all conversation participants</param>
-    /// <remarks>
-    /// <para>Targeted messages are delivered privately to the recipient specified in the activity's Recipient property.</para>
-    /// <para>The <paramref name="isTargeted"/> parameter is in preview.</para>
-    /// </remarks>
-    public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType, string? serviceUrl, bool isTargeted = false, CancellationToken cancellationToken = default)
-    {
-        return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, isTargeted, cancellationToken);
+        return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, cancellationToken);
     }
 
     /// <summary>
@@ -331,7 +292,7 @@ public partial class App
         var routes = Router.Select(@event.Activity);
         JsonWebToken? userToken = null;
 
-        var api = new ApiClient(Api);
+        var api = new ApiClient(Api, cancellationToken);
 
         try
         {
@@ -411,52 +372,38 @@ public partial class App
             );
         };
 
-        try
+        if (@event.Services is not null)
         {
-            if (@event.Services is not null)
+            var accessor = (IContext.Accessor?)@event.Services.GetService(typeof(IContext.Accessor));
+
+            if (accessor is not null)
             {
-                var accessor = (IContext.Accessor?)@event.Services.GetService(typeof(IContext.Accessor));
-
-                if (accessor is not null)
-                {
-                    accessor.Value = context;
-                }
+                accessor.Value = context;
             }
-
-            foreach (var plugin in Plugins)
-            {
-                await plugin.OnActivity(this, sender, @event, cancellationToken);
-            }
-
-            var res = await Next(context);
-            await stream.Close();
-
-            var response = res is Response value
-                ? value
-                : new Response(System.Net.HttpStatusCode.OK, res);
-
-            response.Meta.Routes = i + 1;
-            response.Meta.Elapse = (DateTime.UtcNow - start).Milliseconds;
-
-            await Events.Emit(
-                sender,
-                EventType.ActivityResponse,
-                new ActivityResponseEvent() { Response = response },
-                cancellationToken
-            );
-
-            return response;
         }
-        catch (Exception ex)
+
+        foreach (var plugin in Plugins)
         {
-            await Events.Emit(
-                sender,
-                EventType.Error,
-                new ErrorEvent() { Exception = ex, Context = context.ToActivityType<IActivity>() },
-                cancellationToken
-            );
-
-            return new Response(System.Net.HttpStatusCode.InternalServerError);
+            await plugin.OnActivity(this, sender, @event, cancellationToken);
         }
+
+        var res = await Next(context);
+        await stream.Close(cancellationToken);
+
+        var response = res is Response value
+            ? value
+            : new Response(System.Net.HttpStatusCode.OK, res);
+
+        response.Meta.Routes = i + 1;
+        response.Meta.Elapse = (DateTime.UtcNow - start).Milliseconds;
+
+        await Events.Emit(
+            sender,
+            EventType.ActivityResponse,
+            new ActivityResponseEvent() { Response = response },
+            cancellationToken
+        );
+
+        return response;
     }
 }

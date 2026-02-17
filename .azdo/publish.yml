@@ -1,0 +1,87 @@
+# =============================================================================
+# For public releases, this pipeline (teams.net) is triggered manually.
+# It builds, tests, signs (Authenticode + NuGet), and packs the code, then pushes to nuget.org (requires approval).
+# =============================================================================
+
+trigger: none
+
+pr: none
+
+pool:
+  vmImage: 'ubuntu-22.04'
+
+variables:
+  buildConfiguration: 'Release'
+  folderPath: '$(Build.SourcesDirectory)'
+  appRegistrationTenantId: 'cdc5aeea-15c5-4db6-b079-fcadd2505dc2'
+  authenticodeSignId: '2d5c4ab9-0b7e-4f60-bb92-70322df77b94'
+  nugetSignId: 'a94a770a-9a7b-4888-a3ea-24584b851e49'
+
+stages:
+- stage: Build_Test_Sign_Pack
+  jobs:
+  - job: BuildTestSignPack
+    displayName: 'Build, Test, Sign, and Pack'
+    steps:
+      - checkout: self
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET 8'
+        inputs:
+          packageType: 'sdk'
+          version: '8.0.x'
+
+      - task: UseDotNet@2
+        displayName: 'Use .NET 10'
+        inputs:
+          packageType: 'sdk'
+          version: '10.0.x'
+
+      - script: dotnet restore
+        displayName: 'Restore'
+
+      - script: dotnet build --no-restore --configuration $(buildConfiguration)
+        displayName: 'Build'
+
+      - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
+        displayName: 'Test'
+
+      - task: PublishTestResults@2
+        displayName: 'Publish Test Results'
+        condition: succeededOrFailed()
+        inputs:
+          testResultsFormat: 'VSTest'
+          testResultsFiles: '**/*.trx'
+          mergeTestResults: true
+
+      - template: templates/sign-and-pack.yaml
+
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish NuGet Packages as Pipeline Artifact'
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifact: 'Packages'
+          publishLocation: 'pipeline'
+
+- stage: PushToNuGet
+  displayName: 'Push NuGet Packages to nuget.org'
+  dependsOn: Build_Test_Sign_Pack
+  jobs:
+  - deployment: PushPackages
+    displayName: 'Manual Approval Required to Push Packages'
+    environment:
+      name: 'teams-net-publish'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: Packages
+
+          - task: NuGetCommand@2
+            displayName: 'Push NuGet Packages'
+            inputs:
+              command: push
+              packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
+              nuGetFeedType: external
+              publishFeedCredentials: 'Microsoft.Teams.*'

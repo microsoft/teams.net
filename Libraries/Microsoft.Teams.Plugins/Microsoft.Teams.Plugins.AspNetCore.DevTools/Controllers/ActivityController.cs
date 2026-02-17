@@ -16,6 +16,7 @@ using Microsoft.Teams.Api.Auth;
 namespace Microsoft.Teams.Plugins.AspNetCore.DevTools.Controllers;
 
 [ApiController]
+[Obsolete("Use Minimal APIs instead.")]
 public class ActivityController : ControllerBase
 {
     private readonly DevToolsPlugin _plugin;
