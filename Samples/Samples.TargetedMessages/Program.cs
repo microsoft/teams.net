@@ -27,7 +27,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
     if (text.Contains("send"))
     {
-        var members = await context.Api.Conversations.Members.GetAsync(activity.Conversation?.Id ?? "");
+        var members = await context.Api.Conversations.Members.GetAsync(activity.Conversation.Id);
 
         foreach (var member in members)
         {
@@ -36,8 +36,7 @@ teams.OnMessage(async (context, cancellationToken) =>
             // SEND: Create a new targeted message
             await context.Send(
                 new MessageActivity($"👋 {member.Name} This is a **targeted message** - only YOU can see this!")
-                    .WithRecipient(new Account() { Id = member.Id, Name = member.Name, Role = Role.User }, true)
-            );
+                    .WithRecipient(new Account() { Id = member.Id, Name = member.Name, Role = Role.User }, true), cancellationToken);
         }
         
         context.Log.Info($"[SEND] Sent targeted message");
@@ -49,8 +48,7 @@ teams.OnMessage(async (context, cancellationToken) =>
         
         var response = await context.Send(
             new MessageActivity("📝 This message will be **updated** in 3 seconds...")
-                .WithRecipient(context.Activity.From, true)
-        );
+                .WithRecipient(context.Activity.From, true), cancellationToken);
         
         if (response?.Id != null)
         {
@@ -84,8 +82,7 @@ teams.OnMessage(async (context, cancellationToken) =>
         
         var response = await context.Send(
             new MessageActivity("🗑️ This message will be **deleted** in 3 seconds...")
-                .WithRecipient(context.Activity.From, true)
-        );
+                .WithRecipient(context.Activity.From, true), cancellationToken);
         
         if (response?.Id != null)
         {
@@ -115,8 +112,7 @@ teams.OnMessage(async (context, cancellationToken) =>
         // REPLY: Send a targeted reply to the user's message
         await context.Reply(
             new MessageActivity("💬 This is a **targeted reply** - threaded and private!")
-                .WithRecipient(context.Activity.From, true)
-        );
+                .WithRecipient(context.Activity.From, true), cancellationToken);
         
         context.Log.Info("[REPLY] Sent targeted reply");
     }
@@ -129,12 +125,11 @@ teams.OnMessage(async (context, cancellationToken) =>
             "- `update` - Send a message, then update it after 3 seconds\n" +
             "- `delete` - Send a message, then delete it after 3 seconds\n" +
             "- `reply` - Get a targeted reply (threaded)\n\n" +
-            "_Targeted messages are only visible to you, even in group chats!_", cancellationToken
-        );
+            "_Targeted messages are only visible to you, even in group chats!_", cancellationToken);
     }
     else
     {
-        await context.Typing();
+        await context.Typing(null, cancellationToken);
         await context.Send($"You said: '{activity.Text}'\n\nType `help` to see available commands.", cancellationToken);
     }
 });

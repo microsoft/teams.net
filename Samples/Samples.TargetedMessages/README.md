@@ -13,13 +13,8 @@ Targeted messages (also known as "user-specific views" or "private messages in g
 
 ## Running the Sample
 
-### Option 1: Using Teams Toolkit (Recommended)
 
-1. Install [Teams Toolkit](https://marketplace.visualstudio.com/items?itemName=TeamsDevApp.ms-teams-vscode-extension) extension in VS Code
-2. Open this sample folder in VS Code
-3. Press F5 to start debugging - Teams Toolkit will handle tunneling and app registration
-
-### Option 2: Using Dev Tunnels
+###  Dev Tunnels
 
 1. Install [dev tunnels CLI](https://learn.microsoft.com/azure/developer/dev-tunnels/get-started):
    ```bash
@@ -49,6 +44,7 @@ Targeted messages (also known as "user-specific views" or "private messages in g
    ```json
    {
      "Teams": {
+       "TenantId": "your-tenant-id",
        "ClientId": "your-bot-app-id",
        "ClientSecret": "your-bot-client-secret"
      }
@@ -66,22 +62,12 @@ Targeted messages (also known as "user-specific views" or "private messages in g
    - Add the bot to a group chat or channel
    - Start chatting!
 
-### Option 3: Using ngrok
-
-1. Install [ngrok](https://ngrok.com/download)
-
-2. Start ngrok:
-   ```bash
-   ngrok http 3978
-   ```
-
-3. Follow steps 4-7 from Option 2 above, using the ngrok URL
 
 ## Commands
 
 | Command | Type | Description |
 |---------|------|-------------|
-| `send` | Reactive | Create a new targeted message |
+| `send` | Reactive | Create targeted messages for participants in a conversation |
 | `update` | Reactive | Send a message, then update it after 3 seconds |
 | `delete` | Reactive | Send a message, then delete it after 3 seconds |
 | `reply` | Reactive | Get a targeted reply (threaded) |
