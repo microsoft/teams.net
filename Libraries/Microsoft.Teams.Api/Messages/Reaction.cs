@@ -73,11 +73,6 @@ public class ReactionType(string value) : StringEnum(value)
     public static readonly ReactionType Angry = new("angry");
     public bool IsAngry => Angry.Equals(Value);
 
-    /// <summary>
-    /// plus-one
-    /// </summary>
-    public static readonly ReactionType PlusOne = new("plusOne");
-    public bool IsPlusOne => PlusOne.Equals(Value);
 }
 
 /// <summary>
