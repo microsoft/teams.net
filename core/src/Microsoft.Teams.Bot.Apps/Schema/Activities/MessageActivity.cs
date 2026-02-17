@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents a message activity.
@@ -23,23 +22,6 @@ public class MessageActivity : TeamsActivity
         ArgumentNullException.ThrowIfNull(activity);
         return new MessageActivity(activity);
     }
-
-    /// <summary>
-    /// Deserializes a JSON string into a MessageActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A MessageActivity instance.</returns>
-    public static new MessageActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageActivity);
-    }
-
-    /// <summary>
-    /// Serializes the MessageActivity to JSON with all message-specific properties.
-    /// </summary>
-    /// <returns>JSON string representation of the MessageActivity</returns>
-    public new string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.MessageActivity);
 
     /// <summary>
     /// Default constructor.
@@ -74,121 +56,114 @@ public class MessageActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageActivity(CoreActivity activity) : base(activity)
     {
+        if (activity.Properties.TryGetValue("text", out var text))
+        {
+            Text = text?.ToString();
+            activity.Properties.Remove("text");
+        }
+        if (activity.Properties.TryGetValue("textFormat", out var textFormat))
+        {
+            TextFormat = textFormat?.ToString();
+            activity.Properties.Remove("textFormat");
+        }
+        if (activity.Properties.TryGetValue("attachmentLayout", out var attachmentLayout))
+        {
+            AttachmentLayout = attachmentLayout?.ToString();
+            activity.Properties.Remove("attachmentLayout");
+        }
+        /*
+        if (activity.Properties.TryGetValue("speak", out var speak))
+        {
+            Speak = speak?.ToString();
+            activity.Properties.Remove("speak");
+        }
+        if (activity.Properties.TryGetValue("inputHint", out var inputHint))
+        {
+            InputHint = inputHint?.ToString();
+            activity.Properties.Remove("inputHint");
+        }
+        if (activity.Properties.TryGetValue("summary", out var summary))
+        {
+            Summary = summary?.ToString();
+            activity.Properties.Remove("summary");
+        }
+        if (activity.Properties.TryGetValue("importance", out var importance))
+        {
+            Importance = importance?.ToString();
+            activity.Properties.Remove("importance");
+        }
+        if (activity.Properties.TryGetValue("deliveryMode", out var deliveryMode))
+        {
+            DeliveryMode = deliveryMode?.ToString();
+            activity.Properties.Remove("deliveryMode");
+        }
+        if (activity.Properties.TryGetValue("expiration", out var expiration))
+        {
+            Expiration = expiration?.ToString();
+            activity.Properties.Remove("expiration");
+        }
+        */
     }
 
     /// <summary>
     /// Gets or sets the text content of the message.
     /// </summary>
     [JsonPropertyName("text")]
-    public string? Text
-    {
-        get => base.Properties.TryGetValue("text", out var value) ? value?.ToString() : null;
-        set => base.Properties["text"] = value;
-    }
-
-    /// <summary>
-    /// Gets or sets the SSML speak content of the message.
-    /// </summary>
-    [JsonPropertyName("speak")]
-    public string? Speak
-    {
-        get => base.Properties.TryGetValue("speak", out var value) ? value?.ToString() : null;
-        set => base.Properties["speak"] = value;
-    }
-
-    /// <summary>
-    /// Gets or sets the input hint. See <see cref="InputHints"/> for common values.
-    /// </summary>
-    [JsonPropertyName("inputHint")]
-    public string? InputHint
-    {
-        get => base.Properties.TryGetValue("inputHint", out var value) ? value?.ToString() : null;
-        set => base.Properties["inputHint"] = value;
-    }
-
-    /// <summary>
-    /// Gets or sets the summary of the message.
-    /// </summary>
-    [JsonPropertyName("summary")]
-    public string? Summary
-    {
-        get => base.Properties.TryGetValue("summary", out var value) ? value?.ToString() : null;
-        set => base.Properties["summary"] = value;
-    }
-
+    public string? Text { get; set; }
     /// <summary>
     /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
     /// </summary>
     [JsonPropertyName("textFormat")]
-    public string? TextFormat
-    {
-        get => base.Properties.TryGetValue("textFormat", out var value) ? value?.ToString() : null;
-        set => base.Properties["textFormat"] = value;
-    }
+    public string? TextFormat { get; set; }
 
     /// <summary>
     /// Gets or sets the attachment layout.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
-    public string? AttachmentLayout
-    {
-        get => base.Properties.TryGetValue("attachmentLayout", out var value) ? value?.ToString() : null;
-        set => base.Properties["attachmentLayout"] = value;
-    }
+    public string? AttachmentLayout { get; set; }
+
+    //TODO : Review properties
+    /*
+    /// <summary>
+    /// Gets or sets the SSML speak content of the message.
+    /// </summary>
+    [JsonPropertyName("speak")]
+    public string? Speak { get; set; }
+
+    /// <summary>
+    /// Gets or sets the input hint. See <see cref="InputHints"/> for common values.
+    /// </summary>
+    [JsonPropertyName("inputHint")]
+    public string? InputHint { get; set; }
+
+    /// <summary>
+    /// Gets or sets the summary of the message.
+    /// </summary>
+    [JsonPropertyName("summary")]
+    public string? Summary { get; set; }
 
     /// <summary>
     /// Gets or sets the importance. See <see cref="ImportanceLevels"/> for common values.
     /// </summary>
     [JsonPropertyName("importance")]
-    public string? Importance
-    {
-        get => base.Properties.TryGetValue("importance", out var value) ? value?.ToString() : null;
-        set => base.Properties["importance"] = value;
-    }
+    public string? Importance { get; set; }
 
     /// <summary>
     /// Gets or sets the delivery mode. See <see cref="DeliveryModes"/> for common values.
     /// </summary>
     [JsonPropertyName("deliveryMode")]
-    public string? DeliveryMode
-    {
-        get => base.Properties.TryGetValue("deliveryMode", out var value) ? value?.ToString() : null;
-        set => base.Properties["deliveryMode"] = value;
-    }
+    public string? DeliveryMode { get; set; }
 
     /// <summary>
     /// Gets or sets the expiration time of the message.
     /// </summary>
     [JsonPropertyName("expiration")]
-    public DateTime? Expiration
-    {
-        get => base.Properties.TryGetValue("expiration", out var value) && value != null
-            ? (DateTime.TryParse(value.ToString(), out var date) ? date : null)
-            : null;
-        set => base.Properties["expiration"] = value;
-    }
+    public string? Expiration { get; set; }
 
-}
+    [JsonPropertyName("suggestedActions")]
+    public SuggestedActions? SuggestedActions { get; set; }
+    */
 
-/// <summary>
-/// String constants for input hints.
-/// </summary>
-public static class InputHints
-{
-    /// <summary>
-    /// Accepting input hint.
-    /// </summary>
-    public const string AcceptingInput = "acceptingInput";
-
-    /// <summary>
-    /// Ignoring input hint.
-    /// </summary>
-    public const string IgnoringInput = "ignoringInput";
-
-    /// <summary>
-    /// Expecting input hint.
-    /// </summary>
-    public const string ExpectingInput = "expectingInput";
 }
 
 /// <summary>
@@ -210,6 +185,29 @@ public static class TextFormats
     /// XML text format.
     /// </summary>
     public const string Xml = "xml";
+}
+
+
+/*
+/// <summary>
+/// String constants for input hints.
+/// </summary>
+public static class InputHints
+{
+    /// <summary>
+    /// Accepting input hint.
+    /// </summary>
+    public const string AcceptingInput = "acceptingInput";
+
+    /// <summary>
+    /// Ignoring input hint.
+    /// </summary>
+    public const string IgnoringInput = "ignoringInput";
+
+    /// <summary>
+    /// Expecting input hint.
+    /// </summary>
+    public const string ExpectingInput = "expectingInput";
 }
 
 /// <summary>
@@ -263,3 +261,21 @@ public static class DeliveryModes
     /// </summary>
     public const string ExpectedReplies = "expectReplies";
 }
+
+
+public class SuggestedActions
+{
+    /// <summary>
+    /// Ids of the recipients that the actions should be shown to.  These Ids are relative to the
+    /// channelId and a subset of all recipients of the activity
+    /// </summary>
+    [JsonPropertyName("to")]
+    public IList<string> To { get; set; } = [];
+
+    /// <summary>
+    /// Actions that can be shown to the user
+    /// </summary>
+    [JsonPropertyName("actions")]
+    public IList<Cards.Action> Actions { get; set; } = [];
+}
+*/

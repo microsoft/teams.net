@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -32,10 +33,12 @@ internal sealed class BotAuthenticationHandler(
     private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
     private readonly IOptions<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
     private static readonly Action<ILogger, string, Exception?> _logAgenticToken =
-        LoggerMessage.Define<string>(LogLevel.Debug, new(2), "Acquiring agentic token for app {AgenticAppId}");
+        LoggerMessage.Define<string>(LogLevel.Information, new(2), "Acquiring agentic token for AgenticAppId {AgenticAppId}");
     private static readonly Action<ILogger, string, Exception?> _logAppOnlyToken =
-        LoggerMessage.Define<string>(LogLevel.Debug, new(3), "Acquiring app-only token for scope: {Scope}");
-
+        LoggerMessage.Define<string>(LogLevel.Information, new(3), "Acquiring app-only token for scope: {Scope}");
+    private static readonly Action<ILogger, string, Exception?> _logTokenClaims =
+        LoggerMessage.Define<string>(LogLevel.Trace, new(4), "Acquired token claims:{Claims}");
+    
     /// <summary>
     /// Key used to store the agentic identity in HttpRequestMessage options.
     /// </summary>
@@ -51,6 +54,8 @@ internal sealed class BotAuthenticationHandler(
         string tokenValue = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
             ? token["Bearer ".Length..]
             : token;
+
+        LogTokenClaims(tokenValue);
 
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", tokenValue);
 
@@ -98,6 +103,22 @@ internal sealed class BotAuthenticationHandler(
 
         _logAppOnlyToken(_logger, _scope, null);
         string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(_scope, options, cancellationToken).ConfigureAwait(false);
+
+
         return appToken;
+    }
+
+    private void LogTokenClaims(string token)
+    {
+        if (!_logger.IsEnabled(LogLevel.Trace))
+        {
+            return;
+        }
+
+
+        var jwtToken = new JwtSecurityToken(token);
+        var claims = Environment.NewLine + string.Join(Environment.NewLine, jwtToken.Claims.Select(c => $"  {c.Type}: {c.Value}"));
+        _logTokenClaims(_logger, claims, null);
+
     }
 }

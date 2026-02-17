@@ -5,24 +5,25 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Routing;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Identity.Client;
+using Microsoft.Teams.Bot.Apps.Schema;
 
 namespace Microsoft.Teams.Bot.Apps;
 
 /// <summary>
 /// Teams specific Bot Application
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsApiClient;
     private static TeamsBotApplicationBuilder? _botApplicationBuilder;
-    internal Router Router = new();
-    
+
+    /// <summary>
+    /// Gets the router for dispatching Teams activities to registered routes.
+    /// </summary>
+    internal Router Router { get; }
+
     /// <summary>
     /// Gets the client used to interact with the Teams API service.
     /// </summary>
@@ -42,11 +43,12 @@ public class TeamsBotApplication : BotApplication
         TeamsApiClient teamsApiClient,
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<BotApplication> logger,
+        ILogger<TeamsBotApplication> logger,
         string sectionName = "AzureAd")
         : base(conversationClient, userTokenClient, config, logger, sectionName)
     {
         _teamsApiClient = teamsApiClient;
+        Router = new Router(logger);
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogInformation("New {Type} activity received.", activity.Type);
@@ -59,12 +61,13 @@ public class TeamsBotApplication : BotApplication
             }
             else // invokes
             {
-                CoreInvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+                InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
                 HttpContext? httpContext = httpContextAccessor.HttpContext;
                 if (httpContext is not null && invokeResponse is not null)
                 {
                     httpContext.Response.StatusCode = invokeResponse.Status;
-                    await httpContext.Response.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
+                    logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
+                    await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
 
                 }
             }
@@ -75,9 +78,9 @@ public class TeamsBotApplication : BotApplication
     /// Creates a new instance of the TeamsBotApplicationBuilder to configure and build a Teams bot application.
     /// </summary>
     /// <returns></returns>
-    public static TeamsBotApplicationBuilder CreateBuilder()
+    public static TeamsBotApplicationBuilder CreateBuilder(string[] args)
     {
-        _botApplicationBuilder = new TeamsBotApplicationBuilder();
+        _botApplicationBuilder = new TeamsBotApplicationBuilder(args);
         return _botApplicationBuilder;
     }
 

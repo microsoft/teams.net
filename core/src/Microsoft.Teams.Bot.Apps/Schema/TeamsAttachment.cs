@@ -8,6 +8,90 @@ using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
 
+/// <summary>
+/// Teams attachment content types.
+/// </summary>
+public static class AttachmentContentType
+{
+    /// <summary>
+    /// Adaptive Card content type.
+    /// </summary>
+    public const string AdaptiveCard = "application/vnd.microsoft.card.adaptive";
+
+    /// <summary>
+    /// Hero Card content type.
+    /// </summary>
+    public const string HeroCard = "application/vnd.microsoft.card.hero";
+
+    /// <summary>
+    /// Thumbnail Card content type.
+    /// </summary>
+    public const string ThumbnailCard = "application/vnd.microsoft.card.thumbnail";
+
+    /// <summary>
+    /// Office 365 Connector Card content type.
+    /// </summary>
+    public const string O365ConnectorCard = "application/vnd.microsoft.teams.card.o365connector";
+
+    /// <summary>
+    /// File consent card content type.
+    /// </summary>
+    public const string FileConsentCard = "application/vnd.microsoft.teams.card.file.consent";
+
+    /// <summary>
+    /// File info card content type.
+    /// </summary>
+    public const string FileInfoCard = "application/vnd.microsoft.teams.card.file.info";
+
+    //TODO : verify these
+    /*
+    /// <summary>
+    /// Receipt Card content type.
+    /// </summary>
+    public const string ReceiptCard = "application/vnd.microsoft.card.receipt";
+
+    /// <summary>
+    /// Signin Card content type.
+    /// </summary>
+    public const string SigninCard = "application/vnd.microsoft.card.signin";
+
+    /// <summary>
+    /// Animation content type.
+    /// </summary>
+    public const string Animation = "application/vnd.microsoft.card.animation";
+
+    /// <summary>
+    /// Audio content type.
+    /// </summary>
+    public const string Audio = "application/vnd.microsoft.card.audio";
+
+    /// <summary>
+    /// Video content type.
+    /// </summary>
+    public const string Video = "application/vnd.microsoft.card.video";
+    */
+}
+
+/// <summary>
+/// Attachment layout types.
+/// </summary>
+public static class TeamsAttachmentLayout
+{
+    /// <summary>
+    /// List layout - displays attachments in a vertical list.
+    /// </summary>
+    public const string List = "list";
+
+    /// <summary>
+    /// Grid layout - displays attachments in a grid.
+    /// </summary>
+    public const string Grid = "grid";
+
+    /// <summary>
+    /// Carousel layout - displays attachments in a horizontal carousel.
+    /// </summary>
+    public const string Carousel = "carousel";
+}
 
 /// <summary>
 /// Extension methods for TeamsAttachment.
@@ -40,7 +124,7 @@ public class TeamsAttachment
         List<TeamsAttachment> attachments = [];
         foreach (JsonNode? item in jsonArray)
         {
-            attachments.Add(JsonSerializer.Deserialize<TeamsAttachment>(item)!);
+            attachments.Add(item.Deserialize<TeamsAttachment>()!);
         }
         return attachments;
     }
@@ -73,9 +157,7 @@ public class TeamsAttachment
     /// <summary>
     /// Extension data for additional properties not explicitly defined by the type.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Creates a builder for constructing a <see cref="TeamsAttachment"/> instance.

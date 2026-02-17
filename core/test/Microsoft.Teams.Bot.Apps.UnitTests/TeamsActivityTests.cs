@@ -1,46 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json.Nodes;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
-
+using Microsoft.Teams.Bot.Core.Schema;
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
 
 public class TeamsActivityTests
 {
-
-    [Fact]
-    public void DeserializeActivityWithTeamsChannelData()
-    {
-        TeamsActivity activityWithTeamsChannelData = TeamsActivity.FromJsonString(json);
-        TeamsChannelData tcd = activityWithTeamsChannelData.ChannelData!;
-        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.TeamsChannelId);
-        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.Channel!.Id);
-        // Assert.Equal("b15a9416-0ad3-4172-9210-7beb711d3f70", activity.From.AadObjectId);
-    }
-
-    [Fact]
-    public void DeserializeTeamsActivityWithTeamsChannelData()
-    {
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
-        TeamsChannelData tcd = activity.ChannelData!;
-        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.TeamsChannelId);
-        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2", tcd.Channel!.Id);
-        Assert.Equal("b15a9416-0ad3-4172-9210-7beb711d3f70", activity.From.AadObjectId);
-        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", activity.Conversation.Id);
-
-        Assert.NotNull(activity.Attachments);
-        Assert.Single(activity.Attachments);
-        Assert.Equal("text/html", activity.Attachments[0].ContentType);
-
-        Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities.Count);
-
-    }
-
     [Fact]
     public void DownCastTeamsActivity_To_CoreActivity()
     {
@@ -74,24 +40,10 @@ public class TeamsActivityTests
     }
 
     [Fact]
-    public void DownCastTeamsActivity_To_CoreActivity_FromJsonString()
-    {
-
-        TeamsActivity teamsActivity = TeamsActivity.FromJsonString(json);
-        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", teamsActivity.Conversation!.Id);
-
-        static void AssertCid(CoreActivity a)
-        {
-            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
-        }
-        AssertCid(teamsActivity);
-
-    }
-
-    [Fact]
     public void DownCastTeamsActivity_To_CoreActivity_WithoutRebase()
     {
-        TeamsActivity teamsActivity = new TeamsActivity() { 
+        TeamsActivity teamsActivity = new TeamsActivity()
+        {
             Conversation = new TeamsConversation()
             {
                 Id = "19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856"
@@ -192,58 +144,6 @@ public class TeamsActivityTests
     }
 
     [Fact]
-    public void Deserialize_With_Entities()
-    {
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
-        Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities.Count);
-
-        List<Entity> mentions = activity.Entities.Where(e => e is MentionEntity).ToList();
-        Assert.Single(mentions);
-        MentionEntity? m1 = mentions[0] as MentionEntity;
-        Assert.NotNull(m1);
-        Assert.NotNull(m1.Mentioned);
-        Assert.Equal("28:0b6fe6d1-fece-44f7-9a48-56465e2d5ab8", m1.Mentioned.Id);
-        Assert.Equal("ridotest", m1.Mentioned.Name);
-        Assert.Equal("<at>ridotest</at>", m1.Text);
-
-        List<Entity> clientInfos = [.. activity.Entities.Where(e => e is ClientInfoEntity)];
-        Assert.Single(clientInfos);
-        ClientInfoEntity? c1 = clientInfos[0] as ClientInfoEntity;
-        Assert.NotNull(c1);
-        Assert.Equal("en-US", c1.Locale);
-        Assert.Equal("US", c1.Country);
-        Assert.Equal("Web", c1.Platform);
-        Assert.Equal("America/Los_Angeles", c1.Timezone);
-
-    }
-
-
-    [Fact]
-    public void Deserialize_With_Entities_Extensions()
-    {
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
-        Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities.Count);
-
-        var mentions = activity.GetMentions();
-        Assert.Single(mentions);
-        MentionEntity? m1 = mentions.FirstOrDefault();
-        Assert.NotNull(m1);
-        Assert.NotNull(m1.Mentioned);
-        Assert.Equal("28:0b6fe6d1-fece-44f7-9a48-56465e2d5ab8", m1.Mentioned.Id);
-        Assert.Equal("ridotest", m1.Mentioned.Name);
-        Assert.Equal("<at>ridotest</at>", m1.Text);
-
-        var clientInfo = activity.GetClientInfo();
-        Assert.NotNull(clientInfo);
-        Assert.Equal("en-US", clientInfo.Locale);
-        Assert.Equal("US", clientInfo.Country);
-        Assert.Equal("Web", clientInfo.Platform);
-        Assert.Equal("America/Los_Angeles", clientInfo.Timezone);
-    }
-
-    [Fact]
     public void Serialize_TeamsActivity_WithEntities()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
@@ -261,18 +161,6 @@ public class TeamsActivityTests
     }
 
     [Fact]
-    public void Deserialize_TeamsActivity_WithAttachments()
-    {
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
-        Assert.NotNull(activity.Attachments);
-        Assert.Single(activity.Attachments);
-        TeamsAttachment attachment = activity.Attachments[0] as TeamsAttachment;
-        Assert.NotNull(attachment);
-        Assert.Equal("text/html", attachment.ContentType);
-        Assert.Equal("<p><span itemtype=\"http://schema.skype.com/Mention\" itemscope=\"\" itemid=\"0\">ridotest</span>&nbsp;reply to thread</p>", attachment.Content?.ToString());
-    }
-
-    [Fact]
     public void Deserialize_TeamsActivity_Invoke_WithValue()
     {
         //TeamsActivity activity = CoreActivity.FromJsonString<TeamsActivity>(jsonInvoke);
@@ -280,6 +168,50 @@ public class TeamsActivityTests
         Assert.NotNull(activity.Value);
         string feedback = activity.Value?["action"]?["data"]?["feedback"]?.ToString()!;
         Assert.Equal("test invokes", feedback);
+    }
+
+    [Fact]
+    public void Serialize_Does_Not_Repeat_AAdObjectId()
+    {
+        var coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "recipient": {
+                    "id": "rec1",
+                    "name": "recname",
+                    "aadObjectId": "rec-aadId-1"
+                }
+            }
+            """);
+        var teamsActivity = TeamsActivity.FromActivity(coreActivity);
+        string json = teamsActivity.ToJson();
+        string[] found = json.Split("aadObjectId");
+        Assert.Equal(1, found.Length - 1); // only one occurrence
+    }
+
+    [Fact]
+    public void FromActivity_Overrides_Recipient()
+    {
+        var coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "recipient": {
+                    "id": "rec1",
+                    "name": "recname",
+                    "agenticUserId": "0d5eb8a3-1642-4e63-9ccc-a89aa461716c",
+                    "agenticAppId": "3fc62d4f-b04e-4c71-878b-02a2fa395fe2",
+                    "agenticAppBlueprintId": "24fff850-d7fb-4d32-a6e7-a1178874430e"
+                }
+            }
+            """);
+        var teamsActivity = TeamsActivity.FromActivity(coreActivity);
+        Assert.Equal("rec1", teamsActivity.Recipient?.Id);
+        Assert.Equal("recname", teamsActivity.Recipient?.Name);
+        var agenticIdentity = AgenticIdentity.FromProperties(teamsActivity.Recipient?.Properties);
+        Assert.NotNull(agenticIdentity);
+        Assert.Equal("0d5eb8a3-1642-4e63-9ccc-a89aa461716c", agenticIdentity.AgenticUserId);
+        Assert.Equal("3fc62d4f-b04e-4c71-878b-02a2fa395fe2", agenticIdentity.AgenticAppId);
+        Assert.Equal("24fff850-d7fb-4d32-a6e7-a1178874430e", agenticIdentity.AgenticAppBlueprintId);
     }
 
     private const string jsonInvoke = """
@@ -406,27 +338,6 @@ public class TeamsActivityTests
               "localTimezone": "America/Los_Angeles"
             }
             """;
-
-    [Fact]
-    public void FromJsonString_ReturnsDerivedType_WhenRegistered()
-    {
-        string json = """{"type": "message", "text": "Hello World"}""";
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
-
-        Assert.IsType<MessageActivity>(activity);
-        MessageActivity messageActivity = (MessageActivity)activity;
-        Assert.Equal("Hello World", messageActivity.Text);
-    }
-
-    [Fact]
-    public void FromJsonString_ReturnsBaseType_WhenNotRegistered()
-    {
-        string json = """{"type": "unknownType"}""";
-        TeamsActivity activity = TeamsActivity.FromJsonString(json);
-
-        Assert.Equal(typeof(TeamsActivity), activity.GetType());
-        Assert.Equal("unknownType", activity.Type);
-    }
 
     [Fact]
     public void FromActivity_ReturnsDerivedType_WhenRegistered()

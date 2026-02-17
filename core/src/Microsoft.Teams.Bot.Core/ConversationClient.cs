@@ -15,7 +15,6 @@ using CustomHeaders = Dictionary<string, string>;
 /// </summary>
 /// <param name="httpClient">The HTTP client instance used to send requests to the conversation service. Must not be null.</param>
 /// <param name="logger">The logger instance used for logging. Optional.</param>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class ConversationClient(HttpClient httpClient, ILogger<ConversationClient> logger = default!)
 {
     private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
@@ -52,9 +51,11 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities";
         }
 
+        logger?.LogInformation("Sending activity to {Url}", url);
+
         string body = activity.ToJson();
 
-        logger?.LogTrace("Sending activity to {Url}: {Activity}", url, body);
+        logger?.LogTrace("Outgoing Activity :\r {Activity}", body);
 
         return (await _botHttpClient.SendAsync<SendActivityResponse>(
             HttpMethod.Post,

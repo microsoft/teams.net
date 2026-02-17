@@ -56,9 +56,7 @@ public class GetConversationsResponse
     /// Gets or sets the list of conversations.
     /// </summary>
     [JsonPropertyName("conversations")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<ConversationMembers>? Conversations { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>
@@ -76,9 +74,7 @@ public class ConversationMembers
     /// Gets or sets the list of members in this conversation.
     /// </summary>
     [JsonPropertyName("members")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<ConversationAccount>? Members { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>
@@ -102,9 +98,7 @@ public class ConversationParameters
     /// Gets or sets the list of members to add to the conversation.
     /// </summary>
     [JsonPropertyName("members")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<ConversationAccount>? Members { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets or sets the topic name for the conversation (if supported by the channel).
@@ -170,9 +164,7 @@ public class PagedMembersResult
     /// Gets or sets the list of members in this page.
     /// </summary>
     [JsonPropertyName("members")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<ConversationAccount>? Members { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>
@@ -184,9 +176,7 @@ public class Transcript
     /// Gets or sets the collection of activities that conforms to the Transcript schema.
     /// </summary>
     [JsonPropertyName("activities")]
-#pragma warning disable CA2227 // Collection properties should be read only
     public IList<CoreActivity>? Activities { get; set; }
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>

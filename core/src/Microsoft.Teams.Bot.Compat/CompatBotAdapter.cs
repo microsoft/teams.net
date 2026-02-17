@@ -21,15 +21,14 @@ namespace Microsoft.Teams.Bot.Compat;
 /// <remarks>Use this adapter to bridge Bot Framework turn contexts and activities with a custom bot application.
 /// This class is intended for scenarios where integration with non-standard bot runtimes or legacy systems is
 /// required.</remarks>
-/// <param name="sp">The service provider used to resolve dependencies for the adapter.</param>
-/// <param name="httpContextAccessor">The HTTP context accessor used to retrieve the current HTTP context for writing invoke responses.</param>
-/// <param name="logger">The logger instance for recording adapter operations and diagnostics.</param>
-/// <param name="keyName">The key name used to identify the specific TeamsBotApplication instance.</param>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
-public class CompatBotAdapter(IServiceProvider sp, IHttpContextAccessor httpContextAccessor = default!, ILogger<CompatBotAdapter> logger = default!, string keyName = "AzureAD") : BotAdapter
+/// <param name="sp">The service provider used to resolve dependencies.</param>
+public class CompatBotAdapter(IServiceProvider sp) : BotAdapter
 {
     TeamsBotApplication botApplication = sp.GetRequiredKeyedService<TeamsBotApplication>(keyName) ?? throw new InvalidOperationException("TeamsApplication not found");
     private readonly JsonSerializerOptions _writeIndentedJsonOptions = new() { WriteIndented = true };
+    private readonly TeamsBotApplication botApplication = sp.GetRequiredService<TeamsBotApplication>();
+    private readonly IHttpContextAccessor? httpContextAccessor = sp.GetService<IHttpContextAccessor>();
+    private readonly ILogger<CompatBotAdapter>? logger = sp.GetService<ILogger<CompatBotAdapter>>();
 
     /// <summary>
     /// Deletes an activity from the conversation.
@@ -78,7 +77,7 @@ public class CompatBotAdapter(IServiceProvider sp, IHttpContextAccessor httpCont
 
             SendActivityResponse? resp = await botApplication.SendActivityAsync(activity.FromCompatActivity(), cancellationToken).ConfigureAwait(false);
 
-            logger.LogInformation("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
+            logger?.LogInformation("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
 
             responses[i] = new Microsoft.Bot.Schema.ResourceResponse() { Id = resp?.Id };
         }
@@ -115,7 +114,7 @@ public class CompatBotAdapter(IServiceProvider sp, IHttpContextAccessor httpCont
             response.StatusCode = invokeResponse.Status;
             using StreamWriter httpResponseStreamWriter = new(response.BodyWriter.AsStream());
             using JsonTextWriter httpResponseJsonWriter = new(httpResponseStreamWriter);
-            logger.LogTrace("Sending Invoke Response: \n {InvokeResponse} with status: {Status} \n", System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions), invokeResponse.Status);
+            logger?.LogTrace("Sending Invoke Response: \n {InvokeResponse} with status: {Status} \n", System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions), invokeResponse.Status);
             if (invokeResponse.Body is not null)
             {
                 Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
@@ -123,7 +122,7 @@ public class CompatBotAdapter(IServiceProvider sp, IHttpContextAccessor httpCont
         }
         else
         {
-            logger.LogWarning("HTTP response is null or has started. Cannot write invoke response. ResponseStarted: {ResponseStarted}", response?.HasStarted);
+            logger?.LogWarning("HTTP response is null or has started. Cannot write invoke response. ResponseStarted: {ResponseStarted}", response?.HasStarted);
         }
     }
 }

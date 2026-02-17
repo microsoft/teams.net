@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents a message delete activity.
@@ -22,23 +22,6 @@ public class MessageDeleteActivity : TeamsActivity
         ArgumentNullException.ThrowIfNull(activity);
         return new MessageDeleteActivity(activity);
     }
-
-    /// <summary>
-    /// Deserializes a JSON string into a MessageDeleteActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A MessageDeleteActivity instance.</returns>
-    public static new MessageDeleteActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageDeleteActivity);
-    }
-
-    /// <summary>
-    /// Serializes the MessageDeleteActivity to JSON with all message delete-specific properties.
-    /// </summary>
-    /// <returns>JSON string representation of the MessageDeleteActivity</returns>
-    public new string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.MessageDeleteActivity);
 
     /// <summary>
     /// Default constructor.

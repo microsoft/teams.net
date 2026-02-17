@@ -19,7 +19,6 @@ namespace Microsoft.Teams.Bot.Core.Hosting
     /// <summary>
     /// Provides extension methods for configuring JWT authentication and authorization for bots and agents.
     /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     public static class JwtExtensions
     {
         internal const string BotScheme = "BotScheme";

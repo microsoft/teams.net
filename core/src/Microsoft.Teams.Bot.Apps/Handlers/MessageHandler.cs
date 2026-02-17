@@ -4,7 +4,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
@@ -58,7 +57,7 @@ public static class MessageExtensions
 
         app.Router.Register(new Route<MessageActivity>
         {
-            Name = TeamsActivityType.Message,
+            Name = string.Join("/", [TeamsActivityType.Message, pattern]),
             Selector = msg => regex.IsMatch(msg.Text ?? ""),
             Handler = async (ctx, cancellationToken) =>
             {
@@ -79,9 +78,10 @@ public static class MessageExtensions
     public static TeamsBotApplication OnMessage(this TeamsBotApplication app, Regex regex, MessageHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
+        ArgumentNullException.ThrowIfNull(regex, nameof(regex));
         app.Router.Register(new Route<MessageActivity>
         {
-            Name = TeamsActivityType.Message,
+            Name = string.Join("/", [TeamsActivityType.Message, regex.ToString()]),
             Selector = msg => regex.IsMatch(msg.Text ?? ""),
             Handler = async (ctx, cancellationToken) =>
             {

@@ -13,7 +13,6 @@ namespace Microsoft.Teams.Bot.Core;
 /// <summary>
 /// Represents a bot application.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class BotApplication
 {
     private readonly ILogger<BotApplication> _logger;
@@ -43,7 +42,7 @@ public class BotApplication
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
         string appId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? "Unknown AppID";
-        logger.LogInformation("Started bot listener \n on {Port} \n for AppID:{AppId} \n with SDK version {SdkVersion}", config?["ASPNETCORE_URLS"], appId, Version);
+        logger.LogInformation(" Started {ThisType} listener \n on {Port} \n for AppID:{AppId} \n with SDK version {SdkVersion}", this.GetType().Name, config?["ASPNETCORE_URLS"], appId, Version);
 
     }
 

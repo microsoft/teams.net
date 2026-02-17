@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace ABSTokenServiceClient
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     internal class UserTokenCLIService(UserTokenClient userTokenClient, ILogger<UserTokenCLIService> logger) : IHostedService
     {
         public Task StartAsync(CancellationToken cancellationToken)

@@ -1,11 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
+
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -13,7 +10,6 @@ namespace Microsoft.Teams.Bot.Apps.Schema;
 /// <summary>
 /// Teams Activity schema.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227: Collection Properties should be read only", Justification = "<Pending>")]
 public class TeamsActivity : CoreActivity
 {
     /// <summary>
@@ -26,58 +22,21 @@ public class TeamsActivity : CoreActivity
         ArgumentNullException.ThrowIfNull(activity);
 
         return TeamsActivityType.ActivityDeserializerMap.TryGetValue(activity.Type, out var factory)
-            ? factory.FromActivity(activity)
+            ? factory(activity)
             : new TeamsActivity(activity);  // Fallback to base type
     }
 
     /// <summary>
-    /// Creates a new instance of the TeamsActivity class from the specified Activity object.
-    /// </summary>
-    /// <param name="json"></param>
-    /// <returns></returns>
-    public static new TeamsActivity FromJsonString(string json)
-    {
-        string? type = null;
-        var jsonBytes = Encoding.UTF8.GetBytes(json);
-        var reader = new Utf8JsonReader(jsonBytes);
-
-        while (reader.Read())
-        {
-            if (reader.TokenType == JsonTokenType.PropertyName &&
-                reader.ValueTextEquals("type"u8))
-            {
-                reader.Read();
-                type = reader.GetString();
-                break;
-            }
-        }
-
-        return type != null && TeamsActivityType.ActivityDeserializerMap.TryGetValue(type, out var factory)
-            ? factory.FromJson(json)
-            : FromJsonString(json, TeamsActivityJsonContext.Default.TeamsActivity);
-    }
-
-    /// <summary>
-    /// Creates a new instance of the specified activity type from JSON string.
-    /// </summary>
-    /// <typeparam name="T">The expected activity type.</typeparam>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="typeInfo">The JSON type info for deserialization.</param>
-    /// <returns>An activity of type T.</returns>
-    public static T FromJsonString<T>(string json, JsonTypeInfo<T> typeInfo) where T : TeamsActivity
-    {
-        T activity = JsonSerializer.Deserialize(json, typeInfo)!;
-        activity.Rebase();
-        return activity;
-    }
-
-
-    /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
+    /// Uses the appropriate JSON type info based on the activity type.
     /// </summary>
-    /// <returns></returns>
-    public new string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
+    /// <returns>A JSON string representation of the activity using the type-specific serializer.</returns>
+    public override string ToJson()
+    {
+        return Type == TeamsActivityType.Message
+            ? ToJson(TeamsActivityJsonContext.Default.MessageActivity)
+            : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);  // Fallback to base type
+    }
 
     /// <summary>
     /// Constructor with type parameter.
@@ -127,8 +86,8 @@ public class TeamsActivity : CoreActivity
     /// <returns></returns>
     internal TeamsActivity Rebase()
     {
-        base.Attachments = this.Attachments?.ToJsonArray();
-        base.Entities = this.Entities?.ToJsonArray();
+        base.Attachments = Attachments?.ToJsonArray();
+        base.Entities = Entities?.ToJsonArray();
 
         return this;
     }
@@ -140,7 +99,7 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("from")]
     public new TeamsConversationAccount From
     {
-        get => (base.From as TeamsConversationAccount) ?? new TeamsConversationAccount(base.From);
+        get => base.From as TeamsConversationAccount ?? new TeamsConversationAccount(base.From);
         set => base.From = value;
     }
 
@@ -150,7 +109,7 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("recipient")]
     public new TeamsConversationAccount Recipient
     {
-        get => (base.Recipient as TeamsConversationAccount) ?? new TeamsConversationAccount(base.Recipient);
+        get => base.Recipient as TeamsConversationAccount ?? new TeamsConversationAccount(base.Recipient);
         set => base.Recipient = value;
     }
 
@@ -160,7 +119,7 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("conversation")]
     public new TeamsConversation Conversation
     {
-        get => (base.Conversation as TeamsConversation) ?? new TeamsConversation(base.Conversation);
+        get => base.Conversation as TeamsConversation ?? new TeamsConversation(base.Conversation);
         set => base.Conversation = value;
     }
 
@@ -183,6 +142,30 @@ public class TeamsActivity : CoreActivity
     /// Attachments specific to Teams.
     /// </summary>
     [JsonPropertyName("attachments")] public new IList<TeamsAttachment>? Attachments { get; set; }
+
+    /// <summary>
+    /// UTC timestamp of when the activity was sent.
+    /// </summary>
+    [JsonPropertyName("timestamp")]
+    public string? Timestamp { get; set; }
+
+    /// <summary>
+    /// Local timestamp of when the activity was sent, including timezone offset.
+    /// </summary>
+    [JsonPropertyName("localTimestamp")]
+    public string? LocalTimestamp { get; set; }
+
+    /// <summary>
+    /// Locale of the activity set by the client (e.g., "en-US").
+    /// </summary>
+    [JsonPropertyName("locale")]
+    public string? Locale { get; set; }
+
+    /// <summary>
+    /// Local timezone of the client (e.g., "America/Los_Angeles").
+    /// </summary>
+    [JsonPropertyName("localTimezone")]
+    public string? LocalTimezone { get; set; }
 
     /// <summary>
     /// Adds an entity to the activity's Entities collection.

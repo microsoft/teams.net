@@ -21,50 +21,17 @@ namespace Microsoft.Teams.Bot.Compat;
 /// The adapter allows registration of middleware and error handling delegates, and supports processing HTTP requests
 /// and continuing conversations. Thread safety is not guaranteed; instances should not be shared across concurrent
 /// requests.</remarks>
-public class CompatAdapter : ICompatAdapter
+public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
 {
     private readonly TeamsBotApplication _teamsBotApplication;
-    private readonly CompatBotAdapter _compatBotAdapter;
-    private readonly IServiceProvider _sp;
-
 
     /// <summary>
     /// Creates a new instance of the <see cref="CompatAdapter"/> class.
     /// </summary>
     /// <param name="sp"></param>
-    /// <param name="keyName"></param>
-    public CompatAdapter(IServiceProvider sp, string keyName = "AzureAd")
+    public CompatAdapter(IServiceProvider sp) : base(sp)
     {
-        _sp = sp;
-        _teamsBotApplication = sp.GetRequiredKeyedService<TeamsBotApplication>(keyName);
-        _compatBotAdapter = sp.GetRequiredKeyedService<CompatBotAdapter>(keyName);
-    }
-
-    /// <summary>
-    /// Gets the collection of middleware components configured for the application.
-    /// </summary>
-    /// <remarks>Use this property to access or inspect the set of middleware that will be invoked during
-    /// request processing. The returned collection is read-only and reflects the current middleware pipeline.</remarks>
-    public MiddlewareSet MiddlewareSet { get; } = new MiddlewareSet();
-
-    /// <summary>
-    /// Gets or sets the error handling callback to be invoked when an exception occurs during a turn.
-    /// </summary>
-    /// <remarks>Assign a delegate to customize how errors are handled within the bot's turn processing. The
-    /// callback receives the current turn context and the exception that was thrown. If not set, unhandled exceptions
-    /// may propagate and result in default error behavior. This property is typically used to log errors, send
-    /// user-friendly messages, or perform cleanup actions.</remarks>
-    public Func<ITurnContext, Exception, Task>? OnTurnError { get; set; }
-
-    /// <summary>
-    /// Adds the specified middleware to the adapter's processing pipeline.
-    /// </summary>
-    /// <param name="middleware">The middleware component to be invoked during request processing. Cannot be null.</param>
-    /// <returns>The current <see cref="CompatAdapter"/> instance, enabling method chaining.</returns>
-    public CompatAdapter Use(Microsoft.Bot.Builder.IMiddleware middleware)
-    {
-        MiddlewareSet.Use(middleware);
-        return this;
+        _teamsBotApplication = sp.GetRequiredService<TeamsBotApplication>();
     }
 
     /// <summary>
@@ -82,15 +49,15 @@ public class CompatAdapter : ICompatAdapter
         ArgumentNullException.ThrowIfNull(bot);
 
         CoreActivity? coreActivity = null;
-        _teamsBotApplication.OnActivity = async (activity, cancellationToken1) =>
+        _teamsBotApplication.OnActivity = async (activity, ct) =>
         {
             coreActivity = activity;
-            TurnContext turnContext = new(_compatBotAdapter, activity.ToCompatActivity());
+            TurnContext turnContext = new(this, activity.ToCompatActivity());
             turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
-            await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, cancellationToken).ConfigureAwait(false);
+            await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
         };
 
         try
@@ -104,7 +71,7 @@ public class CompatAdapter : ICompatAdapter
                 if (ex is BotHandlerException aex)
                 {
                     coreActivity = aex.Activity;
-                    using TurnContext turnContext = new(_compatBotAdapter, coreActivity!.ToCompatActivity());
+                    using TurnContext turnContext = new(this, coreActivity!.ToCompatActivity());
                     await OnTurnError(turnContext, ex).ConfigureAwait(false);
                 }
                 else
@@ -131,14 +98,15 @@ public class CompatAdapter : ICompatAdapter
     /// cancellation token.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
-    public async Task ContinueConversationAsync(string botId, ConversationReference reference, BotCallbackHandler callback, CancellationToken cancellationToken)
+    public async override Task ContinueConversationAsync(string botId, ConversationReference reference, BotCallbackHandler callback, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(reference);
         ArgumentNullException.ThrowIfNull(callback);
 
-        using TurnContext turnContext = new(_compatBotAdapter, reference.GetContinuationActivity());
+        using TurnContext turnContext = new(this, reference.GetContinuationActivity());
+        turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
         turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl }));
         turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
-        await callback(turnContext, cancellationToken).ConfigureAwait(false);
+        await RunPipelineAsync(turnContext, callback, cancellationToken).ConfigureAwait(false);
     }
 }

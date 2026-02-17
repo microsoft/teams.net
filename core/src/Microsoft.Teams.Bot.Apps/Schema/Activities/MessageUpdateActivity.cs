@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents a message update activity.
@@ -22,23 +21,6 @@ public class MessageUpdateActivity : MessageActivity
         ArgumentNullException.ThrowIfNull(activity);
         return new MessageUpdateActivity(activity);
     }
-
-    /// <summary>
-    /// Deserializes a JSON string into a MessageUpdateActivity instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A MessageUpdateActivity instance.</returns>
-    public static new MessageUpdateActivity FromJsonString(string json)
-    {
-        return FromJsonString(json, TeamsActivityJsonContext.Default.MessageUpdateActivity);
-    }
-
-    /// <summary>
-    /// Serializes the MessageUpdateActivity to JSON with all message update-specific properties.
-    /// </summary>
-    /// <returns>JSON string representation of the MessageUpdateActivity</returns>
-    public new string ToJson()
-        => ToJson(TeamsActivityJsonContext.Default.MessageUpdateActivity);
 
     /// <summary>
     /// Default constructor.

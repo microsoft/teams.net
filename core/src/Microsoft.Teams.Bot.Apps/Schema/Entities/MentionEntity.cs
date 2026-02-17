@@ -4,10 +4,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Extension methods for Activity to handle mentions.
@@ -42,10 +41,9 @@ public static class ActivityMentionExtensions
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(account);
         string? mentionText = text ?? account.Name;
-        if (addText)
+        if (addText && activity is MessageActivity msg)
         {
-            string? currentText = activity.Properties.TryGetValue("text", out var t) ? t?.ToString() : null;
-            activity.Properties["text"] = $"<at>{mentionText}</at> {currentText}";
+            msg.Text = $"<at>{mentionText}</at> {msg.Text}";
         }
         activity.Entities ??= [];
         MentionEntity mentionEntity = new(account, $"<at>{mentionText}</at>");

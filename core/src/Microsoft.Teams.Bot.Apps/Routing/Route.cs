@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Routing;
@@ -37,7 +36,7 @@ public abstract class RouteBase
     /// <param name="ctx"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public abstract Task<CoreInvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default);
+    public abstract Task<InvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default);
 }
 
 /// <summary>
@@ -69,7 +68,7 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <summary>
     /// Handler function to process the activity and return a response
     /// </summary>
-    public Func<Context<TActivity>, CancellationToken, Task<CoreInvokeResponse>>? HandlerWithReturn { get; set; }
+    public Func<Context<TActivity>, CancellationToken, Task<InvokeResponse>>? HandlerWithReturn { get; set; }
 
     /// <summary>
     /// Determines if the route matches the given activity
@@ -79,7 +78,7 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     public override bool Matches(TeamsActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        return (activity.Type.Equals(Name, StringComparison.Ordinal)) && Selector((TActivity)activity);
+        return activity is TActivity && Selector((TActivity)activity);
     }
 
     /// <summary>
@@ -108,7 +107,7 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="NotImplementedException"></exception>
-    public override async Task<CoreInvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
+    public override async Task<InvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
         if (ctx.Activity is TActivity typedActivity)

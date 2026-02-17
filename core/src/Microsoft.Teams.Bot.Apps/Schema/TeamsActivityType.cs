@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -38,6 +37,23 @@ public static class TeamsActivityType
     public const string MessageDelete = "messageDelete";
 
     /// <summary>
+    /// Represents a conversation update activity.
+    /// </summary>
+    public const string ConversationUpdate = "conversationUpdate";
+
+    /*
+    /// <summary>
+    /// Represents an end of conversation activity.
+    /// </summary>
+    public const string EndOfConversation = "endOfConversation";
+    */
+
+    /// <summary>
+    /// Represents an installation update activity.
+    /// </summary>
+    public const string InstallationUpdate = "installationUpdate";
+
+    /// <summary>
     /// Represents the string value "invoke" used to identify an invoke operation or action.
     /// </summary>
     public const string Invoke = "invoke";
@@ -45,14 +61,15 @@ public static class TeamsActivityType
     /// <summary>
     /// Registry of activity type factories for creating specialized activity instances.
     /// </summary>
-    internal static readonly Dictionary<string, (
-        Func<CoreActivity, TeamsActivity> FromActivity,
-        Func<string, TeamsActivity> FromJson)> ActivityDeserializerMap = new()
+    internal static readonly Dictionary<string, Func<CoreActivity, TeamsActivity>> ActivityDeserializerMap = new()
     {
-        [TeamsActivityType.Message] = (MessageActivity.FromActivity, MessageActivity.FromJsonString),
-        [TeamsActivityType.MessageReaction] = (MessageReactionActivity.FromActivity, MessageReactionActivity.FromJsonString),
-        [TeamsActivityType.MessageUpdate] = (MessageUpdateActivity.FromActivity, MessageUpdateActivity.FromJsonString),
-        [TeamsActivityType.MessageDelete] = (MessageDeleteActivity.FromActivity, MessageDeleteActivity.FromJsonString),
-        [TeamsActivityType.Invoke] = (InvokeActivity.FromActivity, InvokeActivity.FromJsonString), 
-    }; // TODO: Review if we need FromJson in this map
+        [Message] = MessageActivity.FromActivity,
+        [MessageReaction] = MessageReactionActivity.FromActivity,
+        [MessageUpdate] = MessageUpdateActivity.FromActivity,
+        [MessageDelete] = MessageDeleteActivity.FromActivity,
+        [ConversationUpdate] = ConversationUpdateActivity.FromActivity,
+        //[TeamsActivityType.EndOfConversation] = EndOfConversationActivity.FromActivity,
+        [InstallationUpdate] = InstallUpdateActivity.FromActivity,
+        [Invoke] = InvokeActivity.FromActivity,
+    };
 }
