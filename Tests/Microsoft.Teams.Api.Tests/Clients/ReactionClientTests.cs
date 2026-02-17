@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Api.Tests.Clients;
 public class ReactionClientTests
 {
     [Fact]
-    public async Task reactionClient_CreateOrUpdateAsync()
+    public async Task ReactionClient_CreateOrUpdateAsync()
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
@@ -42,7 +42,7 @@ public class ReactionClientTests
     }
 
     [Fact]
-    public async Task reactionClient_DeleteAsync()
+    public async Task ReactionClient_DeleteAsync()
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");
