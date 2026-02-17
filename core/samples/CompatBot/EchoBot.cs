@@ -75,7 +75,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive messages to  `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
     }
 
-    protected override async Task<InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+    protected override async Task<Microsoft.Bot.Builder.InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
     {
         logger.LogInformation("Invoke Activity received: {Name}", turnContext.Activity.Name);
         var actionValue = JObject.FromObject(turnContext.Activity.Value);
@@ -97,7 +97,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         var card = MessageFactory.Attachment(attachment);
         await turnContext.SendActivityAsync(card, cancellationToken);
 
-        return new InvokeResponse
+        return new Microsoft.Bot.Builder.InvokeResponse
         {
             Status = 200,
             Body = new { value = "invokes from compat bot" }
