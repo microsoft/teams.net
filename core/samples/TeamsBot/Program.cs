@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
-using System.Text.RegularExpressions;
 using TeamsBot;
 
 var builder = TeamsBotApplication.CreateBuilder(args);
@@ -143,11 +141,7 @@ teamsApp.OnInvoke(async (context, cancellationToken) =>
 
     await context.SendActivityAsync(reply, cancellationToken);
 
-    return new CoreInvokeResponse(200)
-    {
-        Type = "application/vnd.microsoft.activity.message",
-        Body = "Invokes are great !!"
-    };
+    return AdaptiveCardResponse.CreateMessageResponse("Invokes are great!!");
 });
 
 // ==================== CONVERSATION UPDATE HANDLERS ====================

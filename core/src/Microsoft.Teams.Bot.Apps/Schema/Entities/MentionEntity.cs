@@ -4,10 +4,9 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Extension methods for Activity to handle mentions.

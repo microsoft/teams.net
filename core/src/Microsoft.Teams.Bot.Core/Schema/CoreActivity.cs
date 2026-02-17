@@ -68,7 +68,6 @@ public class CoreActivity
     /// <remarks>
     /// Entities are structured objects that represent mentions, places, or other data.
     /// </remarks>
-#pragma warning disable CA2227 // Collection properties should be read only
     [JsonPropertyName("entities")] public JsonArray? Entities { get; set; }
 
     /// <summary>
@@ -86,7 +85,6 @@ public class CoreActivity
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets the default JSON serializer options used for serializing and deserializing activities.

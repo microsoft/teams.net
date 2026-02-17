@@ -5,7 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents a message delete activity.
