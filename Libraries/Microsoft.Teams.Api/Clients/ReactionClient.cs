@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Api.Messages;
@@ -45,11 +45,8 @@ public class ReactionClient : Client
     /// <param name="reactionType">
     /// The reaction type (for example: "like", "heart", "laugh", etc.).
     /// </param>
-    /// <param name="userId">
-    /// Optional id of the user on whose behalf the reaction is added/updated (if supported by the service).
-    /// </param>
     /// <returns>
-    /// A <see cref="Resource"/> describing the reaction, or <c>null</c> if the service returned an empty body.
+    /// A <see cref="Task"/> representing the asynchronous operation.
     /// </returns>
     public async Task CreateOrUpdateAsync(
         string conversationId,
@@ -72,9 +69,9 @@ public class ReactionClient : Client
     /// <param name="reactionType">
     /// The reaction type to remove (for example: "like", "heart", "laugh", etc.).
     /// </param>
-    /// <param name="userId">
-    /// Optional id of the user whose reaction should be removed (if supported by the service).
-    /// </param>
+    /// <returns>
+    /// A <see cref="Task"/> representing the asynchronous operation.
+    /// </returns>
     public async Task DeleteAsync(
         string conversationId,
         string activityId,

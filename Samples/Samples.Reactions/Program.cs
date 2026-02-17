@@ -32,7 +32,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 teams.OnMessageReaction(async (context, cancellationToken) =>
 {
     context.Log.Info($"Reaction '{context.Activity.ReactionsAdded?.FirstOrDefault()?.Type}' added by {context.Activity.From?.Name}");
-    await context.Send($"you reacted with  added '{context.Activity.ReactionsAdded?.FirstOrDefault()?.Type}' " +
+    await context.Send($"you added '{context.Activity.ReactionsAdded?.FirstOrDefault()?.Type}' " +
         $"and removed '{context.Activity.ReactionsRemoved?.FirstOrDefault()?.Type}'", cancellationToken);
 });
 

@@ -8,7 +8,7 @@ using Microsoft.Teams.Common;
 namespace Microsoft.Teams.Api.Messages;
 
 /// <summary>
-/// The type of reaction given to the
+/// The type of reaction given to the message.
 /// </summary>
 [JsonConverter(typeof(JsonConverter<ReactionType>))]
 public class ReactionType(string value) : StringEnum(value)
