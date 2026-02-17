@@ -4,54 +4,60 @@
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
+using Microsoft.Teams.Bot.Apps;
 using PABot;
 using PABot.Bots;
 using PABot.Dialogs;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddCustomCompatAdapter();
+// Register all the keyed services (ConversationClient, UserTokenClient, TeamsApiClient, TeamsBotApplication)
+builder.Services.AddTeamsBotApplications();
 
-builder.Services.AddKeyedSingleton<IBotFrameworkHttpAdapter>("RidoABSOne", (sp, keyName) =>
+// Register keyed adapters using the keyed TeamsBotApplication
+builder.Services.AddKeyedSingleton<IBotFrameworkHttpAdapter>("AdapterOne", (sp, keyName) =>
 {
     return new AdapterWithErrorHandler(
-        sp,
+        sp.GetRequiredKeyedService<TeamsBotApplication>("AdapterOne"),
+        sp.GetRequiredService<IHttpContextAccessor>(),
         sp.GetRequiredService<IConfiguration>(),
-        sp.GetRequiredService<IHttpClientFactory>(),
         sp.GetRequiredService<ILogger<IBotFrameworkHttpAdapter>>(),
         sp.GetRequiredService<IStorage>(),
-        sp.GetRequiredService<ConversationState>(),
-        "RidoABSOne");
+        sp.GetRequiredService<ConversationState>());
 });
 
-builder.Services.AddKeyedSingleton<IBotFrameworkHttpAdapter>("RidoABSTwo", (sp, keyName) =>
+builder.Services.AddKeyedSingleton<IBotFrameworkHttpAdapter>("AdapterTwo", (sp, keyName) =>
 {
     return new AdapterWithErrorHandler(
-        sp,
+        sp.GetRequiredKeyedService<TeamsBotApplication>("AdapterTwo"),
+        sp.GetRequiredService<IHttpContextAccessor>(),
         sp.GetRequiredService<IConfiguration>(),
-        sp.GetRequiredService<IHttpClientFactory>(),
         sp.GetRequiredService<ILogger<IBotFrameworkHttpAdapter>>(),
         sp.GetRequiredService<IStorage>(),
-        sp.GetRequiredService<ConversationState>(),
-        "RidoABSTwo");
+        sp.GetRequiredService<ConversationState>());
 });
 
+// Register bot state and dialog
 builder.Services.AddSingleton<IStorage, MemoryStorage>();
 builder.Services.AddSingleton<UserState>();
 builder.Services.AddSingleton<ConversationState>();
 builder.Services.AddSingleton<MainDialog>();
-//builder.Services.AddKeyedTransient<IBot, TeamsBot<MainDialog>>("TeamsBot");
-builder.Services.AddKeyedTransient<IBot, EchoBot>("TeamsBot");
+
+// Register bots
+builder.Services.AddKeyedTransient<IBot, TeamsBot<MainDialog>>("TeamsBot");
 builder.Services.AddKeyedTransient<IBot, EchoBot>("EchoBot");
+
 var app = builder.Build();
 
-var adapterOne = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("RidoABSOne");
-var adapterTwo = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("RidoABSTwo");
+// Get the keyed adapters
+var adapterOne = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("AdapterOne");
+var adapterTwo = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("AdapterTwo");
 
-app.MapPost("/api/ridoabsone", (HttpRequest request, HttpResponse response, [FromKeyedServices("TeamsBot")]IBot bot, CancellationToken ct) =>
-    adapterOne.ProcessAsync(request, response, bot, ct)).RequireAuthorization("RidoABSOne");
+// Map endpoints with their respective adapters and authorization policies
+app.MapPost("/api/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("EchoBot")]IBot bot, CancellationToken ct) =>
+    adapterOne.ProcessAsync(request, response, bot, ct)).RequireAuthorization("AdapterOne");
 
-app.MapPost("/api/ridoabstwo", (HttpRequest request, HttpResponse response, [FromKeyedServices("EchoBot")]IBot bot, CancellationToken ct) =>
-    adapterTwo.ProcessAsync(request, response, bot, ct)).RequireAuthorization("RidoABSTwo");
+app.MapPost("/api/v2/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("TeamsBot")]IBot bot, CancellationToken ct) =>
+    adapterTwo.ProcessAsync(request, response, bot, ct)).RequireAuthorization("AdapterTwo");
 
 app.Run();

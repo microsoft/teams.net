@@ -6,6 +6,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Builder.TraceExtensions;
+using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Compat;
 
 namespace PABot
@@ -13,14 +14,17 @@ namespace PABot
     public class AdapterWithErrorHandler : CompatAdapter
     {
         public AdapterWithErrorHandler(
-            IServiceProvider sp,
+            TeamsBotApplication teamsBotApp,
+            IHttpContextAccessor httpContextAccessor,
             IConfiguration configuration,
-            IHttpClientFactory httpClientFactory,
             ILogger<IBotFrameworkHttpAdapter> logger,
             IStorage storage,
-            ConversationState conversationState,
-            string keyName = "AzureAd")
-            : base(sp, keyName)
+            ConversationState conversationState
+        )
+            : base(
+                teamsBotApp,
+                httpContextAccessor,
+                logger)
         {
             base.Use(new TeamsSSOTokenExchangeMiddleware(storage, configuration["ConnectionName"] ?? "graph"));
 
