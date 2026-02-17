@@ -495,7 +495,7 @@ public class MessageActivityTests
     [Fact]
     public void WithRecipient_SetsIsTargetedAndRecipient()
     {
-        var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "user-123", Name = "user", Role= Role.User }, true);
+        var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "user-123", Name = "user", Role = Role.User }, true);
 
         Assert.True(activity.IsTargeted);
         Assert.NotNull(activity.Recipient);
