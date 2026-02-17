@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Invokes;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Messaging extension response types.
@@ -75,7 +75,7 @@ public class ComposeExtension
 
     /// <summary>
     /// Layout for attachments.
-    /// See <see cref="TeamsAttachmentLayout"/> for common values. 
+    /// See <see cref="TeamsAttachmentLayout"/> for common values.
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
     public string? AttachmentLayout { get; set; }

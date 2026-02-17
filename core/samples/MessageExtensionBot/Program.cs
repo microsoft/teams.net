@@ -6,8 +6,6 @@ using MessageExtensionBot;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Invokes;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 var builder = TeamsBotApplication.CreateBuilder(args);
 var bot = builder.Build();
@@ -207,7 +205,7 @@ bot.OnQuerySettingUrl(async (context, cancellationToken) =>
 
     var query = context.Activity.Value;
 
-    var action = new
+    var action = new 
     {
         Type = "openUrl",
         Value = "https://www.microsoft.com"    

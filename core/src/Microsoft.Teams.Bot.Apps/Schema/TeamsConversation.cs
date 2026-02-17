@@ -80,7 +80,7 @@ public class TeamsConversation : Conversation
     [JsonPropertyName("tenantId")] public string? TenantId { get; set; }
 
     /// <summary>
-    /// Conversation Type. See <see cref="Schema.ConversationType"/> for known values.
+    /// Conversation Type. See <see cref="ConversationType"/> for known values.
     /// </summary>
     [JsonPropertyName("conversationType")] public string? ConversationType { get; set; }
 
