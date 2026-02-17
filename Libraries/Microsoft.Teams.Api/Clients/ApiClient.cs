@@ -14,6 +14,8 @@ public class ApiClient : Client
     public virtual TeamClient Teams { get; }
     public virtual MeetingClient Meetings { get; }
 
+    public IHttpClient Client { get => base._http; }
+
     public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
@@ -32,6 +34,7 @@ public class ApiClient : Client
         Users = new UserClient(_http, cancellationToken);
         Teams = new TeamClient(serviceUrl, _http, cancellationToken);
         Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+
     }
 
     public ApiClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)

@@ -39,12 +39,12 @@ public class MessageReactionActivityTests
             return Task.CompletedTask;
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new MessageReactionActivity().AddReaction(Api.Messages.ReactionType.Angry));
+        var res = await _app.Process<TestPlugin>(_token, new MessageReactionActivity());
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
         Assert.Equal(2, calls);
-        Assert.Equal(2, _controller.Calls);
-        Assert.Equal(4, res.Meta.Routes);
+        Assert.Equal(1, _controller.Calls);
+        Assert.Equal(3, res.Meta.Routes);
     }
 
     [Fact]
@@ -98,12 +98,12 @@ public class MessageReactionActivityTests
             return Task.CompletedTask;
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new MessageReactionActivity().AddReaction(Api.Messages.ReactionType.Angry));
+        var res = await _app.Process<TestPlugin>(_token, new MessageReactionActivity());
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
-        Assert.Equal(3, calls);
-        Assert.Equal(2, _controller.Calls);
-        Assert.Equal(5, res.Meta.Routes);
+        Assert.Equal(2, calls);
+        Assert.Equal(1, _controller.Calls);
+        Assert.Equal(3, res.Meta.Routes);
     }
 
     [Fact]
@@ -137,12 +137,12 @@ public class MessageReactionActivityTests
             return Task.CompletedTask;
         });
 
-        var res = await _app.Process<TestPlugin>(_token, new MessageReactionActivity().RemoveReaction(Api.Messages.ReactionType.Angry));
+        var res = await _app.Process<TestPlugin>(_token, new MessageReactionActivity());
 
         Assert.Equal(System.Net.HttpStatusCode.OK, res.Status);
-        Assert.Equal(3, calls);
-        Assert.Equal(2, _controller.Calls);
-        Assert.Equal(5, res.Meta.Routes);
+        Assert.Equal(2, calls);
+        Assert.Equal(1, _controller.Calls);
+        Assert.Equal(3, res.Meta.Routes);
     }
 
     [TeamsController]
