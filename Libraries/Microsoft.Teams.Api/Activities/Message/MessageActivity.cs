@@ -64,6 +64,13 @@ public class MessageActivity : Activity
     [JsonPropertyOrder(43)]
     public object? Value { get; set; }
 
+    /// <summary>
+    /// Indicates if this is a targeted message visible only to a specific recipient.
+    /// Used internally by the SDK for routing - not serialized to the service.
+    /// </summary>
+    [JsonIgnore]
+    public bool? IsTargeted { get; set; }
+
     [JsonIgnore]
     public bool IsRecipientMentioned
     {
@@ -209,6 +216,33 @@ public class MessageActivity : Activity
     public MentionEntity? GetAccountMention(string accountId)
     {
         return (MentionEntity?)(Entities ?? []).FirstOrDefault(e => e is MentionEntity mention && mention.Mentioned.Id == accountId);
+    }
+
+    /// <summary>
+    /// Mark this message as a targeted message visible only to a specific recipient.
+    /// </summary>
+    /// <param name="isTargeted">If true, marks this as a targeted message. The recipient will be inferred from the incoming activity context.</param>
+    /// <returns>This instance for chaining</returns>
+    /// <remarks>
+    /// When using true, this must be sent within an activity context (not proactively).
+    /// For proactive sends, use the overload that accepts an explicit recipient ID.
+    /// </remarks>
+    public MessageActivity WithTargetedRecipient(bool isTargeted = true)
+    {
+        IsTargeted = isTargeted;
+        return this;
+    }
+
+    /// <summary>
+    /// Mark this message as a targeted message visible only to a specific recipient.
+    /// </summary>
+    /// <param name="recipientId">The explicit recipient ID.</param>
+    /// <returns>This instance for chaining</returns>
+    public MessageActivity WithTargetedRecipient(string recipientId)
+    {
+        IsTargeted = true;
+        Recipient = new Account { Id = recipientId, Name = string.Empty, Role = Role.User };
+        return this;
     }
 
     public MessageActivity Merge(MessageActivity from)

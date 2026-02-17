@@ -22,7 +22,7 @@ teams.Use(async context =>
     {
         await context.Next();
     }
-    catch(Exception e)
+    catch (Exception e)
     {
         context.Log.Error(e);
         context.Log.Error("error occurred during activity processing");
@@ -30,7 +30,7 @@ teams.Use(async context =>
     context.Log.Debug($"request took {(DateTime.UtcNow - start).TotalMilliseconds}ms");
 });
 
-teams.OnMeetingStart(async context =>
+teams.OnMeetingStart(async (context, cancellationToken) =>
 {
     var activity = context.Activity.Value;
     var startTime = activity.StartTime.ToLocalTime();
@@ -53,10 +53,10 @@ teams.OnMeetingStart(async context =>
             }
         }
     };
-    await context.Send(card);
+    await context.Send(card, cancellationToken);
 });
 
-teams.OnMeetingEnd(async context =>
+teams.OnMeetingEnd(async (context, cancellationToken) =>
 {
     var activity = context.Activity.Value;
     var endTime = activity.EndTime.ToLocalTime();
@@ -74,10 +74,10 @@ teams.OnMeetingEnd(async context =>
                 }
     };
 
-    await context.Send(card);
+    await context.Send(card, cancellationToken);
 });
 
-teams.OnMeetingJoin(async context =>
+teams.OnMeetingJoin(async (context, cancellationToken) =>
 {
     var activity = context.Activity.Value;
     var member = activity.Members[0].User.Name;
@@ -96,11 +96,11 @@ teams.OnMeetingJoin(async context =>
                 }
     };
 
-    await context.Send(card);
+    await context.Send(card, cancellationToken);
 
 });
 
-teams.OnMeetingLeave(async context =>
+teams.OnMeetingLeave(async (context, cancellationToken) =>
 {
     var activity = context.Activity.Value;
     var member = activity.Members[0].User.Name;
@@ -118,13 +118,13 @@ teams.OnMeetingLeave(async context =>
                 }
     };
 
-    await context.Send(card);
+    await context.Send(card, cancellationToken);
 });
 
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
-    await context.Typing();
-    await context.Send($"you said '{context.Activity.Text}'");
+    await context.Typing(cancellationToken: cancellationToken);
+    await context.Send($"you said '{context.Activity.Text}'", cancellationToken);
 });
 
 app.Run();

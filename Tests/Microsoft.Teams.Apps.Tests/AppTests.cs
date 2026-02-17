@@ -286,4 +286,36 @@ public class AppTests
         Assert.True(secondMiddlewareCalled);
         Assert.True(firstMiddlewareCalled);
     }
+
+    [Fact]
+    public async Task Test_App_Send_TargetedMessage_WithoutRecipient_ThrowsException()
+    {
+        // arrange
+        var token = new Mock<IToken>();
+        token.Setup(t => t.AppId).Returns("test-app-id");
+
+        var app = new App();
+        app.Token = token.Object;
+
+        var targetedMessage = new MessageActivity("Hello")
+            .WithTargetedRecipient(true); // IsTargeted=true but no Recipient (reactive pattern used proactively)
+
+        // act & assert
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => app.Send("conversationId", targetedMessage));
+        Assert.Contains("Targeted messages sent proactively must specify an explicit recipient ID", exception.Message);
+    }
+
+    [Fact]
+    public void Test_App_Send_TargetedMessage_WithRecipient_PassesValidation()
+    {
+        // arrange
+        var targetedMessage = new MessageActivity("Hello")
+            .WithTargetedRecipient("user123"); // Proper proactive pattern with explicit recipient
+
+        // assert
+        Assert.True(targetedMessage.IsTargeted);
+        Assert.NotNull(targetedMessage.Recipient);
+        Assert.Equal("user123", targetedMessage.Recipient.Id);
+    }
 }

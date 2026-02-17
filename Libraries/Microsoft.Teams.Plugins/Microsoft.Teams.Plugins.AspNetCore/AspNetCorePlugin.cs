@@ -89,23 +89,42 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
         activity.Conversation = reference.Conversation;
         activity.From = reference.Bot;
-        activity.Recipient = reference.User;
         activity.ChannelId = reference.ChannelId;
+
+        // For targeted messages with an explicit Recipient (proactive sends), preserve it.
+        // Otherwise, use the reference User from the conversation context.
+        var isTargetedWithRecipient = activity is MessageActivity msg && msg.IsTargeted == true && msg.Recipient is not null;
+        if (!isTargetedWithRecipient)
+        {
+            activity.Recipient = reference.User;
+        }
+
+        // Check if this is a targeted message
+        var isTargeted = activity is MessageActivity messageActivity && messageActivity.IsTargeted == true;
 
         if (activity.Id is not null && !activity.IsStreaming)
         {
-            await client
+            if (isTargeted)
+            {
+                await client
+                .Conversations
+                .Activities
+                .UpdateTargetedAsync(reference.Conversation.Id, activity.Id, activity);
+            }
+            else
+            {
+                await client
                 .Conversations
                 .Activities
                 .UpdateAsync(reference.Conversation.Id, activity.Id, activity);
+            }
 
             return activity;
         }
 
-        var res = await client
-            .Conversations
-            .Activities
-            .CreateAsync(reference.Conversation.Id, activity);
+        var res = isTargeted
+            ? await client.Conversations.Activities.CreateTargetedAsync(reference.Conversation.Id, activity)
+            : await client.Conversations.Activities.CreateAsync(reference.Conversation.Id, activity);
 
         activity.Id = res?.Id;
         return activity;

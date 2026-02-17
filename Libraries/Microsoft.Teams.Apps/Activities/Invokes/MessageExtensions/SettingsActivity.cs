@@ -34,4 +34,21 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnSetting(this App app, Func<IContext<MessageExtensions.SettingActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Setting]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.SettingActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.SettingActivity
+        });
+
+        return app;
+    }
 }
