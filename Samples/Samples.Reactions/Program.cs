@@ -19,10 +19,10 @@ teams.OnMessage(async (context, cancellationToken) =>
     // replace with context.Api.Conversations.Reactions once APX is rolledout to PROD
     var api = new ApiClient(context.Activity.ServiceUrl!, context.Api.Client, cancellationToken);
         
-    await api.Conversations.Reactions.CreateOrUpdateAsync(context.Activity.Conversation.Id, context.Activity.Id, new ReactionType("1f44b_wavinghand-tone4"));
+    await api.Conversations.Reactions.AddAsync(context.Activity.Conversation.Id, context.Activity.Id, new ReactionType("1f44b_wavinghand-tone4"));
 
     await Task.Delay(2000, cancellationToken);
-    await api.Conversations.Reactions.CreateOrUpdateAsync(context.Activity.Conversation.Id, context.Activity.Id, new ReactionType("1f601_beamingfacewithsmilingeyes"));
+    await api.Conversations.Reactions.AddAsync(context.Activity.Conversation.Id, context.Activity.Id, new ReactionType("1f601_beamingfacewithsmilingeyes"));
     
     await Task.Delay(2000, cancellationToken);
     await api.Conversations.Reactions.DeleteAsync(context.Activity.Conversation.Id, context.Activity.Id, new ReactionType("1f601_beamingfacewithsmilingeyes"));

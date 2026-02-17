@@ -38,7 +38,7 @@ public class ReactionClient : Client
     }
 
     /// <summary>
-    /// Creates or updates a reaction on an activity in a conversation.
+    /// Adds a reaction on an activity in a conversation.
     /// </summary>
     /// <param name="conversationId">The conversation id.</param>
     /// <param name="activityId">The id of the activity to react to.</param>
@@ -48,7 +48,7 @@ public class ReactionClient : Client
     /// <returns>
     /// A <see cref="Task"/> representing the asynchronous operation.
     /// </returns>
-    public async Task CreateOrUpdateAsync(
+    public async Task AddAsync(
         string conversationId,
         string activityId,
         ReactionType reactionType

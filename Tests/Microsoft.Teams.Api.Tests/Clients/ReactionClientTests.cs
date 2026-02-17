@@ -31,7 +31,7 @@ public class ReactionClientTests
         string activityId = "activityId";
         var reactionType = ReactionType.Like;
 
-        await reactionClient.CreateOrUpdateAsync(conversationId, activityId, reactionType);
+        await reactionClient.AddAsync(conversationId, activityId, reactionType);
 
         string expectedUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId/reactions/like";
         HttpMethod expectedMethod = HttpMethod.Put;
