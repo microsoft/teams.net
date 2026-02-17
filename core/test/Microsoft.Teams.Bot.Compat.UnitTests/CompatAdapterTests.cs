@@ -82,7 +82,6 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             var userTokenClient = new UserTokenClient(httpClient, mockConfig.Object, NullLogger<UserTokenClient>.Instance);
             var teamsApiClient = new TeamsApiClient(httpClient, NullLogger<TeamsApiClient>.Instance);
-            var router = new Router(NullLogger<Router>.Instance);
 
             var teamsBotApplication = new TeamsBotApplication(
                 conversationClient,
@@ -90,8 +89,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 teamsApiClient,
                 mockConfig.Object,
                 Mock.Of<IHttpContextAccessor>(),
-                NullLogger<TeamsBotApplication>.Instance,
-                router);
+                NullLogger<TeamsBotApplication>.Instance);
 
             var mockServiceProvider = new Mock<IServiceProvider>();
             mockServiceProvider

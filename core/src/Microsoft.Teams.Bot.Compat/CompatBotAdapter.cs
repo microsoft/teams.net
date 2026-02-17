@@ -22,7 +22,6 @@ namespace Microsoft.Teams.Bot.Compat;
 /// This class is intended for scenarios where integration with non-standard bot runtimes or legacy systems is
 /// required.</remarks>
 /// <param name="sp">The service provider used to resolve dependencies.</param>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
 public class CompatBotAdapter(IServiceProvider sp) : BotAdapter
 {
     private readonly JsonSerializerOptions _writeIndentedJsonOptions = new() { WriteIndented = true };

@@ -36,7 +36,6 @@ public class TeamsBotApplication : BotApplication
     /// <param name="config"></param>
     /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
-    /// <param name="router"></param>
     /// <param name="sectionName"></param>
     public TeamsBotApplication(
         ConversationClient conversationClient,
@@ -45,12 +44,11 @@ public class TeamsBotApplication : BotApplication
         IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
-        Router router,
         string sectionName = "AzureAd")
         : base(conversationClient, userTokenClient, config, logger, sectionName)
     {
         _teamsApiClient = teamsApiClient;
-        Router = router;
+        Router = new Router(logger);
         OnActivity = async (activity, cancellationToken) =>
         {
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);

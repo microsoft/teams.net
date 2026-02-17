@@ -10,7 +10,6 @@ namespace Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
 /// <summary>
 /// Represents a conversation update activity.
 /// </summary>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227: Collection Properties should be read only", Justification = "<Pending>")]
 public class ConversationUpdateActivity : TeamsActivity
 {
     /// <summary>
