@@ -110,4 +110,10 @@ public static class EventNames
 
     /// <summary>Meeting participant leave event name.</summary>
     public const string MeetingParticipantLeave = "application/vnd.microsoft.meetingParticipantLeave";
+
+    //TODO : review read receipts
+    /*
+    /// <summary>Read receipt event name. Fired when a user reads a message in a 1:1 chat with the bot.</summary>
+    public const string ReadReceipt = "application/vnd.microsoft.readReceipt";
+    */
 }
