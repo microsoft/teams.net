@@ -1,3 +1,4 @@
+using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Activities;
 using Microsoft.Teams.Apps.Extensions;
@@ -26,10 +27,17 @@ teams.OnMessage(async (context, cancellationToken) =>
 
     if (text.Contains("send"))
     {
-        // SEND: Create a new targeted message
-        await context.Send(
-            new MessageActivity("👋 This is a **targeted message** - only YOU can see this!")
-                .WithTargetedRecipient(true), cancellationToken);
+        var members = await context.Api.Conversations.Members.GetAsync(activity.Conversation.Id);
+
+        foreach (var member in members)
+        {
+            context.Log.Info($"[MEMBER] {member.Name} (ID: {member.Id})");
+
+            // SEND: Create a new targeted message
+            await context.Send(
+                new MessageActivity($"👋 {member.Name} This is a **targeted message** - only YOU can see this!")
+                    .WithRecipient(new Account() { Id = member.Id, Name = member.Name, Role = Role.User }, true), cancellationToken);
+        }
         
         context.Log.Info($"[SEND] Sent targeted message");
     }
@@ -37,11 +45,10 @@ teams.OnMessage(async (context, cancellationToken) =>
     {
         // UPDATE: Send a targeted message, then update it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
-        var userId = activity.From?.Id ?? "";
 
         var response = await context.Send(
             new MessageActivity("📝 This message will be **updated** in 3 seconds...")
-                .WithTargetedRecipient(true), cancellationToken);
+                .WithRecipient(context.Activity.From, true), cancellationToken);
         
         if (response?.Id != null)
         {
@@ -53,8 +60,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
                 try
                 {
-                    var updatedMessage = new MessageActivity($"✏️ **Updated!** This message was modified at {DateTime.UtcNow:HH:mm:ss}")
-                        .WithTargetedRecipient(userId);
+                    var updatedMessage = new MessageActivity($"✏️ **Updated!** This message was modified at {DateTime.UtcNow:HH:mm:ss}");
 
                     await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updatedMessage);
 
@@ -76,7 +82,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
         var response = await context.Send(
             new MessageActivity("🗑️ This message will be **deleted** in 3 seconds...")
-                .WithTargetedRecipient(true), cancellationToken);
+                .WithRecipient(context.Activity.From, true), cancellationToken);
         
         if (response?.Id != null)
         {
@@ -106,7 +112,7 @@ teams.OnMessage(async (context, cancellationToken) =>
         // REPLY: Send a targeted reply to the user's message
         await context.Reply(
             new MessageActivity("💬 This is a **targeted reply** - threaded and private!")
-                .WithTargetedRecipient(true), cancellationToken);
+                .WithRecipient(context.Activity.From, true), cancellationToken);
         
         context.Log.Info("[REPLY] Sent targeted reply");
     }
@@ -119,12 +125,11 @@ teams.OnMessage(async (context, cancellationToken) =>
             "- `update` - Send a message, then update it after 3 seconds\n" +
             "- `delete` - Send a message, then delete it after 3 seconds\n" +
             "- `reply` - Get a targeted reply (threaded)\n\n" +
-            "_Targeted messages are only visible to you, even in group chats!_", cancellationToken
-        );
+            "_Targeted messages are only visible to you, even in group chats!_", cancellationToken);
     }
     else
     {
-        await context.Typing();
+        await context.Typing(null, cancellationToken);
         await context.Send($"You said: '{activity.Text}'\n\nType `help` to see available commands.", cancellationToken);
     }
 });
