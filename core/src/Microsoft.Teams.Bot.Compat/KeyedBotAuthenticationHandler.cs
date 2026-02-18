@@ -25,7 +25,6 @@ namespace Microsoft.Teams.Bot.Compat;
 /// multi-instance scenarios where different bot configurations require different credentials.
 /// </para>
 /// </remarks>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "Clarity over performance for this internal class")]
 internal sealed class KeyedBotAuthenticationHandler : DelegatingHandler
 {
     private readonly string _msalOptionsName;
