@@ -9,6 +9,8 @@
 # local app settings files
 appsettings.Local.json
 
+.claude/
+
 # User-specific files
 *.rsuser
 *.suo

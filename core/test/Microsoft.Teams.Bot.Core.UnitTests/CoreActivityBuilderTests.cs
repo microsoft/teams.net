@@ -480,4 +480,67 @@ public class CoreActivityBuilderTests
         Assert.Equal("conv-001", activity.Conversation.Id);
         Assert.NotNull(activity.ChannelData);
     }
+
+    [Fact]
+    public void WithRecipient_DefaultsToNotTargeted()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithRecipient(new ConversationAccount { Id = "user-123" })
+            .Build();
+
+        Assert.False(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-123", activity.Recipient.Id);
+    }
+
+    [Fact]
+    public void WithRecipient_WithIsTargetedTrue_SetsIsTargeted()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithRecipient(new ConversationAccount { Id = "user-123" }, true)
+            .Build();
+
+        Assert.True(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-123", activity.Recipient.Id);
+    }
+
+    [Fact]
+    public void WithRecipient_WithIsTargetedFalse_DoesNotSetIsTargeted()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithRecipient(new ConversationAccount { Id = "user-123" }, false)
+            .Build();
+
+        Assert.False(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-123", activity.Recipient.Id);
+    }
+
+    [Fact]
+    public void WithRecipient_Targeted_MaintainsFluentChaining()
+    {
+        CoreActivityBuilder builder = new();
+
+        CoreActivityBuilder result = builder.WithRecipient(new ConversationAccount { Id = "user-123" }, true);
+
+        Assert.Same(builder, result);
+    }
+
+    [Fact]
+    public void WithRecipient_Targeted_CanChainWithOtherMethods()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithType(ActivityType.Message)
+            .WithRecipient(new ConversationAccount { Id = "user-123", Name = "Test User" }, true)
+            .WithChannelId("msteams")
+            .Build();
+
+        Assert.Equal(ActivityType.Message, activity.Type);
+        Assert.True(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-123", activity.Recipient.Id);
+        Assert.Equal("Test User", activity.Recipient.Name);
+        Assert.Equal("msteams", activity.ChannelId);
+    }
 }

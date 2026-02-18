@@ -346,4 +346,53 @@ public class CoreCoreActivityTests
         Assert.Equal("value1", act.Value["key1"]?.GetValue<string>());
         Assert.Equal(2, act.Value["key2"]?.GetValue<int>());
     }
+
+    [Fact]
+    public void IsTargeted_DefaultsToFalse()
+    {
+        CoreActivity activity = new();
+
+        Assert.False(activity.IsTargeted);
+    }
+
+    [Fact]
+    public void IsTargeted_CanBeSetToTrue()
+    {
+        CoreActivity activity = new()
+        {
+            IsTargeted = true
+        };
+
+        Assert.True(activity.IsTargeted);
+    }
+
+    [Fact]
+    public void IsTargeted_IsNotSerializedToJson()
+    {
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            IsTargeted = true
+        };
+
+        string json = activity.ToJson();
+
+        Assert.DoesNotContain("isTargeted", json, StringComparison.OrdinalIgnoreCase);
+        Assert.True(activity.IsTargeted); // Property still holds value
+    }
+
+    [Fact]
+    public void IsTargeted_IsNotDeserializedFromJson()
+    {
+        string json = """
+        {
+            "type": "message",
+            "isTargeted": true
+        }
+        """;
+
+        CoreActivity activity = CoreActivity.FromJsonString(json);
+
+        Assert.False(activity.IsTargeted); // Should default to false since JsonIgnore
+    }
 }
