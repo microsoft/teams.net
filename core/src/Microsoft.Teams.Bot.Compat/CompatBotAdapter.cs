@@ -5,7 +5,6 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Core;
@@ -21,13 +20,18 @@ namespace Microsoft.Teams.Bot.Compat;
 /// <remarks>Use this adapter to bridge Bot Framework turn contexts and activities with a custom bot application.
 /// This class is intended for scenarios where integration with non-standard bot runtimes or legacy systems is
 /// required.</remarks>
-/// <param name="sp">The service provider used to resolve dependencies.</param>
-public class CompatBotAdapter(IServiceProvider sp) : BotAdapter
+/// <param name="botApplication">The Teams bot application instance.</param>
+/// <param name="httpContextAccessor">The HTTP context accessor.</param>
+/// <param name="logger">The logger instance.</param>
+public class CompatBotAdapter(
+    TeamsBotApplication botApplication,
+    IHttpContextAccessor? httpContextAccessor = null,
+    ILogger? logger = null) : BotAdapter
 {
     private readonly JsonSerializerOptions _writeIndentedJsonOptions = new() { WriteIndented = true };
-    private readonly TeamsBotApplication botApplication = sp.GetRequiredService<TeamsBotApplication>();
-    private readonly IHttpContextAccessor? httpContextAccessor = sp.GetService<IHttpContextAccessor>();
-    private readonly ILogger<CompatBotAdapter>? logger = sp.GetService<ILogger<CompatBotAdapter>>();
+    private readonly TeamsBotApplication botApplication = botApplication;
+    private readonly IHttpContextAccessor? httpContextAccessor = httpContextAccessor;
+    private readonly ILogger? logger = logger;
 
     /// <summary>
     /// Deletes an activity from the conversation.
