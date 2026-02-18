@@ -91,12 +91,10 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<TeamsBotApplication>.Instance);
 
-            var mockServiceProvider = new Mock<IServiceProvider>();
-            mockServiceProvider
-                .Setup(sp => sp.GetService(typeof(TeamsBotApplication)))
-                .Returns(teamsBotApplication);
-
-            var compatAdapter = new CompatAdapter(mockServiceProvider.Object);
+            var compatAdapter = new CompatAdapter(
+                teamsBotApplication,
+                Mock.Of<IHttpContextAccessor>(),
+                NullLogger<CompatAdapter>.Instance);
 
             return (compatAdapter, teamsApiClient);
         }
