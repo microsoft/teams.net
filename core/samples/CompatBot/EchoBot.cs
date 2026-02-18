@@ -9,9 +9,9 @@ using Microsoft.Teams.Bot.Compat;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
+using Newtonsoft.Json.Linq;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Newtonsoft.Json.Linq;
 
 namespace CompatBot;
 
@@ -39,6 +39,17 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         string replyText = $"Echo from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
         await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
         await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
+
+        var activity = ((Activity)turnContext.Activity).FromCompatActivity();
+        TeamsActivity tm = TeamsActivity.CreateBuilder()
+            .WithConversation(new Conversation { Id = activity.Conversation.Id })
+            .WithText("Hello TM !")
+            .WithRecipient(activity.From, true)
+            .WithFrom(activity.Recipient)
+            .WithServiceUrl(activity.ServiceUrl!)
+            .Build();
+
+        await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
 
         // TeamsAPXClient provides Teams-specific operations like:
         // - FetchTeamDetailsAsync, FetchChannelListAsync
