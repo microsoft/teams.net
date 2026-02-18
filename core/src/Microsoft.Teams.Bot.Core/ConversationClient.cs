@@ -430,6 +430,68 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             cancellationToken).ConfigureAwait(false))!;
     }
 
+    /// <summary>
+    /// Adds a reaction to an activity in a conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="activityId">The ID of the activity to react to. Cannot be null or whitespace.</param>
+    /// <param name="reactionType">The type of reaction to add (e.g., "like", "heart", "laugh"). Cannot be null or whitespace.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the reaction could not be added successfully.</exception>
+    public async Task AddReactionAsync(string conversationId, string activityId, string reactionType, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reactionType);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/reactions/{reactionType}";
+
+        logger.LogTrace("Adding reaction at {Url}", url);
+
+        await _botHttpClient.SendAsync(
+            HttpMethod.Put,
+            url,
+            body: null,
+            CreateRequestOptions(agenticIdentity, "adding reaction", customHeaders),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Removes a reaction from an activity in a conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="activityId">The ID of the activity to remove the reaction from. Cannot be null or whitespace.</param>
+    /// <param name="reactionType">The type of reaction to remove (e.g., "like", "heart", "laugh"). Cannot be null or whitespace.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the reaction could not be removed successfully.</exception>
+    public async Task DeleteReactionAsync(string conversationId, string activityId, string reactionType, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reactionType);
+        ArgumentNullException.ThrowIfNull(serviceUrl);
+
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/reactions/{reactionType}";
+
+        logger.LogTrace("Deleting reaction at {Url}", url);
+
+        await _botHttpClient.SendAsync(
+            HttpMethod.Delete,
+            url,
+            body: null,
+            CreateRequestOptions(agenticIdentity, "deleting reaction", customHeaders),
+            cancellationToken).ConfigureAwait(false);
+    }
+
     private BotRequestOptions CreateRequestOptions(AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders) =>
         new()
         {
