@@ -89,8 +89,6 @@ public static class TeamsActivityType
         //[TeamsActivityType.EndOfConversation] = EndOfConversationActivity.FromActivity,
         [InstallationUpdate] = InstallUpdateActivity.FromActivity,
         [Invoke] = InvokeActivity.FromActivity,
-        [Event] = EventActivity.FromActivity,
-        [Command] = CommandActivity.FromActivity,
-        [CommandResult] = CommandResultActivity.FromActivity,
+        [Event] = EventActivity.FromActivity
     };
 }
