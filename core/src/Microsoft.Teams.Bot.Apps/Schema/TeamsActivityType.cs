@@ -59,6 +59,24 @@ public static class TeamsActivityType
     public const string Invoke = "invoke";
 
     /// <summary>
+    /// Represents an event activity.
+    /// </summary>
+    public const string Event = "event";
+
+    //TODO : review command activity
+    /*
+    /// <summary>
+    /// Represents a command activity.
+    /// </summary>
+    public const string Command = "command";
+
+    /// <summary>
+    /// Represents a command result activity.
+    /// </summary>
+    public const string CommandResult = "commandResult";
+    */
+
+    /// <summary>
     /// Registry of activity type factories for creating specialized activity instances.
     /// </summary>
     internal static readonly Dictionary<string, Func<CoreActivity, TeamsActivity>> ActivityDeserializerMap = new()
@@ -71,5 +89,6 @@ public static class TeamsActivityType
         //[TeamsActivityType.EndOfConversation] = EndOfConversationActivity.FromActivity,
         [InstallationUpdate] = InstallUpdateActivity.FromActivity,
         [Invoke] = InvokeActivity.FromActivity,
+        [Event] = EventActivity.FromActivity
     };
 }

@@ -144,6 +144,14 @@ teamsApp.OnInvoke(async (context, cancellationToken) =>
     return AdaptiveCardResponse.CreateMessageResponse("Invokes are great!!");
 });
 
+// ==================== EVENT HANDLERS ====================
+
+teamsApp.OnEvent(async (context, cancellationToken) =>
+{
+    Console.WriteLine($"[Event] Name: {context.Activity.Name}");
+    await context.SendActivityAsync($"Received event: `{context.Activity.Name}`", cancellationToken);
+});
+
 // ==================== CONVERSATION UPDATE HANDLERS ====================
 
 teamsApp.OnMembersAdded(async (context, cancellationToken) =>
