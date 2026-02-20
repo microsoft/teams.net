@@ -25,7 +25,11 @@ public static partial class Messages
         /// </summary>
         [JsonPropertyName("value")]
         [JsonPropertyOrder(32)]
-        public new required SubmitActionValue Value { get; set; }
+        public new required SubmitActionValue Value
+        {
+            get => (SubmitActionValue)base.Value!;
+            set => base.Value = value;
+        }
 
         /// <summary>
         /// The Submit Action
