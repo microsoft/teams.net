@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-	  <InternalsVisibleTo Include="Microsoft.Teams.Bot.Core.UnitTests" />
+	  <InternalsVisibleTo Include="Microsoft.Teams.Bot.Apps.UnitTests" />
   </ItemGroup>
 
 </Project>
