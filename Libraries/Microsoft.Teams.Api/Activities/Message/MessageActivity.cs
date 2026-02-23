@@ -63,7 +63,7 @@ public class MessageActivity : Activity
     [JsonPropertyName("value")]
     [JsonPropertyOrder(43)]
     public object? Value { get; set; }
-
+        
     [JsonIgnore]
     public bool IsRecipientMentioned
     {
@@ -144,6 +144,16 @@ public class MessageActivity : Activity
     {
         Text += text;
         return this;
+    }
+
+    public override MessageActivity WithRecipient(Account value)
+    {
+        return (MessageActivity)base.WithRecipient(value);
+    }
+
+    public override MessageActivity WithRecipient(Account value, bool isTargeted = false)
+    {
+        return (MessageActivity)base.WithRecipient(value, isTargeted);
     }
 
     public MessageActivity AddAttachment(params Attachment[] value)

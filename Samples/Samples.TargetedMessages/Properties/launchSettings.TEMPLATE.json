@@ -1,14 +1,16 @@
-﻿{
+{
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
     "http": {
       "commandName": "Project",
       "dotnetRunMessages": true,
-      "launchBrowser": true,
+      "launchBrowser": false,
       "applicationUrl": "http://localhost:3978",
-      "launchUrl": "devtools",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Local"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Teams__TenantId": "",
+        "Teams__ClientId": "",
+        "Teams__ClientSecret": ""
       }
     }
   }
