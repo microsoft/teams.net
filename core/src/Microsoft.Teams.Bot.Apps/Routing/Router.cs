@@ -24,16 +24,21 @@ internal sealed class Router
     public Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
     {
         if (_routes.Any(r => r.Name == route.Name))
+        {
             throw new InvalidOperationException($"A route with name '{route.Name}' is already registered.");
+        }
 
         string invokePrefix = TeamsActivityType.Invoke + "/";
 
-        if (route.Name == TeamsActivityType.Invoke && _routes.Any(r => r.Name.StartsWith(invokePrefix, StringComparison.OrdinalIgnoreCase)))
+        if (route.Name == TeamsActivityType.Invoke && _routes.Any(r => r.Name.StartsWith(invokePrefix, StringComparison.Ordinal)))
+        {
             throw new InvalidOperationException("Cannot register a catch-all invoke handler when specific invoke handlers are already registered. Use specific handlers or handle all invoke types inside OnInvoke.");
+        }
 
-        if (route.Name.StartsWith(invokePrefix, StringComparison.OrdinalIgnoreCase) && _routes.Any(r => r.Name == TeamsActivityType.Invoke))
+        if (route.Name.StartsWith(invokePrefix, StringComparison.Ordinal) && _routes.Any(r => r.Name == TeamsActivityType.Invoke))
+        {
             throw new InvalidOperationException($"Cannot register '{route.Name}' when a catch-all invoke handler is already registered. Remove OnInvoke or use specific handlers exclusively.");
-
+        }
         _routes.Add(route);
         return this;
     }
