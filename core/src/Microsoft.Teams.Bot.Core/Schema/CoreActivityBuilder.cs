@@ -49,6 +49,11 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
         SetFrom(activity.Recipient);
         SetRecipient(activity.From);
 
+        if (!string.IsNullOrEmpty(activity.Id))
+        {
+            WithReplyToId(activity.Id);
+        }
+
         return (TBuilder)this;
     }
 
@@ -75,6 +80,17 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     public TBuilder WithId(string id)
     {
         _activity.Id = id;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the Reply to id
+    /// </summary>
+    /// <param name="replyToId"></param>
+    /// <returns></returns>
+    public TBuilder WithReplyToId(string replyToId)
+    {
+        _activity.ReplyToId = replyToId;
         return (TBuilder)this;
     }
 
