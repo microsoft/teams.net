@@ -18,9 +18,14 @@ internal sealed class Router
     public IReadOnlyList<RouteBase> GetRoutes() => _routes.AsReadOnly();
 
     /// <summary>
-    /// Registers a route. Routes are checked in registration order.
-    /// All matching routes are invoked sequentially.
+    /// Registers a route. Routes are checked and invoked in registration order.
+    /// For non-invoke activities all matching routes run sequentially.
+    /// For invoke activities — routes must be non-overlapping.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if a route with the same name is already registered, or if an invoke catch-all
+    /// is mixed with specific invoke handlers.
+    /// </exception>
     public Router Register<TActivity>(Route<TActivity> route) where TActivity : TeamsActivity
     {
         if (_routes.Any(r => r.Name == route.Name))
