@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Teams.Bot.Core.Hosting;
 using Moq;
 using Moq.Protected;
 
@@ -19,12 +20,12 @@ public class BotApplicationTests
     {
         ConversationClient conversationClient = CreateMockConversationClient();
         UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
 
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = new(conversationClient, userTokenClient, CreateOptions("test-app-id"), logger);
         Assert.NotNull(botApp);
         Assert.NotNull(botApp.ConversationClient);
+        Assert.NotNull(botApp.UserTokenClient);
     }
 
 
@@ -32,11 +33,7 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithNullHttpContext_ThrowsArgumentNullException()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             botApp.ProcessAsync(null!));
@@ -45,11 +42,7 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithValidActivity_ProcessesSuccessfully()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         CoreActivity activity = new()
         {
@@ -70,18 +63,13 @@ public class BotApplicationTests
 
         await botApp.ProcessAsync(httpContext);
 
-
         Assert.True(onActivityCalled);
     }
 
     [Fact]
     public async Task ProcessAsync_WithMiddleware_ExecutesMiddleware()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         CoreActivity activity = new()
         {
@@ -121,11 +109,7 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithException_ThrowsBotHandlerException()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         CoreActivity activity = new()
         {
@@ -148,11 +132,7 @@ public class BotApplicationTests
     [Fact]
     public void Use_AddsMiddlewareToChain()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         Mock<ITurnMiddleWare> mockMiddleware = new();
 
@@ -179,10 +159,9 @@ public class BotApplicationTests
 
         HttpClient httpClient = new(mockHttpMessageHandler.Object);
         ConversationClient conversationClient = new(httpClient);
-        Mock<IConfiguration> mockConfig = new();
         UserTokenClient userTokenClient = CreateMockUserTokenClient();
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = new(conversationClient, userTokenClient, CreateOptions(), logger);
 
         CoreActivity activity = new()
         {
@@ -200,15 +179,17 @@ public class BotApplicationTests
     [Fact]
     public async Task SendActivityAsync_WithNullActivity_ThrowsArgumentNullException()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             botApp.SendActivityAsync(null!));
     }
+
+    private static BotApplicationOptions CreateOptions(string appId = "") =>
+        new() { AppId = appId };
+
+    private static BotApplication CreateBotApplication() =>
+        new(CreateMockConversationClient(), CreateMockUserTokenClient(), CreateOptions(), NullLogger<BotApplication>.Instance);
 
     private static ConversationClient CreateMockConversationClient()
     {

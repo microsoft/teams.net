@@ -3,11 +3,11 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Bot.Core;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Apps;
 
@@ -33,19 +33,17 @@ public class TeamsBotApplication : BotApplication
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
     /// <param name="teamsApiClient"></param>
-    /// <param name="config"></param>
+    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics.</param>
     /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
-    /// <param name="sectionName"></param>
     public TeamsBotApplication(
         ConversationClient conversationClient,
         UserTokenClient userTokenClient,
         TeamsApiClient teamsApiClient,
-        IConfiguration config,
+        BotApplicationOptions options,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<TeamsBotApplication> logger,
-        string sectionName = "AzureAd")
-        : base(conversationClient, userTokenClient, config, logger, sectionName)
+        ILogger<TeamsBotApplication> logger)
+        : base(conversationClient, userTokenClient, options, logger)
     {
         _teamsApiClient = teamsApiClient;
         Router = new Router(logger);

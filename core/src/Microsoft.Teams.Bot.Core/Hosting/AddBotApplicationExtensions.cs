@@ -99,6 +99,14 @@ public static class AddBotApplicationExtensions
         ILogger logger = loggerFactory?.CreateLogger<BotApplication>()
             ?? (ILogger)Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
+        services.AddSingleton<BotApplicationOptions>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            return new BotApplicationOptions
+            {
+                AppId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? string.Empty
+            };
+        });
         services.AddAuthorization(logger, sectionName);
         services.AddConversationClient(sectionName);
         services.AddUserTokenClient(sectionName);

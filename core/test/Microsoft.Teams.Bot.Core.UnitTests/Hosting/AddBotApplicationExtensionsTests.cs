@@ -213,4 +213,114 @@ public class AddBotApplicationExtensionsTests
         // Assert
         AssertMsalOptions(serviceProvider, "custom-client-id", "custom-tenant-id");
     }
+
+    // --- BotApplicationOptions (AppId) tests ---
+
+    private static ServiceProvider BuildServiceProviderForBotApp(Dictionary<string, string?> configData, string? sectionName = null)
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+
+        if (sectionName is null)
+            services.AddBotApplication();
+        else
+            services.AddBotApplication(sectionName);
+
+        return services.BuildServiceProvider();
+    }
+
+    private static string GetAppId(ServiceProvider serviceProvider) =>
+        serviceProvider.GetRequiredService<BotApplicationOptions>().AppId;
+
+    [Fact]
+    public void AddBotApplication_WithMicrosoftAppId_SetsAppIdFromMicrosoftAppId()
+    {
+        // Arrange
+        Dictionary<string, string?> configData = new()
+        {
+            ["MicrosoftAppId"] = "bf-app-id",
+            ["MicrosoftAppTenantId"] = "bf-tenant-id"
+        };
+
+        // Act
+        ServiceProvider serviceProvider = BuildServiceProviderForBotApp(configData);
+
+        // Assert
+        Assert.Equal("bf-app-id", GetAppId(serviceProvider));
+    }
+
+    [Fact]
+    public void AddBotApplication_WithClientId_SetsAppIdFromClientId()
+    {
+        // Arrange
+        Dictionary<string, string?> configData = new()
+        {
+            ["CLIENT_ID"] = "core-client-id",
+            ["TENANT_ID"] = "core-tenant-id"
+        };
+
+        // Act
+        ServiceProvider serviceProvider = BuildServiceProviderForBotApp(configData);
+
+        // Assert
+        Assert.Equal("core-client-id", GetAppId(serviceProvider));
+    }
+
+    [Fact]
+    public void AddBotApplication_WithAzureAdSection_SetsAppIdFromSection()
+    {
+        // Arrange
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "azuread-client-id",
+            ["AzureAd:TenantId"] = "azuread-tenant-id"
+        };
+
+        // Act
+        ServiceProvider serviceProvider = BuildServiceProviderForBotApp(configData);
+
+        // Assert
+        Assert.Equal("azuread-client-id", GetAppId(serviceProvider));
+    }
+
+    [Fact]
+    public void AddBotApplication_WithCustomSection_SetsAppIdFromCustomSection()
+    {
+        // Arrange
+        Dictionary<string, string?> configData = new()
+        {
+            ["CustomAuth:ClientId"] = "custom-client-id",
+            ["CustomAuth:TenantId"] = "custom-tenant-id"
+        };
+
+        // Act
+        ServiceProvider serviceProvider = BuildServiceProviderForBotApp(configData, "CustomAuth");
+
+        // Assert
+        Assert.Equal("custom-client-id", GetAppId(serviceProvider));
+    }
+
+    [Fact]
+    public void AddBotApplication_MicrosoftAppIdTakesPrecedenceOverClientId()
+    {
+        // Arrange — both keys present; MicrosoftAppId is highest priority
+        Dictionary<string, string?> configData = new()
+        {
+            ["MicrosoftAppId"] = "bf-app-id",
+            ["MicrosoftAppTenantId"] = "bf-tenant-id",
+            ["CLIENT_ID"] = "core-client-id",
+            ["TENANT_ID"] = "core-tenant-id"
+        };
+
+        // Act
+        ServiceProvider serviceProvider = BuildServiceProviderForBotApp(configData);
+
+        // Assert
+        Assert.Equal("bf-app-id", GetAppId(serviceProvider));
+    }
 }
