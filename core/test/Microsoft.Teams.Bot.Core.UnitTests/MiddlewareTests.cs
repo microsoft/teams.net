@@ -189,7 +189,7 @@ public class MiddlewareTests
     }
 
     private static BotApplication CreateBotApplication() =>
-        new(CreateMockConversationClient(), CreateMockUserTokenClient(), new(), NullLogger<BotApplication>.Instance);
+        new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance);
 
     private static ConversationClient CreateMockConversationClient()
     {

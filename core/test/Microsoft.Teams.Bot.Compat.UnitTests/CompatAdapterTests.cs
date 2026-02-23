@@ -85,7 +85,6 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 conversationClient,
                 userTokenClient,
                 teamsApiClient,
-                new BotApplicationOptions(),
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<TeamsBotApplication>.Instance);
 

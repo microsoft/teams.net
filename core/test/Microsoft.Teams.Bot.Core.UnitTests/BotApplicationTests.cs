@@ -22,7 +22,7 @@ public class BotApplicationTests
         UserTokenClient userTokenClient = CreateMockUserTokenClient();
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
 
-        BotApplication botApp = new(conversationClient, userTokenClient, CreateOptions("test-app-id"), logger);
+        BotApplication botApp = new(conversationClient, userTokenClient, logger, CreateOptions("test-app-id"));
         Assert.NotNull(botApp);
         Assert.NotNull(botApp.ConversationClient);
         Assert.NotNull(botApp.UserTokenClient);
@@ -161,7 +161,7 @@ public class BotApplicationTests
         ConversationClient conversationClient = new(httpClient);
         UserTokenClient userTokenClient = CreateMockUserTokenClient();
         NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, CreateOptions(), logger);
+        BotApplication botApp = new(conversationClient, userTokenClient, logger);
 
         CoreActivity activity = new()
         {
@@ -185,11 +185,11 @@ public class BotApplicationTests
             botApp.SendActivityAsync(null!));
     }
 
-    private static BotApplicationOptions CreateOptions(string appId = "") =>
+    private static BotApplicationOptions CreateOptions(string appId) =>
         new() { AppId = appId };
 
     private static BotApplication CreateBotApplication() =>
-        new(CreateMockConversationClient(), CreateMockUserTokenClient(), CreateOptions(), NullLogger<BotApplication>.Instance);
+        new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance);
 
     private static ConversationClient CreateMockConversationClient()
     {

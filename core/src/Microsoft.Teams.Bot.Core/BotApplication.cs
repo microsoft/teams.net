@@ -26,12 +26,11 @@ public class BotApplication
     /// </summary>
     /// <param name="conversationClient">The client used to manage and interact with conversations for the bot.</param>
     /// <param name="userTokenClient">The client used to manage user tokens for authentication.</param>
-    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics.</param>
     /// <param name="logger">The logger used to record operational and diagnostic information for the bot application.</param>
-    public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, BotApplicationOptions options, ILogger<BotApplication> logger)
+    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics. Defaults to an empty instance if not provided.</param>
+    public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, ILogger<BotApplication> logger, BotApplicationOptions? options = null)
     {
-        ArgumentNullException.ThrowIfNull(options);
-
+        options ??= new();
         _logger = logger;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;

@@ -80,13 +80,6 @@ namespace PABot
                 return new TeamsApiClient(httpClient, sp.GetRequiredService<ILogger<TeamsApiClient>>());
             });
 
-            services.AddKeyedSingleton<BotApplicationOptions>(keyName, (sp, _) =>
-            {
-                return new BotApplicationOptions()
-                {
-                    AppId = configSection["ClientId"] ?? string.Empty
-                };
-            });
 
             // Register keyed TeamsBotApplication
             services.AddKeyedSingleton(keyName, (sp, key) =>
@@ -95,7 +88,6 @@ namespace PABot
                     sp.GetRequiredKeyedService<ConversationClient>(keyName),
                     sp.GetRequiredKeyedService<UserTokenClient>(keyName),
                     sp.GetRequiredKeyedService<TeamsApiClient>(keyName),
-                    sp.GetRequiredKeyedService<BotApplicationOptions>(keyName),
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     sp.GetRequiredService<ILogger<TeamsBotApplication>>()
                 );
