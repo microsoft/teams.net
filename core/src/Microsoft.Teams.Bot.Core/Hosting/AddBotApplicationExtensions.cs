@@ -29,6 +29,17 @@ public static class AddBotApplicationExtensions
     internal const string MsalConfigKey = "AzureAd";
 
     /// <summary>
+    /// Initializes the default route
+    /// </summary>
+    /// <param name="endpoints"></param>
+    /// <param name="routePath"></param>
+    /// <returns></returns>
+    public static BotApplication UseBotApplication(
+        this IEndpointRouteBuilder endpoints,
+       string routePath = "api/messages")
+        => UseBotApplication<BotApplication>(endpoints, routePath);
+
+    /// <summary>
     /// Configures the application to handle bot messages at the specified route and returns the registered bot
     /// application instance.
     /// </summary>

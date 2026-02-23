@@ -82,6 +82,11 @@ public class CoreActivity
     [JsonPropertyName("value")] public JsonNode? Value { get; set; }
 
     /// <summary>
+    /// Reply to Id
+    /// </summary>
+    [JsonPropertyName("replyToId")] public string? ReplyToId { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
