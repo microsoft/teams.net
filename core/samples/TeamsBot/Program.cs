@@ -176,7 +176,9 @@ teamsApp.OnInstallUpdate(async (context, cancellationToken) =>
 {
     var action = context.Activity.Action ?? "unknown";
     Console.WriteLine($"[InstallUpdate] Installation action: {action}");
-    await context.SendActivityAsync($"Installation update: {action}", cancellationToken);
+
+    if (context.Activity.Action != InstallUpdateActions.Remove)
+        await context.SendActivityAsync($"Installation update: {action}", cancellationToken);
 });
 
 teamsApp.OnInstall(async (context, cancellationToken) =>

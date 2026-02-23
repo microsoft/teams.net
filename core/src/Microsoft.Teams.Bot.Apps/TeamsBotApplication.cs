@@ -48,7 +48,7 @@ public class TeamsBotApplication : BotApplication
         : base(conversationClient, userTokenClient, config, logger, sectionName)
     {
         _teamsApiClient = teamsApiClient;
-        Router = new Router(logger);
+        Router = new Router();
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogInformation("New {Type} activity received.", activity.Type);
