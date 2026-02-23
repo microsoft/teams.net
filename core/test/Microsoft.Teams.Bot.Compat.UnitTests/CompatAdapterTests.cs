@@ -5,12 +5,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Hosting;
 using Moq;
 
 namespace Microsoft.Teams.Bot.Compat.UnitTests
@@ -87,7 +85,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 conversationClient,
                 userTokenClient,
                 teamsApiClient,
-                mockConfig.Object,
+                new BotApplicationOptions(),
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<TeamsBotApplication>.Instance);
 
