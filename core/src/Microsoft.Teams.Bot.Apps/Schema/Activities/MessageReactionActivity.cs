@@ -86,12 +86,6 @@ public class MessageReactionActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("reactionsRemoved")]
     public IList<MessageReaction>? ReactionsRemoved { get; set; }
-
-    /// <summary>
-    /// Gets or sets the ID of the message being reacted to.
-    /// </summary>
-    [JsonPropertyName("replyToId")]
-    public string? ReplyToId { get; set; }
 }
 
 /// <summary>
