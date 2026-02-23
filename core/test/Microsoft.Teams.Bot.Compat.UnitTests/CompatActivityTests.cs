@@ -59,7 +59,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.NotNull(coreActivity);
             Assert.Equal(activity.Text, coreActivity.Properties["text"]?.ToString());
             Assert.Equal(activity.InputHint, coreActivity.Properties["inputHint"]?.ToString());
-            Assert.Equal(activity.ReplyToId, coreActivity.Properties["replyToId"]?.ToString());
+            Assert.Equal(activity.ReplyToId, coreActivity.ReplyToId);
             Assert.Equal(activity.Locale, coreActivity.Properties["locale"]?.ToString());
         }
 

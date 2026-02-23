@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Core;
@@ -23,6 +24,8 @@ public class BotApplication
     /// <summary>
     /// Initializes a new instance of the BotApplication class with the specified conversation client, app ID,
     /// and logger.
+    /// Initializes a new instance of the BotApplication class with the specified conversation client, app ID,
+    /// and logger.
     /// </summary>
     /// <param name="conversationClient">The client used to manage and interact with conversations for the bot.</param>
     /// <param name="userTokenClient">The client used to manage user tokens for authentication.</param>
@@ -35,6 +38,7 @@ public class BotApplication
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
+        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
         logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
     }
 

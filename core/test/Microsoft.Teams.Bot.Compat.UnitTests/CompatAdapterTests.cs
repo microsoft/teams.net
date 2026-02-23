@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Bot.Core.Hosting;
 using Moq;
 
 namespace Microsoft.Teams.Bot.Compat.UnitTests

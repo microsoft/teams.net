@@ -7,6 +7,7 @@ using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Bot.Core.Hosting;
 using Moq;
 
 namespace Microsoft.Teams.Bot.Core.UnitTests;
@@ -16,6 +17,7 @@ public class MiddlewareTests
     [Fact]
     public async Task BotApplication_Use_AddsMiddlewareToChain()
     {
+        BotApplication botApp = CreateBotApplication();
         BotApplication botApp = CreateBotApplication();
 
         Mock<ITurnMiddleWare> mockMiddleware = new();
@@ -29,6 +31,7 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_ExecutesInOrder()
     {
+        BotApplication botApp = CreateBotApplication();
         BotApplication botApp = CreateBotApplication();
 
         List<int> executionOrder = [];
@@ -80,6 +83,7 @@ public class MiddlewareTests
     public async Task Middleware_CanShortCircuit()
     {
         BotApplication botApp = CreateBotApplication();
+        BotApplication botApp = CreateBotApplication();
 
         bool secondMiddlewareCalled = false;
         bool onActivityCalled = false;
@@ -123,6 +127,7 @@ public class MiddlewareTests
     public async Task Middleware_ReceivesCancellationToken()
     {
         BotApplication botApp = CreateBotApplication();
+        BotApplication botApp = CreateBotApplication();
 
         CancellationToken receivedToken = default;
 
@@ -157,6 +162,7 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_ReceivesActivity()
     {
+        BotApplication botApp = CreateBotApplication();
         BotApplication botApp = CreateBotApplication();
 
         CoreActivity? receivedActivity = null;
