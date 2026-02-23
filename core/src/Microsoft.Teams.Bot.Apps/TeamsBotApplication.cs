@@ -4,7 +4,6 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
@@ -41,7 +40,7 @@ public class TeamsBotApplication : BotApplication
         ConversationClient conversationClient,
         UserTokenClient userTokenClient,
         TeamsApiClient teamsApiClient,
-        IOptions<BotApplicationOptions> options,
+        BotApplicationOptions options,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger)
         : base(conversationClient, userTokenClient, options, logger)

@@ -5,7 +5,6 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -29,13 +28,15 @@ public class BotApplication
     /// <param name="userTokenClient">The client used to manage user tokens for authentication.</param>
     /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics.</param>
     /// <param name="logger">The logger used to record operational and diagnostic information for the bot application.</param>
-    public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, IOptions<BotApplicationOptions> options, ILogger<BotApplication> logger)
+    public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, BotApplicationOptions options, ILogger<BotApplication> logger)
     {
+        ArgumentNullException.ThrowIfNull(options);
+
         _logger = logger;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
-        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.Value.AppId, Version);
+        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
     }
 
 
