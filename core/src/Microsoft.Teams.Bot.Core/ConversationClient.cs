@@ -47,8 +47,13 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         {
             logger.LogInformation("Truncating conversation ID for 'agents' channel to comply with length restrictions.");
             string conversationId = activity.Conversation.Id;
-            string convId = conversationId.Length > 325 ? conversationId[..325] : conversationId;
-            url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities";
+            string convId = conversationId.Length > 100 ? conversationId[..100] : conversationId;
+            url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities/";
+        }
+
+        if (!string.IsNullOrEmpty(activity.ReplyToId))
+        {
+            url += activity.ReplyToId;
         }
 
         logger?.LogInformation("Sending activity to {Url}", url);

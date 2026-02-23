@@ -29,6 +29,17 @@ public static class AddBotApplicationExtensions
     internal const string MsalConfigKey = "AzureAd";
 
     /// <summary>
+    /// Initializes the default route
+    /// </summary>
+    /// <param name="endpoints"></param>
+    /// <param name="routePath"></param>
+    /// <returns></returns>
+    public static BotApplication UseBotApplication(
+        this IEndpointRouteBuilder endpoints,
+       string routePath = "api/messages")
+        => UseBotApplication<BotApplication>(endpoints, routePath);
+
+    /// <summary>
     /// Configures the application to handle bot messages at the specified route and returns the registered bot
     /// application instance.
     /// </summary>
@@ -88,6 +99,14 @@ public static class AddBotApplicationExtensions
         ILogger logger = loggerFactory?.CreateLogger<BotApplication>()
             ?? (ILogger)Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
+        services.AddSingleton<BotApplicationOptions>(sp =>
+        {
+            var config = sp.GetRequiredService<IConfiguration>();
+            return new BotApplicationOptions
+            {
+                AppId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? string.Empty
+            };
+        });
         services.AddAuthorization(logger, sectionName);
         services.AddConversationClient(sectionName);
         services.AddUserTokenClient(sectionName);
