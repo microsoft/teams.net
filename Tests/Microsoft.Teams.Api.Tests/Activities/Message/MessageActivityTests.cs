@@ -475,46 +475,54 @@ public class MessageActivityTests
     }
 
     [Fact]
-    public void WithTargetedRecipient_Bool_SetsIsTargeted()
+    public void WithRecipient_DefaultsToNotTargeted()
     {
-        var activity = new MessageActivity("hello").WithTargetedRecipient(true);
+        var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "1" });
 
-        Assert.True(activity.IsTargeted);
-        Assert.Null(activity.Recipient);
+        Assert.False(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
     }
 
     [Fact]
-    public void WithTargetedRecipient_String_SetsIsTargetedAndRecipient()
+    public void WithRecipient_Bool_SetsIsTargeted()
     {
-        var activity = new MessageActivity("hello").WithTargetedRecipient("user-123");
+        var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "1" }, true);
+
+        Assert.True(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+    }
+
+    [Fact]
+    public void WithRecipient_SetsIsTargetedAndRecipient()
+    {
+        var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "user-123", Name = "user", Role = Role.User }, true);
 
         Assert.True(activity.IsTargeted);
         Assert.NotNull(activity.Recipient);
         Assert.Equal("user-123", activity.Recipient.Id);
-        Assert.Equal(string.Empty, activity.Recipient.Name);
+        Assert.Equal("user", activity.Recipient.Name);
         Assert.Equal(Role.User, activity.Recipient.Role);
     }
 
     [Fact]
-    public void WithTargetedRecipient_IsChainable()
+    public void WithRecipient_MaintainsFluentChaining()
     {
+        // This test ensures that WithRecipient(account) returns MessageActivity, not Activity
+        // If it returned Activity, the call to AddText would not compile
         var activity = new MessageActivity("hello")
-            .WithImportance(Importance.High)
-            .WithTargetedRecipient("user-456")
-            .WithDeliveryMode(DeliveryMode.Notification);
+            .WithRecipient(new Account() { Id = "user-123" })
+            .AddText(" world");
 
-        Assert.Equal("hello", activity.Text);
-        Assert.Equal(Importance.High, activity.Importance);
-        Assert.Equal(DeliveryMode.Notification, activity.DeliveryMode);
-        Assert.True(activity.IsTargeted);
+        Assert.Equal("hello world", activity.Text);
         Assert.NotNull(activity.Recipient);
-        Assert.Equal("user-456", activity.Recipient.Id);
+        Assert.Equal("user-123", activity.Recipient.Id);
+        Assert.False(activity.IsTargeted);
     }
 
     [Fact]
     public void JsonSerialize_WithIsTargeted()
     {
-        var activity = new MessageActivity("targeted message").WithTargetedRecipient(true);
+        var activity = new MessageActivity("targeted message").WithRecipient(new Account() { Id = "user-123" }, true);
         activity.Id = "1";
         activity.From = new() { Id = "1", Name = "test", Role = Role.User };
         activity.Conversation = new() { Id = "1", Type = ConversationType.Personal };
@@ -531,5 +539,21 @@ public class MessageActivityTests
         Assert.Contains("\"text\": \"targeted message\"", json);
         // Verify the property is still set on the object
         Assert.True(activity.IsTargeted);
+    }
+
+    [Fact]
+    public void Validate_FluentAPI()
+    {
+        var msg = new MessageActivity("Hello")
+            .WithDeliveryMode(DeliveryMode.Notification)
+            .WithRecipient(new Account() { Id = "user-123", Name = "Test User", Role = Role.User }, true)
+            .WithImportance(Importance.High); 
+
+        Assert.Equal("Hello", msg.Text);
+        Assert.True(msg.IsTargeted);
+        Assert.NotNull(msg.Recipient);
+        Assert.Equal("user-123", msg.Recipient.Id);
+        Assert.Equal("Test User", msg.Recipient.Name);
+        Assert.Equal(Role.User, msg.Recipient.Role);
     }
 }
