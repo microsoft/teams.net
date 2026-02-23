@@ -8,6 +8,7 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// <summary>
 /// Router for dispatching Teams activities to registered routes
 /// </summary>
+// TODO : add inline docs to handlers for breaking change
 internal sealed class Router
 {
     private readonly List<RouteBase> _routes = [];
