@@ -15,8 +15,8 @@ teams.OnMessage(async (context, cancellationToken) =>
 {
     await context.Send($"you said '{context.Activity.Text}'", cancellationToken);
 
-    
-    // replace with context.Api.Conversations.Reactions once APX is rolledout to PROD
+
+    // replace with context.Api.Conversations.Reactions once Reactions client is available in PROD.
     var api = new ApiClient(context.Activity.ServiceUrl!, context.Api.Client, cancellationToken);
         
     await api.Conversations.Reactions.AddAsync(context.Activity.Conversation.Id, context.Activity.Id, new ReactionType("1f44b_wavinghand-tone4"));

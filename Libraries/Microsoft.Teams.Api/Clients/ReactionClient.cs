@@ -45,20 +45,22 @@ public class ReactionClient : Client
     /// <param name="reactionType">
     /// The reaction type (for example: "like", "heart", "laugh", etc.).
     /// </param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>
     /// A <see cref="Task"/> representing the asynchronous operation.
     /// </returns>
     public async Task AddAsync(
         string conversationId,
         string activityId,
-        ReactionType reactionType
+        ReactionType reactionType,
+        CancellationToken cancellationToken = default
     )
     {
         // Assumed route:
         //   PUT v3/conversations/{conversationId}/activities/{activityId}/reactions
         var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{activityId}/reactions/{reactionType}";
         var req = HttpRequest.Put(url);
-        await _http.SendAsync(req, _cancellationToken);
+        await _http.SendAsync(req, cancellationToken != default ? cancellationToken : _cancellationToken);
     }
 
     /// <summary>
@@ -69,13 +71,15 @@ public class ReactionClient : Client
     /// <param name="reactionType">
     /// The reaction type to remove (for example: "like", "heart", "laugh", etc.).
     /// </param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>
     /// A <see cref="Task"/> representing the asynchronous operation.
     /// </returns>
     public async Task DeleteAsync(
         string conversationId,
         string activityId,
-        ReactionType reactionType
+        ReactionType reactionType, 
+        CancellationToken cancellationToken = default
     )
     {
         // Assumed route:
@@ -85,6 +89,6 @@ public class ReactionClient : Client
 
         var req = HttpRequest.Delete(url);
 
-        await _http.SendAsync(req, _cancellationToken);
+        await _http.SendAsync(req, cancellationToken != default ? cancellationToken : _cancellationToken);
     }
 }

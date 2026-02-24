@@ -26,53 +26,28 @@ public class ReactionType(string value) : StringEnum(value)
     public bool IsHeart => Heart.Equals(Value);
 
     /// <summary>
-    /// ✅
+    /// 👀
     /// </summary>
-    public static readonly ReactionType Checkmark = new("checkmark");
-    public bool IsCheckmark => Checkmark.Equals(Value);
+    public static readonly ReactionType Eyes = new("1f440_eyes");
+    public bool IsEyes => Eyes.Equals(Value);
 
     /// <summary>
-    /// ⏳
+    /// ✅
     /// </summary>
-    public static readonly ReactionType Hourglass = new("hourglass");
-    public bool IsHourglass => Hourglass.Equals(Value);
+    public static readonly ReactionType CheckMark = new("2705_whiteheavycheckmark");
+    public bool IsCheckMark => CheckMark.Equals(Value);
+
+    /// <summary>
+    /// 🚀
+    /// </summary>
+    public static readonly ReactionType Launch = new("launch");
+    public bool IsLaunch => Launch.Equals(Value);
 
     /// <summary>
     /// 📌
     /// </summary>
-    public static readonly ReactionType Pushpin = new("pushpin");
+    public static readonly ReactionType Pushpin = new("1f4cc_pushpin");
     public bool IsPushpin => Pushpin.Equals(Value);
-
-    /// <summary>
-    /// ❗
-    /// </summary>
-    public static readonly ReactionType Exclamation = new("exclamation");
-    public bool IsExclamation => Exclamation.Equals(Value);
-
-    /// <summary>
-    /// 😆
-    /// </summary>
-    public static readonly ReactionType Laugh = new("laugh");
-    public bool IsLaugh => Laugh.Equals(Value);
-
-    /// <summary>
-    /// 😮
-    /// </summary>
-    public static readonly ReactionType Surprise = new("surprise");
-    public bool IsSurprise => Surprise.Equals(Value);
-
-    /// <summary>
-    /// 🙁
-    /// </summary>
-    public static readonly ReactionType Sad = new("sad");
-    public bool IsSad => Sad.Equals(Value);
-
-    /// <summary>
-    /// 😠
-    /// </summary>
-    public static readonly ReactionType Angry = new("angry");
-    public bool IsAngry => Angry.Equals(Value);
-
 }
 
 /// <summary>

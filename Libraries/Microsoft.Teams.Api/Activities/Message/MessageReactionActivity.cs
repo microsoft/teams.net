@@ -22,4 +22,62 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
     [JsonPropertyName("reactionsRemoved")]
     [JsonPropertyOrder(122)]
     public IList<Messages.Reaction>? ReactionsRemoved { get; set; }
+
+    [Obsolete("Use the Reactions client instead.")]
+    public MessageReactionActivity AddReaction(Messages.Reaction reaction)
+    {
+        ReactionsAdded ??= [];
+        ReactionsAdded.Add(reaction);
+        return this;
+    }
+
+    [Obsolete("Use the Reactions client instead.")]
+    public MessageReactionActivity AddReaction(Messages.ReactionType type)
+    {
+        ReactionsAdded ??= [];
+        ReactionsAdded.Add(new() { Type = type });
+        return this;
+    }
+
+    [Obsolete("Use the Reactions client instead.")]
+    public MessageReactionActivity RemoveReaction(Messages.Reaction reaction)
+    {
+        ReactionsRemoved ??= [];
+
+        if (ReactionsAdded is not null)
+        {
+            var i = ReactionsAdded.ToList().FindIndex(r =>
+                r.Type.Equals(reaction.Type) && r.User?.Id == reaction.User?.Id
+            );
+
+            if (i > -1)
+            {
+                ReactionsAdded.RemoveAt(i);
+                return this;
+            }
+        }
+
+        ReactionsRemoved.Add(reaction);
+        return this;
+    }
+
+    [Obsolete("Use the Reactions client instead.")]
+    public MessageReactionActivity RemoveReaction(Messages.ReactionType type)
+    {
+        ReactionsRemoved ??= [];
+
+        if (ReactionsAdded is not null)
+        {
+            var i = ReactionsAdded.ToList().FindIndex(r => r.Type.Equals(type));
+
+            if (i > -1)
+            {
+                ReactionsAdded.RemoveAt(i);
+                return this;
+            }
+        }
+
+        ReactionsRemoved.Add(new() { Type = type });
+        return this;
+    }
 }
