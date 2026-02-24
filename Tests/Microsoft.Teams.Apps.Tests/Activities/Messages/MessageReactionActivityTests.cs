@@ -35,7 +35,7 @@ public class MessageReactionActivityTests
             calls++;
             Assert.True(context.Activity.Type.IsMessageReaction);
             Assert.Single(context.Activity.ReactionsAdded ?? []);
-            Assert.True(context.Activity.ReactionsAdded!.First().Type.IsAngry);
+            Assert.True(context.Activity.ReactionsAdded!.First().Type.IsLike);
             return Task.CompletedTask;
         });
 
@@ -84,7 +84,7 @@ public class MessageReactionActivityTests
             calls++;
             Assert.True(context.Activity.Type.IsMessageReaction);
             Assert.Single(context.Activity.ReactionsAdded ?? []);
-            Assert.True(context.Activity.ReactionsAdded!.First().Type.IsAngry);
+            Assert.True(context.Activity.ReactionsAdded!.First().Type.IsLike);
             return context.Next();
         });
 
@@ -94,7 +94,7 @@ public class MessageReactionActivityTests
             Assert.True(context.Activity.Type.IsMessageReaction);
             Assert.Single(context.Activity.ReactionsAdded ?? []);
             Assert.Empty(context.Activity.ReactionsRemoved ?? []);
-            Assert.True(context.Activity.ReactionsAdded!.First().Type.IsAngry);
+            Assert.True(context.Activity.ReactionsAdded!.First().Type.IsLike);
             return Task.CompletedTask;
         });
 
@@ -123,7 +123,7 @@ public class MessageReactionActivityTests
             calls++;
             Assert.True(context.Activity.Type.IsMessageReaction);
             Assert.Single(context.Activity.ReactionsRemoved ?? []);
-            Assert.True(context.Activity.ReactionsRemoved!.First().Type.IsAngry);
+            Assert.True(context.Activity.ReactionsRemoved!.First().Type.IsLike);
             return context.Next();
         });
 
@@ -133,7 +133,7 @@ public class MessageReactionActivityTests
             Assert.True(context.Activity.Type.IsMessageReaction);
             Assert.Single(context.Activity.ReactionsAdded ?? []);
             Assert.Empty(context.Activity.ReactionsRemoved ?? []);
-            Assert.True(context.Activity.ReactionsRemoved!.First().Type.IsAngry);
+            Assert.True(context.Activity.ReactionsRemoved!.First().Type.IsLike);
             return Task.CompletedTask;
         });
 
