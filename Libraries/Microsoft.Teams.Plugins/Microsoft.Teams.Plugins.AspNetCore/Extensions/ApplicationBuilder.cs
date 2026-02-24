@@ -6,7 +6,6 @@ using System.Reflection;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Annotations;
 using Microsoft.Teams.Apps.Plugins;
@@ -65,10 +64,10 @@ public static partial class ApplicationBuilderExtensions
         {
             builder.UseRouting();
             builder.UseAuthorization();
-            
+
             // Get AspNetCorePlugin for endpoint registration
             var aspNetCorePlugin = plugins.OfType<AspNetCorePlugin>().FirstOrDefault();
-            
+
             builder.UseEndpoints(endpoints =>
             {
                 // Map AspNetCorePlugin endpoint
