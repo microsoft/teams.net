@@ -180,6 +180,38 @@ public partial class App
     }
 
     /// <summary>
+    /// Default handler for signin/failure invoke activities.
+    /// Teams sends this when SSO token exchange fails (e.g., due to a
+    /// misconfigured Entra app registration). Logs the failure details
+    /// and emits an error event.
+    /// </summary>
+    protected async Task<object?> OnFailureActivity(IContext<Api.Activities.Invokes.SignIn.FailureActivity> context)
+    {
+        var failure = context.Activity.Value;
+
+        Logger.Warn(
+            $"sign-in failed for user \"{context.Activity.From.Id}\" in conversation " +
+            $"\"{context.Ref.Conversation.Id}\": {failure.Code} — {failure.Message}. " +
+            $"If the code is 'resourcematchfailed', verify that your Entra app registration " +
+            $"has 'Expose an API' configured with the correct Application ID URI matching " +
+            $"your OAuth connection's Token Exchange URL."
+        );
+
+        await Events.Emit(
+            context.Sender,
+            EventType.Error,
+            new ErrorEvent()
+            {
+                Exception = new Exception($"Sign-in failure: {failure.Code} — {failure.Message}"),
+                Context = context.ToActivityType<IActivity>()
+            },
+            context.CancellationToken
+        );
+
+        return new Response(HttpStatusCode.OK);
+    }
+
+    /// <summary>
     /// Register a middleware.
     /// </summary>
     /// <param name="handler">Callback to invoke.</param>

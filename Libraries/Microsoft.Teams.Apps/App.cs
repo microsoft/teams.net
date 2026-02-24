@@ -102,6 +102,7 @@ public partial class App
 
         this.OnTokenExchange(OnTokenExchangeActivity);
         this.OnVerifyState(OnVerifyStateActivity);
+        this.OnFailure(OnFailureActivity);
         this.OnError(OnErrorEvent);
         this.OnActivitySent(OnActivitySentEvent);
         this.OnActivityResponse(OnActivityResponseEvent);
