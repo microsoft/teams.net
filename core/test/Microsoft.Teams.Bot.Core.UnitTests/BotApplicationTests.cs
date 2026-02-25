@@ -8,7 +8,6 @@ using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Core.Hosting;
-using Microsoft.Teams.Bot.Core.Hosting;
 using Moq;
 using Moq.Protected;
 
@@ -36,7 +35,6 @@ public class BotApplicationTests
     public async Task ProcessAsync_WithNullHttpContext_ThrowsArgumentNullException()
     {
         BotApplication botApp = CreateBotApplication();
-        BotApplication botApp = CreateBotApplication();
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             botApp.ProcessAsync(null!));
@@ -45,7 +43,6 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithValidActivity_ProcessesSuccessfully()
     {
-        BotApplication botApp = CreateBotApplication();
         BotApplication botApp = CreateBotApplication();
 
         CoreActivity activity = new()
@@ -73,7 +70,6 @@ public class BotApplicationTests
     [Fact]
     public async Task ProcessAsync_WithMiddleware_ExecutesMiddleware()
     {
-        BotApplication botApp = CreateBotApplication();
         BotApplication botApp = CreateBotApplication();
 
         CoreActivity activity = new()
@@ -115,7 +111,6 @@ public class BotApplicationTests
     public async Task ProcessAsync_WithException_ThrowsBotHandlerException()
     {
         BotApplication botApp = CreateBotApplication();
-        BotApplication botApp = CreateBotApplication();
 
         CoreActivity activity = new()
         {
@@ -138,7 +133,6 @@ public class BotApplicationTests
     [Fact]
     public void Use_AddsMiddlewareToChain()
     {
-        BotApplication botApp = CreateBotApplication();
         BotApplication botApp = CreateBotApplication();
 
         Mock<ITurnMiddleWare> mockMiddleware = new();
@@ -186,7 +180,6 @@ public class BotApplicationTests
     [Fact]
     public async Task SendActivityAsync_WithNullActivity_ThrowsArgumentNullException()
     {
-        BotApplication botApp = CreateBotApplication();
         BotApplication botApp = CreateBotApplication();
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
