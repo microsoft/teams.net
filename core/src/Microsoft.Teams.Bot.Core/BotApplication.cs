@@ -23,19 +23,21 @@ public class BotApplication
     /// <summary>
     /// Initializes a new instance of the BotApplication class with the specified conversation client, app ID,
     /// and logger.
+    /// Initializes a new instance of the BotApplication class with the specified conversation client, app ID,
+    /// and logger.
     /// </summary>
     /// <param name="conversationClient">The client used to manage and interact with conversations for the bot.</param>
     /// <param name="userTokenClient">The client used to manage user tokens for authentication.</param>
-    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics.</param>
     /// <param name="logger">The logger used to record operational and diagnostic information for the bot application.</param>
-    public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, BotApplicationOptions options, ILogger<BotApplication> logger)
+    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics. Defaults to an empty instance if not provided.</param>
+    public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, ILogger<BotApplication> logger, BotApplicationOptions? options = null)
     {
-        ArgumentNullException.ThrowIfNull(options);
-
+        options ??= new();
         _logger = logger;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
+        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
         logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
     }
 
