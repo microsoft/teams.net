@@ -53,6 +53,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         }
 
         _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/GetTokenStatus");
+
         IList<GetTokenStatusResult>? result = await _botHttpClient.SendAsync<IList<GetTokenStatusResult>>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -94,6 +95,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         }
 
         _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/GetToken");
+
         return await _botHttpClient.SendAsync<GetTokenResult>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -137,6 +139,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         }
 
         _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/botsignin/GetSignInResource");
+
         return (await _botHttpClient.SendAsync<GetSignInResourceResult>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -170,6 +173,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         };
 
         _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/exchange");
+
         return (await _botHttpClient.SendAsync<GetTokenResult>(
             HttpMethod.Post,
             _apiEndpoint,
@@ -206,6 +210,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         }
 
         _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/SignOut");
+
         await _botHttpClient.SendAsync(
             HttpMethod.Delete,
             _apiEndpoint,
@@ -236,6 +241,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         };
 
         _logger.LogInformation("Calling API endpoint with POST: {Endpoint}", "api/usertoken/GetAadTokens");
+
         return (await _botHttpClient.SendAsync<Dictionary<string, GetTokenResult>>(
             HttpMethod.Post,
             _apiEndpoint,

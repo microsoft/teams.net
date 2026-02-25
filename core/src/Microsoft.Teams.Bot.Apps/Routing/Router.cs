@@ -41,7 +41,7 @@ internal sealed class Router(ILogger logger)
 
         if (matchingRoutes.Count == 0 && _routes.Count > 0)
             {
-                logger.LogDebug(
+                logger.LogWarning(
                     "No routes matched activity type '{Type}'",
                     ctx.Activity.Type
                 );
