@@ -43,7 +43,7 @@ public class ReactionClient : Client
     /// <param name="conversationId">The conversation id.</param>
     /// <param name="activityId">The id of the activity to react to.</param>
     /// <param name="reactionType">
-    /// The reaction type (for example: "like", "heart", "laugh", etc.).
+    /// The reaction type (for example: "like", "heart", "launch", etc.).
     /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>
@@ -57,7 +57,7 @@ public class ReactionClient : Client
     )
     {
         // Assumed route:
-        //   PUT v3/conversations/{conversationId}/activities/{activityId}/reactions
+        //   PUT v3/conversations/{conversationId}/activities/{activityId}/reactions/{reactionType}
         var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{activityId}/reactions/{reactionType}";
         var req = HttpRequest.Put(url);
         await _http.SendAsync(req, cancellationToken != default ? cancellationToken : _cancellationToken);
@@ -69,7 +69,7 @@ public class ReactionClient : Client
     /// <param name="conversationId">The conversation id.</param>
     /// <param name="activityId">The id of the activity the reaction is on.</param>
     /// <param name="reactionType">
-    /// The reaction type to remove (for example: "like", "heart", "laugh", etc.).
+    /// The reaction type to remove (for example: "like", "heart", "launch", etc.).
     /// </param>
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     /// <returns>
@@ -78,7 +78,7 @@ public class ReactionClient : Client
     public async Task DeleteAsync(
         string conversationId,
         string activityId,
-        ReactionType reactionType, 
+        ReactionType reactionType,
         CancellationToken cancellationToken = default
     )
     {

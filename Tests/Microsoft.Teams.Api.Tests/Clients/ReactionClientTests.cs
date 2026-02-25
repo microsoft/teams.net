@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Api.Tests.Clients;
 public class ReactionClientTests
 {
     [Fact]
-    public async Task ReactionClient_CreateOrUpdateAsync()
+    public async Task ReactionClient_AddAsync()
     {
         var responseMessage = new HttpResponseMessage();
         responseMessage.Headers.Add("Custom-Header", "HeaderValue");

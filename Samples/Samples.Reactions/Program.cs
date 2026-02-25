@@ -15,7 +15,6 @@ teams.OnMessage(async (context, cancellationToken) =>
 {
     await context.Send($"you said '{context.Activity.Text}'", cancellationToken);
 
-
     // replace with context.Api.Conversations.Reactions once Reactions client is available in PROD.
     var api = new ApiClient(context.Activity.ServiceUrl!, context.Api.Client, cancellationToken);
         
