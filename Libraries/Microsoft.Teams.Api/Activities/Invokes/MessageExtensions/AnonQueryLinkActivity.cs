@@ -25,6 +25,10 @@ public static partial class MessageExtensions
         /// </summary>
         [JsonPropertyName("value")]
         [JsonPropertyOrder(32)]
-        public new required AppBasedQueryLink Value { get; set; }
+        public new required AppBasedQueryLink Value
+        {
+            get => (AppBasedQueryLink)base.Value!;
+            set => base.Value = value;
+        }
     }
 }
