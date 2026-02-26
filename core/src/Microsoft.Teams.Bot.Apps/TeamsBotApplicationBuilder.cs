@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -165,9 +164,9 @@ public class TeamsBotApplicationBuilder
             webApp.MapPost($"/functions/{name}", async (HttpContext httpCtx, CancellationToken ct) =>
             {
                 ILogger logger = httpCtx.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger($"functions.{name}");
+                BotApplicationOptions options = httpCtx.RequestServices.GetRequiredService<BotApplicationOptions>();
                 TBody? body = await httpCtx.Request.ReadFromJsonAsync<TBody>(ct).ConfigureAwait(false);
-                FunctionContext<TBody> ctx = new(botApp, logger, body!);
-                PopulateClientContext(ctx, httpCtx);
+                FunctionContext<TBody> ctx = new(botApp, logger, httpCtx, options, body!);
                 var result = await handler(ctx, ct).ConfigureAwait(false);
                 return Results.Json(result);
             }).RequireAuthorization(JwtExtensions.EntraPolicy);
@@ -195,8 +194,8 @@ public class TeamsBotApplicationBuilder
             webApp.MapPost($"/functions/{name}", async (HttpContext httpCtx, CancellationToken ct) =>
             {
                 ILogger logger = httpCtx.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger($"functions.{name}");
-                FunctionContext ctx = new(botApp, logger);
-                PopulateClientContext(ctx, httpCtx);
+                BotApplicationOptions options = httpCtx.RequestServices.GetRequiredService<BotApplicationOptions>();
+                FunctionContext ctx = new(botApp, logger, httpCtx, options);
                 var result = await handler(ctx, ct).ConfigureAwait(false);
                 return Results.Json(result);
             }).RequireAuthorization(JwtExtensions.EntraPolicy);
@@ -231,34 +230,4 @@ public class TeamsBotApplicationBuilder
         });
     }
 
-    private static void PopulateClientContext(FunctionContext ctx, HttpContext httpCtx)
-    {
-        BotApplicationOptions botOptions = httpCtx.RequestServices.GetRequiredService<BotApplicationOptions>();
-        ctx.BotId = botOptions.AppId;
-        ctx.ServiceUrl = botOptions.ServiceUrl;
-
-        ctx.TenantId  = httpCtx.User.FindFirst("tid")?.Value;
-        ctx.UserId    = httpCtx.User.FindFirst("oid")?.Value;
-        ctx.UserName  = httpCtx.User.FindFirst(ClaimTypes.Name)?.Value;
-        ctx.AuthToken = httpCtx.Request.Headers.Authorization.FirstOrDefault()
-            ?.Replace("Bearer ", string.Empty, StringComparison.OrdinalIgnoreCase);
-
-        // X-Teams-* headers sent by the Teams JS client
-        if (httpCtx.Request.Headers.TryGetValue("X-Teams-App-Session-Id", out var appSessionId))
-            ctx.AppSessionId = appSessionId;
-        if (httpCtx.Request.Headers.TryGetValue("X-Teams-Page-Id", out var pageId))
-            ctx.PageId = pageId;
-        if (httpCtx.Request.Headers.TryGetValue("X-Teams-Channel-Id", out var channelId))
-            ctx.ChannelId = channelId;
-        if (httpCtx.Request.Headers.TryGetValue("X-Teams-Chat-Id", out var chatId))
-            ctx.ChatId = chatId;
-        if (httpCtx.Request.Headers.TryGetValue("X-Teams-Meeting-Id", out var meetingId))
-            ctx.MeetingId = meetingId;
-        if (httpCtx.Request.Headers.TryGetValue("X-Teams-Team-Id", out var teamId))
-            ctx.TeamId = teamId;
-        if (httpCtx.Request.Headers.TryGetValue("X-Teams-Message-Id", out var messageId))
-            ctx.MessageId = messageId;
-        if (httpCtx.Request.Headers.TryGetValue("X-Teams-Sub-Page-Id", out var subPageId))
-            ctx.SubPageId = subPageId;
-    }
 }
