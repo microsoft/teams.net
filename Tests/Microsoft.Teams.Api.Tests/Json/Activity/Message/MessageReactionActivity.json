@@ -15,14 +15,5 @@
     "conversation": {
         "id": "1",
         "conversationType": "personal"
-    },
-    "reactionsAdded": [
-        {
-            "type": "like",
-            "user": {
-                "id": "100",
-                "userIdentityType": "anonymousGuest"
-            }
-        }
-    ]
+    }
 }

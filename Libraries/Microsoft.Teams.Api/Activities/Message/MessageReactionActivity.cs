@@ -23,6 +23,7 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
     [JsonPropertyOrder(122)]
     public IList<Messages.Reaction>? ReactionsRemoved { get; set; }
 
+    [Obsolete("Use the Reactions client instead.")]
     public MessageReactionActivity AddReaction(Messages.Reaction reaction)
     {
         ReactionsAdded ??= [];
@@ -30,6 +31,7 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
         return this;
     }
 
+    [Obsolete("Use the Reactions client instead.")]
     public MessageReactionActivity AddReaction(Messages.ReactionType type)
     {
         ReactionsAdded ??= [];
@@ -37,6 +39,7 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
         return this;
     }
 
+    [Obsolete("Use the Reactions client instead.")]
     public MessageReactionActivity RemoveReaction(Messages.Reaction reaction)
     {
         ReactionsRemoved ??= [];
@@ -58,6 +61,7 @@ public class MessageReactionActivity() : Activity(ActivityType.MessageReaction)
         return this;
     }
 
+    [Obsolete("Use the Reactions client instead.")]
     public MessageReactionActivity RemoveReaction(Messages.ReactionType type)
     {
         ReactionsRemoved ??= [];

@@ -14,6 +14,20 @@ public class ApiClient : Client
     public virtual TeamClient Teams { get; }
     public virtual MeetingClient Meetings { get; }
 
+    /// <summary>
+    /// Gets the underlying <see cref="IHttpClient"/> instance used by this <see cref="ApiClient"/>
+    /// and its sub-clients to perform HTTP requests.
+    /// </summary>
+    /// <remarks>
+    /// This property is provided for advanced scenarios where you need to issue custom HTTP
+    /// calls that are not yet covered by the strongly-typed clients exposed by <see cref="ApiClient"/>.
+    /// Prefer using the typed clients (<see cref="Bots"/>, <see cref="Conversations"/>,
+    /// <see cref="Users"/>, <see cref="Teams"/>, <see cref="Meetings"/>) whenever possible.
+    /// Relying on this property may couple your code to the current HTTP implementation and
+    /// could limit future refactoring of the underlying client.
+    /// </remarks>
+    public IHttpClient Client { get => base._http; }
+
     public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
