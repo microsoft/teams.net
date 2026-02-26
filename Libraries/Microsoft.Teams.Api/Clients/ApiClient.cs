@@ -16,42 +16,42 @@ public class ApiClient : Client
 
     public ApiClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
         Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
+        Conversations = new ConversationClient(ServiceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+        Teams = new TeamClient(ServiceUrl, _http, cancellationToken);
+        Meetings = new MeetingClient(ServiceUrl, _http, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
         Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
+        Conversations = new ConversationClient(ServiceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+        Teams = new TeamClient(ServiceUrl, _http, cancellationToken);
+        Meetings = new MeetingClient(ServiceUrl, _http, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
         Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
+        Conversations = new ConversationClient(ServiceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+        Teams = new TeamClient(ServiceUrl, _http, cancellationToken);
+        Meetings = new MeetingClient(ServiceUrl, _http, cancellationToken);
     }
 
     public ApiClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
         Bots = new BotClient(_http, cancellationToken);
-        Conversations = new ConversationClient(serviceUrl, _http, cancellationToken);
+        Conversations = new ConversationClient(ServiceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
-        Teams = new TeamClient(serviceUrl, _http, cancellationToken);
-        Meetings = new MeetingClient(serviceUrl, _http, cancellationToken);
+        Teams = new TeamClient(ServiceUrl, _http, cancellationToken);
+        Meetings = new MeetingClient(ServiceUrl, _http, cancellationToken);
     }
 
     public ApiClient(ApiClient client) : base()

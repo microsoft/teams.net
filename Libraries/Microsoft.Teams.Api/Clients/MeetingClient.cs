@@ -14,22 +14,22 @@ public class MeetingClient : Client
 
     public MeetingClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public MeetingClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public MeetingClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public MeetingClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public async Task<Meeting> GetByIdAsync(string id)

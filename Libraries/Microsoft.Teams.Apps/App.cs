@@ -312,7 +312,7 @@ public partial class App
 
         var reference = new ConversationReference()
         {
-            ServiceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl,
+            ServiceUrl = @event.Activity.ServiceUrl ?? @event.Token?.ServiceUrl ?? string.Empty,
             ChannelId = @event.Activity.ChannelId,
             Bot = @event.Activity.Recipient,
             User = @event.Activity.From,
@@ -338,8 +338,8 @@ public partial class App
         var stream = sender.CreateStream(reference, cancellationToken);
         var context = new Context<IActivity>(sender, stream)
         {
-            AppId = @event.Token.AppId ?? Id ?? string.Empty,
-            TenantId = @event.Token.TenantId ?? string.Empty,
+            AppId = @event.Token?.AppId ?? Id ?? string.Empty,
+            TenantId = @event.Token?.TenantId ?? string.Empty,
             Log = Logger.Child(path),
             Storage = Storage,
             Api = api,

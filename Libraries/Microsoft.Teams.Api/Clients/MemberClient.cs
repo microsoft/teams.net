@@ -11,22 +11,22 @@ public class MemberClient : Client
 
     public MemberClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public MemberClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public MemberClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public MemberClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
     {
-        ServiceUrl = serviceUrl;
+        ServiceUrl = NormalizeServiceUrl(serviceUrl);
     }
 
     public async Task<List<Account>> GetAsync(string conversationId)

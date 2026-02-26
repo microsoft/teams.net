@@ -47,6 +47,18 @@ public class AspNetCorePluginTests
         return ctx;
     }
 
+    private static DefaultHttpContext CreateHttpContextWithoutAuth(IActivity activity)
+    {
+        var ctx = new DefaultHttpContext();
+        ctx.TraceIdentifier = Guid.NewGuid().ToString();
+        // No Authorization header
+        var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull });
+        var bytes = Encoding.UTF8.GetBytes(json);
+        ctx.Request.Body = new MemoryStream(bytes);
+        ctx.Request.ContentLength = bytes.Length;
+        return ctx;
+    }
+
     private static MessageActivity CreateMessageActivity()
     {
         return new MessageActivity("hi")
@@ -195,5 +207,50 @@ public class AspNetCorePluginTests
         // Assert
         Assert.Same(response, res);
         logger.Verify(l => l.Debug(It.IsAny<object[]>()), Times.AtLeastOnce);
+    }
+
+    [Fact]
+    public void Test_ExtractToken_ReturnsNull_WhenNoAuthHeader()
+    {
+        // Arrange
+        var plugin = CreatePlugin();
+        var ctx = CreateHttpContextWithoutAuth(CreateMessageActivity());
+
+        // Act
+        var token = plugin.ExtractToken(ctx.Request);
+
+        // Assert
+        Assert.Null(token);
+    }
+
+    [Fact]
+    public async Task Test_Do_Http_WorksWithoutAuthHeader()
+    {
+        // Arrange - simulates skipAuth scenario where no Authorization header is present
+        var activity = CreateMessageActivity();
+        var coreResponse = new Response(HttpStatusCode.OK, new { ok = true });
+        EventFunction events = (plugin, name, payload, ct) =>
+        {
+            if (name == "activity")
+            {
+                var activityEvent = (ActivityEvent)payload;
+                // Token should be an AnonymousToken when no auth header (matches Python/TypeScript behavior)
+                Assert.NotNull(activityEvent.Token);
+                Assert.IsType<AnonymousToken>(activityEvent.Token);
+                Assert.Equal(string.Empty, activityEvent.Token.AppId);
+                return Task.FromResult<object?>(coreResponse);
+            }
+            return Task.FromResult<object?>(null);
+        };
+
+        var plugin = CreatePlugin(new Mock<ILogger>(), events);
+        var ctx = CreateHttpContextWithoutAuth(activity);
+
+        // Act
+        var result = await plugin.Do(ctx);
+
+        // Assert
+        var jsonResult = Assert.IsType<Microsoft.AspNetCore.Http.HttpResults.JsonHttpResult<object?>>(result);
+        Assert.Equal(200, jsonResult.StatusCode);
     }
 }

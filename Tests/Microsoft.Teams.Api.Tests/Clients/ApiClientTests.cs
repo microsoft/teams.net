@@ -11,7 +11,8 @@ public class ApiClientTests
         var serviceUrl = "https://api.botframework.com";
         var apiClient = new ApiClient(serviceUrl);
 
-        Assert.Equal(serviceUrl, apiClient.ServiceUrl);
+        // ServiceUrl is normalized to have trailing slash
+        Assert.Equal(serviceUrl + "/", apiClient.ServiceUrl);
     }
 
     [Fact]
@@ -20,6 +21,7 @@ public class ApiClientTests
         var serviceUrl = "https://api.botframework.com";
         var apiClient = new ApiClient(serviceUrl);
 
-        Assert.Equal(serviceUrl, apiClient.ServiceUrl);
+        // ServiceUrl is normalized to have trailing slash
+        Assert.Equal(serviceUrl + "/", apiClient.ServiceUrl);
     }
 }

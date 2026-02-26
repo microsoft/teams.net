@@ -10,6 +10,9 @@ public abstract class Client
     protected IHttpClient _http;
     protected CancellationToken _cancellationToken;
 
+    protected static string NormalizeServiceUrl(string serviceUrl) =>
+        serviceUrl.EndsWith('/') ? serviceUrl : serviceUrl + '/';
+
     public Client(CancellationToken cancellationToken = default)
     {
         _http = new Common.Http.HttpClient();
