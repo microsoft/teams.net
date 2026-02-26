@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Bot.Core.Hosting;
 using Moq;
 
 namespace Microsoft.Teams.Bot.Core.UnitTests;
@@ -189,7 +188,7 @@ public class MiddlewareTests
     }
 
     private static BotApplication CreateBotApplication() =>
-        new(CreateMockConversationClient(), CreateMockUserTokenClient(), new(), NullLogger<BotApplication>.Instance);
+        new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance);
 
     private static ConversationClient CreateMockConversationClient()
     {
