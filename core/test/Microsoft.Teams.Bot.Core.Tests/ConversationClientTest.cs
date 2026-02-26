@@ -1,11 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Core.Hosting;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Bot.Core.Tests;
+using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests;
 
@@ -14,9 +17,11 @@ public class ConversationClientTest
     private readonly ServiceProvider _serviceProvider;
     private readonly ConversationClient _conversationClient;
     private readonly Uri _serviceUrl;
+    private readonly ITestOutputHelper testOutput;
 
-    public ConversationClientTest()
+    public ConversationClientTest(ITestOutputHelper outputHelper)
     {
+        testOutput = outputHelper;
         IConfigurationBuilder builder = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
             .AddEnvironmentVariables();
@@ -24,7 +29,12 @@ public class ConversationClientTest
         IConfiguration configuration = builder.Build();
 
         ServiceCollection services = new();
-        services.AddLogging();
+        services.AddLogging((builder) => {
+            builder.AddXUnit(outputHelper);
+            builder.AddFilter("System.Net", LogLevel.Warning);
+            builder.AddFilter("Microsoft.Identity", LogLevel.Warning);
+            builder.AddFilter("Microsoft.Teams", LogLevel.Information);
+        });
         services.AddSingleton(configuration);
         services.AddBotApplication<BotApplication>();
         _serviceProvider = services.BuildServiceProvider();
@@ -40,6 +50,28 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
+            Conversation = new()
+            {
+                Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
+            }
+        };
+        SendActivityResponse res = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        Assert.NotNull(res);
+        Assert.NotNull(res.Id);
+    }
+
+    
+
+    [Fact]
+    public async Task SendActivityDefaultWithAgentic()
+    {
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
+            ServiceUrl = _serviceUrl,
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
@@ -59,6 +91,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CHANNELID") ?? throw new InvalidOperationException("TEST_CHANNELID environment variable not set")
@@ -77,6 +110,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message from Automated tests, running in SDK `{BotApplication.Version}` at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = "a:1"
@@ -96,6 +130,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Original message from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
@@ -111,6 +146,7 @@ public class ConversationClientTest
         {
             Type = ActivityType.Message,
             Properties = { { "text", $"Updated message from Automated tests at `{DateTime.UtcNow:s}`" } },
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             ServiceUrl = _serviceUrl,
         };
 
@@ -133,6 +169,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message to delete from Automated tests at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
@@ -151,6 +188,7 @@ public class ConversationClientTest
             activity.Conversation.Id,
             sendResponse.Id,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         // If no exception was thrown, the delete was successful
@@ -164,16 +202,17 @@ public class ConversationClientTest
         IList<ConversationAccount> members = await _conversationClient.GetConversationMembersAsync(
             conversationId,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
 
         // Log members
-        Console.WriteLine($"Found {members.Count} members in conversation {conversationId}:");
+        testOutput.WriteLine($"Found {members.Count} members in conversation {conversationId}:");
         foreach (ConversationAccount member in members)
         {
-            Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+            testOutput.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             Assert.NotNull(member);
             Assert.NotNull(member.Id);
         }
@@ -189,13 +228,14 @@ public class ConversationClientTest
             conversationId,
             userId,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(member);
 
         // Log member
-        Console.WriteLine($"Found member in conversation {conversationId}:");
-        Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+        testOutput.WriteLine($"Found member in conversation {conversationId}:");
+        testOutput.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
         Assert.NotNull(member);
         Assert.NotNull(member.Id);
     }
@@ -209,16 +249,17 @@ public class ConversationClientTest
         IList<ConversationAccount> members = await _conversationClient.GetConversationMembersAsync(
             channelId,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
 
         // Log members
-        Console.WriteLine($"Found {members.Count} members in channel {channelId}:");
+        testOutput.WriteLine($"Found {members.Count} members in channel {channelId}:");
         foreach (ConversationAccount member in members)
         {
-            Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+            testOutput.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             Assert.NotNull(member);
             Assert.NotNull(member.Id);
         }
@@ -233,6 +274,7 @@ public class ConversationClientTest
             Type = ActivityType.Message,
             Properties = { { "text", $"Message for GetActivityMembers test at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             Conversation = new()
             {
                 Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
@@ -248,16 +290,17 @@ public class ConversationClientTest
             activity.Conversation.Id,
             sendResponse.Id,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
 
         // Log activity members
-        Console.WriteLine($"Found {members.Count} members for activity {sendResponse.Id}:");
+        testOutput.WriteLine($"Found {members.Count} members for activity {sendResponse.Id}:");
         foreach (ConversationAccount member in members)
         {
-            Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+            testOutput.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             Assert.NotNull(member);
             Assert.NotNull(member.Id);
         }
@@ -276,19 +319,19 @@ public class ConversationClientTest
         Assert.NotEmpty(response.Conversations);
 
         // Log conversations
-        Console.WriteLine($"Found {response.Conversations.Count} conversations:");
+        testOutput.WriteLine($"Found {response.Conversations.Count} conversations:");
         foreach (ConversationMembers conversation in response.Conversations)
         {
-            Console.WriteLine($"  - Conversation Id: {conversation.Id}");
+            testOutput.WriteLine($"  - Conversation Id: {conversation.Id}");
             Assert.NotNull(conversation);
             Assert.NotNull(conversation.Id);
 
             if (conversation.Members != null && conversation.Members.Any())
             {
-                Console.WriteLine($"    Members ({conversation.Members.Count}):");
+                testOutput.WriteLine($"    Members ({conversation.Members.Count}):");
                 foreach (ConversationAccount member in conversation.Members)
                 {
-                    Console.WriteLine($"      - Id: {member.Id}, Name: {member.Name}");
+                    testOutput.WriteLine($"      - Id: {member.Id}, Name: {member.Name}");
                 }
             }
         }
@@ -315,14 +358,15 @@ public class ConversationClientTest
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
 
-        Console.WriteLine($"Created conversation: {response.Id}");
-        Console.WriteLine($"  ActivityId: {response.ActivityId}");
-        Console.WriteLine($"  ServiceUrl: {response.ServiceUrl}");
+        testOutput.WriteLine($"Created conversation: {response.Id}");
+        testOutput.WriteLine($"  ActivityId: {response.ActivityId}");
+        testOutput.WriteLine($"  ServiceUrl: {response.ServiceUrl}");
 
         // Send a message to the newly created conversation
         CoreActivity activity = new()
@@ -340,7 +384,7 @@ public class ConversationClientTest
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
-        Console.WriteLine($"  Sent message with activity ID: {sendResponse.Id}");
+        testOutput.WriteLine($"  Sent message with activity ID: {sendResponse.Id}");
     }
 
     // TODO: This doesn't work
@@ -368,12 +412,13 @@ public class ConversationClientTest
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
 
-        Console.WriteLine($"Created group conversation: {response.Id}");
+        testOutput.WriteLine($"Created group conversation: {response.Id}");
 
         // Send a message to the newly created group conversation
         CoreActivity activity = new()
@@ -391,7 +436,7 @@ public class ConversationClientTest
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
-        Console.WriteLine($"  Sent message with activity ID: {sendResponse.Id}");
+        testOutput.WriteLine($"  Sent message with activity ID: {sendResponse.Id}");
     }
 
     // TODO: This doesn't work
@@ -421,7 +466,7 @@ public class ConversationClientTest
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
 
-        Console.WriteLine($"Created conversation with topic '{parameters.TopicName}': {response.Id}");
+        testOutput.WriteLine($"Created conversation with topic '{parameters.TopicName}': {response.Id}");
 
         // Send a message to the newly created conversation
         CoreActivity activity = new()
@@ -439,7 +484,7 @@ public class ConversationClientTest
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
-        Console.WriteLine($"  Sent message with activity ID: {sendResponse.Id}");
+        testOutput.WriteLine($"  Sent message with activity ID: {sendResponse.Id}");
     }
 
     // TODO: This doesn't fail, but doesn't actually create the initial activity
@@ -468,14 +513,15 @@ public class ConversationClientTest
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
         // Assert.NotNull(response.ActivityId); // Should have an activity ID since we sent an initial message
 
-        Console.WriteLine($"Created conversation with initial activity: {response.Id}");
-        Console.WriteLine($"  Initial activity ID: {response.ActivityId}");
+        testOutput.WriteLine($"Created conversation with initial activity: {response.Id}");
+        testOutput.WriteLine($"  Initial activity ID: {response.ActivityId}");
     }
 
     [Fact]
@@ -502,12 +548,13 @@ public class ConversationClientTest
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
 
-        Console.WriteLine($"Created conversation with channel data: {response.Id}");
+        testOutput.WriteLine($"Created conversation with channel data: {response.Id}");
     }
 
     [Fact]
@@ -518,23 +565,26 @@ public class ConversationClientTest
         PagedMembersResult result = await _conversationClient.GetConversationPagedMembersAsync(
             conversationId,
             _serviceUrl,
+            10,
+            null!,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Members);
         Assert.NotEmpty(result.Members);
 
-        Console.WriteLine($"Found {result.Members.Count} members in page:");
+        testOutput.WriteLine($"Found {result.Members.Count} members in page:");
         foreach (ConversationAccount member in result.Members)
         {
-            Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+            testOutput.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             Assert.NotNull(member);
             Assert.NotNull(member.Id);
         }
 
         if (!string.IsNullOrWhiteSpace(result.ContinuationToken))
         {
-            Console.WriteLine($"Continuation token: {result.ContinuationToken}");
+            testOutput.WriteLine($"Continuation token: {result.ContinuationToken}");
         }
     }
 
@@ -554,16 +604,16 @@ public class ConversationClientTest
         Assert.NotEmpty(result.Members);
         Assert.Single(result.Members);
 
-        Console.WriteLine($"Found {result.Members.Count} members with pageSize=1:");
+        testOutput.WriteLine($"Found {result.Members.Count} members with pageSize=1:");
         foreach (ConversationAccount member in result.Members)
         {
-            Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+            testOutput.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
         }
 
         // If there's a continuation token, get the next page
         if (!string.IsNullOrWhiteSpace(result.ContinuationToken))
         {
-            Console.WriteLine($"Getting next page with continuation token...");
+            testOutput.WriteLine($"Getting next page with continuation token...");
 
             PagedMembersResult nextPage = await _conversationClient.GetConversationPagedMembersAsync(
                 conversationId,
@@ -575,10 +625,10 @@ public class ConversationClientTest
             Assert.NotNull(nextPage);
             Assert.NotNull(nextPage.Members);
 
-            Console.WriteLine($"Found {nextPage.Members.Count} members in next page:");
+            testOutput.WriteLine($"Found {nextPage.Members.Count} members in next page:");
             foreach (ConversationAccount member in nextPage.Members)
             {
-                Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+                testOutput.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
             }
         }
     }
@@ -597,10 +647,10 @@ public class ConversationClientTest
         Assert.NotNull(membersBefore);
         Assert.NotEmpty(membersBefore);
 
-        Console.WriteLine($"Members before deletion: {membersBefore.Count}");
+        testOutput.WriteLine($"Members before deletion: {membersBefore.Count}");
         foreach (ConversationAccount member in membersBefore)
         {
-            Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+            testOutput.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
         }
 
         // Delete the test user
@@ -615,7 +665,7 @@ public class ConversationClientTest
             _serviceUrl,
             cancellationToken: CancellationToken.None);
 
-        Console.WriteLine($"Deleted member: {memberToDelete}");
+        testOutput.WriteLine($"Deleted member: {memberToDelete}");
 
         // Get members after deletion
         IList<ConversationAccount> membersAfter = await _conversationClient.GetConversationMembersAsync(
@@ -625,10 +675,10 @@ public class ConversationClientTest
 
         Assert.NotNull(membersAfter);
 
-        Console.WriteLine($"Members after deletion: {membersAfter.Count}");
+        testOutput.WriteLine($"Members after deletion: {membersAfter.Count}");
         foreach (ConversationAccount member in membersAfter)
         {
-            Console.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
+            testOutput.WriteLine($"  - Id: {member.Id}, Name: {member.Name}");
         }
 
         // Verify the member was deleted
@@ -680,8 +730,8 @@ public class ConversationClientTest
 
         Assert.NotNull(response);
 
-        Console.WriteLine($"Sent conversation history with {transcript.Activities?.Count} activities");
-        Console.WriteLine($"Response ID: {response.Id}");
+        testOutput.WriteLine($"Sent conversation history with {transcript.Activities?.Count} activities");
+        testOutput.WriteLine($"Response ID: {response.Id}");
     }
 
     [Fact(Skip = "Attachment upload endpoint not found")]
@@ -709,9 +759,11 @@ public class ConversationClientTest
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
 
-        Console.WriteLine($"Uploaded attachment: {attachmentData.Name}");
-        Console.WriteLine($"  Attachment ID: {response.Id}");
-        Console.WriteLine($"  Content-Type: {attachmentData.Type}");
-        Console.WriteLine($"  Size: {fileBytes.Length} bytes");
+        testOutput.WriteLine($"Uploaded attachment: {attachmentData.Name}");
+        testOutput.WriteLine($"  Attachment ID: {response.Id}");
+        testOutput.WriteLine($"  Content-Type: {attachmentData.Type}");
+        testOutput.WriteLine($"  Size: {fileBytes.Length} bytes");
     }
+
+   
 }

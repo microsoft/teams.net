@@ -178,7 +178,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Require special permissions")]
         public async Task GetMeetingInfoAsync_WithMeetingId_ReturnsMeetingInfo()
         {
             var adapter = InitializeCompatAdapter();
@@ -224,7 +224,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Require special permissions")]
         public async Task SendMeetingNotificationAsync_SendsNotification()
         {
             var adapter = InitializeCompatAdapter();
@@ -323,7 +323,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Require special permissions")]
         public async Task SendMessageToListOfUsersAsync_ReturnsOperationId()
         {
             var adapter = InitializeCompatAdapter();
@@ -362,7 +362,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Require special permissions")]
         public async Task SendMessageToListOfChannelsAsync_ReturnsOperationId()
         {
             var adapter = InitializeCompatAdapter();
@@ -396,7 +396,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Require special permissions")]
         public async Task SendMessageToAllUsersInTeamAsync_ReturnsOperationId()
         {
             var adapter = InitializeCompatAdapter();
@@ -455,7 +455,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Require special permissions")]
         public async Task SendMessageToTeamsChannelAsync_CreatesConversationAndSendsMessage()
         {
             var adapter = InitializeCompatAdapter();
@@ -487,7 +487,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Require special permissions")]
         public async Task GetOperationStateAsync_WithOperationId_ReturnsState()
         {
             var adapter = InitializeCompatAdapter();
@@ -510,7 +510,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Require special permissions")]
         public async Task GetPagedFailedEntriesAsync_WithOperationId_ReturnsFailedEntries()
         {
             var adapter = InitializeCompatAdapter();
@@ -532,7 +532,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Requires valid operation ID from batch operation")]
         public async Task CancelOperationAsync_WithOperationId_CancelsOperation()
         {
             var adapter = InitializeCompatAdapter();
