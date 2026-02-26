@@ -23,6 +23,8 @@ namespace Microsoft.Teams.Bot.Core.Hosting
     {
         internal const string BotScheme = "BotScheme";
         internal const string AgentScheme = "AgentScheme";
+        internal const string EntraScheme = "EntraScheme";
+        internal const string EntraPolicy = "EntraPolicy";
         internal const string BotScope = "https://api.botframework.com/.default";
         internal const string AgentScope = "https://botapi.skype.com/.default";
         internal const string BotOIDC = "https://login.botframework.com/v1/.well-known/openid-configuration";
@@ -44,10 +46,16 @@ namespace Microsoft.Teams.Bot.Core.Hosting
 
             AuthenticationBuilder builder = services.AddAuthentication();
             ArgumentNullException.ThrowIfNull(configuration);
+
             string audience = configuration[$"{aadSectionName}:ClientId"]
-                   ?? configuration["CLIENT_ID"]
-                   ?? configuration["MicrosoftAppId"]
-                   ?? throw new InvalidOperationException("ClientID not found in configuration, tried the 3 option");
+                ?? configuration["CLIENT_ID"]
+                ?? configuration["MicrosoftAppId"]
+                ?? throw new InvalidOperationException("ClientID not found in configuration, tried the 3 option");
+
+            string tenantId = configuration[$"{aadSectionName}:TenantId"]
+                ?? configuration["TENANT_ID"]
+                ?? configuration["MicrosoftAppTenantId"]
+                ?? string.Empty;
 
             if (!useAgentAuth)
             {
@@ -56,14 +64,17 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             }
             else
             {
-                string tenantId = configuration[$"{aadSectionName}:TenantId"]
-                    ?? configuration["TENANT_ID"]
-                    ?? configuration["MicrosoftAppTenantId"]
-                    ?? "botframework.com"; // TODO: Task 5039198: Test JWT Validation for MultiTenant
-
-                string[] validIssuers = [$"https://sts.windows.net/{tenantId}/", $"https://login.microsoftonline.com/{tenantId}/v2", "https://api.botframework.com"];
+                string agentTenantId = string.IsNullOrEmpty(tenantId) ? "botframework.com" : tenantId; // TODO: Task 5039198: Test JWT Validation for MultiTenant
+                string[] validIssuers = [$"https://sts.windows.net/{agentTenantId}/", $"https://login.microsoftonline.com/{agentTenantId}/v2", "https://api.botframework.com"];
                 builder.AddCustomJwtBearer(AgentScheme, validIssuers, audience, logger);
             }
+
+            // Register the Entra user token scheme for tab function endpoints.
+            string[] entraIssuers = string.IsNullOrEmpty(tenantId)
+                ? ["https://login.microsoftonline.com/common/v2.0"]
+                : [$"https://login.microsoftonline.com/{tenantId}/v2.0", $"https://sts.windows.net/{tenantId}/"];
+            builder.AddCustomJwtBearer(EntraScheme, entraIssuers, audience, logger);
+
             return builder;
         }
 
@@ -100,6 +111,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             bool useAgentAuth = string.Equals(azureScope, AgentScope, StringComparison.OrdinalIgnoreCase);
 
             services.AddBotAuthentication(configuration, useAgentAuth, logger, aadSectionName);
+
             AuthorizationBuilder authorizationBuilder = services
                 .AddAuthorizationBuilder()
                 .AddDefaultPolicy(aadSectionName, policy =>
@@ -112,6 +124,11 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     {
                         policy.AuthenticationSchemes.Add(AgentScheme);
                     }
+                    policy.RequireAuthenticatedUser();
+                })
+                .AddPolicy(EntraPolicy, policy =>
+                {
+                    policy.AddAuthenticationSchemes(EntraScheme);
                     policy.RequireAuthenticatedUser();
                 });
             return authorizationBuilder;
