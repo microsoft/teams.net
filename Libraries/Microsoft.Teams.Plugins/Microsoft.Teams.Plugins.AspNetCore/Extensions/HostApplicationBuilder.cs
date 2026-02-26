@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Extensions;
 
@@ -119,8 +120,9 @@ public static class HostApplicationBuilderExtensions
     public static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false)
     {
         var settings = builder.Configuration.GetTeams();
+        var cloud = settings.ResolveCloud();
 
-        var teamsValidationSettings = new TeamsValidationSettings();
+        var teamsValidationSettings = new TeamsValidationSettings(cloud);
         if (!string.IsNullOrEmpty(settings.ClientId))
         {
             teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
