@@ -120,7 +120,7 @@ public static class HostApplicationBuilderExtensions
     public static IHostApplicationBuilder AddTeamsTokenAuthentication(this IHostApplicationBuilder builder, bool skipAuth = false)
     {
         var settings = builder.Configuration.GetTeams();
-        var cloud = settings.Cloud is not null ? CloudEnvironment.FromName(settings.Cloud) : CloudEnvironment.Public;
+        var cloud = settings.ResolveCloud();
 
         var teamsValidationSettings = new TeamsValidationSettings(cloud);
         if (!string.IsNullOrEmpty(settings.ClientId))
