@@ -1,5 +1,3 @@
-﻿using Json.Schema;
-
 using Microsoft.Teams.AI;
 using Microsoft.Teams.AI.Prompts;
 using Microsoft.Teams.Common.Logging;
@@ -220,7 +218,7 @@ public class McpClientPlugin : BaseChatPlugin
         return new AI.Function(
             tool.Name,
             tool.Description,
-            JsonSchema.FromText(tool.InputSchema?.GetRawText() ?? "{}"),
+            JsonSchemaWrapper.FromJson(tool.InputSchema?.GetRawText() ?? "{}"),
             async (IDictionary<string, object?> args) =>
             {
                 try
