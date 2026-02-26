@@ -10,6 +10,7 @@ public class ClientCredentials : IHttpCredentials
     public string ClientId { get; set; }
     public string ClientSecret { get; set; }
     public string? TenantId { get; set; }
+    public CloudEnvironment Cloud { get; set; } = CloudEnvironment.Public;
 
     public ClientCredentials(string clientId, string clientSecret)
     {
@@ -26,9 +27,9 @@ public class ClientCredentials : IHttpCredentials
 
     public async Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, CancellationToken cancellationToken = default)
     {
-        var tenantId = TenantId ?? "botframework.com";
+        var tenantId = TenantId ?? Cloud.LoginTenant;
         var request = HttpRequest.Post(
-            $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token"
+            $"{Cloud.LoginEndpoint}/{tenantId}/oauth2/v2.0/token"
         );
 
         request.Headers.Add("Content-Type", ["application/x-www-form-urlencoded"]);

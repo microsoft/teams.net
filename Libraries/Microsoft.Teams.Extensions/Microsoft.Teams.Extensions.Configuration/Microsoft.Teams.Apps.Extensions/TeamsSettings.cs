@@ -10,6 +10,7 @@ public class TeamsSettings
     public string? ClientId { get; set; }
     public string? ClientSecret { get; set; }
     public string? TenantId { get; set; }
+    public string? Cloud { get; set; }
 
     public bool Empty
     {
@@ -20,9 +21,20 @@ public class TeamsSettings
     {
         options ??= new AppOptions();
 
+        if (Cloud is not null)
+        {
+            options.Cloud = CloudEnvironment.FromName(Cloud);
+        }
+
+        var cloud = options.Cloud ?? CloudEnvironment.Public;
+
         if (ClientId is not null && ClientSecret is not null && !Empty)
         {
-            options.Credentials = new ClientCredentials(ClientId, ClientSecret, TenantId);
+            var credentials = new ClientCredentials(ClientId, ClientSecret, TenantId)
+            {
+                Cloud = cloud
+            };
+            options.Credentials = credentials;
         }
 
         return options;
