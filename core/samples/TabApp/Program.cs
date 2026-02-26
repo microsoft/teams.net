@@ -8,14 +8,12 @@ using TabApp;
 
 var builder = TeamsBotApplication.CreateBuilder(args);
 
-var app = builder.Build();
-
 // Serve the React tab at /tabs/test (build the web app first: cd Web && npm install && npm run build)
-app.WithTab("test", "./Web/bin");
+builder.WithTab("test", "./Web/bin");
 
 // ==================== SERVER FUNCTIONS ====================
 
-app.WithFunction<PostToChatBody>("post-to-chat", async (ctx, ct) =>
+builder.WithFunction<PostToChatBody>("post-to-chat", async (ctx, ct) =>
 {
     ctx.Log.LogInformation("post-to-chat called by {User} with message: {Message}", ctx.UserName, ctx.Data.Message);
     await ctx.SendAsync(ctx.Data.Message, ct);
@@ -23,6 +21,8 @@ app.WithFunction<PostToChatBody>("post-to-chat", async (ctx, ct) =>
 });
 
 // TODO: Once SSO is implemented, review moving who-am-i and toggle-status functions to server side
+
+var app = builder.Build();
 
 // ==================== MESSAGE ====================
 app.OnMessage(async (ctx, ct) =>
