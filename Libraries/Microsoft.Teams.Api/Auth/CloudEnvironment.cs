@@ -128,6 +128,39 @@ public class CloudEnvironment
     );
 
     /// <summary>
+    /// Creates a new <see cref="CloudEnvironment"/> by applying non-null overrides on top of this instance.
+    /// Returns the same instance if all overrides are null (no allocation).
+    /// </summary>
+    public CloudEnvironment WithOverrides(
+        string? loginEndpoint = null,
+        string? loginTenant = null,
+        string? botScope = null,
+        string? tokenServiceUrl = null,
+        string? openIdMetadataUrl = null,
+        string? tokenIssuer = null,
+        string? channelService = null,
+        string? oauthRedirectUrl = null)
+    {
+        if (loginEndpoint is null && loginTenant is null && botScope is null &&
+            tokenServiceUrl is null && openIdMetadataUrl is null && tokenIssuer is null &&
+            channelService is null && oauthRedirectUrl is null)
+        {
+            return this;
+        }
+
+        return new CloudEnvironment(
+            loginEndpoint ?? LoginEndpoint,
+            loginTenant ?? LoginTenant,
+            botScope ?? BotScope,
+            tokenServiceUrl ?? TokenServiceUrl,
+            openIdMetadataUrl ?? OpenIdMetadataUrl,
+            tokenIssuer ?? TokenIssuer,
+            channelService ?? ChannelService,
+            oauthRedirectUrl ?? OAuthRedirectUrl
+        );
+    }
+
+    /// <summary>
     /// Resolves a cloud environment name (case-insensitive) to its corresponding instance.
     /// Valid names: "Public", "USGov", "USGovDoD", "China".
     /// </summary>

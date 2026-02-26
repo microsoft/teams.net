@@ -31,13 +31,9 @@ public static class HostApplicationBuilderExtensions
         var settings = builder.Configuration.GetTeams();
         var loggingSettings = builder.Configuration.GetTeamsLogging();
 
-        // cloud environment
-        if (settings.Cloud is not null && options.Cloud is null)
-        {
-            options.Cloud = CloudEnvironment.FromName(settings.Cloud);
-        }
-
-        var cloud = options.Cloud ?? CloudEnvironment.Public;
+        // cloud environment (base preset + per-endpoint overrides)
+        var cloud = settings.ResolveCloud(options.Cloud);
+        options.Cloud = cloud;
 
         // client credentials
         if (options.Credentials is null && settings.ClientId is not null && settings.ClientSecret is not null && !settings.Empty)
@@ -65,12 +61,8 @@ public static class HostApplicationBuilderExtensions
         var settings = builder.Configuration.GetTeams();
         var loggingSettings = builder.Configuration.GetTeamsLogging();
 
-        // cloud environment
-        CloudEnvironment? cloud = null;
-        if (settings.Cloud is not null)
-        {
-            cloud = CloudEnvironment.FromName(settings.Cloud);
-        }
+        // cloud environment (base preset + per-endpoint overrides)
+        var cloud = settings.ResolveCloud();
 
         // client credentials
         if (settings.ClientId is not null && settings.ClientSecret is not null && !settings.Empty)
@@ -79,12 +71,8 @@ public static class HostApplicationBuilderExtensions
                 settings.ClientId,
                 settings.ClientSecret,
                 settings.TenantId
-            );
-
-            if (cloud is not null)
-            {
-                credentials.Cloud = cloud;
-            }
+            )
+            { Cloud = cloud };
 
             appBuilder = appBuilder.AddCredentials(credentials);
         }
