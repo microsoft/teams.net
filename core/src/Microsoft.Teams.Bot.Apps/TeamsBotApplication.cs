@@ -33,17 +33,17 @@ public class TeamsBotApplication : BotApplication
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
     /// <param name="teamsApiClient"></param>
-    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics.</param>
     /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
+    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics. Defaults to an empty instance if not provided.</param>
     public TeamsBotApplication(
         ConversationClient conversationClient,
         UserTokenClient userTokenClient,
         TeamsApiClient teamsApiClient,
-        BotApplicationOptions options,
         IHttpContextAccessor httpContextAccessor,
-        ILogger<TeamsBotApplication> logger)
-        : base(conversationClient, userTokenClient, options, logger)
+        ILogger<TeamsBotApplication> logger,
+        BotApplicationOptions? options = null)
+        : base(conversationClient, userTokenClient, logger, options)
     {
         _teamsApiClient = teamsApiClient;
         Router = new Router(logger);
