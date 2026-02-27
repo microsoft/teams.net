@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Net.Http.Headers;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -173,13 +175,12 @@ public class TeamsBotApplicationBuilder
     /// The endpoint is mapped when <see cref="Build"/> is called.
     /// </summary>
     /// <typeparam name="TBody">The type to deserialize the JSON request body into.</typeparam>
-    /// <typeparam name="TResult">The type of the value serialized as the JSON response.</typeparam>
     /// <param name="name">The function name used in the URL path.</param>
     /// <param name="handler">The async handler whose return value is serialized as the JSON response.</param>
     /// <returns>The current instance for fluent chaining.</returns>
-    public TeamsBotApplicationBuilder WithFunction<TBody, TResult>(
+    public TeamsBotApplicationBuilder WithFunction<TBody>(
         string name,
-        Func<FunctionContext<TBody>, CancellationToken, Task<TResult>> handler)
+        Func<FunctionContext<TBody>, CancellationToken, Task<object?>> handler)
     {
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
@@ -190,7 +191,15 @@ public class TeamsBotApplicationBuilder
             {
                 FunctionRequest<TBody> request = await httpCtx.Request.ReadFromJsonAsync<FunctionRequest<TBody>>(ct).ConfigureAwait(false)
                     ?? throw new InvalidOperationException("Missing request body.");
-                FunctionContext<TBody> ctx = new(botApp, httpCtx, request);
+                FunctionContext<TBody> ctx = new(botApp)
+                {
+                    TenantId     = httpCtx.User.FindFirst("tid")?.Value,
+                    UserId       = httpCtx.User.FindFirst("oid")?.Value,
+                    UserName     = httpCtx.User.FindFirst(ClaimTypes.Name)?.Value,
+                    AuthToken    = AuthenticationHeaderValue.TryParse(httpCtx.Request.Headers.Authorization.FirstOrDefault(), out var header) ? header.Parameter : null,
+                    TeamsContext = request.Context,
+                    Data         = request.Payload,
+                };
                 return Results.Json(await handler(ctx, ct).ConfigureAwait(false));
             }).RequireAuthorization(JwtExtensions.EntraPolicy);
         });
@@ -199,31 +208,14 @@ public class TeamsBotApplicationBuilder
     }
 
     /// <summary>
-    /// Registers an HTTP POST endpoint at <c>/functions/{name}</c> with no request body and a typed response.
+    /// Registers an HTTP POST endpoint at <c>/functions/{name}</c> with no request body.
     /// The endpoint is mapped when <see cref="Build"/> is called.
     /// </summary>
-    /// <typeparam name="TResult">The type of the value serialized as the JSON response.</typeparam>
     /// <param name="name">The function name used in the URL path.</param>
     /// <param name="handler">The async handler whose return value is serialized as the JSON response.</param>
     /// <returns>The current instance for fluent chaining.</returns>
-    public TeamsBotApplicationBuilder WithFunction<TResult>(
+    public TeamsBotApplicationBuilder WithFunction(
         string name,
-        Func<FunctionContext, CancellationToken, Task<TResult>> handler)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
-        ArgumentNullException.ThrowIfNull(handler, nameof(handler));
-
-        _functionActions.Add((webApp, botApp) =>
-        {
-            webApp.MapPost($"/functions/{name}", async (HttpContext httpCtx, CancellationToken ct) =>
-            {
-                FunctionRequest request = await httpCtx.Request.ReadFromJsonAsync<FunctionRequest>(ct).ConfigureAwait(false)
-                    ?? throw new InvalidOperationException("Missing request body.");
-                FunctionContext ctx = new(botApp, httpCtx, request);
-                return Results.Json(await handler(ctx, ct).ConfigureAwait(false));
-            }).RequireAuthorization(JwtExtensions.EntraPolicy);
-        });
-
-        return this;
-    }
+        Func<FunctionContext, CancellationToken, Task<object?>> handler)
+        => WithFunction<object>(name, (ctx, ct) => handler(ctx, ct));
 }

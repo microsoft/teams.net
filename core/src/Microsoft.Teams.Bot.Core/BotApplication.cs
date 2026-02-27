@@ -32,14 +32,16 @@ public class BotApplication
     /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics. Defaults to an empty instance if not provided.</param>
     public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, ILogger<BotApplication> logger, BotApplicationOptions? options = null)
     {
-        options ??= new();
+        Options = options ?? new();
         _logger = logger;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
-        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
-        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
+        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, Options.AppId, Version);
     }
+
+    /// <summary>Gets the options this bot application was configured with.</summary>
+    public BotApplicationOptions Options { get; }
 
 
     /// <summary>

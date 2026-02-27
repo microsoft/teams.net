@@ -1,14 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Net.Http.Headers;
-using System.Security.Claims;
 using System.Text.Json.Nodes;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps;
@@ -17,34 +12,28 @@ namespace Microsoft.Teams.Bot.Apps;
 /// Context passed to a server function handler registered via
 /// <see cref="TeamsBotApplicationBuilder.WithFunction{TResult}"/>.
 /// </summary>
-public class FunctionContext(TeamsBotApplication botApp, HttpContext httpContext, FunctionRequest request)
+public class FunctionContext(TeamsBotApplication botApp)
 {
-    private readonly BotApplicationOptions _options =
-        httpContext.RequestServices.GetRequiredService<BotApplicationOptions>();
-
     /// <summary>Gets the bot's application (client) ID.</summary>
-    public string? BotId => _options.AppId;
+    public string BotId => botApp.Options.AppId;
 
     /// <summary>Gets the Teams bot service URL for proactive messaging.</summary>
-    public Uri? ServiceUrl => _options.ServiceUrl;
+    public Uri ServiceUrl => botApp.Options.ServiceUrl;
 
     /// <summary>Gets the Microsoft Entra tenant ID, extracted from the request auth token.</summary>
-    public string? TenantId => httpContext.User.FindFirst("tid")?.Value;
+    public string? TenantId { get; init; }
 
     /// <summary>Gets the Microsoft Entra object ID of the current user, extracted from the request auth token.</summary>
-    public string? UserId => httpContext.User.FindFirst("oid")?.Value;
+    public string? UserId { get; init; }
 
     /// <summary>Gets the name of the current user, extracted from the request auth token.</summary>
-    public string? UserName => httpContext.User.FindFirst(ClaimTypes.Name)?.Value;
+    public string? UserName { get; init; }
 
     /// <summary>Gets the MSAL Entra auth token from the request Authorization header.</summary>
-    public string? AuthToken => AuthenticationHeaderValue.TryParse(
-        httpContext.Request.Headers.Authorization.FirstOrDefault(), out var header)
-        ? header.Parameter
-        : null;
+    public string? AuthToken { get; init; }
 
     /// <summary>Gets the raw Teams context JSON node from the request body.</summary>
-    public JsonNode? TeamsContext => request.Context;
+    public JsonNode? TeamsContext { get; init; }
 
     /// <summary>Teams conversation ID, resolved after a call to <see cref="SendAsync"/>.</summary>
     public string? ConversationId { get; private set; }
@@ -90,11 +79,10 @@ public class FunctionContext(TeamsBotApplication botApp, HttpContext httpContext
 /// <see cref="TeamsBotApplicationBuilder.WithFunction{TBody, TResult}"/>.
 /// The deserialized request payload is available via <see cref="Data"/>.
 /// </summary>
-public class FunctionContext<T>(TeamsBotApplication botApp, HttpContext httpContext, FunctionRequest<T> request)
-    : FunctionContext(botApp, httpContext, request)
+public class FunctionContext<T>(TeamsBotApplication botApp) : FunctionContext(botApp)
 {
     /// <summary>Gets the deserialized request payload.</summary>
-    public T? Data => request.Payload;
+    public T? Data { get; init; }
 }
 
 /// <summary>

@@ -13,9 +13,9 @@ builder.WithTab("test", "./Web/bin");
 
 // ==================== SERVER FUNCTIONS ====================
 
-builder.WithFunction<PostToChatBody, PostToChatResult>("post-to-chat", async (ctx, ct) =>
+builder.WithFunction<PostToChatBody>("post-to-chat", async (ctx, ct) =>
 {
-    await ctx.SendAsync(ctx.Data?.Message?? "", ct);
+    await ctx.SendAsync(ctx.Data?.Message ?? "", ct);
     return new PostToChatResult(Ok: true);
 });
 
