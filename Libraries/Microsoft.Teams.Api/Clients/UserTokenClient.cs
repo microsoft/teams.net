@@ -10,8 +10,6 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class UserTokenClient : Client
 {
-    public string TokenServiceUrl { get; set; } = "https://token.botframework.com";
-
     private readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
@@ -40,7 +38,7 @@ public class UserTokenClient : Client
     public async Task<Token.Response> GetAsync(GetTokenRequest request)
     {
         var query = QueryString.Serialize(request);
-        var req = HttpRequest.Get($"{TokenServiceUrl}/api/usertoken/GetToken?{query}");
+        var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetToken?{query}");
         var res = await _http.SendAsync<Token.Response>(req, _cancellationToken);
         return res.Body;
     }
@@ -48,7 +46,7 @@ public class UserTokenClient : Client
     public async Task<IDictionary<string, Token.Response>> GetAadAsync(GetAadTokenRequest request)
     {
         var query = QueryString.Serialize(request);
-        var req = HttpRequest.Post($"{TokenServiceUrl}/api/usertoken/GetAadTokens?{query}", body: request);
+        var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/GetAadTokens?{query}", body: request);
         var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, _cancellationToken);
         return res.Body;
     }
@@ -56,7 +54,7 @@ public class UserTokenClient : Client
     public async Task<IList<Token.Status>> GetStatusAsync(GetTokenStatusRequest request)
     {
         var query = QueryString.Serialize(request);
-        var req = HttpRequest.Get($"{TokenServiceUrl}/api/usertoken/GetTokenStatus?{query}");
+        var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetTokenStatus?{query}");
         var res = await _http.SendAsync<IList<Token.Status>>(req, _cancellationToken);
         return res.Body;
     }
@@ -64,7 +62,7 @@ public class UserTokenClient : Client
     public async Task SignOutAsync(SignOutRequest request)
     {
         var query = QueryString.Serialize(request);
-        var req = HttpRequest.Delete($"{TokenServiceUrl}/api/usertoken/SignOut?{query}");
+        var req = HttpRequest.Delete($"https://token.botframework.com/api/usertoken/SignOut?{query}");
         await _http.SendAsync(req, _cancellationToken);
     }
 
@@ -81,7 +79,7 @@ public class UserTokenClient : Client
         // This is required for the Bot Framework Token Service to process the request correctly.
         var body = JsonSerializer.Serialize(request.GetBody(), _jsonSerializerOptions);
 
-        var req = HttpRequest.Post($"{TokenServiceUrl}/api/usertoken/exchange?{query}", body);
+        var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/exchange?{query}", body);
         req.Headers.Add("Content-Type", new List<string>() { "application/json" });
 
         var res = await _http.SendAsync<Token.Response>(req, _cancellationToken);

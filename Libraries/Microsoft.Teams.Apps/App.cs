@@ -51,8 +51,6 @@ public partial class App
 
     public App(AppOptions? options = null)
     {
-        var cloud = options?.Cloud ?? CloudEnvironment.Public;
-
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
         Credentials = options?.Credentials;
@@ -79,7 +77,7 @@ public partial class App
 
                 if (Token.IsExpired)
                 {
-                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(cloud.BotScope)])
+                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(BotTokenClient.BotScope)])
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
@@ -92,9 +90,6 @@ public partial class App
         };
 
         Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
-        Api.Bots.Token.BotScope = cloud.BotScope;
-        Api.Bots.SignIn.TokenServiceUrl = cloud.TokenServiceUrl;
-        Api.Users.Token.TokenServiceUrl = cloud.TokenServiceUrl;
         Container = new Container();
         Container.Register(Logger);
         Container.Register(Storage);
