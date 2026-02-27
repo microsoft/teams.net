@@ -3,9 +3,9 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Teams.Bot.Core.Schema;
 using Moq;
 
 namespace Microsoft.Teams.Bot.Core.UnitTests;

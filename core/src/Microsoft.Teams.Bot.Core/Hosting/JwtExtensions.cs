@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -82,7 +81,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             // We need IConfiguration to determine which authentication scheme to register (Bot vs Agent)
             // This is a registration-time decision that cannot be deferred
             // Try to get it from service descriptors first (fast path)
-            var configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+            ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
             IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
 
             // If not available as ImplementationInstance, build a temporary ServiceProvider
@@ -92,7 +91,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             // 3. This only happens once during application startup
             if (configuration == null)
             {
-                using var tempProvider = services.BuildServiceProvider();
+                using ServiceProvider tempProvider = services.BuildServiceProvider();
                 configuration = tempProvider.GetRequiredService<IConfiguration>();
             }
 
@@ -139,8 +138,8 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     OnMessageReceived = async context =>
                     {
                         // Resolve logger at runtime from request services to ensure we always have proper logging
-                        var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
-                        var requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
+                        ILoggerFactory? loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                        ILogger requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
                             ?? logger
                             ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
@@ -189,8 +188,8 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     OnTokenValidated = context =>
                     {
                         // Resolve logger at runtime
-                        var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
-                        var requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
+                        ILoggerFactory? loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                        ILogger requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
                             ?? logger
                             ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
@@ -200,8 +199,8 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     OnForbidden = context =>
                     {
                         // Resolve logger at runtime
-                        var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
-                        var requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
+                        ILoggerFactory? loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                        ILogger requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
                             ?? logger
                             ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
@@ -211,8 +210,8 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     OnAuthenticationFailed = context =>
                     {
                         // Resolve logger at runtime to ensure authentication failures are always logged
-                        var loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
-                        var requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
+                        ILoggerFactory? loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
+                        ILogger requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
                             ?? logger
                             ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
@@ -229,7 +228,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                             if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                             {
                                 string tokenString = authHeader.Substring("Bearer ".Length).Trim();
-                                var token = new JwtSecurityToken(tokenString);
+                                JwtSecurityToken token = new(tokenString);
 
                                 tokenAudience = token.Audiences?.FirstOrDefault();
                                 tokenIssuer = token.Issuer;
@@ -245,7 +244,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
 #pragma warning restore CA1031
 
                         // Get configured validation parameters
-                        var validationParams = context.Options?.TokenValidationParameters;
+                        TokenValidationParameters? validationParams = context.Options?.TokenValidationParameters;
                         string configuredAudience = validationParams?.ValidAudience ?? "null";
                         string configuredAudiences = validationParams?.ValidAudiences != null
                             ? string.Join(", ", validationParams.ValidAudiences)

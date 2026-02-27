@@ -38,7 +38,7 @@ internal sealed class BotAuthenticationHandler(
         LoggerMessage.Define<string>(LogLevel.Information, new(3), "Acquiring app-only token for scope: {Scope}");
     private static readonly Action<ILogger, string, Exception?> _logTokenClaims =
         LoggerMessage.Define<string>(LogLevel.Trace, new(4), "Acquired token claims:{Claims}");
-    
+
     /// <summary>
     /// Key used to store the agentic identity in HttpRequestMessage options.
     /// </summary>
@@ -116,8 +116,8 @@ internal sealed class BotAuthenticationHandler(
         }
 
 
-        var jwtToken = new JwtSecurityToken(token);
-        var claims = Environment.NewLine + string.Join(Environment.NewLine, jwtToken.Claims.Select(c => $"  {c.Type}: {c.Value}"));
+        JwtSecurityToken jwtToken = new(token);
+        string claims = Environment.NewLine + string.Join(Environment.NewLine, jwtToken.Claims.Select(c => $"  {c.Type}: {c.Value}"));
         _logTokenClaims(_logger, claims, null);
 
     }

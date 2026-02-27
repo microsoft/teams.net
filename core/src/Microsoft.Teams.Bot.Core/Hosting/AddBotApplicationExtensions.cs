@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
@@ -94,14 +92,14 @@ public static class AddBotApplicationExtensions
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
     {
         // Extract ILoggerFactory from service collection to create logger without BuildServiceProvider
-        var loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        var loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
+        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
         ILogger logger = loggerFactory?.CreateLogger<BotApplication>()
             ?? (ILogger)Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
 
         services.AddSingleton<BotApplicationOptions>(sp =>
         {
-            var config = sp.GetRequiredService<IConfiguration>();
+            IConfiguration config = sp.GetRequiredService<IConfiguration>();
             return new BotApplicationOptions
             {
                 AppId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? string.Empty
@@ -157,18 +155,18 @@ public static class AddBotApplicationExtensions
 
         // Get configuration and logger to configure MSAL during registration
         // Try to get from service descriptors first
-        var configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+        ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
         IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
 
-        var loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        var loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
+        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
         ILogger logger = loggerFactory?.CreateLogger(typeof(AddBotApplicationExtensions))
-            ?? (ILogger)Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+            ?? Extensions.Logging.Abstractions.NullLogger.Instance;
 
         // If configuration not available as instance, build temporary provider
         if (configuration == null)
         {
-            using var tempProvider = services.BuildServiceProvider();
+            using ServiceProvider tempProvider = services.BuildServiceProvider();
             configuration = tempProvider.GetRequiredService<IConfiguration>();
             if (loggerFactory == null)
             {
@@ -182,7 +180,7 @@ public static class AddBotApplicationExtensions
             services.AddHttpClient<TClient>(httpClientName)
                 .AddHttpMessageHandler(sp =>
                 {
-                    var botOptions = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
+                    BotClientOptions botOptions = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
                     return new BotAuthenticationHandler(
                         sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                         sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),

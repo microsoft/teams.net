@@ -205,10 +205,10 @@ bot.OnQuerySettingUrl(async (context, cancellationToken) =>
 
     var query = context.Activity.Value;
 
-    var action = new 
+    var action = new
     {
         Type = "openUrl",
-        Value = "https://www.microsoft.com"    
+        Value = "https://www.microsoft.com"
     };
 
     return MessageExtensionResponse.CreateBuilder()

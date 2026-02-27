@@ -25,7 +25,7 @@ public class OMessageEntity : Entity
     [JsonPropertyName("additionalType")]
     public IList<string>? AdditionalType
     {
-        get => base.Properties.TryGetValue("additionalType", out var value) ? value as IList<string> : null;
+        get => base.Properties.TryGetValue("additionalType", out object? value) ? value as IList<string> : null;
         set => base.Properties["additionalType"] = value;
     }
 }

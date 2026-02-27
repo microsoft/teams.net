@@ -65,7 +65,7 @@ public class ConversationUpdateActivity : TeamsActivity
         }
         */
 
-        if (activity.Properties.TryGetValue("membersAdded", out var membersAdded) && membersAdded != null)
+        if (activity.Properties.TryGetValue("membersAdded", out object? membersAdded) && membersAdded != null)
         {
             if (membersAdded is JsonElement je)
             {
@@ -78,7 +78,7 @@ public class ConversationUpdateActivity : TeamsActivity
             activity.Properties.Remove("membersAdded");
         }
 
-        if (activity.Properties.TryGetValue("membersRemoved", out var membersRemoved) && membersRemoved != null)
+        if (activity.Properties.TryGetValue("membersRemoved", out object? membersRemoved) && membersRemoved != null)
         {
             if (membersRemoved is JsonElement je)
             {

@@ -21,7 +21,7 @@ public class StreamInfoEntity : Entity
     [JsonPropertyName("streamId")]
     public string? StreamId
     {
-        get => base.Properties.TryGetValue("streamId", out var value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("streamId", out object? value) ? value?.ToString() : null;
         set => base.Properties["streamId"] = value;
     }
 
@@ -31,7 +31,7 @@ public class StreamInfoEntity : Entity
     [JsonPropertyName("streamType")]
     public string? StreamType
     {
-        get => base.Properties.TryGetValue("streamType", out var value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("streamType", out object? value) ? value?.ToString() : null;
         set => base.Properties["streamType"] = value;
     }
 
@@ -41,8 +41,8 @@ public class StreamInfoEntity : Entity
     [JsonPropertyName("streamSequence")]
     public int? StreamSequence
     {
-        get => base.Properties.TryGetValue("streamSequence", out var value) && value != null
-            ? (int.TryParse(value.ToString(), out var intVal) ? intVal : null)
+        get => base.Properties.TryGetValue("streamSequence", out object? value) && value != null
+            ? (int.TryParse(value.ToString(), out int intVal) ? intVal : null)
             : null;
         set => base.Properties["streamSequence"] = value;
     }

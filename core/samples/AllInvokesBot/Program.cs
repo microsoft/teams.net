@@ -103,7 +103,7 @@ bot.OnFileConsent(async (context, cancellationToken) =>
         string? contentUrl = uploadInfo?.ContentUrl?.ToString();
         string? uniqueId = uploadInfo?.UniqueId;
 
-        if (uploadUrl!=null && contentUrl != null)
+        if (uploadUrl != null && contentUrl != null)
         {
             // Create sample file content
             string fileContent = "This is a sample file uploaded via file consent!";

@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using AdaptiveCards;
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
 using Newtonsoft.Json;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace Microsoft.Teams.Bot.Compat.UnitTests
 {
