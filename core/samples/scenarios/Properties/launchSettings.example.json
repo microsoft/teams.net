@@ -1,0 +1,20 @@
+﻿{
+  "$schema": "http://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "ridobotlocal": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development",
+        "AzureAd__Instance": "https://login.microsoftonline.com/",
+        "AzureAd__ClientId": "",
+        "AzureAd__TenantId": "",
+        "AzureAd__ClientCredentials__0__SourceType": "ClientSecret",
+        "AzureAd__ClientCredentials__0__ClientSecret": "",
+        "Logging__LogLevel__Default": "Warning",
+        "Logging__LogLevel__Microsoft.Bot": "Information",
+      }
+    }
+  }
+}

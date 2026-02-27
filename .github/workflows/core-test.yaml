@@ -1,0 +1,41 @@
+name: Core-Test
+permissions:
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    environment: test_tenant
+
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '10.0.x'
+    
+    - name: Restore dependencies
+      run: dotnet restore
+      working-directory: core
+    
+    - name: Build
+      run: dotnet build --no-restore
+      working-directory: core
+    
+    - name: Test
+      run: dotnet test --no-build test/Microsoft.Bot.Core.Tests/Microsoft.Bot.Core.Tests.csproj
+      working-directory: core
+      env:
+        AzureAd__Instance: 'https://login.microsoftonline.com/'
+        AzureAd__ClientId: 'aabdbd62-bc97-4afb-83ee-575594577de5'
+        AzureAd__TenantId: '56653e9d-2158-46ee-90d7-675c39642038'
+        AzureAd__Scope: 'https://api.botframework.com/.default'
+        AzureAd__ClientCredentials__0__SourceType: 'ClientSecret'
+        AzureAd__ClientCredentials__0__ClientSecret: ${{ secrets.CLIENT_SECRET}}
