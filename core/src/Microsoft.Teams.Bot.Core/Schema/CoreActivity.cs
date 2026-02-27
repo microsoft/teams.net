@@ -57,6 +57,12 @@ public class CoreActivity
     /// Gets or sets the account that should receive this activity.
     /// </summary>
     [JsonPropertyName("recipient")] public ConversationAccount Recipient { get; set; } = new();
+
+    /// <summary>
+    /// Indicates if this is a targeted message visible only to a specific recipient.
+    /// Used internally by the SDK for routing - not serialized to the service.
+    /// </summary>
+    [JsonIgnore] public bool IsTargeted { get; set; }
     /// <summary>
     /// Gets or sets the conversation in which this activity is taking place.
     /// </summary>
@@ -150,6 +156,7 @@ public class CoreActivity
         Attachments = activity.Attachments;
         Properties = activity.Properties;
         Value = activity.Value;
+        IsTargeted = activity.IsTargeted;
     }
 
     /// <summary>

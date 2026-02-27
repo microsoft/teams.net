@@ -13,6 +13,7 @@ namespace Microsoft.Teams.Bot.Apps.Api;
 /// <list type="bullet">
 /// <item><see cref="Activities"/> - Activity operations (send, update, delete, history)</item>
 /// <item><see cref="Members"/> - Member operations (get, delete)</item>
+/// <item><see cref="Reactions"/> - Reaction operations (add, delete)</item>
 /// </list>
 /// </remarks>
 public class ConversationsApi
@@ -25,6 +26,7 @@ public class ConversationsApi
     {
         Activities = new ActivitiesApi(conversationClient);
         Members = new MembersApi(conversationClient);
+        Reactions = new ReactionsApi(conversationClient);
     }
 
     /// <summary>
@@ -36,4 +38,9 @@ public class ConversationsApi
     /// Gets the members API for managing conversation members.
     /// </summary>
     public MembersApi Members { get; }
+
+    /// <summary>
+    /// Gets the reactions API for adding and removing reactions on activities.
+    /// </summary>
+    public ReactionsApi Reactions { get; }
 }
