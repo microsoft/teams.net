@@ -19,7 +19,7 @@ A sample demonstrating a React/Vite tab served by the bot, with server functions
 Under **Expose an API → Application ID URI**, set it to:
 
 ```
-api://{YOUR_DOMAIN}/{YOUR_CLIENT_ID}
+api://{YOUR_CLIENT_ID}
 ```
 
 Then add a scope named `access_as_user` and pre-authorize the Teams client IDs:
@@ -55,7 +55,7 @@ Under **API permissions → Add a permission → Microsoft Graph → Delegated**
 ```json
 "webApplicationInfo": {
   "id": "{YOUR_CLIENT_ID}",
-  "resource": "api://{YOUR_DOMAIN}/{YOUR_CLIENT_ID}"
+  "resource": "api://{YOUR_CLIENT_ID}"
 }
 ```
 
