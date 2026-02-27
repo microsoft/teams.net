@@ -92,6 +92,7 @@ public class BotApplication
             _logger.LogTrace("Received activity: {Activity}", activity.ToJson());
         }
 
+        // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
         using (_logger.BeginScope("ActivityType={ActivityType} ActivityId={ActivityId} ServiceUrl={ServiceUrl} MSCV={MSCV}",
             activity.Type, activity.Id, activity.ServiceUrl, httpContext.Request.GetCorrelationVector()))
         {
