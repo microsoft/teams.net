@@ -37,7 +37,7 @@ public class MessageReactionActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageReactionActivity(CoreActivity activity) : base(activity)
     {
-        if (activity.Properties.TryGetValue("reactionsAdded", out var reactionsAdded) && reactionsAdded != null)
+        if (activity.Properties.TryGetValue("reactionsAdded", out object? reactionsAdded) && reactionsAdded != null)
         {
             if (reactionsAdded is JsonElement je)
             {
@@ -49,7 +49,7 @@ public class MessageReactionActivity : TeamsActivity
             }
             activity.Properties.Remove("reactionsAdded");
         }
-        if (activity.Properties.TryGetValue("reactionsRemoved", out var reactionsRemoved) && reactionsRemoved != null)
+        if (activity.Properties.TryGetValue("reactionsRemoved", out object? reactionsRemoved) && reactionsRemoved != null)
         {
             if (reactionsRemoved is JsonElement je)
             {
@@ -61,7 +61,7 @@ public class MessageReactionActivity : TeamsActivity
             }
             activity.Properties.Remove("reactionsRemoved");
         }
-        if (activity.Properties.TryGetValue("replyToId", out var replyToId) && replyToId != null)
+        if (activity.Properties.TryGetValue("replyToId", out object? replyToId) && replyToId != null)
         {
             if (replyToId is JsonElement jeReplyToId && jeReplyToId.ValueKind == JsonValueKind.String)
             {

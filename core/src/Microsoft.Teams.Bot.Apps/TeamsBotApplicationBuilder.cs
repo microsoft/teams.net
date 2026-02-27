@@ -182,12 +182,12 @@ public class TeamsBotApplicationBuilder
                     ?? throw new InvalidOperationException("Missing request body.");
                 FunctionContext<TBody> ctx = new(botApp)
                 {
-                    TenantId     = httpCtx.User.FindFirst("tid")?.Value,
-                    UserId       = httpCtx.User.FindFirst("oid")?.Value,
-                    UserName     = httpCtx.User.FindFirst(ClaimTypes.Name)?.Value,
-                    AuthToken    = AuthenticationHeaderValue.TryParse(httpCtx.Request.Headers.Authorization.FirstOrDefault(), out var header) ? header.Parameter : null,
+                    TenantId = httpCtx.User.FindFirst("tid")?.Value,
+                    UserId = httpCtx.User.FindFirst("oid")?.Value,
+                    UserName = httpCtx.User.FindFirst(ClaimTypes.Name)?.Value,
+                    AuthToken = AuthenticationHeaderValue.TryParse(httpCtx.Request.Headers.Authorization.FirstOrDefault(), out var header) ? header.Parameter : null,
                     TeamsContext = request.Context,
-                    Data         = request.Payload,
+                    Data = request.Payload,
                 };
                 return Results.Json(await handler(ctx, ct).ConfigureAwait(false));
             }).RequireAuthorization(JwtExtensions.EntraPolicy);

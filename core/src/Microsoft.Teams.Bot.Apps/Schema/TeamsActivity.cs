@@ -21,7 +21,7 @@ public class TeamsActivity : CoreActivity
     {
         ArgumentNullException.ThrowIfNull(activity);
 
-        return TeamsActivityType.ActivityDeserializerMap.TryGetValue(activity.Type, out var factory)
+        return TeamsActivityType.ActivityDeserializerMap.TryGetValue(activity.Type, out Func<CoreActivity, TeamsActivity>? factory)
             ? factory(activity)
             : new TeamsActivity(activity);  // Fallback to base type
     }

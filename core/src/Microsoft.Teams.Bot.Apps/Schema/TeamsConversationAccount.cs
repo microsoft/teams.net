@@ -108,7 +108,7 @@ public class TeamsConversationAccount : ConversationAccount
 
     private string? GetStringProperty(string key)
     {
-        if (Properties.TryGetValue(key, out var val) && val is JsonElement je && je.ValueKind == JsonValueKind.String)
+        if (Properties.TryGetValue(key, out object? val) && val is JsonElement je && je.ValueKind == JsonValueKind.String)
         {
             return je.GetString();
         }

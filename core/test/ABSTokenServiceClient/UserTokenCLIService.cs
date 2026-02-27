@@ -1,7 +1,7 @@
 using System.Text.Json;
-using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core;
 
 namespace ABSTokenServiceClient
 {

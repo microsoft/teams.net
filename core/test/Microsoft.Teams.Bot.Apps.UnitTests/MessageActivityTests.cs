@@ -44,7 +44,7 @@ public class MessageActivityTests
     {
         MessageActivity activity = new("Hello World")
         {
-           // Summary = "Test summary",
+            // Summary = "Test summary",
             TextFormat = TextFormats.Markdown,
             //InputHint = InputHints.ExpectingInput,
             //Importance = ImportanceLevels.Urgent,

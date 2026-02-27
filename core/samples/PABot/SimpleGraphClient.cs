@@ -7,12 +7,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Graph;
-using Microsoft.Graph.Models;
 using Microsoft.Graph.Me.SendMail;
+using Microsoft.Graph.Models;
 using Microsoft.Kiota.Abstractions.Authentication;
-using System.Threading;
 
 
 namespace PABot
