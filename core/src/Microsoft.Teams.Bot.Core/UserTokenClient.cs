@@ -53,7 +53,6 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         }
 
         _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/GetTokenStatus");
-
         IList<GetTokenStatusResult>? result = await _botHttpClient.SendAsync<IList<GetTokenStatusResult>>(
             HttpMethod.Get,
             _apiEndpoint,

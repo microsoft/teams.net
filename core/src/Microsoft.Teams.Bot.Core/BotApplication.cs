@@ -81,7 +81,7 @@ public class BotApplication
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        _logger.LogInformation("Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} CV={CV}",
+        _logger.LogInformation("Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} MSCV={MSCV}",
             activity.Type,
             activity.Id,
             activity.ServiceUrl,
@@ -92,19 +92,23 @@ public class BotApplication
             _logger.LogTrace("Received activity: {Activity}", activity.ToJson());
         }
 
-        try
+        using (_logger.BeginScope("ActivityType={ActivityType} ActivityId={ActivityId} ServiceUrl={ServiceUrl} MSCV={MSCV}",
+            activity.Type, activity.Id, activity.ServiceUrl, httpContext.Request.GetCorrelationVector()))
         {
-            var token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
-            await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error processing activity: Id={Id}", activity.Id);
-            throw new BotHandlerException("Error processing activity", ex, activity);
-        }
-        finally
-        {
-            _logger.LogInformation("Finished processing activity: Id={Id}", activity.Id);
+            try
+            {
+                var token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
+                await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error processing activity: Id={Id}", activity.Id);
+                throw new BotHandlerException("Error processing activity", ex, activity);
+            }
+            finally
+            {
+                _logger.LogInformation("Finished processing activity: Id={Id}", activity.Id);
+            }
         }
     }
 
