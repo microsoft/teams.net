@@ -4,6 +4,7 @@ import { PublicClientApplication, InteractionRequiredAuthError } from '@azure/ms
 
 let _msal: PublicClientApplication | null = null
 
+//TODO : review if we should take a dependency on microsoft/teams.client
 async function getMsal(tenantId: string): Promise<PublicClientApplication> {
   if (!_msal) {
     _msal = new PublicClientApplication({
@@ -16,6 +17,27 @@ async function getMsal(tenantId: string): Promise<PublicClientApplication> {
     await _msal.initialize()
   }
   return _msal
+}
+
+async function acquireToken(scopes: string[], context: app.Context | null): Promise<string> {
+  const tenantId = context?.user?.tenant?.id ?? 'common'
+  const loginHint = context?.user?.loginHint
+  const msal = await getMsal(tenantId)
+
+  const accounts = msal.getAllAccounts()
+  const account = loginHint
+    ? (accounts.find(a => a.username === loginHint) ?? accounts[0])
+    : accounts[0]
+
+  try {
+    if (!account) throw new InteractionRequiredAuthError('no_account')
+    const result = await msal.acquireTokenSilent({ scopes, account })
+    return result.accessToken
+  } catch (e) {
+    if (!(e instanceof InteractionRequiredAuthError)) throw e
+    const result = await msal.acquireTokenPopup({ scopes, loginHint })
+    return result.accessToken
+  }
 }
 
 export default function App() {
@@ -64,71 +86,37 @@ export default function App() {
   const showContext = useCallback(() => run(async () => context), [context])
   const postToChat  = useCallback(() => run(() => callFunction('post-to-chat', { message })), [message])
   const whoAmI = useCallback(() => run(async () => {
-    const tenantId = context?.user?.tenant?.id ?? 'common'
-    const loginHint = context?.user?.loginHint
-    const msal = await getMsal(tenantId)
-    const scopes = ['User.Read']
-
-    const accounts = msal.getAllAccounts()
-    const account = loginHint
-      ? (accounts.find(a => a.username === loginHint) ?? accounts[0])
-      : accounts[0]
-
-    let accessToken: string
-    try {
-      if (!account) throw new InteractionRequiredAuthError('no_account')
-      const result = await msal.acquireTokenSilent({ scopes, account })
-      accessToken = result.accessToken
-    } catch (e) {
-      if (!(e instanceof InteractionRequiredAuthError)) throw e
-      const result = await msal.acquireTokenPopup({ scopes, loginHint })
-      accessToken = result.accessToken
-    }
-
+    const accessToken = await acquireToken(['User.Read'], context)
     return fetch('https://graph.microsoft.com/v1.0/me', {
       headers: { Authorization: `Bearer ${accessToken}` },
     }).then(r => r.json())
   }), [context])
 
-  // TODO: Move whoAmI and toggleStatus to server-side bot functions once SSO OBO is implemented,
-  //       so Graph token acquisition happens on the server via the On-Behalf-Of flow.
   const toggleStatus = useCallback(() => run(async () => {
-    const tenantId = context?.user?.tenant?.id ?? 'common'
-    const loginHint = context?.user?.loginHint
-    const msal = await getMsal(tenantId)
-    const scopes = ['Presence.ReadWrite']
+    const accessToken = await acquireToken(['Presence.ReadWrite'], context)
 
-    const accounts = msal.getAllAccounts()
-    const account = loginHint
-      ? (accounts.find(a => a.username === loginHint) ?? accounts[0])
-      : accounts[0]
+    const presenceRes = await fetch('https://graph.microsoft.com/v1.0/me/presence', {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    })
+    if (!presenceRes.ok) throw new Error(`Graph ${presenceRes.status}`)
+    const { availability: current } = await presenceRes.json()
 
-    let accessToken: string
-    try {
-      if (!account) throw new InteractionRequiredAuthError('no_account')
-      const result = await msal.acquireTokenSilent({ scopes, account })
-      accessToken = result.accessToken
-    } catch (e) {
-      if (!(e instanceof InteractionRequiredAuthError)) throw e
-      const result = await msal.acquireTokenPopup({ scopes, loginHint })
-      accessToken = result.accessToken
-    }
-
-    const newStatus = !status
-    const availability = newStatus ? 'DoNotDisturb' : 'Available'
+    const isAvailable = current === 'Available'
+    const availability = isAvailable ? 'DoNotDisturb' : 'Available'
+    const activity = isAvailable ? 'Presenting' : 'Available'
 
     const res = await fetch('https://graph.microsoft.com/v1.0/me/presence/setUserPreferredPresence', {
       method: 'POST',
       headers: { 'Authorization': `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ availability, activity: availability }),
+      body: JSON.stringify({ availability, activity }),
     })
     if (!res.ok) {
       const body = await res.json().catch(() => ({}))
       throw new Error(`Graph ${res.status}: ${JSON.stringify(body)}`)
     }
-    setStatus(newStatus)
-    return { availability }
-  }), [status, context])
+    setStatus(availability === 'DoNotDisturb')
+    return { availability, activity }
+  }), [context])
 
   if (!initialized) {
     return <div className="loading">Initializing Teams SDK…</div>
