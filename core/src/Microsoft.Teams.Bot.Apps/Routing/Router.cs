@@ -65,11 +65,11 @@ internal sealed class Router
         var matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
 
         if (matchingRoutes.Count == 0 && _routes.Count > 0)
-            {
-                logger.LogWarning(
-                    "No routes matched activity of type '{Type}'",
-                    ctx.Activity.Type
-                );
+        {
+            logger.LogWarning(
+                "No routes matched activity of type '{Type}'",
+                ctx.Activity.Type
+            );
             return;
         }
 
