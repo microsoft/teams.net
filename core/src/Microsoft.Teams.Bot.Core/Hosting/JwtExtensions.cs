@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -22,6 +24,8 @@ namespace Microsoft.Teams.Bot.Core.Hosting
     {
         internal const string BotScheme = "BotScheme";
         internal const string AgentScheme = "AgentScheme";
+        internal const string EntraScheme = "EntraScheme";
+        internal const string EntraPolicy = "EntraPolicy";
         internal const string BotScope = "https://api.botframework.com/.default";
         internal const string AgentScope = "https://botapi.skype.com/.default";
         internal const string BotOIDC = "https://login.botframework.com/v1/.well-known/openid-configuration";
@@ -43,10 +47,16 @@ namespace Microsoft.Teams.Bot.Core.Hosting
 
             AuthenticationBuilder builder = services.AddAuthentication();
             ArgumentNullException.ThrowIfNull(configuration);
+
             string audience = configuration[$"{aadSectionName}:ClientId"]
-                   ?? configuration["CLIENT_ID"]
-                   ?? configuration["MicrosoftAppId"]
-                   ?? throw new InvalidOperationException("ClientID not found in configuration, tried the 3 option");
+                ?? configuration["CLIENT_ID"]
+                ?? configuration["MicrosoftAppId"]
+                ?? throw new InvalidOperationException("ClientID not found in configuration, tried the 3 option");
+
+            string tenantId = configuration[$"{aadSectionName}:TenantId"]
+                ?? configuration["TENANT_ID"]
+                ?? configuration["MicrosoftAppTenantId"]
+                ?? string.Empty;
 
             if (!useAgentAuth)
             {
@@ -55,14 +65,22 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             }
             else
             {
-                string tenantId = configuration[$"{aadSectionName}:TenantId"]
-                    ?? configuration["TENANT_ID"]
-                    ?? configuration["MicrosoftAppTenantId"]
-                    ?? "botframework.com"; // TODO: Task 5039198: Test JWT Validation for MultiTenant
-
-                string[] validIssuers = [$"https://sts.windows.net/{tenantId}/", $"https://login.microsoftonline.com/{tenantId}/v2", "https://api.botframework.com"];
+                string agentTenantId = string.IsNullOrEmpty(tenantId) ? "botframework.com" : tenantId; // TODO: Task 5039198: Test JWT Validation for MultiTenant
+                string[] validIssuers = [$"https://sts.windows.net/{agentTenantId}/", $"https://login.microsoftonline.com/{agentTenantId}/v2", "https://api.botframework.com"];
                 builder.AddCustomJwtBearer(AgentScheme, validIssuers, audience, logger);
             }
+
+            if (string.IsNullOrEmpty(tenantId))
+            {
+                // Validate dynamically by constructing the expected issuer from the token's tid claim.
+                builder.AddCustomJwtBearer(EntraScheme, [], audience, logger, ValidateMultiTenantEntraIssuer);
+            }
+            else
+            {
+                string[] entraIssuers = [$"https://login.microsoftonline.com/{tenantId}/v2.0", $"https://sts.windows.net/{tenantId}/"];
+                builder.AddCustomJwtBearer(EntraScheme, entraIssuers, audience, logger);
+            }
+
             return builder;
         }
 
@@ -99,6 +117,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             bool useAgentAuth = string.Equals(azureScope, AgentScope, StringComparison.OrdinalIgnoreCase);
 
             services.AddBotAuthentication(configuration, useAgentAuth, logger, aadSectionName);
+
             AuthorizationBuilder authorizationBuilder = services
                 .AddAuthorizationBuilder()
                 .AddDefaultPolicy(aadSectionName, policy =>
@@ -112,12 +131,38 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                         policy.AuthenticationSchemes.Add(AgentScheme);
                     }
                     policy.RequireAuthenticatedUser();
+                })
+                .AddPolicy(EntraPolicy, policy =>
+                {
+                    policy.AddAuthenticationSchemes(EntraScheme);
+                    policy.RequireAuthenticatedUser();
                 });
             return authorizationBuilder;
         }
 
-        private static AuthenticationBuilder AddCustomJwtBearer(this AuthenticationBuilder builder, string schemeName, string[] validIssuers, string audience, ILogger? logger)
+        private static (string? iss, string? tid) GetTokenClaims(SecurityToken token) => token switch
         {
+            JsonWebToken jwt => (jwt.Issuer, jwt.TryGetClaim("tid", out var c) ? c.Value : null),
+            JwtSecurityToken legacy => (legacy.Issuer, legacy.Claims.FirstOrDefault(c => c.Type == "tid")?.Value),
+            _ => (null, null)
+        };
+
+        private static string ValidateMultiTenantEntraIssuer(string issuer, SecurityToken token, TokenValidationParameters parameters)
+        {
+            (string? _, string? tid) = GetTokenClaims(token);
+            if (tid != null &&
+                (issuer == $"https://login.microsoftonline.com/{tid}/v2.0" ||
+                 issuer == $"https://sts.windows.net/{tid}/"))
+                return issuer;
+
+            throw new SecurityTokenInvalidIssuerException($"Issuer '{issuer}' is not valid for multi-tenant Entra authentication.");
+        }
+
+        private static AuthenticationBuilder AddCustomJwtBearer(this AuthenticationBuilder builder, string schemeName, string[] validIssuers, string audience, ILogger? logger, IssuerValidator? issuerValidator = null)
+        {
+            // One ConfigurationManager per OIDC authority, shared safely across all requests.
+            ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
+
             builder.AddJwtBearer(schemeName, jwtOptions =>
             {
                 jwtOptions.SaveToken = true;
@@ -129,7 +174,26 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     RequireSignedTokens = true,
                     ValidateIssuer = true,
                     ValidateAudience = true,
-                    ValidIssuers = validIssuers
+                    ValidIssuers = issuerValidator is null ? validIssuers : null,
+                    IssuerValidator = issuerValidator,
+                    IssuerSigningKeyResolver = (_, securityToken, _, _) =>
+                    {
+                        (string? iss, string? tid) = GetTokenClaims(securityToken);
+                        if (iss is null) return [];
+
+                        string authority = iss.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
+                            ? BotOIDC
+                            : $"{AgentOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
+
+                        ConfigurationManager<OpenIdConnectConfiguration> manager = configManagerCache.GetOrAdd(authority, a =>
+                            new ConfigurationManager<OpenIdConnectConfiguration>(
+                                a,
+                                new OpenIdConnectConfigurationRetriever(),
+                                new HttpDocumentRetriever { RequireHttps = jwtOptions.RequireHttpsMetadata }));
+
+                        OpenIdConnectConfiguration config = manager.GetConfigurationAsync(CancellationToken.None).GetAwaiter().GetResult();
+                        return config.SigningKeys;
+                    }
                 };
                 jwtOptions.TokenValidationParameters.EnableAadSigningKeyIssuerValidation();
                 jwtOptions.MapInboundClaims = true;
@@ -148,40 +212,18 @@ namespace Microsoft.Teams.Bot.Core.Hosting
 
                         if (string.IsNullOrEmpty(authorizationHeader))
                         {
-                            // Default to AadTokenValidation handling
-                            context.Options.TokenValidationParameters.ConfigurationManager ??= jwtOptions.ConfigurationManager as BaseConfigurationManager;
-                            await Task.CompletedTask.ConfigureAwait(false);
                             requestLogger.LogWarning("Authorization header is missing for scheme: {Scheme}", schemeName);
+                            await Task.CompletedTask.ConfigureAwait(false);
                             return;
                         }
 
-                        string[] parts = authorizationHeader?.Split(' ')!;
+                        string[] parts = authorizationHeader.Split(' ');
                         if (parts.Length != 2 || parts[0] != "Bearer")
                         {
-                            // Default to AadTokenValidation handling
-                            context.Options.TokenValidationParameters.ConfigurationManager ??= jwtOptions.ConfigurationManager as BaseConfigurationManager;
-                            await Task.CompletedTask.ConfigureAwait(false);
                             requestLogger.LogWarning("Invalid authorization header format for scheme: {Scheme}", schemeName);
+                            await Task.CompletedTask.ConfigureAwait(false);
                             return;
                         }
-
-                        JwtSecurityToken token = new(parts[1]);
-                        string issuer = token.Claims.FirstOrDefault(claim => claim.Type == "iss")?.Value!;
-                        string tid = token.Claims.FirstOrDefault(claim => claim.Type == "tid")?.Value!;
-
-                        string oidcAuthority = issuer.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
-                            ? BotOIDC : $"{AgentOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
-
-                        requestLogger.LogDebug("Using OIDC Authority: {OidcAuthority} for issuer: {Issuer}", oidcAuthority, issuer);
-
-                        jwtOptions.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
-                            oidcAuthority,
-                            new OpenIdConnectConfigurationRetriever(),
-                            new HttpDocumentRetriever
-                            {
-                                RequireHttps = jwtOptions.RequireHttpsMetadata
-                            });
-
 
                         await Task.CompletedTask.ConfigureAwait(false);
                     },

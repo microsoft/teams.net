@@ -100,9 +100,11 @@ public static class AddBotApplicationExtensions
         services.AddSingleton<BotApplicationOptions>(sp =>
         {
             IConfiguration config = sp.GetRequiredService<IConfiguration>();
+            string serviceUrlStr = config["SERVICE_URL"] ?? "https://smba.trafficmanager.net/teams";
             return new BotApplicationOptions
             {
-                AppId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? string.Empty
+                AppId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? string.Empty,
+                ServiceUrl = new Uri(serviceUrlStr.TrimEnd('/'))
             };
         });
         services.AddAuthorization(logger, sectionName);

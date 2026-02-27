@@ -1,3 +1,7 @@
 launchSettings.json
 appsettings.Development.json
 *.runsettings
+
+# Web build output and dependencies
+**/Web/bin/
+**/Web/node_modules/

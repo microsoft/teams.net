@@ -28,7 +28,6 @@ public class TeamsBotApplication : BotApplication
     /// </summary>
     public TeamsApiClient TeamsApiClient => _teamsApiClient;
 
-
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
     /// <param name="teamsApiClient"></param>
