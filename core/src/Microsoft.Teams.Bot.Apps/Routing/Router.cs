@@ -1,5 +1,6 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps.Schema;
 
@@ -62,15 +63,15 @@ internal sealed class Router
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
-        var matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
+        List<RouteBase> matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
 
-        if (matchingRoutes.Count == 0 && _routes.Count>0)
+        if (matchingRoutes.Count == 0 && _routes.Count > 0)
         {
             _logger.LogDebug("No routes matched activity of type '{Type}'.", ctx.Activity.Type);
             return;
         }
 
-        foreach (var route in matchingRoutes)
+        foreach (RouteBase route in matchingRoutes)
         {
             _logger.LogDebug("Dispatching '{Type}' activity to route '{Name}'.", ctx.Activity.Type, route.Name);
             await route.InvokeRoute(ctx, cancellationToken).ConfigureAwait(false);
@@ -88,7 +89,7 @@ internal sealed class Router
     {
         ArgumentNullException.ThrowIfNull(ctx);
 
-        var matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
+        List<RouteBase> matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
         var name = ctx.Activity is InvokeActivity inv ? inv.Name : null;
 
         if (matchingRoutes.Count == 0 && _routes.Count > 0)

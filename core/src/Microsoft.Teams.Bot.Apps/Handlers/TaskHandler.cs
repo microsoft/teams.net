@@ -29,9 +29,9 @@ public static class TaskExtensions
             Selector = activity => activity.Name == InvokeNames.TaskFetch,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
-                InvokeActivity<TaskModuleRequest> typedActivity = new (ctx.Activity);
+                InvokeActivity<TaskModuleRequest> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                return await handler(typedContext, cancellationToken).ConfigureAwait(false);;
+                return await handler(typedContext, cancellationToken).ConfigureAwait(false); ;
             }
         });
 
@@ -50,7 +50,7 @@ public static class TaskExtensions
             Selector = activity => activity.Name == InvokeNames.TaskSubmit,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
-                InvokeActivity<TaskModuleRequest> typedActivity = new (ctx.Activity);
+                InvokeActivity<TaskModuleRequest> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }

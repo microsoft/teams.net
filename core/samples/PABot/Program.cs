@@ -54,10 +54,10 @@ var adapterOne = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>(
 var adapterTwo = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("AdapterTwo");
 
 // Map endpoints with their respective adapters and authorization policies
-app.MapPost("/api/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("EchoBot")]IBot bot, CancellationToken ct) =>
+app.MapPost("/api/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("EchoBot")] IBot bot, CancellationToken ct) =>
     adapterOne.ProcessAsync(request, response, bot, ct)).RequireAuthorization("AdapterOne");
 
-app.MapPost("/api/v2/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("TeamsBot")]IBot bot, CancellationToken ct) =>
+app.MapPost("/api/v2/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("TeamsBot")] IBot bot, CancellationToken ct) =>
     adapterTwo.ProcessAsync(request, response, bot, ct)).RequireAuthorization("AdapterTwo");
 
 app.Run();

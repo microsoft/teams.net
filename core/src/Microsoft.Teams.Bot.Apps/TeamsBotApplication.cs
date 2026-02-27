@@ -2,11 +2,10 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps.Routing;
-using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Apps;

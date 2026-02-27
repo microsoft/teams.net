@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -37,7 +36,6 @@ public class BotApplication
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
-        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
         logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
     }
 
@@ -92,7 +90,7 @@ public class BotApplication
         {
             try
             {
-                var token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
+                CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
                 await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
 
             }

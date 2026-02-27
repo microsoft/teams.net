@@ -20,7 +20,7 @@ namespace PABot
         private readonly ILogger<PACustomAuthHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
         private readonly IOptions<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
-        
+
         /// <summary>
         /// Key used to store the agentic identity in HttpRequestMessage options.
         /// </summary>

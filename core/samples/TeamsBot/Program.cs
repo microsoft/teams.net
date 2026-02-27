@@ -106,7 +106,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     await context.SendActivityAsync(feedbackActivity, cancellationToken);
 });
 
-teamsApp.OnMessageReaction( async (context, cancellationToken) =>
+teamsApp.OnMessageReaction(async (context, cancellationToken) =>
 {
     string reactionsAdded = string.Join(", ", context.Activity.ReactionsAdded?.Select(r => r.Type) ?? []);
     string reactionsRemoved = string.Join(", ", context.Activity.ReactionsRemoved?.Select(r => r.Type) ?? []);

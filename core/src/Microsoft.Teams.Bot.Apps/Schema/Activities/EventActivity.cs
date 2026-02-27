@@ -48,7 +48,7 @@ public class EventActivity : TeamsActivity
     /// </summary>
     protected EventActivity(CoreActivity activity) : base(activity)
     {
-        if (activity.Properties.TryGetValue("name", out var name))
+        if (activity.Properties.TryGetValue("name", out object? name))
         {
             Name = name?.ToString();
             activity.Properties.Remove("name");
