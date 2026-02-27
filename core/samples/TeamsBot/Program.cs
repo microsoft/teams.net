@@ -31,9 +31,9 @@ teamsApp.OnMessage("(?i)tm", async (context, cancellationToken) =>
             TeamsActivity.CreateBuilder()
                 .WithText($"Hello {member.Name}!")
                 .WithRecipient(member, true)
-                .Build(), cancellationToken)
-        ;
+                .Build(), cancellationToken);
     }
+    
     await context.SendActivityAsync($"Sent a private message to {members.Count} member(s) of the conversation!", cancellationToken);
 
 });
