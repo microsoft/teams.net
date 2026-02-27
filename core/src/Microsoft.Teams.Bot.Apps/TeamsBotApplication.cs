@@ -48,7 +48,7 @@ public class TeamsBotApplication : BotApplication
         Router = new Router(logger);
         OnActivity = async (activity, cancellationToken) =>
         {
-            logger.LogInformation("New {Type} activity received.", activity.Type);
+            logger.LogInformation("OnActivity invoked for activity: Id={Id}", activity.Id);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 

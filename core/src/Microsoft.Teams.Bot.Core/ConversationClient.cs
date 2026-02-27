@@ -56,7 +56,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += activity.ReplyToId;
         }
 
-        logger?.LogInformation("Sending activity to {Url}", url);
+        logger?.LogInformation("Sending activity with type `{Type}` to {Url}", activity.Type, url);
 
         string body = activity.ToJson();
 

@@ -79,29 +79,34 @@ public class BotApplication
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        _logger.LogInformation("Processing activity {Type} {Id}", activity.Type, activity.Id);
+        _logger.LogInformation("Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} MSCV={MSCV}",
+            activity.Type,
+            activity.Id,
+            activity.ServiceUrl,
+            httpContext.Request.GetCorrelationVector());
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
             _logger.LogTrace("Received activity: {Activity}", activity.ToJson());
         }
 
-        using (_logger.BeginScope("Processing activity {Type} {Id}", activity.Type, activity.Id))
+        // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
+        using (_logger.BeginScope("ActivityType={ActivityType} ActivityId={ActivityId} ServiceUrl={ServiceUrl} MSCV={MSCV}",
+            activity.Type, activity.Id, activity.ServiceUrl, httpContext.Request.GetCorrelationVector()))
         {
             try
             {
                 CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
                 await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
-
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing activity {Type} {Id}", activity.Type, activity.Id);
+                _logger.LogError(ex, "Error processing activity: Id={Id}", activity.Id);
                 throw new BotHandlerException("Error processing activity", ex, activity);
             }
             finally
             {
-                _logger.LogInformation("Finished processing activity {Type} {Id}", activity.Type, activity.Id);
+                _logger.LogInformation("Finished processing activity: Id={Id}", activity.Id);
             }
         }
     }

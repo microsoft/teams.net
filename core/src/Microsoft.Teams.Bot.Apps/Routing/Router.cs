@@ -67,7 +67,10 @@ internal sealed class Router
 
         if (matchingRoutes.Count == 0 && _routes.Count > 0)
         {
-            _logger.LogDebug("No routes matched activity of type '{Type}'.", ctx.Activity.Type);
+            _logger.LogWarning(
+                "No routes matched activity of type '{Type}'",
+                ctx.Activity.Type
+            );
             return;
         }
 

@@ -110,7 +110,7 @@ internal sealed class KeyedBotAuthenticationHandler : DelegatingHandler
             !string.IsNullOrEmpty(agenticIdentity.AgenticUserId))
         {
             _logger.LogInformation(
-                "Acquiring agentic token for scope '{Scope}' with AppId '{AppId}' and UserId '{UserId}'.",
+                "Acquiring agentic token for scope '{Scope}' with AppId '{AppId}' and AgentUserId '{AgentUserId}'.",
                 _scope,
                 agenticIdentity.AgenticAppId,
                 agenticIdentity.AgenticUserId);
