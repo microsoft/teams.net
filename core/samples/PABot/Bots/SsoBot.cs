@@ -40,9 +40,9 @@ namespace PABot.Bots
 
                     Activity? a = turnContext.Activity as Activity;
                     var signInResource = await utc.GetSignInResourceAsync(ts.ConnectionName, a, string.Empty, cancellationToken);
-                            //logger.LogInformation("Sign-in resource for connection '{ConnectionName}': {SignInLink}", ts.ConnectionName, signInResource.SignInLink);
+                    //logger.LogInformation("Sign-in resource for connection '{ConnectionName}': {SignInLink}", ts.ConnectionName, signInResource.SignInLink);
                     await turnContext.SendActivityAsync(MessageFactory.Text($"Sign-in resource for connection '{ts.ConnectionName}': {signInResource.SignInLink}"), cancellationToken);
-                        
+
                 }
             }
 

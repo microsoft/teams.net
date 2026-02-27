@@ -54,7 +54,7 @@ public class InvokeActivity : TeamsActivity
     protected InvokeActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Properties.TryGetValue("name", out var name))
+        if (activity.Properties.TryGetValue("name", out object? name))
         {
             Name = name?.ToString();
             activity.Properties.Remove("name");
@@ -188,44 +188,44 @@ public static class InvokeNames
     public const string MessageExtensionSubmitAction = "composeExtension/submitAction";
 
     //TODO : review 
-     /*
-     /// <summary>
-     /// Execute action invoke name.
-     /// </summary>
-     public const string ExecuteAction = "actionableMessage/executeAction";
+    /*
+    /// <summary>
+    /// Execute action invoke name.
+    /// </summary>
+    public const string ExecuteAction = "actionableMessage/executeAction";
+
+    /// <summary>
+    /// Handoff invoke name.
+    /// </summary>
+    public const string Handoff = "handoff/action";
+
+    /// <summary>
+    /// Search invoke name.
+    /// </summary>
+    public const string Search = "search";
+    /// <summary>
+    /// Config fetch invoke name.
+    /// </summary>
+    public const string ConfigFetch = "config/fetch";
+
+    /// <summary>
+    /// Config submit invoke name.
+    /// </summary>
+    public const string ConfigSubmit = "config/submit";
 
      /// <summary>
-     /// Handoff invoke name.
+     /// Message submit action invoke name.
      /// </summary>
-     public const string Handoff = "handoff/action";
+     public const string MessageSubmitAction = "message/submitAction";
 
      /// <summary>
-     /// Search invoke name.
+     /// Message extension card button clicked invoke name.
      /// </summary>
-     public const string Search = "search";
-     /// <summary>
-     /// Config fetch invoke name.
-     /// </summary>
-     public const string ConfigFetch = "config/fetch";
+     public const string MessageExtensionCardButtonClicked = "composeExtension/onCardButtonClicked";
 
      /// <summary>
-     /// Config submit invoke name.
+     /// Message extension setting invoke name.
      /// </summary>
-     public const string ConfigSubmit = "config/submit";
-
-      /// <summary>
-      /// Message submit action invoke name.
-      /// </summary>
-      public const string MessageSubmitAction = "message/submitAction";
-
-      /// <summary>
-      /// Message extension card button clicked invoke name.
-      /// </summary>
-      public const string MessageExtensionCardButtonClicked = "composeExtension/onCardButtonClicked";
-
-      /// <summary>
-      /// Message extension setting invoke name.
-      /// </summary>
-      public const string MessageExtensionSetting = "composeExtension/setting";
-      */
+     public const string MessageExtensionSetting = "composeExtension/setting";
+     */
 }

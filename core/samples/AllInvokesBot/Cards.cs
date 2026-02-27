@@ -127,7 +127,7 @@ public static class Cards
                     ["title"] = "Submit"
                 }
             }
-       };
+        };
     }
 
     public static JsonObject CreateFileInfoCard(string? uniqueId, string? fileType)

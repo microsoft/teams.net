@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
-using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Apps;
@@ -39,7 +38,7 @@ public static class TeamsBotApplicationHostingExtensions
         services.AddHttpClient<TeamsApiClient>(TeamsApiClient.TeamsHttpClientName)
             .AddHttpMessageHandler(sp =>
             {
-                var options = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
+                BotClientOptions options = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
                 return new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),

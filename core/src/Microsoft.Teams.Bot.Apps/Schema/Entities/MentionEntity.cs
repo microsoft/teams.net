@@ -80,7 +80,7 @@ public class MentionEntity : Entity
     [JsonPropertyName("mentioned")]
     public ConversationAccount? Mentioned
     {
-        get => base.Properties.TryGetValue("mentioned", out var value) ? value as ConversationAccount : null;
+        get => base.Properties.TryGetValue("mentioned", out object? value) ? value as ConversationAccount : null;
         set => base.Properties["mentioned"] = value;
     }
 
@@ -90,7 +90,7 @@ public class MentionEntity : Entity
     [JsonPropertyName("text")]
     public string? Text
     {
-        get => base.Properties.TryGetValue("text", out var value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
         set => base.Properties["text"] = value;
     }
 

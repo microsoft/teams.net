@@ -24,7 +24,7 @@ public class ProductInfoEntity : Entity
     [JsonPropertyName("id")]
     public string? Id
     {
-        get => base.Properties.TryGetValue("id", out var value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("id", out object? value) ? value?.ToString() : null;
         set => base.Properties["id"] = value;
     }
 }

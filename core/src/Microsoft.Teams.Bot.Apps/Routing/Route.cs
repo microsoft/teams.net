@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Bot.Apps.Schema;
@@ -20,7 +20,7 @@ public abstract class RouteBase
     /// </summary>
     /// <param name="activity"></param>
     /// <returns></returns>
-    public abstract bool Matches (TeamsActivity activity);
+    public abstract bool Matches(TeamsActivity activity);
 
     /// <summary>
     /// Invokes the route handler if the activity matches the expected type

@@ -228,7 +228,7 @@ public static class CompatActivity
     {
         ArgumentNullException.ThrowIfNull(account);
 
-        var teamsChannelAccount = new Microsoft.Bot.Schema.Teams.TeamsChannelAccount
+        TeamsChannelAccount teamsChannelAccount = new()
         {
             Id = account.Id,
             Name = account.Name
@@ -276,9 +276,9 @@ public static class CompatActivity
     public static TeamInfo? TeamsGetTeamInfo(this IActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        var channelData = activity.GetChannelData<Microsoft.Bot.Schema.Teams.TeamsChannelData>();
+        Microsoft.Bot.Schema.Teams.TeamsChannelData channelData = activity.GetChannelData<Microsoft.Bot.Schema.Teams.TeamsChannelData>();
         return channelData?.Team;
     }
 
-  
+
 }
