@@ -51,7 +51,7 @@ public partial class App
 
     public App(AppOptions? options = null)
     {
-        var cloud = options?.Cloud ?? CloudEnvironment.Public;
+        var cloud = options?.Cloud ?? new CloudEnvironment();
 
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();

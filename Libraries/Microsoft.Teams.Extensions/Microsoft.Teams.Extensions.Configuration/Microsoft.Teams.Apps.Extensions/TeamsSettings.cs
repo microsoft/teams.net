@@ -10,30 +10,29 @@ public class TeamsSettings
     public string? ClientId { get; set; }
     public string? ClientSecret { get; set; }
     public string? TenantId { get; set; }
-    public string? Cloud { get; set; }
 
-    /// <summary>Override the Azure AD login endpoint.</summary>
+    /// <summary>The Azure AD login endpoint.</summary>
     public string? LoginEndpoint { get; set; }
 
-    /// <summary>Override the default login tenant.</summary>
+    /// <summary>The default login tenant.</summary>
     public string? LoginTenant { get; set; }
 
-    /// <summary>Override the Bot Framework OAuth scope.</summary>
+    /// <summary>The Bot Framework OAuth scope.</summary>
     public string? BotScope { get; set; }
 
-    /// <summary>Override the Bot Framework token service URL.</summary>
+    /// <summary>The Bot Framework token service URL.</summary>
     public string? TokenServiceUrl { get; set; }
 
-    /// <summary>Override the OpenID metadata URL for token validation.</summary>
+    /// <summary>The OpenID metadata URL for token validation.</summary>
     public string? OpenIdMetadataUrl { get; set; }
 
-    /// <summary>Override the token issuer for Bot Framework tokens.</summary>
+    /// <summary>The token issuer for Bot Framework tokens.</summary>
     public string? TokenIssuer { get; set; }
 
-    /// <summary>Override the channel service URL.</summary>
+    /// <summary>The channel service URL.</summary>
     public string? ChannelService { get; set; }
 
-    /// <summary>Override the OAuth redirect URL.</summary>
+    /// <summary>The OAuth redirect URL.</summary>
     public string? OAuthRedirectUrl { get; set; }
 
     public bool Empty
@@ -43,14 +42,11 @@ public class TeamsSettings
 
     /// <summary>
     /// Resolves the <see cref="CloudEnvironment"/> by starting from <paramref name="programmaticCloud"/>
-    /// (or the <see cref="Cloud"/> setting, or <see cref="CloudEnvironment.Public"/>), then applying
-    /// any per-endpoint overrides from settings.
+    /// (or a new default instance), then applying any per-endpoint overrides from settings.
     /// </summary>
     public CloudEnvironment ResolveCloud(CloudEnvironment? programmaticCloud = null)
     {
-        var baseCloud = programmaticCloud
-            ?? (Cloud is not null ? CloudEnvironment.FromName(Cloud) : null)
-            ?? CloudEnvironment.Public;
+        var baseCloud = programmaticCloud ?? new CloudEnvironment();
 
         return baseCloud.WithOverrides(
             loginEndpoint: LoginEndpoint,

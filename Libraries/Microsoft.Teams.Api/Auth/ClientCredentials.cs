@@ -10,7 +10,7 @@ public class ClientCredentials : IHttpCredentials
     public string ClientId { get; set; }
     public string ClientSecret { get; set; }
     public string? TenantId { get; set; }
-    public CloudEnvironment Cloud { get; set; } = CloudEnvironment.Public;
+    public CloudEnvironment Cloud { get; set; } = new();
 
     public ClientCredentials(string clientId, string clientSecret)
     {

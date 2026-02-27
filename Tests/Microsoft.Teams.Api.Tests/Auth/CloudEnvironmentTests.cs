@@ -8,9 +8,9 @@ namespace Microsoft.Teams.Api.Tests.Auth;
 public class CloudEnvironmentTests
 {
     [Fact]
-    public void Public_HasCorrectEndpoints()
+    public void DefaultConstructor_HasPublicCloudEndpoints()
     {
-        var env = CloudEnvironment.Public;
+        var env = new CloudEnvironment();
 
         Assert.Equal("https://login.microsoftonline.com", env.LoginEndpoint);
         Assert.Equal("botframework.com", env.LoginTenant);
@@ -23,88 +23,33 @@ public class CloudEnvironmentTests
     }
 
     [Fact]
-    public void USGov_HasCorrectEndpoints()
+    public void Constructor_AcceptsCustomEndpoints()
     {
-        var env = CloudEnvironment.USGov;
+        var env = new CloudEnvironment(
+            loginEndpoint: "https://custom.login.example",
+            loginTenant: "custom-tenant",
+            botScope: "https://custom.scope/.default",
+            tokenServiceUrl: "https://custom.token.example",
+            openIdMetadataUrl: "https://custom.openid.example",
+            tokenIssuer: "https://custom.issuer.example",
+            channelService: "https://custom.channel.example",
+            oauthRedirectUrl: "https://custom.redirect.example"
+        );
 
-        Assert.Equal("https://login.microsoftonline.us", env.LoginEndpoint);
-        Assert.Equal("MicrosoftServices.onmicrosoft.us", env.LoginTenant);
-        Assert.Equal("https://api.botframework.us/.default", env.BotScope);
-        Assert.Equal("https://tokengcch.botframework.azure.us", env.TokenServiceUrl);
-        Assert.Equal("https://login.botframework.azure.us/v1/.well-known/openidconfiguration", env.OpenIdMetadataUrl);
-        Assert.Equal("https://api.botframework.us", env.TokenIssuer);
-        Assert.Equal("https://botframework.azure.us", env.ChannelService);
-        Assert.Equal("https://tokengcch.botframework.azure.us/.auth/web/redirect", env.OAuthRedirectUrl);
-    }
-
-    [Fact]
-    public void USGovDoD_HasCorrectEndpoints()
-    {
-        var env = CloudEnvironment.USGovDoD;
-
-        Assert.Equal("https://login.microsoftonline.us", env.LoginEndpoint);
-        Assert.Equal("MicrosoftServices.onmicrosoft.us", env.LoginTenant);
-        Assert.Equal("https://api.botframework.us/.default", env.BotScope);
-        Assert.Equal("https://apiDoD.botframework.azure.us", env.TokenServiceUrl);
-        Assert.Equal("https://login.botframework.azure.us/v1/.well-known/openidconfiguration", env.OpenIdMetadataUrl);
-        Assert.Equal("https://api.botframework.us", env.TokenIssuer);
-        Assert.Equal("https://botframework.azure.us", env.ChannelService);
-        Assert.Equal("https://apiDoD.botframework.azure.us/.auth/web/redirect", env.OAuthRedirectUrl);
-    }
-
-    [Fact]
-    public void China_HasCorrectEndpoints()
-    {
-        var env = CloudEnvironment.China;
-
-        Assert.Equal("https://login.partner.microsoftonline.cn", env.LoginEndpoint);
-        Assert.Equal("microsoftservices.partner.onmschina.cn", env.LoginTenant);
-        Assert.Equal("https://api.botframework.azure.cn/.default", env.BotScope);
-        Assert.Equal("https://token.botframework.azure.cn", env.TokenServiceUrl);
-        Assert.Equal("https://login.botframework.azure.cn/v1/.well-known/openidconfiguration", env.OpenIdMetadataUrl);
-        Assert.Equal("https://api.botframework.azure.cn", env.TokenIssuer);
-        Assert.Equal("https://botframework.azure.cn", env.ChannelService);
-        Assert.Equal("https://token.botframework.azure.cn/.auth/web/redirect", env.OAuthRedirectUrl);
-    }
-
-    [Theory]
-    [InlineData("Public", "https://login.microsoftonline.com")]
-    [InlineData("public", "https://login.microsoftonline.com")]
-    [InlineData("PUBLIC", "https://login.microsoftonline.com")]
-    [InlineData("USGov", "https://login.microsoftonline.us")]
-    [InlineData("usgov", "https://login.microsoftonline.us")]
-    [InlineData("USGovDoD", "https://login.microsoftonline.us")]
-    [InlineData("usgovdod", "https://login.microsoftonline.us")]
-    [InlineData("China", "https://login.partner.microsoftonline.cn")]
-    [InlineData("china", "https://login.partner.microsoftonline.cn")]
-    public void FromName_ResolvesCorrectly(string name, string expectedLoginEndpoint)
-    {
-        var env = CloudEnvironment.FromName(name);
-        Assert.Equal(expectedLoginEndpoint, env.LoginEndpoint);
-    }
-
-    [Theory]
-    [InlineData("invalid")]
-    [InlineData("")]
-    [InlineData("Azure")]
-    public void FromName_ThrowsForUnknownName(string name)
-    {
-        Assert.Throws<ArgumentException>(() => CloudEnvironment.FromName(name));
-    }
-
-    [Fact]
-    public void FromName_ReturnsStaticInstances()
-    {
-        Assert.Same(CloudEnvironment.Public, CloudEnvironment.FromName("Public"));
-        Assert.Same(CloudEnvironment.USGov, CloudEnvironment.FromName("USGov"));
-        Assert.Same(CloudEnvironment.USGovDoD, CloudEnvironment.FromName("USGovDoD"));
-        Assert.Same(CloudEnvironment.China, CloudEnvironment.FromName("China"));
+        Assert.Equal("https://custom.login.example", env.LoginEndpoint);
+        Assert.Equal("custom-tenant", env.LoginTenant);
+        Assert.Equal("https://custom.scope/.default", env.BotScope);
+        Assert.Equal("https://custom.token.example", env.TokenServiceUrl);
+        Assert.Equal("https://custom.openid.example", env.OpenIdMetadataUrl);
+        Assert.Equal("https://custom.issuer.example", env.TokenIssuer);
+        Assert.Equal("https://custom.channel.example", env.ChannelService);
+        Assert.Equal("https://custom.redirect.example", env.OAuthRedirectUrl);
     }
 
     [Fact]
     public void WithOverrides_AllNulls_ReturnsSameInstance()
     {
-        var env = CloudEnvironment.Public;
+        var env = new CloudEnvironment();
 
         var result = env.WithOverrides();
 
@@ -114,7 +59,7 @@ public class CloudEnvironmentTests
     [Fact]
     public void WithOverrides_SingleOverride_ReplacesOnlyThatProperty()
     {
-        var env = CloudEnvironment.Public;
+        var env = new CloudEnvironment();
 
         var result = env.WithOverrides(loginTenant: "my-tenant-id");
 
@@ -132,7 +77,7 @@ public class CloudEnvironmentTests
     [Fact]
     public void WithOverrides_MultipleOverrides_ReplacesCorrectProperties()
     {
-        var env = CloudEnvironment.China;
+        var env = new CloudEnvironment();
 
         var result = env.WithOverrides(
             loginEndpoint: "https://custom.login.cn",
@@ -154,7 +99,7 @@ public class CloudEnvironmentTests
     [Fact]
     public void WithOverrides_AllOverrides_ReplacesAllProperties()
     {
-        var env = CloudEnvironment.Public;
+        var env = new CloudEnvironment();
 
         var result = env.WithOverrides(
             loginEndpoint: "a",

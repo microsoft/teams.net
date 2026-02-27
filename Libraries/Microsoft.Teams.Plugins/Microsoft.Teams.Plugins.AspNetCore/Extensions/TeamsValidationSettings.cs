@@ -9,7 +9,7 @@ public class TeamsValidationSettings
     public List<string> Issuers;
     public string LoginEndpoint;
 
-    public TeamsValidationSettings() : this(CloudEnvironment.Public)
+    public TeamsValidationSettings() : this(new CloudEnvironment())
     {
     }
 
