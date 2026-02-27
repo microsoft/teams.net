@@ -13,7 +13,7 @@ public class TeamsValidationSettings
         "https://sts.windows.net/69e9b82d-4842-4902-8d1e-abc5b98a55e8/", // Copilot Auth v1.0 token
         "https://login.microsoftonline.com/69e9b82d-4842-4902-8d1e-abc5b98a55e8/v2.0", // Copilot Auth v2.0 token
     ];
-    public string Instance = "https://login.microsoftonline.com";
+    public string Instance { get; set; } = "https://login.microsoftonline.com";
 
     public void AddDefaultAudiences(string ClientId)
     {

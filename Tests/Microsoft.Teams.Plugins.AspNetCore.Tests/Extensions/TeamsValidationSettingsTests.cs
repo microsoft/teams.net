@@ -70,7 +70,7 @@ public class TeamsValidationSettingsTests
     }
 
     [Fact]
-    public void GetTenantSpecificOpenIdMetadataUrl_FallsBackToCommon_WhenTenantIdIsNull()
+    public void GetTenantSpecificOpenIdMetadataUrl_UsesCommon_WhenTenantIdIsNull()
     {
         var settings = new TeamsValidationSettings();
         var url = settings.GetTenantSpecificOpenIdMetadataUrl(null);
