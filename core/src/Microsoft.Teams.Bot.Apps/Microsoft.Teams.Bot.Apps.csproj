@@ -10,4 +10,8 @@
     <ProjectReference Include="..\Microsoft.Teams.Bot.Core\Microsoft.Teams.Bot.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+	  <InternalsVisibleTo Include="Microsoft.Teams.Bot.Apps.UnitTests" />
+  </ItemGroup>
+
 </Project>
