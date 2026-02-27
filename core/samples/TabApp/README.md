@@ -35,6 +35,7 @@ Under **Authentication → Add a platform → Single-page application**, add:
 
 ```
 https://{YOUR_DOMAIN}/tabs/test
+brk-multihub://{YOUR_DOMAIN}
 ```
 
 ### 3. API permissions
