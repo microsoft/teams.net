@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
-
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps.Schema;
 
@@ -67,13 +66,13 @@ internal sealed class Router
 
         if (matchingRoutes.Count == 0 && _routes.Count>0)
         {
-            _logger.LogTrace("No routes matched activity of type '{Type}'.", ctx.Activity.Type);
+            _logger.LogDebug("No routes matched activity of type '{Type}'.", ctx.Activity.Type);
             return;
         }
 
         foreach (var route in matchingRoutes)
         {
-            _logger.LogTrace("Dispatching '{Type}' activity to route '{Name}'.", ctx.Activity.Type, route.Name);
+            _logger.LogDebug("Dispatching '{Type}' activity to route '{Name}'.", ctx.Activity.Type, route.Name);
             await route.InvokeRoute(ctx, cancellationToken).ConfigureAwait(false);
         }
     }
@@ -90,12 +89,15 @@ internal sealed class Router
         ArgumentNullException.ThrowIfNull(ctx);
 
         var matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
+        var name = ctx.Activity is InvokeActivity inv ? inv.Name : null;
 
         if (matchingRoutes.Count == 0 && _routes.Count > 0)
         {
-            _logger.LogWarning("No routes matched invoke activity of type '{Type}'; handler will not execute.", ctx.Activity.Type);
+            _logger.LogDebug("No routes matched invoke activity with name '{Name}'; handler will not execute.", name);
             return null!; // TODO : return appropriate response
         }
+
+        _logger.LogDebug("Dispatching invoke activity with name '{Name}' to route '{Route}'", name, matchingRoutes[0].Name);
 
         return await matchingRoutes[0].InvokeRouteWithReturn(ctx, cancellationToken).ConfigureAwait(false);
     }
