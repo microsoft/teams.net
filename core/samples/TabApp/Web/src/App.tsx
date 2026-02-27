@@ -40,23 +40,13 @@ export default function App() {
       app.getContext(),
     ])
 
-    const headers: Record<string, string> = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-    }
-
-    if (ctx.app.sessionId)    headers['X-Teams-App-Session-Id'] = ctx.app.sessionId
-    if (ctx.page.id)          headers['X-Teams-Page-Id']         = ctx.page.id
-    if (ctx.page.subPageId)   headers['X-Teams-Sub-Page-Id']     = ctx.page.subPageId
-    if (ctx.channel?.id)      headers['X-Teams-Channel-Id']      = ctx.channel.id
-    if (ctx.chat?.id)         headers['X-Teams-Chat-Id']         = ctx.chat.id
-    if (ctx.meeting?.id)      headers['X-Teams-Meeting-Id']      = ctx.meeting.id
-    if (ctx.team?.groupId)    headers['X-Teams-Team-Id']         = ctx.team.groupId
-
     const res = await fetch(`/functions/${name}`, {
       method: 'POST',
-      headers,
-      body: JSON.stringify(body),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ payload: body, context: ctx }),
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return res.json()

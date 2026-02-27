@@ -9,3 +9,5 @@ public class PostToChatBody
 {
     public required string Message { get; set; }
 }
+
+public record PostToChatResult(bool Ok);

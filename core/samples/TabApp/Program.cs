@@ -13,11 +13,10 @@ builder.WithTab("test", "./Web/bin");
 
 // ==================== SERVER FUNCTIONS ====================
 
-builder.WithFunction<PostToChatBody>("post-to-chat", async (ctx, ct) =>
+builder.WithFunction<PostToChatBody, PostToChatResult>("post-to-chat", async (ctx, ct) =>
 {
-    ctx.Log.LogInformation("post-to-chat called by {User} with message: {Message}", ctx.UserName, ctx.Data.Message);
-    await ctx.SendAsync(ctx.Data.Message, ct);
-    return new { ok = true };
+    await ctx.SendAsync(ctx.Data?.Message?? "", ct);
+    return new PostToChatResult(Ok: true);
 });
 
 // TODO: Once SSO is implemented, review moving who-am-i and toggle-status functions to server side

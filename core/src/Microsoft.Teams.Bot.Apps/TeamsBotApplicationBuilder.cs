@@ -115,7 +115,7 @@ public class TeamsBotApplicationBuilder
             {
                 webApp.Services.GetRequiredService<IHostApplicationLifetime>()
                     .ApplicationStopped.Register(provider.Dispose);
-                ApplyTab(webApp, name, provider);
+                WithTab(name, provider);
             }
             catch
             {
@@ -139,22 +139,47 @@ public class TeamsBotApplicationBuilder
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
         ArgumentNullException.ThrowIfNull(provider, nameof(provider));
 
-        _tabActions.Add(webApp => ApplyTab(webApp, name, provider));
+        _tabActions.Add(webApp =>
+        {
+            webApp.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = provider,
+                RequestPath = $"/tabs/{name}",
+                ServeUnknownFileTypes = true
+            });
+
+            webApp.MapGet($"/tabs/{name}", () =>
+            {
+                IFileInfo file = provider.GetFileInfo("index.html");
+                return file.Exists
+                    ? Results.File(file.CreateReadStream(), "text/html")
+                    : Results.NotFound();
+            });
+
+            webApp.MapGet($"/tabs/{name}/{{*path}}", (string path) =>
+            {
+                IFileInfo file = provider.GetFileInfo(path);
+                if (!file.Exists) return Results.NotFound();
+                _contentTypeProvider.TryGetContentType(file.Name, out var contentType);
+                return Results.File(file.CreateReadStream(), contentType ?? "application/octet-stream");
+            });
+        });
 
         return this;
     }
 
     /// <summary>
-    /// Registers an HTTP POST endpoint at <c>/functions/{name}</c> with a typed request body.
+    /// Registers an HTTP POST endpoint at <c>/functions/{name}</c> with a typed request body and typed response.
     /// The endpoint is mapped when <see cref="Build"/> is called.
     /// </summary>
     /// <typeparam name="TBody">The type to deserialize the JSON request body into.</typeparam>
+    /// <typeparam name="TResult">The type of the value serialized as the JSON response.</typeparam>
     /// <param name="name">The function name used in the URL path.</param>
-    /// <param name="handler">The async handler. Its return value is serialized as the JSON response.</param>
+    /// <param name="handler">The async handler whose return value is serialized as the JSON response.</param>
     /// <returns>The current instance for fluent chaining.</returns>
-    public TeamsBotApplicationBuilder WithFunction<TBody>(
+    public TeamsBotApplicationBuilder WithFunction<TBody, TResult>(
         string name,
-        Func<FunctionContext<TBody>, CancellationToken, Task<object?>> handler)
+        Func<FunctionContext<TBody>, CancellationToken, Task<TResult>> handler)
     {
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
@@ -163,12 +188,10 @@ public class TeamsBotApplicationBuilder
         {
             webApp.MapPost($"/functions/{name}", async (HttpContext httpCtx, CancellationToken ct) =>
             {
-                ILogger logger = httpCtx.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger($"functions.{name}");
-                BotApplicationOptions options = httpCtx.RequestServices.GetRequiredService<BotApplicationOptions>();
-                TBody? body = await httpCtx.Request.ReadFromJsonAsync<TBody>(ct).ConfigureAwait(false);
-                FunctionContext<TBody> ctx = new(botApp, logger, httpCtx, options, body!);
-                var result = await handler(ctx, ct).ConfigureAwait(false);
-                return Results.Json(result);
+                FunctionRequest<TBody> request = await httpCtx.Request.ReadFromJsonAsync<FunctionRequest<TBody>>(ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("Missing request body.");
+                FunctionContext<TBody> ctx = new(botApp, httpCtx, request);
+                return Results.Json(await handler(ctx, ct).ConfigureAwait(false));
             }).RequireAuthorization(JwtExtensions.EntraPolicy);
         });
 
@@ -176,15 +199,16 @@ public class TeamsBotApplicationBuilder
     }
 
     /// <summary>
-    /// Registers an HTTP POST endpoint at <c>/functions/{name}</c> with no request body.
+    /// Registers an HTTP POST endpoint at <c>/functions/{name}</c> with no request body and a typed response.
     /// The endpoint is mapped when <see cref="Build"/> is called.
     /// </summary>
+    /// <typeparam name="TResult">The type of the value serialized as the JSON response.</typeparam>
     /// <param name="name">The function name used in the URL path.</param>
-    /// <param name="handler">The async handler. Its return value is serialized as the JSON response.</param>
+    /// <param name="handler">The async handler whose return value is serialized as the JSON response.</param>
     /// <returns>The current instance for fluent chaining.</returns>
-    public TeamsBotApplicationBuilder WithFunction(
+    public TeamsBotApplicationBuilder WithFunction<TResult>(
         string name,
-        Func<FunctionContext, CancellationToken, Task<object?>> handler)
+        Func<FunctionContext, CancellationToken, Task<TResult>> handler)
     {
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
         ArgumentNullException.ThrowIfNull(handler, nameof(handler));
@@ -193,41 +217,13 @@ public class TeamsBotApplicationBuilder
         {
             webApp.MapPost($"/functions/{name}", async (HttpContext httpCtx, CancellationToken ct) =>
             {
-                ILogger logger = httpCtx.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger($"functions.{name}");
-                BotApplicationOptions options = httpCtx.RequestServices.GetRequiredService<BotApplicationOptions>();
-                FunctionContext ctx = new(botApp, logger, httpCtx, options);
-                var result = await handler(ctx, ct).ConfigureAwait(false);
-                return Results.Json(result);
+                FunctionRequest request = await httpCtx.Request.ReadFromJsonAsync<FunctionRequest>(ct).ConfigureAwait(false)
+                    ?? throw new InvalidOperationException("Missing request body.");
+                FunctionContext ctx = new(botApp, httpCtx, request);
+                return Results.Json(await handler(ctx, ct).ConfigureAwait(false));
             }).RequireAuthorization(JwtExtensions.EntraPolicy);
         });
 
         return this;
     }
-
-    private static void ApplyTab(WebApplication webApp, string name, IFileProvider provider)
-    {
-        webApp.UseStaticFiles(new StaticFileOptions
-        {
-            FileProvider = provider,
-            RequestPath = $"/tabs/{name}",
-            ServeUnknownFileTypes = true
-        });
-
-        webApp.MapGet($"/tabs/{name}", () =>
-        {
-            IFileInfo file = provider.GetFileInfo("index.html");
-            return file.Exists
-                ? Results.File(file.CreateReadStream(), "text/html")
-                : Results.NotFound();
-        });
-
-        webApp.MapGet($"/tabs/{name}/{{*path}}", (string path) =>
-        {
-            IFileInfo file = provider.GetFileInfo(path);
-            if (!file.Exists) return Results.NotFound();
-            _contentTypeProvider.TryGetContentType(file.Name, out var contentType);
-            return Results.File(file.CreateReadStream(), contentType ?? "application/octet-stream");
-        });
-    }
-
 }
