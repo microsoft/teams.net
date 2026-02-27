@@ -34,11 +34,18 @@ public static class HostApplicationBuilderExtensions
         // client credentials
         if (options.Credentials is null && settings.ClientId is not null && settings.ClientSecret is not null && !settings.Empty)
         {
-            options.Credentials = new ClientCredentials(
+            var credentials = new ClientCredentials(
                 settings.ClientId,
                 settings.ClientSecret,
                 settings.TenantId
             );
+
+            if (settings.Instance is not null)
+            {
+                credentials.Instance = settings.Instance;
+            }
+
+            options.Credentials = credentials;
         }
 
         options.Logger ??= new ConsoleLogger(loggingSettings);
@@ -59,11 +66,18 @@ public static class HostApplicationBuilderExtensions
         // client credentials
         if (settings.ClientId is not null && settings.ClientSecret is not null && !settings.Empty)
         {
-            appBuilder = appBuilder.AddCredentials(new ClientCredentials(
+            var credentials = new ClientCredentials(
                 settings.ClientId,
                 settings.ClientSecret,
                 settings.TenantId
-            ));
+            );
+
+            if (settings.Instance is not null)
+            {
+                credentials.Instance = settings.Instance;
+            }
+
+            appBuilder = appBuilder.AddCredentials(credentials);
         }
 
         var app = appBuilder.Build();

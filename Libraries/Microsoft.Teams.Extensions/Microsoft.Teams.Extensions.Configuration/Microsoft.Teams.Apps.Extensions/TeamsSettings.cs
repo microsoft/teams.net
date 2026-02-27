@@ -11,6 +11,12 @@ public class TeamsSettings
     public string? ClientSecret { get; set; }
     public string? TenantId { get; set; }
 
+    /// <summary>
+    /// The Entra ID login endpoint, following the Microsoft Identity Web configuration schema.
+    /// Override this for sovereign clouds (e.g. "https://login.microsoftonline.us" for US Gov).
+    /// </summary>
+    public string? Instance { get; set; }
+
     public bool Empty
     {
         get { return ClientId == "" || ClientSecret == ""; }
@@ -22,7 +28,14 @@ public class TeamsSettings
 
         if (ClientId is not null && ClientSecret is not null && !Empty)
         {
-            options.Credentials = new ClientCredentials(ClientId, ClientSecret, TenantId);
+            var credentials = new ClientCredentials(ClientId, ClientSecret, TenantId);
+
+            if (Instance is not null)
+            {
+                credentials.Instance = Instance;
+            }
+
+            options.Credentials = credentials;
         }
 
         return options;

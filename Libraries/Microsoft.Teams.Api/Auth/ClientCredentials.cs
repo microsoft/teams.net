@@ -11,6 +11,12 @@ public class ClientCredentials : IHttpCredentials
     public string ClientSecret { get; set; }
     public string? TenantId { get; set; }
 
+    /// <summary>
+    /// The Entra ID login endpoint, following the Microsoft Identity Web configuration schema.
+    /// Override this for sovereign clouds (e.g. "https://login.microsoftonline.us" for US Gov).
+    /// </summary>
+    public string Instance { get; set; } = "https://login.microsoftonline.com";
+
     public ClientCredentials(string clientId, string clientSecret)
     {
         ClientId = clientId;
@@ -27,8 +33,9 @@ public class ClientCredentials : IHttpCredentials
     public async Task<ITokenResponse> Resolve(IHttpClient client, string[] scopes, CancellationToken cancellationToken = default)
     {
         var tenantId = TenantId ?? "botframework.com";
+        var instance = Instance.TrimEnd('/');
         var request = HttpRequest.Post(
-            $"https://login.microsoftonline.com/{tenantId}/oauth2/v2.0/token"
+            $"{instance}/{tenantId}/oauth2/v2.0/token"
         );
 
         request.Headers.Add("Content-Type", ["application/x-www-form-urlencoded"]);

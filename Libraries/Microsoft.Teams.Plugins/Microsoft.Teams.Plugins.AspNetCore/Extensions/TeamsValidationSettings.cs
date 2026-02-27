@@ -13,6 +13,7 @@ public class TeamsValidationSettings
         "https://sts.windows.net/69e9b82d-4842-4902-8d1e-abc5b98a55e8/", // Copilot Auth v1.0 token
         "https://login.microsoftonline.com/69e9b82d-4842-4902-8d1e-abc5b98a55e8/v2.0", // Copilot Auth v2.0 token
     ];
+    public string Instance = "https://login.microsoftonline.com";
 
     public void AddDefaultAudiences(string ClientId)
     {
@@ -29,13 +30,15 @@ public class TeamsValidationSettings
         var validIssuers = new List<string>();
         if (!string.IsNullOrEmpty(tenantId))
         {
-            validIssuers.Add($"https://login.microsoftonline.com/{tenantId}/");
+            var instance = Instance.TrimEnd('/');
+            validIssuers.Add($"{instance}/{tenantId}/");
         }
         return validIssuers;
     }
 
     public string GetTenantSpecificOpenIdMetadataUrl(string? tenantId)
     {
-        return $"https://login.microsoftonline.com/{tenantId ?? "common"}/v2.0/.well-known/openid-configuration";
+        var instance = Instance.TrimEnd('/');
+        return $"{instance}/{tenantId ?? "common"}/v2.0/.well-known/openid-configuration";
     }
 }

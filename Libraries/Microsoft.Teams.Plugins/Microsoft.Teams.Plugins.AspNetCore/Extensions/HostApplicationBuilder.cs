@@ -121,6 +121,12 @@ public static class HostApplicationBuilderExtensions
         var settings = builder.Configuration.GetTeams();
 
         var teamsValidationSettings = new TeamsValidationSettings();
+
+        if (!string.IsNullOrEmpty(settings.Instance))
+        {
+            teamsValidationSettings.Instance = settings.Instance;
+        }
+
         if (!string.IsNullOrEmpty(settings.ClientId))
         {
             teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
