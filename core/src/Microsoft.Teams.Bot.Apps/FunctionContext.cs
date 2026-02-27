@@ -32,6 +32,7 @@ public class FunctionContext(TeamsBotApplication botApp)
     /// <summary>Gets the MSAL Entra auth token from the request Authorization header.</summary>
     public string? AuthToken { get; init; }
 
+    //TODO : review if we should parse out more fields from the Teams context and make them first-class properties (e.g. chat vs channel, team id, etc.)
     /// <summary>Gets the raw Teams context JSON node from the request body.</summary>
     public JsonNode? TeamsContext { get; init; }
 
@@ -76,7 +77,7 @@ public class FunctionContext(TeamsBotApplication botApp)
 
 /// <summary>
 /// Context passed to a server function handler registered via
-/// <see cref="TeamsBotApplicationBuilder.WithFunction{TBody, TResult}"/>.
+/// <see cref="TeamsBotApplicationBuilder.WithFunction{TBody}"/>.
 /// The deserialized request payload is available via <see cref="Data"/>.
 /// </summary>
 public class FunctionContext<T>(TeamsBotApplication botApp) : FunctionContext(botApp)

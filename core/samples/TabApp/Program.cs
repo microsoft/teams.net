@@ -19,7 +19,7 @@ builder.WithFunction<PostToChatBody>("post-to-chat", async (ctx, ct) =>
     return new PostToChatResult(Ok: true);
 });
 
-// TODO: Once SSO is implemented, review moving who-am-i and toggle-status functions to server side
+// TODO: Once SSO is implemented, review graph calls via bot instead of client.
 
 var app = builder.Build();
 

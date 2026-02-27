@@ -3,6 +3,7 @@
 
 using System.Collections.Concurrent;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -69,7 +70,6 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                 builder.AddCustomJwtBearer(AgentScheme, validIssuers, audience, logger);
             }
 
-            // Register the Entra user token scheme for tab function endpoints.
             if (string.IsNullOrEmpty(tenantId))
             {
                 // Validate dynamically by constructing the expected issuer from the token's tid claim.
@@ -140,16 +140,21 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             return authorizationBuilder;
         }
 
+        private static (string? iss, string? tid) GetTokenClaims(SecurityToken token) => token switch
+        {
+            JsonWebToken jwt        => (jwt.Issuer, jwt.TryGetClaim("tid", out var c) ? c.Value : null),
+            JwtSecurityToken legacy => (legacy.Issuer, legacy.Claims.FirstOrDefault(c => c.Type == "tid")?.Value),
+            _                       => (null, null)
+        };
+
         private static string ValidateMultiTenantEntraIssuer(string issuer, SecurityToken token, TokenValidationParameters parameters)
         {
-            if (token is JwtSecurityToken jwt)
-            {
-                var tid = jwt.Claims.FirstOrDefault(c => c.Type == "tid")?.Value;
-                if (tid != null &&
-                    (issuer == $"https://login.microsoftonline.com/{tid}/v2.0" ||
-                     issuer == $"https://sts.windows.net/{tid}/"))
-                    return issuer;
-            }
+            var (_, tid) = GetTokenClaims(token);
+            if (tid != null &&
+                (issuer == $"https://login.microsoftonline.com/{tid}/v2.0" ||
+                 issuer == $"https://sts.windows.net/{tid}/"))
+                return issuer;
+
             throw new SecurityTokenInvalidIssuerException($"Issuer '{issuer}' is not valid for multi-tenant Entra authentication.");
         }
 
@@ -171,12 +176,10 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     ValidateAudience = true,
                     ValidIssuers = issuerValidator is null ? validIssuers : null,
                     IssuerValidator = issuerValidator,
-                    IssuerSigningKeyResolver = (_, securityToken, kid, _) =>
+                    IssuerSigningKeyResolver = (_, securityToken, _, _) =>
                     {
-                        if (securityToken is not JwtSecurityToken jwt) return [];
-
-                        string iss = jwt.Issuer;
-                        string? tid = jwt.Claims.FirstOrDefault(c => c.Type == "tid")?.Value;
+                        var (iss, tid) = GetTokenClaims(securityToken);
+                        if (iss is null) return [];
 
                         string authority = iss.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
                             ? BotOIDC
@@ -188,7 +191,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                                 new OpenIdConnectConfigurationRetriever(),
                                 new HttpDocumentRetriever { RequireHttps = jwtOptions.RequireHttpsMetadata }));
 
-                        var config = manager.GetConfigurationAsync(CancellationToken.None).GetAwaiter().GetResult();
+                        OpenIdConnectConfiguration config = manager.GetConfigurationAsync(CancellationToken.None).GetAwaiter().GetResult();
                         return config.SigningKeys;
                     }
                 };

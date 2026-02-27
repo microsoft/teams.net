@@ -1,28 +1,23 @@
 import { useState, useEffect, useCallback } from 'react'
-import { app, authentication } from '@microsoft/teams-js'
-import { PublicClientApplication, InteractionRequiredAuthError } from '@azure/msal-browser'
+import { app } from '@microsoft/teams-js'
+import { createNestablePublicClientApplication, InteractionRequiredAuthError, IPublicClientApplication } from '@azure/msal-browser'
 
-let _msal: PublicClientApplication | null = null
+const clientId = import.meta.env.VITE_CLIENT_ID as string
+let _msal: IPublicClientApplication
 
-//TODO : review if we should take a dependency on microsoft/teams.client
-async function getMsal(tenantId: string): Promise<PublicClientApplication> {
-  if (!_msal) {
-    _msal = new PublicClientApplication({
-      auth: {
-        clientId: import.meta.env.VITE_CLIENT_ID as string,
-        authority: `https://login.microsoftonline.com/${tenantId}`,
-        redirectUri: window.location.origin + window.location.pathname,
-      },
+//TODO : do we want to take dependency on teams.client 
+async function getMsal(): Promise<IPublicClientApplication> {
+    if (!_msal) {
+      _msal = await createNestablePublicClientApplication({
+      auth: { clientId, authority: '', redirectUri: '/' },
     })
-    await _msal.initialize()
   }
-  return _msal
+    return _msal
 }
 
 async function acquireToken(scopes: string[], context: app.Context | null): Promise<string> {
-  const tenantId = context?.user?.tenant?.id ?? 'common'
   const loginHint = context?.user?.loginHint
-  const msal = await getMsal(tenantId)
+  const msal = await getMsal()
 
   const accounts = msal.getAllAccounts()
   const account = loginHint
@@ -57,8 +52,9 @@ export default function App() {
   }, [])
 
   async function callFunction(name: string, body: unknown): Promise<unknown> {
-    const [token, ctx] = await Promise.all([
-      authentication.getAuthToken(),
+    const msal = await getMsal()
+    const [{ accessToken }, ctx] = await Promise.all([
+      msal.acquireTokenSilent({ scopes: [`api://${clientId}/access_as_user`] }),
       app.getContext(),
     ])
 
@@ -66,10 +62,11 @@ export default function App() {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`,
+        'Authorization': `Bearer ${accessToken}`,
       },
       body: JSON.stringify({ payload: body, context: ctx }),
     })
+    //TODO : pass entire ctx or specific fields ?
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return res.json()
   }
@@ -103,7 +100,7 @@ export default function App() {
 
     const isAvailable = current === 'Available'
     const availability = isAvailable ? 'DoNotDisturb' : 'Available'
-    const activity = isAvailable ? 'Presenting' : 'Available'
+    const activity = isAvailable ? 'DoNotDisturb' : 'Available'
 
     const res = await fetch('https://graph.microsoft.com/v1.0/me/presence/setUserPreferredPresence', {
       method: 'POST',

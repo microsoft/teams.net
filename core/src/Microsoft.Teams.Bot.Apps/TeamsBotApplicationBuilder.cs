@@ -67,7 +67,7 @@ public class TeamsBotApplicationBuilder
 
     /// <summary>
     /// Builds and configures the bot application pipeline, returning a fully initialized instance of the bot
-    /// application. All registered tabs and functions are mapped to the web application at this point.
+    /// application.
     /// </summary>
     /// <returns>A configured <see cref="TeamsBotApplication"/> instance.</returns>
     public TeamsBotApplication Build()
@@ -76,10 +76,11 @@ public class TeamsBotApplicationBuilder
         TeamsBotApplication botApp = _webApp.Services.GetService<TeamsBotApplication>() ?? throw new InvalidOperationException("Application not registered");
         _webApp.UseBotApplication<TeamsBotApplication>(_routePath);
 
-        foreach (var tabAction in _tabActions)
+        // TODO : review this app builder class
+        foreach (var tabAction in _tabActions.ToList())
             tabAction(_webApp);
 
-        foreach (var funcAction in _functionActions)
+        foreach (var funcAction in _functionActions.ToList())
             funcAction(_webApp, botApp);
 
         return botApp;
@@ -103,30 +104,14 @@ public class TeamsBotApplicationBuilder
     /// <param name="name">The tab name used in the URL path.</param>
     /// <param name="physicalPath">Absolute or relative path to the directory containing the tab's static files.</param>
     /// <returns>The current instance for fluent chaining.</returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope",
-        Justification = "Provider is disposed in catch on failure; on success disposal is registered with IHostApplicationLifetime.ApplicationStopped.")]
     public TeamsBotApplicationBuilder WithTab(string name, string physicalPath)
     {
         ArgumentException.ThrowIfNullOrEmpty(name, nameof(name));
         ArgumentException.ThrowIfNullOrEmpty(physicalPath, nameof(physicalPath));
 
-        _tabActions.Add(webApp =>
-        {
-            PhysicalFileProvider provider = new(Path.GetFullPath(physicalPath));
-            try
-            {
-                webApp.Services.GetRequiredService<IHostApplicationLifetime>()
-                    .ApplicationStopped.Register(provider.Dispose);
-                WithTab(name, provider);
-            }
-            catch
-            {
-                provider.Dispose();
-                throw;
-            }
-        });
-
-        return this;
+#pragma warning disable CA2000 // Dispose objects before losing scope
+        return WithTab(name, new PhysicalFileProvider(Path.GetFullPath(physicalPath)));
+#pragma warning restore CA2000 // Dispose objects before losing scope
     }
 
     /// <summary>
@@ -143,6 +128,10 @@ public class TeamsBotApplicationBuilder
 
         _tabActions.Add(webApp =>
         {
+            if (provider is IDisposable disposable)
+                webApp.Services.GetRequiredService<IHostApplicationLifetime>()
+                    .ApplicationStopped.Register(disposable.Dispose);
+
             webApp.UseStaticFiles(new StaticFileOptions
             {
                 FileProvider = provider,
@@ -152,7 +141,7 @@ public class TeamsBotApplicationBuilder
 
             webApp.MapGet($"/tabs/{name}", () =>
             {
-                IFileInfo file = provider.GetFileInfo("index.html");
+                IFileInfo file = provider.GetFileInfo("/index.html");
                 return file.Exists
                     ? Results.File(file.CreateReadStream(), "text/html")
                     : Results.NotFound();
@@ -160,7 +149,7 @@ public class TeamsBotApplicationBuilder
 
             webApp.MapGet($"/tabs/{name}/{{*path}}", (string path) =>
             {
-                IFileInfo file = provider.GetFileInfo(path);
+                IFileInfo file = provider.GetFileInfo($"/{path}");
                 if (!file.Exists) return Results.NotFound();
                 _contentTypeProvider.TryGetContentType(file.Name, out var contentType);
                 return Results.File(file.CreateReadStream(), contentType ?? "application/octet-stream");
