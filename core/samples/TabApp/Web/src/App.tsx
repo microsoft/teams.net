@@ -77,7 +77,7 @@ export default function App() {
   }
 
   const showContext = useCallback(() => run(async () => context), [context])
-  const postToChat  = useCallback(() => run(() => callFunction('post-to-chat', { message })), [message])
+  const postToChat  = useCallback(() => run(() => callFunction('post-to-chat', { message, conversationId: context?.chat?.id ?? context?.channel?.id })), [message, context])
   const whoAmI = useCallback(() => run(async () => {
     const accessToken = await acquireToken(['User.Read'], context)
     return fetch('https://graph.microsoft.com/v1.0/me', {
