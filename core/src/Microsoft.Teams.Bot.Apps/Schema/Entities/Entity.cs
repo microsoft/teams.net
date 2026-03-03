@@ -28,6 +28,19 @@ public class EntityList : List<Entity>
             {
                 ["type"] = entity.Type
             };
+
+            // For entities with direct properties (e.g., CitationEntity.Citation),
+            // serialize via JsonSerializer to capture all [JsonPropertyName] properties.
+            if (entity is CitationEntity citationEntity)
+            {
+                var serialized = JsonSerializer.SerializeToNode(citationEntity);
+                if (serialized is JsonObject citationJson)
+                {
+                    jsonArray.Add(citationJson);
+                    continue;
+                }
+            }
+
             foreach (KeyValuePair<string, object?> property in entity.Properties)
             {
                 jsonObject[property.Key] = property.Value as JsonNode ?? JsonValue.Create(property.Value);
@@ -66,7 +79,7 @@ public class EntityList : List<Entity>
                 {
                     "clientInfo" => item.Deserialize<ClientInfoEntity>(options),
                     "mention" => item.Deserialize<MentionEntity>(options),
-                    //"message" or "https://schema.org/Message" => (Entity?)item.Deserialize<IMessageEntity>(options),
+                    "message" or "https://schema.org/Message" => DeserializeMessageEntity(item, options),
                     "ProductInfo" => item.Deserialize<ProductInfoEntity>(options),
                     "streaminfo" => item.Deserialize<StreamInfoEntity>(options),
                     _ => null
@@ -76,6 +89,30 @@ public class EntityList : List<Entity>
             }
         }
         return entities;
+    }
+
+    /// <summary>
+    /// Deserializes a message entity by checking the @type property to determine the specific type.
+    /// </summary>
+    /// <param name="item">The JSON node to deserialize.</param>
+    /// <param name="options">The JSON serializer options.</param>
+    /// <returns>The deserialized entity, or null if deserialization fails.</returns>
+    private static OMessageEntity? DeserializeMessageEntity(JsonNode item, JsonSerializerOptions? options)
+    {
+        if (item is JsonObject jsonObject
+            && jsonObject.TryGetPropertyValue("@type", out JsonNode? oTypeNode)
+            && oTypeNode is JsonValue oTypeValue
+            && oTypeValue.GetValue<string>() is string oType)
+        {
+            return oType switch
+            {
+                "Message" => item.Deserialize<CitationEntity>(options),
+                "CreativeWork" => item.Deserialize<SensitiveUsageEntity>(options),
+                _ => item.Deserialize<OMessageEntity>(options)
+            };
+        }
+
+        return item.Deserialize<OMessageEntity>(options);
     }
 }
 
