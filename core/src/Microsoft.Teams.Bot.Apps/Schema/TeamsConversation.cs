@@ -45,9 +45,13 @@ public class TeamsConversation : Conversation
     /// Creates a new instance of the TeamsConversation class from the specified Conversation object.
     /// </summary>
     /// <param name="conversation"></param>
-    public TeamsConversation(Conversation conversation)
+    public TeamsConversation(Conversation? conversation)
     {
-        ArgumentNullException.ThrowIfNull(conversation);
+        if (conversation is null)
+        {
+            return;
+        }
+
         Id = conversation.Id;
         if (conversation.Properties == null)
         {

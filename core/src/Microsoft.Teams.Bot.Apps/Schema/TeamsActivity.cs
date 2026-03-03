@@ -71,9 +71,21 @@ public class TeamsActivity : CoreActivity
         {
             ChannelData = new TeamsChannelData(activity.ChannelData);
         }
-        From = new TeamsConversationAccount(activity.From);
-        Recipient = new TeamsConversationAccount(activity.Recipient);
-        Conversation = new TeamsConversation(activity.Conversation);
+
+        if (activity.From is not null)
+        {
+            From = new TeamsConversationAccount(activity.From);
+        }
+
+        if (activity.Recipient is not null)
+        {
+            Recipient = new TeamsConversationAccount(activity.Recipient);
+        }
+
+        if (activity.Conversation is not null)
+        {
+            Conversation = new TeamsConversation(activity.Conversation);
+        }
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
         Entities = EntityList.FromJsonArray(activity.Entities);
 
@@ -97,9 +109,9 @@ public class TeamsActivity : CoreActivity
     /// Gets or sets the account information for the sender of the Teams conversation.
     /// </summary>
     [JsonPropertyName("from")]
-    public new TeamsConversationAccount From
+    public new TeamsConversationAccount? From
     {
-        get => base.From as TeamsConversationAccount ?? new TeamsConversationAccount(base.From);
+        get => base.From as TeamsConversationAccount;
         set => base.From = value;
     }
 
@@ -107,9 +119,9 @@ public class TeamsActivity : CoreActivity
     /// Gets or sets the account information for the recipient of the Teams conversation.
     /// </summary>
     [JsonPropertyName("recipient")]
-    public new TeamsConversationAccount Recipient
+    public new TeamsConversationAccount? Recipient
     {
-        get => base.Recipient as TeamsConversationAccount ?? new TeamsConversationAccount(base.Recipient);
+        get => base.Recipient as TeamsConversationAccount;
         set => base.Recipient = value;
     }
 
@@ -117,9 +129,9 @@ public class TeamsActivity : CoreActivity
     /// Gets or sets the conversation information for the Teams conversation.
     /// </summary>
     [JsonPropertyName("conversation")]
-    public new TeamsConversation Conversation
+    public new TeamsConversation? Conversation
     {
-        get => base.Conversation as TeamsConversation ?? new TeamsConversation(base.Conversation);
+        get => base.Conversation as TeamsConversation;
         set => base.Conversation = value;
     }
 

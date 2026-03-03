@@ -28,9 +28,12 @@ public class TeamsConversationAccount : ConversationAccount
     /// Initializes a new instance of the TeamsConversationAccount class using the specified conversation account.
     /// </summary>
     /// <param name="conversationAccount">The ConversationAccount instance containing the conversation's identifier, name, and properties. Cannot be null.</param>
-    public TeamsConversationAccount(ConversationAccount conversationAccount)
+    public TeamsConversationAccount(ConversationAccount? conversationAccount)
     {
-        ArgumentNullException.ThrowIfNull(conversationAccount);
+        if (conversationAccount is null)
+        {
+            return;
+        }
         Id = conversationAccount.Id;
         Name = conversationAccount.Name;
         Properties = conversationAccount.Properties;

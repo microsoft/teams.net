@@ -144,9 +144,12 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="from">The sender account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithFrom(ConversationAccount from)
+    public TBuilder WithFrom(ConversationAccount? from)
     {
-        SetFrom(from);
+        if (from is not null)
+        {
+            SetFrom(from);
+        }
         return (TBuilder)this;
     }
 

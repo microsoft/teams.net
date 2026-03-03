@@ -20,9 +20,9 @@ public class TeamsActivityBuilderTests
         TeamsActivity activity = builder.Build();
 
         Assert.NotNull(activity);
-        Assert.NotNull(activity.From);
-        Assert.NotNull(activity.Recipient);
-        Assert.NotNull(activity.Conversation);
+        Assert.Null(activity.From);
+        Assert.Null(activity.Recipient);
+        Assert.Null(activity.Conversation);
     }
 
     [Fact]
@@ -112,8 +112,8 @@ public class TeamsActivityBuilderTests
             .WithFrom(fromAccount)
             .Build();
 
-        Assert.Equal("sender-id", activity.From.Id);
-        Assert.Equal("Sender Name", activity.From.Name);
+        Assert.Equal("sender-id", activity.From?.Id);
+        Assert.Equal("Sender Name", activity.From?.Name);
     }
 
     [Fact]
@@ -129,8 +129,8 @@ public class TeamsActivityBuilderTests
             .WithRecipient(recipientAccount)
             .Build();
 
-        Assert.Equal("recipient-id", activity.Recipient.Id);
-        Assert.Equal("Recipient Name", activity.Recipient.Name);
+        Assert.Equal("recipient-id", activity.Recipient?.Id);
+        Assert.Equal("Recipient Name", activity.Recipient?.Name);
     }
 
     [Fact]
@@ -149,9 +149,9 @@ public class TeamsActivityBuilderTests
             .WithConversation(conversation)
             .Build();
 
-        Assert.Equal("conversation-id", activity.Conversation.Id);
-        Assert.Equal("tenant-123", activity.Conversation.TenantId);
-        Assert.Equal("channel", activity.Conversation.ConversationType);
+        Assert.Equal("conversation-id", activity.Conversation?.Id);
+        Assert.Equal("tenant-123", activity.Conversation?.TenantId);
+        Assert.Equal("channel", activity.Conversation?.ConversationType);
     }
 
     [Fact]
@@ -168,8 +168,8 @@ public class TeamsActivityBuilderTests
             .Build();
 
         Assert.NotNull(activity.ChannelData);
-        Assert.Equal("19:channel-id@thread.tacv2", activity.ChannelData.TeamsChannelId);
-        Assert.Equal("19:team-id@thread.tacv2", activity.ChannelData.TeamsTeamId);
+        Assert.Equal("19:channel-id@thread.tacv2", activity.ChannelData?.TeamsChannelId);
+        Assert.Equal("19:team-id@thread.tacv2", activity.ChannelData?.TeamsTeamId);
     }
 
     [Fact]
@@ -259,7 +259,7 @@ public class TeamsActivityBuilderTests
             .Build();
 
         Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities.Count);
+        Assert.Equal(2, activity.Entities?.Count);
     }
 
     [Fact]
@@ -289,7 +289,7 @@ public class TeamsActivityBuilderTests
             .Build();
 
         Assert.NotNull(activity.Attachments);
-        Assert.Equal(2, activity.Attachments.Count);
+        Assert.Equal(2, activity.Attachments?.Count);
     }
 
     [Fact]
@@ -412,7 +412,7 @@ public class TeamsActivityBuilderTests
 
         Assert.Equal("<at>User Two</at> <at>User One</at> message", activity.Properties["text"]);
         Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities.Count);
+        Assert.Equal(2, activity.Entities?.Count);
     }
 
     [Fact]
@@ -447,11 +447,11 @@ public class TeamsActivityBuilderTests
         Assert.Equal("activity-123", activity.Id);
         Assert.Equal("msteams", activity.ChannelId);
         Assert.Equal("<at>User</at> Test message", activity.Properties["text"]);
-        Assert.Equal("sender-id", activity.From.Id);
-        Assert.Equal("recipient-id", activity.Recipient.Id);
-        Assert.Equal("conv-id", activity.Conversation.Id);
+        Assert.Equal("sender-id", activity.From?.Id);
+        Assert.Equal("recipient-id", activity.Recipient?.Id);
+        Assert.Equal("conv-id", activity.Conversation?.Id);
         Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities.Count); // ClientInfo + Mention
+        Assert.Equal(2, activity.Entities?.Count); // ClientInfo + Mention
         Assert.NotNull(activity.Attachments);
         Assert.Single(activity.Attachments);
     }
@@ -533,7 +533,7 @@ public class TeamsActivityBuilderTests
     {
         TeamsActivity activity = builder.Build();
 
-        Assert.NotNull(activity.Entities);
+        Assert.Null(activity.Entities);
 
         ClientInfoEntity entity = new() { Locale = "en-US" };
         builder.AddEntity(entity);
@@ -548,7 +548,7 @@ public class TeamsActivityBuilderTests
     {
         TeamsActivity activity = builder.Build();
 
-        Assert.NotNull(activity.Attachments);
+        Assert.Null(activity.Attachments);
 
         TeamsAttachment attachment = new() { ContentType = "text/html" };
         builder.AddAttachment(attachment);
@@ -676,8 +676,8 @@ public class TeamsActivityBuilderTests
             .Build();
 
         Assert.IsType<TeamsConversationAccount>(activity.From);
-        Assert.Equal("user-123", activity.From.Id);
-        Assert.Equal("User Name", activity.From.Name);
+        Assert.Equal("user-123", activity.From?.Id);
+        Assert.Equal("User Name", activity.From?.Name);
     }
 
     [Fact]
@@ -694,8 +694,8 @@ public class TeamsActivityBuilderTests
             .Build();
 
         Assert.IsType<TeamsConversationAccount>(activity.Recipient);
-        Assert.Equal("bot-123", activity.Recipient.Id);
-        Assert.Equal("Bot Name", activity.Recipient.Name);
+        Assert.Equal("bot-123", activity.Recipient?.Id);
+        Assert.Equal("Bot Name", activity.Recipient?.Name);
     }
 
     [Fact]
@@ -711,7 +711,7 @@ public class TeamsActivityBuilderTests
             .Build();
 
         Assert.IsType<TeamsConversation>(activity.Conversation);
-        Assert.Equal("conv-123", activity.Conversation.Id);
+        Assert.Equal("conv-123", activity.Conversation?.Id);
     }
 
     [Fact]
@@ -833,15 +833,15 @@ public class TeamsActivityBuilderTests
         Assert.Equal(serviceUrl, activity.ServiceUrl);
         Assert.Equal("msteams", activity.ChannelId);
         Assert.Equal("<at>Manager</at> Please review this document", activity.Properties["text"]);
-        Assert.Equal("bot-id", activity.From.Id);
-        Assert.Equal("user-id", activity.Recipient.Id);
-        Assert.Equal("conv-001", activity.Conversation.Id);
-        Assert.Equal("tenant-001", activity.Conversation.TenantId);
-        Assert.Equal("channel", activity.Conversation.ConversationType);
+        Assert.Equal("bot-id", activity.From?.Id);
+        Assert.Equal("user-id", activity.Recipient?.Id);
+        Assert.Equal("conv-001", activity.Conversation?.Id);
+        Assert.Equal("tenant-001", activity.Conversation?.TenantId);
+        Assert.Equal("channel", activity.Conversation?.ConversationType);
         Assert.NotNull(activity.ChannelData);
-        Assert.Equal("19:channel@thread.tacv2", activity.ChannelData.TeamsChannelId);
+        Assert.Equal("19:channel@thread.tacv2", activity.ChannelData?.TeamsChannelId);
         Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities.Count); // ClientInfo + Mention
+        Assert.Equal(2, activity.Entities?.Count); // ClientInfo + Mention
         Assert.NotNull(activity.Attachments);
         Assert.Single(activity.Attachments);
     }

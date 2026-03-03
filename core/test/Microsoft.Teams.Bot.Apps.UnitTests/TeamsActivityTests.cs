@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
@@ -214,6 +215,40 @@ public class TeamsActivityTests
         Assert.Equal("24fff850-d7fb-4d32-a6e7-a1178874430e", agenticIdentity.AgenticAppBlueprintId);
     }
 
+    [Fact]
+    public void FromActivity_ReturnsDerivedType_WhenRegistered()
+    {
+        CoreActivity coreActivity = new CoreActivity(ActivityType.Message);
+        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.IsType<MessageActivity>(activity);
+    }
+
+    [Fact]
+    public void FromActivity_ReturnsBaseType_WhenNotRegistered()
+    {
+        CoreActivity coreActivity = new CoreActivity("unknownType");
+        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.Equal(typeof(TeamsActivity), activity.GetType());
+        Assert.Equal("unknownType", activity.Type);
+    }
+
+    [Fact]
+    public void EmptyTeamsActivity()
+    {
+        string minActivityJson = """
+            {
+              "type": "message"
+            }
+            """;
+
+        var teamsActivity = TeamsActivity.CreateBuilder().Build();
+        Assert.NotNull(teamsActivity);
+        var json = teamsActivity.ToJson();
+        Assert.Equal(minActivityJson, json);
+    }
+
     private const string jsonInvoke = """
           {
           "type": "invoke",
@@ -339,22 +374,5 @@ public class TeamsActivityTests
             }
             """;
 
-    [Fact]
-    public void FromActivity_ReturnsDerivedType_WhenRegistered()
-    {
-        CoreActivity coreActivity = new CoreActivity(ActivityType.Message);
-        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
 
-        Assert.IsType<MessageActivity>(activity);
-    }
-
-    [Fact]
-    public void FromActivity_ReturnsBaseType_WhenNotRegistered()
-    {
-        CoreActivity coreActivity = new CoreActivity("unknownType");
-        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
-
-        Assert.Equal(typeof(TeamsActivity), activity.GetType());
-        Assert.Equal("unknownType", activity.Type);
-    }
 }
