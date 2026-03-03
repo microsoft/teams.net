@@ -249,6 +249,57 @@ public class TeamsActivityTests
         Assert.Equal(minActivityJson, json);
     }
 
+    [Fact]
+    public void BaseFieldsAsBaseTypes()
+    {
+        CoreActivity ca = new CoreActivity();
+        ca.Conversation = new Conversation() { Id = "conv1" };
+        ca.Conversation.Properties.Add("tenantId", "tenant-1");
+        CoreActivity ta = TeamsActivity.FromActivity(ca);
+        if (ta.Conversation is not null)
+        {
+            Assert.NotNull(ta.Conversation);
+            Assert.Equal("conv1", ta.Conversation.Id);
+            Assert.Empty(ta.Conversation.Properties);
+        }
+        else
+        {
+            Assert.Fail("Conversation not set");
+        }
+    }
+
+    [Fact]
+    public void Deserialize_with_Conversation_and_Tenant()
+    {
+        var json = """
+            {
+                "type" : "message",
+                "conversation": {
+                    "id" : "conv1",
+                    "tenantId" : "tenant-1"
+                }
+            }
+            """;
+        var ca = CoreActivity.FromJsonString(json);
+        Assert.NotNull(ca);
+        Assert.NotNull(ca.Conversation);
+        Assert.Equal("conv1", ca.Conversation.Id);
+        if (ca.Conversation.Properties.TryGetValue("tenantId", out var outTenantId))
+        {
+            Assert.Equal("tenant-1", outTenantId?.ToString());
+        }
+        else
+        {
+            Assert.Fail("conversation tenant not set");
+        }
+        TeamsActivity ta = TeamsActivity.FromActivity(ca);
+        Assert.NotNull(ta);
+        Assert.NotNull(ta.Conversation);
+        Assert.Equal("conv1", ta.Conversation.Id);
+        Assert.Equal("tenant-1", ta.Conversation.TenantId);
+    }
+
+
     private const string jsonInvoke = """
           {
           "type": "invoke",

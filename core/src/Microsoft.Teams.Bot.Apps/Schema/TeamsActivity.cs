@@ -74,17 +74,17 @@ public class TeamsActivity : CoreActivity
 
         if (activity.From is not null)
         {
-            From = new TeamsConversationAccount(activity.From);
+            From = TeamsConversationAccount.FromConversationAccount(activity.From);
         }
 
         if (activity.Recipient is not null)
         {
-            Recipient = new TeamsConversationAccount(activity.Recipient);
+            Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient);
         }
 
         if (activity.Conversation is not null)
         {
-            Conversation = new TeamsConversation(activity.Conversation);
+            Conversation = TeamsConversation.FromConversation(activity.Conversation);
         }
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
         Entities = EntityList.FromJsonArray(activity.Entities);

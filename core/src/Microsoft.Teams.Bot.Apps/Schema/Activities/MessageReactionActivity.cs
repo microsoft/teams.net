@@ -37,6 +37,7 @@ public class MessageReactionActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageReactionActivity(CoreActivity activity) : base(activity)
     {
+        ArgumentNullException.ThrowIfNull(activity);
         if (activity.Properties.TryGetValue("reactionsAdded", out object? reactionsAdded) && reactionsAdded != null)
         {
             if (reactionsAdded is JsonElement je)

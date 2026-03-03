@@ -17,7 +17,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void Constructor_DefaultConstructor_CreatesNewActivity()
     {
-        TeamsActivity activity = builder.Build();
+        TeamsActivity activity = TeamsActivity.CreateBuilder().Build();
 
         Assert.NotNull(activity);
         Assert.Null(activity.From);
@@ -102,7 +102,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithFrom_SetsSenderAccount()
     {
-        TeamsConversationAccount fromAccount = new(new ConversationAccount
+        TeamsConversationAccount? fromAccount = TeamsConversationAccount.FromConversationAccount(new ConversationAccount
         {
             Id = "sender-id",
             Name = "Sender Name"
@@ -119,12 +119,12 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithRecipient_SetsRecipientAccount()
     {
-        TeamsConversationAccount recipientAccount = new(new ConversationAccount
+        TeamsConversationAccount? recipientAccount = TeamsConversationAccount.FromConversationAccount(new ConversationAccount
         {
             Id = "recipient-id",
             Name = "Recipient Name"
         });
-
+        Assert.NotNull(recipientAccount);
         var activity = builder
             .WithRecipient(recipientAccount)
             .Build();
@@ -136,15 +136,16 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithConversation_SetsConversationInfo()
     {
-        TeamsConversation conversation = new(new Conversation
+        Conversation baseConversation = new Conversation
         {
             Id = "conversation-id"
-        })
-        {
-            TenantId = "tenant-123",
-            ConversationType = "channel"
         };
 
+        Assert.NotNull(baseConversation);
+        baseConversation.Properties.Add("tenantId", "tenant-123");
+        baseConversation.Properties.Add("conversationType", "channel"); 
+        TeamsConversation? conversation = TeamsConversation.FromConversation(baseConversation);
+        
         var activity = builder
             .WithConversation(conversation)
             .Build();
@@ -424,17 +425,17 @@ public class TeamsActivityBuilderTests
             .WithChannelId("msteams")
             .WithText("Test message")
             .WithServiceUrl(new Uri("https://smba.trafficmanager.net/teams/"))
-            .WithFrom(new TeamsConversationAccount(new ConversationAccount
+            .WithFrom(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
             {
                 Id = "sender-id",
                 Name = "Sender"
             }))
-            .WithRecipient(new TeamsConversationAccount(new ConversationAccount
+            .WithRecipient(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
             {
                 Id = "recipient-id",
                 Name = "Recipient"
             }))
-            .WithConversation(new TeamsConversation(new Conversation
+            .WithConversation(TeamsConversation.FromConversation(new Conversation
             {
                 Id = "conv-id"
             }))
@@ -588,9 +589,9 @@ public class TeamsActivityBuilderTests
         {
             ChannelId = null,
             ServiceUrl = new Uri("https://test.com"),
-            Conversation = new TeamsConversation(new Conversation()),
-            From = new TeamsConversationAccount(new ConversationAccount()),
-            Recipient = new TeamsConversationAccount(new ConversationAccount())
+            Conversation = TeamsConversation.FromConversation(new Conversation()),
+            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
+            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount())
         };
 
         Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(sourceActivity));
@@ -603,9 +604,9 @@ public class TeamsActivityBuilderTests
         {
             ChannelId = "msteams",
             ServiceUrl = null,
-            Conversation = new TeamsConversation(new Conversation()),
-            From = new TeamsConversationAccount(new ConversationAccount()),
-            Recipient = new TeamsConversationAccount(new ConversationAccount())
+            Conversation = TeamsConversation.FromConversation(new Conversation()),
+            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
+            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount())
         };
 
         Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(sourceActivity));
@@ -618,9 +619,9 @@ public class TeamsActivityBuilderTests
         {
             ChannelId = "msteams",
             ServiceUrl = new Uri("https://test.com"),
-            Conversation = new TeamsConversation(new Conversation()),
-            From = new TeamsConversationAccount(new ConversationAccount { Id = "user-1" }),
-            Recipient = new TeamsConversationAccount(new ConversationAccount { Id = "bot-1" })
+            Conversation = TeamsConversation.FromConversation(new Conversation()),
+            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "user-1" }),
+            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "bot-1" })
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
@@ -635,9 +636,9 @@ public class TeamsActivityBuilderTests
         {
             ChannelId = "msteams",
             ServiceUrl = new Uri("https://test.com"),
-            Conversation = new TeamsConversation(new Conversation { Id = "conv-1" }),
-            From = new TeamsConversationAccount(new ConversationAccount()),
-            Recipient = new TeamsConversationAccount(new ConversationAccount { Id = "bot-1" })
+            Conversation = TeamsConversation.FromConversation(new Conversation { Id = "conv-1" }),
+            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
+            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "bot-1" })
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
@@ -652,9 +653,9 @@ public class TeamsActivityBuilderTests
         {
             ChannelId = "msteams",
             ServiceUrl = new Uri("https://test.com"),
-            Conversation = new TeamsConversation(new Conversation { Id = "conv-1" }),
-            From = new TeamsConversationAccount(new ConversationAccount { Id = "user-1" }),
-            Recipient = new TeamsConversationAccount(new ConversationAccount())
+            Conversation = TeamsConversation.FromConversation(new Conversation { Id = "conv-1" }),
+            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "user-1" }),
+            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount())
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
@@ -784,30 +785,36 @@ public class TeamsActivityBuilderTests
             TeamsTeamId = "19:team@thread.tacv2"
         };
 
+        var conv = new Conversation
+        {
+            Id = "conv-001",
+            Properties =
+            {
+                { "tenantId", "tenant-001" },
+                { "conversationType", "channel" }
+            }
+        };
+
+        TeamsConversation? tc = TeamsConversation.FromConversation(conv);
+        Assert.NotNull(tc);
+        
         TeamsActivity activity = builder
             .WithType(TeamsActivityType.Message)
             .WithId("msg-001")
             .WithServiceUrl(serviceUrl)
             .WithChannelId("msteams")
             .WithText("Please review this document")
-            .WithFrom(new TeamsConversationAccount(new ConversationAccount
+            .WithFrom(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
             {
                 Id = "bot-id",
                 Name = "Bot"
             }))
-            .WithRecipient(new TeamsConversationAccount(new ConversationAccount
+            .WithRecipient(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
             {
                 Id = "user-id",
                 Name = "User"
             }))
-            .WithConversation(new TeamsConversation(new Conversation
-            {
-                Id = "conv-001"
-            })
-            {
-                TenantId = "tenant-001",
-                ConversationType = "channel"
-            })
+            .WithConversation(tc)
             .WithChannelData(channelData)
             .AddEntity(new ClientInfoEntity
             {
