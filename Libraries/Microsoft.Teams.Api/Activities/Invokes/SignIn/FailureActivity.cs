@@ -28,6 +28,10 @@ public static partial class SignIn
         /// </summary>
         [JsonPropertyName("value")]
         [JsonPropertyOrder(32)]
-        public new required Api.SignIn.Failure Value { get; set; }
+        public new required Api.SignIn.Failure Value
+        {
+            get => (Api.SignIn.Failure)base.Value!;
+            set => base.Value = value;
+        }
     }
 }
