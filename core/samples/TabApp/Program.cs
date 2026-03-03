@@ -1,34 +1,48 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Teams.Bot.Core.Hosting;
 using TabApp;
 
-var builder = TeamsBotApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
+builder.Services.AddAuthorization(logger: null);
+WebApplication app = builder.Build();
+
+app.UseAuthentication();
+app.UseAuthorization();
+
+// ==================== TABS ====================
 
 // Serve the React tab at /tabs/test (build the web app first: cd Web && npm install && npm run build)
-builder.WithTab("test", "./Web/bin");
+var tabProvider = new PhysicalFileProvider(Path.GetFullPath("./Web/bin"));
+var contentTypeProvider = new FileExtensionContentTypeProvider();
 
-// ==================== SERVER FUNCTIONS ====================
-
-builder.WithFunction<PostToChatBody>("post-to-chat", async (ctx, ct) =>
+app.UseStaticFiles(new StaticFileOptions
 {
-    await ctx.SendAsync(ctx.Data?.Message ?? "", ct);
-    return new PostToChatResult(Ok: true);
+    FileProvider = tabProvider,
+    RequestPath = "/tabs/test",
+    ServeUnknownFileTypes = true
 });
 
-// TODO: Once SSO is implemented, review graph calls via bot instead of client.
-
-var app = builder.Build();
-
-// ==================== MESSAGE ====================
-app.OnMessage(async (ctx, ct) =>
+app.MapGet("/tabs/test/{*path}", (string path) =>
 {
-    await ctx.SendActivityAsync(
-        new MessageActivity("Open the **Tab** tab to interact with the sample."),
-        ct);
+    IFileInfo file = tabProvider.GetFileInfo($"/{path}");
+    if (!file.Exists) return Results.NotFound();
+    contentTypeProvider.TryGetContentType(file.Name, out var contentType);
+    return Results.File(file.CreateReadStream(), contentType ?? "application/octet-stream");
 });
+
+
+app.MapPost("/functions/post-to-chat", async (
+    PostToChatBody body,
+    HttpContext httpCtx,
+    ILogger<Program> logger,
+    CancellationToken ct) =>
+{
+    logger.LogInformation("post-to-chat called by user {UserId}", httpCtx.User.FindFirst("oid")?.Value);
+    return Results.Json(new PostToChatResult(Ok: true));
+}).RequireAuthorization("EntraPolicy");
 
 app.Run();

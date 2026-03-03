@@ -53,10 +53,7 @@ export default function App() {
 
   async function callFunction(name: string, body: unknown): Promise<unknown> {
     const msal = await getMsal()
-    const [{ accessToken }, ctx] = await Promise.all([
-      msal.acquireTokenSilent({ scopes: [`api://${clientId}/access_as_user`] }),
-      app.getContext(),
-    ])
+    const { accessToken } = await msal.acquireTokenSilent({ scopes: [`api://${clientId}/access_as_user`] })
 
     const res = await fetch(`/functions/${name}`, {
       method: 'POST',
@@ -64,9 +61,8 @@ export default function App() {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${accessToken}`,
       },
-      body: JSON.stringify({ payload: body, context: ctx }),
+      body: JSON.stringify(body),
     })
-    //TODO : pass entire ctx or specific fields ?
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     return res.json()
   }
