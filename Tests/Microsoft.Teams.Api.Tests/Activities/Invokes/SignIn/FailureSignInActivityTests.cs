@@ -45,16 +45,15 @@ public class FailureSignInActivityTests
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
             WriteIndented = true,
-            IndentSize = 2,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
         string expectedPath = "Activity.Invoke.Signin/failure";
         Assert.Equal(expectedPath, activity.GetPath());
         Assert.NotNull(activity.ToFailure());
-        var expectedSubmitException = "Unable to cast object of type 'FailureActivity' to type 'TokenExchangeActivity'.";
+        var expectedCastExceptionMessage = "Unable to cast object of type 'FailureActivity' to type 'TokenExchangeActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTokenExchange());
-        Assert.Equal(expectedSubmitException, ex.Message);
+        Assert.Equal(expectedCastExceptionMessage, ex.Message);
         Assert.Equal(File.ReadAllText(
             @"../../../Json/Activity/Invokes/SignInFailureActivity.json"
         ), json);
@@ -68,7 +67,6 @@ public class FailureSignInActivityTests
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
             WriteIndented = true,
-            IndentSize = 2,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
@@ -87,7 +85,6 @@ public class FailureSignInActivityTests
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
             WriteIndented = true,
-            IndentSize = 2,
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
@@ -108,9 +105,9 @@ public class FailureSignInActivityTests
         Assert.Equal(expected.ToString(), activity!.ToString());
         Assert.NotNull(activity.ToFailure());
 
-        var expectedSubmitException = "Unable to cast object of type 'FailureActivity' to type 'TokenExchangeActivity'.";
+        var expectedCastExceptionMessage = "Unable to cast object of type 'FailureActivity' to type 'TokenExchangeActivity'.";
         var ex = Assert.Throws<System.InvalidCastException>(() => activity.ToTokenExchange());
-        Assert.Equal(expectedSubmitException, ex.Message);
+        Assert.Equal(expectedCastExceptionMessage, ex.Message);
     }
 
     [Fact]
