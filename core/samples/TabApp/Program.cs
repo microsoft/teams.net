@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
@@ -19,25 +18,19 @@ app.UseAuthorization();
 
 // ==================== TABS ====================
 
-// Serve the React tab at /tabs/test (build the web app first: cd Web && npm install && npm run build)
-var tabProvider = new PhysicalFileProvider(Path.GetFullPath("./Web/bin"));
-var contentTypeProvider = new FileExtensionContentTypeProvider();
-
+// Serve the React build folder
 app.UseStaticFiles(new StaticFileOptions
 {
-    FileProvider = tabProvider,
-    RequestPath = "/tabs/test",
-    ServeUnknownFileTypes = true
+    FileProvider = new PhysicalFileProvider(Path.Combine(Directory.GetCurrentDirectory(), "Web", "build")),
+    RequestPath = "/tabs/test"
 });
 
-app.MapGet("/tabs/test/{*path}", (string path) =>
+// Fallback to index.html for SPA routing
+app.MapFallback("/tabs/test/{*path}", () =>
 {
-    IFileInfo file = tabProvider.GetFileInfo($"/{path}");
-    if (!file.Exists) return Results.NotFound();
-    contentTypeProvider.TryGetContentType(file.Name, out var contentType);
-    return Results.File(file.CreateReadStream(), contentType ?? "application/octet-stream");
+    var file = Path.Combine(Directory.GetCurrentDirectory(), "Web", "build", "index.html");
+    return Results.File(File.OpenRead(file), "text/html");
 });
-
 // ==================== SERVER FUNCTIONS ====================
 
 app.MapPost("/functions/post-to-chat", async (
@@ -80,6 +73,6 @@ app.MapPost("/functions/post-to-chat", async (
     await conversations.SendActivityAsync(activity, cancellationToken: ct);
 
     return Results.Json(new PostToChatResult(Ok: true));
-}).RequireAuthorization("EntraPolicy");
+}).RequireAuthorization();
 
 app.Run();

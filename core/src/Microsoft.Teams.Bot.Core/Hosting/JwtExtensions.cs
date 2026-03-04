@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -23,63 +24,66 @@ namespace Microsoft.Teams.Bot.Core.Hosting
     public static class JwtExtensions
     {
         internal const string BotScheme = "BotScheme";
-        internal const string AgentScheme = "AgentScheme";
         internal const string EntraScheme = "EntraScheme";
-        internal const string EntraPolicy = "EntraPolicy";
-        internal const string BotScope = "https://api.botframework.com/.default";
-        internal const string AgentScope = "https://botapi.skype.com/.default";
+        internal const string AutoScheme = "AutoScheme";
         internal const string BotOIDC = "https://login.botframework.com/v1/.well-known/openid-configuration";
-        internal const string AgentOIDC = "https://login.microsoftonline.com/";
+        internal const string EntraOIDC = "https://login.microsoftonline.com/";
 
         /// <summary>
         /// Adds JWT authentication for bots and agents.
         /// </summary>
         /// <param name="services">The service collection to add authentication to.</param>
-        /// <param name="configuration">The application configuration containing the settings.</param>
-        /// <param name="useAgentAuth">Indicates whether to use agent authentication (true) or bot authentication (false).</param>
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
         /// <param name="logger">The logger instance for logging.</param>
         /// <returns>An <see cref="AuthenticationBuilder"/> for further authentication configuration.</returns>
-        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, IConfiguration configuration, bool useAgentAuth, ILogger logger, string aadSectionName = "AzureAd")
+        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, ILogger logger, string aadSectionName = "AzureAd")
         {
-
-            // TODO: Task 5039187: Refactor use of BotConfig for MSAL and JWT
-
             AuthenticationBuilder builder = services.AddAuthentication();
-            ArgumentNullException.ThrowIfNull(configuration);
 
-            string audience = configuration[$"{aadSectionName}:ClientId"]
-                ?? configuration["CLIENT_ID"]
-                ?? configuration["MicrosoftAppId"]
-                ?? throw new InvalidOperationException("ClientID not found in configuration, tried the 3 option");
+            ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+            IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
+                ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
 
-            string tenantId = configuration[$"{aadSectionName}:TenantId"]
-                ?? configuration["TENANT_ID"]
-                ?? configuration["MicrosoftAppTenantId"]
-                ?? string.Empty;
+            BotConfig botConfig = BotConfig.Resolve(configuration, aadSectionName);
+            string audience = botConfig.ClientId;
+            string tenantId = botConfig.TenantId;
 
-            if (!useAgentAuth)
-            {
-                string[] validIssuers = ["https://api.botframework.com"];
-                builder.AddCustomJwtBearer($"BotScheme_{aadSectionName}", validIssuers, audience, logger);
-            }
-            else
-            {
-                string agentTenantId = string.IsNullOrEmpty(tenantId) ? "botframework.com" : tenantId; // TODO: Task 5039198: Test JWT Validation for MultiTenant
-                string[] validIssuers = [$"https://sts.windows.net/{agentTenantId}/", $"https://login.microsoftonline.com/{agentTenantId}/v2", "https://api.botframework.com"];
-                builder.AddCustomJwtBearer(AgentScheme, validIssuers, audience, logger);
-            }
+            string botSchemeName = $"{BotScheme}_{aadSectionName}";
+            string entraSchemeName = $"{EntraScheme}_{aadSectionName}";
+            string autoSchemeName = $"{AutoScheme}_{aadSectionName}";
+
+            string[] botIssuers = ["https://api.botframework.com"];
+            builder.AddCustomJwtBearer(botSchemeName, botIssuers, audience, logger);
 
             if (string.IsNullOrEmpty(tenantId))
             {
                 // Validate dynamically by constructing the expected issuer from the token's tid claim.
-                builder.AddCustomJwtBearer(EntraScheme, [], audience, logger, ValidateMultiTenantEntraIssuer);
+                builder.AddCustomJwtBearer(entraSchemeName, [], audience, logger, ValidateMultiTenantEntraIssuer);
             }
             else
             {
-                string[] entraIssuers = [$"https://login.microsoftonline.com/{tenantId}/v2.0", $"https://sts.windows.net/{tenantId}/"];
-                builder.AddCustomJwtBearer(EntraScheme, entraIssuers, audience, logger);
+                string[] entraIssuers = [
+                    $"https://login.microsoftonline.com/{tenantId}/v2.0",
+                    $"https://sts.windows.net/{tenantId}/"
+                ];
+                builder.AddCustomJwtBearer(entraSchemeName, entraIssuers, audience, logger);
             }
+
+            // Policy scheme: inspects the token issuer and forwards to the correct scheme.
+            builder.AddPolicyScheme(autoSchemeName, autoSchemeName, options =>
+            {
+                options.ForwardDefaultSelector = context =>
+                {
+                    string? auth = context.Request.Headers.Authorization;
+                    if (auth?.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) == true)
+                    {
+                        JwtSecurityToken jwt = new(auth["Bearer ".Length..]);
+                        if (jwt.Issuer.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase))
+                            return botSchemeName;
+                    }
+                    return entraSchemeName;
+                };
+            });
 
             return builder;
         }
@@ -94,50 +98,17 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         public static AuthorizationBuilder AddAuthorization(this IServiceCollection services, ILogger? logger = null, string aadSectionName = "AzureAd")
         {
             // Use NullLogger if no logger provided
-            logger ??= Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+            logger ??= NullLogger.Instance;
 
-            // We need IConfiguration to determine which authentication scheme to register (Bot vs Agent)
-            // This is a registration-time decision that cannot be deferred
-            // Try to get it from service descriptors first (fast path)
-            ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-            IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
+            services.AddBotAuthentication(logger, aadSectionName);
 
-            // If not available as ImplementationInstance, build a temporary ServiceProvider
-            // NOTE: This is generally an anti-pattern, but acceptable here because:
-            // 1. We need configuration at registration time to select auth scheme
-            // 2. We properly dispose the temporary ServiceProvider immediately
-            // 3. This only happens once during application startup
-            if (configuration == null)
-            {
-                using ServiceProvider tempProvider = services.BuildServiceProvider();
-                configuration = tempProvider.GetRequiredService<IConfiguration>();
-            }
-
-            string? azureScope = configuration["Scope"];
-            bool useAgentAuth = string.Equals(azureScope, AgentScope, StringComparison.OrdinalIgnoreCase);
-
-            services.AddBotAuthentication(configuration, useAgentAuth, logger, aadSectionName);
-
-            AuthorizationBuilder authorizationBuilder = services
+            return services
                 .AddAuthorizationBuilder()
                 .AddDefaultPolicy(aadSectionName, policy =>
                 {
-                    if (!useAgentAuth)
-                    {
-                        policy.AuthenticationSchemes.Add($"BotScheme_{aadSectionName}");
-                    }
-                    else
-                    {
-                        policy.AuthenticationSchemes.Add(AgentScheme);
-                    }
-                    policy.RequireAuthenticatedUser();
-                })
-                .AddPolicy(EntraPolicy, policy =>
-                {
-                    policy.AddAuthenticationSchemes(EntraScheme);
+                    policy.AuthenticationSchemes.Add($"{AutoScheme}_{aadSectionName}");
                     policy.RequireAuthenticatedUser();
                 });
-            return authorizationBuilder;
         }
 
         private static (string? iss, string? tid) GetTokenClaims(SecurityToken token) => token switch
@@ -183,7 +154,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
 
                         string authority = iss.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
                             ? BotOIDC
-                            : $"{AgentOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
+                            : $"{EntraOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
 
                         ConfigurationManager<OpenIdConnectConfiguration> manager = configManagerCache.GetOrAdd(authority, a =>
                             new ConfigurationManager<OpenIdConnectConfiguration>(
@@ -205,7 +176,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                         ILoggerFactory? loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
                         ILogger requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
                             ?? logger
-                            ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+                            ?? NullLogger.Instance;
 
                         requestLogger.LogDebug("OnMessageReceived invoked for scheme: {Scheme}", schemeName);
                         string authorizationHeader = context.Request.Headers.Authorization.ToString();
@@ -233,7 +204,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                         ILoggerFactory? loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
                         ILogger requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
                             ?? logger
-                            ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+                            ?? NullLogger.Instance;
 
                         requestLogger.LogInformation("Token validated successfully for scheme: {Scheme}", schemeName);
                         return Task.CompletedTask;
@@ -244,7 +215,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                         ILoggerFactory? loggerFactory = context.HttpContext.RequestServices.GetService<ILoggerFactory>();
                         ILogger requestLogger = loggerFactory?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
                             ?? logger
-                            ?? Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+                            ?? NullLogger.Instance;
 
                         requestLogger.LogWarning("Forbidden response for scheme: {Scheme}", schemeName);
                         return Task.CompletedTask;
