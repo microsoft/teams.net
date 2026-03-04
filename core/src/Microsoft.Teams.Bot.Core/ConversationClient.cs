@@ -19,6 +19,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 {
     private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
     internal const string ConversationHttpClientName = "BotConversationClient";
+    private readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     /// <summary>
     /// Gets the default custom headers that will be included in all requests.
@@ -125,7 +126,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
     public virtual async Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
-        return DeleteActivityAsync(conversationId, activityId, serviceUrl, isTargeted: false, agenticIdentity, customHeaders, cancellationToken);
+        await DeleteActivityAsync(conversationId, activityId, serviceUrl, isTargeted: false, agenticIdentity, customHeaders, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -326,12 +327,14 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations";
 
-        logger.LogTrace("Creating conversation at {Url} with parameters: {Parameters}", url, JsonSerializer.Serialize(parameters));
+        string paramsJson = JsonSerializer.Serialize(parameters, jsonSerializerOptions);
+
+        logger.LogTrace("Creating conversation at {Url} with parameters: {Parameters}", url, paramsJson);
 
         return (await _botHttpClient.SendAsync<CreateConversationResponse>(
             HttpMethod.Post,
             url,
-            JsonSerializer.Serialize(parameters),
+            paramsJson,
             CreateRequestOptions(agenticIdentity, "creating conversation", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
@@ -429,12 +432,13 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/history";
 
-        logger.LogTrace("Sending conversation history to {Url}: {Transcript}", url, JsonSerializer.Serialize(transcript));
+        string transcriptJson = JsonSerializer.Serialize(transcript, jsonSerializerOptions);
+        logger.LogTrace("Sending conversation history to {Url}: {Transcript}", url, transcriptJson);
 
         return (await _botHttpClient.SendAsync<SendConversationHistoryResponse>(
             HttpMethod.Post,
             url,
-            JsonSerializer.Serialize(transcript),
+            transcriptJson,
             CreateRequestOptions(agenticIdentity, "sending conversation history", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
@@ -459,12 +463,13 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/attachments";
 
-        logger.LogTrace("Uploading attachment to {Url}: {AttachmentData}", url, JsonSerializer.Serialize(attachmentData));
+        string attachmentDataJson = JsonSerializer.Serialize(attachmentData, jsonSerializerOptions);
+        logger.LogTrace("Uploading attachment to {Url}: {AttachmentData}", url, attachmentDataJson);
 
         return (await _botHttpClient.SendAsync<UploadAttachmentResponse>(
             HttpMethod.Post,
             url,
-            JsonSerializer.Serialize(attachmentData),
+            attachmentDataJson,
             CreateRequestOptions(agenticIdentity, "uploading attachment", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }

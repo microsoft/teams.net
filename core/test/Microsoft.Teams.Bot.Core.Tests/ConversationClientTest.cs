@@ -35,7 +35,7 @@ public class ConversationClientTest
             builder.AddXUnit(outputHelper);
             builder.AddFilter("System.Net", LogLevel.Warning);
             builder.AddFilter("Microsoft.Identity", LogLevel.Error);
-            builder.AddFilter("Microsoft.Teams", LogLevel.Information);
+            builder.AddFilter("Microsoft.Teams", LogLevel.Trace);
         });
         services.AddSingleton(configuration);
         services.AddBotApplication<BotApplication>();

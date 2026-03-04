@@ -17,6 +17,7 @@ namespace Microsoft.Teams.Bot.Apps;
 public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsApiClient;
+    private TeamsApi? _api;
 
     /// <summary>
     /// Gets the router for dispatching Teams activities to registered routes.
