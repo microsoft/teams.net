@@ -300,6 +300,54 @@ public class CitationEntityTests
     }
 
     [Fact]
+    public void Fixture_CitationEntity_DeserializesWithClaims()
+    {
+        string json = """
+        {
+          "type": "message",
+          "entities": [
+            {
+              "type": "https://schema.org/Message",
+              "@context": "https://schema.org",
+              "@type": "Message",
+              "additionalType": ["AIGeneratedContent"],
+              "citation": [
+                {
+                  "@type": "Claim",
+                  "position": 1,
+                  "appearance": {
+                    "@type": "DigitalDocument",
+                    "name": "Test Document",
+                    "abstract": "Test abstract",
+                    "url": "https://example.com/doc",
+                    "encodingFormat": "application/vnd.microsoft.card.adaptive"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+        """;
+
+        CoreActivity coreActivity = CoreActivity.FromJsonString(json);
+        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.NotNull(activity.Entities);
+        Assert.Single(activity.Entities);
+
+        var citationEntity = activity.Entities[0] as CitationEntity;
+        Assert.NotNull(citationEntity);
+        Assert.NotNull(citationEntity.AdditionalType);
+        Assert.Contains("AIGeneratedContent", citationEntity.AdditionalType);
+        Assert.NotNull(citationEntity.Citation);
+        Assert.Single(citationEntity.Citation);
+        Assert.Equal(1, citationEntity.Citation[0].Position);
+        Assert.Equal("Test Document", citationEntity.Citation[0].Appearance.Name);
+        Assert.Equal("Test abstract", citationEntity.Citation[0].Appearance.Abstract);
+        Assert.Equal(EncodingFormats.AdaptiveCard, citationEntity.Citation[0].Appearance.EncodingFormat);
+    }
+
+    [Fact]
     public void CitationEntity_CopyConstructor_PreservesData()
     {
         var original = new CitationEntity();

@@ -132,7 +132,11 @@ public class CitationEntity : OMessageEntity
     /// Gets or sets the list of citation claims.
     /// </summary>
     [JsonPropertyName("citation")]
-    public IList<CitationClaim>? Citation { get; set; }
+    public IList<CitationClaim>? Citation
+    {
+        get => base.Properties.TryGetValue("citation", out object? value) ? value as IList<CitationClaim> : null;
+        set => base.Properties["citation"] = value;
+    }
 }
 
 /// <summary>

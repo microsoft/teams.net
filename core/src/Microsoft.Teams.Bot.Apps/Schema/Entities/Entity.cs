@@ -29,18 +29,6 @@ public class EntityList : List<Entity>
                 ["type"] = entity.Type
             };
 
-            // For entities with direct properties (e.g., CitationEntity.Citation),
-            // serialize via JsonSerializer to capture all [JsonPropertyName] properties.
-            if (entity is CitationEntity citationEntity)
-            {
-                var serialized = JsonSerializer.SerializeToNode(citationEntity);
-                if (serialized is JsonObject citationJson)
-                {
-                    jsonArray.Add(citationJson);
-                    continue;
-                }
-            }
-
             foreach (KeyValuePair<string, object?> property in entity.Properties)
             {
                 jsonObject[property.Key] = property.Value as JsonNode ?? JsonValue.Create(property.Value);
