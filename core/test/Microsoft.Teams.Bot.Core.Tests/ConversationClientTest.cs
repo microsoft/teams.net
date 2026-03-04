@@ -4,10 +4,12 @@
 using Microsoft.Bot.Connector;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.VisualBasic.FileIO;
+using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests;
 
@@ -21,7 +23,7 @@ public class ConversationClientTest
     private ConversationAccount _recipient = new ConversationAccount();
     private AgenticIdentity? _agenticIdentity;
 
-    public ConversationClientTest()
+    public ConversationClientTest(ITestOutputHelper outputHelper)
     {
         IConfigurationBuilder builder = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -30,7 +32,12 @@ public class ConversationClientTest
         IConfiguration configuration = builder.Build();
 
         ServiceCollection services = new();
-        services.AddLogging();
+        services.AddLogging((builder) => {
+            builder.AddXUnit(outputHelper);
+            builder.AddFilter("System.Net", LogLevel.Warning);
+            builder.AddFilter("Microsoft.Identity", LogLevel.Warning);
+            builder.AddFilter("Microsoft.Teams", LogLevel.Information);
+        });
         services.AddSingleton(configuration);
         services.AddBotApplication<BotApplication>();
         _serviceProvider = services.BuildServiceProvider();
@@ -336,6 +343,7 @@ public class ConversationClientTest
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
