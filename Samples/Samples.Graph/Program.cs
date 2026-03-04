@@ -74,4 +74,11 @@ teams.OnSignIn(async (_, @event, cancellationToken) =>
     await context.Send($"user \"{me!.DisplayName}\" signed in. Here's the token: {token.Token}", cancellationToken);
 });
 
+teams.OnSigninFailure(async (context, cancellationToken) =>
+{
+    var failure = context.Activity.Value;
+    Console.WriteLine($"sign-in failed: {failure?.Code} - {failure?.Message}");
+    await context.Send("sign-in failed. please contact your admin.", cancellationToken);
+});
+
 app.Run();
