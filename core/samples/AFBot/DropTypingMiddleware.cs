@@ -6,7 +6,7 @@ using Microsoft.Teams.Bot.Core.Schema;
 
 namespace AFBot;
 
-internal class DropTypingMiddleware : ITurnMiddleWare
+internal class DropTypingMiddleware : ITurnMiddleware
 {
     public Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
     {

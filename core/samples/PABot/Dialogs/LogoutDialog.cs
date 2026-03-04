@@ -1,12 +1,8 @@
-// <copyright file="LogoutDialog.cs" company="Microsoft">
-// Copyright (c) Microsoft. All rights reserved.
-// </copyright>
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
 
@@ -45,7 +41,7 @@ namespace PABot.Dialogs
             object options,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = await InterruptAsync(innerDc, cancellationToken);
+            DialogTurnResult result = await InterruptAsync(innerDc, cancellationToken);
             if (result != null)
             {
                 return result;
@@ -64,7 +60,7 @@ namespace PABot.Dialogs
             DialogContext innerDc,
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            var result = await InterruptAsync(innerDc, cancellationToken);
+            DialogTurnResult result = await InterruptAsync(innerDc, cancellationToken);
             if (result != null)
             {
                 return result;
@@ -85,13 +81,13 @@ namespace PABot.Dialogs
         {
             if (innerDc.Context.Activity.Type == ActivityTypes.Message)
             {
-                var text = innerDc.Context.Activity.Text.ToLowerInvariant();
+                string text = innerDc.Context.Activity.Text.ToLowerInvariant();
 
                 // Allow logout anywhere in the command
                 if (text.Contains("logout"))
                 {
                     // The UserTokenClient encapsulates the authentication processes.
-                    var userTokenClient = innerDc.Context.TurnState.Get<UserTokenClient>();
+                    UserTokenClient userTokenClient = innerDc.Context.TurnState.Get<UserTokenClient>();
                     await userTokenClient.SignOutUserAsync(innerDc.Context.Activity.From.Id, ConnectionName, innerDc.Context.Activity.ChannelId, cancellationToken).ConfigureAwait(false);
 
                     await innerDc.Context.SendActivityAsync(MessageFactory.Text("You have been signed out."), cancellationToken);

@@ -14,7 +14,7 @@ public class ActivitiesTests
     [Fact]
     public void MessageReaction_FromActivityConvertsCorrectly()
     {
-        var coreActivity = new CoreActivity
+        CoreActivity coreActivity = new()
         {
             Type = TeamsActivityType.MessageReaction
         };
@@ -41,7 +41,7 @@ public class ActivitiesTests
     [Fact]
     public void MessageDelete_FromActivityConvertsCorrectly()
     {
-        var coreActivity = new CoreActivity
+        CoreActivity coreActivity = new()
         {
             Type = TeamsActivityType.MessageDelete,
             Id = "deleted-msg-id"
@@ -71,7 +71,7 @@ public class ActivitiesTests
     [Fact]
     public void MessageUpdate_InheritsFromMessageActivity()
     {
-        var activity = new MessageUpdateActivity
+        MessageUpdateActivity activity = new()
         {
             Text = "Updated",
             TextFormat = TextFormats.Markdown
@@ -85,7 +85,7 @@ public class ActivitiesTests
     [Fact]
     public void MessageUpdate_FromActivityConvertsCorrectly()
     {
-        var coreActivity = new CoreActivity
+        CoreActivity coreActivity = new()
         {
             Type = TeamsActivityType.MessageUpdate
         };
@@ -107,7 +107,7 @@ public class ActivitiesTests
     [Fact]
     public void ConversationUpdate_FromActivityConvertsCorrectly()
     {
-        var coreActivity = new CoreActivity
+        CoreActivity coreActivity = new()
         {
             Type = TeamsActivityType.ConversationUpdate
         };
@@ -129,7 +129,7 @@ public class ActivitiesTests
     [Fact]
     public void InstallUpdate_FromActivityConvertsCorrectly()
     {
-        var coreActivity = new CoreActivity
+        CoreActivity coreActivity = new()
         {
             Type = TeamsActivityType.InstallationUpdate
         };

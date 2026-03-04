@@ -6,6 +6,7 @@ using AFBot;
 using Azure.AI.OpenAI;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -28,7 +29,7 @@ ChatClientAgent agent = azureClient.GetChatClient("gpt-5-nano").CreateAIAgent(
                     "Always respond with the three complete words only, and include a related emoji at the end.",
     name: "AcronymMaker");
 
-botApp.Use(new DropTypingMiddleware());
+botApp.UseMiddleware(new DropTypingMiddleware());
 
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
@@ -45,7 +46,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 
     AgentRunResponse agentResponse = await agent.RunAsync(activity.Properties["text"]?.ToString() ?? "OMW", cancellationToken: timer.Token);
 
-    var m1 = agentResponse.Messages.FirstOrDefault();
+    ChatMessage? m1 = agentResponse.Messages.FirstOrDefault();
     Console.WriteLine($"AI:: GOT {agentResponse.Messages.Count} msgs");
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Message)
@@ -53,7 +54,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         .WithProperty("text", m1!.Text)
         .Build();
 
-    var res = await botApp.SendActivityAsync(replyActivity, cancellationToken);
+    SendActivityResponse? res = await botApp.SendActivityAsync(replyActivity, cancellationToken);
 
     Console.WriteLine("SENT >>> => " + res?.Id);
 };
