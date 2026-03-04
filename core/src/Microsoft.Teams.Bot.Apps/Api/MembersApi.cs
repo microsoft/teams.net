@@ -55,10 +55,14 @@ public class MembersApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+
         return _client.GetConversationMembersAsync(
-            activity.Conversation.Id!,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.Conversation.Id,
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -99,11 +103,15 @@ public class MembersApi
         CancellationToken cancellationToken = default) where T : ConversationAccount
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.GetConversationMemberAsync<T>(
-            activity.Conversation.Id!,
+            activity.Conversation.Id,
             userId,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -142,11 +150,15 @@ public class MembersApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.GetConversationMemberAsync<ConversationAccount>(
-            activity.Conversation.Id!,
+            activity.Conversation.Id,
             userId,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -189,12 +201,16 @@ public class MembersApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.GetConversationPagedMembersAsync(
-            activity.Conversation.Id!,
-            activity.ServiceUrl!,
+            activity.Conversation.Id,
+            activity.ServiceUrl,
             pageSize,
             continuationToken,
-            activity.From.GetAgenticIdentity(),
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -235,11 +251,15 @@ public class MembersApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.DeleteConversationMemberAsync(
-            activity.Conversation.Id!,
+            activity.Conversation.Id,
             memberId,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }

@@ -4,14 +4,15 @@
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Connector;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Compat;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Newtonsoft.Json.Linq;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Compat;
+using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Schema;
+using Newtonsoft.Json.Linq;
 
 namespace CompatBot;
 
@@ -86,7 +87,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive messages to  `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
     }
 
-    protected override async Task<InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+    protected override async Task<Microsoft.Bot.Builder.InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
     {
         logger.LogInformation("Invoke Activity received: {Name}", turnContext.Activity.Name);
         var actionValue = JObject.FromObject(turnContext.Activity.Value);
@@ -108,7 +109,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         var card = MessageFactory.Attachment(attachment);
         await turnContext.SendActivityAsync(card, cancellationToken);
 
-        return new InvokeResponse
+        return new Microsoft.Bot.Builder.InvokeResponse
         {
             Status = 200,
             Body = new { value = "invokes from compat bot" }
@@ -160,7 +161,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
 
         await Task.Delay(2000, cancellationToken);
 
-        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, new Uri(turnContext.Activity.ServiceUrl), AgenticIdentity.FromProperties(ca.From.Properties), null, cancellationToken);
+        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, new Uri(turnContext.Activity.ServiceUrl), AgenticIdentity.FromProperties(ca.From?.Properties), null, cancellationToken);
 
         await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
     }

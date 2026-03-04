@@ -47,8 +47,13 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         {
             logger.LogInformation("Truncating conversation ID for 'agents' channel to comply with length restrictions.");
             string conversationId = activity.Conversation.Id;
-            string convId = conversationId.Length > 325 ? conversationId[..325] : conversationId;
-            url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities";
+            string convId = conversationId.Length > 100 ? conversationId[..100] : conversationId;
+            url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities/";
+        }
+
+        if (!string.IsNullOrEmpty(activity.ReplyToId))
+        {
+            url += activity.ReplyToId;
         }
 
         if (activity.IsTargeted)
@@ -66,7 +71,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             HttpMethod.Post,
             url,
             body,
-            CreateRequestOptions(activity.From.GetAgenticIdentity(), "sending activity", customHeaders),
+            CreateRequestOptions(activity.From?.GetAgenticIdentity(), "sending activity", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -102,7 +107,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             HttpMethod.Put,
             url,
             body,
-            CreateRequestOptions(activity.From.GetAgenticIdentity(), "updating activity", customHeaders),
+            CreateRequestOptions(activity.From?.GetAgenticIdentity(), "updating activity", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 

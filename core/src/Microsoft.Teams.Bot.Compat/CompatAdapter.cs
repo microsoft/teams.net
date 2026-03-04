@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -28,10 +28,16 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
     /// <summary>
     /// Creates a new instance of the <see cref="CompatAdapter"/> class.
     /// </summary>
-    /// <param name="sp"></param>
-    public CompatAdapter(IServiceProvider sp) : base(sp)
+    /// <param name="teamsBotApplication">The Teams bot application instance.</param>
+    /// <param name="httpContextAccessor">The HTTP context accessor.</param>
+    /// <param name="logger">The logger instance.</param>
+    public CompatAdapter(
+        TeamsBotApplication teamsBotApplication,
+        IHttpContextAccessor? httpContextAccessor = null,
+        ILogger? logger = null)
+        : base(teamsBotApplication, httpContextAccessor, logger)
     {
-        _teamsBotApplication = sp.GetRequiredService<TeamsBotApplication>();
+        _teamsBotApplication = teamsBotApplication;
     }
 
     /// <summary>

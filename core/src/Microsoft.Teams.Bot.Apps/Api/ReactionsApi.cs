@@ -71,7 +71,7 @@ public class ReactionsApi
             activity.Id,
             reactionType,
             activity.ServiceUrl,
-            activity.Recipient.GetAgenticIdentity(),
+            activity.Recipient?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -122,7 +122,7 @@ public class ReactionsApi
             activity.Id,
             reactionType,
             activity.ServiceUrl,
-            activity.Recipient.GetAgenticIdentity(),
+            activity.Recipient?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }

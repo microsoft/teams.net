@@ -290,9 +290,11 @@ public class CoreCoreActivityTests
         Assert.Equal("channel1", reply.ChannelId);
         Assert.NotNull(reply.ServiceUrl);
         Assert.Equal("http://service.url/", reply.ServiceUrl.ToString());
-        Assert.Equal("conversation1", reply.Conversation.Id);
-        Assert.Equal("bot1", reply.From.Id);
-        Assert.Equal("Bot One", reply.From.Name);
+        Assert.Equal("conversation1", reply.Conversation?.Id);
+        Assert.Equal("bot1", reply.From?.Id);
+        Assert.Equal("Bot One", reply.From?.Name);
+        Assert.Equal("user1", reply.Recipient?.Id);
+        Assert.Equal("User One", reply.Recipient?.Name);
     }
 
     [Fact]

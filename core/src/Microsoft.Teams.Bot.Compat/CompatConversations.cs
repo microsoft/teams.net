@@ -58,7 +58,7 @@ namespace Microsoft.Teams.Bot.Compat
             CreateConversationResponse res = await _client.CreateConversationAsync(
                 convoParams,
                 new Uri(ServiceUrl),
-                AgenticIdentity.FromProperties(convoParams.Activity?.From.Properties),
+                AgenticIdentity.FromProperties(convoParams.Activity?.From?.Properties),
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -265,7 +265,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             Microsoft.Teams.Bot.Core.Transcript coreTranscript = new()
             {
-                Activities = transcript.Activities?.Select(a => a.FromCompatActivity() as CoreActivity).ToList()
+                Activities = transcript.Activities?.Select(a => a.FromCompatActivity()).ToList()
             };
 
             SendConversationHistoryResponse response = await _client.SendConversationHistoryAsync(

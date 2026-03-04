@@ -52,12 +52,11 @@ public class CoreActivity
     /// <summary>
     /// Gets or sets the account that sent this activity.
     /// </summary>
-    [JsonPropertyName("from")] public ConversationAccount From { get; set; } = new();
+    [JsonPropertyName("from")] public ConversationAccount? From { get; set; }
     /// <summary>
     /// Gets or sets the account that should receive this activity.
     /// </summary>
-    [JsonPropertyName("recipient")] public ConversationAccount Recipient { get; set; } = new();
-
+    [JsonPropertyName("recipient")] public ConversationAccount? Recipient { get; set; }
     /// <summary>
     /// Indicates if this is a targeted message visible only to a specific recipient.
     /// Used internally by the SDK for routing - not serialized to the service.
@@ -66,7 +65,7 @@ public class CoreActivity
     /// <summary>
     /// Gets or sets the conversation in which this activity is taking place.
     /// </summary>
-    [JsonPropertyName("conversation")] public Conversation Conversation { get; set; } = new();
+    [JsonPropertyName("conversation")] public Conversation? Conversation { get; set; }
 
     /// <summary>
     /// Gets the collection of entities contained in this activity.
@@ -74,7 +73,6 @@ public class CoreActivity
     /// <remarks>
     /// Entities are structured objects that represent mentions, places, or other data.
     /// </remarks>
-#pragma warning disable CA2227 // Collection properties should be read only
     [JsonPropertyName("entities")] public JsonArray? Entities { get; set; }
 
     /// <summary>
@@ -89,10 +87,14 @@ public class CoreActivity
     [JsonPropertyName("value")] public JsonNode? Value { get; set; }
 
     /// <summary>
+    /// Reply to Id
+    /// </summary>
+    [JsonPropertyName("replyToId")] public string? ReplyToId { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets the default JSON serializer options used for serializing and deserializing activities.

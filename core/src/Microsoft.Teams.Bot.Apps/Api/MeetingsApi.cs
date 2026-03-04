@@ -56,10 +56,12 @@ public class MeetingsApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.FetchMeetingInfoAsync(
             meetingId,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -102,12 +104,13 @@ public class MeetingsApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
         return _client.FetchParticipantAsync(
             meetingId,
             participantId,
             activity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -148,11 +151,13 @@ public class MeetingsApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.SendMeetingNotificationAsync(
             meetingId,
             notification,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }

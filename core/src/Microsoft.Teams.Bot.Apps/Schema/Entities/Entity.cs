@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 
 /// <summary>
@@ -43,11 +43,11 @@ public class EntityList : List<Entity>
     /// <param name="jsonArray"></param>
     /// <param name="options"></param>
     /// <returns></returns>
-    public static EntityList FromJsonArray(JsonArray? jsonArray, JsonSerializerOptions? options = null)
+    public static EntityList? FromJsonArray(JsonArray? jsonArray, JsonSerializerOptions? options = null)
     {
         if (jsonArray == null)
         {
-            return [];
+            return null;
         }
         EntityList entities = [];
         foreach (JsonNode? item in jsonArray)
@@ -106,9 +106,7 @@ public class Entity(string type)
     /// <summary>
     /// Extended properties dictionary.
     /// </summary>
-#pragma warning disable CA2227 // Collection properties should be read only
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 
 }
 

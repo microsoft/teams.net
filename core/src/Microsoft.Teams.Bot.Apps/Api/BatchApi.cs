@@ -62,12 +62,14 @@ public class BatchApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(contextActivity);
+        ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
+
         return _client.SendMessageToListOfUsersAsync(
             activity,
             teamsMembers,
             contextActivity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
-            contextActivity.ServiceUrl!,
-            contextActivity.From.GetAgenticIdentity(),
+            contextActivity.ServiceUrl,
+            contextActivity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -106,11 +108,13 @@ public class BatchApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(contextActivity);
+        ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
+
         return _client.SendMessageToAllUsersInTenantAsync(
             activity,
             contextActivity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
-            contextActivity.ServiceUrl!,
-            contextActivity.From.GetAgenticIdentity(),
+            contextActivity.ServiceUrl,
+            contextActivity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -153,12 +157,14 @@ public class BatchApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(contextActivity);
+        ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
+
         return _client.SendMessageToAllUsersInTeamAsync(
             activity,
             teamId,
             contextActivity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
-            contextActivity.ServiceUrl!,
-            contextActivity.From.GetAgenticIdentity(),
+            contextActivity.ServiceUrl,
+            contextActivity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -201,12 +207,14 @@ public class BatchApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(contextActivity);
+        ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
+
         return _client.SendMessageToListOfChannelsAsync(
             activity,
             channelMembers,
             contextActivity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
-            contextActivity.ServiceUrl!,
-            contextActivity.From.GetAgenticIdentity(),
+            contextActivity.ServiceUrl,
+            contextActivity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -243,10 +251,11 @@ public class BatchApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
         return _client.GetOperationStateAsync(
             operationId,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -287,11 +296,12 @@ public class BatchApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
         return _client.GetPagedFailedEntriesAsync(
             operationId,
-            activity.ServiceUrl!,
+            activity.ServiceUrl,
             continuationToken,
-            activity.From.GetAgenticIdentity(),
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -328,10 +338,12 @@ public class BatchApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.CancelOperationAsync(
             operationId,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }

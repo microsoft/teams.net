@@ -1,9 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
-using Microsoft.Teams.Bot.Apps.Schema.InstallActivities;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -62,27 +59,36 @@ public static class TeamsActivityType
     public const string Invoke = "invoke";
 
     /// <summary>
+    /// Represents an event activity.
+    /// </summary>
+    public const string Event = "event";
+
+    //TODO : review command activity
+    /*
+    /// <summary>
+    /// Represents a command activity.
+    /// </summary>
+    public const string Command = "command";
+
+    /// <summary>
+    /// Represents a command result activity.
+    /// </summary>
+    public const string CommandResult = "commandResult";
+    */
+
+    /// <summary>
     /// Registry of activity type factories for creating specialized activity instances.
     /// </summary>
     internal static readonly Dictionary<string, Func<CoreActivity, TeamsActivity>> ActivityDeserializerMap = new()
     {
-        [TeamsActivityType.Message] = MessageActivity.FromActivity,
-        [TeamsActivityType.MessageReaction] = MessageReactionActivity.FromActivity,
-        [TeamsActivityType.MessageUpdate] = MessageUpdateActivity.FromActivity,
-        [TeamsActivityType.MessageDelete] = MessageDeleteActivity.FromActivity,
-        [TeamsActivityType.ConversationUpdate] = ConversationUpdateActivity.FromActivity,
+        [Message] = MessageActivity.FromActivity,
+        [MessageReaction] = MessageReactionActivity.FromActivity,
+        [MessageUpdate] = MessageUpdateActivity.FromActivity,
+        [MessageDelete] = MessageDeleteActivity.FromActivity,
+        [ConversationUpdate] = ConversationUpdateActivity.FromActivity,
         //[TeamsActivityType.EndOfConversation] = EndOfConversationActivity.FromActivity,
-        [TeamsActivityType.InstallationUpdate] = InstallUpdateActivity.FromActivity,
-        [TeamsActivityType.Invoke] = InvokeActivity.FromActivity,
-    };
-
-    /// <summary>
-    /// Registry of serialization functions for specialized activity instances.
-    /// Maps activity types to functions that serialize the activity using the appropriate JsonTypeInfo.
-    /// </summary>
-    internal static readonly Dictionary<string, Func<TeamsActivity, string>> ActivitySerializerMap = new()
-    {
-        [TeamsActivityType.Message] = activity => activity.ToJson(TeamsActivityJsonContext.Default.MessageActivity),
-        [TeamsActivityType.Invoke] = activity => activity.ToJson(TeamsActivityJsonContext.Default.InvokeActivity),
+        [InstallationUpdate] = InstallUpdateActivity.FromActivity,
+        [Invoke] = InvokeActivity.FromActivity,
+        [Event] = EventActivity.FromActivity
     };
 }

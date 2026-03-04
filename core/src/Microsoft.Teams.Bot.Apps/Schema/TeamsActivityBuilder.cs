@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -29,31 +28,31 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <summary>
     /// Sets the conversation (override for Teams-specific type).
     /// </summary>
-    protected override void SetConversation(Conversation conversation)
+    protected override void SetConversation(Conversation? conversation)
     {
         _activity.Conversation = conversation is TeamsConversation teamsConv
             ? teamsConv
-            : new TeamsConversation(conversation);
+            : TeamsConversation.FromConversation(conversation);
     }
 
     /// <summary>
     /// Sets the From account (override for Teams-specific type).
     /// </summary>
-    protected override void SetFrom(ConversationAccount from)
+    protected override void SetFrom(ConversationAccount? from)
     {
         _activity.From = from is TeamsConversationAccount teamsAccount
             ? teamsAccount
-            : new TeamsConversationAccount(from);
+            : TeamsConversationAccount.FromConversationAccount(from);
     }
 
     /// <summary>
     /// Sets the Recipient account (override for Teams-specific type).
     /// </summary>
-    protected override void SetRecipient(ConversationAccount recipient)
+    protected override void SetRecipient(ConversationAccount? recipient)
     {
         _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
             ? teamsAccount
-            : new TeamsConversationAccount(recipient);
+            : TeamsConversationAccount.FromConversationAccount(recipient);
     }
 
     /// <summary>

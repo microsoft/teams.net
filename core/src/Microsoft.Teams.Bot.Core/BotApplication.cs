@@ -3,9 +3,8 @@
 
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc.Formatters;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Core;
@@ -18,32 +17,26 @@ public class BotApplication
     private readonly ILogger<BotApplication> _logger;
     private readonly ConversationClient? _conversationClient;
     private readonly UserTokenClient? _userTokenClient;
-    private readonly string _serviceKey;
     internal TurnMiddleware MiddleWare { get; }
 
     /// <summary>
-    /// Initializes a new instance of the BotApplication class with the specified conversation client, configuration,
-    /// logger, and optional service key.
+    /// Initializes a new instance of the BotApplication class with the specified conversation client, app ID,
+    /// and logger.
+    /// Initializes a new instance of the BotApplication class with the specified conversation client, app ID,
+    /// and logger.
     /// </summary>
-    /// <remarks>This constructor sets up the bot application and starts the bot listener using the provided
-    /// configuration and service key. The service key is used to locate authentication credentials in the
-    /// configuration.</remarks>
     /// <param name="conversationClient">The client used to manage and interact with conversations for the bot.</param>
     /// <param name="userTokenClient">The client used to manage user tokens for authentication.</param>
-    /// <param name="config">The application configuration settings used to retrieve environment variables and service credentials.</param>
     /// <param name="logger">The logger used to record operational and diagnostic information for the bot application.</param>
-    /// <param name="sectionName">The configuration key identifying the authentication service. Defaults to "AzureAd" if not specified.</param>
-    public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, IConfiguration config, ILogger<BotApplication> logger, string sectionName = "AzureAd")
+    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics. Defaults to an empty instance if not provided.</param>
+    public BotApplication(ConversationClient conversationClient, UserTokenClient userTokenClient, ILogger<BotApplication> logger, BotApplicationOptions? options = null)
     {
-        ArgumentNullException.ThrowIfNull(config);
+        options ??= new();
         _logger = logger;
-        _serviceKey = sectionName;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
-        string appId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? "Unknown AppID";
-        logger.LogInformation(" Started {ThisType} listener \n on {Port} \n for AppID:{AppId} \n with SDK version {SdkVersion}", this.GetType().Name, config?["ASPNETCORE_URLS"], appId, Version);
-
+        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
     }
 
 
@@ -86,29 +79,34 @@ public class BotApplication
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        _logger.LogInformation("Processing activity {Type} {Id}", activity.Type, activity.Id);
+        _logger.LogInformation("Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} MSCV={MSCV}",
+            activity.Type,
+            activity.Id,
+            activity.ServiceUrl,
+            httpContext.Request.GetCorrelationVector());
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
             _logger.LogTrace("Received activity: {Activity}", activity.ToJson());
         }
 
-        using (_logger.BeginScope("Processing activity {Type} {Id}", activity.Type, activity.Id))
+        // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
+        using (_logger.BeginScope("ActivityType={ActivityType} ActivityId={ActivityId} ServiceUrl={ServiceUrl} MSCV={MSCV}",
+            activity.Type, activity.Id, activity.ServiceUrl, httpContext.Request.GetCorrelationVector()))
         {
             try
             {
-                var token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
+                CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
                 await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
-
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing activity {Type} {Id}", activity.Type, activity.Id);
+                _logger.LogError(ex, "Error processing activity: Id={Id}", activity.Id);
                 throw new BotHandlerException("Error processing activity", ex, activity);
             }
             finally
             {
-                _logger.LogInformation("Finished processing activity {Type} {Id}", activity.Type, activity.Id);
+                _logger.LogInformation("Finished processing activity: Id={Id}", activity.Id);
             }
         }
     }
