@@ -50,7 +50,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithId_SetsActivityId()
     {
-        var activity = builder
+        TeamsActivity activity = builder
             .WithId("test-activity-id")
             .Build();
 
@@ -62,7 +62,7 @@ public class TeamsActivityBuilderTests
     {
         Uri serviceUrl = new("https://smba.trafficmanager.net/teams/");
 
-        var activity = builder
+        TeamsActivity activity = builder
             .WithServiceUrl(serviceUrl)
             .Build();
 
@@ -72,7 +72,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithChannelId_SetsChannelId()
     {
-        var activity = builder
+        TeamsActivity activity = builder
             .WithChannelId("msteams")
             .Build();
 
@@ -82,7 +82,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithType_SetsActivityType()
     {
-        var activity = builder
+        TeamsActivity activity = builder
             .WithType(TeamsActivityType.Message)
             .Build();
 
@@ -92,7 +92,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithText_SetsTextContent()
     {
-        var activity = builder
+        TeamsActivity activity = builder
             .WithText("Hello, World!")
             .Build();
 
@@ -108,7 +108,7 @@ public class TeamsActivityBuilderTests
             Name = "Sender Name"
         });
 
-        var activity = builder
+        TeamsActivity activity = builder
             .WithFrom(fromAccount)
             .Build();
 
@@ -125,7 +125,7 @@ public class TeamsActivityBuilderTests
             Name = "Recipient Name"
         });
         Assert.NotNull(recipientAccount);
-        var activity = builder
+        TeamsActivity activity = builder
             .WithRecipient(recipientAccount)
             .Build();
 
@@ -140,10 +140,10 @@ public class TeamsActivityBuilderTests
 
         Assert.NotNull(baseConversation);
         baseConversation.Properties.Add("tenantId", "tenant-123");
-        baseConversation.Properties.Add("conversationType", "channel"); 
+        baseConversation.Properties.Add("conversationType", "channel");
         TeamsConversation? conversation = TeamsConversation.FromConversation(baseConversation);
-        
-        var activity = builder
+
+        TeamsActivity activity = builder
             .WithConversation(conversation)
             .Build();
 
@@ -161,7 +161,7 @@ public class TeamsActivityBuilderTests
             TeamsTeamId = "19:team-id@thread.tacv2"
         };
 
-        var activity = builder
+        TeamsActivity activity = builder
             .WithChannelData(channelData)
             .Build();
 
@@ -182,7 +182,7 @@ public class TeamsActivityBuilderTests
             }
         ];
 
-        var activity = builder
+        TeamsActivity activity = builder
             .WithEntities(entities)
             .Build();
 
@@ -202,7 +202,7 @@ public class TeamsActivityBuilderTests
             }
         ];
 
-        var activity = builder
+        TeamsActivity activity = builder
             .WithAttachments(attachments)
             .Build();
 
@@ -221,7 +221,7 @@ public class TeamsActivityBuilderTests
             Name = "single"
         };
 
-        var activity = builder
+        TeamsActivity activity = builder
             .WithAttachment(attachment)
             .Build();
 
@@ -239,7 +239,7 @@ public class TeamsActivityBuilderTests
             Country = "US"
         };
 
-        var activity = builder
+        TeamsActivity activity = builder
             .AddEntity(entity)
             .Build();
 
@@ -251,7 +251,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddEntity_MultipleEntities_AddsAllToCollection()
     {
-        var activity = builder
+        TeamsActivity activity = builder
             .AddEntity(new ClientInfoEntity { Locale = "en-US" })
             .AddEntity(new ProductInfoEntity { Id = "product-123" })
             .Build();
@@ -269,7 +269,7 @@ public class TeamsActivityBuilderTests
             Name = "test.html"
         };
 
-        var activity = builder
+        TeamsActivity activity = builder
             .AddAttachment(attachment)
             .Build();
 
@@ -281,7 +281,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddAttachment_MultipleAttachments_AddsAllToCollection()
     {
-        var activity = builder
+        TeamsActivity activity = builder
             .AddAttachment(new TeamsAttachment { ContentType = "text/html" })
             .AddAttachment(new TeamsAttachment { ContentType = "application/json" })
             .Build();
@@ -295,7 +295,7 @@ public class TeamsActivityBuilderTests
     {
         var adaptiveCard = new { type = "AdaptiveCard", version = "1.2" };
 
-        var activity = builder
+        TeamsActivity activity = builder
             .AddAdaptiveCardAttachment(adaptiveCard)
             .Build();
 
@@ -310,7 +310,7 @@ public class TeamsActivityBuilderTests
     {
         var adaptiveCard = new { type = "AdaptiveCard" };
 
-        var activity = builder
+        TeamsActivity activity = builder
             .WithAdaptiveCardAttachment(adaptiveCard, b => b.WithName("feedback"))
             .Build();
 
@@ -340,7 +340,7 @@ public class TeamsActivityBuilderTests
             Name = "John Doe"
         };
 
-        var activity = builder
+        TeamsActivity activity = builder
             .WithText("said hello")
             .AddMention(account)
             .Build();
@@ -365,7 +365,7 @@ public class TeamsActivityBuilderTests
             Name = "John Doe"
         };
 
-        var activity = builder
+        TeamsActivity activity = builder
             .WithText("replied")
             .AddMention(account, "CustomName")
             .Build();
@@ -782,7 +782,7 @@ public class TeamsActivityBuilderTests
             TeamsTeamId = "19:team@thread.tacv2"
         };
 
-        var conv = new Conversation
+        Conversation conv = new()
         {
             Id = "conv-001",
             Properties =
@@ -794,7 +794,7 @@ public class TeamsActivityBuilderTests
 
         TeamsConversation? tc = TeamsConversation.FromConversation(conv);
         Assert.NotNull(tc);
-        
+
         TeamsActivity activity = builder
             .WithType(TeamsActivityType.Message)
             .WithId("msg-001")

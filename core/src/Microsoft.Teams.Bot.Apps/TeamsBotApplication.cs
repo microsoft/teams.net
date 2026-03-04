@@ -17,8 +17,6 @@ namespace Microsoft.Teams.Bot.Apps;
 public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsApiClient;
-    private static TeamsBotApplicationBuilder? _botApplicationBuilder;
-    private TeamsApi? _api;
 
     /// <summary>
     /// Gets the router for dispatching Teams activities to registered routes.
@@ -90,29 +88,4 @@ public class TeamsBotApplication : BotApplication
             }
         };
     }
-
-    /// <summary>
-    /// Creates a new instance of the TeamsBotApplicationBuilder to configure and build a Teams bot application.
-    /// </summary>
-    /// <returns></returns>
-    public static TeamsBotApplicationBuilder CreateBuilder(string[] args)
-    {
-        _botApplicationBuilder = new TeamsBotApplicationBuilder(args);
-        return _botApplicationBuilder;
-    }
-
-    /// <summary>
-    /// Runs the web application configured by the bot application builder.
-    /// </summary>
-    /// <remarks>Call CreateBuilder() before invoking this method to ensure the bot application builder is
-    /// initialized. This method blocks the calling thread until the web application shuts down.</remarks>
-#pragma warning disable CA1822 // Mark members as static
-    public void Run()
-#pragma warning restore CA1822 // Mark members as static
-    {
-        ArgumentNullException.ThrowIfNull(_botApplicationBuilder, "BotApplicationBuilder not initialized. Call CreateBuilder() first.");
-
-        _botApplicationBuilder.WebApplication.Run();
-    }
-
 }

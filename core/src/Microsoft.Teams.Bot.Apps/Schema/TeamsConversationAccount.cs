@@ -34,7 +34,7 @@ public class TeamsConversationAccount : ConversationAccount
         {
             return null;
         }
-        TeamsConversationAccount result = new TeamsConversationAccount();
+        TeamsConversationAccount result = new();
         result.Id = conversationAccount.Id;
         result.Name = conversationAccount.Name;
         result.Properties = conversationAccount.Properties;

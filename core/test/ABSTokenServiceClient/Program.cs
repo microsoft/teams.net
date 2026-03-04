@@ -4,7 +4,6 @@
 using ABSTokenServiceClient;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);

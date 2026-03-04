@@ -15,16 +15,16 @@ namespace Microsoft.Teams.Bot.Core;
 /// sequentially, with each middleware having the opportunity to modify the activity, perform side effects,
 /// or short-circuit the pipeline. Middleware is executed in the order it was registered via the Use method.
 /// </remarks>
-internal sealed class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleWare>
+internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddleware>
 {
-    private readonly IList<ITurnMiddleWare> _middlewares = [];
+    private readonly IList<ITurnMiddleware> _middlewares = [];
 
     /// <summary>
     /// Adds a middleware component to the end of the pipeline.
     /// </summary>
     /// <param name="middleware">The middleware to add. Cannot be null.</param>
     /// <returns>The current TurnMiddleware instance for method chaining.</returns>
-    internal TurnMiddleware Use(ITurnMiddleWare middleware)
+    internal TurnMiddleware Use(ITurnMiddleware middleware)
     {
         _middlewares.Add(middleware);
         return this;
@@ -59,7 +59,7 @@ internal sealed class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleW
         {
             return callback is not null ? callback!(activity, cancellationToken) ?? Task.CompletedTask : Task.CompletedTask;
         }
-        ITurnMiddleWare nextMiddleware = _middlewares[nextMiddlewareIndex];
+        ITurnMiddleware nextMiddleware = _middlewares[nextMiddlewareIndex];
         return nextMiddleware.OnTurnAsync(
             botApplication,
             activity,
@@ -67,7 +67,7 @@ internal sealed class TurnMiddleware : ITurnMiddleWare, IEnumerable<ITurnMiddleW
             cancellationToken);
     }
 
-    public IEnumerator<ITurnMiddleWare> GetEnumerator()
+    public IEnumerator<ITurnMiddleware> GetEnumerator()
     {
         return _middlewares.GetEnumerator();
     }

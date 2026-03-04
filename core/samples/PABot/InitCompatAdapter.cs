@@ -34,11 +34,11 @@ namespace PABot
         private static void RegisterKeyedTeamsBotApplication(IServiceCollection services, string keyName)
         {
             // Get configuration for this key
-            var configSection = services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetSection(keyName);
+            IConfigurationSection configSection = services.BuildServiceProvider().GetRequiredService<IConfiguration>().GetSection(keyName);
 
             // Configure authorization and authentication for this key
             // This sets up JWT bearer authentication and authorization policies
-            services.AddAuthorization(null, keyName);
+            services.AddBotAuthorization(null, keyName);
 
             // Configure MSAL options for this key
             services.Configure<MicrosoftIdentityApplicationOptions>(keyName, configSection);
@@ -56,7 +56,7 @@ namespace PABot
             // Register keyed ConversationClient
             services.AddKeyedSingleton<ConversationClient>(keyName, (sp, key) =>
             {
-                var httpClient = sp.GetRequiredService<IHttpClientFactory>()
+                HttpClient httpClient = sp.GetRequiredService<IHttpClientFactory>()
                     .CreateClient($"{keyName}_ConversationClient");
                 return new ConversationClient(httpClient, sp.GetRequiredService<ILogger<ConversationClient>>());
             });
@@ -64,7 +64,7 @@ namespace PABot
             // Register keyed UserTokenClient
             services.AddKeyedSingleton<UserTokenClient>(keyName, (sp, key) =>
             {
-                var httpClient = sp.GetRequiredService<IHttpClientFactory>()
+                HttpClient httpClient = sp.GetRequiredService<IHttpClientFactory>()
                     .CreateClient($"{keyName}_UserTokenClient");
                 return new UserTokenClient(
                     httpClient,
@@ -75,7 +75,7 @@ namespace PABot
             // Register keyed TeamsApiClient
             services.AddKeyedSingleton<TeamsApiClient>(keyName, (sp, key) =>
             {
-                var httpClient = sp.GetRequiredService<IHttpClientFactory>()
+                HttpClient httpClient = sp.GetRequiredService<IHttpClientFactory>()
                     .CreateClient($"{keyName}_TeamsApiClient");
                 return new TeamsApiClient(httpClient, sp.GetRequiredService<ILogger<TeamsApiClient>>());
             });
