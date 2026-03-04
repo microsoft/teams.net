@@ -56,10 +56,12 @@ public class TeamsOperationsApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.FetchTeamDetailsAsync(
             teamId,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -96,10 +98,12 @@ public class TeamsOperationsApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.FetchChannelListAsync(
             teamId,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }

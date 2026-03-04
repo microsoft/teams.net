@@ -82,14 +82,13 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             // This is a registration-time decision that cannot be deferred
             // Try to get it from service descriptors first (fast path)
             ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-            IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
 
             // If not available as ImplementationInstance, build a temporary ServiceProvider
             // NOTE: This is generally an anti-pattern, but acceptable here because:
             // 1. We need configuration at registration time to select auth scheme
             // 2. We properly dispose the temporary ServiceProvider immediately
             // 3. This only happens once during application startup
-            if (configuration == null)
+            if (configDescriptor?.ImplementationInstance is not IConfiguration configuration)
             {
                 using ServiceProvider tempProvider = services.BuildServiceProvider();
                 configuration = tempProvider.GetRequiredService<IConfiguration>();
@@ -227,7 +226,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                             string authHeader = context.Request.Headers.Authorization.ToString();
                             if (!string.IsNullOrEmpty(authHeader) && authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                             {
-                                string tokenString = authHeader.Substring("Bearer ".Length).Trim();
+                                string tokenString = authHeader["Bearer ".Length..].Trim();
                                 JwtSecurityToken token = new(tokenString);
 
                                 tokenAudience = token.Audiences?.FirstOrDefault();

@@ -3,13 +3,9 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-<<<<<<< next/core-api-clients
 using Microsoft.Teams.Bot.Apps.Api;
 using Microsoft.Teams.Bot.Apps.Schema;
-=======
->>>>>>> next/core
 using Microsoft.Teams.Bot.Apps.Routing;
-using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 

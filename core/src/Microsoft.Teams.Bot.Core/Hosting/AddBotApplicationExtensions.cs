@@ -156,7 +156,6 @@ public static class AddBotApplicationExtensions
         // Get configuration and logger to configure MSAL during registration
         // Try to get from service descriptors first
         ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-        IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
 
         ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
         ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
@@ -164,7 +163,7 @@ public static class AddBotApplicationExtensions
             ?? Extensions.Logging.Abstractions.NullLogger.Instance;
 
         // If configuration not available as instance, build temporary provider
-        if (configuration == null)
+        if (configDescriptor?.ImplementationInstance is not IConfiguration configuration)
         {
             using ServiceProvider tempProvider = services.BuildServiceProvider();
             configuration = tempProvider.GetRequiredService<IConfiguration>();

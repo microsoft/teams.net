@@ -134,11 +134,15 @@ public class ActivitiesApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.SendConversationHistoryAsync(
-            activity.Conversation.Id!,
+            activity.Conversation.Id,
             transcript,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
@@ -175,11 +179,16 @@ public class ActivitiesApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.Id);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
         return _client.GetActivityMembersAsync(
-            activity.Conversation.Id!,
-            activity.Id!,
-            activity.ServiceUrl!,
-            activity.From.GetAgenticIdentity(),
+            activity.Conversation.Id,
+            activity.Id,
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken);
     }
