@@ -3,9 +3,9 @@
 
 using System.Text;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Teams.Bot.Core.Schema;
 using Moq;
 
 namespace Microsoft.Teams.Bot.Core.UnitTests;
@@ -15,11 +15,7 @@ public class MiddlewareTests
     [Fact]
     public async Task BotApplication_Use_AddsMiddlewareToChain()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         Mock<ITurnMiddleWare> mockMiddleware = new();
 
@@ -32,11 +28,7 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_ExecutesInOrder()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         List<int> executionOrder = [];
 
@@ -68,7 +60,10 @@ public class MiddlewareTests
             Type = ActivityType.Message,
             Id = "act123"
         };
-        activity.Recipient.Properties["appId"] = "test-app-id";
+        if (activity.Recipient is not null)
+        {
+            activity.Recipient.Properties["appId"] = "test-app-id";
+        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -86,11 +81,7 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_CanShortCircuit()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         bool secondMiddlewareCalled = false;
         bool onActivityCalled = false;
@@ -114,7 +105,10 @@ public class MiddlewareTests
             Type = ActivityType.Message,
             Id = "act123"
         };
-        activity.Recipient.Properties["appId"] = "test-app-id";
+        if (activity.Recipient is not null)
+        {
+            activity.Recipient.Properties["appId"] = "test-app-id";
+        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -133,11 +127,7 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_ReceivesCancellationToken()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        Mock<IConfiguration> mockConfig = new();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         CancellationToken receivedToken = default;
 
@@ -158,7 +148,11 @@ public class MiddlewareTests
             Type = ActivityType.Message,
             Id = "act123"
         };
-        activity.Recipient.Properties["appId"] = "test-app-id";
+
+        if (activity.Recipient is not null)
+        {
+            activity.Recipient.Properties["appId"] = "test-app-id";
+        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -172,12 +166,7 @@ public class MiddlewareTests
     [Fact]
     public async Task Middleware_ReceivesActivity()
     {
-        ConversationClient conversationClient = CreateMockConversationClient();
-
-        Mock<IConfiguration> mockConfig = new();
-        UserTokenClient userTokenClient = CreateMockUserTokenClient();
-        NullLogger<BotApplication> logger = NullLogger<BotApplication>.Instance;
-        BotApplication botApp = new(conversationClient, userTokenClient, mockConfig.Object, logger);
+        BotApplication botApp = CreateBotApplication();
 
         CoreActivity? receivedActivity = null;
 
@@ -198,7 +187,11 @@ public class MiddlewareTests
             Type = ActivityType.Message,
             Id = "act123"
         };
-        activity.Recipient.Properties["appId"] = "test-app-id";
+
+        if (activity.Recipient is not null)
+        {
+            activity.Recipient.Properties["appId"] = "test-app-id";
+        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -207,6 +200,9 @@ public class MiddlewareTests
         Assert.NotNull(receivedActivity);
         Assert.Equal(ActivityType.Message, receivedActivity.Type);
     }
+
+    private static BotApplication CreateBotApplication() =>
+        new(CreateMockConversationClient(), CreateMockUserTokenClient(), NullLogger<BotApplication>.Instance);
 
     private static ConversationClient CreateMockConversationClient()
     {

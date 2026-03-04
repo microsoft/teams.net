@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using AdaptiveCards;
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
 using Newtonsoft.Json;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace Microsoft.Teams.Bot.Compat.UnitTests
 {
@@ -35,10 +35,10 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.Equal(activity.ServiceUrl, coreActivity.ServiceUrl?.ToString());
             Assert.Equal(activity.ChannelId, coreActivity.ChannelId);
             Assert.Equal(activity.Id, coreActivity.Id);
-            Assert.Equal(activity.From.Id, coreActivity.From.Id);
-            Assert.Equal(activity.From.Name, coreActivity.From.Name);
-            Assert.Equal(activity.Recipient.Id, coreActivity.Recipient.Id);
-            Assert.Equal(activity.Conversation.Id, coreActivity.Conversation.Id);
+            Assert.Equal(activity.From?.Id, coreActivity.From?.Id);
+            Assert.Equal(activity.From?.Name, coreActivity.From?.Name);
+            Assert.Equal(activity.Recipient?.Id, coreActivity.Recipient?.Id);
+            Assert.Equal(activity.Conversation?.Id, coreActivity.Conversation?.Id);
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.NotNull(coreActivity);
             Assert.Equal(activity.Text, coreActivity.Properties["text"]?.ToString());
             Assert.Equal(activity.InputHint, coreActivity.Properties["inputHint"]?.ToString());
-            Assert.Equal(activity.ReplyToId, coreActivity.Properties["replyToId"]?.ToString());
+            Assert.Equal(activity.ReplyToId, coreActivity.ReplyToId);
             Assert.Equal(activity.Locale, coreActivity.Properties["locale"]?.ToString());
         }
 
@@ -91,8 +91,8 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             var content = attachmentObj["content"];
             Assert.NotNull(content);
             var card = AdaptiveCard.FromJson(content.ToJsonString()).Card;
-            Assert.Equal(2, card.Body.Count);
-            var firstTextBlock = card.Body[0] as AdaptiveTextBlock;
+            Assert.Equal(2, card.Body?.Count);
+            var firstTextBlock = card?.Body?[0] as AdaptiveTextBlock;
             Assert.NotNull(firstTextBlock);
             Assert.Equal("Mention a user by User Principle Name: Hello <at>Test User UPN</at>", firstTextBlock.Text);
         }
@@ -113,9 +113,9 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             CoreActivity coreActivity = activity.FromCompatActivity();
 
             Assert.NotNull(coreActivity.Attachments);
-            Assert.Equal(2, coreActivity.Attachments.Count);
-            Assert.Equal("text/plain", coreActivity.Attachments[0]?["contentType"]?.GetValue<string>());
-            Assert.Equal("image/png", coreActivity.Attachments[1]?["contentType"]?.GetValue<string>());
+            Assert.Equal(2, coreActivity.Attachments?.Count);
+            Assert.Equal("text/plain", coreActivity.Attachments?[0]?["contentType"]?.GetValue<string>());
+            Assert.Equal("image/png", coreActivity.Attachments?[1]?["contentType"]?.GetValue<string>());
         }
 
         #endregion
@@ -147,12 +147,12 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             CoreActivity coreActivity = botActivity.FromCompatActivity();
 
             Assert.NotNull(coreActivity.Entities);
-            Assert.Equal(2, coreActivity.Entities.Count);
+            Assert.Equal(2, coreActivity.Entities?.Count);
 
-            var firstEntity = coreActivity.Entities[0]?.AsObject();
+            var firstEntity = coreActivity.Entities?[0]?.AsObject();
             Assert.Equal("https://schema.org/Message", firstEntity?["type"]?.GetValue<string>());
 
-            var secondEntity = coreActivity.Entities[1]?.AsObject();
+            var secondEntity = coreActivity.Entities?[1]?.AsObject();
             Assert.Equal("BotMessageMetadata", secondEntity?["type"]?.GetValue<string>());
         }
 

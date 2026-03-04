@@ -14,9 +14,9 @@ public class CoreActivityBuilderTests
         CoreActivity activity = builder.Build();
 
         Assert.NotNull(activity);
-        Assert.NotNull(activity.From);
-        Assert.NotNull(activity.Recipient);
-        Assert.NotNull(activity.Conversation);
+        Assert.Null(activity.From);
+        Assert.Null(activity.Recipient);
+        Assert.Null(activity.Conversation);
     }
 
     [Fact]
@@ -104,8 +104,8 @@ public class CoreActivityBuilderTests
             .WithFrom(fromAccount)
             .Build();
 
-        Assert.Equal("sender-id", activity.From.Id);
-        Assert.Equal("Sender Name", activity.From.Name);
+        Assert.Equal("sender-id", activity.From?.Id);
+        Assert.Equal("Sender Name", activity.From?.Name);
     }
 
     [Fact]
@@ -121,8 +121,8 @@ public class CoreActivityBuilderTests
             .WithRecipient(recipientAccount)
             .Build();
 
-        Assert.Equal("recipient-id", activity.Recipient.Id);
-        Assert.Equal("Recipient Name", activity.Recipient.Name);
+        Assert.Equal("recipient-id", activity.Recipient?.Id);
+        Assert.Equal("Recipient Name", activity.Recipient?.Name);
     }
 
     [Fact]
@@ -137,7 +137,7 @@ public class CoreActivityBuilderTests
             .WithConversation(conversation)
             .Build();
 
-        Assert.Equal("conversation-id", activity.Conversation.Id);
+        Assert.Equal("conversation-id", activity.Conversation?.Id);
     }
 
     [Fact]
@@ -181,9 +181,9 @@ public class CoreActivityBuilderTests
         Assert.Equal("activity-123", activity.Id);
         Assert.Equal("msteams", activity.ChannelId);
         Assert.Equal("Test message", activity.Properties["text"]?.ToString());
-        Assert.Equal("sender-id", activity.From.Id);
-        Assert.Equal("recipient-id", activity.Recipient.Id);
-        Assert.Equal("conv-id", activity.Conversation.Id);
+        Assert.Equal("sender-id", activity.From?.Id);
+        Assert.Equal("recipient-id", activity.Recipient?.Id);
+        Assert.Equal("conv-id", activity.Conversation?.Id);
     }
 
     [Fact]
@@ -335,11 +335,11 @@ public class CoreActivityBuilderTests
 
         Assert.Equal("msteams", activity.ChannelId);
         Assert.Equal(new Uri("https://smba.trafficmanager.net/teams/"), activity.ServiceUrl);
-        Assert.Equal("conv-123", activity.Conversation.Id);
-        Assert.Equal("bot-1", activity.From.Id);
-        Assert.Equal("Bot", activity.From.Name);
-        Assert.Equal("user-1", activity.Recipient.Id);
-        Assert.Equal("User One", activity.Recipient.Name);
+        Assert.Equal("conv-123", activity.Conversation?.Id);
+        Assert.Equal("bot-1", activity.From?.Id);
+        Assert.Equal("Bot", activity.From?.Name);
+        Assert.Equal("user-1", activity.Recipient?.Id);
+        Assert.Equal("User One", activity.Recipient?.Name);
     }
 
     [Fact]
@@ -358,10 +358,10 @@ public class CoreActivityBuilderTests
             .WithConversationReference(incomingActivity)
             .Build();
 
-        Assert.Equal("bot-id", replyActivity.From.Id);
-        Assert.Equal("Bot", replyActivity.From.Name);
-        Assert.Equal("user-id", replyActivity.Recipient.Id);
-        Assert.Equal("User", replyActivity.Recipient.Name);
+        Assert.Equal("bot-id", replyActivity.From?.Id);
+        Assert.Equal("Bot", replyActivity.From?.Name);
+        Assert.Equal("user-id", replyActivity.Recipient?.Id);
+        Assert.Equal("User", replyActivity.Recipient?.Name);
     }
 
     [Fact]
@@ -423,8 +423,8 @@ public class CoreActivityBuilderTests
             .Build();
 
         Assert.Equal(ActivityType.Message, activity.Type);
-        Assert.Equal("bot-1", activity.From.Id);
-        Assert.Equal("user-1", activity.Recipient.Id);
+        Assert.Equal("bot-1", activity.From?.Id);
+        Assert.Equal("user-1", activity.Recipient?.Id);
     }
 
     [Fact]
@@ -475,9 +475,9 @@ public class CoreActivityBuilderTests
         Assert.Equal("msg-001", activity.Id);
         Assert.Equal(serviceUrl, activity.ServiceUrl);
         Assert.Equal("msteams", activity.ChannelId);
-        Assert.Equal("bot-id", activity.From.Id);
-        Assert.Equal("user-id", activity.Recipient.Id);
-        Assert.Equal("conv-001", activity.Conversation.Id);
+        Assert.Equal("bot-id", activity.From?.Id);
+        Assert.Equal("user-id", activity.Recipient?.Id);
+        Assert.Equal("conv-001", activity.Conversation?.Id);
         Assert.NotNull(activity.ChannelData);
     }
 }
