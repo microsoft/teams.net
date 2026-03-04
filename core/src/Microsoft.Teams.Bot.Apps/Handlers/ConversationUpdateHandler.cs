@@ -3,7 +3,6 @@
 
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 

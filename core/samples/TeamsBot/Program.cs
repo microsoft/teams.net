@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
-using System.Text.RegularExpressions;
 using TeamsBot;
 
 var builder = TeamsBotApplication.CreateBuilder(args);
@@ -110,7 +108,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     await context.SendActivityAsync(feedbackActivity, cancellationToken);
 });
 
-teamsApp.OnMessageReaction( async (context, cancellationToken) =>
+teamsApp.OnMessageReaction(async (context, cancellationToken) =>
 {
     string reactionsAdded = string.Join(", ", context.Activity.ReactionsAdded?.Select(r => r.Type) ?? []);
     string reactionsRemoved = string.Join(", ", context.Activity.ReactionsRemoved?.Select(r => r.Type) ?? []);
@@ -145,11 +143,15 @@ teamsApp.OnInvoke(async (context, cancellationToken) =>
 
     await context.SendActivityAsync(reply, cancellationToken);
 
-    return new CoreInvokeResponse(200)
-    {
-        Type = "application/vnd.microsoft.activity.message",
-        Body = "Invokes are great !!"
-    };
+    return AdaptiveCardResponse.CreateMessageResponse("Invokes are great!!");
+});
+
+// ==================== EVENT HANDLERS ====================
+
+teamsApp.OnEvent(async (context, cancellationToken) =>
+{
+    Console.WriteLine($"[Event] Name: {context.Activity.Name}");
+    await context.SendActivityAsync($"Received event: `{context.Activity.Name}`", cancellationToken);
 });
 
 // ==================== CONVERSATION UPDATE HANDLERS ====================
@@ -176,7 +178,11 @@ teamsApp.OnInstallUpdate(async (context, cancellationToken) =>
 {
     var action = context.Activity.Action ?? "unknown";
     Console.WriteLine($"[InstallUpdate] Installation action: {action}");
-    await context.SendActivityAsync($"Installation update: {action}", cancellationToken);
+
+    if (context.Activity.Action != InstallUpdateActions.Remove)
+    {
+        await context.SendActivityAsync($"Installation update: {action}", cancellationToken);
+    }
 });
 
 teamsApp.OnInstall(async (context, cancellationToken) =>

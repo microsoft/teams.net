@@ -3,8 +3,6 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
 
@@ -19,7 +17,6 @@ namespace Microsoft.Teams.Bot.Apps.Schema;
 [JsonSerializable(typeof(CoreActivity))]
 [JsonSerializable(typeof(TeamsActivity))]
 [JsonSerializable(typeof(MessageActivity))]
-[JsonSerializable(typeof(InvokeActivity))]
 [JsonSerializable(typeof(Entity))]
 [JsonSerializable(typeof(EntityList))]
 [JsonSerializable(typeof(MentionEntity))]

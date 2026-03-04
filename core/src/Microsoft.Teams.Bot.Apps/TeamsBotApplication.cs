@@ -2,13 +2,16 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+<<<<<<< next/core-api-clients
 using Microsoft.Teams.Bot.Apps.Api;
 using Microsoft.Teams.Bot.Apps.Schema;
+=======
+>>>>>>> next/core
 using Microsoft.Teams.Bot.Apps.Routing;
-using Microsoft.Teams.Bot.Apps.Handlers;
+using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Apps;
 
@@ -53,24 +56,23 @@ public class TeamsBotApplication : BotApplication
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
     /// <param name="teamsApiClient"></param>
-    /// <param name="config"></param>
     /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
-    /// <param name="sectionName"></param>
+    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics. Defaults to an empty instance if not provided.</param>
     public TeamsBotApplication(
         ConversationClient conversationClient,
         UserTokenClient userTokenClient,
         TeamsApiClient teamsApiClient,
-        IConfiguration config,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
-        string sectionName = "AzureAd")
-        : base(conversationClient, userTokenClient, config, logger, sectionName)
+        BotApplicationOptions? options = null)
+        : base(conversationClient, userTokenClient, logger, options)
     {
         _teamsApiClient = teamsApiClient;
         Router = new Router(logger);
         OnActivity = async (activity, cancellationToken) =>
         {
+            logger.LogInformation("OnActivity invoked for activity: Id={Id}", activity.Id);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
@@ -80,12 +82,14 @@ public class TeamsBotApplication : BotApplication
             }
             else // invokes
             {
-                CoreInvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+                InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
                 HttpContext? httpContext = httpContextAccessor.HttpContext;
                 if (httpContext is not null && invokeResponse is not null)
                 {
                     httpContext.Response.StatusCode = invokeResponse.Status;
-                    await httpContext.Response.WriteAsJsonAsync(invokeResponse, cancellationToken).ConfigureAwait(false);
+                    logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
+                    await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+
                 }
             }
         };

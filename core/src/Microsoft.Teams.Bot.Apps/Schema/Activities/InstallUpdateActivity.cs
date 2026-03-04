@@ -4,7 +4,7 @@
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.InstallActivities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents an installation update activity.
@@ -36,7 +36,8 @@ public class InstallUpdateActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected InstallUpdateActivity(CoreActivity activity) : base(activity)
     {
-        if (activity.Properties.TryGetValue("action", out var action))
+        ArgumentNullException.ThrowIfNull(activity);
+        if (activity.Properties.TryGetValue("action", out object? action))
         {
             Action = action?.ToString();
             activity.Properties.Remove("action");

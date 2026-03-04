@@ -1,12 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
 /// Represents a message activity.
@@ -58,17 +56,17 @@ public class MessageActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageActivity(CoreActivity activity) : base(activity)
     {
-        if (activity.Properties.TryGetValue("text", out var text))
+        if (activity.Properties.TryGetValue("text", out object? text))
         {
             Text = text?.ToString();
             activity.Properties.Remove("text");
         }
-        if (activity.Properties.TryGetValue("textFormat", out var textFormat))
+        if (activity.Properties.TryGetValue("textFormat", out object? textFormat))
         {
             TextFormat = textFormat?.ToString();
             activity.Properties.Remove("textFormat");
         }
-        if (activity.Properties.TryGetValue("attachmentLayout", out var attachmentLayout))
+        if (activity.Properties.TryGetValue("attachmentLayout", out object? attachmentLayout))
         {
             AttachmentLayout = attachmentLayout?.ToString();
             activity.Properties.Remove("attachmentLayout");

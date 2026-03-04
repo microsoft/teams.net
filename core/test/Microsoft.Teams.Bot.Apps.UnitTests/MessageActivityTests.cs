@@ -1,9 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
 
@@ -45,7 +44,7 @@ public class MessageActivityTests
     {
         MessageActivity activity = new("Hello World")
         {
-           // Summary = "Test summary",
+            // Summary = "Test summary",
             TextFormat = TextFormats.Markdown,
             //InputHint = InputHints.ExpectingInput,
             //Importance = ImportanceLevels.Urgent,
