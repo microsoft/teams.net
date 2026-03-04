@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
@@ -214,6 +215,91 @@ public class TeamsActivityTests
         Assert.Equal("24fff850-d7fb-4d32-a6e7-a1178874430e", agenticIdentity.AgenticAppBlueprintId);
     }
 
+    [Fact]
+    public void FromActivity_ReturnsDerivedType_WhenRegistered()
+    {
+        CoreActivity coreActivity = new CoreActivity(ActivityType.Message);
+        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.IsType<MessageActivity>(activity);
+    }
+
+    [Fact]
+    public void FromActivity_ReturnsBaseType_WhenNotRegistered()
+    {
+        CoreActivity coreActivity = new CoreActivity("unknownType");
+        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.Equal(typeof(TeamsActivity), activity.GetType());
+        Assert.Equal("unknownType", activity.Type);
+    }
+
+    [Fact]
+    public void EmptyTeamsActivity()
+    {
+        string minActivityJson = """
+            {
+              "type": "message"
+            }
+            """;
+
+        var teamsActivity = TeamsActivity.CreateBuilder().Build();
+        Assert.NotNull(teamsActivity);
+        var json = teamsActivity.ToJson();
+        Assert.Equal(minActivityJson, json);
+    }
+
+    [Fact]
+    public void BaseFieldsAsBaseTypes()
+    {
+        CoreActivity ca = new CoreActivity();
+        ca.Conversation = new Conversation() { Id = "conv1" };
+        ca.Conversation.Properties.Add("tenantId", "tenant-1");
+        CoreActivity ta = TeamsActivity.FromActivity(ca);
+        if (ta.Conversation is not null)
+        {
+            Assert.NotNull(ta.Conversation);
+            Assert.Equal("conv1", ta.Conversation.Id);
+            Assert.Empty(ta.Conversation.Properties);
+        }
+        else
+        {
+            Assert.Fail("Conversation not set");
+        }
+    }
+
+    [Fact]
+    public void Deserialize_with_Conversation_and_Tenant()
+    {
+        var json = """
+            {
+                "type" : "message",
+                "conversation": {
+                    "id" : "conv1",
+                    "tenantId" : "tenant-1"
+                }
+            }
+            """;
+        var ca = CoreActivity.FromJsonString(json);
+        Assert.NotNull(ca);
+        Assert.NotNull(ca.Conversation);
+        Assert.Equal("conv1", ca.Conversation.Id);
+        if (ca.Conversation.Properties.TryGetValue("tenantId", out var outTenantId))
+        {
+            Assert.Equal("tenant-1", outTenantId?.ToString());
+        }
+        else
+        {
+            Assert.Fail("conversation tenant not set");
+        }
+        TeamsActivity ta = TeamsActivity.FromActivity(ca);
+        Assert.NotNull(ta);
+        Assert.NotNull(ta.Conversation);
+        Assert.Equal("conv1", ta.Conversation.Id);
+        Assert.Equal("tenant-1", ta.Conversation.TenantId);
+    }
+
+
     private const string jsonInvoke = """
           {
           "type": "invoke",
@@ -339,22 +425,5 @@ public class TeamsActivityTests
             }
             """;
 
-    [Fact]
-    public void FromActivity_ReturnsDerivedType_WhenRegistered()
-    {
-        CoreActivity coreActivity = new CoreActivity(ActivityType.Message);
-        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
 
-        Assert.IsType<MessageActivity>(activity);
-    }
-
-    [Fact]
-    public void FromActivity_ReturnsBaseType_WhenNotRegistered()
-    {
-        CoreActivity coreActivity = new CoreActivity("unknownType");
-        TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
-
-        Assert.Equal(typeof(TeamsActivity), activity.GetType());
-        Assert.Equal("unknownType", activity.Type);
-    }
 }

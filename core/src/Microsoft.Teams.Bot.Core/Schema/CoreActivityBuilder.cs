@@ -60,17 +60,17 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// <summary>
     /// Sets the conversation (to be overridden by derived classes for type-specific behavior).
     /// </summary>
-    protected abstract void SetConversation(Conversation conversation);
+    protected abstract void SetConversation(Conversation? conversation);
 
     /// <summary>
     /// Sets the From account (to be overridden by derived classes for type-specific behavior).
     /// </summary>
-    protected abstract void SetFrom(ConversationAccount from);
+    protected abstract void SetFrom(ConversationAccount? from);
 
     /// <summary>
     /// Sets the Recipient account (to be overridden by derived classes for type-specific behavior).
     /// </summary>
-    protected abstract void SetRecipient(ConversationAccount recipient);
+    protected abstract void SetRecipient(ConversationAccount? recipient);
 
     /// <summary>
     /// Sets the activity ID.
@@ -144,7 +144,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="from">The sender account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithFrom(ConversationAccount from)
+    public TBuilder WithFrom(ConversationAccount? from)
     {
         SetFrom(from);
         return (TBuilder)this;
@@ -155,7 +155,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="recipient">The recipient account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithRecipient(ConversationAccount recipient)
+    public TBuilder WithRecipient(ConversationAccount? recipient)
     {
         SetRecipient(recipient);
         return (TBuilder)this;
@@ -166,7 +166,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="conversation">The conversation information.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithConversation(Conversation conversation)
+    public TBuilder WithConversation(Conversation? conversation)
     {
         SetConversation(conversation);
         return (TBuilder)this;
@@ -213,7 +213,7 @@ public class CoreActivityBuilder : CoreActivityBuilder<CoreActivity, CoreActivit
     /// <summary>
     /// Sets the conversation.
     /// </summary>
-    protected override void SetConversation(Conversation conversation)
+    protected override void SetConversation(Conversation? conversation)
     {
         _activity.Conversation = conversation;
     }
@@ -221,7 +221,7 @@ public class CoreActivityBuilder : CoreActivityBuilder<CoreActivity, CoreActivit
     /// <summary>
     /// Sets the From account.
     /// </summary>
-    protected override void SetFrom(ConversationAccount from)
+    protected override void SetFrom(ConversationAccount? from)
     {
         _activity.From = from;
     }
@@ -229,7 +229,7 @@ public class CoreActivityBuilder : CoreActivityBuilder<CoreActivity, CoreActivit
     /// <summary>
     /// Sets the Recipient account.
     /// </summary>
-    protected override void SetRecipient(ConversationAccount recipient)
+    protected override void SetRecipient(ConversationAccount? recipient)
     {
         _activity.Recipient = recipient;
     }
