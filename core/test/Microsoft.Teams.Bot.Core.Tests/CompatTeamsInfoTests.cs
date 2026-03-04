@@ -8,7 +8,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Compat;
-using Microsoft.Teams.Bot.Core;
 using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests
@@ -28,6 +27,9 @@ namespace Microsoft.Bot.Core.Tests
         private readonly string _channelId;
         private readonly string _meetingId;
         private readonly string _tenantId;
+        private readonly string _agenticAppBlueprintId;
+        private readonly string? _agenticAppId;
+        private readonly string? _agenticUserId;
 
         public CompatTeamsInfoTests(ITestOutputHelper outputHelper)
         {
@@ -39,6 +41,10 @@ namespace Microsoft.Bot.Core.Tests
             _channelId = Environment.GetEnvironmentVariable("TEST_CHANNELID") ?? "19:test-channel-id";
             _meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? "test-meeting-id";
             _tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? "test-tenant-id";
+
+            _agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? throw new InvalidOperationException("AzureAd__ClientId environment variable not set");
+            _agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");// ?? throw new InvalidOperationException("TEST_AGENTIC_APPID environment variable not set");
+            _agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
         }
 
         [Fact]
@@ -473,7 +479,7 @@ namespace Microsoft.Bot.Core.Tests
                         Type = ActivityTypes.Message,
                         Text = "Test message to channel"
                     };
-                    var botAppId = Environment.GetEnvironmentVariable("MicrosoftAppId") ?? string.Empty;
+                    var botAppId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? string.Empty;
 
                     var result = await CompatTeamsInfo.SendMessageToTeamsChannelAsync(
                         turnContext,
@@ -589,6 +595,15 @@ namespace Microsoft.Bot.Core.Tests
                 Conversation = new ConversationAccount
                 {
                     Id = conversationId
+                },
+                User = new ChannelAccount()
+                {
+                    Properties =
+                    {
+                        { "agenticAppBlueprintId", _agenticAppBlueprintId },
+                        { "agenticAppId", _agenticAppId },
+                        { "agenticUserId", _agenticUserId },
+                    }
                 }
             };
         }
