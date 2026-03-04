@@ -58,9 +58,17 @@ namespace Microsoft.Bot.Core.Tests
             {
                 ChannelId = "msteams",
                 ServiceUrl = serviceUrl,
-                Conversation = new ConversationAccount
+                Conversation = new ConversationAccount()
                 {
                     Id = conversationId
+                },
+                Bot = new ChannelAccount()
+                {
+                    Id = "28:fake-bot-id",
+                    Properties =
+                    {
+                        ["aadObjectId"] = "fake-aad-object-id"
+                    }
                 }
             };
 

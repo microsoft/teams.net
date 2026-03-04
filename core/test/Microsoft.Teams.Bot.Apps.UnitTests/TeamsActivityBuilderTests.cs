@@ -136,10 +136,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithConversation_SetsConversationInfo()
     {
-        Conversation baseConversation = new Conversation
-        {
-            Id = "conversation-id"
-        };
+        Conversation baseConversation = new Conversation("conversation-id");
 
         Assert.NotNull(baseConversation);
         baseConversation.Properties.Add("tenantId", "tenant-123");

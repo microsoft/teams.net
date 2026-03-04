@@ -104,6 +104,16 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
         _activity.ServiceUrl = serviceUrl;
         return (TBuilder)this;
     }
+    /// <summary>
+    /// Sets the service URL from a string.
+    /// </summary>
+    /// <param name="serviceUrlString"></param>
+    /// <returns></returns>
+    public TBuilder WithServiceUrl(string serviceUrlString)
+    {
+        _activity.ServiceUrl = new Uri(serviceUrlString);
+        return (TBuilder)this;
+    }
 
     /// <summary>
     /// Sets the channel ID.
