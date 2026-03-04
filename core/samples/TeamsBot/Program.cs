@@ -16,8 +16,6 @@ var teamsApp = builder.Build();
 teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 {
     await context.SendActivityAsync("Hi there! 👋 You said hello!", cancellationToken);
-    
-    await teamsApp.Api.Conversations.Reactions.AddAsync(context.Activity, "cake", cancellationToken: cancellationToken);
 });
 
 // Markdown handler: matches "markdown" (case-insensitive)

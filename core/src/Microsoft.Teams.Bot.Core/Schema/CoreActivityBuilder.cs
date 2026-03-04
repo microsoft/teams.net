@@ -47,7 +47,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
         WithChannelId(activity.ChannelId);
         SetConversation(activity.Conversation);
         SetFrom(activity.Recipient);
-        SetRecipient(activity.From);
+        //SetRecipient(activity.From);
 
         if (!string.IsNullOrEmpty(activity.Id))
         {
@@ -157,7 +157,19 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// <returns>The builder instance for chaining.</returns>
     public TBuilder WithRecipient(ConversationAccount? recipient)
     {
+        return WithRecipient(recipient, false);
+    }
+
+    /// <summary>
+    /// Sets the recipient account information and optionally marks this as a targeted message.
+    /// </summary>
+    /// <param name="recipient">The recipient account.</param>
+    /// <param name="isTargeted">If true, marks this as a targeted message visible only to the specified recipient.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
+    {
         SetRecipient(recipient);
+        _activity.IsTargeted = isTargeted;
         return (TBuilder)this;
     }
 
