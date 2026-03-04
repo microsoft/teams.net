@@ -95,6 +95,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
         /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
         /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
+        // TODO :: confusing with aspnet addAuthorization - rename to AddBotAuthorization or similar 
         public static AuthorizationBuilder AddAuthorization(this IServiceCollection services, ILogger? logger = null, string aadSectionName = "AzureAd")
         {
             // Use NullLogger if no logger provided
