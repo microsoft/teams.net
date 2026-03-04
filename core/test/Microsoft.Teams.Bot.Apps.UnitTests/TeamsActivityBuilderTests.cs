@@ -660,7 +660,7 @@ public class TeamsActivityBuilderTests
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
 
-        Assert.NotNull(result.Recipient);
+        Assert.NotNull(result.From);
     }
 
     [Fact]
