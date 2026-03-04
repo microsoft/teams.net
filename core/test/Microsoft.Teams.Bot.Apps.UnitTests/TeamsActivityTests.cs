@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
@@ -43,7 +42,7 @@ public class TeamsActivityTests
     [Fact]
     public void DownCastTeamsActivity_To_CoreActivity_WithoutRebase()
     {
-        TeamsActivity teamsActivity = new TeamsActivity()
+        TeamsActivity teamsActivity = new()
         {
             Conversation = new TeamsConversation()
             {
@@ -174,7 +173,7 @@ public class TeamsActivityTests
     [Fact]
     public void Serialize_Does_Not_Repeat_AAdObjectId()
     {
-        var coreActivity = CoreActivity.FromJsonString("""
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
             {
                 "type": "message",
                 "recipient": {
@@ -184,7 +183,7 @@ public class TeamsActivityTests
                 }
             }
             """);
-        var teamsActivity = TeamsActivity.FromActivity(coreActivity);
+        TeamsActivity teamsActivity = TeamsActivity.FromActivity(coreActivity);
         string json = teamsActivity.ToJson();
         string[] found = json.Split("aadObjectId");
         Assert.Equal(1, found.Length - 1); // only one occurrence
@@ -193,7 +192,7 @@ public class TeamsActivityTests
     [Fact]
     public void FromActivity_Overrides_Recipient()
     {
-        var coreActivity = CoreActivity.FromJsonString("""
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
             {
                 "type": "message",
                 "recipient": {
@@ -205,10 +204,10 @@ public class TeamsActivityTests
                 }
             }
             """);
-        var teamsActivity = TeamsActivity.FromActivity(coreActivity);
+        TeamsActivity teamsActivity = TeamsActivity.FromActivity(coreActivity);
         Assert.Equal("rec1", teamsActivity.Recipient?.Id);
         Assert.Equal("recname", teamsActivity.Recipient?.Name);
-        var agenticIdentity = AgenticIdentity.FromProperties(teamsActivity.Recipient?.Properties);
+        AgenticIdentity? agenticIdentity = AgenticIdentity.FromProperties(teamsActivity.Recipient?.Properties);
         Assert.NotNull(agenticIdentity);
         Assert.Equal("0d5eb8a3-1642-4e63-9ccc-a89aa461716c", agenticIdentity.AgenticUserId);
         Assert.Equal("3fc62d4f-b04e-4c71-878b-02a2fa395fe2", agenticIdentity.AgenticAppId);
@@ -218,7 +217,7 @@ public class TeamsActivityTests
     [Fact]
     public void FromActivity_ReturnsDerivedType_WhenRegistered()
     {
-        CoreActivity coreActivity = new CoreActivity(ActivityType.Message);
+        CoreActivity coreActivity = new(ActivityType.Message);
         TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
 
         Assert.IsType<MessageActivity>(activity);
@@ -227,7 +226,7 @@ public class TeamsActivityTests
     [Fact]
     public void FromActivity_ReturnsBaseType_WhenNotRegistered()
     {
-        CoreActivity coreActivity = new CoreActivity("unknownType");
+        CoreActivity coreActivity = new("unknownType");
         TeamsActivity activity = TeamsActivity.FromActivity(coreActivity);
 
         Assert.Equal(typeof(TeamsActivity), activity.GetType());
@@ -243,16 +242,16 @@ public class TeamsActivityTests
             }
             """;
 
-        var teamsActivity = TeamsActivity.CreateBuilder().Build();
+        TeamsActivity teamsActivity = TeamsActivity.CreateBuilder().Build();
         Assert.NotNull(teamsActivity);
-        var json = teamsActivity.ToJson();
+        string json = teamsActivity.ToJson();
         Assert.Equal(minActivityJson, json);
     }
 
     [Fact]
     public void BaseFieldsAsBaseTypes()
     {
-        CoreActivity ca = new CoreActivity();
+        CoreActivity ca = new();
         ca.Conversation = new Conversation() { Id = "conv1" };
         ca.Conversation.Properties.Add("tenantId", "tenant-1");
         CoreActivity ta = TeamsActivity.FromActivity(ca);
@@ -271,7 +270,7 @@ public class TeamsActivityTests
     [Fact]
     public void Deserialize_with_Conversation_and_Tenant()
     {
-        var json = """
+        string json = """
             {
                 "type" : "message",
                 "conversation": {
@@ -280,11 +279,11 @@ public class TeamsActivityTests
                 }
             }
             """;
-        var ca = CoreActivity.FromJsonString(json);
+        CoreActivity ca = CoreActivity.FromJsonString(json);
         Assert.NotNull(ca);
         Assert.NotNull(ca.Conversation);
         Assert.Equal("conv1", ca.Conversation.Id);
-        if (ca.Conversation.Properties.TryGetValue("tenantId", out var outTenantId))
+        if (ca.Conversation.Properties.TryGetValue("tenantId", out object? outTenantId))
         {
             Assert.Equal("tenant-1", outTenantId?.ToString());
         }

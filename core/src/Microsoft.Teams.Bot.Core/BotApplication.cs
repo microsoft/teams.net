@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -18,6 +19,15 @@ public class BotApplication
     private readonly ConversationClient? _conversationClient;
     private readonly UserTokenClient? _userTokenClient;
     internal TurnMiddleware MiddleWare { get; }
+
+    /// <summary>
+    /// Creates a default instance, primarily for testing purposes. The ConversationClient and UserTokenClient properties will not be initialized
+    /// </summary>
+    protected BotApplication()
+    {
+        _logger = NullLogger<BotApplication>.Instance;
+        MiddleWare = new TurnMiddleware();
+    }
 
     /// <summary>
     /// Initializes a new instance of the BotApplication class with the specified conversation client, app ID,
@@ -60,7 +70,7 @@ public class BotApplication
     /// <remarks>Assign a delegate to process activities as they are received. The delegate should accept an
     /// <see cref="CoreActivity"/> and a <see cref="CancellationToken"/>, and return a <see cref="Task"/> representing the
     /// asynchronous operation. If <see langword="null"/>, incoming activities will not be handled.</remarks>
-    public Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
+    public virtual Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
 
     /// <summary>
     /// Processes an incoming HTTP request containing a bot activity.
@@ -70,7 +80,7 @@ public class BotApplication
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="BotHandlerException"></exception>
-    public async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
+    public virtual async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(_conversationClient);
@@ -116,7 +126,7 @@ public class BotApplication
     /// </summary>
     /// <param name="middleware">The middleware component to add to the pipeline. Cannot be null.</param>
     /// <returns>An ITurnMiddleWare instance representing the updated middleware pipeline.</returns>
-    public ITurnMiddleWare Use(ITurnMiddleWare middleware)
+    public ITurnMiddleware UseMiddleware(ITurnMiddleware middleware)
     {
         MiddleWare.Use(middleware);
         return MiddleWare;

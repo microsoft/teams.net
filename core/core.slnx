@@ -15,6 +15,7 @@
     <Project Path="samples/CompatBot/CompatBot.csproj" Id="39461362-c3d0-41ae-9ed7-f7e1232a8ead" />
     <Project Path="samples/CompatProactive/CompatProactive.csproj" Id="60e946ea-ea2f-4994-8b5b-e6aa98723aa4" />
     <Project Path="samples/CoreBot/CoreBot.csproj" Id="142a67bc-68e7-4020-83cf-51423e317b53" />
+    <Project Path="samples/CustomHosting/CustomHosting.csproj" Id="de2e42de-3d8f-4a9d-920f-14c7e39fc3c0" />
     <Project Path="samples/MeetingsBot/MeetingsBot.csproj" />
     <Project Path="samples/MessageExtensionBot/MessageExtensionBot.csproj" />
     <Project Path="samples/PABot/PABot.csproj" Id="ef8f29ef-fe59-4edf-8a50-6e7ab6699a45" />

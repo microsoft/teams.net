@@ -12,30 +12,30 @@ var teamsApp = builder.Build();
 
 teamsApp.OnMeetingStart(async (context, cancellationToken) =>
 {
-    var meeting = context.Activity.Value;
+    MeetingStartValue? meeting = context.Activity.Value;
     Console.WriteLine($"[MeetingStart] Title: {meeting?.Title}");
     await context.SendActivityAsync($"Meeting started: **{meeting?.Title}**", cancellationToken);
 });
 
 teamsApp.OnMeetingEnd(async (context, cancellationToken) =>
 {
-    var meeting = context.Activity.Value;
+    MeetingEndValue? meeting = context.Activity.Value;
     Console.WriteLine($"[MeetingEnd] Title: {meeting?.Title}, EndTime: {meeting?.EndTime:u}");
     await context.SendActivityAsync($"Meeting ended: **{meeting?.Title}**\nEnd time: {meeting?.EndTime:u}", cancellationToken);
 });
 
 teamsApp.OnMeetingParticipantJoin(async (context, cancellationToken) =>
 {
-    var members = context.Activity.Value?.Members ?? [];
-    var names = string.Join(", ", members.Select(m => m.User.Name ?? m.User.Id));
+    IList<MeetingParticipantMember> members = context.Activity.Value?.Members ?? [];
+    string names = string.Join(", ", members.Select(m => m.User.Name ?? m.User.Id));
     Console.WriteLine($"[MeetingParticipantJoin] Members: {names}");
     await context.SendActivityAsync($"Participant(s) joined: {names}", cancellationToken);
 });
 
 teamsApp.OnMeetingParticipantLeave(async (context, cancellationToken) =>
 {
-    var members = context.Activity.Value?.Members ?? [];
-    var names = string.Join(", ", members.Select(m => m.User.Name ?? m.User.Id));
+    IList<MeetingParticipantMember> members = context.Activity.Value?.Members ?? [];
+    string names = string.Join(", ", members.Select(m => m.User.Name ?? m.User.Id));
     Console.WriteLine($"[MeetingParticipantLeave] Members: {names}");
     await context.SendActivityAsync($"Participant(s) left: {names}", cancellationToken);
 });

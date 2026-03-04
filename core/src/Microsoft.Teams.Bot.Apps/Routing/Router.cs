@@ -93,7 +93,7 @@ internal sealed class Router
         ArgumentNullException.ThrowIfNull(ctx);
 
         List<RouteBase> matchingRoutes = _routes.Where(r => r.Matches(ctx.Activity)).ToList();
-        var name = ctx.Activity is InvokeActivity inv ? inv.Name : null;
+        string? name = ctx.Activity is InvokeActivity inv ? inv.Name : null;
 
         if (matchingRoutes.Count == 0 && _routes.Count > 0)
         {
