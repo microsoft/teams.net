@@ -38,7 +38,7 @@ namespace PABot
 
             // Configure authorization and authentication for this key
             // This sets up JWT bearer authentication and authorization policies
-            services.AddAuthorization(null, keyName);
+            services.AddBotAuthorization(null, keyName);
 
             // Configure MSAL options for this key
             services.Configure<MicrosoftIdentityApplicationOptions>(keyName, configSection);

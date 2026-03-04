@@ -105,7 +105,8 @@ public static class AddBotApplicationExtensions
                 AppId = config["MicrosoftAppId"] ?? config["CLIENT_ID"] ?? config[$"{sectionName}:ClientId"] ?? string.Empty
             };
         });
-        services.AddAuthorization(logger, sectionName);
+        services.AddHttpContextAccessor();
+        services.AddBotAuthorization(logger, sectionName);
         services.AddConversationClient(sectionName);
         services.AddUserTokenClient(sectionName);
         services.AddSingleton<TApp>();
