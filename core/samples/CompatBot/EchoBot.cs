@@ -3,10 +3,8 @@
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
-using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Newtonsoft.Json.Linq;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Compat;
@@ -43,7 +41,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
 
         var activity = ((Activity)turnContext.Activity).FromCompatActivity();
         TeamsActivity tm = TeamsActivity.CreateBuilder()
-            .WithConversation(new Conversation { Id = activity.Conversation.Id })
+            .WithConversation(new Conversation { Id = activity.Conversation?.Id! })
             .WithText("Hello TM !")
             .WithRecipient(activity.From, true)
             .WithFrom(activity.Recipient)

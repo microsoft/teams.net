@@ -16,24 +16,6 @@ var teamsApp = builder.Build();
 teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 {
     await context.SendActivityAsync("Hi there! 👋 You said hello!", cancellationToken);
-    
-    await teamsApp.Api.Conversations.Reactions.AddAsync(context.Activity, "cake", cancellationToken: cancellationToken);
-});
-
-teamsApp.OnMessage("(?i)tm", async (context, cancellationToken) =>
-{
-    var members = await teamsApp.Api.Conversations.Members.GetAllAsync(context.Activity, cancellationToken: cancellationToken);
-    foreach (var member in members)
-    {
-        await context.SendActivityAsync(
-            TeamsActivity.CreateBuilder()
-                .WithText($"Hello {member.Name}!")
-                .WithRecipient(member, true)
-                .Build(), cancellationToken);
-    }
-    
-    await context.SendActivityAsync($"Sent a private message to {members.Count} member(s) of the conversation!", cancellationToken);
-
 });
 
 // Markdown handler: matches "markdown" (case-insensitive)
@@ -159,11 +141,15 @@ teamsApp.OnInvoke(async (context, cancellationToken) =>
 
     await context.SendActivityAsync(reply, cancellationToken);
 
-    return new CoreInvokeResponse(200)
-    {   
-        Type = "application/vnd.microsoft.activity.message",
-        Body = "Invokes are great !!"
-    };
+    return AdaptiveCardResponse.CreateMessageResponse("Invokes are great!!");
+});
+
+// ==================== EVENT HANDLERS ====================
+
+teamsApp.OnEvent(async (context, cancellationToken) =>
+{
+    Console.WriteLine($"[Event] Name: {context.Activity.Name}");
+    await context.SendActivityAsync($"Received event: `{context.Activity.Name}`", cancellationToken);
 });
 
 // ==================== CONVERSATION UPDATE HANDLERS ====================

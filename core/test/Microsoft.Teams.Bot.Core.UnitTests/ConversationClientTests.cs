@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Core.Schema;
 using Moq;
 using Moq.Protected;

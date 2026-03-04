@@ -184,7 +184,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             activity.Id,
             activity.ServiceUrl,
             activity.IsTargeted,
-            activity.From.GetAgenticIdentity(),
+            activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken).ConfigureAwait(false);
     }

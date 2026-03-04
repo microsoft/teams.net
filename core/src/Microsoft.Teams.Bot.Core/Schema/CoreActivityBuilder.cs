@@ -166,7 +166,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// <param name="recipient">The recipient account.</param>
     /// <param name="isTargeted">If true, marks this as a targeted message visible only to the specified recipient.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithRecipient(ConversationAccount recipient, bool isTargeted)
+    public TBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
     {
         SetRecipient(recipient);
         _activity.IsTargeted = isTargeted;
