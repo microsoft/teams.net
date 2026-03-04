@@ -5,8 +5,11 @@ using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 
-var builder = TeamsBotApplication.CreateBuilder(args);
-var teamsApp = builder.Build();
+WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
+webAppBuilder.Services.AddTeamsBotApplication();
+WebApplication webApp = webAppBuilder.Build();
+
+TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
 // ==================== MEETING HANDLERS ====================
 
@@ -63,4 +66,4 @@ teamsApp.OnCommandResult(async (context, cancellationToken) =>
         await context.SendActivityAsync($"Command **{commandId}** completed successfully.", cancellationToken);
 });
 */
-teamsApp.Run();
+webApp.Run();

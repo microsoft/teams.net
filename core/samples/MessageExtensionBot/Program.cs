@@ -7,8 +7,11 @@ using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 
-var builder = TeamsBotApplication.CreateBuilder(args);
-var bot = builder.Build();
+WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
+webAppBuilder.Services.AddTeamsBotApplication();
+WebApplication webApp = webAppBuilder.Build();
+
+TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 
 // ==================== MESSAGE EXTENSION QUERY ====================
 bot.OnQuery(async (context, cancellationToken) =>
@@ -81,7 +84,7 @@ bot.OnFetchTask(async (context, cancellationToken) =>
 });
 
 // Helper: Extract title and description from preview card
-(string?, string?) GetDataFromPreview(TeamsActivity? preview)
+static (string?, string?) GetDataFromPreview(TeamsActivity? preview)
 {
     if (preview?.Attachments == null) return (null, null);
 
@@ -257,4 +260,4 @@ bot.OnSetting(async (context, cancellationToken) =>
 });
 */
 
-bot.Run();
+webApp.Run();
