@@ -18,6 +18,7 @@
     <Project Path="samples/MeetingsBot/MeetingsBot.csproj" />
     <Project Path="samples/MessageExtensionBot/MessageExtensionBot.csproj" />
     <Project Path="samples/PABot/PABot.csproj" Id="ef8f29ef-fe59-4edf-8a50-6e7ab6699a45" />
+    <Project Path="samples/TabApp/TabApp.csproj" />
     <Project Path="samples/TeamsBot/TeamsBot.csproj" Id="94a35050-6826-446f-9b29-863f2bbc75b7" />
     <Project Path="samples/TeamsChannelBot/TeamsChannelBot.csproj" />
   </Folder>

@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Apps;
@@ -19,27 +18,38 @@ public class TeamsBotApplicationBuilder
     private readonly WebApplicationBuilder _webAppBuilder;
     private WebApplication? _webApp;
     private string _routePath = "/api/messages";
-    internal WebApplication WebApplication => _webApp ?? throw new InvalidOperationException("Call Build");
+
+    /// <summary>
+    /// The underlying ASP.NET <see cref="WebApplication"/>, available after <see cref="Build"/> is called.
+    /// Use this to register routes, middleware, and static files using standard ASP.NET infrastructure.
+    /// </summary>
+    public WebApplication WebApplication => _webApp ?? throw new InvalidOperationException("Call Build");
+
     /// <summary>
     /// Accessor for the service collection used to configure application services.
     /// </summary>
     public IServiceCollection Services => _webAppBuilder.Services;
+
     /// <summary>
     /// Accessor for the application configuration used to configure services and settings.
     /// </summary>
     public IConfiguration Configuration => _webAppBuilder.Configuration;
+
     /// <summary>
     /// Accessor for the web hosting environment information.
     /// </summary>
     public IWebHostEnvironment Environment => _webAppBuilder.Environment;
+
     /// <summary>
     /// Accessor for configuring the host settings and services.
     /// </summary>
     public ConfigureHostBuilder Host => _webAppBuilder.Host;
+
     /// <summary>
     /// Accessor for configuring logging services and settings.
     /// </summary>
     public ILoggingBuilder Logging => _webAppBuilder.Logging;
+
     /// <summary>
     /// Creates a new instance of the BotApplicationBuilder with default configuration and registered bot services.
     /// </summary>
@@ -54,7 +64,7 @@ public class TeamsBotApplicationBuilder
     /// Builds and configures the bot application pipeline, returning a fully initialized instance of the bot
     /// application.
     /// </summary>
-    /// <returns>A configured <see cref="BotApplication"/> instance representing the bot application pipeline.</returns>
+    /// <returns>A configured <see cref="TeamsBotApplication"/> instance.</returns>
     public TeamsBotApplication Build()
     {
         _webApp = _webAppBuilder.Build();
