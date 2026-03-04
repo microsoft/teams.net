@@ -23,6 +23,7 @@ public static class ActivityCitationExtensions
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(appearance);
 
+        activity.Entities ??= [];
         var messageEntity = GetOrCreateRootMessageEntity(activity);
         var citationEntity = new CitationEntity(messageEntity);
         citationEntity.Citation ??= [];
@@ -32,7 +33,7 @@ public static class ActivityCitationExtensions
             Appearance = appearance.ToDocument()
         });
 
-        activity.Entities!.Remove(messageEntity);
+        activity.Entities.Remove(messageEntity);
         activity.Entities.Add(citationEntity);
         activity.Rebase();
         return citationEntity;
@@ -40,6 +41,7 @@ public static class ActivityCitationExtensions
 
     /// <summary>
     /// Adds the AI-generated content label to the activity's root message entity.
+    /// This method is idempotent — calling it multiple times has the same effect as calling it once.
     /// </summary>
     /// <param name="activity">The activity to mark as AI-generated. Cannot be null.</param>
     /// <returns>The OMessageEntity with the AI-generated label applied.</returns>
@@ -74,11 +76,7 @@ public static class ActivityCitationExtensions
         return activity;
     }
 
-    /// <summary>
-    /// Gets or creates the single root-level OMessageEntity on the activity.
-    /// </summary>
-    /// <param name="activity">The activity to search.</param>
-    /// <returns>The existing or newly created root message entity.</returns>
+    // Gets or creates the single root-level OMessageEntity on the activity.
     private static OMessageEntity GetOrCreateRootMessageEntity(TeamsActivity activity)
     {
         activity.Entities ??= [];
