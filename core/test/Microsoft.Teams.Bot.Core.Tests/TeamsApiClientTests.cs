@@ -6,7 +6,9 @@ using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps;
+using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests;
 
@@ -16,7 +18,7 @@ public class TeamsApiClientTests
     private readonly TeamsApiClient _teamsClient;
     private readonly Uri _serviceUrl;
 
-    public TeamsApiClientTests()
+    public TeamsApiClientTests(ITestOutputHelper outputHelper)
     {
         IConfigurationBuilder builder = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -25,7 +27,12 @@ public class TeamsApiClientTests
         IConfiguration configuration = builder.Build();
 
         ServiceCollection services = new();
-        services.AddLogging();
+        services.AddLogging((builder) => {
+            builder.AddXUnit(outputHelper);
+            builder.AddFilter("System.Net", LogLevel.Warning);
+            builder.AddFilter("Microsoft.Identity", LogLevel.Error);
+            builder.AddFilter("Microsoft.Teams", LogLevel.Information);
+        });
         services.AddSingleton(configuration);
         services.AddTeamsBotApplication();
         _serviceProvider = services.BuildServiceProvider();

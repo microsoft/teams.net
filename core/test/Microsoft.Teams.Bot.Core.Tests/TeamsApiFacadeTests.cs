@@ -1,14 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Bot.Connector;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Api;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests;
 
@@ -21,8 +24,11 @@ public class TeamsApiFacadeTests
     private readonly ServiceProvider _serviceProvider;
     private readonly TeamsBotApplication _teamsBotApplication;
     private readonly Uri _serviceUrl;
+    private readonly string _conversationId;
+    private readonly ConversationAccount _recipient = new ConversationAccount();
+    private readonly AgenticIdentity? _agenticIdentity;
 
-    public TeamsApiFacadeTests()
+    public TeamsApiFacadeTests(ITestOutputHelper outputHelper)
     {
         IConfigurationBuilder builder = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -31,13 +37,31 @@ public class TeamsApiFacadeTests
         IConfiguration configuration = builder.Build();
 
         ServiceCollection services = new();
-        services.AddLogging();
+        services.AddLogging((builder) => {
+            builder.AddXUnit(outputHelper);
+            builder.AddFilter("System.Net", LogLevel.Warning);
+            builder.AddFilter("Microsoft.Identity", LogLevel.Error);
+            builder.AddFilter("Microsoft.Teams", LogLevel.Information);
+        });
         services.AddSingleton(configuration);
         services.AddHttpContextAccessor();
         services.AddTeamsBotApplication();
         _serviceProvider = services.BuildServiceProvider();
         _teamsBotApplication = _serviceProvider.GetRequiredService<TeamsBotApplication>();
         _serviceUrl = new Uri(Environment.GetEnvironmentVariable("TEST_SERVICEURL") ?? "https://smba.trafficmanager.net/teams/");
+        _conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
+        string agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? throw new InvalidOperationException("AzureAd__ClientId environment variable not set");
+        string? agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");
+        string? agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
+
+        _agenticIdentity = null;
+        if (!string.IsNullOrEmpty(agenticAppId) && !string.IsNullOrEmpty(agenticUserId))
+        {
+            _recipient.Properties.Add("agenticAppBlueprintId", agenticAppBlueprintId);
+            _recipient.Properties.Add("agenticAppId", agenticAppId);
+            _recipient.Properties.Add("agenticUserId", agenticUserId);
+            _agenticIdentity = AgenticIdentity.FromProperties(_recipient.Properties);
+        }
     }
 
     [Fact]
@@ -90,6 +114,7 @@ public class TeamsApiFacadeTests
         TeamDetails result = await _teamsBotApplication.Api.Teams.GetByIdAsync(
             teamId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -108,6 +133,7 @@ public class TeamsApiFacadeTests
         ChannelList result = await _teamsBotApplication.Api.Teams.GetChannelsAsync(
             teamId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -129,7 +155,7 @@ public class TeamsApiFacadeTests
         TeamsActivity activity = new()
         {
             ServiceUrl = _serviceUrl,
-            From = new TeamsConversationAccount { Id = "test-user" }
+            From = TeamsConversationAccount.FromConversationAccount(_recipient)
         };
 
         TeamDetails result = await _teamsBotApplication.Api.Teams.GetByIdAsync(
@@ -152,10 +178,8 @@ public class TeamsApiFacadeTests
             Type = ActivityType.Message,
             Properties = { { "text", $"Message via Api.Conversations.Activities.SendAsync at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            Conversation = new()
-            {
-                Id = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set")
-            }
+            Conversation = new(_conversationId),
+            From = _recipient
         };
 
         SendActivityResponse res = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(
@@ -171,15 +195,14 @@ public class TeamsApiFacadeTests
     [Fact]
     public async Task Api_Conversations_Activities_UpdateAsync()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         // First send an activity
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
             Properties = { { "text", $"Original message via Api at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            Conversation = new() { Id = conversationId }
+            Conversation = new(_conversationId),
+            From = _recipient
         };
 
         SendActivityResponse sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
@@ -191,10 +214,11 @@ public class TeamsApiFacadeTests
             Type = ActivityType.Message,
             Properties = { { "text", $"Updated message via Api.Conversations.Activities.UpdateAsync at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
+            From = _recipient
         };
 
         UpdateActivityResponse updateResponse = await _teamsBotApplication.Api.Conversations.Activities.UpdateAsync(
-            conversationId,
+            _conversationId,
             sendResponse.Id,
             updatedActivity,
             cancellationToken: CancellationToken.None);
@@ -208,15 +232,14 @@ public class TeamsApiFacadeTests
     [Fact]
     public async Task Api_Conversations_Activities_DeleteAsync()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         // First send an activity
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
             Properties = { { "text", $"Message to delete via Api at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            Conversation = new() { Id = conversationId }
+            Conversation = new(_conversationId),
+            From = _recipient
         };
 
         SendActivityResponse sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
@@ -227,9 +250,10 @@ public class TeamsApiFacadeTests
 
         // Now delete the activity
         await _teamsBotApplication.Api.Conversations.Activities.DeleteAsync(
-            conversationId,
+            _conversationId,
             sendResponse.Id,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Console.WriteLine($"Deleted activity via Api.Conversations.Activities.DeleteAsync: {sendResponse.Id}");
@@ -238,15 +262,14 @@ public class TeamsApiFacadeTests
     [Fact]
     public async Task Api_Conversations_Activities_GetMembersAsync()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         // First send an activity
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
             Properties = { { "text", $"Message for GetMembersAsync test at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _serviceUrl,
-            Conversation = new() { Id = conversationId }
+            Conversation = new(_conversationId),
+            From = _recipient
         };
 
         SendActivityResponse sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
@@ -254,7 +277,7 @@ public class TeamsApiFacadeTests
 
         // Now get activity members
         IList<ConversationAccount> members = await _teamsBotApplication.Api.Conversations.Activities.GetMembersAsync(
-            conversationId,
+            _conversationId,
             sendResponse.Id,
             _serviceUrl,
             cancellationToken: CancellationToken.None);
@@ -272,11 +295,10 @@ public class TeamsApiFacadeTests
     [Fact]
     public async Task Api_Conversations_Members_GetAllAsync()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         IList<ConversationAccount> members = await _teamsBotApplication.Api.Conversations.Members.GetAllAsync(
-            conversationId,
+            _conversationId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(members);
@@ -292,13 +314,11 @@ public class TeamsApiFacadeTests
     [Fact]
     public async Task Api_Conversations_Members_GetAllAsync_WithActivityContext()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         TeamsActivity activity = new()
         {
             ServiceUrl = _serviceUrl,
-            Conversation = new TeamsConversation { Id = conversationId },
-            From = new TeamsConversationAccount { Id = "test-user" }
+            Conversation = new TeamsConversation { Id = _conversationId },
+            From = TeamsConversationAccount.FromConversationAccount(_recipient)
         };
 
         IList<ConversationAccount> members = await _teamsBotApplication.Api.Conversations.Members.GetAllAsync(
@@ -314,13 +334,13 @@ public class TeamsApiFacadeTests
     [Fact]
     public async Task Api_Conversations_Members_GetByIdAsync()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
 
         ConversationAccount member = await _teamsBotApplication.Api.Conversations.Members.GetByIdAsync(
-            conversationId,
+            _conversationId,
             userId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(member);
@@ -333,11 +353,12 @@ public class TeamsApiFacadeTests
     [Fact]
     public async Task Api_Conversations_Members_GetPagedAsync()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         PagedMembersResult result = await _teamsBotApplication.Api.Conversations.Members.GetPagedAsync(
-            conversationId,
+            _conversationId,
             _serviceUrl,
+            5,
+            null,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -355,6 +376,7 @@ public class TeamsApiFacadeTests
         MeetingInfo result = await _teamsBotApplication.Api.Meetings.GetByIdAsync(
             meetingId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -379,6 +401,7 @@ public class TeamsApiFacadeTests
             participantId,
             tenantId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -395,7 +418,7 @@ public class TeamsApiFacadeTests
     public async Task Api_Batch_GetStateAsync_FailsWithInvalidOperationId()
     {
         await Assert.ThrowsAsync<HttpRequestException>(()
-            => _teamsBotApplication.Api.Batch.GetStateAsync("invalid-operation-id", _serviceUrl));
+            => _teamsBotApplication.Api.Batch.GetStateAsync("invalid-operation-id", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]

@@ -7,9 +7,9 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Compat;
 using Microsoft.Teams.Bot.Core;
+using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests
 {
@@ -20,6 +20,7 @@ namespace Microsoft.Bot.Core.Tests
     /// </summary>
     public class CompatTeamsInfoTests
     {
+        private readonly ITestOutputHelper _outputHelper;
         private readonly string _serviceUrl = "https://smba.trafficmanager.net/amer/";
         private readonly string _userId;
         private readonly string _conversationId;
@@ -28,8 +29,9 @@ namespace Microsoft.Bot.Core.Tests
         private readonly string _meetingId;
         private readonly string _tenantId;
 
-        public CompatTeamsInfoTests()
+        public CompatTeamsInfoTests(ITestOutputHelper outputHelper)
         {
+            _outputHelper = outputHelper;
             // These tests require environment variables for live integration testing
             _userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? "29:test-user-id";
             _conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? "19:test-conversation-id";
@@ -564,11 +566,14 @@ namespace Microsoft.Bot.Core.Tests
             IConfiguration configuration = builder.Build();
 
             ServiceCollection services = new();
-            services.AddSingleton<ILogger<BotApplication>>(NullLogger<BotApplication>.Instance);
-            services.AddSingleton<ILogger<ConversationClient>>(NullLogger<ConversationClient>.Instance);
             services.AddSingleton(configuration);
             services.AddCompatAdapter();
-            services.AddLogging(configure => configure.AddConsole());
+            services.AddLogging((builder) => {
+                builder.AddXUnit(_outputHelper);
+                builder.AddFilter("System.Net", LogLevel.Warning);
+                builder.AddFilter("Microsoft.Identity", LogLevel.Error);
+                builder.AddFilter("Microsoft.Teams", LogLevel.Information);
+            });
 
             var serviceProvider = services.BuildServiceProvider();
             CompatAdapter compatAdapter = (CompatAdapter)serviceProvider.GetRequiredService<IBotFrameworkHttpAdapter>();
