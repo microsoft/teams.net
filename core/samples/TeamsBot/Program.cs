@@ -1,14 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 using TeamsBot;
 
-var builder = TeamsBotApplication.CreateBuilder(args);
-var teamsApp = builder.Build();
+WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
+webAppBuilder.Services.AddTeamsBotApplication();
+WebApplication webApp = webAppBuilder.Build();
+
+TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
 // ==================== MESSAGE HANDLERS ====================
 
@@ -21,7 +25,7 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 // Markdown handler: matches "markdown" (case-insensitive)
 teamsApp.OnMessage("(?i)markdown", async (context, cancellationToken) =>
 {
-    var markdownMessage = new MessageActivity("""
+    MessageActivity markdownMessage = new("""
 # Markdown Examples
 
 Here are some **markdown** formatting examples:
@@ -90,10 +94,10 @@ teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
 });
 
 // Regex-based handler: matches commands starting with "/"
-var commandRegex = new Regex(@"^/(\w+)(.*)$", RegexOptions.Compiled);
+Regex commandRegex = Regexes.CommandRegex();
 teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
 {
-    var match = commandRegex.Match(context.Activity.Text ?? "");
+    Match match = commandRegex.Match(context.Activity.Text ?? "");
     if (match.Success)
     {
         string command = match.Groups[1].Value;
@@ -159,10 +163,10 @@ teamsApp.OnMessageDelete(async (context, cancellationToken) =>
 
 teamsApp.OnInvoke(async (context, cancellationToken) =>
 {
-    var valueNode = context.Activity.Value;
+    JsonNode? valueNode = context.Activity.Value;
     string? feedbackValue = valueNode?["action"]?["data"]?["feedback"]?.GetValue<string>();
 
-    var reply = TeamsActivity.CreateBuilder()
+    TeamsActivity reply = TeamsActivity.CreateBuilder()
         .WithAttachment(TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.ResponseCard(feedbackValue))
             .Build()
@@ -188,7 +192,7 @@ teamsApp.OnMembersAdded(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[MembersAdded] {context.Activity.MembersAdded?.Count ?? 0} member(s) added");
 
-    var memberNames = string.Join(", ", context.Activity.MembersAdded?.Select(m => m.Name ?? m.Id) ?? []);
+    string memberNames = string.Join(", ", context.Activity.MembersAdded?.Select(m => m.Name ?? m.Id) ?? []);
     await context.SendActivityAsync($"Welcome! Members added: {memberNames}", cancellationToken);
 });
 
@@ -196,7 +200,7 @@ teamsApp.OnMembersRemoved(async (context, cancellationToken) =>
 {
     Console.WriteLine($"[MembersRemoved] {context.Activity.MembersRemoved?.Count ?? 0} member(s) removed");
 
-    var memberNames = string.Join(", ", context.Activity.MembersRemoved?.Select(m => m.Name ?? m.Id) ?? []);
+    string memberNames = string.Join(", ", context.Activity.MembersRemoved?.Select(m => m.Name ?? m.Id) ?? []);
     await context.SendActivityAsync($"Goodbye! Members removed: {memberNames}", cancellationToken);
 });
 
@@ -204,7 +208,7 @@ teamsApp.OnMembersRemoved(async (context, cancellationToken) =>
 
 teamsApp.OnInstallUpdate(async (context, cancellationToken) =>
 {
-    var action = context.Activity.Action ?? "unknown";
+    string action = context.Activity.Action ?? "unknown";
     Console.WriteLine($"[InstallUpdate] Installation action: {action}");
 
     if (context.Activity.Action != InstallUpdateActions.Remove)
@@ -225,5 +229,10 @@ teamsApp.OnUnInstall((context, cancellationToken) =>
     return Task.CompletedTask;
 });
 
+webApp.Run();
 
-teamsApp.Run();
+partial class Regexes
+{
+    [GeneratedRegex(@"^/(\w+)(.*)$")]
+    public static partial Regex CommandRegex();
+}

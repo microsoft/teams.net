@@ -36,6 +36,7 @@ public class InstallUpdateActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected InstallUpdateActivity(CoreActivity activity) : base(activity)
     {
+        ArgumentNullException.ThrowIfNull(activity);
         if (activity.Properties.TryGetValue("action", out object? action))
         {
             Action = action?.ToString();

@@ -52,15 +52,15 @@ public class CoreActivity
     /// <summary>
     /// Gets or sets the account that sent this activity.
     /// </summary>
-    [JsonPropertyName("from")] public ConversationAccount From { get; set; } = new();
+    [JsonPropertyName("from")] public ConversationAccount? From { get; set; }
     /// <summary>
     /// Gets or sets the account that should receive this activity.
     /// </summary>
-    [JsonPropertyName("recipient")] public ConversationAccount Recipient { get; set; } = new();
+    [JsonPropertyName("recipient")] public ConversationAccount? Recipient { get; set; }
     /// <summary>
     /// Gets or sets the conversation in which this activity is taking place.
     /// </summary>
-    [JsonPropertyName("conversation")] public Conversation Conversation { get; set; } = new();
+    [JsonPropertyName("conversation")] public Conversation? Conversation { get; set; }
 
     /// <summary>
     /// Gets the collection of entities contained in this activity.

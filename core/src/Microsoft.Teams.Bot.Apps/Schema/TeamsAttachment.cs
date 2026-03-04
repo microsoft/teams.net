@@ -115,11 +115,11 @@ public static class TeamsAttachmentExtensions
 /// </summary>
 public class TeamsAttachment
 {
-    static internal IList<TeamsAttachment> FromJArray(JsonArray? jsonArray)
+    static internal IList<TeamsAttachment>? FromJArray(JsonArray? jsonArray)
     {
         if (jsonArray is null)
         {
-            return [];
+            return null;
         }
         List<TeamsAttachment> attachments = [];
         foreach (JsonNode? item in jsonArray)

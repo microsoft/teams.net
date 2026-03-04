@@ -44,11 +44,11 @@ public class EntityList : List<Entity>
     /// <param name="jsonArray"></param>
     /// <param name="options"></param>
     /// <returns></returns>
-    public static EntityList FromJsonArray(JsonArray? jsonArray, JsonSerializerOptions? options = null)
+    public static EntityList? FromJsonArray(JsonArray? jsonArray, JsonSerializerOptions? options = null)
     {
         if (jsonArray == null)
         {
-            return [];
+            return null;
         }
         EntityList entities = [];
         foreach (JsonNode? item in jsonArray)

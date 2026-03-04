@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -42,36 +41,35 @@ public class TeamsConversation : Conversation
     }
 
     /// <summary>
-    /// Creates a new instance of the TeamsConversation class from the specified Conversation object.
+    /// Creates a Teams Conversation from a Conversation
     /// </summary>
     /// <param name="conversation"></param>
-    public TeamsConversation(Conversation conversation)
+    /// <returns></returns>
+    public static TeamsConversation? FromConversation(Conversation? conversation)
     {
-        ArgumentNullException.ThrowIfNull(conversation);
-        Id = conversation.Id;
+        if (conversation is null)
+        {
+            return null;
+        }
+        TeamsConversation result = new();
+        result.Id = conversation.Id;
         if (conversation.Properties == null)
         {
-            return;
+            return result;
         }
-        if (conversation.Properties.TryGetValue("tenantId", out object? tenantObj) && tenantObj is JsonElement je && je.ValueKind == JsonValueKind.String)
+        if (conversation.Properties.TryGetValue("tenantId", out object? tenantObj))
         {
-            TenantId = je.GetString();
+            result.TenantId = tenantObj?.ToString();
         }
-        if (conversation.Properties.TryGetValue("conversationType", out object? convTypeObj) && convTypeObj is JsonElement je2 && je2.ValueKind == JsonValueKind.String)
+        if (conversation.Properties.TryGetValue("conversationType", out object? convTypeObj))
         {
-            ConversationType = je2.GetString();
+            result.ConversationType = convTypeObj?.ToString();
         }
-        if (conversation.Properties.TryGetValue("isGroup", out object? isGroupObj) && isGroupObj is JsonElement je3)
+        if (conversation.Properties.TryGetValue("isGroup", out object? isGroupObj))
         {
-            if (je3.ValueKind == JsonValueKind.True)
-            {
-                IsGroup = true;
-            }
-            else if (je3.ValueKind == JsonValueKind.False)
-            {
-                IsGroup = false;
-            }
+            result.IsGroup = Convert.ToBoolean(isGroupObj?.ToString());
         }
+        return result;
     }
 
     /// <summary>
