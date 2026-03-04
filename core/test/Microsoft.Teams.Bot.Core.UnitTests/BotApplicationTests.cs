@@ -51,7 +51,11 @@ public class BotApplicationTests
             Id = "act123"
         };
         activity.Properties["text"] = "Test message";
-        activity.Recipient.Properties["appId"] = "test-app-id";
+
+        if (activity.Recipient is not null)
+        {
+            activity.Recipient.Properties["appId"] = "test-app-id";
+        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -77,7 +81,10 @@ public class BotApplicationTests
             Type = ActivityType.Message,
             Id = "act123"
         };
-        activity.Recipient.Properties["appId"] = "test-app-id";
+        if (activity.Recipient is not null)
+        {
+            activity.Recipient.Properties["appId"] = "test-app-id";
+        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -117,7 +124,11 @@ public class BotApplicationTests
             Type = ActivityType.Message,
             Id = "act123"
         };
-        activity.Recipient.Properties["appId"] = "test-app-id";
+
+        if (activity.Recipient is not null)
+        {
+            activity.Recipient.Properties["appId"] = "test-app-id";
+        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
