@@ -55,7 +55,7 @@ public static class CompatTeamsInfo
     private static AgenticIdentity GetIdentity(ITurnContext turnContext)
     {
         CoreActivity coreActivity = turnContext.Activity.FromCompatActivity();
-        return AgenticIdentity.FromProperties(coreActivity.From.Properties) ?? new AgenticIdentity();
+        return AgenticIdentity.FromProperties(coreActivity.From?.Properties) ?? new AgenticIdentity();
     }
 
     #endregion
