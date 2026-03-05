@@ -20,12 +20,19 @@ namespace Microsoft.Bot.Core.Tests
         private readonly string _serviceUrl = "https://smba.trafficmanager.net/amer/";
         private readonly string _userId;
         private readonly string _conversationId;
+        private readonly string _agenticAppBlueprintId;
+        private readonly string? _agenticAppId;
+        private readonly string? _agenticUserId;
 
         public CompatConversationClientTests(ITestOutputHelper outputHelper)
         {
             _outputHelper = outputHelper;
             _userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
             _conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
+
+            _agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? throw new InvalidOperationException("AzureAd__ClientId environment variable not set");
+            _agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");// ?? throw new InvalidOperationException("TEST_AGENTIC_APPID environment variable not set");
+            _agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");// ?? throw new InvalidOperationException("TEST_AGENTIC_USERID environment variable not set");
         }
 
         [Fact(Skip = "not implemented")]
@@ -69,12 +76,14 @@ namespace Microsoft.Bot.Core.Tests
                 {
                     Id = _conversationId
                 },
-                Bot = new ChannelAccount()
+                User = new ChannelAccount()
                 {
                     Id = "28:fake-bot-id",
                     Properties =
                     {
-                        ["aadObjectId"] = "fake-aad-object-id"
+                        ["agenticAppId"] = _agenticAppId,
+                        ["agenticUserId"] = _agenticUserId,
+                        ["agenticAppBlueprintId"] = _agenticAppBlueprintId
                     }
                 }
             };
@@ -83,7 +92,7 @@ namespace Microsoft.Bot.Core.Tests
                 string.Empty, conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var result = await TeamsInfo.GetPagedMembersAsync(turnContext, cancellationToken: cancellationToken);
+                    var result = await CompatTeamsInfo.GetPagedMembersAsync(turnContext, cancellationToken: cancellationToken);
                     Assert.NotNull(result);
                     Assert.True(result.Members.Count > 0);
                     var m0 = result.Members[0];

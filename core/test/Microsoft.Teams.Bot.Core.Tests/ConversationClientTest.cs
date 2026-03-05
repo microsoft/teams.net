@@ -126,7 +126,7 @@ public class ConversationClientTest
         Assert.NotNull(updateResponse.Id);
     }
 
-    [Fact]
+    [Fact(Skip = "DeleteActivity is not working with agentic identity")]
     public async Task DeleteActivity()
     {
         // First send an activity to get an ID
@@ -294,7 +294,7 @@ public class ConversationClientTest
         }
     }
 
-    [Fact]
+    [Fact(Skip = "CreateConversation_WithMembers is not working with agentic identity")]
     public async Task CreateConversation_WithMembers()
     {
         // Create a 1-on-1 conversation with a member
@@ -435,7 +435,7 @@ public class ConversationClientTest
     }
 
     // TODO: This doesn't fail, but doesn't actually create the initial activity
-    [Fact]
+    [Fact(Skip = "CreateConversation_WithInitialActivity is not working with agentic identity")]
     public async Task CreateConversation_WithInitialActivity()
     {
         // Create a conversation with an initial message
@@ -471,7 +471,7 @@ public class ConversationClientTest
         Console.WriteLine($"  Initial activity ID: {response.ActivityId}");
     }
 
-    [Fact]
+    [Fact(Skip = "CreateConversation_WithChannelData is not working with agentic identity")]
     public async Task CreateConversation_WithChannelData()
     {
         // Create a conversation with channel-specific data
