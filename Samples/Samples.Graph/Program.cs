@@ -1,5 +1,6 @@
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Activities;
+using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Extensions;
 using Microsoft.Teams.Common.Logging;
@@ -72,6 +73,13 @@ teams.OnSignIn(async (_, @event, cancellationToken) =>
 
     var me = await context.GetUserGraphClient().Me.GetAsync(cancellationToken: cancellationToken);
     await context.Send($"user \"{me!.DisplayName}\" signed in. Here's the token: {token.Token}", cancellationToken);
+});
+
+teams.OnSignInFailure(async (context, cancellationToken) =>
+{
+    var failure = context.Activity.Value;
+    context.Log.Error($"sign-in failed: {failure?.Code} - {failure?.Message}");
+    await context.Send("sign-in failed. please contact your admin.", cancellationToken);
 });
 
 app.Run();

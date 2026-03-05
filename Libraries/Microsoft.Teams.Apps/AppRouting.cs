@@ -180,6 +180,51 @@ public partial class App
     }
 
     /// <summary>
+    /// Default handler for signin/failure invoke activities.
+    /// Teams sends this when SSO token exchange fails (e.g., due to a
+    /// misconfigured Entra app registration). Logs the failure details
+    /// and emits an error event.
+    ///
+    /// Known failure codes (sent by the Teams client):
+    /// <list type="bullet">
+    /// <item><term>installappfailed</term><description>Failed to install the app in the user's personal scope (non-silent).</description></item>
+    /// <item><term>authrequestfailed</term><description>The SSO auth request failed after app installation (non-silent).</description></item>
+    /// <item><term>installedappnotfound</term><description>The bot app is not installed for the user or group chat.</description></item>
+    /// <item><term>invokeerror</term><description>A generic error occurred during the SSO invoke flow.</description></item>
+    /// <item><term>resourcematchfailed</term><description>The token exchange resource URI on the OAuthCard does not match the Application ID URI in the Entra app registration's "Expose an API" section.</description></item>
+    /// <item><term>oauthcardnotvalid</term><description>The bot's OAuthCard could not be parsed.</description></item>
+    /// <item><term>tokenmissing</term><description>AAD token acquisition failed.</description></item>
+    /// <item><term>userconsentrequired</term><description>The user needs to consent (handled via OAuth card fallback, does not typically reach the bot).</description></item>
+    /// <item><term>interactionrequired</term><description>User interaction is required (handled via OAuth card fallback, does not typically reach the bot).</description></item>
+    /// </list>
+    /// </summary>
+    protected async Task<object?> OnFailureActivity(IContext<Api.Activities.Invokes.SignIn.FailureActivity> context)
+    {
+        var failure = context.Activity.Value;
+
+        Logger.Warn(
+            $"sign-in failed for user \"{context.Activity.From.Id}\" in conversation " +
+            $"\"{context.Ref.Conversation.Id}\": {failure.Code} — {failure.Message}. " +
+            $"If the code is 'resourcematchfailed', verify that your Entra app registration " +
+            $"has 'Expose an API' configured with the correct Application ID URI matching " +
+            $"your OAuth connection's Token Exchange URL."
+        );
+
+        await Events.Emit(
+            context.Sender,
+            EventType.Error,
+            new ErrorEvent()
+            {
+                Exception = new Exception($"Sign-in failure: {failure.Code} — {failure.Message}"),
+                Context = context.ToActivityType<IActivity>()
+            },
+            context.CancellationToken
+        );
+
+        return new Response(HttpStatusCode.OK);
+    }
+
+    /// <summary>
     /// Register a middleware.
     /// </summary>
     /// <param name="handler">Callback to invoke.</param>
