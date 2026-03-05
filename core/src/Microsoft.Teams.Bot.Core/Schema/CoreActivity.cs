@@ -61,7 +61,7 @@ public class CoreActivity
     /// Indicates if this is a targeted message visible only to a specific recipient.
     /// Used internally by the SDK for routing - not serialized to the service.
     /// </summary>
-    [JsonIgnore] public bool IsTargeted { get; set; }
+    [JsonPropertyName("isTargeted")] public bool IsTargeted { get; set; }
     /// <summary>
     /// Gets or sets the conversation in which this activity is taking place.
     /// </summary>

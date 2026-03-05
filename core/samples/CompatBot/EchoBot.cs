@@ -37,7 +37,12 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
 
         string replyText = $"Echo from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
-        await turnContext.SendActivityAsync(MessageFactory.Text(replyText, replyText), cancellationToken);
+
+        var act = MessageFactory.Text(replyText, replyText);
+        act.Properties.Add("isTargeted", true); 
+        await turnContext.SendActivityAsync(act, cancellationToken);
+
+
         await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
 
         var activity = ((Activity)turnContext.Activity).FromCompatActivity();
