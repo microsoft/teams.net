@@ -367,7 +367,7 @@ public class CoreCoreActivityTests
     }
 
     [Fact]
-    public void IsTargeted_IsNotSerializedToJson()
+    public void IsTargeted_IsSerializedToJson()
     {
         CoreActivity activity = new()
         {
@@ -377,12 +377,12 @@ public class CoreCoreActivityTests
 
         string json = activity.ToJson();
 
-        Assert.DoesNotContain("isTargeted", json, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("isTargeted", json, StringComparison.OrdinalIgnoreCase);
         Assert.True(activity.IsTargeted); // Property still holds value
     }
 
     [Fact]
-    public void IsTargeted_IsNotDeserializedFromJson()
+    public void IsTargeted_DeserializedFromJson()
     {
         string json = """
         {
@@ -393,6 +393,6 @@ public class CoreCoreActivityTests
 
         CoreActivity activity = CoreActivity.FromJsonString(json);
 
-        Assert.False(activity.IsTargeted); // Should default to false since JsonIgnore
+        Assert.True(activity.IsTargeted); 
     }
 }
