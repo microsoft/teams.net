@@ -50,7 +50,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
             .WithServiceUrl("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/")
             .Build();
 
-        await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
+        //await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
 
         var res = await turnContext.SendActivityAsync(MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
 
