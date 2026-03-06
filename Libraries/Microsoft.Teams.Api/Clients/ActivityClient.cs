@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 using Microsoft.Teams.Api.Activities;
@@ -94,6 +95,7 @@ public class ActivityClient : Client
     /// <param name="conversationId">The ID of the conversation</param>
     /// <param name="activity">The activity to create</param>
     /// <returns>The created activity resource</returns>
+    [Experimental("TEAMS0002")]
     public async Task<Resource?> CreateTargetedAsync(string conversationId, IActivity activity)
     {
         var req = HttpRequest.Post(
@@ -116,6 +118,7 @@ public class ActivityClient : Client
     /// <param name="id">The ID of the activity to update</param>
     /// <param name="activity">The updated activity data</param>
     /// <returns>The updated activity resource</returns>
+    [Experimental("TEAMS0002")]
     public async Task<Resource?> UpdateTargetedAsync(string conversationId, string id, IActivity activity)
     {
         var req = HttpRequest.Put(
@@ -136,6 +139,7 @@ public class ActivityClient : Client
     /// </summary>
     /// <param name="conversationId">The ID of the conversation</param>
     /// <param name="id">The ID of the activity to delete</param>
+    [Experimental("TEAMS0002")]
     public async Task DeleteTargetedAsync(string conversationId, string id)
     {
         var req = HttpRequest.Delete(

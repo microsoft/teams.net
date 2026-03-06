@@ -130,5 +130,7 @@ public class Message
     /// </summary>
     [JsonPropertyName("reactions")]
     [JsonPropertyOrder(16)]
+    #pragma warning disable TEAMS0001
     public IList<Reaction>? Reactions { get; set; }
+    #pragma warning restore TEAMS0001
 }
