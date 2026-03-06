@@ -7,8 +7,9 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class BotTokenClient : Client
 {
-    public static readonly string BotScope = "https://api.botframework.com/.default";
+    public static readonly string DefaultBotScope = "https://api.botframework.com/.default";
     public static readonly string GraphScope = "https://graph.microsoft.com/.default";
+    public string BotScope { get; set; } = DefaultBotScope;
 
     public BotTokenClient() : this(default)
     {

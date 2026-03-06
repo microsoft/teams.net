@@ -491,3 +491,7 @@ $RECYCLE.BIN/
 
 # Claude local settings
 .claude/settings.local.json
+
+# Claude session and private files
+session-context.md
+*-private.md
