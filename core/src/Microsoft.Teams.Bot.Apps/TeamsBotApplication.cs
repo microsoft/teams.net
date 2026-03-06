@@ -3,8 +3,9 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps.Routing;
+using Microsoft.Teams.Bot.Apps.Api;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 
@@ -16,6 +17,7 @@ namespace Microsoft.Teams.Bot.Apps;
 public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsApiClient;
+    private TeamsApi? _api;
 
     /// <summary>
     /// Gets the router for dispatching Teams activities to registered routes.
@@ -27,6 +29,24 @@ public class TeamsBotApplication : BotApplication
     /// </summary>
     public TeamsApiClient TeamsApiClient => _teamsApiClient;
 
+    /// <summary>
+    /// Gets the hierarchical API facade for Teams operations.
+    /// </summary>
+    /// <remarks>
+    /// This property provides a structured API for accessing Teams operations through a hierarchy:
+    /// <list type="bullet">
+    /// <item><c>Api.Conversations.Activities</c> - Activity operations (send, update, delete)</item>
+    /// <item><c>Api.Conversations.Members</c> - Member operations (get, delete)</item>
+    /// <item><c>Api.Users.Token</c> - User token operations (OAuth SSO, sign-in resources)</item>
+    /// <item><c>Api.Teams</c> - Team operations (get details, channels)</item>
+    /// <item><c>Api.Meetings</c> - Meeting operations (get info, participant, notifications)</item>
+    /// <item><c>Api.Batch</c> - Batch messaging operations</item>
+    /// </list>
+    /// </remarks>
+    public TeamsApi Api => _api ??= new TeamsApi(
+        ConversationClient,
+        UserTokenClient,
+        _teamsApiClient);
 
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>

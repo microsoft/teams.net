@@ -129,9 +129,19 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     string replyText = $"You sent: `{context.Activity.Text}` in activity of type `{context.Activity.Type}`.";
 
     MessageActivity reply = new(replyText);
+    
     reply.AddMention(context.Activity.From!);
 
-    await context.SendActivityAsync(reply, cancellationToken);
+    ArgumentNullException.ThrowIfNull(context.Activity.From);
+
+    TeamsActivity ta = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText(replyText)
+        .WithRecipient(context.Activity.From, true)
+        .AddMention(context.Activity.From)
+        .Build();
+
+    await context.SendActivityAsync(ta, cancellationToken);
 
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.FeedbackCardObj)

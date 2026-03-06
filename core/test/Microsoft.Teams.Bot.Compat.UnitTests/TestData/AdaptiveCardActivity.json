@@ -1,5 +1,6 @@
 {
   "type": "message",
+  "isTargeted": false,
   "serviceUrl": "https://smba.trafficmanager.net/amer/1a2b3c4d-5e6f-4789-a0b1-c2d3e4f5a6b7/",
   "channelId": "msteams",
   "from": {

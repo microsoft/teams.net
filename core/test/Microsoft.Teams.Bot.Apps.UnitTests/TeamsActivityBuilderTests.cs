@@ -136,10 +136,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithConversation_SetsConversationInfo()
     {
-        Conversation baseConversation = new()
-        {
-            Id = "conversation-id"
-        };
+        Conversation baseConversation = new Conversation("conversation-id");
 
         Assert.NotNull(baseConversation);
         baseConversation.Properties.Add("tenantId", "tenant-123");
@@ -660,7 +657,7 @@ public class TeamsActivityBuilderTests
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
 
-        Assert.NotNull(result.Recipient);
+        Assert.NotNull(result.From);
     }
 
     [Fact]
