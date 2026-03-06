@@ -1,0 +1,6 @@
+<Project>
+	<PropertyGroup>
+		<NuGetAuditMode>all</NuGetAuditMode>
+		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+	</PropertyGroup>
+</Project>
