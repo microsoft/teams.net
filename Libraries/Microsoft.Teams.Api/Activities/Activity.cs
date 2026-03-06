@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -146,6 +147,7 @@ public partial class Activity : IActivity
     public ChannelData? ChannelData { get; set; }
 
     [JsonIgnore]
+    [Experimental("TEAMS0002")]
     public bool IsTargeted { get; set; }
 
     [JsonExtensionData]
@@ -226,13 +228,18 @@ public partial class Activity : IActivity
 
     public virtual Activity WithRecipient(Account value)
     {
+        #pragma warning disable TEAMS0002
         return WithRecipient(value, false);
+        #pragma warning restore TEAMS0002
     }
 
+    [Experimental("TEAMS0002")]
     public virtual Activity WithRecipient(Account value, bool isTargeted)
     {
         Recipient = value;
+        #pragma warning disable TEAMS0002
         IsTargeted = isTargeted;
+        #pragma warning restore TEAMS0002
         return this;
     }
 
@@ -423,10 +430,12 @@ public partial class Activity : IActivity
         LocalTimestamp ??= from.LocalTimestamp;
         AddEntity(from.Entities?.ToArray() ?? []);
 
+        #pragma warning disable TEAMS0002
         if (from.IsTargeted)
         {
             IsTargeted = true;
         }
+        #pragma warning restore TEAMS0002
 
         if (from.ChannelData is not null)
         {
