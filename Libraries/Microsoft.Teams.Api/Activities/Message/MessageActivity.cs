@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Api.Entities;
@@ -63,7 +64,7 @@ public class MessageActivity : Activity
     [JsonPropertyName("value")]
     [JsonPropertyOrder(43)]
     public object? Value { get; set; }
-        
+
     [JsonIgnore]
     public bool IsRecipientMentioned
     {
@@ -151,10 +152,13 @@ public class MessageActivity : Activity
         return (MessageActivity)base.WithRecipient(value);
     }
 
+    [Experimental("TEAMS0002")]
+    #pragma warning disable TEAMS0002
     public override MessageActivity WithRecipient(Account value, bool isTargeted = false)
     {
         return (MessageActivity)base.WithRecipient(value, isTargeted);
     }
+    #pragma warning restore TEAMS0002
 
     public MessageActivity AddAttachment(params Attachment[] value)
     {
