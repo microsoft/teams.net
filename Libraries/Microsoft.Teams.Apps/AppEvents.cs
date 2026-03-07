@@ -27,9 +27,8 @@ public partial class App
             }
         }
 
-        foreach (var plugin in Plugins)
+        foreach (var plugin in Plugins.Where(p => !ReferenceEquals(sender, p)))
         {
-            if (sender.Equals(plugin)) continue;
             await plugin.OnError(this, sender, @event, cancellationToken);
         }
     }
@@ -44,9 +43,8 @@ public partial class App
     {
         Logger.Debug(EventType.ActivitySent);
 
-        foreach (var plugin in Plugins)
+        foreach (var plugin in Plugins.Where(p => !ReferenceEquals(sender, p)))
         {
-            if (sender.Equals(plugin)) continue;
             await plugin.OnActivitySent(this, sender, @event, cancellationToken);
         }
     }
@@ -55,9 +53,8 @@ public partial class App
     {
         Logger.Debug(EventType.ActivityResponse);
 
-        foreach (var plugin in Plugins)
+        foreach (var plugin in Plugins.Where(p => !ReferenceEquals(sender, p)))
         {
-            if (sender.Equals(plugin)) continue;
             await plugin.OnActivityResponse(this, sender, @event, cancellationToken);
         }
     }
