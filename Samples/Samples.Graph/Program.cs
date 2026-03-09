@@ -79,7 +79,7 @@ teams.OnSignInFailure(async (context, cancellationToken) =>
 {
     var failure = context.Activity.Value;
     context.Log.Error($"sign-in failed: {failure?.Code} - {failure?.Message}");
-    await context.Send("sign-in failed. please contact your admin.", cancellationToken);
+    await context.Send("Sign-in failed.", cancellationToken);
 });
 
 app.Run();
