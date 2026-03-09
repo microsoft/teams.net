@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -52,7 +51,7 @@ public class TeamsConversation : Conversation
         {
             return null;
         }
-        TeamsConversation result = new TeamsConversation();
+        TeamsConversation result = new();
         result.Id = conversation.Id;
         if (conversation.Properties == null)
         {

@@ -1,6 +1,5 @@
-// <copyright file="Program.cs" company="Microsoft">
-// Copyright (c) Microsoft. All rights reserved.
-// </copyright>
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
@@ -9,7 +8,7 @@ using PABot;
 using PABot.Bots;
 using PABot.Dialogs;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Register all the keyed services (ConversationClient, UserTokenClient, TeamsApiClient, TeamsBotApplication)
 builder.Services.AddTeamsBotApplications();
@@ -47,11 +46,11 @@ builder.Services.AddSingleton<MainDialog>();
 builder.Services.AddKeyedTransient<IBot, TeamsBot<MainDialog>>("TeamsBot");
 builder.Services.AddKeyedTransient<IBot, EchoBot>("EchoBot");
 
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 // Get the keyed adapters
-var adapterOne = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("AdapterOne");
-var adapterTwo = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("AdapterTwo");
+IBotFrameworkHttpAdapter adapterOne = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("AdapterOne");
+IBotFrameworkHttpAdapter adapterTwo = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("AdapterTwo");
 
 // Map endpoints with their respective adapters and authorization policies
 app.MapPost("/api/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("EchoBot")] IBot bot, CancellationToken ct) =>

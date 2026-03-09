@@ -3,7 +3,6 @@
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
-using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Bot.Apps;
@@ -47,12 +46,12 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
 
         await SendUpdateDeleteActivityAsync(turnContext, teamsBotApp.ConversationClient, cancellationToken);
 
-        var attachment = new Attachment
+        Attachment attachment = new()
         {
             ContentType = "application/vnd.microsoft.card.adaptive",
             Content = Cards.FeedbackCardObj
         };
-        var attachmentReply = MessageFactory.Attachment(attachment);
+        IMessageActivity attachmentReply = MessageFactory.Attachment(attachment);
         await turnContext.SendActivityAsync(attachmentReply, cancellationToken);
 
     }
@@ -78,23 +77,23 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
     protected override async Task<Microsoft.Bot.Builder.InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
     {
         logger.LogInformation("Invoke Activity received: {Name}", turnContext.Activity.Name);
-        var actionValue = JObject.FromObject(turnContext.Activity.Value);
-        var action = actionValue["action"] as JObject;
-        var actionData = action?["data"] as JObject;
-        var userInput = actionData?["feedback"]?.ToString();
+        JObject actionValue = JObject.FromObject(turnContext.Activity.Value);
+        JObject? action = actionValue["action"] as JObject;
+        JObject? actionData = action?["data"] as JObject;
+        string? userInput = actionData?["feedback"]?.ToString();
         //var userInput = actionValue["userInput"]?.ToString();
 
         logger.LogInformation("Action: {Action}, User Input: {UserInput}", action, userInput);
 
 
 
-        var attachment = new Attachment
+        Attachment attachment = new()
         {
             ContentType = "application/vnd.microsoft.card.adaptive",
             Content = Cards.ResponseCard(userInput)
         };
 
-        var card = MessageFactory.Attachment(attachment);
+        IMessageActivity card = MessageFactory.Attachment(attachment);
         await turnContext.SendActivityAsync(card, cancellationToken);
 
         return new Microsoft.Bot.Builder.InvokeResponse
@@ -123,14 +122,14 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
 
     private static async Task SendUpdateDeleteActivityAsync(ITurnContext<IMessageActivity> turnContext, ConversationClient conversationClient, CancellationToken cancellationToken)
     {
-        var cr = turnContext.Activity.GetConversationReference();
+        ConversationReference cr = turnContext.Activity.GetConversationReference();
         Activity reply = (Activity)Activity.CreateMessageActivity();
         reply.ApplyConversationReference(cr, isIncoming: false);
         reply.Text = "This is a proactive message sent using the Conversations API.";
 
         CoreActivity ca = reply.FromCompatActivity();
 
-        var res = await conversationClient.SendActivityAsync(ca, null, cancellationToken);
+        SendActivityResponse res = await conversationClient.SendActivityAsync(ca, null, cancellationToken);
 
         await Task.Delay(2000, cancellationToken);
 

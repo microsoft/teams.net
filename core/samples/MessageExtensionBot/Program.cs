@@ -7,8 +7,11 @@ using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 
-var builder = TeamsBotApplication.CreateBuilder(args);
-var bot = builder.Build();
+WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
+webAppBuilder.Services.AddTeamsBotApplication();
+WebApplication webApp = webAppBuilder.Build();
+
+TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 
 // ==================== MESSAGE EXTENSION QUERY ====================
 bot.OnQuery(async (context, cancellationToken) =>
@@ -30,7 +33,7 @@ bot.OnQuery(async (context, cancellationToken) =>
     }
 
     // Create results with tap actions to trigger OnSelectItem
-    var cards = Cards.CreateQueryResultCards(searchText);
+    object[] cards = Cards.CreateQueryResultCards(searchText);
     TeamsAttachment[] attachments = [.. cards.Select(card => TeamsAttachment.CreateBuilder().WithContent(card)
         .WithContentType(AttachmentContentType.ThumbnailCard).Build())];
 
@@ -46,13 +49,13 @@ bot.OnSelectItem(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnSelectItem");
 
-    var selectedItem = context.Activity.Value;
-    var itemData = selectedItem as JsonElement?;
-    string? itemId = itemData.Value.TryGetProperty("itemId", out var id) ? id.GetString() : "unknown";
-    string? title = itemData.Value.TryGetProperty("title", out var t) ? t.GetString() : "Selected Item";
-    string? description = itemData.Value.TryGetProperty("description", out var d) ? d.GetString() : "No description";
+    JsonElement selectedItem = context.Activity.Value;
+    JsonElement? itemData = selectedItem;
+    string? itemId = itemData.Value.TryGetProperty("itemId", out JsonElement id) ? id.GetString() : "unknown";
+    string? title = itemData.Value.TryGetProperty("title", out JsonElement t) ? t.GetString() : "Selected Item";
+    string? description = itemData.Value.TryGetProperty("description", out JsonElement d) ? d.GetString() : "No description";
 
-    var card = Cards.CreateSelectItemCard(itemId, title, description);
+    object card = Cards.CreateSelectItemCard(itemId, title, description);
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(card).Build();
 
     return MessageExtensionResponse.CreateBuilder()
@@ -69,7 +72,7 @@ bot.OnFetchTask(async (context, cancellationToken) =>
 
     MessageExtensionAction? action = context.Activity.Value;
 
-    var fetchTaskCard = Cards.CreateFetchTaskCard(action?.CommandId ?? "unknown");
+    object fetchTaskCard = Cards.CreateFetchTaskCard(action?.CommandId ?? "unknown");
     TeamsAttachment fetchTaskCardResponse = TeamsAttachment.CreateBuilder()
         .WithAdaptiveCard(fetchTaskCard).Build();
     return MessageExtensionActionResponse.CreateBuilder()
@@ -81,18 +84,18 @@ bot.OnFetchTask(async (context, cancellationToken) =>
 });
 
 // Helper: Extract title and description from preview card
-(string?, string?) GetDataFromPreview(TeamsActivity? preview)
+static (string?, string?) GetDataFromPreview(TeamsActivity? preview)
 {
     if (preview?.Attachments == null) return (null, null);
 
-    var cardData = JsonSerializer.Deserialize<JsonElement>(
+    JsonElement cardData = JsonSerializer.Deserialize<JsonElement>(
         JsonSerializer.Serialize(preview.Attachments[0].Content));
 
-    if (!cardData.TryGetProperty("body", out var body) || body.ValueKind != JsonValueKind.Array)
+    if (!cardData.TryGetProperty("body", out JsonElement body) || body.ValueKind != JsonValueKind.Array)
         return (null, null);
 
-    var title = body.GetArrayLength() > 0 && body[0].TryGetProperty("text", out var t) ? t.GetString() : null;
-    var description = body.GetArrayLength() > 1 && body[1].TryGetProperty("text", out var d) ? d.GetString() : null;
+    string? title = body.GetArrayLength() > 0 && body[0].TryGetProperty("text", out JsonElement t) ? t.GetString() : null;
+    string? description = body.GetArrayLength() > 1 && body[1].TryGetProperty("text", out JsonElement d) ? d.GetString() : null;
 
     return (title, description);
 }
@@ -109,9 +112,9 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     if (action?.BotMessagePreviewAction == "edit")
     {
         Console.WriteLine("Handling EDIT action - returning to form");
-        var (previewTitle, previewDescription) = GetDataFromPreview(action.BotActivityPreview?.FirstOrDefault());
+        (string? previewTitle, string? previewDescription) = GetDataFromPreview(action.BotActivityPreview?.FirstOrDefault());
 
-        var editFormCard = Cards.CreateEditFormCard(previewTitle, previewDescription);
+        object editFormCard = Cards.CreateEditFormCard(previewTitle, previewDescription);
         TeamsAttachment editFormCardResponse = TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(editFormCard).Build();
         return MessageExtensionActionResponse.CreateBuilder()
@@ -127,9 +130,9 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     if (action?.BotMessagePreviewAction == "send")
     {
         Console.WriteLine("Handling SEND action - finalizing card");
-        var (previewTitle, previewDescription) = GetDataFromPreview(action.BotActivityPreview?.FirstOrDefault());
+        (string? previewTitle, string? previewDescription) = GetDataFromPreview(action.BotActivityPreview?.FirstOrDefault());
 
-        var card = Cards.CreateSubmitActionCard(previewTitle, previewDescription);
+        object card = Cards.CreateSubmitActionCard(previewTitle, previewDescription);
         TeamsAttachment attachment2 = TeamsAttachment.CreateBuilder().WithAdaptiveCard(card).Build();
 
         return MessageExtensionActionResponse.CreateBuilder()
@@ -141,11 +144,11 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     }
 
 
-    var data = action?.Data as JsonElement?;
-    string? title = data != null && data.Value.TryGetProperty("title", out var t) ? t.GetString() : "Untitled";
-    string? description = data != null && data.Value.TryGetProperty("description", out var d) ? d.GetString() : "No description";
+    JsonElement? data = action?.Data as JsonElement?;
+    string? title = data != null && data.Value.TryGetProperty("title", out JsonElement t) ? t.GetString() : "Untitled";
+    string? description = data != null && data.Value.TryGetProperty("description", out JsonElement d) ? d.GetString() : "No description";
 
-    var previewCard = Cards.CreateSubmitActionCard(title, description);
+    object previewCard = Cards.CreateSubmitActionCard(title, description);
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(previewCard).Build();
 
     return MessageExtensionActionResponse.CreateBuilder()
@@ -163,7 +166,7 @@ bot.OnQueryLink(async (context, cancellationToken) =>
 
     MessageExtensionQueryLink? queryLink = context.Activity.Value;
 
-    var card = Cards.CreateLinkUnfurlCard(queryLink?.Url?.ToString());
+    object card = Cards.CreateLinkUnfurlCard(queryLink?.Url?.ToString());
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
 
@@ -186,7 +189,7 @@ bot.OnAnonQueryLink(async (context, cancellationToken) =>
         Console.WriteLine($"  URL: '{anonQueryLink.Url}'");
     }
 
-    var card = Cards.CreateLinkUnfurlCard(anonQueryLink?.Url?.ToString());
+    object card = Cards.CreateLinkUnfurlCard(anonQueryLink?.Url?.ToString());
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
 
@@ -203,7 +206,7 @@ bot.OnQuerySettingUrl(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnQuerySettingUrl");
 
-    var query = context.Activity.Value;
+    MessageExtensionQuery? query = context.Activity.Value;
 
     var action = new
     {
@@ -257,4 +260,4 @@ bot.OnSetting(async (context, cancellationToken) =>
 });
 */
 
-bot.Run();
+webApp.Run();

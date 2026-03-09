@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Nodes;
-using Microsoft.Teams.Bot.Apps.Schema;
 
 namespace AllInvokesBot;
 

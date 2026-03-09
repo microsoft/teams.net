@@ -55,8 +55,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
         /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
         /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
-        // TODO : Rename to AddBotAuthorization 
-        public static AuthorizationBuilder AddAuthorization(this IServiceCollection services, ILogger? logger = null, string aadSectionName = "AzureAd")
+        public static AuthorizationBuilder AddBotAuthorization(this IServiceCollection services, ILogger? logger = null, string aadSectionName = "AzureAd")
         {
             logger ??= NullLogger.Instance;
 
@@ -77,7 +76,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             if (issuer.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase))
                 return issuer;
 
-            // Entra tokens — bot-to-bot (agent) and user (tab/API)
+            // Entra tokens � bot-to-bot (agent) and user (tab/API)
             // Use the token's own tid claim for multi-tenant; fall back to configured tenant
             (_, string? tid) = GetTokenClaims(token);
             string? effectiveTenant = string.IsNullOrEmpty(configuredTenantId) ? tid : configuredTenantId;

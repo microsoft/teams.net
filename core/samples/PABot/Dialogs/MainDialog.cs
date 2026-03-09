@@ -1,17 +1,10 @@
-// <copyright file="MainDialog.cs" company="Microsoft">
-// Copyright (c) Microsoft. All rights reserved.
-// </copyright>
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
-using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
+using Microsoft.Graph.Models;
 
 namespace PABot.Dialogs
 {
@@ -77,24 +70,24 @@ namespace PABot.Dialogs
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task<DialogTurnResult> LoginStepAsync(WaterfallStepContext stepContext, CancellationToken cancellationToken)
         {
-            var tokenResponse = (TokenResponse)stepContext.Result;
+            TokenResponse tokenResponse = (TokenResponse)stepContext.Result;
             if (tokenResponse?.Token != null)
             {
                 try
                 {
-                    var client = new SimpleGraphClient(tokenResponse.Token);
-                    var me = await client.GetMeAsync();
-                    var title = !string.IsNullOrEmpty(me.JobTitle) ? me.JobTitle : "Unknown";
+                    SimpleGraphClient client = new(tokenResponse.Token);
+                    User me = await client.GetMeAsync();
+                    string title = !string.IsNullOrEmpty(me.JobTitle) ? me.JobTitle : "Unknown";
 
                     await stepContext.Context.SendActivityAsync($"You're logged in as {me.DisplayName} ({me.UserPrincipalName}); your job title is: {title}");
 
-                    var photo = await client.GetPhotoAsync();
+                    string photo = await client.GetPhotoAsync();
 
                     if (!string.IsNullOrEmpty(photo))
                     {
-                        var cardImage = new CardImage(photo);
-                        var card = new ThumbnailCard(images: new List<CardImage> { cardImage });
-                        var reply = MessageFactory.Attachment(card.ToAttachment());
+                        CardImage cardImage = new(photo);
+                        ThumbnailCard card = new(images: new List<CardImage> { cardImage });
+                        IMessageActivity reply = MessageFactory.Attachment(card.ToAttachment());
 
                         await stepContext.Context.SendActivityAsync(reply, cancellationToken);
                     }
@@ -134,7 +127,7 @@ namespace PABot.Dialogs
 
             await stepContext.Context.SendActivityAsync(MessageFactory.Text("Thank you."), cancellationToken);
 
-            var result = (bool)stepContext.Result;
+            bool result = (bool)stepContext.Result;
             if (result)
             {
                 return await stepContext.BeginDialogAsync(nameof(OAuthPrompt), cancellationToken: cancellationToken);
@@ -153,7 +146,7 @@ namespace PABot.Dialogs
         {
             _logger.LogInformation("DisplayTokenPhase2Async() method called.");
 
-            var tokenResponse = (TokenResponse)stepContext.Result;
+            TokenResponse tokenResponse = (TokenResponse)stepContext.Result;
             if (tokenResponse != null)
             {
                 await stepContext.Context.SendActivityAsync(MessageFactory.Text($"Here is your token: {tokenResponse.Token}"), cancellationToken);
