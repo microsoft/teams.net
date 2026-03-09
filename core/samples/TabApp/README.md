@@ -19,7 +19,7 @@ A sample demonstrating a React/Vite tab served by the bot, with server functions
 Under **Expose an API → Application ID URI**, set it to:
 
 ```
-api://{YOUR_DOMAIN}/{YOUR_CLIENT_ID}
+api://{YOUR_CLIENT_ID}
 ```
 
 Then add a scope named `access_as_user` and pre-authorize the Teams client IDs:
@@ -35,6 +35,10 @@ Under **Authentication → Add a platform → Single-page application**, add:
 
 ```
 https://{YOUR_DOMAIN}/tabs/test
+```
+and
+```
+brk-multihub://{your_domain}
 ```
 
 ### 3. API permissions
@@ -55,7 +59,7 @@ Under **API permissions → Add a permission → Microsoft Graph → Delegated**
 ```json
 "webApplicationInfo": {
   "id": "{YOUR_CLIENT_ID}",
-  "resource": "api://{YOUR_DOMAIN}/{YOUR_CLIENT_ID}"
+  "resource": "api://{YOUR_CLIENT_ID}"
 }
 ```
 
@@ -86,7 +90,7 @@ Under **API permissions → Add a permission → Microsoft Graph → Delegated**
 "AzureAd__ClientCredentials__0__ClientSecret": "{YOUR_CLIENT_SECRET}"
 ```
 
-**`Web/.env.local`**:
+**`Web/.env`**:
 
 ```
 VITE_CLIENT_ID={YOUR_CLIENT_ID}

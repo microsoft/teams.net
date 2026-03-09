@@ -23,7 +23,6 @@ namespace Microsoft.Teams.Bot.Core.Hosting
     /// </summary>
     public static class JwtExtensions
     {
-        internal const string TeamsScheme = "TeamsScheme";
         internal const string BotOIDC = "https://login.botframework.com/v1/.well-known/openid-configuration";
         internal const string EntraOIDC = "https://login.microsoftonline.com/";
 
@@ -44,8 +43,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
 
             BotConfig botConfig = BotConfig.Resolve(configuration, aadSectionName);
 
-            string schemeName = $"{TeamsScheme}_{aadSectionName}";
-            builder.AddTeamsJwtBearer(schemeName, botConfig.ClientId, botConfig.TenantId, logger);
+            builder.AddTeamsJwtBearer(aadSectionName, botConfig.ClientId, botConfig.TenantId, logger);
 
             return builder;
         }
@@ -68,7 +66,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                 .AddAuthorizationBuilder()
                 .AddDefaultPolicy(aadSectionName, policy =>
                 {
-                    policy.AuthenticationSchemes.Add($"{TeamsScheme}_{aadSectionName}");
+                    policy.AuthenticationSchemes.Add(aadSectionName);
                     policy.RequireAuthenticatedUser();
                 });
         }
@@ -106,13 +104,13 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             {
                 jwtOptions.SaveToken = true;
                 jwtOptions.IncludeErrorDetails = true;
-                jwtOptions.Audience = audience;
                 jwtOptions.TokenValidationParameters = new TokenValidationParameters
                 {
                     ValidateIssuerSigningKey = true,
                     RequireSignedTokens = true,
                     ValidateIssuer = true,
                     ValidateAudience = true,
+                    ValidAudiences = [audience, $"api://{audience}"],
                     IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId),
                     IssuerSigningKeyResolver = (_, securityToken, _, _) =>
                     {
@@ -151,7 +149,10 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     {
                         ILogger log = GetLogger(context.HttpContext, logger);
 
-                        string? tokenIssuer = null, tokenAudience = null, tokenExpiration = null, tokenSubject = null;
+                        string? tokenIssuer = null;
+                        string? tokenAudience = null;
+                        string? tokenExpiration = null;
+                        string? tokenSubject = null;
                         string authHeader = context.Request.Headers.Authorization.ToString();
                         if (authHeader.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
                         {
@@ -167,6 +168,9 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                         }
 
                         TokenValidationParameters? validationParams = context.Options?.TokenValidationParameters;
+                        string expectedAudiences = validationParams?.ValidAudiences is not null
+                            ? string.Join(", ", validationParams.ValidAudiences)
+                            : validationParams?.ValidAudience ?? "n/a";
                         log.LogError(context.Exception,
                             "JWT authentication failed for scheme {Scheme}: {ExceptionMessage} | " +
                             "token iss={TokenIssuer} aud={TokenAudience} exp={TokenExpiration} sub={TokenSubject} | " +
@@ -177,7 +181,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                             tokenAudience ?? "n/a",
                             tokenExpiration ?? "n/a",
                             tokenSubject ?? "n/a",
-                            validationParams?.ValidAudience ?? "n/a");
+                            expectedAudiences);
 
                         return Task.CompletedTask;
                     }
