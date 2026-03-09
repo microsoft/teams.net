@@ -10,7 +10,7 @@ using Microsoft.Teams.Bot.Core.Hosting;
 using TabApp;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
-builder.Services.AddAuthorization(logger: null);
+builder.Services.AddBotAuthorization();
 builder.Services.AddConversationClient();
 WebApplication app = builder.Build();
 
