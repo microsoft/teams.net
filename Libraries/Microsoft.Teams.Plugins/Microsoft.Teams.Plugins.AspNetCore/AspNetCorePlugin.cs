@@ -93,7 +93,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
         // For targeted messages with an explicit Recipient (proactive sends), preserve it.
         // Otherwise, use the reference User from the conversation context.
-        #pragma warning disable TEAMS0002
+        #pragma warning disable ExperimentalTeamsTargeted
         var isTargetedWithRecipient = activity is MessageActivity msg && msg.IsTargeted == true && msg.Recipient is not null;
         if (!isTargetedWithRecipient)
         {
@@ -126,7 +126,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         var res = isTargeted
             ? await client.Conversations.Activities.CreateTargetedAsync(reference.Conversation.Id, activity)
             : await client.Conversations.Activities.CreateAsync(reference.Conversation.Id, activity);
-        #pragma warning restore TEAMS0002
+        #pragma warning restore ExperimentalTeamsTargeted
 
         activity.Id = res?.Id;
         return activity;

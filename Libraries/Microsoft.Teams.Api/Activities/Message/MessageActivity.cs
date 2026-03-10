@@ -152,13 +152,13 @@ public class MessageActivity : Activity
         return (MessageActivity)base.WithRecipient(value);
     }
 
-    [Experimental("TEAMS0002")]
-    #pragma warning disable TEAMS0002
+    [Experimental("ExperimentalTeamsTargeted")]
+    #pragma warning disable ExperimentalTeamsTargeted
     public override MessageActivity WithRecipient(Account value, bool isTargeted = false)
     {
         return (MessageActivity)base.WithRecipient(value, isTargeted);
     }
-    #pragma warning restore TEAMS0002
+    #pragma warning restore ExperimentalTeamsTargeted
 
     public MessageActivity AddAttachment(params Attachment[] value)
     {

@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Api.Messages;
 /// <summary>
 /// The type of reaction given to the message.
 /// </summary>
-[Experimental("TEAMS0001")]
+[Experimental("ExperimentalTeamsReactions")]
 [JsonConverter(typeof(JsonConverter<ReactionType>))]
 public class ReactionType(string value) : StringEnum(value)
 {
@@ -55,7 +55,7 @@ public class ReactionType(string value) : StringEnum(value)
 /// <summary>
 /// Message Reaction
 /// </summary>
-[Experimental("TEAMS0001")]
+[Experimental("ExperimentalTeamsReactions")]
 public class Reaction
 {
     /// <summary>

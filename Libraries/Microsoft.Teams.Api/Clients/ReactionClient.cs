@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Api.Clients;
 /// <summary>
 /// Client for working with app message reactions for a given conversation/activity.
 /// </summary>
-[Experimental("TEAMS0001")]
+[Experimental("ExperimentalTeamsReactions")]
 public class ReactionClient : Client
 {
     public readonly string ServiceUrl;
