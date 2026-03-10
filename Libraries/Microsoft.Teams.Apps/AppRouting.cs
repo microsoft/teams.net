@@ -198,7 +198,7 @@ public partial class App
     /// <item><term>interactionrequired</term><description>User interaction is required (handled via OAuth card fallback, does not typically reach the bot).</description></item>
     /// </list>
     /// </summary>
-    protected async Task<object?> OnFailureActivity(IContext<Api.Activities.Invokes.SignIn.FailureActivity> context)
+    protected async Task<object?> OnSignInFailureActivity(IContext<Api.Activities.Invokes.SignIn.FailureActivity> context)
     {
         var failure = context.Activity.Value;
 
