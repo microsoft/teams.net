@@ -556,4 +556,42 @@ public class AdaptiveCardsTest
         Assert.Equal("Learn More", action.Title);
         Assert.Equal("https://adaptivecards.microsoft.com", action.Url);
     }
+
+    [Fact]
+    public void Should_Default_Version_To_1_5()
+    {
+        var card = new AdaptiveCard(new List<CardElement>
+        {
+            new TextBlock("Hello")
+        });
+
+        Assert.Equal("1.5", card.Version);
+    }
+
+    [Fact]
+    public void Should_Include_Version_In_Serialized_Json()
+    {
+        var card = new AdaptiveCard(new List<CardElement>
+        {
+            new TextBlock("Hello")
+        });
+
+        var json = JsonSerializer.Serialize(card);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        Assert.True(root.TryGetProperty("version", out var versionElement));
+        Assert.Equal("1.5", versionElement.GetString());
+    }
+
+    [Fact]
+    public void Should_Allow_Overriding_Version()
+    {
+        var card = new AdaptiveCard(new List<CardElement>
+        {
+            new TextBlock("Hello")
+        }).WithVersion(Version.Version1_4);
+
+        Assert.Equal("1.4", card.Version);
+    }
 }

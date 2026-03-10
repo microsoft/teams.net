@@ -1078,9 +1078,10 @@ public class AdaptiveCard : CardElement
 
     /// <summary>
     /// The Adaptive Card schema version the card is authored against.
+    /// Defaults to <see cref="Cards.Version.Version1_5"/>. The version field is required for Adaptive Cards to render on Teams mobile clients.
     /// </summary>
     [JsonPropertyName("version")]
-    public Version? Version { get; set; }
+    public Version? Version { get; set; } = Version.Version1_5;
 
     /// <summary>
     /// The text that should be displayed if the client is not able to render the card.
