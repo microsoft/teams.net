@@ -89,7 +89,7 @@ public class BotApplicationTests
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
         bool middlewareCalled = false;
-        Mock<ITurnMiddleWare> mockMiddleware = new();
+        Mock<ITurnMiddleware> mockMiddleware = new();
         mockMiddleware
             .Setup(m => m.OnTurnAsync(It.IsAny<BotApplication>(), It.IsAny<CoreActivity>(), It.IsAny<NextTurn>(), It.IsAny<CancellationToken>()))
             .Callback<BotApplication, CoreActivity, NextTurn, CancellationToken>(async (app, act, next, ct) =>
@@ -99,7 +99,7 @@ public class BotApplicationTests
             })
             .Returns(Task.CompletedTask);
 
-        botApp.Use(mockMiddleware.Object);
+        botApp.UseMiddleware(mockMiddleware.Object);
 
         bool onActivityCalled = false;
         botApp.OnActivity = (act, ct) =>
@@ -146,9 +146,9 @@ public class BotApplicationTests
     {
         BotApplication botApp = CreateBotApplication();
 
-        Mock<ITurnMiddleWare> mockMiddleware = new();
+        Mock<ITurnMiddleware> mockMiddleware = new();
 
-        ITurnMiddleWare result = botApp.Use(mockMiddleware.Object);
+        ITurnMiddleware result = botApp.UseMiddleware(mockMiddleware.Object);
 
         Assert.NotNull(result);
     }
@@ -182,7 +182,7 @@ public class BotApplicationTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        var result = await botApp.SendActivityAsync(activity);
+        SendActivityResponse? result = await botApp.SendActivityAsync(activity);
 
         Assert.NotNull(result);
         Assert.Contains("activity123", result.Id);

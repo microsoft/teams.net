@@ -38,7 +38,7 @@ public class ConversationClientTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        var result = await conversationClient.SendActivityAsync(activity);
+        SendActivityResponse result = await conversationClient.SendActivityAsync(activity);
 
         Assert.NotNull(result);
         Assert.Contains("activity123", result.Id);

@@ -1,14 +1,6 @@
-// <copyright file="SimpleGraphClient.cs" company="Microsoft">
-// Copyright (c) Microsoft. All rights reserved.
-// </copyright>
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http.Headers;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.Graph;
 using Microsoft.Graph.Me.SendMail;
 using Microsoft.Graph.Models;
@@ -63,11 +55,10 @@ namespace PABot
                 throw new ArgumentNullException(nameof(content));
             }
 
-            var graphClient = GetAuthenticatedClient();
-            var recipients = new List<Recipient>
-                {
-                    new Recipient
-                    {
+            GraphServiceClient graphClient = GetAuthenticatedClient();
+            List<Recipient> recipients = new()
+            {
+                    new() {
                         EmailAddress = new EmailAddress
                         {
                             Address = toAddress,
@@ -76,7 +67,7 @@ namespace PABot
                 };
 
             // Create the message.
-            var email = new Message
+            Message email = new()
             {
                 Body = new ItemBody
                 {
@@ -97,8 +88,8 @@ namespace PABot
         /// <returns>An array of recent messages.</returns>
         public async Task<Message[]> GetRecentMailAsync()
         {
-            var graphClient = GetAuthenticatedClient();
-            var messages = await graphClient.Me.MailFolders["inbox"].Messages.GetAsync();
+            GraphServiceClient graphClient = GetAuthenticatedClient();
+            MessageCollectionResponse? messages = await graphClient.Me.MailFolders["inbox"].Messages.GetAsync();
 
             return messages?.Value?.Take(5).ToArray()!;
         }
@@ -109,8 +100,8 @@ namespace PABot
         /// <returns>The user information.</returns>
         public async Task<User> GetMeAsync()
         {
-            var graphClient = GetAuthenticatedClient();
-            var me = await graphClient.Me.GetAsync();
+            GraphServiceClient graphClient = GetAuthenticatedClient();
+            User? me = await graphClient.Me.GetAsync();
             return me!;
         }
 
@@ -120,13 +111,13 @@ namespace PABot
         /// <returns>The user's photo as a base64 string.</returns>
         public async Task<string> GetPhotoAsync()
         {
-            var graphClient = GetAuthenticatedClient();
-            var photo = await graphClient.Me.Photo.Content.GetAsync();
+            GraphServiceClient graphClient = GetAuthenticatedClient();
+            Stream? photo = await graphClient.Me.Photo.Content.GetAsync();
             if (photo != null)
             {
-                using var ms = new MemoryStream();
+                using MemoryStream ms = new();
                 await photo.CopyToAsync(ms);
-                var buffers = ms.ToArray();
+                byte[] buffers = ms.ToArray();
                 return $"data:image/png;base64,{Convert.ToBase64String(buffers)}";
             }
             return string.Empty;
@@ -138,9 +129,9 @@ namespace PABot
         /// <returns>The authenticated GraphServiceClient.</returns>
         private GraphServiceClient GetAuthenticatedClient()
         {
-            var tokenProvider = new SimpleAccessTokenProvider(_token);
+            SimpleAccessTokenProvider tokenProvider = new(_token);
 
-            var authProvider = new BaseBearerTokenAuthenticationProvider(tokenProvider);
+            BaseBearerTokenAuthenticationProvider authProvider = new(tokenProvider);
 
             return new GraphServiceClient(authProvider);
         }
@@ -159,7 +150,7 @@ namespace PABot
                 return Task.FromResult(_accessToken);
             }
 
-            public AllowedHostsValidator AllowedHostsValidator => new AllowedHostsValidator();
+            public AllowedHostsValidator AllowedHostsValidator => new();
         }
     }
 }

@@ -20,7 +20,7 @@ public delegate Task NextTurn(CancellationToken cancellationToken);
 /// <remarks>Implement this interface to add custom logic before or after the bot processes an activity.
 /// Middleware can perform tasks such as logging, authentication, or altering activities. Multiple middleware components
 /// can be chained together; each should call the nextTurn delegate to continue the pipeline.</remarks>
-public interface ITurnMiddleWare
+public interface ITurnMiddleware
 {
     /// <summary>
     /// Triggers the middleware to process an activity during a bot turn.

@@ -124,6 +124,13 @@ public class TeamsChannelData : ChannelData
             {
                 Source = JsonSerializer.Deserialize<TeamsChannelDataSource?>(sourceObjJE.GetRawText());
             }
+
+            if (cd.Properties.TryGetValue("feedbackLoopEnabled", out object? feedbackObj)
+                && feedbackObj is JsonElement jeFeedback
+                && jeFeedback.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                FeedbackLoopEnabled = jeFeedback.GetBoolean();
+            }
         }
     }
 
@@ -167,5 +174,10 @@ public class TeamsChannelData : ChannelData
     /// Source information for the activity.
     /// </summary>
     [JsonPropertyName("source")] public TeamsChannelDataSource? Source { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the feedback loop (thumbs up/down) is enabled for the activity.
+    /// </summary>
+    [JsonPropertyName("feedbackLoopEnabled")] public bool? FeedbackLoopEnabled { get; set; }
 
 }

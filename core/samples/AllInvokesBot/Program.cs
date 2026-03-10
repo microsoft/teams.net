@@ -2,20 +2,25 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using AllInvokesBot;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core.Hosting;
 
-var builder = TeamsBotApplication.CreateBuilder(args);
-var bot = builder.Build();
+WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
+webAppBuilder.Services.AddTeamsBotApplication();
+WebApplication webApp = webAppBuilder.Build();
+
+TeamsBotApplication bot = webApp.UseBotApplication<TeamsBotApplication>();
 
 // ==================== MESSAGE - SEND SIMPLE CARD ====================
 bot.OnMessage(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnMessage");
 
-    var card = Cards.CreateWelcomeCard();
+    JsonObject card = Cards.CreateWelcomeCard();
 
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
         .WithAdaptiveCard(card)
@@ -28,10 +33,10 @@ bot.OnMessage(async (context, cancellationToken) =>
 bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnAdaptiveCardAction");
-    var value = context.Activity.Value;
-    var action = value?.Action;
+    AdaptiveCardActionValue? value = context.Activity.Value;
+    AdaptiveCardAction? action = value?.Action;
     string? verb = action?.Verb;
-    var data = action?.Data;
+    Dictionary<string, object>? data = action?.Data;
 
     Console.WriteLine($"  Verb: {verb}");
     Console.WriteLine($"  Data: {JsonSerializer.Serialize(data)}");
@@ -39,7 +44,7 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
     // Handle file upload request
     if (verb == "requestFileUpload")
     {
-        var fileConsentCard = Cards.CreateFileConsentCard();
+        JsonObject fileConsentCard = Cards.CreateFileConsentCard();
         TeamsAttachment fileConsentCardResponse = TeamsAttachment.CreateBuilder()
             .WithContent(fileConsentCard).WithContentType(AttachmentContentType.FileConsentCard)
             .WithName("file_consent.json").Build();
@@ -48,9 +53,9 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
         return AdaptiveCardResponse.CreateMessageResponse("File Consent requested!");
     }
 
-    string? message = data != null && data.TryGetValue("message", out var msgValue) ? msgValue?.ToString() : null;
+    string? message = data != null && data.TryGetValue("message", out object? msgValue) ? msgValue?.ToString() : null;
 
-    var adaptiveActionCard = Cards.CreateAdaptiveActionResponseCard(verb, message);
+    JsonObject adaptiveActionCard = Cards.CreateAdaptiveActionResponseCard(verb, message);
     TeamsAttachment adaptiveActionCardResponse = TeamsAttachment.CreateBuilder().WithAdaptiveCard(adaptiveActionCard).Build();
     await context.SendActivityAsync(new MessageActivity([adaptiveActionCardResponse]), cancellationToken);
 
@@ -88,10 +93,10 @@ bot.OnFileConsent(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnFileConsent");
 
-    var value = context.Activity.Value;
+    FileConsentValue? value = context.Activity.Value;
     string? action = value?.Action;
-    var uploadInfo = value?.UploadInfo;
-    var consentContext = value?.Context;
+    FileUploadInfo? uploadInfo = value?.UploadInfo;
+    object? consentContext = value?.Context;
 
     if (action == "accept")
     {
@@ -110,19 +115,19 @@ bot.OnFileConsent(async (context, cancellationToken) =>
             byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(fileContent);
             int fileSize = fileBytes.Length;
 
-            using var httpClient = new HttpClient();
-            using var content = new ByteArrayContent(fileBytes);
+            using HttpClient httpClient = new();
+            using ByteArrayContent content = new(fileBytes);
             content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("application/octet-stream");
             content.Headers.ContentRange = new System.Net.Http.Headers.ContentRangeHeaderValue(0, fileSize - 1, fileSize);
 
             try
             {
-                var uploadResponse = await httpClient.PutAsync(uploadUrl, content, cancellationToken);
+                HttpResponseMessage uploadResponse = await httpClient.PutAsync(uploadUrl, content, cancellationToken);
                 Console.WriteLine($"  Upload Status: {uploadResponse.StatusCode}");
 
                 if (uploadResponse.IsSuccessStatusCode)
                 {
-                    var fileInfoContent = Cards.CreateFileInfoCard(uniqueId, uploadInfo?.FileType);
+                    JsonObject fileInfoContent = Cards.CreateFileInfoCard(uniqueId, uploadInfo?.FileType);
 
                     TeamsAttachment fileUploadResponse = TeamsAttachment.CreateBuilder()
                         .WithName(fileName)
@@ -280,4 +285,4 @@ bot.OnConfigSubmit(async (context, cancellationToken) =>
 });
 */
 
-bot.Run();
+webApp.Run();

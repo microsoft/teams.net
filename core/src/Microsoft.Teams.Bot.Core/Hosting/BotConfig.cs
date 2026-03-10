@@ -105,4 +105,28 @@ internal sealed class BotConfig
             ClientSecret = section["ClientSecret"],
         };
     }
+
+    /// <summary>
+    /// Resolves a BotConfig by trying all configuration formats in priority order:
+    /// AzureAd section, Core environment variables, then Bot Framework SDK keys.
+    /// </summary>
+    /// <param name="configuration">The application configuration.</param>
+    /// <param name="sectionName">The AAD configuration section name. Defaults to "AzureAd".</param>
+    /// <returns>The first BotConfig with a non-empty ClientId.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when no ClientId is found in any configuration format.</exception>
+    public static BotConfig Resolve(IConfiguration configuration, string sectionName = "AzureAd")
+    {
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        BotConfig config = FromAadConfig(configuration, sectionName);
+        if (!string.IsNullOrEmpty(config.ClientId)) return config;
+
+        config = FromCoreConfig(configuration);
+        if (!string.IsNullOrEmpty(config.ClientId)) return config;
+
+        config = FromBFConfig(configuration);
+        if (!string.IsNullOrEmpty(config.ClientId)) return config;
+
+        throw new InvalidOperationException("ClientID not found in configuration.");
+    }
 }

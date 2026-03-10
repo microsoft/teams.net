@@ -4,8 +4,11 @@
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 
-var builder = TeamsBotApplication.CreateBuilder(args);
-var app = builder.Build();
+WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
+webAppBuilder.Services.AddTeamsBotApplication();
+WebApplication webApp = webAppBuilder.Build();
+
+TeamsBotApplication app = webApp.UseTeamsBotApplication();
 
 
 //TODO : implement next(); 
@@ -138,4 +141,4 @@ app.OnTeamRestored(async (context, cancellationToken) =>
 });
 */
 
-app.Run();
+webApp.Run();

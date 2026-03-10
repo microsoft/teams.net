@@ -18,12 +18,12 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         public async Task ContinueConversationAsync_WhenCastToBotAdapter_BuildsTurnContextWithUnderlyingClients()
         {
             // Arrange
-            var (compatAdapter, teamsApiClient) = CreateCompatAdapter();
+            (CompatAdapter? compatAdapter, TeamsApiClient? teamsApiClient) = CreateCompatAdapter();
 
             // Cast to BotAdapter to ensure we're using the base class method
             BotAdapter botAdapter = compatAdapter;
 
-            var conversationReference = new ConversationReference
+            ConversationReference conversationReference = new()
             {
                 ServiceUrl = "https://smba.trafficmanager.net/teams",
                 ChannelId = "msteams",
@@ -71,23 +71,23 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
         private static (CompatAdapter, TeamsApiClient) CreateCompatAdapter()
         {
-            var httpClient = new HttpClient();
-            var conversationClient = new ConversationClient(httpClient, NullLogger<ConversationClient>.Instance);
+            HttpClient httpClient = new();
+            ConversationClient conversationClient = new(httpClient, NullLogger<ConversationClient>.Instance);
 
-            var mockConfig = new Mock<IConfiguration>();
+            Mock<IConfiguration> mockConfig = new();
             mockConfig.Setup(c => c["UserTokenApiEndpoint"]).Returns("https://token.botframework.com");
 
-            var userTokenClient = new UserTokenClient(httpClient, mockConfig.Object, NullLogger<UserTokenClient>.Instance);
-            var teamsApiClient = new TeamsApiClient(httpClient, NullLogger<TeamsApiClient>.Instance);
+            UserTokenClient userTokenClient = new(httpClient, mockConfig.Object, NullLogger<UserTokenClient>.Instance);
+            TeamsApiClient teamsApiClient = new(httpClient, NullLogger<TeamsApiClient>.Instance);
 
-            var teamsBotApplication = new TeamsBotApplication(
+            TeamsBotApplication teamsBotApplication = new(
                 conversationClient,
                 userTokenClient,
                 teamsApiClient,
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<TeamsBotApplication>.Instance);
 
-            var compatAdapter = new CompatAdapter(
+            CompatAdapter compatAdapter = new(
                 teamsBotApplication,
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<CompatAdapter>.Instance);
