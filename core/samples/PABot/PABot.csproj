@@ -15,4 +15,10 @@
 		<ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Compat\Microsoft.Teams.Bot.Compat.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Update="Properties\launchSettings.json">
+			<CopyToOutputDirectory>Never</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
 </Project>
