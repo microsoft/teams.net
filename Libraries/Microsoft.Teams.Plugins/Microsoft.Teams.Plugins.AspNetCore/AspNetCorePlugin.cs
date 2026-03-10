@@ -93,14 +93,14 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
         // For targeted messages with an explicit Recipient (proactive sends), preserve it.
         // Otherwise, use the reference User from the conversation context.
-        var isTargetedWithRecipient = activity is MessageActivity msg && msg.IsTargeted == true && msg.Recipient is not null;
+        var isTargetedWithRecipient = activity.Recipient?.IsTargeted == true;
         if (!isTargetedWithRecipient)
         {
             activity.Recipient = reference.User;
         }
 
         // Check if this is a targeted message
-        var isTargeted = activity is MessageActivity messageActivity && messageActivity.IsTargeted == true;
+        var isTargeted = activity.Recipient?.IsTargeted == true;
 
         if (activity.Id is not null && !activity.IsStreaming)
         {

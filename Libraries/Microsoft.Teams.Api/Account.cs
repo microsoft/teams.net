@@ -33,6 +33,10 @@ public class Account
     [JsonPropertyName("properties")]
     [JsonPropertyOrder(5)]
     public Dictionary<string, object>? Properties { get; set; }
+
+    [JsonPropertyName("isTargeted")]
+    [JsonPropertyOrder(6)]
+    public bool? IsTargeted { get; set; }
 }
 
 [JsonConverter(typeof(JsonConverter<Role>))]
