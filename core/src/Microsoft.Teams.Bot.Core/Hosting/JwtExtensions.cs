@@ -35,17 +35,8 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// <returns>An <see cref="AuthenticationBuilder"/> for further authentication configuration.</returns>
         public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, string aadSectionName = "AzureAd", ILogger? logger = null)
         {
-            AuthenticationBuilder builder = services.AddAuthentication();
-
-            ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-            IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
-                ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-
-            BotConfig botConfig = BotConfig.Resolve(configuration, aadSectionName);
-
-            builder.AddBotAuthentication(aadSectionName, botConfig.ClientId, botConfig.TenantId, logger);
-
-            return builder;
+            BotConfig botConfig = ResolveBotConfig(services, aadSectionName);
+            return services.AddBotAuthentication(aadSectionName, botConfig.ClientId, botConfig.TenantId, logger);
         }
 
         /// <summary>
@@ -101,9 +92,8 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         {
             logger ??= NullLogger.Instance;
 
-            services.AddBotAuthentication(aadSectionName, logger);
-
-            return AddBotAuthorizationPolicy(services, aadSectionName);
+            BotConfig botConfig = ResolveBotConfig(services, aadSectionName);
+            return services.AddBotAuthorization(botConfig.ClientId, botConfig.TenantId, aadSectionName, logger);
         }
 
         /// <summary>
@@ -124,17 +114,14 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         {
             services.AddBotAuthentication(clientId, tenantId, schemeName, logger);
 
-            return AddBotAuthorizationPolicy(services, schemeName);
+            return services
+                    .AddAuthorizationBuilder()
+                    .AddDefaultPolicy(schemeName, policy =>
+                    {
+                        policy.AuthenticationSchemes.Add(schemeName);
+                        policy.RequireAuthenticatedUser();
+                    });
         }
-
-        private static AuthorizationBuilder AddBotAuthorizationPolicy(IServiceCollection services, string schemeName) =>
-            services
-                .AddAuthorizationBuilder()
-                .AddDefaultPolicy(schemeName, policy =>
-                {
-                    policy.AuthenticationSchemes.Add(schemeName);
-                    policy.RequireAuthenticatedUser();
-                });
 
         private static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId)
         {
@@ -272,6 +259,15 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                 jwtOptions.Validate();
             });
             return builder;
+        }
+
+        private static BotConfig ResolveBotConfig(IServiceCollection services, string sectionName)
+        {
+            ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+            IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
+                ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+
+            return BotConfig.Resolve(configuration, sectionName);
         }
 
         private static ILogger GetLogger(HttpContext context, ILogger? fallback) =>
