@@ -115,12 +115,12 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             services.AddBotAuthentication(clientId, tenantId, schemeName, logger);
 
             return services
-                    .AddAuthorizationBuilder()
-                    .AddDefaultPolicy(schemeName, policy =>
-                    {
-                        policy.AuthenticationSchemes.Add(schemeName);
-                        policy.RequireAuthenticatedUser();
-                    });
+                .AddAuthorizationBuilder()
+                .AddDefaultPolicy(schemeName, policy =>
+                {
+                    policy.AuthenticationSchemes.Add(schemeName);
+                    policy.RequireAuthenticatedUser();
+                });
         }
 
         private static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId)
