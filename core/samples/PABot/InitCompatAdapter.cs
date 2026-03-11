@@ -191,7 +191,6 @@ namespace PABot
                 return new RoutedTokenAcquisitionService(
                     config.KeyName,
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
-                    sp.GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>(),
                     sp.GetRequiredService<ILogger<RoutedTokenAcquisitionService>>());
             });
         }
