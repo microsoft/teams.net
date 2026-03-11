@@ -33,7 +33,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
         /// <param name="logger">The logger instance for logging.</param>
         /// <returns>An <see cref="AuthenticationBuilder"/> for further authentication configuration.</returns>
-        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, ILogger logger, string aadSectionName = "AzureAd")
+        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, string aadSectionName = "AzureAd", ILogger? logger = null)
         {
             AuthenticationBuilder builder = services.AddAuthentication();
 
@@ -43,7 +43,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
 
             BotConfig botConfig = BotConfig.Resolve(configuration, aadSectionName);
 
-            builder.AddTeamsJwtBearer(aadSectionName, botConfig.ClientId, botConfig.TenantId, logger);
+            builder.AddBotAuthentication(aadSectionName, botConfig.ClientId, botConfig.TenantId, logger);
 
             return builder;
         }
@@ -65,7 +65,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             ILogger? logger = null)
         {
             AuthenticationBuilder builder = services.AddAuthentication();
-            builder.AddTeamsJwtBearer(schemeName, clientId, tenantId, logger);
+            builder.AddBotAuthentication(schemeName, clientId, tenantId, logger);
             return builder;
         }
 
@@ -97,19 +97,13 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
         /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
         /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
-        public static AuthorizationBuilder AddBotAuthorization(this IServiceCollection services, ILogger? logger = null, string aadSectionName = "AzureAd")
+        public static AuthorizationBuilder AddBotAuthorization(this IServiceCollection services, string aadSectionName = "AzureAd", ILogger? logger = null)
         {
             logger ??= NullLogger.Instance;
 
-            services.AddBotAuthentication(logger, aadSectionName);
+            services.AddBotAuthentication(aadSectionName, logger);
 
-            return services
-                .AddAuthorizationBuilder()
-                .AddDefaultPolicy(aadSectionName, policy =>
-                {
-                    policy.AuthenticationSchemes.Add(aadSectionName);
-                    policy.RequireAuthenticatedUser();
-                });
+            return AddBotAuthorizationPolicy(services, aadSectionName);
         }
 
         /// <summary>
@@ -130,14 +124,17 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         {
             services.AddBotAuthentication(clientId, tenantId, schemeName, logger);
 
-            return services
+            return AddBotAuthorizationPolicy(services, schemeName);
+        }
+
+        private static AuthorizationBuilder AddBotAuthorizationPolicy(IServiceCollection services, string schemeName) =>
+            services
                 .AddAuthorizationBuilder()
                 .AddDefaultPolicy(schemeName, policy =>
                 {
                     policy.AuthenticationSchemes.Add(schemeName);
                     policy.RequireAuthenticatedUser();
                 });
-        }
 
         private static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId)
         {
@@ -181,7 +178,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// The signing keys for both token types are dynamically resolved at runtime using OpenID Connect discovery,
         /// allowing the same authentication configuration to validate tokens from multiple issuers.
         /// </remarks>
-        private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger)
+        private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)
         {
             // One ConfigurationManager per OIDC authority, shared safely across all requests.
             ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
