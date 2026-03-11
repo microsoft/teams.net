@@ -43,7 +43,6 @@ namespace PABot
         public RoutedTokenAcquisitionService(
             string keyName,
             IAuthorizationHeaderProvider authorizationHeaderProvider,
-            IOptionsMonitor<MicrosoftIdentityApplicationOptions> optionsMonitor,
             ILogger<RoutedTokenAcquisitionService> logger)
         {
             _keyName = keyName;
