@@ -27,45 +27,98 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         internal const string EntraOIDC = "https://login.microsoftonline.com/";
 
         /// <summary>
-        /// Adds JWT authentication for bots and agents.
+        /// Adds JWT authentication for bots and agents using configuration from appsettings.
         /// </summary>
         /// <param name="services">The service collection to add authentication to.</param>
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
         /// <param name="logger">The logger instance for logging.</param>
         /// <returns>An <see cref="AuthenticationBuilder"/> for further authentication configuration.</returns>
-        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, ILogger logger, string aadSectionName = "AzureAd")
+        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, string aadSectionName = "AzureAd", ILogger? logger = null)
+        {
+            BotConfig botConfig = ResolveBotConfig(services, aadSectionName);
+            return services.AddBotAuthentication(aadSectionName, botConfig.ClientId, botConfig.TenantId, logger);
+        }
+
+        /// <summary>
+        /// Adds JWT authentication for bots and agents with manually provided configuration values.
+        /// </summary>
+        /// <param name="services">The service collection to add authentication to.</param>
+        /// <param name="clientId">The application (client) ID for token validation.</param>
+        /// <param name="tenantId">The Azure AD tenant ID. Can be empty for multi-tenant scenarios.</param>
+        /// <param name="schemeName">The authentication scheme name. Defaults to "AzureAd".</param>
+        /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
+        /// <returns>An <see cref="AuthenticationBuilder"/> for further authentication configuration.</returns>
+        public static AuthenticationBuilder AddBotAuthentication(
+            this IServiceCollection services,
+            string clientId,
+            string tenantId = "",
+            string schemeName = "AzureAd",
+            ILogger? logger = null)
         {
             AuthenticationBuilder builder = services.AddAuthentication();
-
-            ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-            IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
-                ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-
-            BotConfig botConfig = BotConfig.Resolve(configuration, aadSectionName);
-
-            builder.AddTeamsJwtBearer(aadSectionName, botConfig.ClientId, botConfig.TenantId, logger);
-
+            builder.AddBotAuthentication(schemeName, clientId, tenantId, logger);
             return builder;
         }
 
         /// <summary>
-        /// Adds authorization policies to the service collection.
+        /// Adds JWT authentication for bots and agents to an existing authentication builder.
+        /// Use this overload when registering multiple authentication schemes to avoid calling AddAuthentication() multiple times.
+        /// </summary>
+        /// <param name="builder">The existing authentication builder.</param>
+        /// <param name="clientId">The application (client) ID for token validation.</param>
+        /// <param name="tenantId">The Azure AD tenant ID. Can be empty for multi-tenant scenarios.</param>
+        /// <param name="schemeName">The authentication scheme name.</param>
+        /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
+        /// <returns>The <see cref="AuthenticationBuilder"/> for chaining.</returns>
+        public static AuthenticationBuilder AddBotAuthentication(
+            this AuthenticationBuilder builder,
+            string clientId,
+            string tenantId = "",
+            string schemeName = "AzureAd",
+            ILogger? logger = null)
+        {
+            builder.AddTeamsJwtBearer(schemeName, clientId, tenantId, logger);
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds authorization policies to the service collection using configuration from appsettings.
         /// </summary>
         /// <param name="services">The service collection to add authorization to.</param>
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
         /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
         /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
-        public static AuthorizationBuilder AddBotAuthorization(this IServiceCollection services, ILogger? logger = null, string aadSectionName = "AzureAd")
+        public static AuthorizationBuilder AddBotAuthorization(this IServiceCollection services, string aadSectionName = "AzureAd", ILogger? logger = null)
         {
             logger ??= NullLogger.Instance;
 
-            services.AddBotAuthentication(logger, aadSectionName);
+            BotConfig botConfig = ResolveBotConfig(services, aadSectionName);
+            return services.AddBotAuthorization(botConfig.ClientId, botConfig.TenantId, aadSectionName, logger);
+        }
+
+        /// <summary>
+        /// Adds authorization policies to the service collection with manually provided configuration values.
+        /// </summary>
+        /// <param name="services">The service collection to add authorization to.</param>
+        /// <param name="clientId">The application (client) ID for token validation.</param>
+        /// <param name="tenantId">The Azure AD tenant ID. Can be empty for multi-tenant scenarios.</param>
+        /// <param name="schemeName">The authentication scheme name. Defaults to "AzureAd".</param>
+        /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
+        /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
+        public static AuthorizationBuilder AddBotAuthorization(
+            this IServiceCollection services,
+            string clientId,
+            string tenantId = "",
+            string schemeName = "AzureAd",
+            ILogger? logger = null)
+        {
+            services.AddBotAuthentication(clientId, tenantId, schemeName, logger);
 
             return services
                 .AddAuthorizationBuilder()
-                .AddDefaultPolicy(aadSectionName, policy =>
+                .AddDefaultPolicy(schemeName, policy =>
                 {
-                    policy.AuthenticationSchemes.Add(aadSectionName);
+                    policy.AuthenticationSchemes.Add(schemeName);
                     policy.RequireAuthenticatedUser();
                 });
         }
@@ -94,7 +147,25 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                 ? (jwt.Issuer, jwt.TryGetClaim("tid", out var c) ? c.Value : null)
                 : (null, null);
 
-        private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger)
+        /// <summary>
+        /// Adds Teams JWT Bearer authentication that supports both Bot Framework and Entra ID tokens.
+        /// </summary>
+        /// <param name="builder">The authentication builder.</param>
+        /// <param name="schemeName">The authentication scheme name.</param>
+        /// <param name="audience">The application (client) ID used to validate the audience of tokens.</param>
+        /// <param name="tenantId">The Azure AD tenant ID.</param>
+        /// <param name="logger">Optional logger for authentication events.</param>
+        /// <returns>The authentication builder for chaining.</returns>
+        /// <remarks>
+        /// This method configures authentication to support both types of tokens:
+        /// <list type="bullet">
+        /// <item><description>Bot Framework tokens: Issued by the Bot Connector service when channels send activities to your bot (issuer: https://api.botframework.com).</description></item>
+        /// <item><description>Entra ID tokens: Issued by Azure AD when the bot is registered as an agentic application (issuer: https://login.microsoftonline.com). See https://learn.microsoft.com/en-us/microsoft-agent-365/developer/identity#understanding-agent-identity-components</description></item>
+        /// </list>
+        /// The signing keys for both token types are dynamically resolved at runtime using OpenID Connect discovery,
+        /// allowing the same authentication configuration to validate tokens from multiple issuers.
+        /// </remarks>
+        private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)
         {
             // One ConfigurationManager per OIDC authority, shared safely across all requests.
             ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
@@ -188,6 +259,15 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                 jwtOptions.Validate();
             });
             return builder;
+        }
+
+        private static BotConfig ResolveBotConfig(IServiceCollection services, string sectionName)
+        {
+            ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+            IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
+                ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+
+            return BotConfig.Resolve(configuration, sectionName);
         }
 
         private static ILogger GetLogger(HttpContext context, ILogger? fallback) =>

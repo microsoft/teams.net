@@ -56,7 +56,7 @@ IBotFrameworkHttpAdapter adapterTwo = app.Services.GetRequiredKeyedService<IBotF
 app.MapPost("/api/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("EchoBot")] IBot bot, CancellationToken ct) =>
     adapterOne.ProcessAsync(request, response, bot, ct)).RequireAuthorization("AdapterOne");
 
-app.MapPost("/api/v2/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("TeamsBot")] IBot bot, CancellationToken ct) =>
+app.MapPost("/api/v2/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("EchoBot")] IBot bot, CancellationToken ct) =>
     adapterTwo.ProcessAsync(request, response, bot, ct)).RequireAuthorization("AdapterTwo");
 
 app.Run();
