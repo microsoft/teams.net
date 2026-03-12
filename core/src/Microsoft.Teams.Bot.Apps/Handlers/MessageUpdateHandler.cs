@@ -22,6 +22,9 @@ public static class MessageUpdateExtensions
     /// <summary>
     /// Registers a handler for message update activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>

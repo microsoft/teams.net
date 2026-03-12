@@ -65,8 +65,15 @@ public static class MessageExtensionExtensions
     //onSubmitAction is confusing as it is similar to adaptive cards
 
     /// <summary>
-    /// Registers a handler for message extension query invoke activities with strongly-typed response.
+    /// Registers a handler for message extension query invoke activities.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnQuery(this TeamsBotApplication app, MessageExtensionQueryHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -87,7 +94,14 @@ public static class MessageExtensionExtensions
 
     /// <summary>
     /// Registers a handler for message extension submit action invoke activities.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnSubmitAction(this TeamsBotApplication app, MessageExtensionSubmitActionHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -107,8 +121,15 @@ public static class MessageExtensionExtensions
     }
 
     /// <summary>
-    /// Registers a handler for message extension query link invoke activities with strongly-typed response.
+    /// Registers a handler for message extension query link invoke activities.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnQueryLink(this TeamsBotApplication app, MessageExtensionQueryLinkHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -128,8 +149,15 @@ public static class MessageExtensionExtensions
     }
 
     /// <summary>
-    /// Registers a handler for message extension anonymous query link invoke activities with strongly-typed response.
+    /// Registers a handler for message extension anonymous query link invoke activities.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnAnonQueryLink(this TeamsBotApplication app, MessageExtensionAnonQueryLinkHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -150,7 +178,14 @@ public static class MessageExtensionExtensions
 
     /// <summary>
     /// Registers a handler for message extension fetch task invoke activities.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnFetchTask(this TeamsBotApplication app, MessageExtensionFetchTaskHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -170,8 +205,15 @@ public static class MessageExtensionExtensions
     }
 
     /// <summary>
-    /// Registers a handler for message extension select item invoke activities with strongly-typed response.
+    /// Registers a handler for message extension select item invoke activities.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnSelectItem(this TeamsBotApplication app, MessageExtensionSelectItemHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -191,8 +233,15 @@ public static class MessageExtensionExtensions
     }
 
     /// <summary>
-    /// Registers a handler for message extension query setting URL invoke activities with strongly-typed response.
+    /// Registers a handler for message extension query setting URL invoke activities.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnQuerySettingUrl(this TeamsBotApplication app, MessageExtensionQuerySettingUrlHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
