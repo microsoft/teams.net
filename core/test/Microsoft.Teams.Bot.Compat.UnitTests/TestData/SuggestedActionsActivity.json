@@ -1,0 +1,240 @@
+{
+  "type": "message",
+  "serviceUrl": "https://smba.trafficmanager.net/teams",
+  "from": {
+    "id": "a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6"
+  },
+  "recipient": {},
+  "conversation": {
+    "id": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
+  },
+  "text": "Hi there.\n\nI'm working on a status report and will share it in this chat shortly. You'll be able to make edits, and once it's ready, send it to the channel.\n\n\n\nYou can add more reviewers anytime.",
+  "inputHint": "acceptingInput",
+  "suggestedActions": {
+    "actions": [
+      {
+        "type": "Action.Odsl",
+        "title": "Add reviewers",
+        "value": {
+          "actions": {
+            "odsl": {
+              "statements": [
+                {
+                  "name": "statusReportConfiguration",
+                  "arguments": [
+                    {
+                      "name": "agentId",
+                      "value": ""
+                    },
+                    {
+                      "name": "agentName",
+                      "value": "PA Test"
+                    },
+                    {
+                      "name": "agentType",
+                      "value": 0
+                    },
+                    {
+                      "name": "teamId",
+                      "value": ""
+                    },
+                    {
+                      "name": "channelId",
+                      "value": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
+                    },
+                    {
+                      "name": "recurrence",
+                      "value": {
+                        "pattern": {
+                          "patternType": "test"
+                        },
+                        "range": {
+                          "startDate": "test",
+                          "endDate": "test"
+                        }
+                      }
+                    },
+                    {
+                      "name": "approvalList",
+                      "value": [
+                        "123",
+                        "345"
+                      ]
+                    },
+                    {
+                      "name": "welcomeMessageType",
+                      "value": "ApproversChat"
+                    },
+                    {
+                      "name": "chatId",
+                      "value": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
+                    },
+                    {
+                      "name": "displayText",
+                      "value": "Add reviewers"
+                    },
+                    {
+                      "name": "deleteAgentDisplayText",
+                      "value": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "entities": [
+            "chat"
+          ]
+        }
+      },
+      {
+        "type": "Action.Odsl",
+        "title": "Open agent settings",
+        "value": {
+          "actions": {
+            "odsl": {
+              "statements": [
+                {
+                  "name": "agentConfiguration",
+                  "arguments": [
+                    {
+                      "name": "agentId",
+                      "value": ""
+                    },
+                    {
+                      "name": "agentName",
+                      "value": "PA Test"
+                    },
+                    {
+                      "name": "agentType",
+                      "value": 0
+                    },
+                    {
+                      "name": "teamId",
+                      "value": ""
+                    },
+                    {
+                      "name": "channelId",
+                      "value": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
+                    },
+                    {
+                      "name": "recurrence",
+                      "value": {
+                        "pattern": {
+                          "patternType": "test"
+                        },
+                        "range": {
+                          "startDate": "test",
+                          "endDate": "test"
+                        }
+                      }
+                    },
+                    {
+                      "name": "approvalList",
+                      "value": [
+                        "123",
+                        "345"
+                      ]
+                    },
+                    {
+                      "name": "welcomeMessageType",
+                      "value": "ApproversChat"
+                    },
+                    {
+                      "name": "chatId",
+                      "value": "19:xYz9pQrS8tUv5wXy3zAbCdEfGhIjKlMnOpQrStUvWx-Y2@thread.tacv2"
+                    },
+                    {
+                      "name": "displayText",
+                      "value": "Open agent settings"
+                    },
+                    {
+                      "name": "deleteAgentDisplayText",
+                      "value": ""
+                    }
+                  ]
+                }
+              ]
+            }
+          },
+          "entities": [
+            "chat"
+          ]
+        }
+      },
+      {
+        "type": "Action.Compose",
+        "title": "Ask me a question",
+        "value": {
+          "type": "Teams.chatMessage",
+          "data": {
+            "body": {
+              "additionalData": {},
+              "backingStore": {
+                "returnOnlyChangedValues": false,
+                "initializationCompleted": true
+              },
+              "content": "<at id=\"0\">PA Test</at>"
+            },
+            "mentions": [
+              {
+                "additionalData": {},
+                "backingStore": {
+                  "returnOnlyChangedValues": false,
+                  "initializationCompleted": false
+                },
+                "id": 0,
+                "mentioned": {
+                  "additionalData": {},
+                  "backingStore": {
+                    "returnOnlyChangedValues": false,
+                    "initializationCompleted": false
+                  },
+                  "odataType": "#microsoft.graph.chatMessageMentionedIdentitySet",
+                  "user": {
+                    "additionalData": {},
+                    "backingStore": {
+                      "returnOnlyChangedValues": false,
+                      "initializationCompleted": false
+                    },
+                    "displayName": "PA Test",
+                    "id": "28:a1b2c3d4-e5f6-47a8-b9c0-d1e2f3a4b5c6",
+                    "appId": ""
+                  }
+                },
+                "mentionText": "PA Test"
+              }
+            ],
+            "additionalData": {},
+            "backingStore": {
+              "returnOnlyChangedValues": false,
+              "initializationCompleted": true
+            }
+          }
+        }
+      }
+    ]
+  },
+  "attachments": [],
+  "entities": [
+    {
+      "type": "https://schema.org/Message",
+      "@context": "https://schema.org",
+      "@type": "Message",
+      "additionalType": [
+        "AIGeneratedContent"
+      ]
+    },
+    {
+      "type": "BotMessageMetadata",
+      "botTelemetryMessageType": "Welcome-AddApproverChat",
+      "aiMetadata": {
+        "botAiSkill": "{\"cv\":\"GsaulSWnUUWlHf97qANDWA.0.0\",\"reasoningActive\":false}"
+      }
+    }
+  ],
+  "channelData": {
+    "feedbackLoopEnabled": true
+  },
+  "replyToId": "f7e8d9c0-b1a2-4536-9271-a8b9c0d1e2f3"
+}
