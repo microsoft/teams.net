@@ -9,7 +9,6 @@ namespace Microsoft.Teams.Bot.Apps.Routing;
 /// <summary>
 /// Router for dispatching Teams activities to registered routes
 /// </summary>
-// TODO : add inline docs to handlers for breaking change
 internal sealed class Router
 {
     private readonly List<RouteBase> _routes = [];
@@ -97,8 +96,8 @@ internal sealed class Router
 
         if (matchingRoutes.Count == 0 && _routes.Count > 0)
         {
-            _logger.LogDebug("No routes matched invoke activity with name '{Name}'; handler will not execute.", name);
-            return null!; // TODO : return appropriate response
+            _logger.LogWarning("No routes matched invoke activity with name '{Name}'; returning 501.", name);
+            return new InvokeResponse(501);
         }
 
         _logger.LogDebug("Dispatching invoke activity with name '{Name}' to route '{Route}'", name, matchingRoutes[0].Name);

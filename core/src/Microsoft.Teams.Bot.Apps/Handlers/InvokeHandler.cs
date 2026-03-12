@@ -22,8 +22,13 @@ public delegate Task<InvokeResponse> InvokeHandler(Context<InvokeActivity> conte
 public static class InvokeExtensions
 {
     /// <summary>
-    /// Registers a handler for invoke activities.
+    /// Registers a catch-all handler for all invoke activities.
+    /// Cannot be combined with specific invoke handlers such as <see cref="AdaptiveCardExtensions.OnAdaptiveCardAction"/>,
+    /// <see cref="TaskExtensions.OnTaskFetch"/>, etc.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
     /// <param name="app">The Teams bot application.</param>
     /// <param name="handler">The invoke handler to register.</param>
     /// <returns>The updated Teams bot application.</returns>
