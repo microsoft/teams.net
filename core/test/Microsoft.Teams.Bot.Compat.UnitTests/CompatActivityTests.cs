@@ -291,4 +291,142 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             return File.ReadAllText(testDataPath);
         }
     }
+
+    public class FromCompatChannelAccountTests
+    {
+        [Fact]
+        public void FromCompatChannelAccount_MapsIdAndName()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Name = "Alice" };
+
+            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+
+            Assert.Equal("user-1", result.Id);
+            Assert.Equal("Alice", result.Name);
+        }
+
+        [Fact]
+        public void FromCompatChannelAccount_MapsAadObjectIdToProperties()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", AadObjectId = "aad-123" };
+
+            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+
+            Assert.True(result.Properties.TryGetValue("aadObjectId", out object? val));
+            Assert.Equal("aad-123", val?.ToString());
+        }
+
+        [Fact]
+        public void FromCompatChannelAccount_MapsRoleToUserRoleInProperties()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Role = "owner" };
+
+            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+
+            Assert.True(result.Properties.TryGetValue("userRole", out object? val));
+            Assert.Equal("owner", val?.ToString());
+        }
+
+        [Fact]
+        public void FromCompatChannelAccount_SkipsNullAadObjectIdAndRole()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1" };
+
+            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+
+            Assert.False(result.Properties.ContainsKey("aadObjectId"));
+            Assert.False(result.Properties.ContainsKey("userRole"));
+        }
+
+        [Fact]
+        public void FromCompatChannelAccount_ThrowsOnNull()
+        {
+            Microsoft.Bot.Schema.ChannelAccount? account = null;
+            Assert.Throws<ArgumentNullException>(() => account!.FromCompatChannelAccount());
+        }
+    }
+
+    public class FromCompatConversationParametersTests
+    {
+        [Fact]
+        public void FromCompatConversationParameters_MapsAllScalarFields()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new()
+            {
+                IsGroup = true,
+                TopicName = "Test Topic",
+                TenantId = "tenant-abc",
+                ChannelData = new { custom = "data" },
+            };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.True(result.IsGroup);
+            Assert.Equal("Test Topic", result.TopicName);
+            Assert.Equal("tenant-abc", result.TenantId);
+            Assert.NotNull(result.ChannelData);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_MapsBotAccount()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new()
+            {
+                Bot = new Microsoft.Bot.Schema.ChannelAccount { Id = "bot-1", Name = "MyBot" }
+            };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.NotNull(result.Bot);
+            Assert.Equal("bot-1", result.Bot.Id);
+            Assert.Equal("MyBot", result.Bot.Name);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_MapsMembers()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new()
+            {
+                Members =
+                [
+                    new Microsoft.Bot.Schema.ChannelAccount { Id = "user-1", Name = "Alice" },
+                    new Microsoft.Bot.Schema.ChannelAccount { Id = "user-2", Name = "Bob" },
+                ]
+            };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.NotNull(result.Members);
+            Assert.Equal(2, result.Members.Count);
+            Assert.Equal("user-1", result.Members[0].Id);
+            Assert.Equal("user-2", result.Members[1].Id);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_NullActivityProducesNullActivity()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new() { Activity = null };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.Null(result.Activity);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_NullBotProducesNullBot()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new() { Bot = null };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.Null(result.Bot);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_ThrowsOnNull()
+        {
+            Microsoft.Bot.Schema.ConversationParameters? parameters = null;
+            Assert.Throws<ArgumentNullException>(() => parameters!.FromCompatConversationParameters());
+        }
+    }
 }
