@@ -178,10 +178,12 @@ public partial class App
         }
 
         // Validate targeted messages in proactive context
+        #pragma warning disable ExperimentalTeamsTargeted
         if (activity is MessageActivity messageActivity && messageActivity.IsTargeted == true && messageActivity.Recipient is null)
         {
             throw new InvalidOperationException("Targeted messages sent proactively must specify an explicit recipient ID. Use WithRecipient(new Account { Id = recipientId }, true) with an explicit recipient.");
         }
+        #pragma warning restore ExperimentalTeamsTargeted
 
         var reference = new ConversationReference()
         {

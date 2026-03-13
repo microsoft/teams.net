@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common;
@@ -10,6 +11,7 @@ namespace Microsoft.Teams.Api.Messages;
 /// <summary>
 /// The type of reaction given to the message.
 /// </summary>
+[Experimental("ExperimentalTeamsReactions")]
 [JsonConverter(typeof(JsonConverter<ReactionType>))]
 public class ReactionType(string value) : StringEnum(value)
 {
@@ -53,6 +55,7 @@ public class ReactionType(string value) : StringEnum(value)
 /// <summary>
 /// Message Reaction
 /// </summary>
+[Experimental("ExperimentalTeamsReactions")]
 public class Reaction
 {
     /// <summary>
