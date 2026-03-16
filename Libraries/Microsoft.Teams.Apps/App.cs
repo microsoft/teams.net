@@ -409,4 +409,12 @@ public partial class App
 
         return response;
     }
+
+    /// <summary>
+    /// Sanitizes a user-controlled value for safe inclusion in log messages
+    /// by removing control characters (including newlines, tabs, and ANSI escape
+    /// sequences) that could be used for log forging.
+    /// </summary>
+    private static string? SanitizeLogValue(string? value)
+        => value is null ? null : string.Concat(value.Where(c => !char.IsControl(c)));
 }

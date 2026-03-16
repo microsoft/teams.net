@@ -72,7 +72,7 @@ public partial class App
 
         if (OAuth.DefaultConnectionName != connectionName)
         {
-            Logger.Warn($"`default connection name \"{OAuth.DefaultConnectionName}\" does not match activity connection name \"{connectionName}\"");
+            Logger.Warn($"`default connection name \"{OAuth.DefaultConnectionName}\" does not match activity connection name \"{SanitizeLogValue(connectionName)}\"");
         }
 
         try
@@ -132,7 +132,7 @@ public partial class App
         {
             if (context.Activity.Value.State is null)
             {
-                context.Log.Warn($"auth state not found for conversation '{context.Ref.Conversation.Id}' and user '{context.Activity.From.Id}'");
+                context.Log.Warn($"auth state not found for conversation '{SanitizeLogValue(context.Ref.Conversation.Id)}' and user '{SanitizeLogValue(context.Activity.From.Id)}'");
                 return new Response(HttpStatusCode.NotFound);
             }
 
@@ -203,8 +203,8 @@ public partial class App
         var failure = context.Activity.Value;
 
         Logger.Warn(
-            $"sign-in failed for user \"{context.Activity.From.Id}\" in conversation " +
-            $"\"{context.Ref.Conversation.Id}\": {failure.Code} — {failure.Message}. " +
+            $"sign-in failed for user \"{SanitizeLogValue(context.Activity.From.Id)}\" in conversation " +
+            $"\"{SanitizeLogValue(context.Ref.Conversation.Id)}\": {SanitizeLogValue(failure.Code)} — {SanitizeLogValue(failure.Message)}. " +
             $"If the code is 'resourcematchfailed', verify that your Entra app registration " +
             $"has 'Expose an API' configured with the correct Application ID URI matching " +
             $"your OAuth connection's Token Exchange URL."

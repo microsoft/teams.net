@@ -18,12 +18,12 @@ public partial class App
 
         if (@event.Exception is HttpException ex)
         {
-            Logger.Error(ex.Request?.RequestUri?.ToString());
+            Logger.Error(SanitizeLogValue(ex.Request?.RequestUri?.ToString()));
 
             if (ex.Request?.Content is not null)
             {
                 var content = await ex.Request.Content.ReadAsStringAsync();
-                Logger.Error(content);
+                Logger.Error(SanitizeLogValue(content));
             }
         }
 
