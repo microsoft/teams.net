@@ -6,9 +6,6 @@ using Microsoft.Teams.Bot.Core;
 
 namespace Microsoft.Teams.Bot.Apps;
 
-// TODO: Make Context Generic over the TeamsActivity type.
-// It should be able to work with any type of TeamsActivity.
-
 
 /// <summary>
 /// Context for a bot turn.
