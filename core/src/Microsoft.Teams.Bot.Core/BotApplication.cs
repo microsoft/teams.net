@@ -90,10 +90,10 @@ public class BotApplication
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
         _logger.LogInformation("Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} MSCV={MSCV}",
-            activity.Type,
-            activity.Id,
-            activity.ServiceUrl,
-            httpContext.Request.GetCorrelationVector());
+            Sanitize(activity.Type),
+            Sanitize(activity.Id),
+            Sanitize(activity.ServiceUrl?.ToString()),
+            Sanitize(httpContext.Request.GetCorrelationVector()));
 
         if (_logger.IsEnabled(LogLevel.Trace))
         {
@@ -102,7 +102,7 @@ public class BotApplication
 
         // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
         using (_logger.BeginScope("ActivityType={ActivityType} ActivityId={ActivityId} ServiceUrl={ServiceUrl} MSCV={MSCV}",
-            activity.Type, activity.Id, activity.ServiceUrl, httpContext.Request.GetCorrelationVector()))
+            Sanitize(activity.Type), Sanitize(activity.Id), Sanitize(activity.ServiceUrl?.ToString()), Sanitize(httpContext.Request.GetCorrelationVector())))
         {
             try
             {
@@ -111,15 +111,19 @@ public class BotApplication
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing activity: Id={Id}", activity.Id);
+                _logger.LogError(ex, "Error processing activity: Id={Id}", Sanitize(activity.Id));
                 throw new BotHandlerException("Error processing activity", ex, activity);
             }
             finally
             {
-                _logger.LogInformation("Finished processing activity: Id={Id}", activity.Id);
+                _logger.LogInformation("Finished processing activity: Id={Id}", Sanitize(activity.Id));
             }
         }
     }
+
+    private static string? Sanitize(string? value) =>
+        value?.Replace("\r", string.Empty, StringComparison.Ordinal)
+              .Replace("\n", string.Empty, StringComparison.Ordinal);
 
     /// <summary>
     /// Adds the specified turn middleware to the middleware pipeline.
