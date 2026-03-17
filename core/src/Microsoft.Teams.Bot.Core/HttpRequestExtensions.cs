@@ -28,7 +28,6 @@ public static class HttpRequestExtensions
             return correlationVector;
         }
 
-        // GOOD: User input logged with new-lines removed
         return correlationVector.Replace(Environment.NewLine, "", StringComparison.Ordinal);
     }
 }
