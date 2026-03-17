@@ -36,7 +36,7 @@ public static class MemoryManagementHandler
     /// <summary>
     /// Example of stateful conversation handler that maintains conversation history
     /// </summary>
-    public static async Task HandleStatefulConversation(OpenAIChatModel model, IContext<MessageActivity> context)
+    public static async Task HandleStatefulConversation(OpenAIChatModel model, IContext<MessageActivity> context, CancellationToken cancellationToken = default)
     {
         Console.WriteLine($"[HANDLER] Stateful conversation handler invoked");
         Console.WriteLine($"[HANDLER] User: {context.Activity.From.Name}, Message: '{context.Activity.Text}'");
@@ -58,7 +58,7 @@ public static class MemoryManagementHandler
         {
             Messages = messages
         };
-        var result = await prompt.Send(context.Activity.Text, options);
+        var result = await prompt.Send(context.Activity.Text, options, null, cancellationToken);
 
         if (result.Content != null)
         {
@@ -68,7 +68,7 @@ public static class MemoryManagementHandler
             {
                 Text = result.Content,
             }.AddAIGenerated();
-            await context.Send(message);
+            await context.Send(message, cancellationToken);
 
             // Update conversation history
             messages.Add(UserMessage.Text(context.Activity.Text));
@@ -79,7 +79,7 @@ public static class MemoryManagementHandler
         else
         {
             Console.WriteLine("[HANDLER] No content received from AI");
-            await context.Reply("I did not generate a response.");
+            await context.Reply("I did not generate a response.", cancellationToken);
         }
     }
 

@@ -30,4 +30,21 @@ public static partial class AppActivityExtensions
 
         return app;
     }
+
+    public static App OnCommand(this App app, Func<IContext<CommandActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.Command,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<CommandActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is CommandActivity
+        });
+
+        return app;
+    }
 }

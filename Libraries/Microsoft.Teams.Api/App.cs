@@ -15,7 +15,7 @@ public class App
     /// </summary>
     [JsonPropertyName("id")]
     [JsonPropertyOrder(0)]
-    public required string Id { get; set; }
+    public string? Id { get; set; }
 
     /// <summary>
     /// All extra data present

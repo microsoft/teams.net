@@ -9,6 +9,9 @@ namespace Microsoft.Teams.Bot.Apps.Handlers;
 /// <summary>
 /// Delegate for handling task module invoke activities.
 /// </summary>
+/// <param name="context">The context for the invoke activity, providing access to the activity data and bot application.</param>
+/// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+/// <returns>A task that represents the asynchronous operation. The task result contains the invoke response.</returns>
 public delegate Task<InvokeResponse<TaskModuleResponse>> TaskModuleHandler(Context<InvokeActivity<TaskModuleRequest>> context, CancellationToken cancellationToken = default);
 
 /// <summary>
@@ -19,7 +22,14 @@ public static class TaskExtensions
 
     /// <summary>
     /// Registers a handler for task module fetch invoke activities.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTaskFetch(this TeamsBotApplication app, TaskModuleHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -39,8 +49,15 @@ public static class TaskExtensions
     }
 
     /// <summary>
-    /// Registers a handler for task module submit invoke activities with strongly-typed value and response.
+    /// Registers a handler for task module submit invoke activities.
+    /// Cannot be combined with <see cref="InvokeExtensions.OnInvoke"/>.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.
+    /// </remarks>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTaskSubmit(this TeamsBotApplication app, TaskModuleHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));

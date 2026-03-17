@@ -73,4 +73,47 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.Invoke,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<InvokeActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is InvokeActivity
+        });
+
+        return app;
+    }
+
+    public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, CancellationToken, Task<object?>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.Invoke,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = context => handler(context.ToActivityType<InvokeActivity>(), context.CancellationToken),
+            Selector = activity => activity is InvokeActivity
+        });
+
+        return app;
+    }
+
+    public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, CancellationToken, Task<Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.Invoke,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<InvokeActivity>(), context.CancellationToken),
+            Selector = activity => activity is InvokeActivity
+        });
+
+        return app;
+    }
 }

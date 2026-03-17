@@ -90,14 +90,8 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     public override async Task InvokeRoute(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
-        if (ctx.Activity is TActivity typedActivity)
-        {
-            Context<TActivity> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-            if (Handler is not null)
-            {
-                await Handler(typedContext, cancellationToken).ConfigureAwait(false);
-            }
-        }
+        Context<TActivity> typedContext = new(ctx.TeamsBotApplication, (TActivity)ctx.Activity);
+        await Handler!(typedContext, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -106,18 +100,10 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <param name="ctx"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    /// <exception cref="NotImplementedException"></exception>
     public override async Task<InvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
-        if (ctx.Activity is TActivity typedActivity)
-        {
-            Context<TActivity> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-            if (HandlerWithReturn is not null)
-            {
-                return await HandlerWithReturn(typedContext, cancellationToken).ConfigureAwait(false);
-            }
-        }
-        return null!; // TODO: throw?
+        Context<TActivity> typedContext = new(ctx.TeamsBotApplication, (TActivity)ctx.Activity);
+        return await HandlerWithReturn!(typedContext, cancellationToken).ConfigureAwait(false);
     }
 }

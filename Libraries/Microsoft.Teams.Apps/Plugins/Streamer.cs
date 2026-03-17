@@ -63,7 +63,8 @@ public interface IStreamer
     /// <summary>
     /// close the stream
     /// </summary>
-    public Task<MessageActivity?> Close();
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<MessageActivity?> Close(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// handler called on each chunk send
