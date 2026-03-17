@@ -49,4 +49,29 @@ public static partial class AppActivityExtensions
 
         return app;
     }
+
+    public static App OnChannelRestored(this App app, Func<IContext<ConversationUpdateActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.ConversationUpdate, ConversationUpdateActivity.EventType.ChannelRestored]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ConversationUpdateActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is ConversationUpdateActivity update)
+                {
+                    return update.ChannelData?.EventType == ConversationUpdateActivity.EventType.ChannelRestored;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
 }

@@ -25,6 +25,10 @@ public static partial class SignIn
         /// </summary>
         [JsonPropertyName("value")]
         [JsonPropertyOrder(32)]
-        public new required Api.SignIn.ExchangeToken Value { get; set; }
+        public new required Api.SignIn.ExchangeToken Value
+        {
+            get => (Api.SignIn.ExchangeToken)base.Value!;
+            set => base.Value = value;
+        }
     }
 }

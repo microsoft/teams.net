@@ -473,4 +473,87 @@ public class MessageActivityTests
         Assert.NotNull(mention);
         Assert.Equal("<at>Custom Name</at>", mention.Text);
     }
+
+    [Fact]
+    public void WithRecipient_DefaultsToNotTargeted()
+    {
+        var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "1" });
+
+        Assert.False(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+    }
+
+    [Fact]
+    public void WithRecipient_Bool_SetsIsTargeted()
+    {
+        var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "1" }, true);
+
+        Assert.True(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+    }
+
+    [Fact]
+    public void WithRecipient_SetsIsTargetedAndRecipient()
+    {
+        var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "user-123", Name = "user", Role = Role.User }, true);
+
+        Assert.True(activity.IsTargeted);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-123", activity.Recipient.Id);
+        Assert.Equal("user", activity.Recipient.Name);
+        Assert.Equal(Role.User, activity.Recipient.Role);
+    }
+
+    [Fact]
+    public void WithRecipient_MaintainsFluentChaining()
+    {
+        // This test ensures that WithRecipient(account) returns MessageActivity, not Activity
+        // If it returned Activity, the call to AddText would not compile
+        var activity = new MessageActivity("hello")
+            .WithRecipient(new Account() { Id = "user-123" })
+            .AddText(" world");
+
+        Assert.Equal("hello world", activity.Text);
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-123", activity.Recipient.Id);
+        Assert.False(activity.IsTargeted);
+    }
+
+    [Fact]
+    public void JsonSerialize_WithIsTargeted()
+    {
+        var activity = new MessageActivity("targeted message").WithRecipient(new Account() { Id = "user-123" }, true);
+        activity.Id = "1";
+        activity.From = new() { Id = "1", Name = "test", Role = Role.User };
+        activity.Conversation = new() { Id = "1", Type = ConversationType.Personal };
+
+        var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+            IndentSize = 4,
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        });
+
+        // IsTargeted is not serialized (JsonIgnore) - it's only used internally for SDK routing
+        Assert.DoesNotContain("\"isTargeted\"", json);
+        Assert.Contains("\"text\": \"targeted message\"", json);
+        // Verify the property is still set on the object
+        Assert.True(activity.IsTargeted);
+    }
+
+    [Fact]
+    public void Validate_FluentAPI()
+    {
+        var msg = new MessageActivity("Hello")
+            .WithDeliveryMode(DeliveryMode.Notification)
+            .WithRecipient(new Account() { Id = "user-123", Name = "Test User", Role = Role.User }, true)
+            .WithImportance(Importance.High); 
+
+        Assert.Equal("Hello", msg.Text);
+        Assert.True(msg.IsTargeted);
+        Assert.NotNull(msg.Recipient);
+        Assert.Equal("user-123", msg.Recipient.Id);
+        Assert.Equal("Test User", msg.Recipient.Name);
+        Assert.Equal(Role.User, msg.Recipient.Role);
+    }
 }

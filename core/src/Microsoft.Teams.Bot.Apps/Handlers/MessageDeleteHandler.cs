@@ -22,6 +22,9 @@ public static class MessageDeleteExtensions
     /// <summary>
     /// Registers a handler for message delete activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>

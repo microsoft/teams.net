@@ -60,4 +60,47 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnTabFetch(this App app, Func<IContext<Tabs.FetchActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Tabs.Fetch]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Tabs.FetchActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is Tabs.FetchActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTabFetch(this App app, Func<IContext<Tabs.FetchActivity>, CancellationToken, Task<Response<Api.Tabs.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Tabs.Fetch]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<Tabs.FetchActivity>(), context.CancellationToken),
+            Selector = activity => activity is Tabs.FetchActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTabFetch(this App app, Func<IContext<Tabs.FetchActivity>, CancellationToken, Task<Api.Tabs.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Tabs.Fetch]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<Tabs.FetchActivity>(), context.CancellationToken),
+            Selector = activity => activity is Tabs.FetchActivity
+        });
+
+        return app;
+    }
 }

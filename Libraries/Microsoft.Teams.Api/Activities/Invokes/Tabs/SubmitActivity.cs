@@ -25,6 +25,10 @@ public static partial class Tabs
         /// </summary>
         [JsonPropertyName("value")]
         [JsonPropertyOrder(32)]
-        public new required Api.Tabs.Request Value { get; set; }
+        public new required Api.Tabs.Request Value
+        {
+            get => (Api.Tabs.Request)base.Value!;
+            set => base.Value = value;
+        }
     }
 }

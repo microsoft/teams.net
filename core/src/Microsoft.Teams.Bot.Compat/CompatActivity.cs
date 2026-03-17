@@ -269,6 +269,47 @@ public static class CompatActivity
     }
 
     /// <summary>
+    /// Converts a Bot Framework ChannelAccount to a Core ConversationAccount.
+    /// </summary>
+    public static Microsoft.Teams.Bot.Core.Schema.ConversationAccount FromCompatChannelAccount(this Microsoft.Bot.Schema.ChannelAccount account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+
+        Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = new() { Id = account.Id, Name = account.Name };
+
+        if (!string.IsNullOrEmpty(account.AadObjectId))
+        {
+            result.Properties["aadObjectId"] = account.AadObjectId;
+        }
+
+        if (!string.IsNullOrEmpty(account.Role))
+        {
+            result.Properties["userRole"] = account.Role;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Converts a Bot Framework ConversationParameters to a Core ConversationParameters.
+    /// </summary>
+    public static Microsoft.Teams.Bot.Core.ConversationParameters FromCompatConversationParameters(this Microsoft.Bot.Schema.ConversationParameters parameters)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+
+        return new Microsoft.Teams.Bot.Core.ConversationParameters
+        {
+            IsGroup = parameters.IsGroup,
+            Bot = parameters.Bot?.FromCompatChannelAccount(),
+            Members = parameters.Members?.Select(m => m.FromCompatChannelAccount()).ToList(),
+            TopicName = parameters.TopicName,
+            Activity = parameters.Activity?.FromCompatActivity(),
+            ChannelData = parameters.ChannelData,
+            TenantId = parameters.TenantId,
+        };
+    }
+
+    /// <summary>
     /// Gets the TeamInfo object from the current activity.
     /// </summary>
     /// <param name="activity">The activity.</param>

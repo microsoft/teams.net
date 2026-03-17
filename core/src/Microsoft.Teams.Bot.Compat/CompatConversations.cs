@@ -49,10 +49,7 @@ namespace Microsoft.Teams.Bot.Compat
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
 
-            Microsoft.Teams.Bot.Core.ConversationParameters convoParams = new()
-            {
-                Activity = parameters.Activity.FromCompatActivity()
-            };
+            Microsoft.Teams.Bot.Core.ConversationParameters convoParams = parameters.FromCompatConversationParameters();
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CreateConversationResponse res = await _client.CreateConversationAsync(
