@@ -82,8 +82,10 @@ public partial interface IActivity : IConvertible, ICloneable
     public string GetPath();
 
     /// <summary>
-    /// get the quote reply string form of this activity
+    /// Generates a quoted reply placeholder for the current activity.
+    /// See <see cref="MessageActivity.AddQuotedReply(string, string?)"/> for the recommended approach.
     /// </summary>
+    [Obsolete("Use MessageActivity.AddQuotedReply() instead.")]
     public string ToQuoteReply();
 }
 
@@ -189,12 +191,6 @@ public partial class Activity : IActivity
     public virtual Activity WithId(string value)
     {
         Id = value;
-        return this;
-    }
-
-    public virtual Activity WithReplyToId(string value)
-    {
-        ReplyToId = value;
         return this;
     }
 
@@ -446,24 +442,15 @@ public partial class Activity : IActivity
         return this;
     }
 
-    public string ToQuoteReply()
+    /// <summary>
+    /// Generates a quoted reply placeholder for the current activity.
+    /// See <see cref="MessageActivity.AddQuotedReply(string, string?)"/> for the recommended approach.
+    /// </summary>
+    [Obsolete("Use MessageActivity.AddQuotedReply() instead.")]
+    public virtual string ToQuoteReply()
     {
-        var text = string.Empty;
-
-        if (this is MessageActivity message)
-        {
-            text = $"<p itemprop=\"preview\">{message.Text}</p>";
-        }
-
-        return $"""
-        <blockquote itemscope="" itemtype="http://schema.skype.com/Reply" itemid="{Id}">
-            <strong itemprop="mri" itemid="{From.Id}">
-                {From.Name}
-            </strong>
-            <span itemprop="time" itemid="{Id}"></span>
-            {text}
-        </blockquote>
-        """;
+        if (Id == null) return string.Empty;
+        return $"<quoted messageId=\"{Id}\"/>";
     }
 
     public override string ToString()
