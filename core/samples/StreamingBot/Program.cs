@@ -73,8 +73,7 @@ teamsApp.OnMessage( async (context, cancellationToken) =>
         })
         .Build();
 
-    await writer.FinalizeResponseAsync(entities: [citation], cancellationToken);
-    await context.SendActivityAsync(new MessageActivity([card]), cancellationToken);
+    await writer.FinalizeResponseAsync(attachments: [card], entities: [citation], cancellationToken);
 });
 
 webApp.Run();
