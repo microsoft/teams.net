@@ -25,7 +25,7 @@ public static class HttpRequestExtensions
 
         if (string.IsNullOrEmpty(correlationVector))
         {
-            return correlationVector;
+            return string.Empty;
         }
 
         return correlationVector.Replace(Environment.NewLine, "", StringComparison.Ordinal);

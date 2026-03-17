@@ -79,13 +79,13 @@ public class HttpRequestExtensionsTests
     }
 
     [Fact]
-    public void GetCorrelationVector_WithMissingHeader_ReturnsNull()
+    public void GetCorrelationVector_WithMissingHeader_ReturnsEmptyString()
     {
         DefaultHttpContext httpContext = new();
 
         string? result = httpContext.Request.GetCorrelationVector();
 
-        Assert.Null(result);
+        Assert.Equal(string.Empty, result);
     }
 
     [Fact]
