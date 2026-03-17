@@ -36,7 +36,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, string aadSectionName = "AzureAd", ILogger? logger = null)
         {
             BotConfig botConfig = ResolveBotConfig(services, aadSectionName);
-            return services.AddBotAuthentication(aadSectionName, botConfig.ClientId, botConfig.TenantId, logger);
+            return services.AddBotAuthentication(botConfig.ClientId, botConfig.TenantId, aadSectionName, logger);
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             ILogger? logger = null)
         {
             AuthenticationBuilder builder = services.AddAuthentication();
-            builder.AddBotAuthentication(schemeName, clientId, tenantId, logger);
+            builder.AddBotAuthentication(clientId, tenantId, schemeName, logger);
             return builder;
         }
 
