@@ -13,12 +13,18 @@ public class ConversationClient : Client
     public readonly string ServiceUrl;
     public readonly ActivityClient Activities;
     public readonly MemberClient Members;
+    #pragma warning disable ExperimentalTeamsReactions
+    public readonly ReactionClient Reactions;
+    #pragma warning restore ExperimentalTeamsReactions
 
     public ConversationClient(string serviceUrl, CancellationToken cancellationToken = default) : base(cancellationToken)
     {
         ServiceUrl = serviceUrl;
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
+        #pragma warning disable ExperimentalTeamsReactions
+        Reactions = new ReactionClient(serviceUrl, _http, cancellationToken);
+        #pragma warning restore ExperimentalTeamsReactions
     }
 
     public ConversationClient(string serviceUrl, IHttpClient client, CancellationToken cancellationToken = default) : base(client, cancellationToken)
@@ -26,6 +32,9 @@ public class ConversationClient : Client
         ServiceUrl = serviceUrl;
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
+        #pragma warning disable ExperimentalTeamsReactions
+        Reactions = new ReactionClient(serviceUrl, _http, cancellationToken);
+        #pragma warning restore ExperimentalTeamsReactions
     }
 
     public ConversationClient(string serviceUrl, IHttpClientOptions options, CancellationToken cancellationToken = default) : base(options, cancellationToken)
@@ -33,6 +42,9 @@ public class ConversationClient : Client
         ServiceUrl = serviceUrl;
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
+        #pragma warning disable ExperimentalTeamsReactions
+        Reactions = new ReactionClient(serviceUrl, _http, cancellationToken);
+        #pragma warning restore ExperimentalTeamsReactions
     }
 
     public ConversationClient(string serviceUrl, IHttpClientFactory factory, CancellationToken cancellationToken = default) : base(factory, cancellationToken)
@@ -40,6 +52,9 @@ public class ConversationClient : Client
         ServiceUrl = serviceUrl;
         Activities = new ActivityClient(serviceUrl, _http, cancellationToken);
         Members = new MemberClient(serviceUrl, _http, cancellationToken);
+        #pragma warning disable ExperimentalTeamsReactions
+        Reactions = new ReactionClient(serviceUrl, _http, cancellationToken);
+        #pragma warning restore ExperimentalTeamsReactions
     }
 
     public async Task<ConversationResource> CreateAsync(CreateRequest request)

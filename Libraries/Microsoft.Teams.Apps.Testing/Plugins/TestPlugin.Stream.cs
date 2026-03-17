@@ -55,7 +55,7 @@ public partial class TestPlugin
             });
         }
 
-        public Task<MessageActivity?> Close()
+        public Task<MessageActivity?> Close(CancellationToken cancellationToken = default)
         {
             Closed = true;
             return Task.FromResult(_activity);

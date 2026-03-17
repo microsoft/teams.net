@@ -60,4 +60,47 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.SelectItemActivity
+        });
+
+        return app;
+    }
+
+    public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, CancellationToken, Task<Response<Api.MessageExtensions.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken),
+            Selector = activity => activity is MessageExtensions.SelectItemActivity
+        });
+
+        return app;
+    }
+
+    public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, CancellationToken, Task<Api.MessageExtensions.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken),
+            Selector = activity => activity is MessageExtensions.SelectItemActivity
+        });
+
+        return app;
+    }
 }

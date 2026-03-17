@@ -102,6 +102,7 @@ public partial class App
 
         this.OnTokenExchange(OnTokenExchangeActivity);
         this.OnVerifyState(OnVerifyStateActivity);
+        this.OnSignInFailure(OnSignInFailureActivity);
         this.OnError(OnErrorEvent);
         this.OnActivitySent(OnActivitySentEvent);
         this.OnActivityResponse(OnActivityResponseEvent);
@@ -175,6 +176,14 @@ public partial class App
         {
             throw new InvalidOperationException("app not started");
         }
+
+        // Validate targeted messages in proactive context
+        #pragma warning disable ExperimentalTeamsTargeted
+        if (activity is MessageActivity messageActivity && messageActivity.IsTargeted == true && messageActivity.Recipient is null)
+        {
+            throw new InvalidOperationException("Targeted messages sent proactively must specify an explicit recipient ID. Use WithRecipient(new Account { Id = recipientId }, true) with an explicit recipient.");
+        }
+        #pragma warning restore ExperimentalTeamsTargeted
 
         var reference = new ConversationReference()
         {
@@ -286,7 +295,7 @@ public partial class App
         var routes = Router.Select(@event.Activity);
         JsonWebToken? userToken = null;
 
-        var api = new ApiClient(Api);
+        var api = new ApiClient(Api, cancellationToken);
 
         try
         {
@@ -382,7 +391,7 @@ public partial class App
         }
 
         var res = await Next(context);
-        await stream.Close();
+        await stream.Close(cancellationToken);
 
         var response = res is Response value
             ? value
