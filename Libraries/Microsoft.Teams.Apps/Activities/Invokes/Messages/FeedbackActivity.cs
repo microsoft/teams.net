@@ -45,4 +45,24 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    /// <summary>
+    /// Registers a handler for message feedback activities with cancellation token support
+    /// </summary>
+    public static App OnFeedback(this App app, Func<IContext<Messages.SubmitActionActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Messages.SubmitAction, "feedback"]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Messages.SubmitActionActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is Messages.SubmitActionActivity submitAction && submitAction.Value?.ActionName == "feedback"
+        });
+
+        return app;
+    }
 }

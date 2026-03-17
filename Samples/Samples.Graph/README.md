@@ -12,7 +12,7 @@ This sample demonstrates how to implement OAuth authentication and Microsoft Gra
 
 ## Prerequisites
 
-- .NET 9.0
+- .NET 8.0
 - Azure Bot Service registration
 - Microsoft Graph OAuth connection configured in Azure Bot Service
 - Dev tunnels or ngrok for local development
@@ -21,11 +21,11 @@ This sample demonstrates how to implement OAuth authentication and Microsoft Gra
 
 ```
 Samples.Graph/
-├── Program.cs                          # Main bot logic and OAuth handlers
-├── Samples.Graph.csproj               # Project file with SDK dependencies
-├── appsettings.json                   # Bot credentials configuration
-├── Properties/launchSettings.json     # Launch configuration (port 3978)
-└── README.md                         # This file
+├── Program.cs                                  # Main bot logic and OAuth handlers
+├── Samples.Graph.csproj                        # Project file with SDK dependencies
+├── appsettings.json                            # Bot credentials configuration
+├── Properties/launchSettings.TEMPLATE.json     # Launch configuration (port 3978). Rename to launchSettings.json
+└── README.md                                   # This file
 ```
 
 ## Setup

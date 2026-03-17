@@ -83,13 +83,13 @@ public partial class AspNetCorePlugin
             });
         }
 
-        public async Task<MessageActivity?> Close()
+        public async Task<MessageActivity?> Close(CancellationToken cancellationToken = default)
         {
             if (_index == 1 && _queue.Count == 0 && _lock.CurrentCount > 0) return null;
             if (_result is not null) return _result;
             while (_id is null || _queue.Count > 0)
             {
-                await Task.Delay(50);
+                await Task.Delay(50, cancellationToken);
             }
 
             if (_text == string.Empty && _attachments.Count == 0) // when only informative updates are present

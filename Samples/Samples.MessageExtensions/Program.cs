@@ -34,15 +34,15 @@ var teams = app.UseTeams();
 // Serve settings page
 app.MapGet("/settings", () => Results.Content(GetSettingsHtml(), "text/html"));
 
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
     var activity = context.Activity;
     context.Log.Info($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
     context.Log.Info($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
-    await context.Send($"Echo: {activity.Text}\n\nThis is a message extension bot. Use the message extension commands in Teams to test functionality.");
+    await context.Send($"Echo: {activity.Text}\n\nThis is a message extension bot. Use the message extension commands in Teams to test functionality.", cancellationToken);
 });
 
-teams.OnQuery(context =>
+teams.OnQuery((context, cancellationToken) =>
 {
     context.Log.Info("[MESSAGE_EXT_QUERY] Search query received");
     var activity = context.Activity;
@@ -66,7 +66,7 @@ teams.OnQuery(context =>
     });
 });
 
-teams.OnSubmitAction(context =>
+teams.OnSubmitAction((context, cancellationToken) =>
 {
     context.Log.Info("[MESSAGE_EXT_SUBMIT] Action submit received");
     var activity = context.Activity;
@@ -85,7 +85,7 @@ teams.OnSubmitAction(context =>
     return Task.FromResult(response);
 });
 
-teams.OnQueryLink(context =>
+teams.OnQueryLink((context, cancellationToken) =>
 {
     context.Log.Info("[MESSAGE_EXT_QUERY_LINK] Link unfurling received");
     var activity = context.Activity;
@@ -100,7 +100,7 @@ teams.OnQueryLink(context =>
     return Task.FromResult(CreateLinkUnfurlResponse(url, context.Log));
 });
 
-teams.OnSelectItem(context =>
+teams.OnSelectItem((context, cancellationToken) =>
 {
     context.Log.Info("[MESSAGE_EXT_SELECT_ITEM] Item selection received");
     var activity = context.Activity;
@@ -109,7 +109,7 @@ teams.OnSelectItem(context =>
     return Task.FromResult(CreateItemSelectionResponse(selectedItem, context.Log));
 });
 
-teams.OnQuerySettingsUrl(context =>
+teams.OnQuerySettingsUrl((context, cancellationToken) =>
 {
     context.Log.Info("[MESSAGE_EXT_QUERY_SETTINGS_URL] Settings URL requested");
     return Task.FromResult(new Microsoft.Teams.Api.MessageExtensions.Response
@@ -122,7 +122,7 @@ teams.OnQuerySettingsUrl(context =>
     });
 });
 
-teams.OnFetchTask(context =>
+teams.OnFetchTask((context, cancellationToken) =>
 {
     context.Log.Info("[MESSAGE_EXT_FETCH_TASK] Fetch task received");
     var activity = context.Activity;
@@ -131,7 +131,7 @@ teams.OnFetchTask(context =>
     return Task.FromResult(CreateFetchTaskResponse(commandId, context.Log));
 });
 
-teams.OnSetting(context =>
+teams.OnSetting((context, cancellationToken) =>
 {
     context.Log.Info("[MESSAGE_EXT_SETTING] Settings received");
     var activity = context.Activity;

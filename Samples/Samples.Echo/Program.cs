@@ -8,17 +8,17 @@ builder.AddTeams().AddTeamsDevTools();
 var app = builder.Build();
 var teams = app.UseTeams();
 
-teams.OnActivity(async context =>
+teams.OnActivity(async (context, cancellationToken) =>
 {
     context.Log.Info(context.AppId);
     await context.Next();
 });
 
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
     context.Log.Info("hit!");
-    await context.Typing();
-    await context.Send($"you said '{context.Activity.Text}'");
+    await context.Typing("processing your response", cancellationToken);
+    await context.Send($"you said '{context.Activity.Text}'", cancellationToken);
 });
 
 app.Run();

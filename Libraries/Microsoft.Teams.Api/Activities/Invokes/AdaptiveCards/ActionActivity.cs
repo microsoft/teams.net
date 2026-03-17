@@ -25,6 +25,10 @@ public static partial class AdaptiveCards
         /// </summary>
         [JsonPropertyName("value")]
         [JsonPropertyOrder(32)]
-        public new required Api.AdaptiveCards.InvokeValue Value { get; set; }
+        public new required Api.AdaptiveCards.InvokeValue Value
+        {
+            get => (Api.AdaptiveCards.InvokeValue)base.Value!;
+            set => base.Value = value;
+        }
     }
 }
