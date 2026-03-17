@@ -1,6 +1,9 @@
 using System.Text.Json;
 
+using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
+
+using static Microsoft.Teams.Api.Activities.Invokes.MessageExtensions;
 
 namespace Microsoft.Teams.Api.Tests.Activities.Invokes.MessageExtensions;
 
@@ -30,5 +33,24 @@ public class MessageExtensionsTests
         var json = "{\"type\":\"invoke\",\"name\":\"composeExtension/other\"}";
         var ex = Assert.Throws<JsonException>(() => Deserialize(json));
         Assert.Contains("doesn't match any known types", ex.Message);
+    }
+
+    [Fact]
+    public void MessageExtension_Query_Value_AccessibleFromDerivedType()
+    {
+        var json = "{\"type\":\"invoke\",\"name\":\"composeExtension/query\",\"value\":{\"commandId\":\"searchCmd\"}}";
+        MessageExtensionActivity? activity = Deserialize(json);
+        var query = Assert.IsType<QueryActivity>(activity);
+        Assert.NotNull(query.Value);
+        Assert.Equal("searchCmd", query.Value.CommandId);
+    }
+
+    [Fact]
+    public void MessageExtension_Query_Value_AccessibleFromBaseType()
+    {
+        var json = "{\"type\":\"invoke\",\"name\":\"composeExtension/query\",\"value\":{\"commandId\":\"searchCmd\"}}";
+        var activity = Deserialize(json);
+        var invoke = Assert.IsAssignableFrom<InvokeActivity>(activity);
+        Assert.NotNull(invoke.Value);
     }
 }

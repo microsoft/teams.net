@@ -43,4 +43,21 @@ public static partial class AppEventActivityExtensions
 
         return app;
     }
+
+    public static App OnMeetingJoin(this App app, Func<IContext<MeetingParticipantJoinActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Event, Name.MeetingParticipantJoin]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MeetingParticipantJoinActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is MeetingParticipantJoinActivity
+        });
+
+        return app;
+    }
 }
