@@ -70,6 +70,14 @@ public class MessageActivity : Activity
     {
         get => (Entities ?? []).Any(e => e is MentionEntity mention && mention.Mentioned.Id == Recipient.Id);
     }
+    /// <summary>
+    /// Get all quoted reply entities from this message activity.
+    /// </summary>
+    public IReadOnlyList<QuotedReplyEntity> GetQuotedMessages()
+    {
+        return Entities?.OfType<QuotedReplyEntity>().ToList()
+            ?? new List<QuotedReplyEntity>();
+    }
 
     public MessageActivity() : base(ActivityType.Message)
     {
@@ -159,6 +167,26 @@ public class MessageActivity : Activity
         return (MessageActivity)base.WithRecipient(value, isTargeted);
     }
     #pragma warning restore ExperimentalTeamsTargeted
+
+    /// <summary>
+    /// Add a quotedReply entity for the given message ID and append a placeholder to Text.
+    /// If response is provided, it is appended after the placeholder.
+    /// </summary>
+    public MessageActivity AddQuotedReply(string messageId, string? response = null)
+    {
+        Entities ??= new List<IEntity>();
+        Entities.Add(new QuotedReplyEntity
+        {
+            QuotedReply = new QuotedReplyData { MessageId = messageId }
+        });
+        AddText($"<quoted messageId=\"{messageId}\"/>");
+        if (response != null)
+        {
+            AddText($" {response}");
+        }
+        return this;
+    }
+
 
     public MessageActivity AddAttachment(params Attachment[] value)
     {
