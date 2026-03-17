@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Entities;
 
 namespace Microsoft.Teams.Apps;
 
@@ -50,6 +51,22 @@ public partial interface IContext<TActivity>
     public Task<MessageActivity> Reply(Cards.AdaptiveCard card, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// send an activity to the conversation as a quoted reply to an arbitrary message
+    /// </summary>
+    /// <param name="messageId">the id of the message to quote</param>
+    /// <param name="activity">activity to send</param>
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<T> QuoteReply<T>(string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity;
+
+    /// <summary>
+    /// send a message activity as a quoted reply to an arbitrary message
+    /// </summary>
+    /// <param name="messageId">the id of the message to quote</param>
+    /// <param name="text">the text to send</param>
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<MessageActivity> QuoteReply(string messageId, string text, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// send a typing activity
     /// </summary>
     /// <param name="text">optional text to include</param>
@@ -79,14 +96,21 @@ public partial class Context<TActivity> : IContext<TActivity>
     public Task<T> Reply<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
         activity.Conversation = Ref.Conversation.Copy();
-        activity.Conversation.Id = Ref.Conversation.ThreadId;
 
-        if (activity is MessageActivity message)
+        if (Activity.Id != null)
         {
-            message.Text = string.Join("\n", [
-                Activity.ToQuoteReply(),
-                message.Text != string.Empty ? $"<p>{message.Text}</p>" : string.Empty
-            ]);
+            var placeholder = $"<quoted messageId=\"{Activity.Id}\"/>";
+            activity.Entities ??= new List<IEntity>();
+            activity.Entities.Add(new QuotedReplyEntity
+            {
+                QuotedReply = new QuotedReplyData { MessageId = Activity.Id }
+            });
+
+            if (activity is MessageActivity message)
+            {
+                var text = message.Text?.Trim() ?? "";
+                message.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
+            }
         }
 
         return Send(activity, cancellationToken);
@@ -100,6 +124,29 @@ public partial class Context<TActivity> : IContext<TActivity>
     public Task<MessageActivity> Reply(Cards.AdaptiveCard card, CancellationToken cancellationToken = default)
     {
         return Reply(new MessageActivity().AddAttachment(card), cancellationToken);
+    }
+
+    public Task<T> QuoteReply<T>(string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity
+    {
+        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
+        activity.Entities ??= new List<IEntity>();
+        activity.Entities.Add(new QuotedReplyEntity
+        {
+            QuotedReply = new QuotedReplyData { MessageId = messageId }
+        });
+
+        if (activity is MessageActivity message)
+        {
+            var text = message.Text?.Trim() ?? "";
+            message.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
+        }
+
+        return Send(activity, cancellationToken);
+    }
+
+    public Task<MessageActivity> QuoteReply(string messageId, string text, CancellationToken cancellationToken = default)
+    {
+        return QuoteReply(messageId, new MessageActivity(text), cancellationToken);
     }
 
     public Task<TypingActivity> Typing(string? text = null, CancellationToken cancellationToken = default)

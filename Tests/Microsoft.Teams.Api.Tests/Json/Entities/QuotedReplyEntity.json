@@ -1,0 +1,12 @@
+{
+  "type": "quotedReply",
+  "quotedReply": {
+    "messageId": "1234567890",
+    "senderId": "user-1",
+    "senderName": "Test User",
+    "preview": "Hello, world!",
+    "time": "2025-01-01T00:00:00Z",
+    "isReplyDeleted": false,
+    "validatedMessageReference": true
+  }
+}
