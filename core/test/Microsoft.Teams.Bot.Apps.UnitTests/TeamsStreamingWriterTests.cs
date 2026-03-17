@@ -7,9 +7,9 @@ using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.UnitTests.Streaming;
+namespace Microsoft.Teams.Bot.Apps.UnitTests;
 
-public class ActivityStreamingWriterTests
+public class TeamsStreamingWriterTests
 {
     // Fake HttpMessageHandler that captures requests and returns pre-configured responses.
     private sealed class FakeHttpMessageHandler : HttpMessageHandler
@@ -47,11 +47,11 @@ public class ActivityStreamingWriterTests
         Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "bot-123", Name = "Bot" })
     };
 
-    private static (ActivityStreamingWriter writer, FakeHttpMessageHandler handler) CreateWriter(TeamsActivity? reference = null)
+    private static (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) CreateWriter(TeamsActivity? reference = null)
     {
         FakeHttpMessageHandler handler = new();
         ConversationClient client = new(new HttpClient(handler), NullLogger<ConversationClient>.Instance);
-        ActivityStreamingWriter writer = new(client, reference ?? CreateReferenceActivity());
+        TeamsStreamingWriter writer = new(client, reference ?? CreateReferenceActivity());
         return (writer, handler);
     }
 
@@ -60,7 +60,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task AppendAsync_AfterFinalizeAsync_ThrowsInvalidOperationException()
     {
-        (ActivityStreamingWriter writer, _) = CreateWriter();
+        (TeamsStreamingWriter writer, _) = CreateWriter();
 
         await writer.AppendAsync("Hello");
         await writer.FinalizeAsync();
@@ -71,7 +71,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task FinalizeAsync_CalledTwice_ThrowsInvalidOperationException()
     {
-        (ActivityStreamingWriter writer, _) = CreateWriter();
+        (TeamsStreamingWriter writer, _) = CreateWriter();
 
         await writer.AppendAsync("Hello");
         await writer.FinalizeAsync();
@@ -84,7 +84,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task SendInformativeAsync_SendsMessageActivityWithInformativeStreamType()
     {
-        (ActivityStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.SendInformativeAsync("Thinking…");
 
@@ -99,7 +99,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task AppendAsync_AfterSendInformativeAsync_SendsAccumulatedText()
     {
-        (ActivityStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.SendInformativeAsync("Hello");
         await writer.AppendAsync("World");
@@ -114,7 +114,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task FinalizeAsync_AfterInformative_SendsAccumulatedTextAsFinal()
     {
-        (ActivityStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.SendInformativeAsync("Hello");
         await writer.AppendAsync("Final");
@@ -131,7 +131,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task AppendAsync_AccumulatesChunksAndSendsFullTextEachTime()
     {
-        (ActivityStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.AppendAsync("Hello");
         await writer.AppendAsync(", world");
@@ -144,7 +144,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task FinalizeAsync_SendsFullAccumulatedText()
     {
-        (ActivityStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.AppendAsync("Hello");
         await writer.AppendAsync(", world");
@@ -158,7 +158,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task FinalizeAsync_WithNoAppendCalls_ThrowsInvalidOperationException()
     {
-        (ActivityStreamingWriter writer, _) = CreateWriter();
+        (TeamsStreamingWriter writer, _) = CreateWriter();
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeAsync());
     }
@@ -166,7 +166,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task FinalizeAsync_AfterOnlyInformative_ThrowsInvalidOperationException()
     {
-        (ActivityStreamingWriter writer, _) = CreateWriter();
+        (TeamsStreamingWriter writer, _) = CreateWriter();
 
         await writer.SendInformativeAsync("Thinking…");
 
@@ -178,7 +178,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task AppendAsync_MultipleChunks_IncrementsSequenceCorrectly()
     {
-        (ActivityStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.SendInformativeAsync("Hello");   // sequence 1
         await writer.AppendAsync("chunk 1");           // sequence 2
@@ -191,7 +191,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task AppendAsync_WithoutInformative_SequenceStartsAtOne()
     {
-        (ActivityStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.AppendAsync("chunk 1");   // sequence 1
         await writer.AppendAsync("chunk 2");   // sequence 2
@@ -207,7 +207,7 @@ public class ActivityStreamingWriterTests
     [Fact]
     public async Task AllChunks_ShareTheSameStreamId()
     {
-        (ActivityStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
         await writer.SendInformativeAsync("Hello");
         await writer.AppendAsync("chunk");

@@ -33,9 +33,12 @@ public class TeamsActivity : CoreActivity
     /// <returns>A JSON string representation of the activity using the type-specific serializer.</returns>
     public override string ToJson()
     {
-        return Type == TeamsActivityType.Message
-            ? ToJson(TeamsActivityJsonContext.Default.MessageActivity)
-            : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);  // Fallback to base type
+        return this switch
+        {
+            MessageActivity => ToJson(TeamsActivityJsonContext.Default.MessageActivity),
+            TypingActivity  => ToJson(TeamsActivityJsonContext.Default.TypingActivity),
+            _               => ToJson(TeamsActivityJsonContext.Default.TeamsActivity)
+        };
     }
 
     /// <summary>
