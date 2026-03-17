@@ -23,6 +23,9 @@ public static class MessageExtensions
     /// <summary>
     /// Registers a handler for message activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -46,6 +49,9 @@ public static class MessageExtensions
     /// <summary>
     /// Registers a handler for message activities matching the specified pattern.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="pattern"></param>
     /// <param name="handler"></param>
@@ -71,6 +77,9 @@ public static class MessageExtensions
     /// <summary>
     /// Registers a handler for message activities matching the specified regex.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="regex"></param>
     /// <param name="handler"></param>

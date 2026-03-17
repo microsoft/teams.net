@@ -22,6 +22,9 @@ public static class InstallUpdateExtensions
     /// <summary>
     /// Registers a handler for installation update activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -44,6 +47,9 @@ public static class InstallUpdateExtensions
     /// <summary>
     /// Registers a handler for installation add activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -66,6 +72,9 @@ public static class InstallUpdateExtensions
     /// <summary>
     /// Registers a handler for installation remove activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>

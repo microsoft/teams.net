@@ -22,6 +22,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for conversation update activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -44,6 +47,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for conversation update activities where members were added.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -66,6 +72,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for conversation update activities where members were removed.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -90,6 +99,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel created events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -112,6 +124,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel deleted events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -134,6 +149,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel renamed events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -270,6 +288,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team member added events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -292,6 +313,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team member removed events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -314,6 +338,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team archived events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -336,6 +363,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team deleted events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -358,6 +388,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team renamed events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -380,6 +413,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team unarchived events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>

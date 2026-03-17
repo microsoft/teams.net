@@ -106,7 +106,7 @@ public static class AddBotApplicationExtensions
             };
         });
         services.AddHttpContextAccessor();
-        services.AddBotAuthorization(logger, sectionName);
+        services.AddBotAuthorization(sectionName, logger);
         services.AddConversationClient(sectionName);
         services.AddUserTokenClient(sectionName);
         services.AddSingleton<TApp>();
