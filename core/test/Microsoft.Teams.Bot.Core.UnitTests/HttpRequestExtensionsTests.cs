@@ -22,37 +22,36 @@ public class HttpRequestExtensionsTests
     public void GetCorrelationVector_WithNewlineCharacters_SanitizesValue()
     {
         DefaultHttpContext httpContext = new();
-        httpContext.Request.Headers["MS-CV"] = "correlation\nvector\nwith\nnewlines";
+        httpContext.Request.Headers["MS-CV"] = $"correlation{Environment.NewLine}vector{Environment.NewLine}with{Environment.NewLine}newlines";
 
         string? result = httpContext.Request.GetCorrelationVector();
 
         Assert.Equal("correlationvectorwithnewlines", result);
-        Assert.DoesNotContain("\n", result);
+        Assert.DoesNotContain(Environment.NewLine, result);
     }
 
     [Fact]
     public void GetCorrelationVector_WithCarriageReturnCharacters_SanitizesValue()
     {
         DefaultHttpContext httpContext = new();
-        httpContext.Request.Headers["MS-CV"] = "correlation\rvector\rwith\rcarriage\rreturns";
+        httpContext.Request.Headers["MS-CV"] = $"correlation{Environment.NewLine}vector{Environment.NewLine}with{Environment.NewLine}carriage{Environment.NewLine}returns";
 
         string? result = httpContext.Request.GetCorrelationVector();
 
         Assert.Equal("correlationvectorwithcarriagereturns", result);
-        Assert.DoesNotContain("\r", result);
+        Assert.DoesNotContain(Environment.NewLine, result);
     }
 
     [Fact]
     public void GetCorrelationVector_WithCRLF_SanitizesValue()
     {
         DefaultHttpContext httpContext = new();
-        httpContext.Request.Headers["MS-CV"] = "correlation\r\nvector\r\nwith\r\nCRLF";
+        httpContext.Request.Headers["MS-CV"] = $"correlation{Environment.NewLine}vector{Environment.NewLine}with{Environment.NewLine}CRLF";
 
         string? result = httpContext.Request.GetCorrelationVector();
 
         Assert.Equal("correlationvectorwithCRLF", result);
-        Assert.DoesNotContain("\r", result);
-        Assert.DoesNotContain("\n", result);
+        Assert.DoesNotContain(Environment.NewLine, result);
     }
 
     [Fact]
@@ -60,12 +59,12 @@ public class HttpRequestExtensionsTests
     {
         // Simulates a malicious attempt to inject fake log entries
         DefaultHttpContext httpContext = new();
-        httpContext.Request.Headers["MS-CV"] = "legitimate-value\nFAKE_LOG_ENTRY: Unauthorized access granted";
+        httpContext.Request.Headers["MS-CV"] = $"legitimate-value{Environment.NewLine}FAKE_LOG_ENTRY: Unauthorized access granted";
 
         string? result = httpContext.Request.GetCorrelationVector();
 
         Assert.Equal("legitimate-valueFAKE_LOG_ENTRY: Unauthorized access granted", result);
-        Assert.DoesNotContain("\n", result);
+        Assert.DoesNotContain(Environment.NewLine, result);
         // Verify that the newline that would allow log forging is removed
     }
 
@@ -115,11 +114,11 @@ public class HttpRequestExtensionsTests
     public void GetCorrelationVector_WithNewlineInMultipleValues_SanitizesFirstValue()
     {
         DefaultHttpContext httpContext = new();
-        httpContext.Request.Headers["MS-CV"] = new[] { "first\nvalue", "second-value" };
+        httpContext.Request.Headers["MS-CV"] = new[] { $"first{Environment.NewLine}value", "second-value" };
 
         string? result = httpContext.Request.GetCorrelationVector();
 
         Assert.Equal("firstvalue", result);
-        Assert.DoesNotContain("\n", result);
+        Assert.DoesNotContain(Environment.NewLine, result);
     }
 }

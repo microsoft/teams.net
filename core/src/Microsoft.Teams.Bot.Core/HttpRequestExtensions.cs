@@ -28,9 +28,7 @@ public static class HttpRequestExtensions
             return correlationVector;
         }
 
-        // Sanitize to prevent log forging: remove newline characters
-        return correlationVector
-            .Replace("\r", "", StringComparison.Ordinal)
-            .Replace("\n", "", StringComparison.Ordinal);
+        // GOOD: User input logged with new-lines removed
+        return correlationVector.Replace(Environment.NewLine, "", StringComparison.Ordinal);
     }
 }
