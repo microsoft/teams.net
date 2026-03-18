@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Api.Entities;
 
+[Experimental("ExperimentalTeamsQuotedReplies")]
 public class QuotedReplyEntity : Entity
 {
     [JsonPropertyName("quotedReply")]
@@ -14,6 +16,7 @@ public class QuotedReplyEntity : Entity
     public QuotedReplyEntity() : base("quotedReply") { }
 }
 
+[Experimental("ExperimentalTeamsQuotedReplies")]
 public class QuotedReplyData
 {
     [JsonPropertyName("messageId")]
