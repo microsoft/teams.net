@@ -377,7 +377,9 @@ public class ConversationClientTest
             Conversation = new()
             {
                 Id = response.Id
-            }
+            },
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties()
+
         };
 
         SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
@@ -388,7 +390,7 @@ public class ConversationClientTest
     }
 
     // TODO: This doesn't work
-    [Fact(Skip = "Incorrect conversation creation parameters")]
+    [Fact]
     public async Task CreateConversation_WithGroup()
     {
         // Create a group conversation
@@ -406,7 +408,7 @@ public class ConversationClientTest
                     Id = Environment.GetEnvironmentVariable("TEST_USER_ID_2") ?? throw new InvalidOperationException("TEST_USER_ID_2 environment variable not set"),
                 }
             ],
-            TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
+            TenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set")
         };
 
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
@@ -429,7 +431,8 @@ public class ConversationClientTest
             Conversation = new()
             {
                 Id = response.Id
-            }
+            },
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
@@ -440,7 +443,7 @@ public class ConversationClientTest
     }
 
     // TODO: This doesn't work
-    [Fact(Skip = "Incorrect conversation creation parameters")]
+    [Fact]
     public async Task CreateConversation_WithTopicName()
     {
         // Create a conversation with a topic name
@@ -455,12 +458,13 @@ public class ConversationClientTest
                     Id = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set"),
                 }
             ],
-            TenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set")
+            TenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set")
         };
 
         CreateConversationResponse response = await _conversationClient.CreateConversationAsync(
             parameters,
             _serviceUrl,
+            AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(response);
@@ -477,7 +481,8 @@ public class ConversationClientTest
             Conversation = new()
             {
                 Id = response.Id
-            }
+            },
+            From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
