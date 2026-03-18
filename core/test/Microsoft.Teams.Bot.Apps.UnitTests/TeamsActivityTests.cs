@@ -238,8 +238,7 @@ public class TeamsActivityTests
     {
         string minActivityJson = """
             {
-              "type": "message",
-              "isTargeted": false
+              "type": "message"
             }
             """;
 

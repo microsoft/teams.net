@@ -25,6 +25,8 @@ public class ActivitiesApi
         _client = conversationClient;
     }
 
+    // TODO: Resolve comment https://github.com/microsoft/teams.net/pull/334/changes#r2824918487
+
     /// <summary>
     /// Sends an activity to a conversation.
     /// </summary>
@@ -180,7 +182,7 @@ public class ActivitiesApi
     /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains a list of members for the activity.</returns>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a list of conversation members.</returns>
     public Task<IList<ConversationAccount>> GetMembersAsync(
         string conversationId,
         string activityId,
