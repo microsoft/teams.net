@@ -71,7 +71,7 @@ public class MessageActivity : Activity
         get => (Entities ?? []).Any(e => e is MentionEntity mention && mention.Mentioned.Id == Recipient.Id);
     }
     /// <summary>
-    /// Get all quoted reply entities from this message activity.
+    /// Get all quoted reply entities from this message.
     /// </summary>
     public IReadOnlyList<QuotedReplyEntity> GetQuotedMessages()
     {

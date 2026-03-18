@@ -30,28 +30,28 @@ public partial interface IContext<TActivity>
     public Task<MessageActivity> Send(Cards.AdaptiveCard card, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// send an activity to the conversation as a reply
+    /// send an activity to the conversation as a reply, automatically quoting the inbound message
     /// </summary>
-    /// <param name="activity">activity activity to send</param>
+    /// <param name="activity">activity to send</param>
     /// <param name="cancellationToken">optional cancellation token</param>
     public Task<T> Reply<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity;
 
     /// <summary>
-    /// send a message activity to the conversation as a reply
+    /// send a message activity to the conversation as a reply, automatically quoting the inbound message
     /// </summary>
     /// <param name="text">the text to send</param>
     /// <param name="cancellationToken">optional cancellation token</param>
     public Task<MessageActivity> Reply(string text, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// send a message activity with a card attachment as a reply
+    /// send a message activity with a card attachment as a reply, automatically quoting the inbound message
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
     /// <param name="cancellationToken">optional cancellation token</param>
     public Task<MessageActivity> Reply(Cards.AdaptiveCard card, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// send an activity to the conversation as a quoted reply to an arbitrary message
+    /// send an activity to the conversation as a reply quoting a specific message by ID
     /// </summary>
     /// <param name="messageId">the id of the message to quote</param>
     /// <param name="activity">activity to send</param>
@@ -59,7 +59,7 @@ public partial interface IContext<TActivity>
     public Task<T> QuoteReply<T>(string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity;
 
     /// <summary>
-    /// send a message activity as a quoted reply to an arbitrary message
+    /// send a message activity as a reply quoting a specific message by ID
     /// </summary>
     /// <param name="messageId">the id of the message to quote</param>
     /// <param name="text">the text to send</param>
