@@ -99,11 +99,6 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         if (!isTargeted)
         {
             activity.Recipient = reference.User;
-
-            if (activity.Recipient is not null)
-            {
-                activity.Recipient.IsTargeted = null;
-            }
         }
 
         if (activity.Id is not null && !activity.IsStreaming)

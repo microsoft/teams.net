@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Api.Memberships;
@@ -36,6 +37,7 @@ public class Account
 
     [JsonPropertyName("isTargeted")]
     [JsonPropertyOrder(6)]
+    [Experimental("ExperimentalTeamsTargeted")]
     public bool? IsTargeted { get; set; }
 }
 

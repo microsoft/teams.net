@@ -225,7 +225,9 @@ public partial class Activity : IActivity
     public virtual Activity WithRecipient(Account value)
     {
         Recipient = value;
+        #pragma warning disable ExperimentalTeamsTargeted
         Recipient.IsTargeted = null;
+        #pragma warning restore ExperimentalTeamsTargeted
         return this;
     }
 
