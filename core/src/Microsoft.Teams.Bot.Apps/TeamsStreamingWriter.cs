@@ -41,6 +41,7 @@ public sealed class TeamsStreamingWriter
     private string? _streamId;
     private int _sequence;
     private bool _finalized;
+    private bool _cancelled;
     private string _accumulated = string.Empty;
     private DateTime _lastChunkSent = DateTime.MinValue;
 
@@ -56,9 +57,9 @@ public sealed class TeamsStreamingWriter
     /// </summary>
     public async Task SendInformativeUpdateAsync(string text, CancellationToken cancellationToken = default)
     {
-        _sequence = 1;
+        _sequence++;
         var response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
-        _streamId = response.Id;
+        _streamId ??= response.Id;
     }
 
     /// <summary>
@@ -71,15 +72,25 @@ public sealed class TeamsStreamingWriter
         if (_finalized)
             throw new InvalidOperationException("Cannot append after FinalizeResponseAsync has been called.");
 
+        if (_cancelled)
+            return;
+
         _accumulated += chunk;
 
         if (DateTime.UtcNow - _lastChunkSent < _minChunkInterval)
             return;
 
         _sequence++;
-        var response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
-        _streamId ??= response.Id;
-        _lastChunkSent = DateTime.UtcNow;
+        try
+        {
+            var response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
+            _streamId ??= response.Id;
+            _lastChunkSent = DateTime.UtcNow;
+        }
+        catch (HttpRequestException ex) when (ex.Message.Contains("Content stream was cancelled by user", StringComparison.OrdinalIgnoreCase))
+        {
+            _cancelled = true;
+        }
     }
 
     /// <summary>
@@ -93,6 +104,9 @@ public sealed class TeamsStreamingWriter
     {
         if (_finalized)
             throw new InvalidOperationException("Cannot finalize after FinalizeResponseAsync has already been called.");
+
+        if (_cancelled)
+            return;
 
         if (string.IsNullOrEmpty(_accumulated))
             throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");

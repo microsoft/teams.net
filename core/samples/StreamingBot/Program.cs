@@ -25,6 +25,8 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
 {
     TeamsStreamingWriter writer = context.GetStreamingWriter();
     await writer.SendInformativeUpdateAsync("Thinking…", cancellationToken);
+    await Task.Delay(500, cancellationToken);
+    await writer.SendInformativeUpdateAsync("Thinking again !!!", cancellationToken);
 
     string userText = context.Activity.Text ?? "Tell me something interesting.";
 
