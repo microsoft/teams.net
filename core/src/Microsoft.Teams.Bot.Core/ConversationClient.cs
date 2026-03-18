@@ -57,7 +57,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += activity.ReplyToId;
         }
 
-        if (activity.IsTargeted)
+        if (activity.Recipient?.IsTargeted == true)
         {
             url += url.Contains('?', StringComparison.Ordinal) ? "&isTargetedActivity=true" : "?isTargetedActivity=true";
         }
@@ -95,7 +95,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}";
 
-        if (activity.IsTargeted)
+        if (activity.Recipient?.IsTargeted == true)
         {
             url += "?isTargetedActivity=true";
         }
@@ -112,6 +112,54 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             cancellationToken).ConfigureAwait(false))!;
     }
 
+
+    /// <summary>
+    /// Updates an existing targeted activity in a conversation.
+    /// The activity body is sent without the targeted recipient to avoid "Cannot edit Recipient of Targeted Message" errors.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="activityId">The ID of the activity to update. Cannot be null or whitespace.</param>
+    /// <param name="activity">The updated activity data. Cannot be null. Must contain a valid ServiceUrl.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
+    public virtual async Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string activityId, CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
+        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}?isTargetedActivity=true";
+
+        string body = activity.ToJson();
+
+        logger.LogTrace("Updating targeted activity at {Url}: {Activity}", url, body);
+
+        return (await _botHttpClient.SendAsync<UpdateActivityResponse>(
+            HttpMethod.Put,
+            url,
+            body,
+            CreateRequestOptions(activity.From?.GetAgenticIdentity(), "updating targeted activity", customHeaders),
+            cancellationToken).ConfigureAwait(false))!;
+    }
+
+    /// <summary>
+    /// Deletes an existing targeted activity from a conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
+    /// <param name="activityId">The ID of the activity to delete. Cannot be null or whitespace.</param>
+    /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
+    public virtual async Task DeleteTargetedActivityAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    {
+        await DeleteActivityAsync(conversationId, activityId, serviceUrl, isTargeted: true, agenticIdentity, customHeaders, cancellationToken).ConfigureAwait(false);
+    }
 
     /// <summary>
     /// Deletes an existing activity from a conversation.
@@ -184,7 +232,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             activity.Conversation.Id,
             activity.Id,
             activity.ServiceUrl,
-            activity.IsTargeted,
+            activity.Recipient?.IsTargeted == true,
             activity.From?.GetAgenticIdentity(),
             customHeaders,
             cancellationToken).ConfigureAwait(false);

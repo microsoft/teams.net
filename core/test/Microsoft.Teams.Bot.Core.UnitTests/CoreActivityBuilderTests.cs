@@ -488,8 +488,8 @@ public class CoreActivityBuilderTests
             .WithRecipient(new ConversationAccount { Id = "user-123" })
             .Build();
 
-        Assert.False(activity.IsTargeted);
         Assert.NotNull(activity.Recipient);
+        Assert.Null(activity.Recipient.IsTargeted);
         Assert.Equal("user-123", activity.Recipient.Id);
     }
 
@@ -500,8 +500,8 @@ public class CoreActivityBuilderTests
             .WithRecipient(new ConversationAccount { Id = "user-123" }, true)
             .Build();
 
-        Assert.True(activity.IsTargeted);
         Assert.NotNull(activity.Recipient);
+        Assert.True(activity.Recipient.IsTargeted);
         Assert.Equal("user-123", activity.Recipient.Id);
     }
 
@@ -512,8 +512,8 @@ public class CoreActivityBuilderTests
             .WithRecipient(new ConversationAccount { Id = "user-123" }, false)
             .Build();
 
-        Assert.False(activity.IsTargeted);
         Assert.NotNull(activity.Recipient);
+        Assert.False(activity.Recipient.IsTargeted);
         Assert.Equal("user-123", activity.Recipient.Id);
     }
 
@@ -537,8 +537,8 @@ public class CoreActivityBuilderTests
             .Build();
 
         Assert.Equal(ActivityType.Message, activity.Type);
-        Assert.True(activity.IsTargeted);
         Assert.NotNull(activity.Recipient);
+        Assert.True(activity.Recipient.IsTargeted);
         Assert.Equal("user-123", activity.Recipient.Id);
         Assert.Equal("Test User", activity.Recipient.Name);
         Assert.Equal("msteams", activity.ChannelId);

@@ -93,6 +93,48 @@ teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
     await context.SendActivityAsync(reply, cancellationToken);
 });
 
+// Targeted message handler: matches "targeted" (case-insensitive)
+// Demonstrates send, update, and delete of a targeted message using Recipient.IsTargeted
+teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
+{
+    ArgumentNullException.ThrowIfNull(context.Activity.From);
+    ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
+    ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
+
+    // Send a targeted message visible only to the sender
+    TeamsActivity targeted = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText("This is a targeted message only you can see!")
+        .WithRecipient(context.Activity.From, isTargeted: true)
+        .Build();
+
+    var sendResponse = await context.SendActivityAsync(targeted, cancellationToken);
+
+    await Task.Delay(2000, cancellationToken);
+
+    // Update the targeted message (must use UpdateTargetedAsync to avoid setting Recipient on the update payload)
+    TeamsActivity updated = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText("This targeted message was updated!")
+        .WithServiceUrl(context.Activity.ServiceUrl)
+        .Build();
+
+    await context.TeamsBotApplication.Api.Conversations.Activities.UpdateTargetedAsync(
+        context.Activity.Conversation.Id!,
+        sendResponse!.Id!,
+        updated,
+        cancellationToken: cancellationToken);
+
+    await Task.Delay(2000, cancellationToken);
+
+    // Delete the targeted message
+    await context.TeamsBotApplication.Api.Conversations.Activities.DeleteTargetedAsync(
+        context.Activity.Conversation.Id!,
+        sendResponse.Id!,
+        context.Activity.ServiceUrl,
+        cancellationToken: cancellationToken);
+});
+
 // Regex-based handler: matches commands starting with "/"
 Regex commandRegex = Regexes.CommandRegex();
 teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>

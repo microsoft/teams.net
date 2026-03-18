@@ -348,22 +348,22 @@ public class CoreCoreActivityTests
     }
 
     [Fact]
-    public void IsTargeted_DefaultsToFalse()
+    public void IsTargeted_DefaultsToNull()
     {
-        CoreActivity activity = new();
+        ConversationAccount account = new();
 
-        Assert.False(activity.IsTargeted);
+        Assert.Null(account.IsTargeted);
     }
 
     [Fact]
     public void IsTargeted_CanBeSetToTrue()
     {
-        CoreActivity activity = new()
+        ConversationAccount account = new()
         {
             IsTargeted = true
         };
 
-        Assert.True(activity.IsTargeted);
+        Assert.True(account.IsTargeted);
     }
 
     [Fact]
@@ -372,13 +372,14 @@ public class CoreCoreActivityTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            IsTargeted = true
+            Recipient = new ConversationAccount { Id = "user-123", IsTargeted = true }
         };
 
         string json = activity.ToJson();
 
+        // IsTargeted is serialized in the recipient object
         Assert.Contains("isTargeted", json, StringComparison.OrdinalIgnoreCase);
-        Assert.True(activity.IsTargeted); // Property still holds value
+        Assert.True(activity.Recipient.IsTargeted);
     }
 
     [Fact]
@@ -387,12 +388,16 @@ public class CoreCoreActivityTests
         string json = """
         {
             "type": "message",
-            "isTargeted": true
+            "recipient": {
+                "id": "user-123",
+                "isTargeted": true
+            }
         }
         """;
 
         CoreActivity activity = CoreActivity.FromJsonString(json);
 
-        Assert.True(activity.IsTargeted); 
+        Assert.NotNull(activity.Recipient);
+        Assert.True(activity.Recipient.IsTargeted);
     }
 }

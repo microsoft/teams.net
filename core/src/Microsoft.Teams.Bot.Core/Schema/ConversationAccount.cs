@@ -25,6 +25,12 @@ public class ConversationAccount()
     public string? Name { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether this is a targeted message visible only to this recipient.
+    /// </summary>
+    [JsonPropertyName("isTargeted")]
+    public bool? IsTargeted { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData]

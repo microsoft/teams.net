@@ -167,7 +167,8 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// <returns>The builder instance for chaining.</returns>
     public TBuilder WithRecipient(ConversationAccount? recipient)
     {
-        return WithRecipient(recipient, false);
+        SetRecipient(recipient);
+        return (TBuilder)this;
     }
 
     /// <summary>
@@ -179,7 +180,10 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     public TBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
     {
         SetRecipient(recipient);
-        _activity.IsTargeted = isTargeted;
+        if (recipient is not null)
+        {
+            recipient.IsTargeted = isTargeted;
+        }
         return (TBuilder)this;
     }
 

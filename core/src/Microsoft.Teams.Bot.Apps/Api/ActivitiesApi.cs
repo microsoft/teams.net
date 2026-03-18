@@ -56,6 +56,43 @@ public class ActivitiesApi
         => _client.UpdateActivityAsync(conversationId, activityId, activity, customHeaders, cancellationToken);
 
     /// <summary>
+    /// Updates an existing targeted activity in a conversation.
+    /// The activity body is sent without the targeted recipient to avoid service errors.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation.</param>
+    /// <param name="activityId">The ID of the activity to update.</param>
+    /// <param name="activity">The updated activity data.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
+    public Task<UpdateActivityResponse> UpdateTargetedAsync(
+        string conversationId,
+        string activityId,
+        CoreActivity activity,
+        CustomHeaders? customHeaders = null,
+        CancellationToken cancellationToken = default)
+        => _client.UpdateTargetedActivityAsync(conversationId, activityId, activity, customHeaders, cancellationToken);
+
+    /// <summary>
+    /// Deletes an existing targeted activity from a conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation.</param>
+    /// <param name="activityId">The ID of the activity to delete.</param>
+    /// <param name="serviceUrl">The service URL for the conversation.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
+    public Task DeleteTargetedAsync(
+        string conversationId,
+        string activityId,
+        Uri serviceUrl,
+        AgenticIdentity? agenticIdentity = null,
+        CustomHeaders? customHeaders = null,
+        CancellationToken cancellationToken = default)
+        => _client.DeleteTargetedActivityAsync(conversationId, activityId, serviceUrl, agenticIdentity, customHeaders, cancellationToken);
+
+    /// <summary>
     /// Deletes an existing activity from a conversation.
     /// </summary>
     /// <param name="conversationId">The ID of the conversation.</param>
