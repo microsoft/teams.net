@@ -32,6 +32,16 @@ $: dotnet format
 $: dotnet test
 ```
 
+## Public Preview Packages
+
+> ⚠️ **Preview Packages**: In addition to stable releases, we publish preview packages (versioned with `-preview` suffix) to [nuget.org](https://www.nuget.org/profiles/teams-sdk) for early access to new features.
+>
+> **About preview packages:**
+> - Preview builds may contain bugs, incomplete features, or breaking changes between versions
+> - APIs in preview packages are subject to change without notice
+> - You are welcome to [file issues](https://github.com/microsoft/teams.net/issues) for bugs or feedback, but they may not be addressed with the same priority as stable releases
+> - **Preview packages are not recommended for production workloads**
+
 ## Packages
 
 > ℹ️ core packages used to build client/server apps for Teams.

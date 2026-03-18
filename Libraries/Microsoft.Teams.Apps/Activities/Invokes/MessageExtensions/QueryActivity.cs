@@ -60,4 +60,47 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnQuery(this App app, Func<IContext<MessageExtensions.QueryActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.QueryActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.QueryActivity
+        });
+
+        return app;
+    }
+
+    public static App OnQuery(this App app, Func<IContext<MessageExtensions.QueryActivity>, CancellationToken, Task<Response<Api.MessageExtensions.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>(), context.CancellationToken),
+            Selector = activity => activity is MessageExtensions.QueryActivity
+        });
+
+        return app;
+    }
+
+    public static App OnQuery(this App app, Func<IContext<MessageExtensions.QueryActivity>, CancellationToken, Task<Api.MessageExtensions.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>(), context.CancellationToken),
+            Selector = activity => activity is MessageExtensions.QueryActivity
+        });
+
+        return app;
+    }
 }

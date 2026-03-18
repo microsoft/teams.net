@@ -20,7 +20,11 @@ public class HandoffActivity() : InvokeActivity(Name.Handoff)
     /// </summary>
     [JsonPropertyName("value")]
     [JsonPropertyOrder(32)]
-    public new required HandoffActivityValue Value { get; set; }
+    public new required HandoffActivityValue Value
+    {
+        get => (HandoffActivityValue)base.Value!;
+        set => base.Value = value;
+    }
 }
 
 public class HandoffActivityValue
