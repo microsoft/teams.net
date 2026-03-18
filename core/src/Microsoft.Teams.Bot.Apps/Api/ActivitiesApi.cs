@@ -125,19 +125,6 @@ public class ActivitiesApi
         => _client.DeleteActivityAsync(activity, customHeaders, cancellationToken);
 
     /// <summary>
-    /// Deletes an existing activity from a conversation using Teams activity context.
-    /// </summary>
-    /// <param name="activity">The Teams activity to delete. Must contain valid Id, Conversation.Id, and ServiceUrl.</param>
-    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
-    public Task DeleteAsync(
-        TeamsActivity activity,
-        CustomHeaders? customHeaders = null,
-        CancellationToken cancellationToken = default)
-        => _client.DeleteActivityAsync(activity, customHeaders, cancellationToken);
-
-    /// <summary>
     /// Uploads and sends historic activities to a conversation.
     /// </summary>
     /// <param name="conversationId">The ID of the conversation.</param>
@@ -172,7 +159,7 @@ public class ActivitiesApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         return _client.SendConversationHistoryAsync(
@@ -216,9 +203,9 @@ public class ActivitiesApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        ArgumentNullException.ThrowIfNull(activity.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Id);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         return _client.GetActivityMembersAsync(

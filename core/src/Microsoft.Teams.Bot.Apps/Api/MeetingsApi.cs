@@ -105,10 +105,12 @@ public class MeetingsApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+        var tenantId = activity.ChannelData?.Tenant?.Id;
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "activity.ChannelData.Tenant.Id");
         return _client.FetchParticipantAsync(
             meetingId,
             participantId,
-            activity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
+            tenantId,
             activity.ServiceUrl,
             activity.From?.GetAgenticIdentity(),
             customHeaders,

@@ -64,10 +64,12 @@ public class BatchApi
         ArgumentNullException.ThrowIfNull(contextActivity);
         ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
 
+        var tenantId = contextActivity.ChannelData?.Tenant?.Id;
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "contextActivity.ChannelData.Tenant.Id");
         return _client.SendMessageToListOfUsersAsync(
             activity,
             teamsMembers,
-            contextActivity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
+            tenantId,
             contextActivity.ServiceUrl,
             contextActivity.From?.GetAgenticIdentity(),
             customHeaders,
@@ -110,9 +112,11 @@ public class BatchApi
         ArgumentNullException.ThrowIfNull(contextActivity);
         ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
 
+        var tenantId = contextActivity.ChannelData?.Tenant?.Id;
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "contextActivity.ChannelData.Tenant.Id");
         return _client.SendMessageToAllUsersInTenantAsync(
             activity,
-            contextActivity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
+            tenantId,
             contextActivity.ServiceUrl,
             contextActivity.From?.GetAgenticIdentity(),
             customHeaders,
@@ -159,10 +163,12 @@ public class BatchApi
         ArgumentNullException.ThrowIfNull(contextActivity);
         ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
 
+        var tenantId = contextActivity.ChannelData?.Tenant?.Id;
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "contextActivity.ChannelData.Tenant.Id");
         return _client.SendMessageToAllUsersInTeamAsync(
             activity,
             teamId,
-            contextActivity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
+            tenantId,
             contextActivity.ServiceUrl,
             contextActivity.From?.GetAgenticIdentity(),
             customHeaders,
@@ -209,10 +215,12 @@ public class BatchApi
         ArgumentNullException.ThrowIfNull(contextActivity);
         ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
 
+        var tenantId = contextActivity.ChannelData?.Tenant?.Id;
+        ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "contextActivity.ChannelData.Tenant.Id");
         return _client.SendMessageToListOfChannelsAsync(
             activity,
             channelMembers,
-            contextActivity.ChannelData?.Tenant?.Id ?? throw new InvalidOperationException("Tenant ID not available in activity"),
+            tenantId,
             contextActivity.ServiceUrl,
             contextActivity.From?.GetAgenticIdentity(),
             customHeaders,

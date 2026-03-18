@@ -17,7 +17,6 @@ namespace Microsoft.Teams.Bot.Apps;
 public class TeamsBotApplication : BotApplication
 {
     private readonly TeamsApiClient _teamsApiClient;
-    private TeamsApi? _api;
 
     /// <summary>
     /// Gets the router for dispatching Teams activities to registered routes.
@@ -42,10 +41,7 @@ public class TeamsBotApplication : BotApplication
     /// <item><c>Api.Batch</c> - Batch messaging operations</item>
     /// </list>
     /// </remarks>
-    public TeamsApi Api => _api ??= new TeamsApi(
-        ConversationClient,
-        UserTokenClient,
-        _teamsApiClient);
+    public TeamsApi Api { get; }
 
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
@@ -63,6 +59,7 @@ public class TeamsBotApplication : BotApplication
         : base(conversationClient, userTokenClient, logger, options)
     {
         _teamsApiClient = teamsApiClient;
+        Api = new TeamsApi(conversationClient, userTokenClient, teamsApiClient);
         Router = new Router(logger);
         OnActivity = async (activity, cancellationToken) =>
         {

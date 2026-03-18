@@ -4,7 +4,8 @@
       "Bash(dotnet build:*)",
       "Bash(dotnet test:*)",
       "Bash(gh pr:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(gh api:*)"
     ]
   }
 }

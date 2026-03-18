@@ -57,7 +57,7 @@ public class MembersApi
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
 
         return _client.GetConversationMembersAsync(
             activity.Conversation.Id,
@@ -104,7 +104,7 @@ public class MembersApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         return _client.GetConversationMemberAsync<T>(
@@ -151,7 +151,7 @@ public class MembersApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNull(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         return _client.GetConversationMemberAsync<ConversationAccount>(

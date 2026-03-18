@@ -541,7 +541,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(reactionType);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/reactions/{reactionType}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/reactions/{Uri.EscapeDataString(reactionType)}";
 
         logger.LogTrace("Adding reaction at {Url}", url);
 
@@ -572,7 +572,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(reactionType);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/reactions/{reactionType}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/reactions/{Uri.EscapeDataString(reactionType)}";
 
         logger.LogTrace("Deleting reaction at {Url}", url);
 

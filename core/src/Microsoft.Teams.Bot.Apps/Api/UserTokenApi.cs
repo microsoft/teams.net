@@ -55,8 +55,8 @@ public class UserTokenApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.From);
-        ArgumentNullException.ThrowIfNull(activity.From.Id);
-        ArgumentNullException.ThrowIfNull(activity.ChannelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.From.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.ChannelId);
 
         return _client.GetTokenAsync(
             activity.From.Id,
@@ -99,8 +99,8 @@ public class UserTokenApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.From);
-        ArgumentNullException.ThrowIfNull(activity.From.Id);
-        ArgumentNullException.ThrowIfNull(activity.ChannelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.From.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.ChannelId);
 
         return _client.ExchangeTokenAsync(
             activity.From.Id,
@@ -139,8 +139,8 @@ public class UserTokenApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.From);
-        ArgumentNullException.ThrowIfNull(activity.From.Id);
-        ArgumentNullException.ThrowIfNull(activity.ChannelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.From.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.ChannelId);
 
         return _client.SignOutUserAsync(
             activity.From.Id,
@@ -181,10 +181,9 @@ public class UserTokenApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.From);
-        ArgumentNullException.ThrowIfNull(activity.From.Id);
-        ArgumentNullException.ThrowIfNull(activity.ChannelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.From.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.ChannelId);
 
         return _client.GetAadTokensAsync(
             activity.From.Id,
@@ -223,8 +222,8 @@ public class UserTokenApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.From);
-        ArgumentNullException.ThrowIfNull(activity.From.Id);
-        ArgumentNullException.ThrowIfNull(activity.ChannelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.From.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.ChannelId);
 
         return _client.GetTokenStatusAsync(
             activity.From.Id,
@@ -266,8 +265,8 @@ public class UserTokenApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.From);
-        ArgumentNullException.ThrowIfNull(activity.From.Id);
-        ArgumentNullException.ThrowIfNull(activity.ChannelId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.From.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.ChannelId);
 
         return _client.GetSignInResource(
             activity.From.Id,
