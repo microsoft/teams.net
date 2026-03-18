@@ -9,7 +9,7 @@ public class QuotedReplyEntity : Entity
 {
     [JsonPropertyName("quotedReply")]
     [JsonPropertyOrder(3)]
-    public QuotedReplyData? QuotedReply { get; set; }
+    public QuotedReplyData QuotedReply { get; set; }
 
     public QuotedReplyEntity() : base("quotedReply") { }
 }
@@ -17,7 +17,7 @@ public class QuotedReplyEntity : Entity
 public class QuotedReplyData
 {
     [JsonPropertyName("messageId")]
-    public string? MessageId { get; set; }
+    public string MessageId { get; set; }
 
     [JsonPropertyName("senderId")]
     public string? SenderId { get; set; }
