@@ -181,7 +181,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     {
         if (recipient is not null)
         {
-            recipient.IsTargeted = isTargeted;
+            recipient.IsTargeted = isTargeted ? true : null;
             SetRecipient(recipient);
         }
         return (TBuilder)this;

@@ -506,14 +506,14 @@ public class CoreActivityBuilderTests
     }
 
     [Fact]
-    public void WithRecipient_WithIsTargetedFalse_DoesNotSetIsTargeted()
+    public void WithRecipient_WithIsTargetedFalse_SetsIsTargetedToNull()
     {
         CoreActivity activity = new CoreActivityBuilder()
             .WithRecipient(new ConversationAccount { Id = "user-123" }, false)
             .Build();
 
         Assert.NotNull(activity.Recipient);
-        Assert.False(activity.Recipient.IsTargeted);
+        Assert.Null(activity.Recipient.IsTargeted);
         Assert.Equal("user-123", activity.Recipient.Id);
     }
 

@@ -167,7 +167,14 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
-    var response = await context.SendActivityAsync("React to this message!", cancellationToken);
+    var tmMsgToReact = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText("I'm going to add and remove reactions to this message.")
+        .WithRecipient(context.Activity.From, false)
+        .WithServiceUrl(context.Activity.ServiceUrl)
+        .Build();
+
+    var response = await context.SendActivityAsync(tmMsgToReact, cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
 
