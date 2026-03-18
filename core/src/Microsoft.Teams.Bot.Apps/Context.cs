@@ -51,12 +51,12 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
 
     /// <summary>
-    /// Creates a new <see cref="TeamsStreamingWriter"/> bound to the current activity's conversation.
+    /// Creates a <see cref="TeamsStreamingWriter"/> bound to this context.
     /// </summary>
-    /// <returns>An <see cref="TeamsStreamingWriter"/> ready to stream message updates.</returns>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "Creates a new instance on each call.")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "<Pending>")]
     public TeamsStreamingWriter GetStreamingWriter()
         => new(TeamsBotApplication.ConversationClient, Activity);
+ 
 
     /// <summary>
     /// Sends a typing activity to the conversation asynchronously.

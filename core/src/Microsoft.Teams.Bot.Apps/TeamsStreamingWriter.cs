@@ -16,10 +16,10 @@ namespace Microsoft.Teams.Bot.Apps;
 /// <remarks>
 /// Typical usage:
 /// <code>
-///     var writer = ctx.GetStreamingWriter();
-///     await writer.EmitInformativeUpdateAsync("Thinking…"); //optional placeholder while the bot thinks
-///     await writer.EmitResponseAsync(" Hello");
-///     await writer.EmitResponseAsync(", world");
+///     var writer = context.GetStreamingWriter();
+///     await writer.SendInformativeUpdateAsync("Thinking…"); //optional placeholder while the bot thinks
+///     await writer.AppendResponseAsync(" Hello");
+///     await writer.AppendResponseAsync(", world");
 ///     await writer.FinalizeResponseAsync();            // sends accumulated " Hello, world"
 /// </code>
 ///
@@ -95,7 +95,7 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException("Cannot finalize after FinalizeResponseAsync has already been called.");
 
         if (string.IsNullOrEmpty(_accumulated))
-            throw new InvalidOperationException("Cannot finalize with no content. Call EmitResponseAsync at least once before FinalizeResponseAsync.");
+            throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
 
         await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities), cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -106,15 +106,9 @@ public sealed class TeamsStreamingWriter
     {
         bool isFinal = streamType == StreamType.Final;
 
-        TeamsActivity activity = isFinal
+        TeamsActivity baseActivity = isFinal
             ? new MessageActivity(text)
-            : new TypingActivity(text);
-
-        activity.ServiceUrl = _reference.ServiceUrl;
-        activity.ChannelId = _reference.ChannelId;
-        activity.Conversation = _reference.Conversation;
-        activity.From = _reference.Recipient;
-        activity.Recipient = _reference.From;
+            : new StreamingActivity(text);
 
         StreamInfoEntity streamInfo = new() { StreamType = streamType };
 
@@ -126,20 +120,20 @@ public sealed class TeamsStreamingWriter
         if (!isFinal)
             streamInfo.StreamSequence = _sequence;
 
-        activity.Entities ??= [];
-        activity.Entities.Add(streamInfo);
+        TeamsActivityBuilder builder = new TeamsActivityBuilder(baseActivity)
+            .WithConversationReference(_reference)
+            .AddEntity(streamInfo);
 
         if (isFinal)
         {
             if (entities != null)
                 foreach (Entity entity in entities)
-                    activity.Entities.Add(entity);
+                    builder.AddEntity(entity);
 
             if (attachments?.Count > 0)
-                activity.Attachments = attachments;
+                builder.WithAttachments(attachments);
         }
 
-        activity.Rebase();
-        return activity;
+        return builder.Build();
     }
 }
