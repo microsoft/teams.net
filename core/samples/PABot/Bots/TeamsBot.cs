@@ -102,5 +102,25 @@ namespace PABot.Bots
             // Run the Dialog with the new Invoke Activity.
             await _dialog.RunAsync(turnContext, _conversationState.CreateProperty<DialogState>(nameof(DialogState)), cancellationToken);
         }
+
+        /// <summary>
+        /// Handles invoke activities, including signin/failure events.
+        /// </summary>
+        /// <param name="turnContext">The turn context.</param>
+        /// <param name="cancellationToken">The cancellation token.</param>
+        /// <returns>An invoke response.</returns>
+        protected override async Task<InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            if (turnContext.Activity.Name == "signin/failure")
+            {
+                _logger.LogWarning("Sign-in failure detected. Activity Name: {ActivityName}", turnContext.Activity.Name);
+                _logger.LogWarning("Sign-in failure details - ConversationId: {ConversationId}, From: {FromId}, Value: {Value}",
+                    turnContext.Activity.Conversation?.Id,
+                    turnContext.Activity.From?.Id,
+                    Newtonsoft.Json.JsonConvert.SerializeObject(turnContext.Activity));
+            }
+
+            return await base.OnInvokeActivityAsync(turnContext, cancellationToken);
+        }
     }
 }

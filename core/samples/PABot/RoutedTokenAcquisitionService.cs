@@ -36,23 +36,33 @@ namespace PABot
     /// </summary>
     public class RoutedTokenAcquisitionService : IRoutedTokenAcquisitionService
     {
-        private readonly string _keyName;
+        private readonly bool _hasBotIdentity;
+        private readonly bool _hasAgentIdentity;
         private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider;
         private readonly ILogger<RoutedTokenAcquisitionService> _logger;
 
         public RoutedTokenAcquisitionService(
-            string keyName,
+            bool hasBotIdentity,
+            bool hasAgentIdentity,
             IAuthorizationHeaderProvider authorizationHeaderProvider,
             ILogger<RoutedTokenAcquisitionService> logger)
         {
-            _keyName = keyName;
+            _hasBotIdentity = hasBotIdentity;
+            _hasAgentIdentity = hasAgentIdentity;
             _authorizationHeaderProvider = authorizationHeaderProvider;
             _logger = logger;
         }
 
         public async Task<string> AcquireTokenForBotAsync(string scope, CancellationToken cancellationToken = default)
         {
-            _logger.LogDebug("Acquiring token for bot credentials using key: {KeyName}", _keyName);
+            if (!_hasBotIdentity)
+            {
+                throw new InvalidOperationException(
+                    "Bot identity (MsalBot) is not configured. Cannot acquire token using bot credentials. " +
+                    "Either configure MsalBot section in configuration or use AcquireTokenForAgenticAsync instead.");
+            }
+
+            _logger.LogDebug("Acquiring token for bot credentials using MsalBot configuration");
 
             // Use the bot client credentials configuration
             return await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(
@@ -61,7 +71,7 @@ namespace PABot
                 {
                     AcquireTokenOptions = new AcquireTokenOptions
                     {
-                        AuthenticationOptionsName = _keyName
+                        AuthenticationOptionsName = "MsalBot"
                     }
                 },
                 cancellationToken);
@@ -84,18 +94,23 @@ namespace PABot
                 throw new ArgumentException("AgenticUserId cannot be null or empty", nameof(agenticIdentity));
             }
 
+            if (!_hasAgentIdentity)
+            {
+                throw new InvalidOperationException(
+                    "Agent identity (MsalAgent) is not configured. Cannot acquire token using agent credentials. " +
+                    "Configure MsalAgent section in configuration to use agentic authentication.");
+            }
+
             _logger.LogDebug("Acquiring token for agentic credentials with AppId '{AppId}' and UserId '{UserId}'",
                 agenticIdentity.AgenticAppId,
                 agenticIdentity.AgenticUserId);
 
             // Use the agentic client credentials configuration
-            string agenticKeyName = $"{_keyName}_Agentic";
-
             AuthorizationHeaderProviderOptions options = new()
             {
                 AcquireTokenOptions = new AcquireTokenOptions
                 {
-                    AuthenticationOptionsName = agenticKeyName
+                    AuthenticationOptionsName = "MsalAgent"
                 }
             };
 

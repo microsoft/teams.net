@@ -229,6 +229,12 @@ namespace Microsoft.Teams.Bot.Compat
 
             CoreActivity coreActivity = activity.FromCompatActivity();
 
+            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
+            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
+            {
+                coreActivity.ServiceUrl = new Uri(ServiceUrl);
+            }
+
             // ReplyToActivity is not available in ConversationClient, use SendActivityAsync with replyToId in Properties
             coreActivity.Properties["replyToId"] = activityId;
             if (coreActivity.Conversation == null)
@@ -302,6 +308,12 @@ namespace Microsoft.Teams.Bot.Compat
 
             CoreActivity coreActivity = activity.FromCompatActivity();
 
+            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
+            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
+            {
+                coreActivity.ServiceUrl = new Uri(ServiceUrl);
+            }
+
             // Ensure conversation ID is set
             coreActivity.Conversation ??= new Microsoft.Teams.Bot.Core.Schema.Conversation { Id = conversationId };
 
@@ -336,6 +348,12 @@ namespace Microsoft.Teams.Bot.Compat
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CoreActivity coreActivity = activity.FromCompatActivity();
+
+            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for updating activities
+            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
+            {
+                coreActivity.ServiceUrl = new Uri(ServiceUrl);
+            }
 
             UpdateActivityResponse response = await _client.UpdateActivityAsync(conversationId, activityId, coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
