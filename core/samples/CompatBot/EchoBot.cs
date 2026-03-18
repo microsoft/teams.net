@@ -21,7 +21,7 @@ public class ConversationData
 
 }
 
-internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> logger)
+internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conversationState, ILogger<EchoBot> logger)
     : TeamsActivityHandler
 {
     public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
