@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -227,10 +228,13 @@ public partial class Activity : IActivity
         return this;
     }
 
+    [Experimental("ExperimentalTeamsTargeted")]
     public virtual Activity WithRecipient(Account value, bool isTargeted)
     {
         Recipient = value;
+        #pragma warning disable ExperimentalTeamsTargeted
         Recipient.IsTargeted = isTargeted;
+        #pragma warning restore ExperimentalTeamsTargeted
         return this;
     }
 
