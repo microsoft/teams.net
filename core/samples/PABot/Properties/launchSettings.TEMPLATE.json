@@ -1,25 +1,37 @@
 {
   "$schema": "https://json.schemastore.org/launchsettings.json",
   "profiles": {
-    "ridotest-local-msal": {
+    "local": {
       "commandName": "Project",
       "launchBrowser": false,
       "applicationUrl": "http://localhost:3978",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development",
-        "ConnectionName": "graph",
+        "Logging__LogLevel__Microsoft": "Warning",
+        "Logging__LogLevel__Microsoft.Teams": "Information",
+        "Logging__LogLevel__Microsoft.Identity.Web": "Error",
         "AdapterOne__Scope": "https://api.botframework.com/.default",
         "AdapterOne__Instance": "https://login.microsoftonline.com/",
         "AdapterOne__TenantId": "",
         "AdapterOne__ClientId": "",
-        "AdapterOne__ClientCredentials__0__SourceType": "ClientSecret",
+        "AdapterOne__ClientCredentials__0__SourceType": "",
         "AdapterOne__ClientCredentials__0__ClientSecret": "",
-        "AdapterTwo__Scope": "https://botapi.skype.com/.default",
+        "AdapterOne__AgenticClientId": "",
+        "AdapterOne__AgenticTenantId": "",
+        "AdapterOne__AgenticScope": "5a807f24-c9de-44ee-a3a7-329e88a00ffc/.default",
+        "AdapterOne__AgenticClientCredentials__0__SourceType": "",
+        "AdapterOne__AgenticClientCredentials__0__ClientSecret": "",
+        "AdapterTwo__Scope": "https://api.botframework.com/.default",
         "AdapterTwo__Instance": "https://login.microsoftonline.com/",
         "AdapterTwo__TenantId": "",
         "AdapterTwo__ClientId": "",
-        "AdapterTwo__ClientCredentials__0__SourceType": "ClientSecret",
+        "AdapterTwo__ClientCredentials__0__SourceType": "",
         "AdapterTwo__ClientCredentials__0__ClientSecret": "",
+        "AdapterTwo__AgenticClientId": "",
+        "AdapterTwo__AgenticTenantId": "",
+        "AdapterTwo__AgenticScope": "5a807f24-c9de-44ee-a3a7-329e88a00ffc/.default",
+        "AdapterTwo__AgenticClientCredentials__0__SourceType": "",
+        "AdapterTwo__AgenticClientCredentials__0__ClientSecret": ""
       }
     }
   }

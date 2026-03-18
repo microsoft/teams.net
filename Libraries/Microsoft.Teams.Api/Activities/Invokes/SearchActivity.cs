@@ -18,5 +18,9 @@ public class SearchActivity() : InvokeActivity(Name.Search)
     /// </summary>
     [JsonPropertyName("value")]
     [JsonPropertyOrder(32)]
-    public new required SearchValue Value { get; set; }
+    public new required SearchValue Value
+    {
+        get => (SearchValue)base.Value!;
+        set => base.Value = value;
+    }
 }

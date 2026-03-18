@@ -8,7 +8,6 @@ using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Api.Clients;
 using Microsoft.Teams.Apps.Plugins;
-using Microsoft.Teams.Common.Extensions;
 using Microsoft.Teams.Common.Logging;
 using Microsoft.Teams.Common.Storage;
 

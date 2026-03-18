@@ -3,7 +3,9 @@
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
+using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
+using Microsoft.Bot.Schema.Teams;
 
 namespace PABot.Bots
 {
@@ -49,6 +51,49 @@ namespace PABot.Bots
         /// <param name="turnContext">The turn context.</param>
         /// <param name="cancellationToken">The cancellation token.</param>
         /// <returns>A task that represents the work queued to execute.</returns>
+        protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
+        {
+            string text = System.Text.RegularExpressions.Regex.Replace(
+                turnContext.Activity.Text ?? string.Empty, @"<at>[^<]*<\/at>", string.Empty).Trim();
+
+            if (text.Equals("/create-conversation", StringComparison.OrdinalIgnoreCase))
+            {
+                if (turnContext.Activity.Conversation.IsGroup != true)
+                {
+                    await turnContext.SendActivityAsync(MessageFactory.Text("This command can only be used in a group chat."), cancellationToken);
+                    return;
+                }
+
+                TeamsChannelData channelData = turnContext.Activity.GetChannelData<TeamsChannelData>();
+                ChannelAccount userChannel = turnContext.Activity.From;
+
+                ConversationParameters conversationParameters = new ConversationParameters
+                {
+                    IsGroup = false,
+                    Bot = new ChannelAccount { Id = turnContext.Activity.Recipient.Id },
+                    Members = [userChannel],
+                    TenantId = channelData.Tenant.Id,
+                };
+
+                _logger.LogInformation("Creating 1:1 conversation with user {UserId} in tenant {TenantId}",
+                    userChannel.Id, conversationParameters.TenantId);
+
+                IConnectorClient connectorClient = turnContext.TurnState.Get<IConnectorClient>();
+                ConversationResourceResponse conv = await connectorClient.Conversations.CreateConversationAsync(conversationParameters, cancellationToken);
+
+                _logger.LogInformation("Created conversation {ConversationId}", conv.Id);
+
+                Activity message = MessageFactory.Text("Hello! I've started a 1:1 conversation with you from the group chat.");
+                message.ServiceUrl = turnContext.Activity.ServiceUrl;
+                await connectorClient.Conversations.SendToConversationAsync(conv.Id, message, cancellationToken);
+
+                await turnContext.SendActivityAsync(MessageFactory.Text("Done! Check your personal chat."), cancellationToken);
+                return;
+            }
+
+            await base.OnMessageActivityAsync(turnContext, cancellationToken);
+        }
+
         protected override async Task OnTeamsSigninVerifyStateAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Running dialog with sign-in/verify state from an Invoke Activity.");

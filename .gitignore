@@ -8,6 +8,8 @@
 
 # local app settings files
 appsettings.Local.json
+appsettings.Development.json
+launchsettings.json
 
 .claude/
 
@@ -488,3 +490,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Claude local settings
+.claude/settings.local.json

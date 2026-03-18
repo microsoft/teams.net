@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "bot-config": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "MicrosoftAppType": "",
+        "MicrosoftAppId": "",
+        "MicrosoftAppPassword": "",
+        "MicrosoftAppTenantId": ""
+      }
+    }
+  }
+}

@@ -46,4 +46,29 @@ public static partial class AppActivityExtensions
 
         return app;
     }
+
+    public static App OnUnInstall(this App app, Func<IContext<InstallUpdateActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.InstallUpdate, InstallUpdateAction.Remove]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<InstallUpdateActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is InstallUpdateActivity installUpdate)
+                {
+                    return installUpdate.Action.IsRemove;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
 }

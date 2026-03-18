@@ -28,7 +28,6 @@ public class TeamsBotApplication : BotApplication
     /// Gets the client used to interact with the Teams API service.
     /// </summary>
     public TeamsApiClient TeamsApiClient => _teamsApiClient;
-
     /// <summary>
     /// Gets the hierarchical API facade for Teams operations.
     /// </summary>

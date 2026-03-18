@@ -63,6 +63,36 @@ public class Example
     await context.SendActivityAsync(markdownMessage, cancellationToken);
 });
 
+// Citation handler: matches "citation" (case-insensitive)
+teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
+{
+    MessageActivity reply = new("Here is a response with citations [1] [2].")
+    {
+        TextFormat = TextFormats.Markdown
+    };
+
+    reply.AddCitation(1, new CitationAppearance()
+    {
+        Name = "Teams SDK Documentation",
+        Abstract = "The Teams Bot SDK provides a streamlined way to build bots for Microsoft Teams.",
+        Url = new Uri("https://github.com/nicoco007/microsoft/teams.net"),
+        Icon = CitationIcon.Text,
+        EncodingFormat = EncodingFormats.AdaptiveCard
+    });
+
+    reply.AddCitation(2, new CitationAppearance()
+    {
+        Name = "Bot Framework Overview",
+        Abstract = "Build intelligent bots that interact naturally with users on Teams.",
+        Keywords = ["bot", "framework"]
+    });
+
+    reply.AddAIGenerated();
+    reply.AddFeedback();
+
+    await context.SendActivityAsync(reply, cancellationToken);
+});
+
 // Regex-based handler: matches commands starting with "/"
 Regex commandRegex = Regexes.CommandRegex();
 teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
