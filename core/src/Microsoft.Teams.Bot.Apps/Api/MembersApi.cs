@@ -68,6 +68,74 @@ public class MembersApi
     }
 
     /// <summary>
+    /// Gets a specific member of a conversation.
+    /// </summary>
+    /// <typeparam name="T">The type of conversation account to return. Must inherit from <see cref="ConversationAccount"/>.</typeparam>
+    /// <param name="conversationId">The ID of the conversation.</param>
+    /// <param name="userId">The ID of the user to retrieve.</param>
+    /// <param name="serviceUrl">The service URL for the conversation.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the conversation member.</returns>
+    public Task<T> GetByIdAsync<T>(
+        string conversationId,
+        string userId,
+        Uri serviceUrl,
+        AgenticIdentity? agenticIdentity = null,
+        CustomHeaders? customHeaders = null,
+        CancellationToken cancellationToken = default) where T : ConversationAccount
+        => _client.GetConversationMemberAsync<T>(conversationId, userId, serviceUrl, agenticIdentity, customHeaders, cancellationToken);
+
+    /// <summary>
+    /// Gets a specific member of a conversation using activity context.
+    /// </summary>
+    /// <typeparam name="T">The type of conversation account to return. Must inherit from <see cref="ConversationAccount"/>.</typeparam>
+    /// <param name="activity">The activity providing conversation context. Must contain valid Conversation.Id and ServiceUrl.</param>
+    /// <param name="userId">The ID of the user to retrieve.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the conversation member.</returns>
+    public Task<T> GetByIdAsync<T>(
+        TeamsActivity activity,
+        string userId,
+        CustomHeaders? customHeaders = null,
+        CancellationToken cancellationToken = default) where T : ConversationAccount
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
+        return _client.GetConversationMemberAsync<T>(
+            activity.Conversation.Id,
+            userId,
+            activity.ServiceUrl,
+            activity.From?.GetAgenticIdentity(),
+            customHeaders,
+            cancellationToken);
+    }
+
+    /// <summary>
+    /// Gets a specific member of a conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation.</param>
+    /// <param name="userId">The ID of the user to retrieve.</param>
+    /// <param name="serviceUrl">The service URL for the conversation.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the conversation member.</returns>
+    public Task<ConversationAccount> GetByIdAsync(
+        string conversationId,
+        string userId,
+        Uri serviceUrl,
+        AgenticIdentity? agenticIdentity = null,
+        CustomHeaders? customHeaders = null,
+        CancellationToken cancellationToken = default)
+        => _client.GetConversationMemberAsync<ConversationAccount>(conversationId, userId, serviceUrl, agenticIdentity, customHeaders, cancellationToken);
+
+    /// <summary>
     /// Gets a specific member of a conversation using activity context.
     /// </summary>
     /// <param name="activity">The activity providing conversation context. Must contain valid Conversation.Id and ServiceUrl.</param>

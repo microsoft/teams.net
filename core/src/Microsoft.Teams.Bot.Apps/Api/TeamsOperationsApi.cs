@@ -67,6 +67,23 @@ public class TeamsOperationsApi
     }
 
     /// <summary>
+    /// Gets the list of channels for a team.
+    /// </summary>
+    /// <param name="teamId">The ID of the team.</param>
+    /// <param name="serviceUrl">The service URL for the Teams service.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="customHeaders">Optional custom headers to include in the request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous operation. The task result contains the list of channels.</returns>
+    public Task<ChannelList> GetChannelsAsync(
+        string teamId,
+        Uri serviceUrl,
+        AgenticIdentity? agenticIdentity = null,
+        CustomHeaders? customHeaders = null,
+        CancellationToken cancellationToken = default)
+        => _client.FetchChannelListAsync(teamId, serviceUrl, agenticIdentity, customHeaders, cancellationToken);
+
+    /// <summary>
     /// Gets the list of channels for a team using activity context.
     /// </summary>
     /// <param name="activity">The activity providing service URL and identity context.</param>

@@ -179,10 +179,10 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// <returns>The builder instance for chaining.</returns>
     public TBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
     {
-        SetRecipient(recipient);
         if (recipient is not null)
         {
             recipient.IsTargeted = isTargeted;
+            SetRecipient(recipient);
         }
         return (TBuilder)this;
     }

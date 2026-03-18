@@ -39,35 +39,36 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         string replyText = $"Echo from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
 
         var act = MessageFactory.Text(replyText, replyText);
-        act.Properties.Add("isTargeted", true); 
+        act.Recipient = new ChannelAccount();
+        act.Recipient.Properties.Add("isTargeted", true); 
         await turnContext.SendActivityAsync(act, cancellationToken);
 
+        // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
 
-        await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
-
-        var activity = ((Activity)turnContext.Activity).FromCompatActivity();
+        var incomingCoreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
         TeamsActivity tm = TeamsActivity.CreateBuilder()
-            .WithConversation(new Conversation { Id = activity.Conversation?.Id! })
+            .WithConversation(new Conversation { Id = incomingCoreActivity.Conversation?.Id! })
             .WithText("Hello TM !")
-            .WithRecipient(activity.From, true)
-            .WithFrom(activity.Recipient)
+            .WithRecipient(incomingCoreActivity.From, true)
+            .WithFrom(incomingCoreActivity.Recipient)
             //.WithServiceUrl(activity.ServiceUrl!)
             .WithServiceUrl("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/")
             .Build();
 
-        //await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
+        await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
 
-        var res = await turnContext.SendActivityAsync(MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
+        var res = await turnContext.SendActivityAsync(
+            MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
 
         await Task.Delay(500, cancellationToken);
-        var ca = ((Activity)turnContext.Activity).FromCompatActivity();
+        
         await teamsBotApp.ConversationClient.AddReactionAsync(
             turnContext.Activity.Conversation.Id,
             res.Id,
             "laugh",
-            //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
-            ca.ServiceUrl!,
-            AgenticIdentity.FromProperties(ca.Recipient?.Properties),
+            new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
+            //incomingCoreActivity.ServiceUrl!,
+            AgenticIdentity.FromProperties(incomingCoreActivity.Recipient?.Properties),
             null,
             cancellationToken);
 
@@ -76,28 +77,22 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
             turnContext.Activity.Conversation.Id,
             res.Id,
             "sad",
-            ca.ServiceUrl!,
-            AgenticIdentity.FromProperties(ca.Recipient?.Properties),
+            incomingCoreActivity.ServiceUrl!,
+            AgenticIdentity.FromProperties(incomingCoreActivity.Recipient?.Properties),
             null,
             cancellationToken);
 
         await Task.Delay(500, cancellationToken);
+
         await teamsBotApp.ConversationClient.DeleteReactionAsync(
             turnContext.Activity.Conversation.Id,
             res.Id,
             "laugh",
             //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"), 
-            ca.ServiceUrl!,
-            AgenticIdentity.FromProperties(ca.Recipient?.Properties),
+            incomingCoreActivity.ServiceUrl!,
+            AgenticIdentity.FromProperties(incomingCoreActivity.Recipient?.Properties),
             null,
             cancellationToken);
-
-        // TeamsAPXClient provides Teams-specific operations like:
-        // - FetchTeamDetailsAsync, FetchChannelListAsync
-        // - FetchMeetingInfoAsync, FetchParticipantAsync, SendMeetingNotificationAsync
-        // - Batch messaging: SendMessageToListOfUsersAsync, SendMessageToAllUsersInTenantAsync, etc.
-
-         // await SendUpdateDeleteActivityAsync(turnContext, teamsBotApp.ConversationClient, cancellationToken);
 
         Attachment attachment = new()
         {
