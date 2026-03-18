@@ -14,7 +14,7 @@ namespace Microsoft.Teams.Bot.Apps;
 /// so Teams renders them as a single progressively-updating bubble.
 /// </summary>
 /// <remarks>
-/// Typical usage with an informative placeholder:
+/// Typical usage:
 /// <code>
 ///     var writer = ctx.GetStreamingWriter();
 ///     await writer.EmitInformativeUpdateAsync("Thinking…"); //optional placeholder while the bot thinks
@@ -52,9 +52,9 @@ public sealed class TeamsStreamingWriter
 
     /// <summary>
     /// Sends an informative placeholder (streamType = "informative").
-    /// Optional — if omitted the first <see cref="EmitResponseAsync"/> call begins the stream.
+    /// Optional — if omitted the first <see cref="AppendResponseAsync"/> call begins the stream.
     /// </summary>
-    public async Task EmitInformativeUpdateAsync(string text, CancellationToken cancellationToken = default)
+    public async Task SendInformativeUpdateAsync(string text, CancellationToken cancellationToken = default)
     {
         _sequence = 1;
         var response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -66,7 +66,7 @@ public sealed class TeamsStreamingWriter
     /// full accumulated text as an intermediate streaming update (streamType = "streaming").
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown if <see cref="FinalizeResponseAsync"/> has already been called.</exception>
-    public async Task EmitResponseAsync(string chunk, CancellationToken cancellationToken = default)
+    public async Task AppendResponseAsync(string chunk, CancellationToken cancellationToken = default)
     {
         if (_finalized)
             throw new InvalidOperationException("Cannot append after FinalizeResponseAsync has been called.");
@@ -88,7 +88,7 @@ public sealed class TeamsStreamingWriter
     /// <param name="attachments">Optional attachments to include in the final message activity.</param>
     /// <param name="entities">Optional entities (e.g. citations, mentions) to include in the final message activity.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <exception cref="InvalidOperationException">Thrown if <see cref="FinalizeResponseAsync"/> has already been called, or if no content has been accumulated via <see cref="EmitResponseAsync"/>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown if <see cref="FinalizeResponseAsync"/> has already been called, or if no content has been accumulated via <see cref="AppendResponseAsync"/>.</exception>
     public async Task FinalizeResponseAsync(IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, CancellationToken cancellationToken = default)
     {
         if (_finalized)

@@ -24,7 +24,7 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 teamsApp.OnMessage( async (context, cancellationToken) =>
 {
     TeamsStreamingWriter writer = context.GetStreamingWriter();
-    await writer.EmitInformativeUpdateAsync("Thinking…", cancellationToken);
+    await writer.SendInformativeUpdateAsync("Thinking…", cancellationToken);
 
     string userText = context.Activity.Text ?? "Tell me something interesting.";
 
@@ -33,10 +33,10 @@ teamsApp.OnMessage( async (context, cancellationToken) =>
         cancellationToken: cancellationToken))
     {
         if (!string.IsNullOrEmpty(update.Text))
-            await writer.EmitResponseAsync(update.Text, cancellationToken);
+            await writer.AppendResponseAsync(update.Text, cancellationToken);
     }
 
-    await writer.EmitResponseAsync(" [1]", cancellationToken);
+    await writer.AppendResponseAsync(" [1]", cancellationToken);
 
     CitationEntity citation = new()
     {

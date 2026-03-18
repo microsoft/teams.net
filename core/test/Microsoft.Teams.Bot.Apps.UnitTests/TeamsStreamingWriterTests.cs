@@ -62,10 +62,10 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, _) = CreateWriter();
 
-        await writer.AppendAsync("Hello");
-        await writer.FinalizeAsync();
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.AppendAsync("Too late"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.AppendResponseAsync("Too late"));
     }
 
     [Fact]
@@ -73,10 +73,10 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, _) = CreateWriter();
 
-        await writer.AppendAsync("Hello");
-        await writer.FinalizeAsync();
+        await writer.AppendResponseAsync("Hello");
+        await writer.FinalizeResponseAsync();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync());
     }
 
     // ── Informative-first path ────────────────────────────────────────────────
@@ -86,7 +86,7 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
-        await writer.SendInformativeAsync("Thinking…");
+        await writer.SendInformativeUpdateAsync("Thinking…");
 
         Assert.Single(handler.RequestBodies);
         string body = handler.RequestBodies[0];
@@ -101,8 +101,8 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
-        await writer.SendInformativeAsync("Hello");
-        await writer.AppendAsync("World");
+        await writer.SendInformativeUpdateAsync("Hello");
+        await writer.AppendResponseAsync("World");
 
         Assert.Equal(2, handler.RequestBodies.Count);
         string body = handler.RequestBodies[1];
@@ -116,9 +116,9 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
-        await writer.SendInformativeAsync("Hello");
-        await writer.AppendAsync("Final");
-        await writer.FinalizeAsync();
+        await writer.SendInformativeUpdateAsync("Hello");
+        await writer.AppendResponseAsync("Final");
+        await writer.FinalizeResponseAsync();
 
         string finalBody = handler.RequestBodies[2];
         Assert.Contains("\"type\": \"message\"", finalBody);
@@ -133,8 +133,8 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
-        await writer.AppendAsync("Hello");
-        await writer.AppendAsync(", world");
+        await writer.AppendResponseAsync("Hello");
+        await writer.AppendResponseAsync(", world");
 
         Assert.Contains("Hello", handler.RequestBodies[0]);
         Assert.Contains("Hello, world", handler.RequestBodies[1]);   // full accumulated text
@@ -146,9 +146,9 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
-        await writer.AppendAsync("Hello");
-        await writer.AppendAsync(", world");
-        await writer.FinalizeAsync();
+        await writer.AppendResponseAsync("Hello");
+        await writer.AppendResponseAsync(", world");
+        await writer.FinalizeResponseAsync();
 
         string finalBody = handler.RequestBodies[2];
         Assert.Contains("Hello, world", finalBody);
@@ -160,7 +160,7 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, _) = CreateWriter();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync());
     }
 
     [Fact]
@@ -168,9 +168,9 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, _) = CreateWriter();
 
-        await writer.SendInformativeAsync("Thinking…");
+        await writer.SendInformativeUpdateAsync("Thinking…");
 
-        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeAsync());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync());
     }
 
     // ── Sequence numbering ────────────────────────────────────────────────────
@@ -180,9 +180,9 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
-        await writer.SendInformativeAsync("Hello");   // sequence 1
-        await writer.AppendAsync("chunk 1");           // sequence 2
-        await writer.AppendAsync("chunk 2");           // sequence 3
+        await writer.SendInformativeUpdateAsync("Hello");   // sequence 1
+        await writer.AppendResponseAsync("chunk 1");           // sequence 2
+        await writer.AppendResponseAsync("chunk 2");           // sequence 3
 
         Assert.Contains("\"streamSequence\": 2", handler.RequestBodies[1]);
         Assert.Contains("\"streamSequence\": 3", handler.RequestBodies[2]);
@@ -193,9 +193,9 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
-        await writer.AppendAsync("chunk 1");   // sequence 1
-        await writer.AppendAsync("chunk 2");   // sequence 2
-        await writer.AppendAsync("chunk 3");   // sequence 3
+        await writer.AppendResponseAsync("chunk 1");   // sequence 1
+        await writer.AppendResponseAsync("chunk 2");   // sequence 2
+        await writer.AppendResponseAsync("chunk 3");   // sequence 3
 
         Assert.Contains("\"streamSequence\": 1", handler.RequestBodies[0]);
         Assert.Contains("\"streamSequence\": 2", handler.RequestBodies[1]);
@@ -209,9 +209,9 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
-        await writer.SendInformativeAsync("Hello");
-        await writer.AppendAsync("chunk");
-        await writer.FinalizeAsync();
+        await writer.SendInformativeUpdateAsync("Hello");
+        await writer.AppendResponseAsync("chunk");
+        await writer.FinalizeResponseAsync();
 
         List<string?> streamIds = handler.RequestBodies
             .Select(b =>
