@@ -155,11 +155,11 @@ public class TeamsApiFacadeTests
         TeamsActivity activity = new()
         {
             ServiceUrl = _serviceUrl,
-            From = TeamsConversationAccount.FromConversationAccount(_recipient)
+            From = TeamsConversationAccount.FromConversationAccount(_recipient),
+            ChannelData = new TeamsChannelData { Team = new Team { Id = teamId } }
         };
 
         TeamDetails result = await _teamsBotApplication.Api.Teams.GetByIdAsync(
-            teamId,
             activity,
             cancellationToken: CancellationToken.None);
 
@@ -426,14 +426,14 @@ public class TeamsApiFacadeTests
     public async Task Api_Teams_GetByIdAsync_ThrowsOnNullActivity()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsBotApplication.Api.Teams.GetByIdAsync("team-id", (TeamsActivity)null!));
+            => _teamsBotApplication.Api.Teams.GetByIdAsync((TeamsActivity)null!));
     }
 
     [Fact]
     public async Task Api_Teams_GetChannelsAsync_ThrowsOnNullActivity()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsBotApplication.Api.Teams.GetChannelsAsync("team-id", (TeamsActivity)null!));
+            => _teamsBotApplication.Api.Teams.GetChannelsAsync((TeamsActivity)null!));
     }
 
     [Fact]

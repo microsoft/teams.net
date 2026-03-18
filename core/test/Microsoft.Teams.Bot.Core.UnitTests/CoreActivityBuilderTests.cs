@@ -543,4 +543,106 @@ public class CoreActivityBuilderTests
         Assert.Equal("Test User", activity.Recipient.Name);
         Assert.Equal("msteams", activity.ChannelId);
     }
+
+    [Fact]
+    public void WithRecipient_Targeted_NullRecipient_DoesNotThrow()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithRecipient(null, true)
+            .Build();
+
+        Assert.Null(activity.Recipient);
+    }
+
+    [Fact]
+    public void WithReplyToId_SetsReplyToId()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithReplyToId("reply-123")
+            .Build();
+
+        Assert.Equal("reply-123", activity.ReplyToId);
+    }
+
+    [Fact]
+    public void WithServiceUrl_String_SetsServiceUrl()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithServiceUrl("https://smba.trafficmanager.net/teams/")
+            .Build();
+
+        Assert.Equal(new Uri("https://smba.trafficmanager.net/teams/"), activity.ServiceUrl);
+    }
+
+    [Fact]
+    public void WithConversationReference_WithActivityId_SetsReplyToId()
+    {
+        CoreActivity sourceActivity = new()
+        {
+            Id = "activity-456",
+            ChannelId = "msteams",
+            ServiceUrl = new Uri("https://test.com"),
+            Conversation = new Conversation { Id = "conv-123" },
+            From = new ConversationAccount { Id = "user-1" },
+            Recipient = new ConversationAccount { Id = "bot-1" }
+        };
+
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithConversationReference(sourceActivity)
+            .Build();
+
+        Assert.Equal("activity-456", activity.ReplyToId);
+    }
+
+    [Fact]
+    public void WithConversationReference_WithoutActivityId_DoesNotSetReplyToId()
+    {
+        CoreActivity sourceActivity = new()
+        {
+            ChannelId = "msteams",
+            ServiceUrl = new Uri("https://test.com"),
+            Conversation = new Conversation { Id = "conv-123" },
+            From = new ConversationAccount { Id = "user-1" },
+            Recipient = new ConversationAccount { Id = "bot-1" }
+        };
+
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithConversationReference(sourceActivity)
+            .Build();
+
+        Assert.Null(activity.ReplyToId);
+    }
+
+    [Fact]
+    public void WithFrom_Null_SetsFromToNull()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithFrom(new ConversationAccount { Id = "user-1" })
+            .WithFrom(null)
+            .Build();
+
+        Assert.Null(activity.From);
+    }
+
+    [Fact]
+    public void WithRecipient_Null_SetsRecipientToNull()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithRecipient(new ConversationAccount { Id = "user-1" })
+            .WithRecipient(null)
+            .Build();
+
+        Assert.Null(activity.Recipient);
+    }
+
+    [Fact]
+    public void WithConversation_Null_SetsConversationToNull()
+    {
+        CoreActivity activity = new CoreActivityBuilder()
+            .WithConversation(new Conversation { Id = "conv-1" })
+            .WithConversation(null)
+            .Build();
+
+        Assert.Null(activity.Conversation);
+    }
 }
