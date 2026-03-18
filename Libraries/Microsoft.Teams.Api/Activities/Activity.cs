@@ -225,6 +225,7 @@ public partial class Activity : IActivity
     public virtual Activity WithRecipient(Account value)
     {
         Recipient = value;
+        Recipient.IsTargeted = null;
         return this;
     }
 
