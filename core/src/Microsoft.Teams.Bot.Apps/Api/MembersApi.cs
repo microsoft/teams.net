@@ -126,14 +126,14 @@ public class MembersApi
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the conversation member.</returns>
-    public Task<ConversationAccount> GetByIdAsync(
+    public Task<TeamsConversationAccount> GetByIdAsync(
         string conversationId,
         string userId,
         Uri serviceUrl,
         AgenticIdentity? agenticIdentity = null,
         CustomHeaders? customHeaders = null,
         CancellationToken cancellationToken = default)
-        => _client.GetConversationMemberAsync<ConversationAccount>(conversationId, userId, serviceUrl, agenticIdentity, customHeaders, cancellationToken);
+        => _client.GetConversationMemberAsync<TeamsConversationAccount>(conversationId, userId, serviceUrl, agenticIdentity, customHeaders, cancellationToken);
 
     /// <summary>
     /// Gets a specific member of a conversation using activity context.
