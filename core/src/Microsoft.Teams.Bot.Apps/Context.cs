@@ -65,7 +65,8 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <returns></returns>
     public Task<SendActivityResponse?> SendTypingActivityAsync(CancellationToken cancellationToken = default)
         => TeamsBotApplication.SendActivityAsync(
-            new TeamsActivityBuilder(new TypingActivity())
+            new TeamsActivityBuilder()
+                .WithType(TeamsActivityType.Typing)
                 .WithConversationReference(Activity)
                 .Build(), cancellationToken);
 }

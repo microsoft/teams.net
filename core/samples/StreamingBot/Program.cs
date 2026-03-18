@@ -11,8 +11,8 @@ using OpenAI;
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.AddTeamsBotApplication();
 
-string apiKey  = builder.Configuration["OpenAI:ApiKey"]  ?? throw new InvalidOperationException("OpenAI:ApiKey is required.");
-string modelId = builder.Configuration["OpenAI:ModelId"] ?? "gpt-4o-mini";
+string apiKey = builder.Configuration["OpenAI:ApiKey"] ?? throw new InvalidOperationException("OpenAI:ApiKey is required.");
+string modelId = builder.Configuration["OpenAI:ModelId"] ?? throw new InvalidOperationException("OpenAI:ModelId is required.");
 
 IChatClient chatClient = new OpenAIClient(apiKey)
     .GetChatClient(modelId)
@@ -21,7 +21,7 @@ IChatClient chatClient = new OpenAIClient(apiKey)
 WebApplication webApp = builder.Build();
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
-teamsApp.OnMessage( async (context, cancellationToken) =>
+teamsApp.OnMessage(async (context, cancellationToken) =>
 {
     TeamsStreamingWriter writer = context.GetStreamingWriter();
     await writer.SendInformativeUpdateAsync("Thinking…", cancellationToken);
@@ -59,9 +59,9 @@ teamsApp.OnMessage( async (context, cancellationToken) =>
     TeamsAttachment card = TeamsAttachment.CreateBuilder()
         .WithAdaptiveCard(new JsonObject
         {
-            ["type"]    = "AdaptiveCard",
+            ["type"] = "AdaptiveCard",
             ["version"] = "1.5",
-            ["body"]    = new JsonArray
+            ["body"] = new JsonArray
             {
                 new JsonObject
                 {

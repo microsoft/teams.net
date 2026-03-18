@@ -91,4 +91,13 @@ public static class TeamsActivityType
         [Invoke] = InvokeActivity.FromActivity,
         [Event] = EventActivity.FromActivity
     };
+
+    /// <summary>
+    /// Registry of serializers keyed by concrete activity type, mirroring <see cref="ActivityDeserializerMap"/>.
+    /// </summary>
+    internal static readonly Dictionary<Type, Func<TeamsActivity, string>> ActivitySerializerMap = new()
+    {
+        [typeof(MessageActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageActivity),
+        [typeof(TypingActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.TypingActivity),
+    };
 }

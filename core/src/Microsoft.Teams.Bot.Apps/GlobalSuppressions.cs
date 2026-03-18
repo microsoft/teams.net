@@ -2,9 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
-using System.Runtime.CompilerServices;
-
-[assembly: InternalsVisibleTo("Microsoft.Teams.Bot.Apps.UnitTests")]
 
 [assembly: SuppressMessage("Performance",
     "CA1873:Avoid potentially expensive logging",

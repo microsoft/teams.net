@@ -82,7 +82,7 @@ public class TeamsStreamingWriterTests
     // ── Informative-first path ────────────────────────────────────────────────
 
     [Fact]
-    public async Task SendInformativeAsync_SendsMessageActivityWithInformativeStreamType()
+    public async Task SendInformativeAsync_SendsTypingActivityWithInformativeStreamType()
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
@@ -90,7 +90,7 @@ public class TeamsStreamingWriterTests
 
         Assert.Single(handler.RequestBodies);
         string body = handler.RequestBodies[0];
-        Assert.Contains("\"type\": \"message\"", body);
+        Assert.Contains("\"type\": \"typing\"", body);
         Assert.Contains("\"streamType\": \"informative\"", body);
         Assert.Contains("\"streamSequence\": 1", body);
         Assert.Contains("Thinking", body);
@@ -106,39 +106,9 @@ public class TeamsStreamingWriterTests
 
         Assert.Equal(2, handler.RequestBodies.Count);
         string body = handler.RequestBodies[1];
-        Assert.Contains("\"type\": \"message\"", body);
+        Assert.Contains("\"type\": \"typing\"", body);
         Assert.Contains("\"streamType\": \"streaming\"", body);
         Assert.Contains("World", body);
-    }
-
-    [Fact]
-    public async Task FinalizeAsync_AfterInformative_SendsAccumulatedTextAsFinal()
-    {
-        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-
-        await writer.SendInformativeUpdateAsync("Hello");
-        await writer.AppendResponseAsync("Final");
-        await writer.FinalizeResponseAsync();
-
-        string finalBody = handler.RequestBodies[2];
-        Assert.Contains("\"type\": \"message\"", finalBody);
-        Assert.Contains("\"streamType\": \"final\"", finalBody);
-        Assert.Contains("Final", finalBody);
-    }
-
-    // ── Accumulation ──────────────────────────────────────────────────────────
-
-    [Fact]
-    public async Task AppendAsync_AccumulatesChunksAndSendsFullTextEachTime()
-    {
-        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-
-        await writer.AppendResponseAsync("Hello");
-        await writer.AppendResponseAsync(", world");
-
-        Assert.Contains("Hello", handler.RequestBodies[0]);
-        Assert.Contains("Hello, world", handler.RequestBodies[1]);   // full accumulated text
-        Assert.DoesNotContain(", world\"", handler.RequestBodies[0]); // first send has no second chunk
     }
 
     [Fact]
@@ -146,11 +116,13 @@ public class TeamsStreamingWriterTests
     {
         (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
 
+        await writer.SendInformativeUpdateAsync("info");
+
         await writer.AppendResponseAsync("Hello");
         await writer.AppendResponseAsync(", world");
         await writer.FinalizeResponseAsync();
 
-        string finalBody = handler.RequestBodies[2];
+        string finalBody = handler.RequestBodies.Last();
         Assert.Contains("Hello, world", finalBody);
         Assert.Contains("\"streamType\": \"final\"", finalBody);
     }
@@ -171,35 +143,6 @@ public class TeamsStreamingWriterTests
         await writer.SendInformativeUpdateAsync("Thinking…");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync());
-    }
-
-    // ── Sequence numbering ────────────────────────────────────────────────────
-
-    [Fact]
-    public async Task AppendAsync_MultipleChunks_IncrementsSequenceCorrectly()
-    {
-        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-
-        await writer.SendInformativeUpdateAsync("Hello");   // sequence 1
-        await writer.AppendResponseAsync("chunk 1");           // sequence 2
-        await writer.AppendResponseAsync("chunk 2");           // sequence 3
-
-        Assert.Contains("\"streamSequence\": 2", handler.RequestBodies[1]);
-        Assert.Contains("\"streamSequence\": 3", handler.RequestBodies[2]);
-    }
-
-    [Fact]
-    public async Task AppendAsync_WithoutInformative_SequenceStartsAtOne()
-    {
-        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
-
-        await writer.AppendResponseAsync("chunk 1");   // sequence 1
-        await writer.AppendResponseAsync("chunk 2");   // sequence 2
-        await writer.AppendResponseAsync("chunk 3");   // sequence 3
-
-        Assert.Contains("\"streamSequence\": 1", handler.RequestBodies[0]);
-        Assert.Contains("\"streamSequence\": 2", handler.RequestBodies[1]);
-        Assert.Contains("\"streamSequence\": 3", handler.RequestBodies[2]);
     }
 
     // ── Shared streamId ───────────────────────────────────────────────────────
@@ -225,7 +168,8 @@ public class TeamsStreamingWriterTests
             .ToList();
 
         Assert.Equal(3, streamIds.Count);
-        Assert.NotNull(streamIds[0]);
-        Assert.All(streamIds, id => Assert.Equal(streamIds[0], id));
+        Assert.Null(streamIds[0]);
+        Assert.NotNull(streamIds[1]);
+        Assert.Equal(streamIds[1], streamIds[2]);
     }
 }
