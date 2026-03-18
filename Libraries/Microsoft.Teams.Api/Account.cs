@@ -38,7 +38,7 @@ public class Account
     [JsonPropertyName("isTargeted")]
     [JsonPropertyOrder(6)]
     [Experimental("ExperimentalTeamsTargeted")]
-    public bool? IsTargeted { get; set; }
+    public bool? IsTargeted { get; internal set; }
 }
 
 [JsonConverter(typeof(JsonConverter<Role>))]
