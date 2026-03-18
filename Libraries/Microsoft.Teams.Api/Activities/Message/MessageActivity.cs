@@ -73,11 +73,14 @@ public class MessageActivity : Activity
     /// <summary>
     /// Get all quoted reply entities from this message.
     /// </summary>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+    #pragma warning disable ExperimentalTeamsQuotedReplies
     public IReadOnlyList<QuotedReplyEntity> GetQuotedMessages()
     {
         return Entities?.OfType<QuotedReplyEntity>().ToList()
             ?? new List<QuotedReplyEntity>();
     }
+    #pragma warning restore ExperimentalTeamsQuotedReplies
 
     public MessageActivity() : base(ActivityType.Message)
     {
@@ -172,6 +175,8 @@ public class MessageActivity : Activity
     /// Add a quotedReply entity for the given message ID and append a placeholder to Text.
     /// If response is provided, it is appended after the placeholder.
     /// </summary>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+    #pragma warning disable ExperimentalTeamsQuotedReplies
     public MessageActivity AddQuotedReply(string messageId, string? response = null)
     {
         Entities ??= new List<IEntity>();
@@ -186,6 +191,7 @@ public class MessageActivity : Activity
         }
         return this;
     }
+    #pragma warning restore ExperimentalTeamsQuotedReplies
 
 
     public MessageActivity AddAttachment(params Attachment[] value)

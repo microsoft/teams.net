@@ -101,11 +101,13 @@ public partial class Context<TActivity> : IContext<TActivity>
         {
             var placeholder = $"<quoted messageId=\"{Activity.Id}\"/>";
             activity.Entities ??= new List<IEntity>();
+            #pragma warning disable ExperimentalTeamsQuotedReplies
             activity.Entities.Add(new QuotedReplyEntity
             {
                 QuotedReply = new QuotedReplyData { MessageId = Activity.Id }
             });
 
+            #pragma warning restore ExperimentalTeamsQuotedReplies
             if (activity is MessageActivity message)
             {
                 var text = message.Text?.Trim() ?? "";
@@ -130,11 +132,13 @@ public partial class Context<TActivity> : IContext<TActivity>
     {
         var placeholder = $"<quoted messageId=\"{messageId}\"/>";
         activity.Entities ??= new List<IEntity>();
+        #pragma warning disable ExperimentalTeamsQuotedReplies
         activity.Entities.Add(new QuotedReplyEntity
         {
             QuotedReply = new QuotedReplyData { MessageId = messageId }
         });
 
+        #pragma warning restore ExperimentalTeamsQuotedReplies
         if (activity is MessageActivity message)
         {
             var text = message.Text?.Trim() ?? "";
