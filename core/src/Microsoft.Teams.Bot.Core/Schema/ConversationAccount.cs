@@ -34,7 +34,7 @@ public class ConversationAccount()
     /// Gets the agentic identity from the account properties.
     /// </summary>
     /// <returns>An AgenticIdentity instance if properties contain agentic identity information; otherwise, null.</returns>
-    internal AgenticIdentity? GetAgenticIdentity()
+    public AgenticIdentity? GetAgenticIdentity()
     {
         Properties.TryGetValue("agenticAppId", out object? appIdObj);
         Properties.TryGetValue("agenticUserId", out object? userIdObj);

@@ -112,14 +112,20 @@ namespace PABot
         public async Task<string> GetPhotoAsync()
         {
             GraphServiceClient graphClient = GetAuthenticatedClient();
-            Stream? photo = await graphClient.Me.Photo.Content.GetAsync();
-            if (photo != null)
+
+            try
             {
-                using MemoryStream ms = new();
-                await photo.CopyToAsync(ms);
-                byte[] buffers = ms.ToArray();
-                return $"data:image/png;base64,{Convert.ToBase64String(buffers)}";
+                Stream? photo = await graphClient.Me.Photo.Content.GetAsync();
+                if (photo != null)
+                {
+                    using MemoryStream ms = new();
+                    await photo.CopyToAsync(ms);
+                    byte[] buffers = ms.ToArray();
+                    return $"data:image/png;base64,{Convert.ToBase64String(buffers)}";
+                }
             }
+            catch { }
+
             return string.Empty;
         }
 
