@@ -180,30 +180,27 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
 
     // Add a waving hand reaction
     await context.TeamsBotApplication.Api.Conversations.Reactions.AddAsync(
-        context.Activity.Conversation.Id!,
+        context.Activity,
         response!.Id!,
         "1f44b_wavinghand-tone4",
-        context.Activity.ServiceUrl,
         cancellationToken: cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
 
     // Add a beaming face reaction
     await context.TeamsBotApplication.Api.Conversations.Reactions.AddAsync(
-        context.Activity.Conversation.Id!,
+        context.Activity,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
-        context.Activity.ServiceUrl,
         cancellationToken: cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
 
     // Remove the beaming face reaction
     await context.TeamsBotApplication.Api.Conversations.Reactions.DeleteAsync(
-        context.Activity.Conversation.Id!,
+        context.Activity,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
-        context.Activity.ServiceUrl,
         cancellationToken: cancellationToken);
 });
 
