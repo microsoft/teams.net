@@ -19,7 +19,7 @@ public class InvokeAction : SubmitAction
     {
         Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
-            Msteams = new InvokeSubmitActionData(value)
+            Msteams = new InvokeSubmitActionData(new Union<object, CollabStageInvokeDataValue>(value))
         });
     }
 }
