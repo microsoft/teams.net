@@ -10,25 +10,14 @@ using PABot.Dialogs;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// Register all the keyed services (ConversationClient, UserTokenClient, TeamsApiClient, TeamsBotApplication)
+// Register TeamsBotApplication and all dependencies (uses MsalBot and MsalAgent configuration sections)
 builder.Services.AddTeamsBotApplications();
 
-// Register keyed adapters using the keyed TeamsBotApplication
-builder.Services.AddKeyedSingleton<IBotFrameworkHttpAdapter>("AdapterOne", (sp, keyName) =>
+// Register adapter using the TeamsBotApplication
+builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(sp =>
 {
     return new AdapterWithErrorHandler(
-        sp.GetRequiredKeyedService<TeamsBotApplication>("AdapterOne"),
-        sp.GetRequiredService<IHttpContextAccessor>(),
-        sp.GetRequiredService<IConfiguration>(),
-        sp.GetRequiredService<ILogger<IBotFrameworkHttpAdapter>>(),
-        sp.GetRequiredService<IStorage>(),
-        sp.GetRequiredService<ConversationState>());
-});
-
-builder.Services.AddKeyedSingleton<IBotFrameworkHttpAdapter>("AdapterTwo", (sp, keyName) =>
-{
-    return new AdapterWithErrorHandler(
-        sp.GetRequiredKeyedService<TeamsBotApplication>("AdapterTwo"),
+        sp.GetRequiredService<TeamsBotApplication>(),
         sp.GetRequiredService<IHttpContextAccessor>(),
         sp.GetRequiredService<IConfiguration>(),
         sp.GetRequiredService<ILogger<IBotFrameworkHttpAdapter>>(),
@@ -42,21 +31,14 @@ builder.Services.AddSingleton<UserState>();
 builder.Services.AddSingleton<ConversationState>();
 builder.Services.AddSingleton<MainDialog>();
 
-// Register bots
-builder.Services.AddKeyedTransient<IBot, TeamsBot<MainDialog>>("TeamsBot");
-builder.Services.AddKeyedTransient<IBot, EchoBot>("EchoBot");
+// Register bot (pick between TeamsBot & EchoBot)
+//builder.Services.AddTransient<IBot, TeamsBot<MainDialog>>();
+builder.Services.AddTransient<IBot, EchoBot>();
 
 WebApplication app = builder.Build();
 
-// Get the keyed adapters
-IBotFrameworkHttpAdapter adapterOne = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("AdapterOne");
-IBotFrameworkHttpAdapter adapterTwo = app.Services.GetRequiredKeyedService<IBotFrameworkHttpAdapter>("AdapterTwo");
-
-// Map endpoints with their respective adapters and authorization policies
-app.MapPost("/api/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("TeamsBot")] IBot bot, CancellationToken ct) =>
-    adapterOne.ProcessAsync(request, response, bot, ct)).RequireAuthorization("AdapterOne");
-
-app.MapPost("/api/v2/messages", (HttpRequest request, HttpResponse response, [FromKeyedServices("EchoBot")] IBot bot, CancellationToken ct) =>
-    adapterTwo.ProcessAsync(request, response, bot, ct)).RequireAuthorization("AdapterTwo");
+// Map endpoint with BotAdapter authorization policy
+app.MapPost("/api/messages", (HttpRequest request, HttpResponse response, IBot bot, CancellationToken ct, IBotFrameworkHttpAdapter adapter) =>
+    adapter.ProcessAsync(request, response, bot, ct)).RequireAuthorization("BotAdapter");
 
 app.Run();

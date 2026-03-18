@@ -20,7 +20,7 @@ public class ConversationData
 
 }
 
-internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conversationState, ILogger<EchoBot> logger)
+internal class EchoBot(ConversationState conversationState, ILogger<EchoBot> logger)
     : TeamsActivityHandler
 {
     public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
@@ -44,7 +44,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         // - FetchMeetingInfoAsync, FetchParticipantAsync, SendMeetingNotificationAsync
         // - Batch messaging: SendMessageToListOfUsersAsync, SendMessageToAllUsersInTenantAsync, etc.
 
-        await SendUpdateDeleteActivityAsync(turnContext, teamsBotApp.ConversationClient, cancellationToken);
+        await SendUpdateDeleteActivityAsync(turnContext, cancellationToken);
 
         Attachment attachment = new()
         {
@@ -120,35 +120,29 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         await turnContext.SendActivityAsync(MessageFactory.Text($"{meeting.Title} {meeting.MeetingType}"), cancellationToken);
     }
 
-    private static async Task SendUpdateDeleteActivityAsync(ITurnContext<IMessageActivity> turnContext, ConversationClient conversationClient, CancellationToken cancellationToken)
+    private static async Task SendUpdateDeleteActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
         ConversationReference cr = turnContext.Activity.GetConversationReference();
         Activity reply = (Activity)Activity.CreateMessageActivity();
         reply.ApplyConversationReference(cr, isIncoming: false);
         reply.Text = "This is a proactive message sent using the Conversations API.";
 
-        CoreActivity ca = reply.FromCompatActivity();
-
-        SendActivityResponse res = await conversationClient.SendActivityAsync(ca, null, cancellationToken);
+        ResourceResponse[] res = await turnContext.Adapter.SendActivitiesAsync(turnContext, [reply], cancellationToken);
 
         await Task.Delay(2000, cancellationToken);
 
-        await conversationClient.UpdateActivityAsync(
-            cr.Conversation.Id,
-            res.Id!,
-            TeamsActivity.CreateBuilder()
-                .WithId(res.Id ?? "")
-                .WithServiceUrl(new Uri(turnContext.Activity.ServiceUrl))
-                .WithType(ActivityType.Message)
-                .WithText("This message has been updated.")
-                .WithFrom(ca.From)
-                .Build(),
-            null,
-            cancellationToken);
+        Activity updatedActivity = (Activity)Activity.CreateMessageActivity();
+        updatedActivity.ApplyConversationReference(cr, isIncoming: false);
+        updatedActivity.Id = res[0].Id;
+        updatedActivity.Text = "This message has been updated.";
+
+        await turnContext.Adapter.UpdateActivityAsync(turnContext, updatedActivity, cancellationToken);
 
         await Task.Delay(2000, cancellationToken);
 
-        await conversationClient.DeleteActivityAsync(cr.Conversation.Id, res.Id!, new Uri(turnContext.Activity.ServiceUrl), AgenticIdentity.FromProperties(ca.From?.Properties), null, cancellationToken);
+        ConversationReference deleteReference = cr;
+        deleteReference.ActivityId = res[0].Id;
+        await turnContext.Adapter.DeleteActivityAsync(turnContext, deleteReference, cancellationToken);
 
         await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
     }
