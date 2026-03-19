@@ -41,14 +41,10 @@ public static class AddBotApplicationExtensions
     /// Configures the application to handle bot messages at the specified route and returns the registered bot
     /// application instance.
     /// </summary>
-    /// <remarks>This method adds authentication and authorization middleware to the HTTP pipeline and maps
-    /// a POST endpoint for bot messages. The endpoint requires authorization. Ensure that the bot application
-    /// is registered in the service container before calling this method.</remarks>
     /// <typeparam name="TApp">The type of the bot application to use. Must inherit from BotApplication.</typeparam>
     /// <param name="endpoints">The endpoint route builder used to configure endpoints.</param>
     /// <param name="routePath">The route path at which to listen for incoming bot messages. Defaults to "api/messages".</param>
     /// <returns>The registered bot application instance of type TApp.</returns>
-    /// <exception cref="InvalidOperationException">Thrown if the bot application of type TApp is not registered in the application's service container.</exception>
     public static TApp UseBotApplication<TApp>(
        this IEndpointRouteBuilder endpoints,
        string routePath = "api/messages")
@@ -56,8 +52,6 @@ public static class AddBotApplicationExtensions
     {
         ArgumentNullException.ThrowIfNull(endpoints);
 
-        // Add authentication and authorization middleware to the pipeline
-        // This is safe because WebApplication implements both IEndpointRouteBuilder and IApplicationBuilder
         if (endpoints is IApplicationBuilder app)
         {
             app.UseAuthentication();
@@ -76,26 +70,15 @@ public static class AddBotApplicationExtensions
     /// <summary>
     /// Adds a bot application to the service collection with the default configuration section name "AzureAd".
     /// </summary>
-    /// <param name="services"></param>
-    /// <param name="sectionName"></param>
-    /// <returns></returns>
     public static IServiceCollection AddBotApplication(this IServiceCollection services, string sectionName = "AzureAd")
         => services.AddBotApplication<BotApplication>(sectionName);
 
     /// <summary>
     /// Adds a bot application to the service collection.
     /// </summary>
-    /// <typeparam name="TApp"></typeparam>
-    /// <param name="services"></param>
-    /// <param name="sectionName"></param>
-    /// <returns></returns>
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
     {
-        // Extract ILoggerFactory from service collection to create logger without BuildServiceProvider
-        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
-        ILogger logger = loggerFactory?.CreateLogger<BotApplication>()
-            ?? (ILogger)Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
+        var (configuration, logger) = ResolveConfigAndLogger(services);
 
         services.AddSingleton<BotApplicationOptions>(sp =>
         {
@@ -107,8 +90,20 @@ public static class AddBotApplicationExtensions
         });
         services.AddHttpContextAccessor();
         services.AddBotAuthorization(sectionName, logger);
-        services.AddConversationClient(sectionName);
-        services.AddUserTokenClient(sectionName);
+
+        // Configure shared infrastructure (options, token acquisition, etc.) once
+        RegisterSharedInfrastructure(services, sectionName);
+
+        // Check MSAL configuration once, register both clients with the result
+        bool msalConfigured = services.ConfigureMSAL(configuration, sectionName, logger);
+        if (!msalConfigured)
+        {
+            _logAuthConfigNotFound(logger, null);
+        }
+
+        AddBotClient<ConversationClient>(services, ConversationClient.ConversationHttpClientName, msalConfigured);
+        AddBotClient<UserTokenClient>(services, UserTokenClient.UserTokenHttpClientName, msalConfigured);
+
         services.AddSingleton<TApp>();
         return services;
     }
@@ -116,27 +111,57 @@ public static class AddBotApplicationExtensions
     /// <summary>
     /// Adds conversation client to the service collection.
     /// </summary>
-    /// <param name="services">service collection</param>
-    /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
-    /// <returns></returns>
-    public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd") =>
-        services.AddBotClient<ConversationClient>(ConversationClient.ConversationHttpClientName, sectionName);
+    public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
+    {
+        var (configuration, logger) = ResolveConfigAndLogger(services);
+        RegisterSharedInfrastructure(services, sectionName);
+        bool msalConfigured = services.ConfigureMSAL(configuration, sectionName, logger);
+        if (!msalConfigured)
+        {
+            _logAuthConfigNotFound(logger, null);
+        }
+
+        return AddBotClient<ConversationClient>(services, ConversationClient.ConversationHttpClientName, msalConfigured);
+    }
 
     /// <summary>
     /// Adds user token client to the service collection.
     /// </summary>
-    /// <param name="services">service collection</param>
-    /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
-    /// <returns></returns>
-    public static IServiceCollection AddUserTokenClient(this IServiceCollection services, string sectionName = "AzureAd") =>
-        services.AddBotClient<UserTokenClient>(UserTokenClient.UserTokenHttpClientName, sectionName);
-
-    private static IServiceCollection AddBotClient<TClient>(
-        this IServiceCollection services,
-        string httpClientName,
-        string sectionName) where TClient : class
+    public static IServiceCollection AddUserTokenClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
-        // Register options to defer scope configuration reading
+        var (configuration, logger) = ResolveConfigAndLogger(services);
+        RegisterSharedInfrastructure(services, sectionName);
+        bool msalConfigured = services.ConfigureMSAL(configuration, sectionName, logger);
+        if (!msalConfigured)
+        {
+            _logAuthConfigNotFound(logger, null);
+        }
+
+        return AddBotClient<UserTokenClient>(services, UserTokenClient.UserTokenHttpClientName, msalConfigured);
+    }
+
+    private static (IConfiguration configuration, ILogger logger) ResolveConfigAndLogger(IServiceCollection services)
+    {
+        ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
+        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
+
+        if (configDescriptor?.ImplementationInstance is IConfiguration config)
+        {
+            ILogger logger = loggerFactory?.CreateLogger(typeof(AddBotApplicationExtensions))
+                ?? Extensions.Logging.Abstractions.NullLogger.Instance;
+            return (config, logger);
+        }
+
+        using ServiceProvider tempProvider = services.BuildServiceProvider();
+        IConfiguration resolvedConfig = tempProvider.GetRequiredService<IConfiguration>();
+        ILogger resolvedLogger = (loggerFactory ?? tempProvider.GetRequiredService<ILoggerFactory>())
+            .CreateLogger(typeof(AddBotApplicationExtensions));
+        return (resolvedConfig, resolvedLogger);
+    }
+
+    private static void RegisterSharedInfrastructure(IServiceCollection services, string sectionName)
+    {
         services.AddOptions<BotClientOptions>()
             .Configure<IConfiguration>((options, configuration) =>
             {
@@ -153,29 +178,14 @@ public static class AddBotApplicationExtensions
             .AddTokenAcquisition(true)
             .AddInMemoryTokenCaches()
             .AddAgentIdentities();
+    }
 
-        // Get configuration and logger to configure MSAL during registration
-        // Try to get from service descriptors first
-        ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-
-        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
-        ILogger logger = loggerFactory?.CreateLogger(typeof(AddBotApplicationExtensions))
-            ?? Extensions.Logging.Abstractions.NullLogger.Instance;
-
-        // If configuration not available as instance, build temporary provider
-        if (configDescriptor?.ImplementationInstance is not IConfiguration configuration)
-        {
-            using ServiceProvider tempProvider = services.BuildServiceProvider();
-            configuration = tempProvider.GetRequiredService<IConfiguration>();
-            if (loggerFactory == null)
-            {
-                logger = tempProvider.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(AddBotApplicationExtensions));
-            }
-        }
-
-        // Configure MSAL during registration (not deferred)z
-        if (services.ConfigureMSAL(configuration, sectionName, logger))
+    private static IServiceCollection AddBotClient<TClient>(
+        IServiceCollection services,
+        string httpClientName,
+        bool msalConfigured) where TClient : class
+    {
+        if (msalConfigured)
         {
             services.AddHttpClient<TClient>(httpClientName)
                 .AddHttpMessageHandler(sp =>
@@ -190,7 +200,6 @@ public static class AddBotApplicationExtensions
         }
         else
         {
-            _logAuthConfigNotFound(logger, null);
             services.AddHttpClient<TClient>(httpClientName);
         }
 
@@ -200,32 +209,32 @@ public static class AddBotApplicationExtensions
     private static bool ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        bool configured = false;
+
         if (configuration["MicrosoftAppId"] is not null)
         {
             _logUsingBFConfig(logger, null);
             BotConfig botConfig = BotConfig.FromBFConfig(configuration);
             services.ConfigureMSALFromBotConfig(botConfig, logger);
-            configured = true;
+            return true;
         }
-        else if (configuration["CLIENT_ID"] is not null)
+
+        if (configuration["CLIENT_ID"] is not null)
         {
             _logUsingCoreConfig(logger, null);
             BotConfig botConfig = BotConfig.FromCoreConfig(configuration);
             services.ConfigureMSALFromBotConfig(botConfig, logger);
-            configured = true;
+            return true;
         }
-        else
+
+        _logUsingSectionConfig(logger, sectionName, null);
+        var section = configuration.GetSection(sectionName);
+        if (section["ClientId"] is not null && !string.IsNullOrEmpty(section["ClientId"]))
         {
-            _logUsingSectionConfig(logger, sectionName, null);
-            var section = configuration.GetSection(sectionName);
-            if (section["ClientId"] is not null && !string.IsNullOrEmpty(section["ClientId"]))
-            {
-                services.ConfigureMSALFromConfig(section);
-                configured = true;
-            }
+            services.ConfigureMSALFromConfig(section);
+            return true;
         }
-        return configured;
+
+        return false;
     }
 
     private static IServiceCollection ConfigureMSALFromConfig(this IServiceCollection services, IConfigurationSection msalConfigSection)
@@ -288,7 +297,6 @@ public static class AddBotApplicationExtensions
         ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
 
-        // Register ManagedIdentityOptions for BotAuthenticationHandler to use
         bool isSystemAssigned = IsSystemAssignedManagedIdentity(managedIdentityClientId);
         string? umiClientId = isSystemAssigned ? null : (managedIdentityClientId ?? clientId);
 
@@ -328,9 +336,6 @@ public static class AddBotApplicationExtensions
         return services;
     }
 
-    /// <summary>
-    /// Determines if the provided client ID represents a system-assigned managed identity.
-    /// </summary>
     private static bool IsSystemAssignedManagedIdentity(string? clientId)
         => string.Equals(clientId, BotConfig.SystemManagedIdentityIdentifier, StringComparison.OrdinalIgnoreCase);
 
@@ -348,6 +353,4 @@ public static class AddBotApplicationExtensions
         LoggerMessage.Define<string>(LogLevel.Debug, new(6), "Configuring authentication with Federated Identity Credential (Managed Identity) with {IdentityType} Managed Identity");
     private static readonly Action<ILogger, Exception?> _logAuthConfigNotFound =
         LoggerMessage.Define(LogLevel.Warning, new(7), "Authentication configuration not found. Running without Auth");
-
-
 }

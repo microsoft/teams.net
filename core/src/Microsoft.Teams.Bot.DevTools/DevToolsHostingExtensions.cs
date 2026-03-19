@@ -87,6 +87,18 @@ public static partial class DevToolsHostingExtensions
     /// <returns>The endpoint route builder for chaining.</returns>
     public static IEndpointRouteBuilder UseDevTools(this IEndpointRouteBuilder endpoints)
     {
+        UseDevTools<BotApplication>(endpoints);
+        return endpoints;
+    }
+
+    /// <summary>
+    /// Configures DevTools and returns the bot application for chaining.
+    /// </summary>
+    /// <typeparam name="TApp">The bot application type.</typeparam>
+    /// <param name="endpoints">The endpoint route builder.</param>
+    /// <returns>The bot application instance.</returns>
+    public static TApp UseDevTools<TApp>(this IEndpointRouteBuilder endpoints) where TApp : BotApplication
+    {
         ArgumentNullException.ThrowIfNull(endpoints);
 
         // Enable WebSockets
@@ -114,7 +126,7 @@ public static partial class DevToolsHostingExtensions
         var logger = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("DevTools");
 
         // Register middleware on the bot application
-        var botApp = endpoints.ServiceProvider.GetRequiredService<BotApplication>();
+        var botApp = endpoints.ServiceProvider.GetRequiredService<TApp>();
         botApp.UseMiddleware(middleware);
 
         // Populate AppId/AppName from BotApplicationOptions
@@ -137,21 +149,7 @@ public static partial class DevToolsHostingExtensions
         // Map endpoints
         MapDevToolsEndpoints(endpoints, service, lifetime, files, botApp);
 
-        return endpoints;
-    }
-
-    /// <summary>
-    /// Configures DevTools and returns the bot application for chaining.
-    /// </summary>
-    /// <typeparam name="TApp">The bot application type.</typeparam>
-    /// <param name="endpoints">The endpoint route builder.</param>
-    /// <returns>The bot application instance.</returns>
-    public static TApp UseDevTools<TApp>(this IEndpointRouteBuilder endpoints) where TApp : BotApplication
-    {
-        ArgumentNullException.ThrowIfNull(endpoints);
-
-        endpoints.UseDevTools();
-        return endpoints.ServiceProvider.GetRequiredService<TApp>();
+        return botApp;
     }
 
     private static void MapDevToolsEndpoints(
