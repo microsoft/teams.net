@@ -18,8 +18,14 @@ using CustomHeaders = Dictionary<string, string>;
 public class ConversationClient(HttpClient httpClient, ILogger<ConversationClient> logger = default!)
 {
     private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
+    private readonly JsonSerializerOptions _jsonSerializerOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+
     internal const string ConversationHttpClientName = "BotConversationClient";
-    private readonly JsonSerializerOptions jsonSerializerOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = false, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
 
     /// <summary>
     /// Gets the default custom headers that will be included in all requests.
@@ -42,14 +48,14 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
-        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{activity.Conversation.Id}/activities/";
+        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(activity.Conversation.Id)}/activities/";
 
         if (activity.ChannelId == "agents")
         {
             logger.LogInformation("Truncating conversation ID for 'agents' channel to comply with length restrictions.");
             string conversationId = activity.Conversation.Id;
             string convId = conversationId.Length > 100 ? conversationId[..100] : conversationId;
-            url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{convId}/activities/";
+            url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(convId)}/activities/";
         }
 
         if (!string.IsNullOrEmpty(activity.ReplyToId))
@@ -93,7 +99,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
-        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}";
+        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}";
 
         if (activity.Recipient?.IsTargeted == true)
         {
@@ -115,7 +121,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
     /// <summary>
     /// Updates an existing targeted activity in a conversation.
-    /// The activity body is sent without the targeted recipient to avoid "Cannot edit Recipient of Targeted Message" errors.
+    /// The activity body is sent with the targeted recipient to avoid "Cannot edit Recipient of Targeted Message" errors.
     /// </summary>
     /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
     /// <param name="activityId">The ID of the activity to update. Cannot be null or whitespace.</param>
@@ -131,7 +137,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
-        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}?isTargetedActivity=true";
+        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}?isTargetedActivity=true";
 
         string body = activity.ToJson();
 
@@ -156,10 +162,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
-    public virtual async Task DeleteTargetedActivityAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
-    {
-        await DeleteActivityAsync(conversationId, activityId, serviceUrl, isTargeted: true, agenticIdentity, customHeaders, cancellationToken).ConfigureAwait(false);
-    }
+    public virtual Task DeleteTargetedActivityAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+        => DeleteActivityAsync(conversationId, activityId, serviceUrl, isTargeted: true, agenticIdentity, customHeaders, cancellationToken);
 
     /// <summary>
     /// Deletes an existing activity from a conversation.
@@ -172,10 +176,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
-    public virtual async Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
-    {
-        await DeleteActivityAsync(conversationId, activityId, serviceUrl, isTargeted: false, agenticIdentity, customHeaders, cancellationToken).ConfigureAwait(false);
-    }
+    public virtual Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+        => DeleteActivityAsync(conversationId, activityId, serviceUrl, isTargeted: false, agenticIdentity, customHeaders, cancellationToken);
 
     /// <summary>
     /// Deletes an existing activity from a conversation.
@@ -195,7 +197,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}";
 
         if (isTargeted)
         {
@@ -253,7 +255,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members";
 
         logger.LogTrace("Getting conversation members from {Url}", url);
 
@@ -287,7 +289,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(serviceUrl);
         ArgumentException.ThrowIfNullOrWhiteSpace(userId);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members/{userId}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members/{Uri.EscapeDataString(userId)}";
 
         logger.LogTrace("Getting conversation members from {Url}", url);
 
@@ -346,7 +348,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/members";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/members";
 
         logger.LogTrace("Getting activity members from {Url}", url);
 
@@ -375,7 +377,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations";
 
-        string paramsJson = JsonSerializer.Serialize(parameters, jsonSerializerOptions);
+        string paramsJson = JsonSerializer.Serialize(parameters, _jsonSerializerOptions);
 
         logger.LogTrace("Creating conversation at {Url} with parameters: {Parameters}", url, paramsJson);
 
@@ -404,7 +406,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/pagedmembers";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/pagedmembers";
 
         List<string> queryParams = [];
         if (pageSize.HasValue)
@@ -448,7 +450,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(memberId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/members/{memberId}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members/{Uri.EscapeDataString(memberId)}";
 
         logger.LogTrace("Deleting conversation member at {Url}", url);
 
@@ -478,9 +480,9 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(transcript);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/history";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/history";
 
-        string transcriptJson = JsonSerializer.Serialize(transcript, jsonSerializerOptions);
+        string transcriptJson = JsonSerializer.Serialize(transcript, _jsonSerializerOptions);
         logger.LogTrace("Sending conversation history to {Url}: {Transcript}", url, transcriptJson);
 
         return (await _botHttpClient.SendAsync<SendConversationHistoryResponse>(
@@ -509,9 +511,9 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(attachmentData);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/attachments";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/attachments";
 
-        string attachmentDataJson = JsonSerializer.Serialize(attachmentData, jsonSerializerOptions);
+        string attachmentDataJson = JsonSerializer.Serialize(attachmentData, _jsonSerializerOptions);
         logger.LogTrace("Uploading attachment to {Url}: {AttachmentData}", url, attachmentDataJson);
 
         return (await _botHttpClient.SendAsync<UploadAttachmentResponse>(
@@ -541,7 +543,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(reactionType);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/reactions/{Uri.EscapeDataString(reactionType)}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/reactions/{Uri.EscapeDataString(reactionType)}";
 
         logger.LogTrace("Adding reaction at {Url}", url);
 
@@ -572,7 +574,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(reactionType);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{conversationId}/activities/{activityId}/reactions/{Uri.EscapeDataString(reactionType)}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/reactions/{Uri.EscapeDataString(reactionType)}";
 
         logger.LogTrace("Deleting reaction at {Url}", url);
 

@@ -59,7 +59,6 @@ public class ActivitiesApi
 
     /// <summary>
     /// Updates an existing targeted activity in a conversation.
-    /// The activity body is sent without the targeted recipient to avoid service errors.
     /// </summary>
     /// <param name="conversationId">The ID of the conversation.</param>
     /// <param name="activityId">The ID of the activity to update.</param>

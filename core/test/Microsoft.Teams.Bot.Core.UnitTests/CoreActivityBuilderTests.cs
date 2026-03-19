@@ -362,6 +362,7 @@ public class CoreActivityBuilderTests
         Assert.Equal("Bot", replyActivity.From?.Name);
         //Assert.Equal("user-id", replyActivity.Recipient?.Id);
         //Assert.Equal("User", replyActivity.Recipient?.Name);
+        // TODO: review if recipient is required
     }
 
     [Fact]
@@ -425,6 +426,8 @@ public class CoreActivityBuilderTests
         Assert.Equal(ActivityType.Message, activity.Type);
         Assert.Equal("bot-1", activity.From?.Id);
         //Assert.Equal("user-1", activity.Recipient?.Id);
+
+        // TODO: review if recipient is required, if not, update WithConversationReference to not throw when recipient is null and update this test accordingly
     }
 
     [Fact]

@@ -295,6 +295,7 @@ public class CoreCoreActivityTests
         Assert.Equal("Bot One", reply.From?.Name);
         //Assert.Equal("user1", reply.Recipient?.Id);
         //Assert.Equal("User One", reply.Recipient?.Name);
+        // TODO: review if recipient is required
     }
 
     [Fact]

@@ -57,7 +57,7 @@ public class CompatBotAdapter(
             ?? turnContext.Activity.ServiceUrl
             ?? throw new ArgumentException("ServiceUrl must be provided", nameof(reference));
 
-        Uri serviceUrl = new Uri(serviceUrlString);
+        Uri serviceUrl = new(serviceUrlString);
 
         // Extract agentic identity from turn context if available
         AgenticIdentity? agenticIdentity = turnContext.Activity?.FromCompatActivity().From?.GetAgenticIdentity();

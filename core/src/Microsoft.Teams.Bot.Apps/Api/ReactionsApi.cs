@@ -3,7 +3,6 @@
 
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Api;
 
@@ -24,7 +23,7 @@ public class ReactionsApi
     {
         _client = conversationClient;
     }
-    
+
     /// <summary>
     /// Adds a reaction to an activity using activity context.
     /// </summary>
@@ -42,7 +41,7 @@ public class ReactionsApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
         ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
@@ -56,7 +55,7 @@ public class ReactionsApi
             customHeaders,
             cancellationToken);
     }
-    
+
     /// <summary>
     /// Removes a reaction from an activity using activity context.
     /// </summary>
@@ -74,7 +73,7 @@ public class ReactionsApi
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
         ArgumentNullException.ThrowIfNull(activity.Conversation);
         ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);

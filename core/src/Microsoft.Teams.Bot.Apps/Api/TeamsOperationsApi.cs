@@ -55,7 +55,7 @@ public class TeamsOperationsApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
-        var teamId = activity.ChannelData?.Team?.Id;
+        string? teamId = activity.ChannelData?.Team?.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(teamId, "activity.ChannelData.Team.Id");
 
         return _client.FetchTeamDetailsAsync(

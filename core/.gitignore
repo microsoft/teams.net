@@ -1,6 +1,8 @@
 launchSettings.json
 appsettings.Development.json
 *.runsettings
+.claude/
+
 
 # Web build output and dependencies
 **/Web/bin/

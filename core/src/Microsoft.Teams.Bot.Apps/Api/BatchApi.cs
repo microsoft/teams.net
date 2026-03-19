@@ -64,7 +64,7 @@ public class BatchApi
         ArgumentNullException.ThrowIfNull(contextActivity);
         ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
 
-        var tenantId = contextActivity.ChannelData?.Tenant?.Id;
+        string? tenantId = contextActivity.ChannelData?.Tenant?.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "contextActivity.ChannelData.Tenant.Id");
         return _client.SendMessageToListOfUsersAsync(
             activity,
@@ -112,7 +112,7 @@ public class BatchApi
         ArgumentNullException.ThrowIfNull(contextActivity);
         ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
 
-        var tenantId = contextActivity.ChannelData?.Tenant?.Id;
+        string? tenantId = contextActivity.ChannelData?.Tenant?.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "contextActivity.ChannelData.Tenant.Id");
         return _client.SendMessageToAllUsersInTenantAsync(
             activity,
@@ -163,7 +163,7 @@ public class BatchApi
         ArgumentNullException.ThrowIfNull(contextActivity);
         ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
 
-        var tenantId = contextActivity.ChannelData?.Tenant?.Id;
+        string? tenantId = contextActivity.ChannelData?.Tenant?.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "contextActivity.ChannelData.Tenant.Id");
         return _client.SendMessageToAllUsersInTeamAsync(
             activity,
@@ -215,7 +215,7 @@ public class BatchApi
         ArgumentNullException.ThrowIfNull(contextActivity);
         ArgumentNullException.ThrowIfNull(contextActivity.ServiceUrl);
 
-        var tenantId = contextActivity.ChannelData?.Tenant?.Id;
+        string? tenantId = contextActivity.ChannelData?.Tenant?.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "contextActivity.ChannelData.Tenant.Id");
         return _client.SendMessageToListOfChannelsAsync(
             activity,

@@ -105,7 +105,7 @@ public class MeetingsApi
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
-        var tenantId = activity.ChannelData?.Tenant?.Id;
+        string? tenantId = activity.ChannelData?.Tenant?.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId, "activity.ChannelData.Tenant.Id");
         return _client.FetchParticipantAsync(
             meetingId,

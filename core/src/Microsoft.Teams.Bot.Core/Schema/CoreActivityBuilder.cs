@@ -48,6 +48,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
         SetConversation(activity.Conversation);
         SetFrom(activity.Recipient);
         //SetRecipient(activity.From);
+        // TODO: Is this correct ? In a reply scenario, the From of the incoming activity becomes the Recipient of the reply, and vice versa.
 
         if (!string.IsNullOrEmpty(activity.Id))
         {
@@ -179,7 +180,11 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// <returns>The builder instance for chaining.</returns>
     public TBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
     {
-        if (recipient is not null)
+        if (recipient is null)
+        {
+            SetRecipient(null);
+        }
+        else
         {
             recipient.IsTargeted = isTargeted ? true : null;
             SetRecipient(recipient);

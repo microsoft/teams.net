@@ -5,11 +5,9 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Identity.Client;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Compat;
-using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
 using Newtonsoft.Json.Linq;
 
@@ -40,7 +38,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
 
         var act = MessageFactory.Text(replyText, replyText);
         act.Recipient = new ChannelAccount();
-        act.Recipient.Properties.Add("isTargeted", true); 
+        act.Recipient.Properties.Add("isTargeted", true);
         await turnContext.SendActivityAsync(act, cancellationToken);
 
         // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
@@ -61,7 +59,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
             MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
 
         await Task.Delay(500, cancellationToken);
-        
+
         await teamsBotApp.ConversationClient.AddReactionAsync(
             turnContext.Activity.Conversation.Id,
             res.Id,
