@@ -23,11 +23,11 @@ namespace Microsoft.Teams.Bot.Apps;
 ///     await writer.FinalizeResponseAsync();            // sends accumulated " Hello, world"
 /// </code>
 ///
-/// Entitites and Attachments are only sent with the final message activity.
+/// Entities and Attachments are only sent with the final message activity.
 /// Pass them directly to <see cref="FinalizeResponseAsync"/>:
 /// <code>
 ///     await writer.FinalizeResponseAsync(
-///         entities: [new CitationEntity(...)]);
+///         entities: [new CitationEntity(...)],
 ///         attachments: [new TeamsAttachment(...)]);
 /// </code>
 /// </remarks>
@@ -102,9 +102,10 @@ public sealed class TeamsStreamingWriter
     /// </summary>
     /// <param name="attachments">Optional attachments to include in the final message activity.</param>
     /// <param name="entities">Optional entities (e.g. citations, mentions) to include in the final message activity.</param>
+    /// <param name="feedbackEnabled">Whether to enable the feedback loop (thumbs up/down) on the final message.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <exception cref="InvalidOperationException">Thrown if <see cref="FinalizeResponseAsync"/> has already been called, or if no content has been accumulated via <see cref="AppendResponseAsync"/>.</exception>
-    public async Task FinalizeResponseAsync(IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, CancellationToken cancellationToken = default)
+    public async Task FinalizeResponseAsync(IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false, CancellationToken cancellationToken = default)
     {
         if (_finalized)
             throw new InvalidOperationException("Cannot finalize after FinalizeResponseAsync has already been called.");
@@ -115,12 +116,12 @@ public sealed class TeamsStreamingWriter
         if (string.IsNullOrEmpty(_accumulated) && (attachments == null || attachments.Count == 0))
             throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
 
-        await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities), cancellationToken: cancellationToken).ConfigureAwait(false);
+        await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities, feedbackEnabled), cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _finalized = true;
     }
 
-    private TeamsActivity BuildActivity(string text, string streamType, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null)
+    private TeamsActivity BuildActivity(string text, string streamType, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false)
     {
         bool isFinal = streamType == StreamType.Final;
 
@@ -142,6 +143,10 @@ public sealed class TeamsStreamingWriter
 
             if (attachments?.Count > 0)
                 builder.WithAttachments(attachments);
+
+            TeamsActivity activity = builder.Build();
+            if (feedbackEnabled) activity.AddFeedback();
+            return activity;
         }
         else
         {

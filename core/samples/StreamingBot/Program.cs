@@ -42,6 +42,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
 
     CitationEntity citation = new()
     {
+        AdditionalType = ["AIGeneratedContent"],
         Citation =
         [
             new CitationClaim
@@ -75,7 +76,18 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         })
         .Build();
 
-    await writer.FinalizeResponseAsync(attachments: [card], entities: [citation], cancellationToken);
+    await writer.FinalizeResponseAsync(
+        attachments: [card],
+        entities: [citation],
+        feedbackEnabled: true,
+        cancellationToken: cancellationToken);
+});
+
+teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
+{
+    await context.SendActivityAsync("You submitted an action with name and value:" + context.Activity.Value?.ActionName + " - " + context.Activity.Value?.ActionValue, cancellationToken);
+
+    return new InvokeResponse(200);
 });
 
 webApp.Run();
