@@ -102,6 +102,6 @@ public static class TeamsBotApplicationHostingExtensions
     /// <param name="endpoints"></param>
     /// <param name="routePath"></param>
     /// <returns></returns>
-    public static TeamsBotApplication UseTeams(this IEndpointRouteBuilder endpoints,string routePath = "api/messages")
+    public static TeamsBotApplication UseTeams(this IEndpointRouteBuilder endpoints, string routePath = "api/messages")
         => endpoints.UseBotApplication<TeamsBotApplication>(routePath);
 }

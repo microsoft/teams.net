@@ -108,37 +108,52 @@ public class MessageReaction
 public static class ReactionTypes
 {
     /// <summary>
-    /// Like reaction.
+    /// Like reaction (👍).
     /// </summary>
     public const string Like = "like";
 
     /// <summary>
-    /// Heart reaction.
+    /// Heart reaction (❤️).
     /// </summary>
     public const string Heart = "heart";
 
     /// <summary>
-    /// Laugh reaction.
+    /// Checkmark reaction (✅).
+    /// </summary>
+    public const string Checkmark = "checkmark";
+
+    /// <summary>
+    /// Hourglass reaction (⏳).
+    /// </summary>
+    public const string Hourglass = "hourglass";
+
+    /// <summary>
+    /// Pushpin reaction (📌).
+    /// </summary>
+    public const string Pushpin = "pushpin";
+
+    /// <summary>
+    /// Exclamation reaction (❗).
+    /// </summary>
+    public const string Exclamation = "exclamation";
+
+    /// <summary>
+    /// Laugh reaction (😆).
     /// </summary>
     public const string Laugh = "laugh";
 
     /// <summary>
-    /// Surprise reaction.
+    /// Surprise reaction (😮).
     /// </summary>
     public const string Surprise = "surprise";
 
     /// <summary>
-    /// Sad reaction.
+    /// Sad reaction (🙁).
     /// </summary>
     public const string Sad = "sad";
 
     /// <summary>
-    /// Angry reaction.
+    /// Angry reaction (😠).
     /// </summary>
     public const string Angry = "angry";
-
-    /// <summary>
-    /// Plus one reaction.
-    /// </summary>
-    public const string PlusOne = "plusOne";
 }

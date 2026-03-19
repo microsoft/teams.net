@@ -6,13 +6,16 @@ namespace Microsoft.Teams.Bot.Core.Schema;
 /// <summary>
 /// Represents a conversation, including its unique identifier and associated extended properties.
 /// </summary>
-public class Conversation()
+/// <remarks>
+/// Initializes a new instance of the <see cref="Conversation"/> class.
+/// </remarks>
+public class Conversation(string id = "")
 {
     /// <summary>
     /// Gets or sets the unique identifier for the object.
     /// </summary>
     [JsonPropertyName("id")]
-    public string Id { get; set; } = string.Empty;
+    public string Id { get; set; } = id;
 
     /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
