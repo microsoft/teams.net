@@ -10,13 +10,10 @@ public class AdaptiveCardsTest
     public void Should_Serialize_AdaptiveCard_Simple()
     {
         // arrange
-        AdaptiveCard card = new AdaptiveCard()
-        {
-            Body = new List<CardElement>()
+        AdaptiveCard card = new AdaptiveCard(new List<CardElement>
             {
                 new TextBlock("Hello, Adaptive Card!")
-            }
-        };
+            });
 
         // act
         var json = JsonSerializer.Serialize(card);
@@ -58,10 +55,7 @@ public class AdaptiveCardsTest
     public void Should_Serialize_BasicCard_WithToggleInput()
     {
         // arrange - recreating CreateBasicAdaptiveCard from samples
-        var card = new AdaptiveCard
-        {
-            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-            Body = new List<CardElement>
+        var card = new AdaptiveCard(new List<CardElement>
             {
                 new TextBlock("Hello world")
                 {
@@ -72,7 +66,9 @@ public class AdaptiveCardsTest
                 {
                     Id = "notify"
                 }
-            },
+            })
+        {
+            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
             Actions = new List<Microsoft.Teams.Cards.Action>
             {
                 new ExecuteAction
@@ -153,7 +149,7 @@ public class AdaptiveCardsTest
             ]
         }";
 
-        var card = JsonSerializer.Deserialize<AdaptiveCard>(cardJson);
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(json);
 
         Assert.NotNull(card);
         // Note: Schema might be serialized as $schema in JSON but not always set on deserialized object
@@ -190,10 +186,7 @@ public class AdaptiveCardsTest
     public void Should_Serialize_TaskFormCard_WithChoiceSet()
     {
         // arrange - recreating CreateTaskFormCard from samples
-        var card = new AdaptiveCard
-        {
-            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-            Body = new List<CardElement>
+        var card = new AdaptiveCard(new List<CardElement>
             {
                 new TextBlock("Create New Task")
                 {
@@ -206,17 +199,16 @@ public class AdaptiveCardsTest
                     Label = "Task Title",
                     Placeholder = "Enter task title"
                 },
-                new ChoiceSetInput
-                {
-                    Id = "priority",
-                    Label = "Priority",
-                    Value = "medium",
-                    Choices = new List<Choice>
+                new ChoiceSetInput(new List<Choice>
                     {
                         new() { Title = "High", Value = "high" },
                         new() { Title = "Medium", Value = "medium" },
                         new() { Title = "Low", Value = "low" }
-                    }
+                    })
+                {
+                    Id = "priority",
+                    Label = "Priority",
+                    Value = "medium"
                 },
                 new DateInput
                 {
@@ -224,7 +216,9 @@ public class AdaptiveCardsTest
                     Label = "Due Date",
                     Value = "2024-01-15"
                 }
-            }
+            })
+        {
+            Schema = "http://adaptivecards.io/schemas/adaptive-card.json"
         };
 
         // act
@@ -350,10 +344,7 @@ public class AdaptiveCardsTest
     public void Should_Serialize_FeedbackCard_WithMultilineInput()
     {
         // arrange - recreating CreateFeedbackCard from samples
-        var card = new AdaptiveCard
-        {
-            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
-            Body = new List<CardElement>
+        var card = new AdaptiveCard(new List<CardElement>
             {
                 new TextBlock("Feedback Form")
                 {
@@ -368,7 +359,9 @@ public class AdaptiveCardsTest
                     IsMultiline = true,
                     IsRequired = true
                 }
-            },
+            })
+        {
+            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
             Actions = new List<Microsoft.Teams.Cards.Action>
             {
                 new ExecuteAction
@@ -433,7 +426,7 @@ public class AdaptiveCardsTest
             ]
         }";
 
-        var card = JsonSerializer.Deserialize<AdaptiveCard>(cardJson);
+        var card = JsonSerializer.Deserialize<AdaptiveCard>(json);
 
         Assert.NotNull(card);
         Assert.Equal(3, card.Body!.Count);
@@ -512,12 +505,11 @@ public class AdaptiveCardsTest
     public void Should_Not_Serialize_Null_MsTeams_Property_On_SubmitAction()
     {
         // arrange
-        var card = new AdaptiveCard
-        {
-            Body = new List<CardElement>
+        var card = new AdaptiveCard(new List<CardElement>
             {
                 new TextBlock("Test card with Submit action")
-            },
+            })
+        {
             Actions = new List<Microsoft.Teams.Cards.Action>
             {
                 new SubmitAction
