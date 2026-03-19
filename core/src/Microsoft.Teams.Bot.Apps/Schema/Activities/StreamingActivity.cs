@@ -13,25 +13,25 @@ namespace Microsoft.Teams.Bot.Apps.Schema;
 public class StreamingActivity : TeamsActivity
 {
     /// <summary>
-    /// Default constructor.
-    /// </summary>
-    [JsonConstructor]
-    public StreamingActivity() : base(TeamsActivityType.Typing)
-    {
-    }
-
-    /// <summary>
     /// Initializes a new instance of the <see cref="StreamingActivity"/> class with the specified text.
     /// </summary>
     /// <param name="text"></param>
+    [JsonConstructor]
     public StreamingActivity(string text) : base(TeamsActivityType.Typing)
     {
         Text = text;
+        StreamInfo = new StreamInfoEntity();
+        AddEntity(StreamInfo);
     }
 
     /// <summary>
     /// Gets or sets the text content of the streaming chunk.
     /// </summary>
     [JsonPropertyName("text")]
-    public string? Text { get; set; }
+    public string Text { get; set; }
+
+    /// <summary>
+    /// Gets the stream info entity for this streaming activity.
+    /// </summary>
+    public StreamInfoEntity StreamInfo { get; }
 }

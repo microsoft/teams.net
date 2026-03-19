@@ -23,11 +23,12 @@ namespace Microsoft.Teams.Bot.Apps;
 ///     await writer.FinalizeResponseAsync();            // sends accumulated " Hello, world"
 /// </code>
 ///
-/// Entities are only sent with the final message activity.
+/// Entitites and Attachments are only sent with the final message activity.
 /// Pass them directly to <see cref="FinalizeResponseAsync"/>:
 /// <code>
 ///     await writer.FinalizeResponseAsync(
 ///         entities: [new CitationEntity(...)]);
+///         attachments: [new TeamsAttachment(...)]);
 /// </code>
 /// </remarks>
 public sealed class TeamsStreamingWriter
@@ -57,6 +58,9 @@ public sealed class TeamsStreamingWriter
     /// </summary>
     public async Task SendInformativeUpdateAsync(string text, CancellationToken cancellationToken = default)
     {
+        if (_lastChunkSent > DateTime.MinValue)
+            throw new InvalidOperationException("Cannot send an informative update after streaming has started.");
+
         _sequence++;
         var response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
         _streamId ??= response.Id;
@@ -108,7 +112,7 @@ public sealed class TeamsStreamingWriter
         if (_cancelled)
             return;
 
-        if (string.IsNullOrEmpty(_accumulated))
+        if (string.IsNullOrEmpty(_accumulated) && (attachments == null || attachments.Count == 0))
             throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
 
         await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities), cancellationToken: cancellationToken).ConfigureAwait(false);
@@ -120,32 +124,35 @@ public sealed class TeamsStreamingWriter
     {
         bool isFinal = streamType == StreamType.Final;
 
-        TeamsActivity baseActivity = isFinal
-            ? new MessageActivity(text)
-            : new StreamingActivity(text);
-
-        StreamInfoEntity streamInfo = new() { StreamType = streamType };
-
-        // streamId is omitted on the very first send; the server assigns it and returns it as the activityId.
-        if (_streamId != null)
-            streamInfo.StreamId = _streamId;
-
-        // streamSequence must not be set on the final message.
-        if (!isFinal)
-            streamInfo.StreamSequence = _sequence;
-
-        TeamsActivityBuilder builder = new TeamsActivityBuilder(baseActivity)
-            .WithConversationReference(_reference)
-            .AddEntity(streamInfo);
+        TeamsActivityBuilder builder;
 
         if (isFinal)
         {
+            StreamInfoEntity streamInfo = new() { StreamType = streamType };
+            if (_streamId != null)
+                streamInfo.StreamId = _streamId;
+
+            builder = new TeamsActivityBuilder(new MessageActivity(text))
+                .WithConversationReference(_reference)
+                .AddEntity(streamInfo);
+
             if (entities != null)
                 foreach (Entity entity in entities)
                     builder.AddEntity(entity);
 
             if (attachments?.Count > 0)
                 builder.WithAttachments(attachments);
+        }
+        else
+        {
+            StreamingActivity streaming = new(text);
+            streaming.StreamInfo.StreamType = streamType;
+            streaming.StreamInfo.StreamSequence = _sequence;
+            if (_streamId != null)
+                streaming.StreamInfo.StreamId = _streamId;
+
+            builder = new TeamsActivityBuilder(streaming)
+                .WithConversationReference(_reference);
         }
 
         return builder.Build();
