@@ -131,7 +131,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
-    public virtual async Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string activityId, CoreActivity activity, AgenticIdentity? agenticIdentity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string activityId, CoreActivity activity, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
