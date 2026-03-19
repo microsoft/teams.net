@@ -299,7 +299,7 @@ public static partial class DevToolsHostingExtensions
             CancellationToken cancellationToken) =>
         {
             var body = await JsonNode.ParseAsync(context.Request.Body, cancellationToken: cancellationToken).ConfigureAwait(false);
-            return Results.Json(new { id = body?["id"]?.ToString() ?? activityId }, statusCode: 201);
+            return Results.Json(new { id = body?["id"]?.ToString() ?? Guid.NewGuid().ToString() }, statusCode: 201);
         });
     }
 }

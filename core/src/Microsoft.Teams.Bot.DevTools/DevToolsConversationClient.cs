@@ -32,7 +32,11 @@ public class DevToolsConversationClient : ConversationClient
     /// <inheritdoc/>
     public override async Task<SendActivityResponse> SendActivityAsync(CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(activity);
         var response = await base.SendActivityAsync(activity, customHeaders, cancellationToken).ConfigureAwait(false);
+
+        // Ensure activity has an ID so the DevTools UI can distinguish messages
+        activity.Id ??= response.Id ?? Guid.NewGuid().ToString();
 
         // Emit sent event after successful send
         await _service.EmitSent(activity, cancellationToken).ConfigureAwait(false);
