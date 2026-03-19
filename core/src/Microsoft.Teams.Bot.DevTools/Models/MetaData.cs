@@ -15,14 +15,14 @@ public class DevToolsMetaData
     /// </summary>
     [JsonPropertyName("id")]
     [JsonPropertyOrder(0)]
-    public string? Id { get; set; }
+    public string Id { get; set; } = string.Empty;
 
     /// <summary>
     /// The bot application name.
     /// </summary>
     [JsonPropertyName("name")]
     [JsonPropertyOrder(1)]
-    public string? Name { get; set; }
+    public string Name { get; set; } = string.Empty;
 
     /// <summary>
     /// Custom pages registered with DevTools.

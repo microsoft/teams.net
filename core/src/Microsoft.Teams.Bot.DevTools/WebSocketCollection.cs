@@ -81,7 +81,8 @@ public class WebSocketCollection : IEnumerable<KeyValuePair<string, WebSocket>>
     /// </summary>
     public async Task Emit(IDevToolsEvent @event, CancellationToken cancellationToken = default)
     {
-        var payload = JsonSerializer.SerializeToUtf8Bytes(@event, SerializerOptions);
+        ArgumentNullException.ThrowIfNull(@event);
+        var payload = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), SerializerOptions);
         var buffer = new ArraySegment<byte>(payload, 0, payload.Length);
 
         foreach (var socket in _store.Values)
@@ -95,10 +96,11 @@ public class WebSocketCollection : IEnumerable<KeyValuePair<string, WebSocket>>
     /// </summary>
     public async Task Emit(string key, IDevToolsEvent @event, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(@event);
         var socket = Get(key);
         if (socket is null) return;
 
-        var payload = JsonSerializer.SerializeToUtf8Bytes(@event, SerializerOptions);
+        var payload = JsonSerializer.SerializeToUtf8Bytes(@event, @event.GetType(), SerializerOptions);
         var buffer = new ArraySegment<byte>(payload, 0, payload.Length);
         await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
     }

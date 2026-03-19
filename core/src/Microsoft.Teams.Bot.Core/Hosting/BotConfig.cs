@@ -127,6 +127,7 @@ internal sealed class BotConfig
         config = FromBFConfig(configuration);
         if (!string.IsNullOrEmpty(config.ClientId)) return config;
 
-        throw new InvalidOperationException("ClientID not found in configuration.");
+        // throw new InvalidOperationException("ClientID not found in configuration.");
+        return new BotConfig();
     }
 }

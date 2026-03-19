@@ -39,7 +39,7 @@ public class DevToolsService
     {
         get
         {
-            var meta = new DevToolsMetaData { Id = AppId, Name = AppName };
+            var meta = new DevToolsMetaData { Id = AppId ?? string.Empty, Name = AppName ?? string.Empty };
             foreach (var page in Settings.Pages)
             {
                 meta.Pages.Add(page);

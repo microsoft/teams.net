@@ -120,7 +120,7 @@ public static class AddBotApplicationExtensions
     /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
     /// <returns></returns>
     public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd") =>
-    services.AddBotClient<ConversationClient>(ConversationClient.ConversationHttpClientName, sectionName);
+        services.AddBotClient<ConversationClient>(ConversationClient.ConversationHttpClientName, sectionName);
 
     /// <summary>
     /// Adds user token client to the service collection.
@@ -174,7 +174,7 @@ public static class AddBotApplicationExtensions
             }
         }
 
-        // Configure MSAL during registration (not deferred)
+        // Configure MSAL during registration (not deferred)z
         if (services.ConfigureMSAL(configuration, sectionName, logger))
         {
             services.AddHttpClient<TClient>(httpClientName)
@@ -200,25 +200,32 @@ public static class AddBotApplicationExtensions
     private static bool ConfigureMSAL(this IServiceCollection services, IConfiguration configuration, string sectionName, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-
+        bool configured = false;
         if (configuration["MicrosoftAppId"] is not null)
         {
             _logUsingBFConfig(logger, null);
             BotConfig botConfig = BotConfig.FromBFConfig(configuration);
             services.ConfigureMSALFromBotConfig(botConfig, logger);
+            configured = true;
         }
         else if (configuration["CLIENT_ID"] is not null)
         {
             _logUsingCoreConfig(logger, null);
             BotConfig botConfig = BotConfig.FromCoreConfig(configuration);
             services.ConfigureMSALFromBotConfig(botConfig, logger);
+            configured = true;
         }
         else
         {
             _logUsingSectionConfig(logger, sectionName, null);
-            services.ConfigureMSALFromConfig(configuration.GetSection(sectionName));
+            var section = configuration.GetSection(sectionName);
+            if (section["ClientId"] is not null && !string.IsNullOrEmpty(section["ClientId"]))
+            {
+                services.ConfigureMSALFromConfig(section);
+                configured = true;
+            }
         }
-        return true;
+        return configured;
     }
 
     private static IServiceCollection ConfigureMSALFromConfig(this IServiceCollection services, IConfigurationSection msalConfigSection)

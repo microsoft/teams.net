@@ -1,4 +1,4 @@
-// Copyright (c) Microsoft Corporation.
+    // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
 using System.Net.WebSockets;
@@ -117,9 +117,10 @@ public static partial class DevToolsHostingExtensions
         var botApp = endpoints.ServiceProvider.GetRequiredService<BotApplication>();
         botApp.UseMiddleware(middleware);
 
-        // Populate AppId from BotApplicationOptions
+        // Populate AppId/AppName from BotApplicationOptions
         var options = endpoints.ServiceProvider.GetService<BotApplicationOptions>();
         service.AppId = options?.AppId;
+        service.AppName ??= options?.AppId ?? "DevTools";
 
         // Log DevTools URLs on application start
         lifetime.ApplicationStarted.Register(() =>
@@ -161,6 +162,7 @@ public static partial class DevToolsHostingExtensions
         BotApplication botApp)
     {
         // Serve React UI — SPA fallback to index.html
+        var contentTypeProvider = new Microsoft.AspNetCore.StaticFiles.FileExtensionContentTypeProvider();
         endpoints.MapGet("/devtools/{*path}", (string? path) =>
         {
             var file = files.GetFileInfo(path ?? "index.html");
@@ -169,7 +171,12 @@ public static partial class DevToolsHostingExtensions
                 file = files.GetFileInfo("index.html");
             }
 
-            return Results.File(file.CreateReadStream(), contentType: "text/html");
+            if (!contentTypeProvider.TryGetContentType(file.Name, out var contentType))
+            {
+                contentType = "application/octet-stream";
+            }
+
+            return Results.File(file.CreateReadStream(), contentType: contentType);
         });
 
         endpoints.MapGet("/devtools", () =>
@@ -264,6 +271,10 @@ public static partial class DevToolsHostingExtensions
                 Name = service.AppName
             });
 
+            // Set serviceUrl and channelId so replies route back here
+            body["serviceUrl"] ??= $"{context.Request.Scheme}://{context.Request.Host}";
+            body["channelId"] ??= "devtools";
+
             // Create a test HttpContext and route through ProcessAsync
             var activityJson = body.ToJsonString();
             var stream = new MemoryStream(Encoding.UTF8.GetBytes(activityJson));
@@ -278,6 +289,17 @@ public static partial class DevToolsHostingExtensions
             await botApp.ProcessAsync(testContext, cancellationToken).ConfigureAwait(false);
 
             return Results.Json(new { id = body["id"]?.ToString() }, statusCode: 201);
+        });
+
+        // Reply endpoint — bot sends replies to /v3/conversations/{id}/activities/{replyToId}
+        endpoints.MapPost("/v3/conversations/{conversationId}/activities/{activityId}", async (
+            string conversationId,
+            string activityId,
+            HttpContext context,
+            CancellationToken cancellationToken) =>
+        {
+            var body = await JsonNode.ParseAsync(context.Request.Body, cancellationToken: cancellationToken).ConfigureAwait(false);
+            return Results.Json(new { id = body?["id"]?.ToString() ?? activityId }, statusCode: 201);
         });
     }
 }

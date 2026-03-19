@@ -47,6 +47,8 @@ internal sealed class BotAuthenticationHandler(
     /// <inheritdoc/>
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
+
+        
         request.Options.TryGetValue(AgenticIdentityKey, out AgenticIdentity? agenticIdentity);
 
         string token = await GetAuthorizationHeaderAsync(agenticIdentity, cancellationToken).ConfigureAwait(false);
