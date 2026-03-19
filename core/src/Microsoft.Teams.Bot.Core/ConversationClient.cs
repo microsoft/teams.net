@@ -126,11 +126,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
     /// <param name="activityId">The ID of the activity to update. Cannot be null or whitespace.</param>
     /// <param name="activity">The updated activity data. Cannot be null. Must contain a valid ServiceUrl.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
-    public virtual async Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string activityId, CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<UpdateActivityResponse> UpdateTargetedActivityAsync(string conversationId, string activityId, CoreActivity activity, AgenticIdentity? agenticIdentity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
@@ -147,7 +148,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             HttpMethod.Put,
             url,
             body,
-            CreateRequestOptions(activity.From?.GetAgenticIdentity(), "updating targeted activity", customHeaders),
+            CreateRequestOptions(agenticIdentity, "updating targeted activity", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 

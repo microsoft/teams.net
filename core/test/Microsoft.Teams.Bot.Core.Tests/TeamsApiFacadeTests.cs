@@ -192,6 +192,51 @@ public class TeamsApiFacadeTests
         Console.WriteLine($"Sent activity via Api.Conversations.Activities.SendAsync: {res.Id}");
     }
 
+
+    [Fact]
+    public async Task Api_Conversations_Activities_Send_Update_DeleteTMAsync()
+    {
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+
+        CoreActivity activity = CoreActivity.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithServiceUrl(_serviceUrl)
+            .WithConversation(new(_conversationId))
+            .WithFrom(_recipient)
+            .WithRecipient(new ConversationAccount() { Id = userId }, isTargeted: true)
+            .WithProperty("text", $"TM Message via Api.Conversations.Activities.SendAsync at `{DateTime.UtcNow:s}`")
+            .Build();
+
+        SendActivityResponse res = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(
+            activity,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(res);
+        Assert.NotNull(res.Id);
+
+        Console.WriteLine($"Sent activity via Api.Conversations.Activities.SendAsync: {res.Id}");
+
+        await Task.Delay(2000);
+
+        await _teamsBotApplication.Api.Conversations.Activities.UpdateTargetedAsync(
+            _conversationId,
+            res.Id,
+            CoreActivity.CreateBuilder()
+                .WithServiceUrl(_serviceUrl)
+                .WithProperty("text", $"TM Updated Message via Api.Conversations.Activities.UpdateAsync at `{DateTime.UtcNow:s}`")
+                .Build(),
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        await Task.Delay(2000);
+        await _teamsBotApplication.Api.Conversations.Activities.DeleteTargetedAsync(
+            _conversationId,
+            res.Id,
+            _serviceUrl,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+    }
+
     [Fact]
     public async Task Api_Conversations_Activities_UpdateAsync()
     {
@@ -229,7 +274,7 @@ public class TeamsApiFacadeTests
         Console.WriteLine($"Updated activity via Api.Conversations.Activities.UpdateAsync: {updateResponse.Id}");
     }
 
-    [Fact(Skip = "Delete is not working with agentic identity")]
+    [Fact]
     public async Task Api_Conversations_Activities_DeleteAsync()
     {
         // First send an activity

@@ -63,6 +63,7 @@ public class ActivitiesApi
     /// <param name="conversationId">The ID of the conversation.</param>
     /// <param name="activityId">The ID of the activity to update.</param>
     /// <param name="activity">The updated activity data.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
@@ -70,9 +71,10 @@ public class ActivitiesApi
         string conversationId,
         string activityId,
         CoreActivity activity,
+        AgenticIdentity? agenticIdentity = null,
         CustomHeaders? customHeaders = null,
         CancellationToken cancellationToken = default)
-        => _client.UpdateTargetedActivityAsync(conversationId, activityId, activity, customHeaders, cancellationToken);
+        => _client.UpdateTargetedActivityAsync(conversationId, activityId, activity, agenticIdentity, customHeaders, cancellationToken);
 
     /// <summary>
     /// Deletes an existing targeted activity from a conversation.

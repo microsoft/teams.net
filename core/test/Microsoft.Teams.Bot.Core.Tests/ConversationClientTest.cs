@@ -126,7 +126,7 @@ public class ConversationClientTest
         Assert.NotNull(updateResponse.Id);
     }
 
-    [Fact(Skip = "DeleteActivity is not working with agentic identity")]
+    [Fact]
     public async Task DeleteActivity()
     {
         // First send an activity to get an ID
