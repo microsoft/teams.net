@@ -1,10 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Text.Json;
-
-using Json.Schema;
-
 using OpenAI.Chat;
 
 namespace Microsoft.Teams.AI.Models.OpenAI;
@@ -18,7 +14,7 @@ public static partial class MessageExtensions
         return new Function(
             tool.FunctionName,
             tool.FunctionDescription,
-            JsonSchema.FromText(parameters == string.Empty ? "{}" : parameters),
+            JsonSchemaWrapper.FromJson(parameters == string.Empty ? "{}" : parameters),
             () => Task.FromResult<object?>(null)
         );
     }
@@ -28,7 +24,7 @@ public static partial class MessageExtensions
         return ChatTool.CreateFunctionTool(
             function.Name,
             function.Description,
-            function.Parameters is null ? null : BinaryData.FromString(JsonSerializer.Serialize(function.Parameters)),
+            function.Parameters is null ? null : BinaryData.FromString(function.Parameters.ToJson()),
             false
         );
     }
