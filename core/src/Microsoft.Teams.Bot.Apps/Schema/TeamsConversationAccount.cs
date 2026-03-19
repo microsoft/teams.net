@@ -37,6 +37,7 @@ public class TeamsConversationAccount : ConversationAccount
         TeamsConversationAccount result = new();
         result.Id = conversationAccount.Id;
         result.Name = conversationAccount.Name;
+        result.IsTargeted = conversationAccount.IsTargeted;
         result.Properties = conversationAccount.Properties;
         return result;
     }

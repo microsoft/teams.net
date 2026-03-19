@@ -6,7 +6,9 @@ using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps;
+using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests;
 
@@ -15,8 +17,10 @@ public class TeamsApiClientTests
     private readonly ServiceProvider _serviceProvider;
     private readonly TeamsApiClient _teamsClient;
     private readonly Uri _serviceUrl;
+    private readonly ConversationAccount _recipient = new ConversationAccount();
+    private AgenticIdentity? _agenticIdentity;
 
-    public TeamsApiClientTests()
+    public TeamsApiClientTests(ITestOutputHelper outputHelper)
     {
         IConfigurationBuilder builder = new ConfigurationBuilder()
             .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -25,12 +29,30 @@ public class TeamsApiClientTests
         IConfiguration configuration = builder.Build();
 
         ServiceCollection services = new();
-        services.AddLogging();
+        services.AddLogging((builder) => {
+            builder.AddXUnit(outputHelper);
+            builder.AddFilter("System.Net", LogLevel.Warning);
+            builder.AddFilter("Microsoft.Identity", LogLevel.Error);
+            builder.AddFilter("Microsoft.Teams", LogLevel.Information);
+        });
         services.AddSingleton(configuration);
         services.AddTeamsBotApplication();
         _serviceProvider = services.BuildServiceProvider();
         _teamsClient = _serviceProvider.GetRequiredService<TeamsApiClient>();
         _serviceUrl = new Uri(Environment.GetEnvironmentVariable("TEST_SERVICEURL") ?? "https://smba.trafficmanager.net/teams/");
+
+        string agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? throw new InvalidOperationException("AzureAd__ClientId environment variable not set");
+        string? agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");// ?? throw new InvalidOperationException("TEST_AGENTIC_APPID environment variable not set");
+        string? agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");// ?? throw new InvalidOperationException("TEST_AGENTIC_USERID environment variable not set");
+
+        _agenticIdentity = null;
+        if (!string.IsNullOrEmpty(agenticAppId) && !string.IsNullOrEmpty(agenticUserId))
+        {
+            _recipient.Properties.Add("agenticAppBlueprintId", agenticAppBlueprintId);
+            _recipient.Properties.Add("agenticAppId", agenticAppId);
+            _recipient.Properties.Add("agenticUserId", agenticUserId);
+            _agenticIdentity = AgenticIdentity.FromProperties(_recipient.Properties);
+        }
     }
 
     #region Team Operations Tests
@@ -43,6 +65,7 @@ public class TeamsApiClientTests
         ChannelList result = await _teamsClient.FetchChannelListAsync(
             teamId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -62,7 +85,7 @@ public class TeamsApiClientTests
     public async Task FetchChannelList_FailsWithInvalidTeamId()
     {
         await Assert.ThrowsAsync<HttpRequestException>(()
-            => _teamsClient.FetchChannelListAsync("invalid-team-id", _serviceUrl));
+            => _teamsClient.FetchChannelListAsync("invalid-team-id", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
@@ -73,6 +96,7 @@ public class TeamsApiClientTests
         TeamDetails result = await _teamsClient.FetchTeamDetailsAsync(
             teamId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -91,14 +115,14 @@ public class TeamsApiClientTests
     public async Task FetchTeamDetails_FailsWithInvalidTeamId()
     {
         await Assert.ThrowsAsync<HttpRequestException>(()
-            => _teamsClient.FetchTeamDetailsAsync("invalid-team-id", _serviceUrl));
+            => _teamsClient.FetchTeamDetailsAsync("invalid-team-id", _serviceUrl, _agenticIdentity));
     }
 
     #endregion
 
     #region Meeting Operations Tests
 
-    [Fact]
+    [Fact(Skip = "FetchMeetingInfo requires permissions")]
     public async Task FetchMeetingInfo()
     {
         string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
@@ -106,6 +130,7 @@ public class TeamsApiClientTests
         MeetingInfo result = await _teamsClient.FetchMeetingInfoAsync(
             meetingId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -131,7 +156,7 @@ public class TeamsApiClientTests
     public async Task FetchMeetingInfo_FailsWithInvalidMeetingId()
     {
         await Assert.ThrowsAsync<HttpRequestException>(()
-            => _teamsClient.FetchMeetingInfoAsync("invalid-meeting-id", _serviceUrl));
+            => _teamsClient.FetchMeetingInfoAsync("invalid-meeting-id", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
@@ -146,6 +171,7 @@ public class TeamsApiClientTests
             participantId,
             tenantId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -190,6 +216,7 @@ public class TeamsApiClientTests
             meetingId,
             notification,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -231,6 +258,7 @@ public class TeamsApiClientTests
             members,
             tenantId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(operationId);
@@ -254,6 +282,7 @@ public class TeamsApiClientTests
             activity,
             tenantId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(operationId);
@@ -279,6 +308,7 @@ public class TeamsApiClientTests
             teamId,
             tenantId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(operationId);
@@ -309,6 +339,7 @@ public class TeamsApiClientTests
             channels,
             tenantId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(operationId);
@@ -329,6 +360,7 @@ public class TeamsApiClientTests
         BatchOperationState result = await _teamsClient.GetOperationStateAsync(
             operationId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -354,7 +386,7 @@ public class TeamsApiClientTests
     public async Task GetOperationState_FailsWithInvalidOperationId()
     {
         await Assert.ThrowsAsync<HttpRequestException>(()
-            => _teamsClient.GetOperationStateAsync("invalid-operation-id", _serviceUrl));
+            => _teamsClient.GetOperationStateAsync("invalid-operation-id", _serviceUrl, _agenticIdentity));
     }
 
     [Fact(Skip = "Requires valid operation ID from batch operation")]
@@ -365,6 +397,8 @@ public class TeamsApiClientTests
         BatchFailedEntriesResponse result = await _teamsClient.GetPagedFailedEntriesAsync(
             operationId,
             _serviceUrl,
+            null,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -396,6 +430,7 @@ public class TeamsApiClientTests
         await _teamsClient.CancelOperationAsync(
             operationId,
             _serviceUrl,
+            _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Console.WriteLine($"Operation {operationId} cancelled successfully");
@@ -409,14 +444,14 @@ public class TeamsApiClientTests
     public async Task FetchChannelList_ThrowsOnNullTeamId()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.FetchChannelListAsync(null!, _serviceUrl));
+            => _teamsClient.FetchChannelListAsync(null!, _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task FetchChannelList_ThrowsOnEmptyTeamId()
     {
         await Assert.ThrowsAsync<ArgumentException>(()
-            => _teamsClient.FetchChannelListAsync("", _serviceUrl));
+            => _teamsClient.FetchChannelListAsync("", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
@@ -430,35 +465,35 @@ public class TeamsApiClientTests
     public async Task FetchTeamDetails_ThrowsOnNullTeamId()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.FetchTeamDetailsAsync(null!, _serviceUrl));
+            => _teamsClient.FetchTeamDetailsAsync(null!, _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task FetchMeetingInfo_ThrowsOnNullMeetingId()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.FetchMeetingInfoAsync(null!, _serviceUrl));
+            => _teamsClient.FetchMeetingInfoAsync(null!, _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task FetchParticipant_ThrowsOnNullMeetingId()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.FetchParticipantAsync(null!, "participant", "tenant", _serviceUrl));
+            => _teamsClient.FetchParticipantAsync(null!, "participant", "tenant", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task FetchParticipant_ThrowsOnNullParticipantId()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.FetchParticipantAsync("meeting", null!, "tenant", _serviceUrl));
+            => _teamsClient.FetchParticipantAsync("meeting", null!, "tenant", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task FetchParticipant_ThrowsOnNullTenantId()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.FetchParticipantAsync("meeting", "participant", null!, _serviceUrl));
+            => _teamsClient.FetchParticipantAsync("meeting", "participant", null!, _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
@@ -466,21 +501,21 @@ public class TeamsApiClientTests
     {
         var notification = new TargetedMeetingNotification();
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.SendMeetingNotificationAsync(null!, notification, _serviceUrl));
+            => _teamsClient.SendMeetingNotificationAsync(null!, notification, _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task SendMeetingNotification_ThrowsOnNullNotification()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.SendMeetingNotificationAsync("meeting", null!, _serviceUrl));
+            => _teamsClient.SendMeetingNotificationAsync("meeting", null!, _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task SendMessageToListOfUsers_ThrowsOnNullActivity()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.SendMessageToListOfUsersAsync(null!, [new TeamMember("id")], "tenant", _serviceUrl));
+            => _teamsClient.SendMessageToListOfUsersAsync(null!, [new TeamMember("id")], "tenant", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
@@ -488,7 +523,7 @@ public class TeamsApiClientTests
     {
         var activity = new CoreActivity { Type = ActivityType.Message };
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.SendMessageToListOfUsersAsync(activity, null!, "tenant", _serviceUrl));
+            => _teamsClient.SendMessageToListOfUsersAsync(activity, null!, "tenant", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
@@ -496,14 +531,14 @@ public class TeamsApiClientTests
     {
         var activity = new CoreActivity { Type = ActivityType.Message };
         await Assert.ThrowsAsync<ArgumentException>(()
-            => _teamsClient.SendMessageToListOfUsersAsync(activity, [], "tenant", _serviceUrl));
+            => _teamsClient.SendMessageToListOfUsersAsync(activity, [], "tenant", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task SendMessageToAllUsersInTenant_ThrowsOnNullActivity()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.SendMessageToAllUsersInTenantAsync(null!, "tenant", _serviceUrl));
+            => _teamsClient.SendMessageToAllUsersInTenantAsync(null!, "tenant", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
@@ -511,14 +546,14 @@ public class TeamsApiClientTests
     {
         var activity = new CoreActivity { Type = ActivityType.Message };
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.SendMessageToAllUsersInTenantAsync(activity, null!, _serviceUrl));
+            => _teamsClient.SendMessageToAllUsersInTenantAsync(activity, null!, _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task SendMessageToAllUsersInTeam_ThrowsOnNullActivity()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.SendMessageToAllUsersInTeamAsync(null!, "team", "tenant", _serviceUrl));
+            => _teamsClient.SendMessageToAllUsersInTeamAsync(null!, "team", "tenant", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
@@ -526,7 +561,7 @@ public class TeamsApiClientTests
     {
         var activity = new CoreActivity { Type = ActivityType.Message };
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.SendMessageToAllUsersInTeamAsync(activity, null!, "tenant", _serviceUrl));
+            => _teamsClient.SendMessageToAllUsersInTeamAsync(activity, null!, "tenant", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
@@ -534,28 +569,28 @@ public class TeamsApiClientTests
     {
         var activity = new CoreActivity { Type = ActivityType.Message };
         await Assert.ThrowsAsync<ArgumentException>(()
-            => _teamsClient.SendMessageToListOfChannelsAsync(activity, [], "tenant", _serviceUrl));
+            => _teamsClient.SendMessageToListOfChannelsAsync(activity, [], "tenant", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task GetOperationState_ThrowsOnNullOperationId()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.GetOperationStateAsync(null!, _serviceUrl));
+            => _teamsClient.GetOperationStateAsync(null!, _serviceUrl, _agenticIdentity));
     }
 
     [Fact]
     public async Task GetPagedFailedEntries_ThrowsOnNullOperationId()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.GetPagedFailedEntriesAsync(null!, _serviceUrl));
+            => _teamsClient.GetPagedFailedEntriesAsync(null!, _serviceUrl, null, _agenticIdentity));
     }
 
     [Fact]
     public async Task CancelOperation_ThrowsOnNullOperationId()
     {
         await Assert.ThrowsAsync<ArgumentNullException>(()
-            => _teamsClient.CancelOperationAsync(null!, _serviceUrl));
+            => _teamsClient.CancelOperationAsync(null!, _serviceUrl, _agenticIdentity));
     }
 
     #endregion

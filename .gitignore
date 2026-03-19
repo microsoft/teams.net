@@ -11,6 +11,8 @@ appsettings.Local.json
 appsettings.Development.json
 launchsettings.json
 
+.claude/
+
 # User-specific files
 *.rsuser
 *.suo
