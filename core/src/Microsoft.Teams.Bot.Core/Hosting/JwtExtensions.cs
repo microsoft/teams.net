@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Collections.Concurrent;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -144,7 +145,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
 
         private static (string? iss, string? tid) GetTokenClaims(SecurityToken token) =>
             token is JsonWebToken jwt
-                ? (jwt.Issuer, jwt.TryGetClaim("tid", out var c) ? c.Value : null)
+                ? (jwt.Issuer, jwt.TryGetClaim("tid", out Claim? c) ? c.Value : null)
                 : (null, null);
 
         /// <summary>

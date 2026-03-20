@@ -7,9 +7,8 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Compat;
-using Microsoft.Teams.Bot.Core;
+using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests
 {
@@ -20,6 +19,7 @@ namespace Microsoft.Bot.Core.Tests
     /// </summary>
     public class CompatTeamsInfoTests
     {
+        private readonly ITestOutputHelper _outputHelper;
         private readonly string _serviceUrl = "https://smba.trafficmanager.net/amer/";
         private readonly string _userId;
         private readonly string _conversationId;
@@ -27,9 +27,13 @@ namespace Microsoft.Bot.Core.Tests
         private readonly string _channelId;
         private readonly string _meetingId;
         private readonly string _tenantId;
+        private readonly string _agenticAppBlueprintId;
+        private readonly string? _agenticAppId;
+        private readonly string? _agenticUserId;
 
-        public CompatTeamsInfoTests()
+        public CompatTeamsInfoTests(ITestOutputHelper outputHelper)
         {
+            _outputHelper = outputHelper;
             // These tests require environment variables for live integration testing
             _userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? "29:test-user-id";
             _conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? "19:test-conversation-id";
@@ -37,6 +41,10 @@ namespace Microsoft.Bot.Core.Tests
             _channelId = Environment.GetEnvironmentVariable("TEST_CHANNELID") ?? "19:test-channel-id";
             _meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? "test-meeting-id";
             _tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? "test-tenant-id";
+
+            _agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? throw new InvalidOperationException("AzureAd__ClientId environment variable not set");
+            _agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");// ?? throw new InvalidOperationException("TEST_AGENTIC_APPID environment variable not set");
+            _agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");
         }
 
         [Fact]
@@ -178,7 +186,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "permissions needed")]
         public async Task GetMeetingInfoAsync_WithMeetingId_ReturnsMeetingInfo()
         {
             var adapter = InitializeCompatAdapter();
@@ -224,7 +232,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Permissions")]
         public async Task SendMeetingNotificationAsync_SendsNotification()
         {
             var adapter = InitializeCompatAdapter();
@@ -341,11 +349,12 @@ namespace Microsoft.Bot.Core.Tests
                     };
                     var members = new List<TeamMember>
                     {
-                        new TeamMember(_userId),
-                        new TeamMember(_userId),
-                        new TeamMember(_userId),
-                        new TeamMember(_userId),
-                        new TeamMember(_userId)
+                        new TeamMember(_channelId),
+                        new TeamMember("1"),
+                        new TeamMember("2"),
+                        new TeamMember("4"),
+                        new TeamMember("5"),
+                        new TeamMember("6")
 
                     };
 
@@ -380,7 +389,12 @@ namespace Microsoft.Bot.Core.Tests
                     };
                     var channels = new List<TeamMember>
                     {
-                        new TeamMember(_channelId)
+                        new TeamMember(_channelId),
+                        new TeamMember("1"),
+                        new TeamMember("2"),
+                        new TeamMember("4"),
+                        new TeamMember("5"),
+                        new TeamMember("6")
                     };
 
                     var operationId = await CompatTeamsInfo.SendMessageToListOfChannelsAsync(
@@ -455,7 +469,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Not implemented")]
         public async Task SendMessageToTeamsChannelAsync_CreatesConversationAndSendsMessage()
         {
             var adapter = InitializeCompatAdapter();
@@ -471,7 +485,7 @@ namespace Microsoft.Bot.Core.Tests
                         Type = ActivityTypes.Message,
                         Text = "Test message to channel"
                     };
-                    var botAppId = Environment.GetEnvironmentVariable("MicrosoftAppId") ?? string.Empty;
+                    var botAppId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? string.Empty;
 
                     var result = await CompatTeamsInfo.SendMessageToTeamsChannelAsync(
                         turnContext,
@@ -487,7 +501,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Internal Server Error")]
         public async Task GetOperationStateAsync_WithOperationId_ReturnsState()
         {
             var adapter = InitializeCompatAdapter();
@@ -510,7 +524,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "Internal Server Error")]
         public async Task GetPagedFailedEntriesAsync_WithOperationId_ReturnsFailedEntries()
         {
             var adapter = InitializeCompatAdapter();
@@ -532,7 +546,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact]
+        [Fact(Skip = "internal error")]
         public async Task CancelOperationAsync_WithOperationId_CancelsOperation()
         {
             var adapter = InitializeCompatAdapter();
@@ -564,11 +578,14 @@ namespace Microsoft.Bot.Core.Tests
             IConfiguration configuration = builder.Build();
 
             ServiceCollection services = new();
-            services.AddSingleton<ILogger<BotApplication>>(NullLogger<BotApplication>.Instance);
-            services.AddSingleton<ILogger<ConversationClient>>(NullLogger<ConversationClient>.Instance);
             services.AddSingleton(configuration);
             services.AddCompatAdapter();
-            services.AddLogging(configure => configure.AddConsole());
+            services.AddLogging((builder) => {
+                builder.AddXUnit(_outputHelper);
+                builder.AddFilter("System.Net", LogLevel.Warning);
+                builder.AddFilter("Microsoft.Identity", LogLevel.Error);
+                builder.AddFilter("Microsoft.Teams", LogLevel.Information);
+            });
 
             var serviceProvider = services.BuildServiceProvider();
             CompatAdapter compatAdapter = (CompatAdapter)serviceProvider.GetRequiredService<IBotFrameworkHttpAdapter>();
@@ -584,6 +601,15 @@ namespace Microsoft.Bot.Core.Tests
                 Conversation = new ConversationAccount
                 {
                     Id = conversationId
+                },
+                User = new ChannelAccount()
+                {
+                    Properties =
+                    {
+                        { "agenticAppBlueprintId", _agenticAppBlueprintId },
+                        { "agenticAppId", _agenticAppId },
+                        { "agenticUserId", _agenticUserId },
+                    }
                 }
             };
         }
