@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers.MessageExtension;

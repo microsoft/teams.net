@@ -7,6 +7,7 @@ using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using TeamsBot;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);

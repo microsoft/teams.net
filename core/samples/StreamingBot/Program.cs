@@ -6,6 +6,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using OpenAI;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
