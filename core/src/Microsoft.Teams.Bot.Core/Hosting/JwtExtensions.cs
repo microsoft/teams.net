@@ -77,7 +77,14 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             string schemeName = "AzureAd",
             ILogger? logger = null)
         {
-            builder.AddTeamsJwtBearer(schemeName, clientId, tenantId, logger);
+            if (string.IsNullOrWhiteSpace(clientId))
+            {
+                builder.AddBypassAuthentication(schemeName, logger);
+            }
+            else
+            {
+                builder.AddTeamsJwtBearer(schemeName, clientId, tenantId, logger);
+            }
             return builder;
         }
 
@@ -257,6 +264,44 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     }
                 };
                 jwtOptions.Validate();
+            });
+            return builder;
+        }
+
+        /// <summary>
+        /// Adds a bypass authentication scheme that always succeeds without validating tokens.
+        /// This is used when no ClientId is configured and should only be used for development.
+        /// </summary>
+        private static AuthenticationBuilder AddBypassAuthentication(this AuthenticationBuilder builder, string schemeName, ILogger? logger = null)
+        {
+            (logger ?? NullLogger.Instance).LogWarning("ClientId not provided for scheme '{SchemeName}'. Configuring bypass authentication (no token validation). This is INSECURE and should only be used for development.", schemeName);
+
+            builder.AddJwtBearer(schemeName, jwtOptions =>
+            {
+#pragma warning disable CA5404 // Do not disable token validation checks
+                jwtOptions.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = false,
+                    ValidateAudience = false,
+                    ValidateLifetime = false,
+                    ValidateIssuerSigningKey = false,
+                    RequireSignedTokens = false,
+                    SignatureValidator = (token, _) => new JsonWebToken(token)
+                };
+#pragma warning restore CA5404 // Do not disable token validation checks
+                jwtOptions.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        // Always succeed authentication even without a token
+                        GetLogger(context.HttpContext, logger).LogWarning("Using bypass authentication scheme succeeded for scheme: {Scheme}. This is INSECURE and should only be used for development.", schemeName);
+                        context.NoResult();
+                        context.Principal = new System.Security.Claims.ClaimsPrincipal(
+                            new System.Security.Claims.ClaimsIdentity("BypassAuth"));
+                        context.Success();
+                        return Task.CompletedTask;
+                    }
+                };
             });
             return builder;
         }

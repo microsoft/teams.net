@@ -37,7 +37,7 @@ public class AddBotApplicationExtensionsTests
     {
         MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(AddBotApplicationExtensions.MsalConfigKey);
+            .Get(MsalConfigurationExtensions.MsalConfigKey);
         Assert.Equal(expectedClientId, msalOptions.ClientId);
         Assert.Equal(expectedTenantId, msalOptions.TenantId);
         Assert.Equal(expectedInstance, msalOptions.Instance);
@@ -61,7 +61,7 @@ public class AddBotApplicationExtensionsTests
         AssertMsalOptions(serviceProvider, "test-app-id", "test-tenant-id");
         MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(AddBotApplicationExtensions.MsalConfigKey);
+            .Get(MsalConfigurationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
         CredentialDescription credential = msalOptions.ClientCredentials.First();
@@ -87,7 +87,7 @@ public class AddBotApplicationExtensionsTests
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
         MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(AddBotApplicationExtensions.MsalConfigKey);
+            .Get(MsalConfigurationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
         CredentialDescription credential = msalOptions.ClientCredentials.First();
@@ -113,7 +113,7 @@ public class AddBotApplicationExtensionsTests
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
         MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(AddBotApplicationExtensions.MsalConfigKey);
+            .Get(MsalConfigurationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
         CredentialDescription credential = msalOptions.ClientCredentials.First();
@@ -142,7 +142,7 @@ public class AddBotApplicationExtensionsTests
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
         MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(AddBotApplicationExtensions.MsalConfigKey);
+            .Get(MsalConfigurationExtensions.MsalConfigKey);
         Assert.NotNull(msalOptions.ClientCredentials);
         Assert.Single(msalOptions.ClientCredentials);
         CredentialDescription credential = msalOptions.ClientCredentials.First();
@@ -170,7 +170,7 @@ public class AddBotApplicationExtensionsTests
         AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
         MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(AddBotApplicationExtensions.MsalConfigKey);
+            .Get(MsalConfigurationExtensions.MsalConfigKey);
         Assert.Null(msalOptions.ClientCredentials);
 
         ManagedIdentityOptions managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;

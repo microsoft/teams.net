@@ -2,11 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.Identity.Abstractions;
 using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Apps;
@@ -47,30 +43,13 @@ public static class TeamsBotApplicationHostingExtensions
     /// <returns>The updated WebApplicationBuilder instance.</returns>
     public static IServiceCollection AddTeamsBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : TeamsBotApplication
     {
-        // Register options to defer configuration reading until ServiceProvider is built
-        services.AddOptions<BotClientOptions>()
-            .Configure<IConfiguration>((options, configuration) =>
-            {
-                options.Scope = "https://api.botframework.com/.default";
-                if (!string.IsNullOrEmpty(configuration[$"{sectionName}:Scope"]))
-                    options.Scope = configuration[$"{sectionName}:Scope"]!;
-                if (!string.IsNullOrEmpty(configuration["Scope"]))
-                    options.Scope = configuration["Scope"]!;
-                options.SectionName = sectionName;
-            });
+        // Resolve BotConfig to get authentication configuration
+        BotConfig botConfig = BotConfig.Resolve(services, sectionName);
 
-        services.AddHttpClient<TeamsApiClient>(TeamsApiClient.TeamsHttpClientName)
-            .AddHttpMessageHandler(sp =>
-            {
-                BotClientOptions options = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
-                return new BotAuthenticationHandler(
-                    sp.GetRequiredService<IAuthorizationHeaderProvider>(),
-                    sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                    options.Scope,
-                    sp.GetService<IOptions<ManagedIdentityOptions>>());
-            });
+        // Reuse AddBotClient infrastructure for TeamsApiClient
+        services.AddBotClient<TeamsApiClient>(TeamsApiClient.TeamsHttpClientName, botConfig);
 
-        services.AddBotApplication<TApp>();
+        services.AddBotApplication<TApp>(sectionName);
         return services;
     }
 
