@@ -6,23 +6,23 @@ using System.Text.Json.Serialization;
 namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
-/// Represents a clickable action associated with a card or suggested action.
+/// Represents a clickable action
 /// </summary>
-public class CardAction
+public class SuggestedAction
 {
     /// <summary>
     /// Default constructor for JSON deserialization.
     /// </summary>
-    public CardAction()
+    public SuggestedAction()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="CardAction"/> class with the specified type and title.
+    /// Initializes a new instance of the <see cref="SuggestedAction"/> class with the specified type and title.
     /// </summary>
-    /// <param name="type">The type of action. See <see cref="CardActionTypes"/> for common values.</param>
+    /// <param name="type">The type of action. See <see cref="ActionType"/> for common values.</param>
     /// <param name="title">The text description displayed on the button.</param>
-    public CardAction(string type, string title)
+    public SuggestedAction(string type, string title)
     {
         Type = type;
         Title = title;
@@ -30,7 +30,7 @@ public class CardAction
 
     /// <summary>
     /// Gets or sets the type of action implemented by this button.
-    /// See <see cref="CardActionTypes"/> for common values.
+    /// See <see cref="ActionType"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
     public string? Type { get; set; }
@@ -82,7 +82,7 @@ public class CardAction
 /// <summary>
 /// String constants for card action types.
 /// </summary>
-public static class CardActionTypes
+public static class ActionType
 {
     /// <summary>
     /// Opens the specified URL in the browser.

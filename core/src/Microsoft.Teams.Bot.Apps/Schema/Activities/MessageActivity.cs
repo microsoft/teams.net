@@ -135,11 +135,7 @@ public class MessageActivity : TeamsActivity
     [JsonPropertyName("attachmentLayout")]
     public string? AttachmentLayout { get; set; }
 
-    /// <summary>
-    /// Gets or sets the suggested actions for the message.
-    /// </summary>
-    [JsonPropertyName("suggestedActions")]
-    public SuggestedActions? SuggestedActions { get; set; }
+    
 
     //TODO : Review properties
     /*

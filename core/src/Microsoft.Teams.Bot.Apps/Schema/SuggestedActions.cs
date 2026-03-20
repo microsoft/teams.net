@@ -21,7 +21,7 @@ public class SuggestedActions
     /// Gets or sets the actions that can be shown to the user.
     /// </summary>
     [JsonPropertyName("actions")]
-    public IList<CardAction> Actions { get; set; } = [];
+    public IList<SuggestedAction> Actions { get; set; } = [];
 
     /// <summary>
     /// Adds recipients to the suggested actions.
@@ -44,7 +44,7 @@ public class SuggestedActions
     /// </summary>
     /// <param name="action">The action to add.</param>
     /// <returns>This instance for chaining.</returns>
-    public SuggestedActions AddAction(CardAction action)
+    public SuggestedActions AddAction(SuggestedAction action)
     {
         Actions.Add(action);
         return this;
@@ -55,7 +55,7 @@ public class SuggestedActions
     /// </summary>
     /// <param name="actions">The actions to add.</param>
     /// <returns>This instance for chaining.</returns>
-    public SuggestedActions AddActions(params CardAction[] actions)
+    public SuggestedActions AddActions(params SuggestedAction[] actions)
     {
         ArgumentNullException.ThrowIfNull(actions);
         foreach (var action in actions)

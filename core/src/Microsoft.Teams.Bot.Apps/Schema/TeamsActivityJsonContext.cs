@@ -32,7 +32,7 @@ namespace Microsoft.Teams.Bot.Apps.Schema;
 [JsonSerializable(typeof(CitationImageObject))]
 [JsonSerializable(typeof(CitationAppearance))]
 [JsonSerializable(typeof(SuggestedActions))]
-[JsonSerializable(typeof(CardAction))]
+[JsonSerializable(typeof(SuggestedAction))]
 [JsonSerializable(typeof(TeamsChannelData))]
 [JsonSerializable(typeof(ConversationAccount))]
 [JsonSerializable(typeof(TeamsConversationAccount))]

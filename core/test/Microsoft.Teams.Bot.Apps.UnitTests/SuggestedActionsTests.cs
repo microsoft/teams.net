@@ -9,23 +9,23 @@ namespace Microsoft.Teams.Bot.Apps.UnitTests;
 public class SuggestedActionsTests
 {
     [Fact]
-    public void CardActionTypes_Constants_HaveExpectedValues()
+    public void ActionTypes_Constants_HaveExpectedValues()
     {
-        Assert.Equal("openUrl", CardActionTypes.OpenUrl);
-        Assert.Equal("imBack", CardActionTypes.IMBack);
-        Assert.Equal("postBack", CardActionTypes.PostBack);
-        Assert.Equal("playAudio", CardActionTypes.PlayAudio);
-        Assert.Equal("playVideo", CardActionTypes.PlayVideo);
-        Assert.Equal("showImage", CardActionTypes.ShowImage);
-        Assert.Equal("downloadFile", CardActionTypes.DownloadFile);
-        Assert.Equal("signin", CardActionTypes.SignIn);
-        Assert.Equal("call", CardActionTypes.Call);
+        Assert.Equal("openUrl", ActionType.OpenUrl);
+        Assert.Equal("imBack", ActionType.IMBack);
+        Assert.Equal("postBack", ActionType.PostBack);
+        Assert.Equal("playAudio", ActionType.PlayAudio);
+        Assert.Equal("playVideo", ActionType.PlayVideo);
+        Assert.Equal("showImage", ActionType.ShowImage);
+        Assert.Equal("downloadFile", ActionType.DownloadFile);
+        Assert.Equal("signin", ActionType.SignIn);
+        Assert.Equal("call", ActionType.Call);
     }
 
     [Fact]
-    public void CardAction_DefaultConstructor_AllPropertiesNull()
+    public void SuggestedAction_DefaultConstructor_AllPropertiesNull()
     {
-        var action = new CardAction();
+        var action = new SuggestedAction();
 
         Assert.Null(action.Type);
         Assert.Null(action.Title);
@@ -38,11 +38,11 @@ public class SuggestedActionsTests
     }
 
     [Fact]
-    public void CardAction_ConvenienceConstructor_SetsTypeAndTitle()
+    public void SuggestedAction_ConvenienceConstructor_SetsTypeAndTitle()
     {
-        var action = new CardAction(CardActionTypes.IMBack, "Say Hello");
+        var action = new SuggestedAction(ActionType.IMBack, "Say Hello");
 
-        Assert.Equal(CardActionTypes.IMBack, action.Type);
+        Assert.Equal(ActionType.IMBack, action.Type);
         Assert.Equal("Say Hello", action.Title);
     }
 
@@ -73,7 +73,7 @@ public class SuggestedActionsTests
     public void SuggestedActions_AddAction_AddsToList()
     {
         var suggestedActions = new SuggestedActions();
-        var action = new CardAction(CardActionTypes.IMBack, "Click me");
+        var action = new SuggestedAction(ActionType.IMBack, "Click me");
 
         suggestedActions.AddAction(action);
 
@@ -87,9 +87,9 @@ public class SuggestedActionsTests
         var suggestedActions = new SuggestedActions();
 
         suggestedActions.AddActions(
-            new CardAction(CardActionTypes.IMBack, "Option 1"),
-            new CardAction(CardActionTypes.IMBack, "Option 2"),
-            new CardAction(CardActionTypes.PostBack, "Option 3")
+            new SuggestedAction(ActionType.IMBack, "Option 1"),
+            new SuggestedAction(ActionType.IMBack, "Option 2"),
+            new SuggestedAction(ActionType.PostBack, "Option 3")
         );
 
         Assert.Equal(3, suggestedActions.Actions.Count);
@@ -99,7 +99,7 @@ public class SuggestedActionsTests
     public void SuggestedActions_FluentChaining_ReturnsSameInstance()
     {
         var suggestedActions = new SuggestedActions();
-        var action = new CardAction(CardActionTypes.IMBack, "Test");
+        var action = new SuggestedAction(ActionType.IMBack, "Test");
 
         var result1 = suggestedActions.AddRecipients("user1");
         var result2 = suggestedActions.AddAction(action);
@@ -118,7 +118,7 @@ public class SuggestedActionsTests
             SuggestedActions = new SuggestedActions()
         };
         activity.SuggestedActions.AddRecipients("user1");
-        activity.SuggestedActions.AddAction(new CardAction(CardActionTypes.IMBack, "Option 1") { Value = "opt1" });
+        activity.SuggestedActions.AddAction(new SuggestedAction(ActionType.IMBack, "Option 1") { Value = "opt1" });
 
         string json = activity.ToJson();
 
@@ -187,49 +187,41 @@ public class SuggestedActionsTests
     }
 
     [Fact]
-    public void MessageActivity_WithSuggestedActions_ExtensionSetsProperty()
+    public void MessageActivity_WithSuggestedActions_SetsProperty()
     {
-        var activity = new MessageActivity("Pick one");
         var suggestedActions = new SuggestedActions();
-        suggestedActions.AddAction(new CardAction(CardActionTypes.IMBack, "Go"));
 
-        activity.WithSuggestedActions(suggestedActions);
+        var activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithText("Choose an option")
+            .WithSuggestedActions(suggestedActions)
+            .Build();
+
+        Assert.NotNull(activity.SuggestedActions);
+        Assert.Same(suggestedActions, activity.SuggestedActions);
+        Assert.Empty(activity.SuggestedActions.Actions);
+    }
+
+    
+
+    [Fact]
+    public void MessageActivity_WithSuggestedActions()
+    {
+        var suggestedActions = new SuggestedActions()
+            .AddAction(new SuggestedAction(ActionType.IMBack, "Option 1") { Value = "opt1" });
+
+        var activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithText("Choose an option")
+            .WithSuggestedActions(suggestedActions)
+            .Build();
 
         Assert.NotNull(activity.SuggestedActions);
         Assert.Same(suggestedActions, activity.SuggestedActions);
         Assert.Single(activity.SuggestedActions.Actions);
-    }
-
-    [Fact]
-    public void MessageActivity_AddSuggestedActions_ExtensionCreatesAndAdds()
-    {
-        var activity = new MessageActivity("Pick one");
-
-        activity.AddSuggestedActions(
-            new CardAction(CardActionTypes.IMBack, "Option A"),
-            new CardAction(CardActionTypes.IMBack, "Option B")
-        );
 
         Assert.NotNull(activity.SuggestedActions);
-        Assert.Equal(2, activity.SuggestedActions.Actions.Count);
-        Assert.Equal("Option A", activity.SuggestedActions.Actions[0].Title);
-        Assert.Equal("Option B", activity.SuggestedActions.Actions[1].Title);
-    }
-
-    [Fact]
-    public void MessageActivity_AddSuggestedActions_WithRecipients()
-    {
-        var activity = new MessageActivity("Pick one");
-
-        activity.AddSuggestedActions(
-            ["user1", "user2"],
-            new CardAction(CardActionTypes.IMBack, "Option A")
-        );
-
-        Assert.NotNull(activity.SuggestedActions);
-        Assert.Equal(2, activity.SuggestedActions.To.Count);
-        Assert.Contains("user1", activity.SuggestedActions.To);
-        Assert.Single(activity.SuggestedActions.Actions);
+        Assert.Empty(activity.SuggestedActions.To);
     }
 
     [Fact]
@@ -239,8 +231,8 @@ public class SuggestedActionsTests
         activity.SuggestedActions = new SuggestedActions();
         activity.SuggestedActions.AddRecipients("user1");
         activity.SuggestedActions.AddActions(
-            new CardAction(CardActionTypes.OpenUrl, "Open") { Value = "https://example.com" },
-            new CardAction(CardActionTypes.IMBack, "Say Hi") { Value = "hi" }
+            new SuggestedAction(ActionType.OpenUrl, "Open") { Value = "https://example.com" },
+            new SuggestedAction(ActionType.IMBack, "Say Hi") { Value = "hi" }
         );
 
         string json = activity.ToJson();

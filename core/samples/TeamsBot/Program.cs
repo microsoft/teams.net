@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 using TeamsBot;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
@@ -19,7 +20,8 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 // Help handler: matches "help" (case-insensitive)
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync(new MessageActivity("""
+
+    var helpMessage = """
 **Teams Bot Demo**
 
 **Messages**
@@ -40,13 +42,42 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 **Lifecycle** *(automatic)*
 - Message edits, deletes, and reactions are detected
 - Member join/leave and install/uninstall events are handled
-""") { TextFormat = TextFormats.Markdown }, cancellationToken);
+""";
+
+    var helpActivity = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText(helpMessage, TextFormats.Markdown)
+        .WithSuggestedActions(new SuggestedActions()
+         {
+             To = [context.Activity.From?.Id!],
+             Actions = [
+                    new SuggestedAction(ActionType.IMBack, "hello") { Value = "hello" },
+                    new SuggestedAction(ActionType.IMBack, "feedback") { Value = "feedback" },
+                 ]
+         })
+        .Build();
+
+    await context.SendActivityAsync(helpActivity, cancellationToken);
 });
 
 // Pattern-based handler: matches "hello" (case-insensitive)
 teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync("Hi there! You said hello!", cancellationToken);
+
+    TeamsActivity ta = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithSuggestedActions(new SuggestedActions()
+        {
+            To = [context.Activity.From?.Id!],
+            Actions = [
+                    new SuggestedAction(ActionType.IMBack, "markdown") { Value = "markdown" },
+                    new SuggestedAction(ActionType.IMBack, "citation") { Value = "citation" },
+                 ]
+        })
+        .WithText("Hi there! You said hello!")
+        .AddMention(context.Activity.From!)
+        .Build();
+    await context.SendActivityAsync(ta, cancellationToken);
 });
 
 // Markdown handler: matches "markdown" (case-insensitive)
@@ -257,23 +288,23 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
     }
 });
 
-// Catch-all message handler: echoes the message back with a mention
-teamsApp.OnMessage(async (context, cancellationToken) =>
-{
-    await context.SendTypingActivityAsync(cancellationToken);
+//// Catch-all message handler: echoes the message back with a mention
+//teamsApp.OnMessage(async (context, cancellationToken) =>
+//{
+//    await context.SendTypingActivityAsync(cancellationToken);
 
-    ArgumentNullException.ThrowIfNull(context.Activity.From);
+//    ArgumentNullException.ThrowIfNull(context.Activity.From);
 
-    string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
+//    string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
 
-    TeamsActivity ta = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
-        .WithText(replyText)
-        .AddMention(context.Activity.From)
-        .Build();
+//    TeamsActivity ta = TeamsActivity.CreateBuilder()
+//        .WithType(TeamsActivityType.Message)
+//        .WithText(replyText)
+//        .AddMention(context.Activity.From)
+//        .Build();
 
-    await context.SendActivityAsync(ta, cancellationToken);
-});
+//    await context.SendActivityAsync(ta, cancellationToken);
+//});
 
 // ==================== MESSAGE LIFECYCLE ====================
 
