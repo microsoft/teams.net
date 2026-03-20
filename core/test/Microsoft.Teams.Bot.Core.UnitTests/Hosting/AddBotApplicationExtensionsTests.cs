@@ -306,9 +306,9 @@ public class AddBotApplicationExtensionsTests
     }
 
     [Fact]
-    public void AddBotApplication_MicrosoftAppIdTakesPrecedenceOverClientId()
+    public void AddBotApplication_ClientIdTakesPrecedenceOverMicrosoftAppId()
     {
-        // Arrange — both keys present; MicrosoftAppId is highest priority
+        // Arrange — both keys present; CLIENT_ID is highest priority
         Dictionary<string, string?> configData = new()
         {
             ["MicrosoftAppId"] = "bf-app-id",
@@ -321,6 +321,6 @@ public class AddBotApplicationExtensionsTests
         ServiceProvider serviceProvider = BuildServiceProviderForBotApp(configData);
 
         // Assert
-        Assert.Equal("bf-app-id", GetAppId(serviceProvider));
+        Assert.Equal("core-client-id", GetAppId(serviceProvider));
     }
 }
