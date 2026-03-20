@@ -79,8 +79,8 @@ public class TeamsBotApplication : BotApplication
                 {
                     httpContext.Response.StatusCode = invokeResponse.Status;
                     logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
-                    await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
-
+                    if (invokeResponse.Body is not null)
+                        await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
                 }
             }
         };
