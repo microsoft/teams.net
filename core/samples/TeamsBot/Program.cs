@@ -104,7 +104,6 @@ teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
         Abstract = "The Teams Bot SDK provides a streamlined way to build bots for Microsoft Teams.",
         Url = new Uri("https://github.com/microsoft/teams.net"),
         Icon = CitationIcon.Text
-        EncodingFormat = EncodingFormats.AdaptiveCard
     });
 
     reply.AddCitation(2, new CitationAppearance()
