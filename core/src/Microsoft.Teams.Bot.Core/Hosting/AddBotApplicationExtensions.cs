@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
@@ -187,16 +189,27 @@ public static class AddBotApplicationExtensions
     }
 
     /// <summary>
-    /// Gets a logger instance from the service collection without building the service provider.
+    /// Gets a logger instance from the service collection.
+    /// If the logger factory is not available as an instance, builds a temporary service provider to create the logger.
     /// </summary>
     /// <param name="services">The service collection to extract the logger from.</param>
     /// <param name="categoryType">The type to use for the logger category. If null, uses AddBotApplicationExtensions.</param>
     /// <returns>An ILogger instance, or NullLogger if no logger factory is registered.</returns>
-    private static ILogger GetLoggerFromServices(IServiceCollection services, Type? categoryType = null)
+    internal static ILogger GetLoggerFromServices(IServiceCollection services, Type? categoryType = null)
     {
         ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
         ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
-        return loggerFactory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
+
+        // If logger factory is available as an instance, use it directly
+        if (loggerFactory != null)
+        {
+            return loggerFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions));
+        }
+
+        // Otherwise, build a temporary service provider to create the logger
+        using ServiceProvider tempProvider = services.BuildServiceProvider();
+        ILoggerFactory? tempFactory = tempProvider.GetService<ILoggerFactory>();
+        return (ILogger?)tempFactory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
             ?? Extensions.Logging.Abstractions.NullLogger.Instance;
     }
 

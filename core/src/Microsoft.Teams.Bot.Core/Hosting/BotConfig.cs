@@ -147,18 +147,15 @@ internal sealed class BotConfig
         IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
             ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
 
-        // Extract ILogger from service collection
-        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
-        ILogger logger = loggerFactory?.CreateLogger(typeof(BotConfig))
-            ?? NullLogger.Instance;
+        // Get logger using the helper method from AddBotApplicationExtensions
+        ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));
 
         return Resolve(configuration, sectionName, logger);
     }
 
     /// <summary>
     /// Resolves a BotConfig by trying all configuration formats in priority order:
-    /// Bot Framework SDK keys, Core environment variables, then MSAL section.
+    /// MSAL section, Core environment variables, then Bot Framework SDK keys.
     /// </summary>
     /// <param name="configuration">The application configuration.</param>
     /// <param name="sectionName">The MSAL configuration section name. Defaults to "AzureAd".</param>
@@ -181,6 +178,7 @@ internal sealed class BotConfig
         if (!string.IsNullOrEmpty(config.ClientId))
         {
             _logUsingCoreConfig(logger, null);
+            config.SectionName = sectionName;
             return config;
         }
 
@@ -188,11 +186,12 @@ internal sealed class BotConfig
         if (!string.IsNullOrEmpty(config.ClientId))
         {
             _logUsingBFConfig(logger, null);
+            config.SectionName = sectionName;
             return config;
         }
 
         // No configuration found - log warning and return empty config
-        _logNoConfigFound(logger, sectionName, null);
+        _logNoConfigFound(logger, null);
         return new BotConfig { SectionName = sectionName };
     }
 
@@ -202,7 +201,7 @@ internal sealed class BotConfig
         LoggerMessage.Define(LogLevel.Debug, new(2), "Resolved bot configuration from Core environment variables");
     private static readonly Action<ILogger, string, Exception?> _logUsingSectionConfig =
         LoggerMessage.Define<string>(LogLevel.Debug, new(3), "Resolved bot configuration from '{SectionName}' configuration section");
-    private static readonly Action<ILogger, string, Exception?> _logNoConfigFound =
-        LoggerMessage.Define<string>(LogLevel.Warning, new(4), "No bot configuration found in '{SectionName}' configuration section");
+    private static readonly Action<ILogger, Exception?> _logNoConfigFound =
+        LoggerMessage.Define(LogLevel.Warning, new(4), "No bot configuration found in configuration.");
 
 }
