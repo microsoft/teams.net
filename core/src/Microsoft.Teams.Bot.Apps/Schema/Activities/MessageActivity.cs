@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -71,6 +72,18 @@ public class MessageActivity : TeamsActivity
             AttachmentLayout = attachmentLayout?.ToString();
             activity.Properties.Remove("attachmentLayout");
         }
+        if (activity.Properties.TryGetValue("suggestedActions", out object? suggestedActions) && suggestedActions != null)
+        {
+            if (suggestedActions is JsonElement je)
+            {
+                SuggestedActions = JsonSerializer.Deserialize<SuggestedActions>(je.GetRawText());
+            }
+            else
+            {
+                SuggestedActions = suggestedActions as SuggestedActions;
+            }
+            activity.Properties.Remove("suggestedActions");
+        }
         /*
         if (activity.Properties.TryGetValue("speak", out var speak))
         {
@@ -122,6 +135,12 @@ public class MessageActivity : TeamsActivity
     [JsonPropertyName("attachmentLayout")]
     public string? AttachmentLayout { get; set; }
 
+    /// <summary>
+    /// Gets or sets the suggested actions for the message.
+    /// </summary>
+    [JsonPropertyName("suggestedActions")]
+    public SuggestedActions? SuggestedActions { get; set; }
+
     //TODO : Review properties
     /*
     /// <summary>
@@ -159,9 +178,6 @@ public class MessageActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("expiration")]
     public string? Expiration { get; set; }
-
-    [JsonPropertyName("suggestedActions")]
-    public SuggestedActions? SuggestedActions { get; set; }
     */
 
 }
@@ -263,19 +279,4 @@ public static class DeliveryModes
 }
 
 
-public class SuggestedActions
-{
-    /// <summary>
-    /// Ids of the recipients that the actions should be shown to.  These Ids are relative to the
-    /// channelId and a subset of all recipients of the activity
-    /// </summary>
-    [JsonPropertyName("to")]
-    public IList<string> To { get; set; } = [];
-
-    /// <summary>
-    /// Actions that can be shown to the user
-    /// </summary>
-    [JsonPropertyName("actions")]
-    public IList<Cards.Action> Actions { get; set; } = [];
-}
 */
