@@ -16,19 +16,6 @@ namespace Microsoft.Teams.Bot.Core.Hosting;
 internal static class MsalConfigurationExtensions
 {
     internal const string MsalConfigKey = "AzureAd";
-    /// <summary>
-    /// Checks if MSAL has already been configured in the service collection.
-    /// </summary>
-    /// <param name="services">The service collection to check.</param>
-    /// <returns>True if MSAL configuration services are registered, false otherwise.</returns>
-    internal static bool IsMsalConfigured(this IServiceCollection services)
-    {
-        // Check if there's any IConfigureOptions<MicrosoftIdentityApplicationOptions> registered
-        // This indicates that MSAL configuration has been set up
-        return services.Any(descriptor =>
-            descriptor.ServiceType == typeof(IConfigureOptions<MicrosoftIdentityApplicationOptions>) ||
-            descriptor.ServiceType == typeof(IPostConfigureOptions<MicrosoftIdentityApplicationOptions>));
-    }
 
     /// <summary>
     /// Configures MSAL authentication based on the provided BotConfig.

@@ -1,0 +1,49 @@
+{
+  "profiles": {
+    "TeamsBot-MsalConfig": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Logging__LogLevel__Microsoft.Teams": "Trace",
+        "Logging__LogLevel__System.Net.Http.HttpClient": "Warning",
+        "AzureAd__Instance": "",
+        "AzureAd__Scope": "",
+        "AzureAd__ClientId": "",
+        "AzureAd__TenantId": "",
+        "AzureAd__ClientCredentials__0__SourceType": "ClientSecret",
+        "AzureAd__ClientCredentials__0__ClientSecret": ""
+      }
+    },
+    "TeamsBot-CoreConfig": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Logging__LogLevel__Microsoft.Teams": "Trace",
+        "Logging__LogLevel__System.Net.Http.HttpClient": "Warning",
+        "Scope": "",
+        "TENANT_ID": "",
+        "CLIENT_ID": "",
+        "CLIENT_SECRET": "",
+        "MANAGED_IDENTITY_CLIENT_ID": ""
+      }
+    },
+    "TeamsBot-BFConfig": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Logging__LogLevel__Microsoft.Teams": "Trace",
+        "Logging__LogLevel__System.Net.Http.HttpClient": "Warning",
+        "Scope": "",
+        "MicrosoftAppPassword": "",
+        "MicrosoftAppId": "",
+        "MicrosoftAppTenantId": ""
+      }
+    }
+  }
+}
