@@ -187,7 +187,12 @@ public static class InvokeNames
     /// </summary>
     public const string MessageExtensionSubmitAction = "composeExtension/submitAction";
 
-    //TODO : review 
+    /// <summary>
+    /// Message submit action invoke name.
+    /// </summary>
+    public const string MessageSubmitAction = "message/submitAction";
+
+    //TODO : review
     /*
     /// <summary>
     /// Execute action invoke name.
@@ -212,11 +217,6 @@ public static class InvokeNames
     /// Config submit invoke name.
     /// </summary>
     public const string ConfigSubmit = "config/submit";
-
-     /// <summary>
-     /// Message submit action invoke name.
-     /// </summary>
-     public const string MessageSubmitAction = "message/submitAction";
 
      /// <summary>
      /// Message extension card button clicked invoke name.

@@ -13,7 +13,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <summary>
     /// Initializes a new instance of the TeamsActivityBuilder class.
     /// </summary>
-    internal TeamsActivityBuilder() : base(TeamsActivity.FromActivity(new CoreActivity()))
+    internal TeamsActivityBuilder() : base(new TeamsActivity())
     {
     }
 
@@ -210,6 +210,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     public override TeamsActivity Build()
     {
         _activity.Rebase();
+
         return _activity;
     }
 
