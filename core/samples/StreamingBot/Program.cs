@@ -23,7 +23,7 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
-    TeamsStreamingWriter writer = context.GetStreamingWriter();
+    TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
     await writer.SendInformativeUpdateAsync("Thinking…", cancellationToken);
     await Task.Delay(500, cancellationToken);
     await writer.SendInformativeUpdateAsync("Thinking again !!!", cancellationToken);

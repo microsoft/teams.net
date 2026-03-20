@@ -16,7 +16,7 @@ namespace Microsoft.Teams.Bot.Apps;
 /// <remarks>
 /// Typical usage:
 /// <code>
-///     var writer = context.GetStreamingWriter();
+///     var writer = TeamsStreamingWriter.CreateFromContext(context);
 ///     await writer.SendInformativeUpdateAsync("Thinking…"); //optional placeholder while the bot thinks
 ///     await writer.AppendResponseAsync(" Hello");
 ///     await writer.AppendResponseAsync(", world");
@@ -51,6 +51,13 @@ public sealed class TeamsStreamingWriter
         _client = client;
         _reference = reference;
     }
+
+    /// <summary>
+    /// Creates a <see cref="TeamsStreamingWriter"/> bound to the given context.
+    /// </summary>
+    public static TeamsStreamingWriter CreateFromContext<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+    {   ArgumentNullException.ThrowIfNull(context);
+        return new TeamsStreamingWriter(context.TeamsBotApplication.ConversationClient, context.Activity); }
 
     /// <summary>
     /// Sends an informative placeholder (streamType = "informative").

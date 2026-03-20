@@ -50,15 +50,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
                 .Build(), cancellationToken);
 
 
-    /// <summary>
-    /// Creates a <see cref="TeamsStreamingWriter"/> bound to this context.
-    /// </summary>
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate", Justification = "<Pending>")]
-    public TeamsStreamingWriter GetStreamingWriter()
-        => new(TeamsBotApplication.ConversationClient, Activity);
- 
-
-    /// <summary>
+/// <summary>
     /// Sends a typing activity to the conversation asynchronously.
     /// </summary>
     /// <param name="cancellationToken"></param>
