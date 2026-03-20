@@ -50,7 +50,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
                 .Build(), cancellationToken);
 
 
-/// <summary>
+    /// <summary>
     /// Sends a typing activity to the conversation asynchronously.
     /// </summary>
     /// <param name="cancellationToken"></param>

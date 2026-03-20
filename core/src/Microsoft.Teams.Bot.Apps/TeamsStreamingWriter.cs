@@ -56,8 +56,10 @@ public sealed class TeamsStreamingWriter
     /// Creates a <see cref="TeamsStreamingWriter"/> bound to the given context.
     /// </summary>
     public static TeamsStreamingWriter CreateFromContext<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
-    {   ArgumentNullException.ThrowIfNull(context);
-        return new TeamsStreamingWriter(context.TeamsBotApplication.ConversationClient, context.Activity); }
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return new TeamsStreamingWriter(context.TeamsBotApplication.ConversationClient, context.Activity);
+    }
 
     /// <summary>
     /// Sends an informative placeholder (streamType = "informative").
@@ -69,7 +71,7 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException("Cannot send an informative update after streaming has started.");
 
         _sequence++;
-        var response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
+        SendActivityResponse response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
         _streamId ??= response.Id;
     }
 
@@ -94,7 +96,7 @@ public sealed class TeamsStreamingWriter
         _sequence++;
         try
         {
-            var response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
             _streamId ??= response.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
