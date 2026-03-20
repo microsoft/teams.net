@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema;
+namespace Microsoft.Teams.Bot.Apps.Handlers.MessageExtension;
 
 /// <summary>
 /// App-based query link payload for link unfurling.

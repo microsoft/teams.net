@@ -5,6 +5,7 @@ using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
+using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Bot.Apps.Schema;
 using TeamsBot;
 

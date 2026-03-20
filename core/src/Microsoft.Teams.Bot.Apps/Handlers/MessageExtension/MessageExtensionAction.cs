@@ -3,8 +3,9 @@
 
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Apps.Handlers;
+using Microsoft.Teams.Bot.Apps.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema;
+namespace Microsoft.Teams.Bot.Apps.Handlers.MessageExtension;
 
 /// <summary>
 /// Message extension command context values.

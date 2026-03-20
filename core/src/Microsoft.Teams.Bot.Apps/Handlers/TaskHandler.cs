@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
 

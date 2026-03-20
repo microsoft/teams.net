@@ -4,7 +4,7 @@
 using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema;
+namespace Microsoft.Teams.Bot.Apps.Handlers;
 
 /// <summary>
 /// Defines the structure that arrives in the Activity.Value for an Invoke activity with

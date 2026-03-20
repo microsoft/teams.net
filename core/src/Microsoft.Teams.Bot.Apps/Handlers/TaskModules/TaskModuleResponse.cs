@@ -2,8 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Handlers;
 
-namespace Microsoft.Teams.Bot.Apps.Schema;
+namespace Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 
 /// <summary>
 /// Task module response types.

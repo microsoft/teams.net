@@ -4,7 +4,8 @@
 using System.Text.Json;
 using MessageExtensionBot;
 using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Handlers;
+using Microsoft.Teams.Bot.Apps.Handlers.MessageExtension;
+using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Bot.Apps.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
