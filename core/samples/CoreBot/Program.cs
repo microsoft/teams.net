@@ -4,13 +4,20 @@
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Bot.DevTools;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddBotApplication();
+webAppBuilder.Services.AddDevTools();
 WebApplication webApp = webAppBuilder.Build();
 
 webApp.MapGet("/", () => "CoreBot is running.");
 BotApplication botApp = webApp.UseBotApplication();
+
+if (webApp.Environment.IsDevelopment())
+{
+    webApp.UseDevTools();
+}
 
 botApp.OnActivity = async (activity, cancellationToken) =>
 {

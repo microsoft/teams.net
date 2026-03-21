@@ -6,13 +6,21 @@ using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.DevTools;
 using TeamsBot;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();
+webAppBuilder.Services.AddDevTools();
 WebApplication webApp = webAppBuilder.Build();
 
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
+
+
+if (webApp.Environment.IsDevelopment())
+{
+    webApp.UseDevTools<TeamsBotApplication>();
+}
 
 // ==================== MESSAGE HANDLERS ====================
 
