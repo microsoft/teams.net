@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema;
+namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
 
 /// <summary>
 /// Extension methods for Activity to handle citations and AI-generated content.
