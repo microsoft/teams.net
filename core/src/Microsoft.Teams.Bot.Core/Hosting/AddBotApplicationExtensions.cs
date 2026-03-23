@@ -74,25 +74,39 @@ public static class AddBotApplicationExtensions
     }
 
     /// <summary>
-    /// Adds a bot application to the service collection with the default configuration section name "AzureAd".
+    /// Registers the default bot application and its dependencies in the service collection.
     /// </summary>
-    /// <param name="services"></param>
-    /// <param name="sectionName"></param>
-    /// <returns></returns>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="sectionName">The configuration section name containing Azure AD settings. Defaults to "AzureAd".</param>
+    /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddBotApplication(this IServiceCollection services, string sectionName = "AzureAd")
         => services.AddBotApplication<BotApplication>(sectionName);
 
     /// <summary>
-    /// Adds a bot application to the service collection.
+    /// Registers a custom bot application and its dependencies in the service collection.
     /// </summary>
-    /// <typeparam name="TApp"></typeparam>
-    /// <param name="services"></param>
-    /// <param name="sectionName"></param>
-    /// <returns></returns>
+    /// <typeparam name="TApp">The custom bot application type that inherits from BotApplication.</typeparam>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="sectionName">The configuration section name containing Azure AD settings. Defaults to "AzureAd".</param>
+    /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
     {
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
 
+        services.AddBotApplication<TApp>(botConfig);
+
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a custom bot application and its dependencies in the service collection.
+    /// </summary>
+    /// <typeparam name="TApp">The custom bot application type that inherits from BotApplication.</typeparam>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="botConfig">The configuration containing Azure AD settings.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    internal static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, BotConfig botConfig) where TApp : BotApplication
+    {
         services.AddSingleton<BotApplicationOptions>(sp =>
         {
             IConfiguration config = sp.GetRequiredService<IConfiguration>();
@@ -102,7 +116,7 @@ public static class AddBotApplicationExtensions
             };
         });
         services.AddHttpContextAccessor();
-        services.AddBotAuthorization(aadSectionName: botConfig.SectionName);
+        services.AddBotAuthorization(botConfig);
         services.AddConversationClient(botConfig);
         services.AddUserTokenClient(botConfig);
         services.AddSingleton<TApp>();
@@ -158,6 +172,7 @@ public static class AddBotApplicationExtensions
                 options.SectionName = botConfig.SectionName;
             });
 
+        // TODO: This shouldn't be called multiple times. It will being called once for each client we support.
         services
             .AddHttpClient()
             .AddTokenAcquisition(true)
@@ -181,7 +196,6 @@ public static class AddBotApplicationExtensions
         }
         else
         {
-            _logAuthConfigNotFound(logger, httpClientName, null);
             services.AddHttpClient<TClient>(httpClientName);
         }
 
@@ -212,7 +226,4 @@ public static class AddBotApplicationExtensions
         return (ILogger?)tempFactory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
             ?? Extensions.Logging.Abstractions.NullLogger.Instance;
     }
-
-    private static readonly Action<ILogger, string, Exception?> _logAuthConfigNotFound =
-        LoggerMessage.Define<string>(LogLevel.Warning, new(7), "Authentication configuration not found. Outgoing requests from '{HttpClientName}' will not be authenticated.");
 }

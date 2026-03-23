@@ -100,7 +100,21 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             logger ??= NullLogger.Instance;
 
             BotConfig botConfig = ResolveBotConfig(services, aadSectionName);
-            return services.AddBotAuthorization(botConfig.ClientId, botConfig.TenantId, aadSectionName, logger);
+            return services.AddBotAuthorization(botConfig, logger);
+        }
+
+        /// <summary>
+        /// Adds authorization policies to the service collection using configuration from appsettings.
+        /// </summary>
+        /// <param name="services">The service collection to add authorization to.</param>
+        /// <param name="botConfig">The bot configuration settings.</param>
+        /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
+        /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
+        internal static AuthorizationBuilder AddBotAuthorization(this IServiceCollection services, BotConfig botConfig, ILogger? logger = null)
+        {
+            logger ??= NullLogger.Instance;
+
+            return services.AddBotAuthorization(botConfig.ClientId, botConfig.TenantId, botConfig.SectionName, logger);
         }
 
         /// <summary>

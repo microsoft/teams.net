@@ -43,13 +43,11 @@ public static class TeamsBotApplicationHostingExtensions
     /// <returns>The updated WebApplicationBuilder instance.</returns>
     public static IServiceCollection AddTeamsBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : TeamsBotApplication
     {
-        // Resolve BotConfig to get authentication configuration
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
 
-        // Reuse AddBotClient infrastructure for TeamsApiClient
         services.AddBotClient<TeamsApiClient>(TeamsApiClient.TeamsHttpClientName, botConfig);
 
-        services.AddBotApplication<TApp>(sectionName);
+        services.AddBotApplication<TApp>(botConfig);
         return services;
     }
 
