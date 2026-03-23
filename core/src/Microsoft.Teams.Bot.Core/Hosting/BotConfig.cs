@@ -125,7 +125,7 @@ internal sealed class BotConfig
             TenantId = section["TenantId"] ?? string.Empty,
             ClientId = section["ClientId"] ?? string.Empty,
             ClientSecret = section["ClientSecret"],
-            Scope = section["Scope"] ?? configuration["Scope"] ?? BotScope,
+            Scope = section["Scope"] ?? BotScope,
             MsalConfigurationSection = section,
             SectionName = sectionName
         };
