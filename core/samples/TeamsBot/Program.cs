@@ -29,32 +29,10 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             TextFormat = TextFormats.Markdown
         }, cancellationToken);
 
-    var helpMessage = """
-**Teams Bot Demo**
-
-**Messages**
-- `hello` - Greeting
-- `markdown` - Markdown formatting demo
-- `citation` - AI citations with feedback
-- `targeted` - Targeted message lifecycle (send, update, delete)
-- `react` - Bot reactions (add, remove)
-- `card` - Send an Adaptive Card with a feedback form
-- `feedback` - Feedback form with Adaptive Card action round-trip
-- `task` - Open a task module dialog
-
-**Commands**
-- `/help` - Available slash commands
-- `/about` - About this bot
-- `/time` - Current server time
-
-**Lifecycle** *(automatic)*
-- Message edits, deletes, and reactions are detected
-- Member join/leave and install/uninstall events are handled
-""";
 
     var helpActivity = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityType.Message)
-        .WithText(helpMessage, TextFormats.Markdown)
+        .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
         .WithSuggestedActions(new SuggestedActions()
          {
              To = [context.Activity.From?.Id!],
@@ -291,24 +269,6 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
 
         await context.SendActivityAsync(response, cancellationToken);
     }
-});
-
-// Catch-all message handler: echoes the message back with a mention
-teamsApp.OnMessage(async (context, cancellationToken) =>
-{
-    await context.SendTypingActivityAsync(cancellationToken);
-
-    ArgumentNullException.ThrowIfNull(context.Activity.From);
-
-    string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
-
-    TeamsActivity ta = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
-        .WithText(replyText)
-        .AddMention(context.Activity.From)
-        .Build();
-
-    await context.SendActivityAsync(ta, cancellationToken);
 });
 
 // ==================== MESSAGE LIFECYCLE ====================
