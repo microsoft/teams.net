@@ -153,6 +153,7 @@ public class CoreActivity
         Attachments = activity.Attachments;
         Properties = activity.Properties;
         Value = activity.Value;
+
     }
 
     /// <summary>

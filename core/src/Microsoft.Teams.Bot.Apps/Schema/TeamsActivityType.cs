@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -90,5 +91,14 @@ public static class TeamsActivityType
         [InstallationUpdate] = InstallUpdateActivity.FromActivity,
         [Invoke] = InvokeActivity.FromActivity,
         [Event] = EventActivity.FromActivity
+    };
+
+    /// <summary>
+    /// Registry of serializers keyed by concrete activity type, mirroring <see cref="ActivityDeserializerMap"/>.
+    /// </summary>
+    internal static readonly Dictionary<Type, Func<TeamsActivity, string>> ActivitySerializerMap = new()
+    {
+        [typeof(MessageActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageActivity),
+        [typeof(StreamingActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.StreamingActivity),
     };
 }

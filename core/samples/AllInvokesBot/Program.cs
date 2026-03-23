@@ -6,6 +6,7 @@ using System.Text.Json.Nodes;
 using AllInvokesBot;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
+using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Hosting;
 

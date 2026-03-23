@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -13,7 +14,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <summary>
     /// Initializes a new instance of the TeamsActivityBuilder class.
     /// </summary>
-    internal TeamsActivityBuilder() : base(TeamsActivity.FromActivity(new CoreActivity()))
+    internal TeamsActivityBuilder() : base(new TeamsActivity())
     {
     }
 
@@ -165,6 +166,18 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     }
 
     /// <summary>
+    /// With Suggested Actions
+    /// </summary>
+    /// <param name="suggestedActions"></param>
+    /// <returns></returns>
+    public TeamsActivityBuilder WithSuggestedActions(SuggestedActions suggestedActions)
+    {
+        ArgumentNullException.ThrowIfNull(_activity);
+        _activity.SuggestedActions = suggestedActions;
+        return this;
+    }
+
+    /// <summary>
     /// Adds a mention to the activity.
     /// </summary>
     /// <param name="account">The account to mention.</param>
@@ -198,6 +211,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     public override TeamsActivity Build()
     {
         _activity.Rebase();
+
         return _activity;
     }
 

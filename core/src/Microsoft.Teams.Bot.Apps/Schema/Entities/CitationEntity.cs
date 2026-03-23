@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema;
+namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
 
 /// <summary>
 /// Extension methods for Activity to handle citations and AI-generated content.
@@ -24,8 +24,8 @@ public static class ActivityCitationExtensions
         ArgumentNullException.ThrowIfNull(appearance);
 
         activity.Entities ??= [];
-        var messageEntity = GetOrCreateRootMessageEntity(activity);
-        var citationEntity = new CitationEntity(messageEntity);
+        OMessageEntity messageEntity = GetOrCreateRootMessageEntity(activity);
+        CitationEntity citationEntity = new(messageEntity);
         citationEntity.Citation ??= [];
         citationEntity.Citation.Add(new CitationClaim()
         {
@@ -49,7 +49,7 @@ public static class ActivityCitationExtensions
     {
         ArgumentNullException.ThrowIfNull(activity);
 
-        var messageEntity = GetOrCreateRootMessageEntity(activity);
+        OMessageEntity messageEntity = GetOrCreateRootMessageEntity(activity);
         messageEntity.AdditionalType ??= [];
 
         if (!messageEntity.AdditionalType.Contains("AIGeneratedContent"))
@@ -81,7 +81,7 @@ public static class ActivityCitationExtensions
     {
         activity.Entities ??= [];
 
-        var messageEntity = activity.Entities.FirstOrDefault(
+        OMessageEntity? messageEntity = activity.Entities.FirstOrDefault(
             e => e.Type == "https://schema.org/Message" && e.OType == "Message"
         ) as OMessageEntity;
 

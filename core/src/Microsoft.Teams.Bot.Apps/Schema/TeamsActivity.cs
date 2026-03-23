@@ -2,7 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-
+using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -28,15 +28,13 @@ public class TeamsActivity : CoreActivity
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
-    /// Uses the appropriate JSON type info based on the activity type.
+    /// Uses the appropriate JSON type info based on the actual runtime type.
     /// </summary>
     /// <returns>A JSON string representation of the activity using the type-specific serializer.</returns>
     public override string ToJson()
-    {
-        return Type == TeamsActivityType.Message
-            ? ToJson(TeamsActivityJsonContext.Default.MessageActivity)
-            : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);  // Fallback to base type
-    }
+        => TeamsActivityType.ActivitySerializerMap.TryGetValue(GetType(), out Func<TeamsActivity, string>? serializer)
+            ? serializer(this)
+            : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
 
     /// <summary>
     /// Constructor with type parameter.
@@ -53,9 +51,7 @@ public class TeamsActivity : CoreActivity
     [JsonConstructor]
     public TeamsActivity()
     {
-        From = new TeamsConversationAccount();
-        Recipient = new TeamsConversationAccount();
-        Conversation = new TeamsConversation();
+        Type = TeamsActivityType.Message;
     }
 
     /// <summary>
@@ -178,6 +174,13 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     [JsonPropertyName("localTimezone")]
     public string? LocalTimezone { get; set; }
+
+    /// <summary>
+    /// Gets or sets the suggested actions for the message.
+    /// </summary>
+    [JsonPropertyName("suggestedActions")]
+    public SuggestedActions? SuggestedActions { get; set; }
+
 
     /// <summary>
     /// Adds an entity to the activity's Entities collection.
