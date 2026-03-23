@@ -44,7 +44,7 @@ teams.OnMessage(async (context, cancellationToken) =>
     // ============================================
     if (text.Contains("test reply"))
     {
-        await context.Reply("This reply auto-quotes your message using Reply()", cancellationToken);
+        await context.Reply("Thanks for your message! This reply auto-quotes it using Reply().", cancellationToken);
         return;
     }
 
@@ -53,8 +53,8 @@ teams.OnMessage(async (context, cancellationToken) =>
     // ============================================
     if (text.Contains("test quote"))
     {
-        var sent = await context.Send("This message will be quoted next...", cancellationToken);
-        await context.QuoteReply(sent.Id, "This quotes the message above using QuoteReply()", cancellationToken);
+        var sent = await context.Send("The meeting has been moved to 3 PM tomorrow.", cancellationToken);
+        await context.QuoteReply(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
         return;
     }
 
@@ -63,23 +63,25 @@ teams.OnMessage(async (context, cancellationToken) =>
     // ============================================
     if (text.Contains("test add"))
     {
-        var sent = await context.Send("This message will be quoted next...", cancellationToken);
+        var sent = await context.Send("Please review the latest PR before end of day.", cancellationToken);
         var msg = new MessageActivity()
-            .AddQuotedReply(sent.Id, "This uses AddQuotedReply() with a response");
+            .AddQuotedReply(sent.Id, "Done! Left my comments on the PR.");
         await context.Send(msg, cancellationToken);
         return;
     }
 
     // ============================================
-    // Multi-quote interleaved
+    // Multi-quote with mixed responses
     // ============================================
     if (text.Contains("test multi"))
     {
-        var sentA = await context.Send("Message A — will be quoted", cancellationToken);
-        var sentB = await context.Send("Message B — will be quoted", cancellationToken);
+        var sentA = await context.Send("We need to update the API docs before launch.", cancellationToken);
+        var sentB = await context.Send("The design mockups are ready for review.", cancellationToken);
+        var sentC = await context.Send("CI pipeline is green on main.", cancellationToken);
         var msg = new MessageActivity()
-            .AddQuotedReply(sentA.Id, "Response to A")
-            .AddQuotedReply(sentB.Id, "Response to B");
+            .AddQuotedReply(sentA.Id, "I can take the docs — will have a draft by Thursday.")
+            .AddQuotedReply(sentB.Id, "Looks great, approved!")
+            .AddQuotedReply(sentC.Id);
         await context.Send(msg, cancellationToken);
         return;
     }
@@ -89,10 +91,10 @@ teams.OnMessage(async (context, cancellationToken) =>
     // ============================================
     if (text.Contains("test manual"))
     {
-        var sent = await context.Send("This message will be quoted next...", cancellationToken);
+        var sent = await context.Send("Deployment to staging is complete.", cancellationToken);
         var msg = new MessageActivity()
             .AddQuotedReply(sent.Id)
-            .AddText(" Custom text after the quote placeholder");
+            .AddText(" Verified — all smoke tests passing.");
         await context.Send(msg, cancellationToken);
         return;
     }
@@ -120,7 +122,7 @@ teams.OnMessage(async (context, cancellationToken) =>
             "- `test reply` - Reply() auto-quotes your message\n" +
             "- `test quote` - QuoteReply() quotes a previously sent message\n" +
             "- `test add` - AddQuotedReply() builder with response\n" +
-            "- `test multi` - Multi-quote interleaved (quotes two separate messages)\n" +
+            "- `test multi` - Multi-quote with mixed responses (one bare quote with no response)\n" +
             "- `test manual` - AddQuotedReply() + AddText() manual control\n" +
             "- `test obsolete` - ToQuoteReply() obsolete method\n\n" +
             "Quote any message to me to see the parsed metadata!", cancellationToken);
