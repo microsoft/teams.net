@@ -250,6 +250,27 @@ teamsApp.OnMessage("(?i)^task$", async (context, cancellationToken) =>
     await context.SendActivityAsync(taskActivity, cancellationToken);
 });
 
+teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
+{
+    var suggestedActions = new SuggestedActions()
+    {
+        To = [context.Activity.From?.Id!],
+        Actions = [
+            new SuggestedAction(ActionType.IMBack, "Option 1") { Value = "You chose option 1" },
+            new SuggestedAction(ActionType.IMBack, "Option 2") { Value = "You chose option 2" },
+            new SuggestedAction(ActionType.IMBack, "Option 3") { Value = "You chose option 3" }
+        ]
+    };
+
+    var reply = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText("Here are some suggested actions for you:")
+        .WithSuggestedActions(suggestedActions)
+        .Build();
+
+    await context.SendActivityAsync(reply, cancellationToken);
+});
+
 // Regex-based handler: matches commands starting with "/"
 Regex commandRegex = Regexes.CommandRegex();
 teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>

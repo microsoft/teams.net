@@ -23,6 +23,7 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
 - `card` - Send an Adaptive Card with a feedback form
 - `feedback` - Feedback form with Adaptive Card action round-trip
 - `task` - Open a task module dialog
+- `suggested` - Suggested actions
 
 ** Commands**
 - `/help` - Available slash commands
