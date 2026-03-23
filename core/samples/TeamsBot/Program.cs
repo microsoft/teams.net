@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 using TeamsBot;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
@@ -27,6 +28,22 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
         {
             TextFormat = TextFormats.Markdown
         }, cancellationToken);
+
+
+    var helpActivity = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
+        .WithSuggestedActions(new SuggestedActions()
+         {
+             To = [context.Activity.From?.Id!],
+             Actions = [
+                    new SuggestedAction(ActionType.IMBack, "hello") { Value = "hello" },
+                    new SuggestedAction(ActionType.IMBack, "feedback") { Value = "feedback" },
+                 ]
+         })
+        .Build();
+
+    await context.SendActivityAsync(helpActivity, cancellationToken);
 });
 
 // Pattern-based handler: matches "hello" (case-insensitive)
@@ -233,6 +250,27 @@ teamsApp.OnMessage("(?i)^task$", async (context, cancellationToken) =>
     await context.SendActivityAsync(taskActivity, cancellationToken);
 });
 
+teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
+{
+    var suggestedActions = new SuggestedActions()
+    {
+        To = [context.Activity.From?.Id!],
+        Actions = [
+            new SuggestedAction(ActionType.IMBack, "Option 1") { Value = "You chose option 1" },
+            new SuggestedAction(ActionType.IMBack, "Option 2") { Value = "You chose option 2" },
+            new SuggestedAction(ActionType.IMBack, "Option 3") { Value = "You chose option 3" }
+        ]
+    };
+
+    var reply = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText("Here are some suggested actions for you:")
+        .WithSuggestedActions(suggestedActions)
+        .Build();
+
+    await context.SendActivityAsync(reply, cancellationToken);
+});
+
 // Regex-based handler: matches commands starting with "/"
 Regex commandRegex = Regexes.CommandRegex();
 teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
@@ -253,24 +291,6 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
         await context.SendActivityAsync(response, cancellationToken);
     }
 });
-
-//// Catch-all message handler: echoes the message back with a mention
-//teamsApp.OnMessage(async (context, cancellationToken) =>
-//{
-//    await context.SendTypingActivityAsync(cancellationToken);
-
-//    ArgumentNullException.ThrowIfNull(context.Activity.From);
-
-//    string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
-
-//    TeamsActivity ta = TeamsActivity.CreateBuilder()
-//        .WithType(TeamsActivityType.Message)
-//        .WithText(replyText)
-//        .AddMention(context.Activity.From)
-//        .Build();
-
-//    await context.SendActivityAsync(ta, cancellationToken);
-//});
 
 // ==================== MESSAGE LIFECYCLE ====================
 
