@@ -171,29 +171,6 @@ public static class ConversationUpdateExtensions
         return app;
     }
 
-    /*
-    /// <summary>
-    /// Registers a handler for channel restored events.
-    /// </summary>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
-    public static TeamsBotApplication OnChannelRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<ConversationUpdateActivity>
-        {
-            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelRestored]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelRestored,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-
     /// <summary>
     /// Registers a handler for channel shared events.
     /// </summary>
@@ -238,6 +215,7 @@ public static class ConversationUpdateExtensions
         return app;
     }
 
+
     /// <summary>
     /// Registers a handler for channel member added events.
     /// </summary>
@@ -273,6 +251,29 @@ public static class ConversationUpdateExtensions
         {
             Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelMemberRemoved]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelMemberRemoved,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
+
+    /*
+    /// <summary>
+    /// Registers a handler for channel restored events.
+    /// </summary>
+    /// <param name="app"></param>
+    /// <param name="handler"></param>
+    /// <returns></returns>
+    public static TeamsBotApplication OnChannelRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<ConversationUpdateActivity>
+        {
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelRestored]),
+            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelRestored,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);

@@ -4,12 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Performance",
-    "CA1873:Avoid potentially expensive logging",
-    Justification = "<Pending>",
-    Scope = "namespaceanddescendants",
-    Target = "~N:Microsoft.Teams.Bot.Core")]
-
-[assembly: SuppressMessage("Performance",
     "CA1848:Use the LoggerMessage delegates",
     Justification = "<Pending>",
     Scope = "namespaceanddescendants",
@@ -23,6 +17,6 @@ using System.Diagnostics.CodeAnalysis;
 
 [assembly: SuppressMessage("Usage",
     "CA2227:Collection properties should be read only",
-    Justification = "<Pending>",
+    Justification = "Required for serialization",
     Scope = "namespaceanddescendants",
     Target = "~N:Microsoft.Teams.Bot.Core")]
