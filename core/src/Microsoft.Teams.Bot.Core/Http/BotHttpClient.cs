@@ -8,6 +8,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Core.Http;
@@ -45,7 +46,7 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
 
         using HttpRequestMessage request = CreateRequest(method, url, body, options);
 
-        logger?.LogTrace("Sending HTTP {Method} request to {Url} with body: {Body}", method, url, body);
+        logger.LogTraceGuarded("Sending HTTP {Method} request to {Url} with body: {Body}", method, url, body);
 
         using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
