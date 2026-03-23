@@ -11,13 +11,11 @@ WebApplication webApp = webAppBuilder.Build();
 TeamsBotApplication app = webApp.UseTeamsBotApplication();
 
 
-//TODO : implement next(); 
-/*app.OnConversationUpdate(async (context, cancellationToken) =>
-{
-    Console.WriteLine($"[ConversationUpdate] Conversation updated");
-}
+app.OnConversationUpdate(async (context, cancellationToken) =>
+    {
+        Console.WriteLine($"[ConversationUpdate] Conversation updated");
+    }
 );
-;*/
 
 // ==================== CHANNEL EVENT HANDLERS ====================
 
@@ -42,16 +40,18 @@ app.OnChannelRenamed(async (context, cancellationToken) =>
     await context.SendActivityAsync($"Channel renamed to: {channelName}", cancellationToken);
 });
 
-/*
-//not able to test - no activity received
-app.OnChannelRestored(async (context, cancellationToken) =>
+app.OnChannelMemberAdded(async (context, cancellationToken) =>
 {
-    var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
-    Console.WriteLine($"[ChannelRestored] Channel '{channelName}' was restored");
-    await context.SendActivityAsync($"Channel restored: {channelName}", cancellationToken);
+    Console.WriteLine($"[ChannelMemberAdded] Member added to channel");
+    await context.SendActivityAsync("A member was added to the channel", cancellationToken);
 });
 
-// not able to test - can't add bot to shared channel
+app.OnChannelMemberRemoved(async (context, cancellationToken) =>
+{
+    Console.WriteLine($"[ChannelMemberRemoved] Member removed from channel");
+    await context.SendActivityAsync("A member was removed from the channel", cancellationToken);
+});
+
 app.OnChannelShared(async (context, cancellationToken) =>
 {
     var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
@@ -59,7 +59,6 @@ app.OnChannelShared(async (context, cancellationToken) =>
     await context.SendActivityAsync($"Channel shared: {channelName}", cancellationToken);
 });
 
-//  not able to test - can't add bot to shared channel
 app.OnChannelUnshared(async (context, cancellationToken) =>
 {
     var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
@@ -67,18 +66,13 @@ app.OnChannelUnshared(async (context, cancellationToken) =>
     await context.SendActivityAsync($"Channel unshared: {channelName}", cancellationToken);
 });
 
-// not able to test - can't add bot to private/shared channel
-app.OnChannelMemberAdded(async (context, cancellationToken) =>
+/*
+//not able to test - no activity received
+app.OnChannelRestored(async (context, cancellationToken) =>
 {
-    Console.WriteLine($"[ChannelMemberAdded] Member added to channel");
-    await context.SendActivityAsync("A member was added to the channel", cancellationToken);
-});
-
-// not able to test - can't add bot to private/shared channel
-app.OnChannelMemberRemoved(async (context, cancellationToken) =>
-{
-    Console.WriteLine($"[ChannelMemberRemoved] Member removed from channel");
-    await context.SendActivityAsync("A member was removed from the channel", cancellationToken);
+    var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
+    Console.WriteLine($"[ChannelRestored] Channel '{channelName}' was restored");
+    await context.SendActivityAsync($"Channel restored: {channelName}", cancellationToken);
 });
 */
 

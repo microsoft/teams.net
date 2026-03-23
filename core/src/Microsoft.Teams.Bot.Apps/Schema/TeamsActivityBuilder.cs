@@ -166,6 +166,18 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     }
 
     /// <summary>
+    /// With Suggested Actions
+    /// </summary>
+    /// <param name="suggestedActions"></param>
+    /// <returns></returns>
+    public TeamsActivityBuilder WithSuggestedActions(SuggestedActions suggestedActions)
+    {
+        ArgumentNullException.ThrowIfNull(_activity);
+        _activity.SuggestedActions = suggestedActions;
+        return this;
+    }
+
+    /// <summary>
     /// Adds a mention to the activity.
     /// </summary>
     /// <param name="account">The account to mention.</param>

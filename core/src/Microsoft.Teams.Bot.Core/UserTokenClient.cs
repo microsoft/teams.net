@@ -51,8 +51,8 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         {
             queryParams.Add("include", include);
         }
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/GetTokenStatus");
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/GetTokenStatus");
         IList<GetTokenStatusResult>? result = await _botHttpClient.SendAsync<IList<GetTokenStatusResult>>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -93,7 +93,8 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("code", code);
         }
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/GetToken");
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/GetToken");
+
         return await _botHttpClient.SendAsync<GetTokenResult>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -136,7 +137,9 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("finalRedirect", finalRedirect);
         }
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/botsignin/GetSignInResource");
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/botsignin/GetSignInResource");
+
+
         return (await _botHttpClient.SendAsync<GetSignInResourceResult>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -169,7 +172,8 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             token = exchangeToken
         };
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/exchange");
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/exchange");
+
         return (await _botHttpClient.SendAsync<GetTokenResult>(
             HttpMethod.Post,
             _apiEndpoint,
@@ -205,7 +209,9 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("channelId", channelId);
         }
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/SignOut");
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/SignOut");
+
+
         await _botHttpClient.SendAsync(
             HttpMethod.Delete,
             _apiEndpoint,
@@ -235,7 +241,8 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             resourceUrls = resourceUrls ?? []
         };
 
-        _logger.LogInformation("Calling API endpoint with POST: {Endpoint}", "api/usertoken/GetAadTokens");
+        _logger.LogInformationGuarded("Calling API endpoint with POST: {Endpoint}", "api/usertoken/GetAadTokens");
+
         return (await _botHttpClient.SendAsync<Dictionary<string, GetTokenResult>>(
             HttpMethod.Post,
             _apiEndpoint,

@@ -176,6 +176,13 @@ public class TeamsActivity : CoreActivity
     public string? LocalTimezone { get; set; }
 
     /// <summary>
+    /// Gets or sets the suggested actions for the message.
+    /// </summary>
+    [JsonPropertyName("suggestedActions")]
+    public SuggestedActions? SuggestedActions { get; set; }
+
+
+    /// <summary>
     /// Adds an entity to the activity's Entities collection.
     /// </summary>
     /// <param name="entity"></param>

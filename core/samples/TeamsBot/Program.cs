@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using TeamsBot;
 
@@ -16,39 +18,51 @@ WebApplication webApp = webAppBuilder.Build();
 
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
+teamsApp.UseMiddleware(new WelcomeMessageMiddleware());
+
 // ==================== MESSAGE HANDLERS ====================
 
 // Help handler: matches "help" (case-insensitive)
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync(new MessageActivity("""
-**Teams Bot Demo**
+    await context.SendActivityAsync(
+        new MessageActivity(WelcomeMessageMiddleware.WelcomeMessage)
+        {
+            TextFormat = TextFormats.Markdown
+        }, cancellationToken);
 
-**Messages**
-- `hello` - Greeting
-- `markdown` - Markdown formatting demo
-- `citation` - AI citations with feedback
-- `targeted` - Targeted message lifecycle (send, update, delete)
-- `react` - Bot reactions (add, remove)
-- `card` - Send an Adaptive Card with a feedback form
-- `feedback` - Feedback form with Adaptive Card action round-trip
-- `task` - Open a task module dialog
 
-**Commands**
-- `/help` - Available slash commands
-- `/about` - About this bot
-- `/time` - Current server time
+    var helpActivity = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
+        .WithSuggestedActions(new SuggestedActions()
+         {
+             To = [context.Activity.From?.Id!],
+             Actions = [
+                    new SuggestedAction(ActionType.IMBack, "hello") { Value = "hello" },
+                    new SuggestedAction(ActionType.IMBack, "feedback") { Value = "feedback" },
+                 ]
+         })
+        .Build();
 
-**Lifecycle** *(automatic)*
-- Message edits, deletes, and reactions are detected
-- Member join/leave and install/uninstall events are handled
-""") { TextFormat = TextFormats.Markdown }, cancellationToken);
+    await context.SendActivityAsync(helpActivity, cancellationToken);
 });
 
 // Pattern-based handler: matches "hello" (case-insensitive)
 teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 {
-    await context.SendActivityAsync("Hi there! You said hello!", cancellationToken);
+    ArgumentNullException.ThrowIfNull(context.Activity.From);
+
+    await context.SendTypingActivityAsync(cancellationToken);
+
+    string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
+
+    TeamsActivity ta = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText(replyText)
+        .AddMention(context.Activity.From)
+        .Build();
+    await context.SendActivityAsync(ta, cancellationToken);
 });
 
 // Markdown handler: matches "markdown" (case-insensitive)
@@ -210,7 +224,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
 teamsApp.OnMessage("(?i)^card$", async (context, cancellationToken) =>
 {
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
-            .WithAdaptiveCard(Cards.FeedbackCardObj)
+            .WithAdaptiveCard(JsonElement.Parse(Cards.TimeOffRequestCardJson))
             .Build();
     MessageActivity feedbackActivity = new([feedbackCard]);
     await context.SendActivityAsync(feedbackActivity, cancellationToken);
@@ -238,6 +252,27 @@ teamsApp.OnMessage("(?i)^task$", async (context, cancellationToken) =>
     await context.SendActivityAsync(taskActivity, cancellationToken);
 });
 
+teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
+{
+    var suggestedActions = new SuggestedActions()
+    {
+        To = [context.Activity.From?.Id!],
+        Actions = [
+            new SuggestedAction(ActionType.IMBack, "Option 1") { Value = "You chose option 1" },
+            new SuggestedAction(ActionType.IMBack, "Option 2") { Value = "You chose option 2" },
+            new SuggestedAction(ActionType.IMBack, "Option 3") { Value = "You chose option 3" }
+        ]
+    };
+
+    var reply = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText("Here are some suggested actions for you:")
+        .WithSuggestedActions(suggestedActions)
+        .Build();
+
+    await context.SendActivityAsync(reply, cancellationToken);
+});
+
 // Regex-based handler: matches commands starting with "/"
 Regex commandRegex = Regexes.CommandRegex();
 teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
@@ -257,24 +292,6 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
 
         await context.SendActivityAsync(response, cancellationToken);
     }
-});
-
-// Catch-all message handler: echoes the message back with a mention
-teamsApp.OnMessage(async (context, cancellationToken) =>
-{
-    await context.SendTypingActivityAsync(cancellationToken);
-
-    ArgumentNullException.ThrowIfNull(context.Activity.From);
-
-    string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
-
-    TeamsActivity ta = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
-        .WithText(replyText)
-        .AddMention(context.Activity.From)
-        .Build();
-
-    await context.SendActivityAsync(ta, cancellationToken);
 });
 
 // ==================== MESSAGE LIFECYCLE ====================
@@ -411,6 +428,14 @@ teamsApp.OnUnInstall((context, cancellationToken) =>
 {
     Console.WriteLine($"[InstallRemove] Bot was uninstalled");
     return Task.CompletedTask;
+});
+
+// TODO: This do not trigger from the TimeOffCard submission, need to investigate if it's an issue with the card or the handler
+teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
+{
+    var actionData = JsonSerializer.Serialize(context.Activity.Value);
+    await context.SendActivityAsync($"Received submit action with data: {actionData}", cancellationToken);
+    return new InvokeResponse(200, "Submit Action Received");
 });
 
 webApp.Run();
