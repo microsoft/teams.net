@@ -268,10 +268,6 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             return builder;
         }
 
-        /// <summary>
-        /// Adds a bypass authentication scheme that always succeeds without validating tokens.
-        /// This is used when no ClientId is configured and should only be used for development.
-        /// </summary>
         private static AuthenticationBuilder AddBypassAuthentication(this AuthenticationBuilder builder, string schemeName, ILogger? logger = null)
         {
             (logger ?? NullLogger.Instance).LogWarning("ClientId not provided for scheme '{SchemeName}'. Configuring bypass authentication (no token validation). This is INSECURE and should only be used for development.", schemeName);

@@ -45,9 +45,6 @@ internal static class MsalConfigurationExtensions
         return true;
     }
 
-    /// <summary>
-    /// Configures MSAL from an IConfigurationSection.
-    /// </summary>
     private static IServiceCollection ConfigureMSALFromConfig(this IServiceCollection services, IConfigurationSection msalConfigSection)
     {
         ArgumentNullException.ThrowIfNull(msalConfigSection);
@@ -55,9 +52,6 @@ internal static class MsalConfigurationExtensions
         return services;
     }
 
-    /// <summary>
-    /// Configures MSAL with client secret authentication.
-    /// </summary>
     private static IServiceCollection ConfigureMSALWithSecret(this IServiceCollection services, string tenantId, string clientId, string clientSecret)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
@@ -80,9 +74,6 @@ internal static class MsalConfigurationExtensions
         return services;
     }
 
-    /// <summary>
-    /// Configures MSAL with Federated Identity Credential (FIC) authentication using managed identity.
-    /// </summary>
     private static IServiceCollection ConfigureMSALWithFIC(this IServiceCollection services, string tenantId, string clientId, string? ficClientId)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
@@ -109,9 +100,6 @@ internal static class MsalConfigurationExtensions
         return services;
     }
 
-    /// <summary>
-    /// Configures MSAL with User-Assigned Managed Identity (UMI) authentication.
-    /// </summary>
     private static IServiceCollection ConfigureMSALWithUMI(this IServiceCollection services, string tenantId, string clientId, string? managedIdentityClientId = null)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
@@ -135,9 +123,6 @@ internal static class MsalConfigurationExtensions
         return services;
     }
 
-    /// <summary>
-    /// Configures MSAL by selecting the appropriate credential type based on BotConfig properties.
-    /// </summary>
     private static IServiceCollection ConfigureMSALFromBotConfig(this IServiceCollection services, BotConfig botConfig, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(botConfig);
@@ -160,9 +145,6 @@ internal static class MsalConfigurationExtensions
         return services;
     }
 
-    /// <summary>
-    /// Determines if the provided client ID represents a system-assigned managed identity.
-    /// </summary>
     private static bool IsSystemAssignedManagedIdentity(string? clientId)
         => string.Equals(clientId, BotConfig.SystemManagedIdentityIdentifier, StringComparison.OrdinalIgnoreCase);
 
