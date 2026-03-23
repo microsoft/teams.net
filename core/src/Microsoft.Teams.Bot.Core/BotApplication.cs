@@ -46,7 +46,7 @@ public class BotApplication
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
-        logger.LogInformation("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", this.GetType().Name, options.AppId, Version);
+        logger.LogInformationGuarded("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", GetType().Name, options.AppId, Version);
     }
 
 
@@ -89,16 +89,13 @@ public class BotApplication
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        _logger.LogInformation("Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} MSCV={MSCV}",
+        _logger.LogInformationGuarded("Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} MSCV={MSCV}",
             activity.Type,
             activity.Id,
             activity.ServiceUrl,
             httpContext.Request.GetCorrelationVector());
 
-        if (_logger.IsEnabled(LogLevel.Trace))
-        {
-            _logger.LogTrace("Received activity: {Activity}", activity.ToJson());
-        }
+        _logger.LogTraceGuarded("Received activity: {Activity}", activity.ToJson());
 
         // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
         using (_logger.BeginScope("ActivityType={ActivityType} ActivityId={ActivityId} ServiceUrl={ServiceUrl} MSCV={MSCV}",
@@ -116,7 +113,7 @@ public class BotApplication
             }
             finally
             {
-                _logger.LogInformation("Finished processing activity: Id={Id}", activity.Id);
+                _logger.LogInformationGuarded("Finished processing activity: Id={Id}", activity.Id);
             }
         }
     }

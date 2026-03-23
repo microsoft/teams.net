@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps;
@@ -15,11 +16,18 @@ WebApplication webApp = webAppBuilder.Build();
 
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
+teamsApp.UseMiddleware(new WelcomeMessageMiddleware());
+
 // ==================== MESSAGE HANDLERS ====================
 
 // Help handler: matches "help" (case-insensitive)
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
+    await context.SendActivityAsync(
+        new MessageActivity(WelcomeMessageMiddleware.WelcomeMessage)
+        {
+            TextFormat = TextFormats.Markdown
+        }, cancellationToken);
 
     var helpMessage = """
 **Teams Bot Demo**
@@ -63,19 +71,16 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 // Pattern-based handler: matches "hello" (case-insensitive)
 teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 {
+    ArgumentNullException.ThrowIfNull(context.Activity.From);
+
+    await context.SendTypingActivityAsync(cancellationToken);
+
+    string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
 
     TeamsActivity ta = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityType.Message)
-        .WithSuggestedActions(new SuggestedActions()
-        {
-            To = [context.Activity.From?.Id!],
-            Actions = [
-                    new SuggestedAction(ActionType.IMBack, "markdown") { Value = "markdown" },
-                    new SuggestedAction(ActionType.IMBack, "citation") { Value = "citation" },
-                 ]
-        })
-        .WithText("Hi there! You said hello!")
-        .AddMention(context.Activity.From!)
+        .WithText(replyText)
+        .AddMention(context.Activity.From)
         .Build();
     await context.SendActivityAsync(ta, cancellationToken);
 });
@@ -239,7 +244,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
 teamsApp.OnMessage("(?i)^card$", async (context, cancellationToken) =>
 {
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
-            .WithAdaptiveCard(Cards.FeedbackCardObj)
+            .WithAdaptiveCard(JsonElement.Parse(Cards.TimeOffRequestCardJson))
             .Build();
     MessageActivity feedbackActivity = new([feedbackCard]);
     await context.SendActivityAsync(feedbackActivity, cancellationToken);
@@ -288,23 +293,23 @@ teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>
     }
 });
 
-//// Catch-all message handler: echoes the message back with a mention
-//teamsApp.OnMessage(async (context, cancellationToken) =>
-//{
-//    await context.SendTypingActivityAsync(cancellationToken);
+// Catch-all message handler: echoes the message back with a mention
+teamsApp.OnMessage(async (context, cancellationToken) =>
+{
+    await context.SendTypingActivityAsync(cancellationToken);
 
-//    ArgumentNullException.ThrowIfNull(context.Activity.From);
+    ArgumentNullException.ThrowIfNull(context.Activity.From);
 
-//    string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
+    string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
 
-//    TeamsActivity ta = TeamsActivity.CreateBuilder()
-//        .WithType(TeamsActivityType.Message)
-//        .WithText(replyText)
-//        .AddMention(context.Activity.From)
-//        .Build();
+    TeamsActivity ta = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText(replyText)
+        .AddMention(context.Activity.From)
+        .Build();
 
-//    await context.SendActivityAsync(ta, cancellationToken);
-//});
+    await context.SendActivityAsync(ta, cancellationToken);
+});
 
 // ==================== MESSAGE LIFECYCLE ====================
 
@@ -440,6 +445,14 @@ teamsApp.OnUnInstall((context, cancellationToken) =>
 {
     Console.WriteLine($"[InstallRemove] Bot was uninstalled");
     return Task.CompletedTask;
+});
+
+// TODO: This do not trigger from the TimeOffCard submission, need to investigate if it's an issue with the card or the handler
+teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
+{
+    var actionData = JsonSerializer.Serialize(context.Activity.Value);
+    await context.SendActivityAsync($"Received submit action with data: {actionData}", cancellationToken);
+    return new InvokeResponse(200, "Submit Action Received");
 });
 
 webApp.Run();
