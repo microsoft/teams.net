@@ -140,12 +140,6 @@ public static class ConversationEventTypes
     /// </summary>
     public const string ChannelRenamed = "channelRenamed";
 
-    //TODO : review these events
-    /*
-    /// <summary>
-    /// Channel restored event.
-    /// </summary>
-    public const string ChannelRestored = "channelRestored";
 
     /// <summary>
     /// Channel shared event.
@@ -155,7 +149,7 @@ public static class ConversationEventTypes
     /// <summary>
     /// Channel unshared event.
     /// </summary>
-    public const string ChannelUnShared = "channelUnShared";
+    public const string ChannelUnShared = "channelUnshared";
 
     /// <summary>
     /// Channel member added event.
@@ -166,6 +160,13 @@ public static class ConversationEventTypes
     /// Channel member removed event.
     /// </summary>
     public const string ChannelMemberRemoved = "channelMemberRemoved";
+
+    //TODO : review these events
+    /*
+    /// <summary>
+    /// Channel restored event.
+    /// </summary>
+    public const string ChannelRestored = "channelRestored";
     */
 
     /// <summary>
