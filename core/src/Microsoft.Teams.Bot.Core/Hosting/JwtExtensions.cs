@@ -208,11 +208,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                 {
                     OnTokenValidated = context =>
                     {
-                        GetLogger(context.HttpContext, logger);
-                        if (logger?.IsEnabled(LogLevel.Debug) == true)
-                        {
-                            logger?.LogDebug("Token validated for scheme: {Scheme}", schemeName);
-                        }    
+                        GetLogger(context.HttpContext, logger).LogTraceGuarded("Token validated for scheme: {Scheme}", schemeName);
                         return Task.CompletedTask;
                     },
                     OnForbidden = context =>
