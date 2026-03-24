@@ -85,9 +85,17 @@ public class BotApplication
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(_conversationClient);
 
+        var sw = Stopwatch.StartNew();
+
+        using var otelActivity = BotCoreTelemetry.ActivitySource.StartActivity("ProcessActivity", ActivityKind.Internal);
+
         _logger.LogDebug("Start processing HTTP request for activity");
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
+
+        otelActivity?.SetTag("activity.id", activity.Id);
+        otelActivity?.SetTag("activity.type", activity.Type);
+        otelActivity?.SetTag("activity.conversationId", activity.Conversation?.Id);
 
         _logger.LogInformationGuarded("Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} MSCV={MSCV}",
             activity.Type,
@@ -105,15 +113,26 @@ public class BotApplication
             {
                 CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
                 await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
+                BotCoreMetrics.BotTurnsCounter.Add(1, new TagList { { "outcome", "success" }, {"activity.type", activity.Type } });
             }
             catch (Exception ex)
             {
+                otelActivity?.SetStatus(ActivityStatusCode.Error, ex.Message);
+                otelActivity?.AddEvent(new ActivityEvent("exception", tags: new ActivityTagsCollection
+                {
+                    ["exception.type"] = ex.GetType().FullName,
+                    ["exception.message"] = ex.Message,
+                    ["exception.stacktrace"] = ex.ToString(),
+                }));
                 _logger.LogError(ex, "Error processing activity: Id={Id}", activity.Id);
+                BotCoreMetrics.BotTurnsCounter.Add(1, new TagList { { "outcome", "failure" }, { "activity.type", activity.Type } });
                 throw new BotHandlerException("Error processing activity", ex, activity);
             }
             finally
             {
+                otelActivity?.SetStatus(ActivityStatusCode.Ok);
                 _logger.LogInformationGuarded("Finished processing activity: Id={Id}", activity.Id);
+                BotCoreMetrics.ProcessingDuration.Record(sw.Elapsed.TotalMilliseconds, new TagList { { "activity.type", activity.Type } });
             }
         }
     }

@@ -23,6 +23,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.Identity.Web.UI" Version="4.3.0" />
         <PackageReference Include="Microsoft.Identity.Web.AgentIdentities" Version="4.3.0" />
+        <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="10.0.5" />
     </ItemGroup>
     <ItemGroup>
         <Using Include="System.Text.Json.Serialization" />

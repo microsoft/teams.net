@@ -224,7 +224,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
 teamsApp.OnMessage("(?i)^card$", async (context, cancellationToken) =>
 {
     TeamsAttachment feedbackCard = TeamsAttachment.CreateBuilder()
-            .WithAdaptiveCard(JsonElement.Parse(Cards.TimeOffRequestCardJson))
+            .WithAdaptiveCard(JsonElement.Parse(Cards.AbhishekCard))
             .Build();
     MessageActivity feedbackActivity = new([feedbackCard]);
     await context.SendActivityAsync(feedbackActivity, cancellationToken);

@@ -1045,4 +1045,45 @@ internal class Cards
     }
     """;
 
+
+    public static readonly string AbhishekCard = """
+        {
+             "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+             "type": "AdaptiveCard",
+             "version": "1.5",
+             "body": [
+                 {
+                     "type": "TextBlock",
+                     "text": "Agent Blueprint Card Action Test",
+                     "weight": "Bolder",
+                     "size": "Large"
+                 },
+                 {
+                     "type": "TextBlock",
+                     "text": "Click each button and observe: should deliver activity.Value with card data, should send an invoke to the bot.",
+                     "wrap": true
+                 },
+                 {
+                     "type": "Input.Toggle",
+                     "id": "testToggle",
+                     "title": "Toggle (value should arrive in activity.Value)",
+                     "value": "false"
+                 }
+             ],
+             "actions": [
+                 {
+                     "type": "Action.Submit",
+                     "title": "Action.Submit (data)",
+                     "data": { "action": "test_submit", "source": "card" }
+                 },
+                 {
+                     "type": "Action.Execute",
+                     "title": "Action.Execute (invoke)",
+                     "verb": "test_execute",
+                     "data": { "action": "test_execute", "source": "card" }
+                 }
+             ],
+             "msTeams": { "width": "Full" }
+         }
+        """;
 }

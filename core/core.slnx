@@ -18,6 +18,7 @@
     <Project Path="samples/CustomHosting/CustomHosting.csproj" Id="de2e42de-3d8f-4a9d-920f-14c7e39fc3c0" />
     <Project Path="samples/MeetingsBot/MeetingsBot.csproj" />
     <Project Path="samples/MessageExtensionBot/MessageExtensionBot.csproj" />
+    <Project Path="samples/OTelBot/OTelBot.csproj" Id="f36badd6-6f31-4f98-b330-9889283591d3" />
     <Project Path="samples/PABot/PABot.csproj" Id="ef8f29ef-fe59-4edf-8a50-6e7ab6699a45" />
     <Project Path="samples/StreamingBot/StreamingBot.csproj" />
     <Project Path="samples/TabApp/TabApp.csproj" />
