@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
 
@@ -56,6 +57,7 @@ public partial interface IContext<TActivity>
     /// <param name="messageId">the id of the message to quote</param>
     /// <param name="activity">activity to send</param>
     /// <param name="cancellationToken">optional cancellation token</param>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<T> QuoteReply<T>(string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity;
 
     /// <summary>
@@ -64,6 +66,7 @@ public partial interface IContext<TActivity>
     /// <param name="messageId">the id of the message to quote</param>
     /// <param name="text">the text to send</param>
     /// <param name="cancellationToken">optional cancellation token</param>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<MessageActivity> QuoteReply(string messageId, string text, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -110,8 +113,8 @@ public partial class Context<TActivity> : IContext<TActivity>
             #pragma warning restore ExperimentalTeamsQuotedReplies
             if (activity is MessageActivity message)
             {
-                var text = message.Text?.Trim() ?? "";
-                message.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
+                var hasText = !string.IsNullOrWhiteSpace(message.Text);
+                message.Text = hasText ? $"{placeholder} {message.Text}" : placeholder;
             }
         }
 
@@ -128,26 +131,28 @@ public partial class Context<TActivity> : IContext<TActivity>
         return Reply(new MessageActivity().AddAttachment(card), cancellationToken);
     }
 
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+    #pragma warning disable ExperimentalTeamsQuotedReplies
     public Task<T> QuoteReply<T>(string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
         var placeholder = $"<quoted messageId=\"{messageId}\"/>";
         activity.Entities ??= new List<IEntity>();
-        #pragma warning disable ExperimentalTeamsQuotedReplies
         activity.Entities.Add(new QuotedReplyEntity
         {
             QuotedReply = new QuotedReplyData { MessageId = messageId }
         });
 
-        #pragma warning restore ExperimentalTeamsQuotedReplies
         if (activity is MessageActivity message)
         {
-            var text = message.Text?.Trim() ?? "";
-            message.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
+            var hasText = !string.IsNullOrWhiteSpace(message.Text);
+            message.Text = hasText ? $"{placeholder} {message.Text}" : placeholder;
         }
 
         return Send(activity, cancellationToken);
     }
+    #pragma warning restore ExperimentalTeamsQuotedReplies
 
+    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<MessageActivity> QuoteReply(string messageId, string text, CancellationToken cancellationToken = default)
     {
         return QuoteReply(messageId, new MessageActivity(text), cancellationToken);
