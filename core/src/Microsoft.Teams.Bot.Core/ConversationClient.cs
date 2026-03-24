@@ -58,11 +58,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(convId)}/activities/";
         }
 
-        if (!string.IsNullOrEmpty(activity.ReplyToId))
-        {
-            url += activity.ReplyToId;
-        }
-
         if (activity.Recipient?.IsTargeted == true)
         {
             url += url.Contains('?', StringComparison.Ordinal) ? "&isTargetedActivity=true" : "?isTargetedActivity=true";
