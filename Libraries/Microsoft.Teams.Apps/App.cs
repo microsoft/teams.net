@@ -79,7 +79,7 @@ public partial class App
 
                 if (Token.IsExpired)
                 {
-                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(cloud.BotScope)])
+                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(Api!.Bots.Token.ActiveBotScope)])
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
@@ -92,7 +92,7 @@ public partial class App
         };
 
         Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
-        Api.Bots.Token.BotScope = cloud.BotScope;
+        Api.Bots.Token.ActiveBotScope = cloud.BotScope;
         Api.Bots.SignIn.TokenServiceUrl = cloud.TokenServiceUrl;
         Api.Users.Token.TokenServiceUrl = cloud.TokenServiceUrl;
         Container = new Container();
