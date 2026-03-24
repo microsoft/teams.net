@@ -7,9 +7,9 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class BotTokenClient : Client
 {
-    public static readonly string DefaultBotScope = "https://api.botframework.com/.default";
+    public static readonly string BotScope = "https://api.botframework.com/.default";
     public static readonly string GraphScope = "https://graph.microsoft.com/.default";
-    public string BotScope { get; set; } = DefaultBotScope;
+    public string ActiveBotScope { get; set; } = BotScope;
 
     public BotTokenClient() : this(default)
     {
@@ -39,7 +39,7 @@ public class BotTokenClient : Client
     public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null, CancellationToken cancellationToken = default)
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
-        return await credentials.Resolve(http ?? _http, [BotScope], token);
+        return await credentials.Resolve(http ?? _http, [ActiveBotScope], token);
     }
 
     public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, IHttpClient? http = null, CancellationToken cancellationToken = default)
