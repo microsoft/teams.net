@@ -10,6 +10,7 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Microsoft.Teams.Bot.Core.UnitTests" />
         <InternalsVisibleTo Include="Microsoft.Teams.Bot.Apps" />
+		<InternalsVisibleTo Include="Microsoft.Teams.Bot.Compat" />
     </ItemGroup>
     <ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
         <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.22" />

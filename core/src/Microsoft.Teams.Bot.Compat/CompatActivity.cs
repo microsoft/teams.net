@@ -5,7 +5,6 @@ using System.Text;
 using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
 using Newtonsoft.Json;
 
@@ -54,23 +53,13 @@ public static class CompatActivity
         ArgumentNullException.ThrowIfNull(account);
 
         Microsoft.Bot.Schema.ChannelAccount channelAccount;
-        if (account is TeamsConversationAccount tae)
+
+        channelAccount = new()
         {
-            channelAccount = new()
-            {
-                Id = account.Id,
-                Name = account.Name,
-                AadObjectId = tae.AadObjectId
-            };
-        }
-        else
-        {
-            channelAccount = new()
-            {
-                Id = account.Id,
-                Name = account.Name
-            };
-        }
+            Id = account.Id,
+            Name = account.Name
+        };
+
 
         if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
         {
@@ -115,7 +104,7 @@ public static class CompatActivity
     /// </summary>
     /// <param name="account"></param>
     /// <returns></returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount account)
+    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount2(this Microsoft.Teams.Bot.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -123,85 +112,16 @@ public static class CompatActivity
         {
             Id = account.Id,
             Name = account.Name,
-            AadObjectId = account.AadObjectId,
-            Email = account.Email,
-            GivenName = account.GivenName,
-            Surname = account.Surname,
-            UserPrincipalName = account.UserPrincipalName,
-            UserRole = account.UserRole,
-            TenantId = account.TenantId
+            AadObjectId = account.Properties["aadObjectId"]?.ToString() ?? string.Empty,
+            Email = account.Properties["email"]?.ToString() ?? string.Empty,
+            GivenName = account.Properties["givenName"]?.ToString() ?? string.Empty,
+            Surname = account.Properties["surname"]?.ToString() ?? string.Empty,
+            UserPrincipalName = account.Properties["userPrincipalName"]?.ToString() ?? string.Empty,
+            UserRole = account.Properties["userRole"]?.ToString() ?? string.Empty,
+            TenantId = account.Properties["tenantId"]?.ToString() ?? string.Empty
         };
     }
-
-    /// <summary>
-    /// Converts a Core MeetingInfo to a Bot Framework MeetingInfo.
-    /// </summary>
-    /// <param name="meetingInfo"></param>
-    /// <returns></returns>
-    public static Microsoft.Bot.Schema.Teams.MeetingInfo ToCompatMeetingInfo(this Microsoft.Teams.Bot.Apps.MeetingInfo meetingInfo)
-    {
-        ArgumentNullException.ThrowIfNull(meetingInfo);
-
-        return new Microsoft.Bot.Schema.Teams.MeetingInfo
-        {
-            Details = meetingInfo.Details != null ? new Microsoft.Bot.Schema.Teams.MeetingDetails
-            {
-                Id = meetingInfo.Details.Id,
-                MsGraphResourceId = meetingInfo.Details.MsGraphResourceId,
-                ScheduledStartTime = meetingInfo.Details.ScheduledStartTime?.DateTime,
-                ScheduledEndTime = meetingInfo.Details.ScheduledEndTime?.DateTime,
-                JoinUrl = meetingInfo.Details.JoinUrl,
-                Title = meetingInfo.Details.Title,
-                Type = meetingInfo.Details.Type
-            } : null,
-            Conversation = meetingInfo.Conversation != null ? new Microsoft.Bot.Schema.ConversationAccount
-            {
-                Id = meetingInfo.Conversation.Id,
-                Name = meetingInfo.Conversation.Name
-            } : null,
-            Organizer = meetingInfo.Organizer != null ? meetingInfo.Organizer.ToCompatTeamsChannelAccount() : null
-        };
-    }
-
-    /// <summary>
-    /// Converts a Core MeetingParticipant to a Bot Framework TeamsMeetingParticipant.
-    /// </summary>
-    /// <param name="participant"></param>
-    /// <returns></returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsMeetingParticipant ToCompatTeamsMeetingParticipant(this Microsoft.Teams.Bot.Apps.MeetingParticipant participant)
-    {
-        ArgumentNullException.ThrowIfNull(participant);
-
-        return new Microsoft.Bot.Schema.Teams.TeamsMeetingParticipant
-        {
-            User = participant.User != null ? participant.User.ToCompatTeamsChannelAccount() : null,
-            Meeting = participant.Meeting != null ? new Microsoft.Bot.Schema.Teams.MeetingParticipantInfo
-            {
-                Role = participant.Meeting.Role,
-                InMeeting = participant.Meeting.InMeeting
-            } : null,
-            Conversation = participant.Conversation != null ? new Microsoft.Bot.Schema.ConversationAccount
-            {
-                Id = participant.Conversation.Id
-            } : null
-        };
-    }
-
-    /// <summary>
-    /// Converts a Core TeamsChannel to a Bot Framework ChannelInfo.
-    /// </summary>
-    /// <param name="channel"></param>
-    /// <returns></returns>
-    public static Microsoft.Bot.Schema.Teams.ChannelInfo ToCompatChannelInfo(this Microsoft.Teams.Bot.Apps.Schema.TeamsChannel channel)
-    {
-        ArgumentNullException.ThrowIfNull(channel);
-
-        return new Microsoft.Bot.Schema.Teams.ChannelInfo
-        {
-            Id = channel.Id,
-            Name = channel.Name
-        };
-    }
+      
 
     /// <summary>
     /// Converts a Core PagedMembersResult to a Bot Framework TeamsPagedMembersResult.
