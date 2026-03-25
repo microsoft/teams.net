@@ -176,4 +176,34 @@ public class CloudEnvironmentTests
         Assert.Equal("g", result.ChannelService);
         Assert.Equal("h", result.OAuthRedirectUrl);
     }
+
+    [Fact]
+    public void ClientCredentials_DefaultsToPublicCloud()
+    {
+        var creds = new ClientCredentials("id", "secret");
+        Assert.Same(CloudEnvironment.Public, creds.Cloud);
+    }
+
+    [Fact]
+    public void ClientCredentials_CloudCanBeSet()
+    {
+        var creds = new ClientCredentials("id", "secret")
+        {
+            Cloud = CloudEnvironment.USGov
+        };
+        Assert.Same(CloudEnvironment.USGov, creds.Cloud);
+    }
+
+    [Fact]
+    public void ClientCredentials_UsesCloudLoginTenantWhenTenantIdNull()
+    {
+        var creds = new ClientCredentials("id", "secret")
+        {
+            Cloud = CloudEnvironment.USGov
+        };
+
+        // TenantId is null, so Cloud.LoginTenant should be used
+        Assert.Null(creds.TenantId);
+        Assert.Equal("MicrosoftServices.onmicrosoft.us", creds.Cloud.LoginTenant);
+    }
 }
