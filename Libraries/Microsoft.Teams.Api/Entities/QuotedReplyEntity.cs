@@ -31,6 +31,10 @@ public class QuotedReplyData
     [JsonPropertyName("preview")]
     public string? Preview { get; set; }
 
+    /// <summary>
+    /// Timestamp of the quoted message (IC3 epoch value, e.g. "1772050244572").
+    /// Populated on inbound; ignored on outbound. Absent for deleted quotes.
+    /// </summary>
     [JsonPropertyName("time")]
     public string? Time { get; set; }
 
