@@ -147,4 +147,49 @@ public class BotTokenClientTests
         Assert.Equal(expectedTenantId, actualTenantId);
         Assert.Equal("https://api.botframework.com/.default", actualScope[0]);
     }
+
+    [Fact]
+    public void ActiveBotScope_DefaultsToPublicBotScope()
+    {
+        var client = new BotTokenClient();
+        Assert.Equal(BotTokenClient.BotScope, client.ActiveBotScope);
+        Assert.Equal("https://api.botframework.com/.default", client.ActiveBotScope);
+    }
+
+    [Fact]
+    public void ActiveBotScope_CanBeOverridden()
+    {
+        var client = new BotTokenClient();
+        client.ActiveBotScope = "https://api.botframework.us/.default";
+        Assert.Equal("https://api.botframework.us/.default", client.ActiveBotScope);
+    }
+
+    [Fact]
+    public void BotScope_StaticFieldUnchanged()
+    {
+        Assert.Equal("https://api.botframework.com/.default", BotTokenClient.BotScope);
+    }
+
+    [Fact]
+    public async Task BotTokenClient_ActiveBotScope_UsedInGetAsync()
+    {
+        var cancellationToken = new CancellationToken();
+        string[] actualScope = [""];
+        TokenFactory tokenFactory = new TokenFactory(async (tenantId, scope) =>
+        {
+            actualScope = scope;
+            return await Task.FromResult<ITokenResponse>(new TokenResponse
+            {
+                TokenType = "Bearer",
+                AccessToken = accessToken
+            });
+        });
+        var credentials = new TokenCredentials("clientId", tokenFactory);
+        var botTokenClient = new BotTokenClient(cancellationToken);
+        botTokenClient.ActiveBotScope = "https://api.botframework.us/.default";
+
+        await botTokenClient.GetAsync(credentials);
+
+        Assert.Equal("https://api.botframework.us/.default", actualScope[0]);
+    }
 }
