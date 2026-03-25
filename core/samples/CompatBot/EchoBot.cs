@@ -65,11 +65,11 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
                 members.AddRange(pagedMembersResult.Members);
             } while (continuationToken != null);
 
-            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(members.Select( m => m.Name).ToList(), Formatting.Indented));
+            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(members.Select(m => m.Name).ToList(), Formatting.Indented));
         }
 
 
-        
+
 
         // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
 
