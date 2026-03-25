@@ -135,7 +135,7 @@ public class MessageActivity : TeamsActivity
     [JsonPropertyName("attachmentLayout")]
     public string? AttachmentLayout { get; set; }
 
-    
+
 
     //TODO : Review properties
     /*

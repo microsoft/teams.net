@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Http;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -92,7 +89,7 @@ public static class CompatTeamsInfo
             Uri serviceUrl = new(GetServiceUrl(turnContext));
             AgenticIdentity identity = GetIdentity(turnContext);
 
-            var result = await client.GetConversationMemberAsync<Core.Schema.ConversationAccount>(
+            Core.Schema.ConversationAccount result = await client.GetConversationMemberAsync<Core.Schema.ConversationAccount>(
                 conversationId, userId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
             return result.ToCompatTeamsChannelAccount();
@@ -197,7 +194,7 @@ public static class CompatTeamsInfo
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
 
-        var result = await client.GetConversationMemberAsync<Core.Schema.ConversationAccount>(
+        Core.Schema.ConversationAccount result = await client.GetConversationMemberAsync<Core.Schema.ConversationAccount>(
             t, userId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatTeamsChannelAccount();
@@ -395,7 +392,7 @@ public static class CompatTeamsInfo
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/teams/{Uri.EscapeDataString(t)}";
 
         ConversationClient cc = GetConversationClient(turnContext);
-        
+
         return (await cc.BotHttpClient.SendAsync<TeamDetails>(
             HttpMethod.Get,
             url,
@@ -438,7 +435,7 @@ public static class CompatTeamsInfo
 
     #endregion
 
-    
+
     #region Batch Messaging Methods
 
     /// <summary>
@@ -606,7 +603,7 @@ public static class CompatTeamsInfo
             url,
             body,
             CreateRequestOptions(agenticIdentity, "sending message to all users in tenant", DefaultCustomHeaders),
-            cancellationToken).ConfigureAwait(false))!;  
+            cancellationToken).ConfigureAwait(false))!;
     }
 
     /// <summary>
@@ -761,7 +758,7 @@ public static class CompatTeamsInfo
     }
 
     #endregion
-    
+
 
     private static BotRequestOptions CreateRequestOptions(AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders) =>
         new()

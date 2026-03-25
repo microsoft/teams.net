@@ -121,7 +121,7 @@ public static class CompatActivity
             TenantId = account.Properties["tenantId"]?.ToString() ?? string.Empty
         };
     }
-      
+
 
     /// <summary>
     /// Converts a Core PagedMembersResult to a Bot Framework TeamsPagedMembersResult.
