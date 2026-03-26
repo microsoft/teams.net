@@ -185,9 +185,9 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void AddQuotedReply_AddsEntityAndPlaceholder()
+    public void AddQuote_AddsEntityAndPlaceholder()
     {
-        var message = new MessageActivity().AddQuotedReply("msg-1");
+        var message = new MessageActivity().AddQuote("msg-1");
 
         Assert.Single(message.Entities!);
         Assert.Equal("quotedReply", message.Entities![0].Type);
@@ -195,19 +195,19 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void AddQuotedReply_WithResponse_AppendsResponseText()
+    public void AddQuote_WithResponse_AppendsResponseText()
     {
-        var message = new MessageActivity().AddQuotedReply("msg-1", "my response");
+        var message = new MessageActivity().AddQuote("msg-1", "my response");
 
         Assert.Equal("<quoted messageId=\"msg-1\"/> my response", message.Text);
     }
 
     [Fact]
-    public void AddQuotedReply_MultiQuoteInterleaved()
+    public void AddQuote_MultiQuoteInterleaved()
     {
         var message = new MessageActivity()
-            .AddQuotedReply("msg-1", "response to first")
-            .AddQuotedReply("msg-2", "response to second");
+            .AddQuote("msg-1", "response to first")
+            .AddQuote("msg-2", "response to second");
 
         Assert.Equal(
             "<quoted messageId=\"msg-1\"/> response to first<quoted messageId=\"msg-2\"/> response to second",
@@ -216,11 +216,11 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void AddQuotedReply_GroupedQuotes()
+    public void AddQuote_GroupedQuotes()
     {
         var message = new MessageActivity()
-            .AddQuotedReply("msg-1")
-            .AddQuotedReply("msg-2", "response to both");
+            .AddQuote("msg-1")
+            .AddQuote("msg-2", "response to both");
 
         Assert.Equal(
             "<quoted messageId=\"msg-1\"/><quoted messageId=\"msg-2\"/> response to both",
@@ -228,7 +228,7 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    #pragma warning disable CS0618 // Obsolete
+#pragma warning disable CS0618 // Obsolete
     public void ToQuoteReply_ReturnsModernPlaceholder()
     {
         var message = new MessageActivity("test") { Id = "activity-123" };
@@ -237,10 +237,10 @@ public class QuotedReplyEntityTests
 
         Assert.Equal("<quoted messageId=\"activity-123\"/>", result);
     }
-    #pragma warning restore CS0618
+#pragma warning restore CS0618
 
     [Fact]
-    #pragma warning disable CS0618 // Obsolete
+#pragma warning disable CS0618 // Obsolete
     public void ToQuoteReply_ReturnsEmptyWhenNoId()
     {
         var message = new MessageActivity("test");
@@ -249,5 +249,5 @@ public class QuotedReplyEntityTests
 
         Assert.Equal(string.Empty, result);
     }
-    #pragma warning restore CS0618
+#pragma warning restore CS0618
 }

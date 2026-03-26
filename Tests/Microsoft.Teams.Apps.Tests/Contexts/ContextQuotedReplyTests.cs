@@ -128,7 +128,7 @@ public class ContextQuotedReplyTests
     }
 
     [Fact]
-    public async Task QuoteReply_Should_Stamp_Entity_With_Provided_MessageId()
+    public async Task Quote_Should_Stamp_Entity_With_Provided_MessageId()
     {
         var app = new App();
         app.AddPlugin(new TestPlugin());
@@ -137,7 +137,7 @@ public class ContextQuotedReplyTests
 
         app.OnMessage(async context =>
         {
-            sent = await context.QuoteReply("custom-msg-id", new MessageActivity("quote reply text"));
+            sent = await context.Quote("custom-msg-id", new MessageActivity("quote reply text"));
         });
 
         await app.Process<TestPlugin>(_token, CreateInbound("hello", "msg-000"));
@@ -148,7 +148,7 @@ public class ContextQuotedReplyTests
     }
 
     [Fact]
-    public async Task QuoteReply_Should_Prepend_Placeholder_To_Text()
+    public async Task Quote_Should_Prepend_Placeholder_To_Text()
     {
         var app = new App();
         app.AddPlugin(new TestPlugin());
@@ -157,7 +157,7 @@ public class ContextQuotedReplyTests
 
         app.OnMessage(async context =>
         {
-            sent = await context.QuoteReply("custom-msg-id", new MessageActivity("quote reply text"));
+            sent = await context.Quote("custom-msg-id", new MessageActivity("quote reply text"));
         });
 
         await app.Process<TestPlugin>(_token, CreateInbound("hello", "msg-000"));
@@ -168,7 +168,7 @@ public class ContextQuotedReplyTests
     }
 
     [Fact]
-    public async Task QuoteReply_Should_Handle_Empty_Text()
+    public async Task Quote_Should_Handle_Empty_Text()
     {
         var app = new App();
         app.AddPlugin(new TestPlugin());
@@ -177,7 +177,7 @@ public class ContextQuotedReplyTests
 
         app.OnMessage(async context =>
         {
-            sent = await context.QuoteReply("custom-msg-id", new MessageActivity());
+            sent = await context.Quote("custom-msg-id", new MessageActivity());
         });
 
         await app.Process<TestPlugin>(_token, CreateInbound("hello", "msg-000"));
@@ -187,7 +187,7 @@ public class ContextQuotedReplyTests
     }
 
     [Fact]
-    public async Task QuoteReply_String_Overload_Should_Stamp_Entity_And_Prepend_Placeholder()
+    public async Task Quote_String_Overload_Should_Stamp_Entity_And_Prepend_Placeholder()
     {
         var app = new App();
         app.AddPlugin(new TestPlugin());
@@ -196,7 +196,7 @@ public class ContextQuotedReplyTests
 
         app.OnMessage(async context =>
         {
-            sent = await context.QuoteReply("custom-msg-id", "quote reply text");
+            sent = await context.Quote("custom-msg-id", "quote reply text");
         });
 
         await app.Process<TestPlugin>(_token, CreateInbound("hello", "msg-000"));
