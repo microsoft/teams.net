@@ -83,9 +83,9 @@ public partial interface IActivity : IConvertible, ICloneable
 
     /// <summary>
     /// Generates a quoted reply placeholder for the current activity.
-    /// See <see cref="MessageActivity.AddQuotedReply(string, string?)"/> for the recommended approach.
+    /// See <see cref="MessageActivity.AddQuote(string, string?)"/> for the recommended approach.
     /// </summary>
-    [Obsolete("Use MessageActivity.AddQuotedReply() instead.")]
+    [Obsolete("Use MessageActivity.AddQuote() instead.")]
     public string ToQuoteReply();
 }
 
@@ -221,9 +221,9 @@ public partial class Activity : IActivity
     public virtual Activity WithRecipient(Account value)
     {
         Recipient = value;
-        #pragma warning disable ExperimentalTeamsTargeted
+#pragma warning disable ExperimentalTeamsTargeted
         Recipient.IsTargeted = null;
-        #pragma warning restore ExperimentalTeamsTargeted
+#pragma warning restore ExperimentalTeamsTargeted
         return this;
     }
 
@@ -231,9 +231,9 @@ public partial class Activity : IActivity
     public virtual Activity WithRecipient(Account value, bool isTargeted)
     {
         Recipient = value;
-        #pragma warning disable ExperimentalTeamsTargeted
+#pragma warning disable ExperimentalTeamsTargeted
         Recipient.IsTargeted = isTargeted ? true : null;
-        #pragma warning restore ExperimentalTeamsTargeted
+#pragma warning restore ExperimentalTeamsTargeted
         return this;
     }
 
@@ -444,9 +444,9 @@ public partial class Activity : IActivity
 
     /// <summary>
     /// Generates a quoted reply placeholder for the current activity.
-    /// See <see cref="MessageActivity.AddQuotedReply(string, string?)"/> for the recommended approach.
+    /// See <see cref="MessageActivity.AddQuote(string, string?)"/> for the recommended approach.
     /// </summary>
-    [Obsolete("Use MessageActivity.AddQuotedReply() instead.")]
+    [Obsolete("Use MessageActivity.AddQuote() instead.")]
     public virtual string ToQuoteReply()
     {
         if (Id == null) return string.Empty;

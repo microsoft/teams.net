@@ -49,23 +49,23 @@ teams.OnMessage(async (context, cancellationToken) =>
     }
 
     // ============================================
-    // QuoteReply() — quote a previously sent message by ID
+    // Quote() — quote a previously sent message by ID
     // ============================================
     if (text.Contains("test quote"))
     {
         var sent = await context.Send("The meeting has been moved to 3 PM tomorrow.", cancellationToken);
-        await context.QuoteReply(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
+        await context.Quote(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
         return;
     }
 
     // ============================================
-    // AddQuotedReply() — builder with response
+    // AddQuote() — builder with response
     // ============================================
     if (text.Contains("test add"))
     {
         var sent = await context.Send("Please review the latest PR before end of day.", cancellationToken);
         var msg = new MessageActivity()
-            .AddQuotedReply(sent.Id, "Done! Left my comments on the PR.");
+            .AddQuote(sent.Id, "Done! Left my comments on the PR.");
         await context.Send(msg, cancellationToken);
         return;
     }
@@ -79,35 +79,35 @@ teams.OnMessage(async (context, cancellationToken) =>
         var sentB = await context.Send("The design mockups are ready for review.", cancellationToken);
         var sentC = await context.Send("CI pipeline is green on main.", cancellationToken);
         var msg = new MessageActivity()
-            .AddQuotedReply(sentA.Id, "I can take the docs — will have a draft by Thursday.")
-            .AddQuotedReply(sentB.Id, "Looks great, approved!")
-            .AddQuotedReply(sentC.Id);
+            .AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.")
+            .AddQuote(sentB.Id, "Looks great, approved!")
+            .AddQuote(sentC.Id);
         await context.Send(msg, cancellationToken);
         return;
     }
 
     // ============================================
-    // AddQuotedReply() + AddText() — manual control
+    // AddQuote() + AddText() — manual control
     // ============================================
     if (text.Contains("test manual"))
     {
         var sent = await context.Send("Deployment to staging is complete.", cancellationToken);
         var msg = new MessageActivity()
-            .AddQuotedReply(sent.Id)
+            .AddQuote(sent.Id)
             .AddText(" Verified — all smoke tests passing.");
         await context.Send(msg, cancellationToken);
         return;
     }
 
     // ============================================
-    // ToQuoteReply() — obsolete method (temporary)
+    // ToQuote() — obsolete method (temporary)
     // ============================================
     if (text.Contains("test obsolete"))
     {
 #pragma warning disable CS0618 // Obsolete
-        var placeholder = activity.ToQuoteReply();
+        var placeholder = activity.ToQuote();
 #pragma warning restore CS0618
-        await context.Send($"ToQuoteReply() returned: {placeholder}", cancellationToken);
+        await context.Send($"ToQuote() returned: {placeholder}", cancellationToken);
         return;
     }
 
@@ -120,11 +120,11 @@ teams.OnMessage(async (context, cancellationToken) =>
             "**Quoted Replies Test Bot**\n\n" +
             "**Commands:**\n" +
             "- `test reply` - Reply() auto-quotes your message\n" +
-            "- `test quote` - QuoteReply() quotes a previously sent message\n" +
-            "- `test add` - AddQuotedReply() builder with response\n" +
+            "- `test quote` - Quote() quotes a previously sent message\n" +
+            "- `test add` - AddQuote() builder with response\n" +
             "- `test multi` - Multi-quote with mixed responses (one bare quote with no response)\n" +
-            "- `test manual` - AddQuotedReply() + AddText() manual control\n" +
-            "- `test obsolete` - ToQuoteReply() obsolete method\n\n" +
+            "- `test manual` - AddQuote() + AddText() manual control\n" +
+            "- `test obsolete` - ToQuote() obsolete method\n\n" +
             "Quote any message to me to see the parsed metadata!", cancellationToken);
         return;
     }

@@ -7,11 +7,11 @@ A bot that demonstrates quoted reply features in Microsoft Teams — referencing
 | Command | Description |
 |---------|-------------|
 | `test reply` | `Reply()` — auto-quotes the inbound message |
-| `test quote` | `QuoteReply()` — sends a message, then quotes it by ID |
-| `test add` | `AddQuotedReply()` — sends a message, then quotes it with builder + response |
+| `test quote` | `Quote()` — sends a message, then quotes it by ID |
+| `test add` | `AddQuote()` — sends a message, then quotes it with builder + response |
 | `test multi` | Sends two messages, then quotes both with interleaved responses |
-| `test manual` | `AddQuotedReply()` + `AddText()` — manual control |
-| `test obsolete` | `ToQuoteReply()` — deprecated method (temporary) |
+| `test manual` | `AddQuote()` + `AddText()` — manual control |
+| `test obsolete` | `ToQuote()` — deprecated method (temporary) |
 | `help` | Shows available commands |
 | *(quote a message)* | Bot reads and displays the quoted reply metadata |
 
@@ -68,33 +68,33 @@ if (quotes.Count > 0)
 await context.Reply("Got it!", cancellationToken);
 ```
 
-### QuoteReply() — Quote a Specific Message by ID
+### Quote() — Quote a Specific Message by ID
 
 ```csharp
 var sent = await context.Send("This message will be quoted next...", cancellationToken);
-await context.QuoteReply(sent.Id, "This quotes the message above", cancellationToken);
+await context.Quote(sent.Id, "This quotes the message above", cancellationToken);
 ```
 
-### AddQuotedReply() — Builder for Proactive / Multi-Quote Scenarios
+### AddQuote() — Builder for Proactive / Multi-Quote Scenarios
 
 ```csharp
 // Single quote with response below it
 var sent = await context.Send("This message will be quoted next...", cancellationToken);
 var msg = new MessageActivity()
-    .AddQuotedReply(sent.Id, "Here is my response");
+    .AddQuote(sent.Id, "Here is my response");
 await context.Send(msg, cancellationToken);
 
 // Multiple quotes with interleaved responses
 var sentA = await context.Send("Message A — will be quoted", cancellationToken);
 var sentB = await context.Send("Message B — will be quoted", cancellationToken);
 var msg = new MessageActivity()
-    .AddQuotedReply(sentA.Id, "Response to A")
-    .AddQuotedReply(sentB.Id, "Response to B");
+    .AddQuote(sentA.Id, "Response to A")
+    .AddQuote(sentB.Id, "Response to B");
 await context.Send(msg, cancellationToken);
 
 // Grouped quotes — omit response to group them
 var msg = new MessageActivity("see below for previous messages")
-    .AddQuotedReply("msg-1")
-    .AddQuotedReply("msg-2", "Response to both");
+    .AddQuote("msg-1")
+    .AddQuote("msg-2", "Response to both");
 await context.Send(msg, cancellationToken);
 ```
