@@ -77,40 +77,42 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         ArgumentNullException.ThrowIfNull(activity);
         if (Activity.Id != null)
         {
-            return QuoteReplyAsync(Activity.Id, activity, cancellationToken);
+            return QuoteAsync(Activity.Id, activity, cancellationToken);
         }
 
         return SendActivityAsync(activity, cancellationToken);
     }
 
     /// <summary>
-    /// Sends a message activity as a reply quoting a specific message by ID.
+    /// Send a message to the conversation with a quoted message reference prepended to the text.
+    /// Teams renders the quoted message as a preview bubble above the response text.
     /// </summary>
     /// <param name="messageId">The ID of the message to quote.</param>
-    /// <param name="text">The text to send.</param>
+    /// <param name="text">The response text, appended to the quoted message placeholder.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
     [Experimental("ExperimentalTeamsQuotedReplies")]
-    public Task<SendActivityResponse?> QuoteReplyAsync(string messageId, string text, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> QuoteAsync(string messageId, string text, CancellationToken cancellationToken = default)
     {
         var reply = new MessageActivity(text);
-        return QuoteReplyAsync(messageId, reply, cancellationToken);
+        return QuoteAsync(messageId, reply, cancellationToken);
     }
 
     /// <summary>
-    /// Sends an activity as a reply quoting a specific message by ID.
+    /// Send a message to the conversation with a quoted message reference prepended to the text.
+    /// Teams renders the quoted message as a preview bubble above the response text.
     /// </summary>
     /// <param name="messageId">The ID of the message to quote.</param>
-    /// <param name="activity">The activity to send.</param>
+    /// <param name="activity">The activity to send — a quote placeholder for messageId will be prepended to its text.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
     [Experimental("ExperimentalTeamsQuotedReplies")]
-    public Task<SendActivityResponse?> QuoteReplyAsync(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> QuoteAsync(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         if (activity is MessageActivity message)
         {
-            message.PrependQuotedReply(messageId);
+            message.PrependQuote(messageId);
         }
         return SendActivityAsync(activity, cancellationToken);
     }

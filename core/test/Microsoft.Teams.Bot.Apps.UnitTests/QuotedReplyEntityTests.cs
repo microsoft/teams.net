@@ -228,13 +228,13 @@ public class QuotedReplyEntityTests
         Assert.Empty(quotedReplies);
     }
 
-    // Extension tests: AddQuotedReply
+    // Extension tests: AddQuote
 
     [Fact]
-    public void AddQuotedReply_AddsEntityAndPlaceholder()
+    public void AddQuote_AddsEntityAndPlaceholder()
     {
         MessageActivity activity = new("existing text");
-        activity.AddQuotedReply("msg-1");
+        activity.AddQuote("msg-1");
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
@@ -245,20 +245,20 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void AddQuotedReply_WithResponse_AppendsResponseText()
+    public void AddQuote_WithResponse_AppendsResponseText()
     {
         MessageActivity activity = new();
-        activity.AddQuotedReply("msg-1", "my response");
+        activity.AddQuote("msg-1", "my response");
 
         Assert.Equal("<quoted messageId=\"msg-1\"/> my response", activity.Text);
     }
 
     [Fact]
-    public void AddQuotedReply_MultiQuoteInterleaved()
+    public void AddQuote_MultiQuoteInterleaved()
     {
         MessageActivity activity = new();
-        activity.AddQuotedReply("msg-1", "response to first");
-        activity.AddQuotedReply("msg-2", "response to second");
+        activity.AddQuote("msg-1", "response to first");
+        activity.AddQuote("msg-2", "response to second");
 
         Assert.Equal(
             "<quoted messageId=\"msg-1\"/> response to first<quoted messageId=\"msg-2\"/> response to second",
@@ -267,11 +267,11 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void AddQuotedReply_GroupedQuotes()
+    public void AddQuote_GroupedQuotes()
     {
         MessageActivity activity = new();
-        activity.AddQuotedReply("msg-1");
-        activity.AddQuotedReply("msg-2", "response to both");
+        activity.AddQuote("msg-1");
+        activity.AddQuote("msg-2", "response to both");
 
         Assert.Equal(
             "<quoted messageId=\"msg-1\"/><quoted messageId=\"msg-2\"/> response to both",
@@ -279,22 +279,22 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void AddQuotedReply_EmptyActivity()
+    public void AddQuote_EmptyActivity()
     {
         MessageActivity activity = new();
-        activity.AddQuotedReply("msg-1");
+        activity.AddQuote("msg-1");
 
         Assert.Equal("<quoted messageId=\"msg-1\"/>", activity.Text);
         Assert.Single(activity.Entities!);
     }
 
-    // Builder tests: WithQuotedReply
+    // Builder tests: WithQuote
 
     [Fact]
-    public void Builder_WithQuotedReply_AddsEntityAndPlaceholder()
+    public void Builder_WithQuote_AddsEntityAndPlaceholder()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithQuotedReply("msg-1")
+            .WithQuote("msg-1")
             .Build();
 
         Assert.NotNull(activity.Entities);
@@ -307,10 +307,10 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void Builder_WithQuotedReply_WithResponse()
+    public void Builder_WithQuote_WithResponse()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithQuotedReply("msg-1", "my response")
+            .WithQuote("msg-1", "my response")
             .Build();
 
         Assert.True(activity.Properties.TryGetValue("text", out object? text));
@@ -318,10 +318,10 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void AddQuotedReply_Rebase_SurvivesRoundTrip()
+    public void AddQuote_Rebase_SurvivesRoundTrip()
     {
         MessageActivity activity = new("hello");
-        activity.AddQuotedReply("msg-123", "my response");
+        activity.AddQuote("msg-123", "my response");
 
         // Verify the base CoreActivity.Entities (JsonArray) contains the quotedReply data
         CoreActivity coreActivity = activity;
@@ -335,10 +335,10 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void AddQuotedReply_ToJson_ContainsQuotedReplyData()
+    public void AddQuote_ToJson_ContainsQuotedReplyData()
     {
         MessageActivity activity = new("hello");
-        activity.AddQuotedReply("msg-123", "my response");
+        activity.AddQuote("msg-123", "my response");
 
         string json = activity.ToJson();
         Assert.Contains("\"quotedReply\"", json);
@@ -347,11 +347,11 @@ public class QuotedReplyEntityTests
     }
 
     [Fact]
-    public void Builder_WithQuotedReply_MultipleQuotes()
+    public void Builder_WithQuote_MultipleQuotes()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithQuotedReply("msg-1", "first response")
-            .WithQuotedReply("msg-2", "second response")
+            .WithQuote("msg-1", "first response")
+            .WithQuote("msg-2", "second response")
             .Build();
 
         Assert.NotNull(activity.Entities);

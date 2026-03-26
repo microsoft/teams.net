@@ -182,10 +182,10 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// Adds a quoted reply entity and appends a placeholder to the activity text.
     /// </summary>
     /// <param name="messageId">The ID of the message to quote.</param>
-    /// <param name="response">Optional response text to append after the placeholder.</param>
+    /// <param name="text">Optional text, appended to the quoted message placeholder.</param>
     /// <returns>The builder instance for chaining.</returns>
     [Experimental("ExperimentalTeamsQuotedReplies")]
-    public TeamsActivityBuilder WithQuotedReply(string messageId, string? response = null)
+    public TeamsActivityBuilder WithQuote(string messageId, string? text = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
 
@@ -198,9 +198,9 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         string? currentText = _activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
         var placeholder = $"<quoted messageId=\"{messageId}\"/>";
         var newText = (currentText ?? "") + placeholder;
-        if (response != null)
+        if (text != null)
         {
-            newText += $" {response}";
+            newText += $" {text}";
         }
         WithProperty("text", newText);
 
