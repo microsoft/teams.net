@@ -13,10 +13,10 @@ Demonstrates reading and sending quoted replies in a Teams bot using the `quoted
 | Command | Behavior |
 |---------|----------|
 | `test reply` | `ReplyAsync()` — auto-quotes the inbound message |
-| `test quote` | `QuoteReplyAsync()` — sends a message, then quotes it by ID |
-| `test add` | `AddQuotedReply()` — sends a message, then quotes it with extension method + response |
+| `test quote` | `QuoteAsync()` — sends a message, then quotes it by ID |
+| `test add` | `AddQuote()` — sends a message, then quotes it with extension method + response |
 | `test multi` | Sends three messages, then quotes all with interleaved responses |
-| `test builder` | `WithQuotedReply()` on `TeamsActivityBuilder` |
+| `test builder` | `WithQuote()` on `TeamsActivityBuilder` |
 | *(quote a message)* | Bot reads and displays the quoted reply metadata |
 
 ---

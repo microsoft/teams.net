@@ -27,13 +27,15 @@ public static class ActivityQuotedReplyExtensions
     }
 
     /// <summary>
-    /// Adds a quoted reply entity to the activity and appends a placeholder to the message text.
+    /// Add a quoted message reference and append a placeholder to the message text.
+    /// Teams renders the quoted message as a preview bubble above the response text.
+    /// If text is provided, it is appended to the quoted message placeholder.
     /// </summary>
-    /// <param name="activity">The activity to add the quoted reply to. Cannot be null.</param>
+    /// <param name="activity">The activity to add the quote to. Cannot be null.</param>
     /// <param name="messageId">The ID of the message to quote. Cannot be null or whitespace.</param>
-    /// <param name="response">Optional response text to append after the placeholder.</param>
+    /// <param name="text">Optional text, appended to the quoted message placeholder.</param>
     /// <returns>The created QuotedReplyEntity that was added to the activity.</returns>
-    public static QuotedReplyEntity AddQuotedReply(this TeamsActivity activity, string messageId, string? response = null)
+    public static QuotedReplyEntity AddQuote(this TeamsActivity activity, string messageId, string? text = null)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -46,9 +48,9 @@ public static class ActivityQuotedReplyExtensions
         {
             var placeholder = $"<quoted messageId=\"{messageId}\"/>";
             msg.Text = (msg.Text ?? "") + placeholder;
-            if (response != null)
+            if (text != null)
             {
-                msg.Text += $" {response}";
+                msg.Text += $" {text}";
             }
         }
 
@@ -58,11 +60,11 @@ public static class ActivityQuotedReplyExtensions
 
     /// <summary>
     /// Prepend a QuotedReply entity and placeholder before existing text.
-    /// Used by ReplyAsync()/QuoteReplyAsync() for quote-above-response.
+    /// Used by ReplyAsync()/QuoteAsync() for quote-above-response.
     /// </summary>
     /// <param name="activity">The message activity to prepend the quoted reply to.</param>
     /// <param name="messageId">The ID of the message to quote.</param>
-    public static void PrependQuotedReply(this MessageActivity activity, string messageId)
+    public static void PrependQuote(this MessageActivity activity, string messageId)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
