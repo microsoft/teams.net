@@ -124,14 +124,7 @@ public partial class Context<TActivity> : IContext<TActivity>
     {
         if (activity is MessageActivity message)
         {
-            var placeholder = $"<quoted messageId=\"{messageId}\"/>";
-            activity.Entities ??= new List<IEntity>();
-            activity.Entities.Add(new QuotedReplyEntity
-            {
-                QuotedReply = new QuotedReplyData { MessageId = messageId }
-            });
-            var hasText = !string.IsNullOrWhiteSpace(message.Text);
-            message.Text = hasText ? $"{placeholder} {message.Text}" : placeholder;
+            message.PrependQuotedReply(messageId);
         }
 
         return Send(activity, cancellationToken);
