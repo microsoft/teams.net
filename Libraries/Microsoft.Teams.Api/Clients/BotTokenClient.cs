@@ -35,13 +35,15 @@ public class BotTokenClient : Client
 
     }
 
-    public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null)
+    public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null, CancellationToken cancellationToken = default)
     {
-        return await credentials.Resolve(http ?? _http, [BotScope], _cancellationToken);
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
+        return await credentials.Resolve(http ?? _http, [BotScope], token);
     }
 
-    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, IHttpClient? http = null)
+    public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, IHttpClient? http = null, CancellationToken cancellationToken = default)
     {
-        return await credentials.Resolve(http ?? _http, [GraphScope], _cancellationToken);
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
+        return await credentials.Resolve(http ?? _http, [GraphScope], token);
     }
 }
