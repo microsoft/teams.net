@@ -63,7 +63,7 @@ public class ReactionClient : Client
         //   PUT v3/conversations/{conversationId}/activities/{activityId}/reactions/{reactionType}
         var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{activityId}/reactions/{reactionType}";
         var req = HttpRequest.Put(url);
-        await _http.SendAsync(req, cancellationToken != default ? cancellationToken : _cancellationToken);
+        await _http.SendAsync(req, cancellationToken != default ? cancellationToken : _cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -92,6 +92,6 @@ public class ReactionClient : Client
 
         var req = HttpRequest.Delete(url);
 
-        await _http.SendAsync(req, cancellationToken != default ? cancellationToken : _cancellationToken);
+        await _http.SendAsync(req, cancellationToken != default ? cancellationToken : _cancellationToken).ConfigureAwait(false);
     }
 }

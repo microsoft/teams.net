@@ -36,7 +36,7 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
 
             // Delegate the processing of the HTTP POST to the adapter.
             // The adapter will invoke the bot.
-            await _adapter.ProcessAsync(HttpContext.Request, HttpContext.Response, _bot);
+            await _adapter.ProcessAsync(HttpContext.Request, HttpContext.Response, _bot).ConfigureAwait(false);
 
             if (Response.HasStarted)
             {
@@ -44,7 +44,7 @@ namespace Microsoft.Teams.Plugins.AspNetCore.BotBuilder
             }
 
             // Fallback logic use the plugin to process the activity
-            return await _plugin.Do(HttpContext, _lifetime.ApplicationStopping);
+            return await _plugin.Do(HttpContext, _lifetime.ApplicationStopping).ConfigureAwait(false);
         }
     }
 }

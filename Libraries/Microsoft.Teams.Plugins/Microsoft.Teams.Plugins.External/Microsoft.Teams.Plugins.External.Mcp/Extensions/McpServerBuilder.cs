@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +24,7 @@ public static class McpServerExtensions
         {
             var mcpPrompt = McpServerPrompt.Create(async (string text) =>
             {
-                var res = await prompt.Send(UserMessage.Text(text));
+                var res = await prompt.Send(UserMessage.Text(text)).ConfigureAwait(false);
                 return ((ModelMessage<string>)res).Content;
             }, new()
             {

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 namespace Microsoft.Teams.AI.Prompts;
@@ -13,7 +13,16 @@ public partial class ChatPrompt<TOptions>
 
     public IChatPrompt<TOptions> OnError(Func<Exception, Task> onError)
     {
-        ErrorEvent += (_, ex) => onError(ex).GetAwaiter().GetResult();
+        ErrorEvent += (_, ex) =>
+        {
+            onError(ex).ContinueWith(t =>
+            {
+                if (t.IsFaulted)
+                {
+                    Logger.Error(t.Exception);
+                }
+            }, TaskScheduler.Default);
+        };
         return this;
     }
 }

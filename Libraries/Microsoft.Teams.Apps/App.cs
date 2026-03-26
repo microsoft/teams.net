@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Api;
@@ -131,7 +131,7 @@ public partial class App
             {
                 try
                 {
-                    var res = await Api.Bots.Token.GetAsync(Credentials, TokenClient);
+                    var res = await Api.Bots.Token.GetAsync(Credentials, TokenClient).ConfigureAwait(false);
                     Token = new JsonWebToken(res.AccessToken);
                 }
                 catch (Exception ex)
@@ -145,12 +145,12 @@ public partial class App
 
             foreach (var plugin in Plugins)
             {
-                await plugin.OnInit(this, cancellationToken);
+                await plugin.OnInit(this, cancellationToken).ConfigureAwait(false);
             }
 
             foreach (var plugin in Plugins)
             {
-                await plugin.OnStart(this, cancellationToken);
+                await plugin.OnStart(this, cancellationToken).ConfigureAwait(false);
             }
 
             Status = Apps.Status.Started;
@@ -162,7 +162,7 @@ public partial class App
                 null!,
                 EventType.Error,
                 new ErrorEvent() { Exception = ex }
-            );
+            ).ConfigureAwait(false);
         }
     }
 
@@ -201,14 +201,14 @@ public partial class App
             throw new Exception("no plugin that can send activities was found");
         }
 
-        var res = await sender.Send(activity, reference, cancellationToken);
+        var res = await sender.Send(activity, reference, cancellationToken).ConfigureAwait(false);
 
         await Events.Emit(
             sender,
             EventType.ActivitySent,
             new ActivitySentEvent() { Activity = res },
             cancellationToken
-        );
+        ).ConfigureAwait(false);
 
         return res;
     }
@@ -219,7 +219,7 @@ public partial class App
     /// <param name="text">the text to send</param>
     public async Task<MessageActivity> Send(string conversationId, string text, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
-        return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, cancellationToken);
+        return await Send(conversationId, new MessageActivity(text), conversationType, serviceUrl, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -228,7 +228,7 @@ public partial class App
     /// <param name="card">the card to send as an attachment</param>
     public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
-        return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, cancellationToken);
+        return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -245,7 +245,7 @@ public partial class App
             Token = token,
             Activity = activity,
             Extra = extra
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -296,11 +296,14 @@ public partial class App
                 UserId = @event.Activity.From.Id,
                 ChannelId = @event.Activity.ChannelId,
                 ConnectionName = OAuth.DefaultConnectionName
-            });
+            }).ConfigureAwait(false);
 
             userToken = new JsonWebToken(tokenResponse);
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Logger.Debug("Token retrieval failed, proceeding without token", ex);
+        }
 
         var path = @event.Activity.GetPath();
         Logger.Debug(path);
@@ -322,7 +325,7 @@ public partial class App
             if (i + 1 == routes.Count) return data;
 
             i++;
-            var res = await routes[i].Invoke(context);
+            var res = await routes[i].Invoke(context).ConfigureAwait(false);
 
             if (res is not null)
                 data = res;
@@ -353,7 +356,7 @@ public partial class App
                     EventType.ActivitySent,
                     new ActivitySentEvent() { Activity = activity },
                     context.CancellationToken
-                );
+                ).ConfigureAwait(false);
             }
         };
 
@@ -364,7 +367,7 @@ public partial class App
                 EventType.ActivitySent,
                 new ActivitySentEvent() { Activity = activity },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
         };
 
         if (@event.Services is not null)
@@ -379,11 +382,11 @@ public partial class App
 
         foreach (var plugin in Plugins)
         {
-            await plugin.OnActivity(this, sender, @event, cancellationToken);
+            await plugin.OnActivity(this, sender, @event, cancellationToken).ConfigureAwait(false);
         }
 
-        var res = await Next(context);
-        await stream.Close(cancellationToken);
+        var res = await Next(context).ConfigureAwait(false);
+        await stream.Close(cancellationToken).ConfigureAwait(false);
 
         var response = res is Response value
             ? value
@@ -397,7 +400,7 @@ public partial class App
             EventType.ActivityResponse,
             new ActivityResponseEvent() { Response = response },
             cancellationToken
-        );
+        ).ConfigureAwait(false);
 
         return response;
     }

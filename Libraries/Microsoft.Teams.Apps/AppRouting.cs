@@ -55,7 +55,7 @@ public partial class App
             {
                 this.OnEvent(attr.Name, async (plugin, @event, token) =>
                 {
-                    await method.InvokeAsync(controller, [plugin, @event]);
+                    await method.InvokeAsync(controller, [plugin, @event]).ConfigureAwait(false);
                 });
 
                 Logger.Debug($"'{attr.Name}' event route '{name}.{method.Name}' registered");
@@ -83,7 +83,7 @@ public partial class App
                 ConnectionName = context.Activity.Value.ConnectionName,
                 UserId = context.Activity.From.Id,
                 ExchangeRequest = new() { Token = context.Activity.Value.Token },
-            });
+            }).ConfigureAwait(false);
 
             context.UserGraphToken = new JsonWebToken(res);
 
@@ -95,7 +95,7 @@ public partial class App
                     Context = context.ToActivityType<Api.Activities.Invokes.SignInActivity>(),
                     Token = res
                 }
-            );
+            ).ConfigureAwait(false);
 
             return new Response(HttpStatusCode.OK);
         }
@@ -110,7 +110,7 @@ public partial class App
                     Context = context.ToActivityType<IActivity>()
                 },
                 context.CancellationToken
-            );
+            ).ConfigureAwait(false);
 
             if (ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.BadRequest && ex.StatusCode != HttpStatusCode.PreconditionFailed)
             {
@@ -142,7 +142,7 @@ public partial class App
                 UserId = context.Activity.From.Id,
                 ConnectionName = OAuth.DefaultConnectionName,
                 Code = context.Activity.Value.State
-            });
+            }).ConfigureAwait(false);
 
             context.UserGraphToken = new JsonWebToken(res);
 
@@ -154,7 +154,7 @@ public partial class App
                     Context = context.ToActivityType<Api.Activities.Invokes.SignInActivity>(),
                     Token = res
                 }
-            );
+            ).ConfigureAwait(false);
             return new Response(HttpStatusCode.OK);
         }
         catch (HttpException ex)
@@ -168,7 +168,7 @@ public partial class App
                     Context = context.ToActivityType<IActivity>()
                 },
                 context.CancellationToken
-            );
+            ).ConfigureAwait(false);
 
             if (ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.BadRequest && ex.StatusCode != HttpStatusCode.PreconditionFailed)
             {
@@ -219,7 +219,7 @@ public partial class App
                 Context = context.ToActivityType<IActivity>()
             },
             context.CancellationToken
-        );
+        ).ConfigureAwait(false);
 
         return new Response(HttpStatusCode.OK);
     }
@@ -250,7 +250,7 @@ public partial class App
     {
         return Use(async (context) =>
         {
-            await handler(context);
+            await handler(context).ConfigureAwait(false);
             return null;
         });
     }

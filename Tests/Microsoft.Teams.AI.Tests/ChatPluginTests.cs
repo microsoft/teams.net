@@ -49,7 +49,7 @@ public class ChatPluginTests
                 chatPlugin.Verify(p => p.OnBuildFunctions(It.IsAny<IChatPrompt<TestModelOptions>>(), It.IsAny<FunctionCollection>(), It.IsAny<CancellationToken>()), Times.Once);
                 break;
             case "OnBuildInstructions":
-                chatPlugin.Verify(p => p.OnBuildInstructions(It.IsAny<IChatPrompt<TestModelOptions>>(), It.IsAny<DeveloperMessage?>()), Times.Once);
+                chatPlugin.Verify(p => p.OnBuildInstructions(It.IsAny<IChatPrompt<TestModelOptions>>(), It.IsAny<DeveloperMessage?>(), It.IsAny<CancellationToken>()), Times.Once);
                 break;
         }
 

@@ -26,7 +26,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>());
+                await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.QuerySettingUrlActivity
@@ -41,7 +41,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QuerySettingUrl]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>()),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>()).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.QuerySettingUrlActivity
         });
 
@@ -54,7 +54,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QuerySettingUrl]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>()),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>()).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.QuerySettingUrlActivity
         });
 
@@ -69,7 +69,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.QuerySettingUrlActivity
@@ -84,7 +84,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QuerySettingUrl]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.QuerySettingUrlActivity
         });
 
@@ -97,7 +97,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.QuerySettingUrl]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QuerySettingUrlActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.QuerySettingUrlActivity
         });
 

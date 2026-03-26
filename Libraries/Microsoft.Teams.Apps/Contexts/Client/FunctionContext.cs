@@ -89,12 +89,12 @@ public class FunctionContext<T>(App app) : ClientContext, IFunctionContext<T>
                         Role = Role.User,
                     }
                 ]
-            });
+            }).ConfigureAwait(false);
 
             conversationId = res.Id;
         }
 
-        return await app.Send(conversationId, activity, cancellationToken: cancellationToken);
+        return await app.Send(conversationId, activity, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     public Task<MessageActivity> Send(string text, CancellationToken cancellationToken = default)

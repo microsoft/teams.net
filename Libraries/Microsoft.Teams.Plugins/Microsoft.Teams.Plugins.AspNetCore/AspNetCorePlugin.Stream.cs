@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Collections.Concurrent;
@@ -7,6 +7,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
 using Microsoft.Teams.Apps.Plugins;
+using Microsoft.Teams.Common.Logging;
 
 using static Microsoft.Teams.Common.Extensions.TaskExtensions;
 
@@ -21,6 +22,7 @@ public partial class AspNetCorePlugin
         public int Sequence => _index;
 
         public required Func<IActivity, Task<IActivity>> Send { get; set; }
+        public ILogger? Logger { get; set; }
         public event IStreamer.OnChunkHandler OnChunk = (_) => { };
 
         protected int _index = 1;
@@ -48,7 +50,7 @@ public partial class AspNetCorePlugin
             _queue.Enqueue(activity);
             _timeout = new Timer(_ =>
             {
-                _ = Flush();
+                _ = FlushSafe();
             }, null, 500, Timeout.Infinite);
         }
 
@@ -63,7 +65,7 @@ public partial class AspNetCorePlugin
             _queue.Enqueue(activity);
             _timeout = new Timer(_ =>
             {
-                _ = Flush();
+                _ = FlushSafe();
             }, null, 500, Timeout.Infinite);
         }
 
@@ -89,7 +91,7 @@ public partial class AspNetCorePlugin
             if (_result is not null) return _result;
             while (_id is null || _queue.Count > 0)
             {
-                await Task.Delay(50, cancellationToken);
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             }
 
             if (_text == string.Empty && _attachments.Count == 0) // when only informative updates are present
@@ -124,7 +126,7 @@ public partial class AspNetCorePlugin
         {
             if (_queue.Count == 0) return;
 
-            await _lock.WaitAsync();
+            await _lock.WaitAsync().ConfigureAwait(false);
 
             try
             {
@@ -170,7 +172,7 @@ public partial class AspNetCorePlugin
                 {
                     while (informativeUpdates.TryDequeue(out var typing))
                     {
-                        await SendActivity(typing);
+                        await SendActivity(typing).ConfigureAwait(false);
                     }
                 }
 
@@ -178,14 +180,14 @@ public partial class AspNetCorePlugin
                 if (_text != string.Empty)
                 {
                     var toSend = new TypingActivity(_text);
-                    await SendActivity(toSend);
+                    await SendActivity(toSend).ConfigureAwait(false);
                 }
 
                 if (_queue.Count > 0)
                 {
                     _timeout = new Timer(_ =>
                     {
-                        _ = Flush();
+                        _ = FlushSafe();
                     }, null, 500, Timeout.Infinite);
                 }
 
@@ -206,6 +208,27 @@ public partial class AspNetCorePlugin
             finally
             {
                 _lock.Release();
+            }
+        }
+
+        private async Task FlushSafe()
+        {
+            try
+            {
+                await Flush().ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                Logger?.Warn("Stream flush failed; will retry if there is pending state.", ex);
+                // Reschedule a retry so Close() doesn't spin forever
+                // waiting for _id to be set after a transient send failure.
+                if (_queue.Count > 0 || _id is null && _count > 0)
+                {
+                    _timeout = new Timer(_ =>
+                    {
+                        _ = FlushSafe();
+                    }, null, 1000, Timeout.Infinite);
+                }
             }
         }
     }

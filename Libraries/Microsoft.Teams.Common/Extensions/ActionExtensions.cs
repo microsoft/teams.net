@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 namespace Microsoft.Teams.Common.Extensions;
@@ -12,12 +12,13 @@ public static class ActionExtensions
         return arg =>
         {
             cancelTokenSource?.Cancel();
+            cancelTokenSource?.Dispose();
             cancelTokenSource = new CancellationTokenSource();
 
-            Task.Delay(milliseconds, cancelTokenSource.Token)
+            _ = Task.Delay(milliseconds, cancelTokenSource.Token)
                 .ContinueWith(t =>
                 {
-                    if (t.IsCompleted && !t.IsFaulted)
+                    if (t.IsCompletedSuccessfully)
                     {
                         func(arg);
                     }
@@ -32,16 +33,28 @@ public static class ActionExtensions
         return () =>
         {
             cancelTokenSource?.Cancel();
+            cancelTokenSource?.Dispose();
             cancelTokenSource = new CancellationTokenSource();
 
-            Task.Delay(milliseconds, cancelTokenSource.Token)
-                .ContinueWith(async t =>
-                {
-                    if (t.IsCompleted && !t.IsFaulted)
-                    {
-                        await func();
-                    }
-                }, TaskScheduler.Default);
+            _ = DebounceCore(func, milliseconds, cancelTokenSource.Token);
         };
+
+        static async Task DebounceCore(Func<Task> func, int milliseconds, CancellationToken token)
+        {
+            try
+            {
+                await Task.Delay(milliseconds, token).ConfigureAwait(false);
+                await func().ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Debounce was cancelled by a newer invocation
+            }
+            catch (Exception)
+            {
+                // Observe exception to prevent UnobservedTaskException.
+                // Callers use fire-and-forget; there is no upstream to propagate to.
+            }
+        }
     }
 }

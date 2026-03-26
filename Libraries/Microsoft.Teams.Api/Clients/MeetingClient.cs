@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
@@ -35,14 +35,14 @@ public class MeetingClient : Client
     public async Task<Meeting> GetByIdAsync(string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{id}");
-        var response = await _http.SendAsync<Meeting>(request, _cancellationToken);
+        var response = await _http.SendAsync<Meeting>(request, _cancellationToken).ConfigureAwait(false);
         return response.Body;
     }
 
     public async Task<MeetingParticipant> GetParticipantAsync(string meetingId, string id, string tenantId)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}");
-        var response = await _http.SendAsync<MeetingParticipant>(request, _cancellationToken);
+        var response = await _http.SendAsync<MeetingParticipant>(request, _cancellationToken).ConfigureAwait(false);
         return response.Body;
     }
 }

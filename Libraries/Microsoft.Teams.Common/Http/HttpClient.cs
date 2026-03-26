@@ -57,15 +57,15 @@ public class HttpClient : IHttpClient
     public async Task<IHttpResponse<string>> SendAsync(IHttpRequest request, CancellationToken cancellationToken = default)
     {
         var httpRequest = CreateRequest(request);
-        var httpResponse = await _client.SendAsync(httpRequest);
-        return await CreateResponse(httpResponse, cancellationToken);
+        var httpResponse = await _client.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        return await CreateResponse(httpResponse, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<IHttpResponse<TResponseBody>> SendAsync<TResponseBody>(IHttpRequest request, CancellationToken cancellationToken = default)
     {
         var httpRequest = CreateRequest(request);
-        var httpResponse = await _client.SendAsync(httpRequest, cancellationToken);
-        return await CreateResponse<TResponseBody>(httpResponse, cancellationToken);
+        var httpResponse = await _client.SendAsync(httpRequest, cancellationToken).ConfigureAwait(false);
+        return await CreateResponse<TResponseBody>(httpResponse, cancellationToken).ConfigureAwait(false);
     }
 
     public void Dispose()
@@ -122,7 +122,7 @@ public class HttpClient : IHttpClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            var errorBody = await ParseErrorBody(response);
+            var errorBody = await ParseErrorBody(response).ConfigureAwait(false);
 
             throw new HttpException()
             {
@@ -133,7 +133,7 @@ public class HttpClient : IHttpClient
             };
         }
 
-        var body = await response.Content.ReadAsStringAsync() ?? throw new ArgumentNullException();
+        var body = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false) ?? throw new ArgumentNullException();
 
         return new HttpResponse<string>()
         {
@@ -147,7 +147,7 @@ public class HttpClient : IHttpClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            var errorBody = await ParseErrorBody(response);
+            var errorBody = await ParseErrorBody(response).ConfigureAwait(false);
 
             throw new HttpException()
             {
@@ -158,7 +158,7 @@ public class HttpClient : IHttpClient
             };
         }
 
-        var body = await response.Content.ReadFromJsonAsync<TResponseBody>(cancellationToken) ?? throw new ArgumentNullException();
+        var body = await response.Content.ReadFromJsonAsync<TResponseBody>(cancellationToken).ConfigureAwait(false) ?? throw new ArgumentNullException();
 
         return new HttpResponse<TResponseBody>()
         {
@@ -170,7 +170,7 @@ public class HttpClient : IHttpClient
 
     private async Task<object> ParseErrorBody(HttpResponseMessage response)
     {
-        var content = await response.Content.ReadAsStringAsync() ?? throw new ArgumentNullException();
+        var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false) ?? throw new ArgumentNullException();
         object errorBody = content;
 
         try

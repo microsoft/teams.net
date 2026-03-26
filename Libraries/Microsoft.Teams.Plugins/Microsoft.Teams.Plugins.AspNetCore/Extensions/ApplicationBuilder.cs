@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Reflection;
@@ -75,7 +75,7 @@ public static partial class ApplicationBuilderExtensions
                 {
                     endpoints.MapPost("/api/messages", async (HttpContext httpContext, CancellationToken cancellationToken) =>
                     {
-                        return await aspNetCorePlugin.Do(httpContext, cancellationToken);
+                        return await aspNetCorePlugin.Do(httpContext, cancellationToken).ConfigureAwait(false);
                     }).RequireAuthorization(TeamsTokenAuthConstants.AuthorizationPolicy);
                 }
 
