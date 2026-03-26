@@ -77,7 +77,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         ArgumentNullException.ThrowIfNull(activity);
         if (Activity.Id != null)
         {
-            StampQuotedReply(activity, Activity.Id);
+            return QuoteReplyAsync(Activity.Id, activity, cancellationToken);
         }
 
         return SendActivityAsync(activity, cancellationToken);
@@ -114,20 +114,18 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     private static void StampQuotedReply(TeamsActivity activity, string messageId)
     {
-        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
-        activity.Entities ??= [];
-        activity.Entities.Add(new QuotedReplyEntity
-        {
-            QuotedReply = new QuotedReplyData { MessageId = messageId }
-        });
-
         if (activity is MessageActivity message)
         {
+            var placeholder = $"<quoted messageId=\"{messageId}\"/>";
+            activity.Entities ??= [];
+            activity.Entities.Add(new QuotedReplyEntity
+            {
+                QuotedReply = new QuotedReplyData { MessageId = messageId }
+            });
             var text = message.Text?.Trim() ?? "";
             message.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
+            activity.Rebase();
         }
-
-        activity.Rebase();
     }
 
     /// <summary>
