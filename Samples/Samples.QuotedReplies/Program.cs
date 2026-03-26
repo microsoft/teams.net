@@ -100,14 +100,14 @@ teams.OnMessage(async (context, cancellationToken) =>
     }
 
     // ============================================
-    // ToQuote() — obsolete method (temporary)
+    // ToQuoteReply() — obsolete method (temporary)
     // ============================================
     if (text.Contains("test obsolete"))
     {
 #pragma warning disable CS0618 // Obsolete
-        var placeholder = activity.ToQuote();
+        var placeholder = activity.ToQuoteReply();
 #pragma warning restore CS0618
-        await context.Send($"ToQuote() returned: {placeholder}", cancellationToken);
+        await context.Send($"ToQuoteReply() returned: {placeholder}", cancellationToken);
         return;
     }
 
@@ -124,7 +124,7 @@ teams.OnMessage(async (context, cancellationToken) =>
             "- `test add` - AddQuote() builder with response\n" +
             "- `test multi` - Multi-quote with mixed responses (one bare quote with no response)\n" +
             "- `test manual` - AddQuote() + AddText() manual control\n" +
-            "- `test obsolete` - ToQuote() obsolete method\n\n" +
+            "- `test obsolete` - ToQuoteReply() obsolete method\n\n" +
             "Quote any message to me to see the parsed metadata!", cancellationToken);
         return;
     }

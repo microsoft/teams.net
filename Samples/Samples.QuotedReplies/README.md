@@ -11,7 +11,7 @@ A bot that demonstrates quoted reply features in Microsoft Teams — referencing
 | `test add` | `AddQuote()` — sends a message, then quotes it with builder + response |
 | `test multi` | Sends two messages, then quotes both with interleaved responses |
 | `test manual` | `AddQuote()` + `AddText()` — manual control |
-| `test obsolete` | `ToQuote()` — deprecated method (temporary) |
+| `test obsolete` | `ToQuoteReply()` — deprecated method (temporary) |
 | `help` | Shows available commands |
 | *(quote a message)* | Bot reads and displays the quoted reply metadata |
 
