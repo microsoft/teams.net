@@ -215,10 +215,12 @@ public partial class AspNetCorePlugin
             {
                 await Flush().ConfigureAwait(false);
             }
-            catch
+            catch (Exception)
             {
                 // Suppress exceptions from fire-and-forget timer callbacks
-                // to prevent unobserved task exceptions
+                // to prevent unobserved task exceptions.
+                // Flush errors are transient (e.g. network hiccups) and the
+                // stream will retry on the next timer tick or Close().
             }
         }
     }

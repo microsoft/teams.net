@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 namespace Microsoft.Teams.AI;
@@ -24,7 +24,11 @@ public interface IStream
     /// emit a text chunk asynchronously
     /// </summary>
     /// <param name="text">the text chunk</param>
-    public Task EmitAsync(string text);
+    public Task EmitAsync(string text)
+    {
+        Emit(text);
+        return Task.CompletedTask;
+    }
 }
 
 /// <summary>
@@ -32,6 +36,7 @@ public interface IStream
 /// </summary>
 public class Stream(OnStreamChunk onChunk) : IStream
 {
+    [Obsolete("Use EmitAsync instead to avoid sync-over-async blocking.")]
     public void Emit(string text)
     {
         EmitAsync(text).ConfigureAwait(false).GetAwaiter().GetResult();

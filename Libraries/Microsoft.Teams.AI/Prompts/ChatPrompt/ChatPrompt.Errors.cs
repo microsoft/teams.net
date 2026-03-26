@@ -13,7 +13,10 @@ public partial class ChatPrompt<TOptions>
 
     public IChatPrompt<TOptions> OnError(Func<Exception, Task> onError)
     {
-        ErrorEvent += async (_, ex) => await onError(ex).ConfigureAwait(false);
+        ErrorEvent += (_, ex) =>
+        {
+            _ = onError(ex).ConfigureAwait(false);
+        };
         return this;
     }
 }

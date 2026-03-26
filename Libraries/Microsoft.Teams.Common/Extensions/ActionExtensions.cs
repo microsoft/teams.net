@@ -34,14 +34,20 @@ public static class ActionExtensions
             cancelTokenSource?.Cancel();
             cancelTokenSource = new CancellationTokenSource();
 
-            _ = Task.Delay(milliseconds, cancelTokenSource.Token)
-                .ContinueWith(async t =>
-                {
-                    if (t.IsCompletedSuccessfully)
-                    {
-                        await func().ConfigureAwait(false);
-                    }
-                }, TaskScheduler.Default);
+            _ = DebounceCore(func, milliseconds, cancelTokenSource.Token);
         };
+
+        static async Task DebounceCore(Func<Task> func, int milliseconds, CancellationToken token)
+        {
+            try
+            {
+                await Task.Delay(milliseconds, token).ConfigureAwait(false);
+                await func().ConfigureAwait(false);
+            }
+            catch (OperationCanceledException)
+            {
+                // Debounce was cancelled by a newer invocation
+            }
+        }
     }
 }

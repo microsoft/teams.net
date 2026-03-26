@@ -141,7 +141,7 @@ public class McpClientPlugin : BaseChatPlugin
             catch (Exception ex)
             {
                 // Suppress aggregate exception; individual task exceptions are handled below
-                _logger.Debug($"One or more MCP tool fetch tasks failed: {ex.Message}");
+                _logger.Debug("One or more MCP tool fetch tasks failed", ex);
             }
 
             var results = fetchNeeded.Zip(tasks);
