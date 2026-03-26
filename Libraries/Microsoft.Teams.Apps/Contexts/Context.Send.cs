@@ -96,30 +96,17 @@ public partial class Context<TActivity> : IContext<TActivity>
         return Send(new MessageActivity().AddAttachment(card), cancellationToken);
     }
 
+    #pragma warning disable ExperimentalTeamsQuotedReplies
     public Task<T> Reply<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
-        activity.Conversation = Ref.Conversation.Copy();
-
         if (Activity.Id != null)
         {
-            var placeholder = $"<quoted messageId=\"{Activity.Id}\"/>";
-            activity.Entities ??= new List<IEntity>();
-            #pragma warning disable ExperimentalTeamsQuotedReplies
-            activity.Entities.Add(new QuotedReplyEntity
-            {
-                QuotedReply = new QuotedReplyData { MessageId = Activity.Id }
-            });
-
-            #pragma warning restore ExperimentalTeamsQuotedReplies
-            if (activity is MessageActivity message)
-            {
-                var hasText = !string.IsNullOrWhiteSpace(message.Text);
-                message.Text = hasText ? $"{placeholder} {message.Text}" : placeholder;
-            }
+            return QuoteReply(Activity.Id, activity, cancellationToken);
         }
 
         return Send(activity, cancellationToken);
     }
+    #pragma warning restore ExperimentalTeamsQuotedReplies
 
     public Task<MessageActivity> Reply(string text, CancellationToken cancellationToken = default)
     {
@@ -135,15 +122,14 @@ public partial class Context<TActivity> : IContext<TActivity>
     #pragma warning disable ExperimentalTeamsQuotedReplies
     public Task<T> QuoteReply<T>(string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
-        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
-        activity.Entities ??= new List<IEntity>();
-        activity.Entities.Add(new QuotedReplyEntity
-        {
-            QuotedReply = new QuotedReplyData { MessageId = messageId }
-        });
-
         if (activity is MessageActivity message)
         {
+            var placeholder = $"<quoted messageId=\"{messageId}\"/>";
+            activity.Entities ??= new List<IEntity>();
+            activity.Entities.Add(new QuotedReplyEntity
+            {
+                QuotedReply = new QuotedReplyData { MessageId = messageId }
+            });
             var hasText = !string.IsNullOrWhiteSpace(message.Text);
             message.Text = hasText ? $"{placeholder} {message.Text}" : placeholder;
         }
