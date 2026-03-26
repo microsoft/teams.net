@@ -27,7 +27,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
     if (text.Contains("send"))
     {
-        var members = await context.Api.Conversations.Members.GetAsync(activity.Conversation.Id);
+        var members = await context.Api.Conversations.Members.GetAsync(activity.Conversation.Id, cancellationToken);
 
         foreach (var member in members)
         {
@@ -62,7 +62,7 @@ teams.OnMessage(async (context, cancellationToken) =>
                 {
                     var updatedMessage = new MessageActivity($"✏️ **Updated!** This message was modified at {DateTime.UtcNow:HH:mm:ss}");
 
-                    await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updatedMessage);
+                    await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updatedMessage, cancellationToken);
 
                     Console.WriteLine($"[UPDATE] Updated targeted message");
                 }
@@ -94,7 +94,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
                 try
                 {
-                    await context.Api.Conversations.Activities.DeleteTargetedAsync(conversationId, messageId);
+                    await context.Api.Conversations.Activities.DeleteTargetedAsync(conversationId, messageId, cancellationToken);
 
                     Console.WriteLine($"[DELETE] Deleted targeted message");
                 }

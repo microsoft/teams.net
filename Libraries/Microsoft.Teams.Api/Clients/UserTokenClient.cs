@@ -35,39 +35,44 @@ public class UserTokenClient : Client
 
     }
 
-    public async Task<Token.Response> GetAsync(GetTokenRequest request)
+    public async Task<Token.Response> GetAsync(GetTokenRequest request, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetToken?{query}");
-        var res = await _http.SendAsync<Token.Response>(req, _cancellationToken);
+        var res = await _http.SendAsync<Token.Response>(req, token);
         return res.Body;
     }
 
-    public async Task<IDictionary<string, Token.Response>> GetAadAsync(GetAadTokenRequest request)
+    public async Task<IDictionary<string, Token.Response>> GetAadAsync(GetAadTokenRequest request, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/GetAadTokens?{query}", body: request);
-        var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, _cancellationToken);
+        var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, token);
         return res.Body;
     }
 
-    public async Task<IList<Token.Status>> GetStatusAsync(GetTokenStatusRequest request)
+    public async Task<IList<Token.Status>> GetStatusAsync(GetTokenStatusRequest request, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get($"https://token.botframework.com/api/usertoken/GetTokenStatus?{query}");
-        var res = await _http.SendAsync<IList<Token.Status>>(req, _cancellationToken);
+        var res = await _http.SendAsync<IList<Token.Status>>(req, token);
         return res.Body;
     }
 
-    public async Task SignOutAsync(SignOutRequest request)
+    public async Task SignOutAsync(SignOutRequest request, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Delete($"https://token.botframework.com/api/usertoken/SignOut?{query}");
-        await _http.SendAsync(req, _cancellationToken);
+        await _http.SendAsync(req, token);
     }
 
-    public async Task<Token.Response> ExchangeAsync(ExchangeTokenRequest request)
+    public async Task<Token.Response> ExchangeAsync(ExchangeTokenRequest request, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(new
         {
             userId = request.UserId,
@@ -82,7 +87,7 @@ public class UserTokenClient : Client
         var req = HttpRequest.Post($"https://token.botframework.com/api/usertoken/exchange?{query}", body);
         req.Headers.Add("Content-Type", new List<string>() { "application/json" });
 
-        var res = await _http.SendAsync<Token.Response>(req, _cancellationToken);
+        var res = await _http.SendAsync<Token.Response>(req, token);
         return res.Body;
     }
 
