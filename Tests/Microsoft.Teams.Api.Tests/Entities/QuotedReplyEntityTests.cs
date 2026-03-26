@@ -25,7 +25,7 @@ public class QuotedReplyEntityTests
                 SenderId = "user-1",
                 SenderName = "Test User",
                 Preview = "Hello, world!",
-                Time = "2025-01-01T00:00:00Z",
+                Time = "1772050244572",
                 IsReplyDeleted = false,
                 ValidatedMessageReference = true
             }
@@ -49,7 +49,7 @@ public class QuotedReplyEntityTests
                 SenderId = "user-1",
                 SenderName = "Test User",
                 Preview = "Hello, world!",
-                Time = "2025-01-01T00:00:00Z",
+                Time = "1772050244572",
                 IsReplyDeleted = false,
                 ValidatedMessageReference = true
             }
@@ -75,7 +75,7 @@ public class QuotedReplyEntityTests
         Assert.Equal("user-1", entity.QuotedReply.SenderId);
         Assert.Equal("Test User", entity.QuotedReply.SenderName);
         Assert.Equal("Hello, world!", entity.QuotedReply.Preview);
-        Assert.Equal("2025-01-01T00:00:00Z", entity.QuotedReply.Time);
+        Assert.Equal("1772050244572", entity.QuotedReply.Time);
         Assert.Equal(false, entity.QuotedReply.IsReplyDeleted);
         Assert.Equal(true, entity.QuotedReply.ValidatedMessageReference);
     }
