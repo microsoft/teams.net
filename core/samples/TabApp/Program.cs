@@ -78,8 +78,7 @@ app.MapPost("/functions/post-to-chat", async (
         conversationId = cached!;
     }
 
-    TeamsActivity activity = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    MessageActivity activity = MessageActivity.CreateBuilder()
         .WithText("Hello from the tab!")
         .WithServiceUrl(serviceUrl)
         .WithConversation(new TeamsConversation { Id = conversationId! })

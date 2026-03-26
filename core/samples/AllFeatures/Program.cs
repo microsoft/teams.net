@@ -14,8 +14,7 @@ teamsApp.OnMessage = async (messageArgs, context, cancellationToken) =>
 
     await context.SendTypingActivityAsync(cancellationToken);
 
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    MessageActivity reply = MessageActivity.CreateBuilder()
         .WithConversationReference(context.Activity)
         .WithText(replyText)
         .Build();

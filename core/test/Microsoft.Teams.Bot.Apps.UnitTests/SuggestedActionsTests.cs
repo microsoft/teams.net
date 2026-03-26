@@ -191,8 +191,7 @@ public class SuggestedActionsTests
     {
         var suggestedActions = new SuggestedActions();
 
-        var activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
             .Build();
@@ -202,7 +201,7 @@ public class SuggestedActionsTests
         Assert.Empty(activity.SuggestedActions.Actions);
     }
 
-    
+
 
     [Fact]
     public void MessageActivity_WithSuggestedActions()
@@ -210,8 +209,7 @@ public class SuggestedActionsTests
         var suggestedActions = new SuggestedActions()
             .AddAction(new SuggestedAction(ActionType.IMBack, "Option 1") { Value = "opt1" });
 
-        var activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
             .Build();

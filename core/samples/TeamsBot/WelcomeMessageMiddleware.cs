@@ -39,10 +39,10 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
     {
         if (!_hasSentWelcomeMessage)
         {
-            var welcomeActivity = TeamsActivity.CreateBuilder()
+            var welcomeActivity = MessageActivity.CreateBuilder()
                 .WithType("message")
                 .WithText(WelcomeMessage, TextFormats.Markdown)
-                .WithConversationReference(TeamsActivity.FromActivity(activity))
+                .WithConversationReference(activity)
                 .Build();
 
             await botApplication.SendActivityAsync(welcomeActivity, cancellationToken);
