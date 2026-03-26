@@ -55,4 +55,23 @@ public static class ActivityQuotedReplyExtensions
         activity.Rebase();
         return entity;
     }
+
+    /// <summary>
+    /// Prepend a QuotedReply entity and placeholder before existing text.
+    /// Used by ReplyAsync()/QuoteReplyAsync() for quote-above-response.
+    /// </summary>
+    /// <param name="activity">The message activity to prepend the quoted reply to.</param>
+    /// <param name="messageId">The ID of the message to quote.</param>
+    public static void PrependQuotedReply(this MessageActivity activity, string messageId)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        activity.Entities ??= [];
+        activity.Entities.Add(new QuotedReplyEntity { QuotedReply = new QuotedReplyData { MessageId = messageId } });
+        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
+        var text = activity.Text?.Trim() ?? "";
+        activity.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
+        activity.Rebase();
+    }
 }

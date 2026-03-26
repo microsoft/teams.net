@@ -108,24 +108,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> QuoteReplyAsync(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        StampQuotedReply(activity, messageId);
-        return SendActivityAsync(activity, cancellationToken);
-    }
-
-    private static void StampQuotedReply(TeamsActivity activity, string messageId)
-    {
         if (activity is MessageActivity message)
         {
-            var placeholder = $"<quoted messageId=\"{messageId}\"/>";
-            activity.Entities ??= [];
-            activity.Entities.Add(new QuotedReplyEntity
-            {
-                QuotedReply = new QuotedReplyData { MessageId = messageId }
-            });
-            var text = message.Text?.Trim() ?? "";
-            message.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
-            activity.Rebase();
+            message.PrependQuotedReply(messageId);
         }
+        return SendActivityAsync(activity, cancellationToken);
     }
 
     /// <summary>
