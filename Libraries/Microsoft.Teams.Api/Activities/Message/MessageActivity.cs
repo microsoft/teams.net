@@ -172,7 +172,7 @@ public class MessageActivity : Activity
     #pragma warning restore ExperimentalTeamsTargeted
 
     /// <summary>
-    /// Add a quotedReply entity for the given message ID and append a placeholder to Text.
+    /// Add a QuotedReply entity for the given message ID and append a placeholder to Text.
     /// If response is provided, it is appended after the placeholder.
     /// </summary>
     [Experimental("ExperimentalTeamsQuotedReplies")]
@@ -189,6 +189,26 @@ public class MessageActivity : Activity
         {
             AddText($" {response}");
         }
+        return this;
+    }
+    #pragma warning restore ExperimentalTeamsQuotedReplies
+
+    /// <summary>
+    /// Prepend a QuotedReply entity and placeholder before existing text.
+    /// Used by Reply()/QuoteReply() for quote-above-response.
+    /// </summary>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+    #pragma warning disable ExperimentalTeamsQuotedReplies
+    public MessageActivity PrependQuotedReply(string messageId)
+    {
+        Entities ??= new List<IEntity>();
+        Entities.Add(new QuotedReplyEntity
+        {
+            QuotedReply = new QuotedReplyData { MessageId = messageId }
+        });
+        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
+        var hasText = !string.IsNullOrWhiteSpace(Text);
+        Text = hasText ? $"{placeholder} {Text}" : placeholder;
         return this;
     }
     #pragma warning restore ExperimentalTeamsQuotedReplies
