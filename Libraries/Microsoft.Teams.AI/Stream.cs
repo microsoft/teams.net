@@ -39,7 +39,7 @@ public class Stream(OnStreamChunk onChunk) : IStream
     [Obsolete("Use EmitAsync instead to avoid sync-over-async blocking.")]
     public void Emit(string text)
     {
-        EmitAsync(text).ConfigureAwait(false).GetAwaiter().GetResult();
+        onChunk(text).GetAwaiter().GetResult();
     }
 
     public Task EmitAsync(string text)

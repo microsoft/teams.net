@@ -7,6 +7,7 @@ using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Entities;
 using Microsoft.Teams.Apps.Plugins;
+using Microsoft.Teams.Common.Logging;
 
 using static Microsoft.Teams.Common.Extensions.TaskExtensions;
 
@@ -21,6 +22,7 @@ public partial class AspNetCorePlugin
         public int Sequence => _index;
 
         public required Func<IActivity, Task<IActivity>> Send { get; set; }
+        public ILogger? Logger { get; set; }
         public event IStreamer.OnChunkHandler OnChunk = (_) => { };
 
         protected int _index = 1;
@@ -215,8 +217,9 @@ public partial class AspNetCorePlugin
             {
                 await Flush().ConfigureAwait(false);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger?.Warn("Stream flush failed; will retry if there is pending state.", ex);
                 // Reschedule a retry so Close() doesn't spin forever
                 // waiting for _id to be set after a transient send failure.
                 if (_queue.Count > 0 || _id is null && _count > 0)
