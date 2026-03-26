@@ -26,7 +26,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<Tabs.SubmitActivity>());
+                await handler(context.ToActivityType<Tabs.SubmitActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is Tabs.SubmitActivity
@@ -41,7 +41,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Tabs.Submit]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>()),
+            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>()).ConfigureAwait(false),
             Selector = activity => activity is Tabs.SubmitActivity
         });
 
@@ -54,7 +54,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Tabs.Submit]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>()),
+            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>()).ConfigureAwait(false),
             Selector = activity => activity is Tabs.SubmitActivity
         });
 
@@ -69,7 +69,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<Tabs.SubmitActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<Tabs.SubmitActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is Tabs.SubmitActivity
@@ -84,7 +84,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Tabs.Submit]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is Tabs.SubmitActivity
         });
 
@@ -97,7 +97,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Tabs.Submit]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<Tabs.SubmitActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is Tabs.SubmitActivity
         });
 

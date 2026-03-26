@@ -1,4 +1,4 @@
-﻿using Json.Schema;
+using Json.Schema;
 
 using Microsoft.Teams.AI;
 using Microsoft.Teams.AI.Prompts;
@@ -70,7 +70,7 @@ public class McpClientPlugin : BaseChatPlugin
 
     public override async Task<FunctionCollection> OnBuildFunctions<TOptions>(IChatPrompt<TOptions> prompt, FunctionCollection functions, CancellationToken cancellationToken = default)
     {
-        await FetchToolsIfNeeded();
+        await FetchToolsIfNeeded().ConfigureAwait(false);
 
         foreach (var entry in _mcpServerParams)
         {
@@ -136,12 +136,12 @@ public class McpClientPlugin : BaseChatPlugin
             }
             try
             {
-                await Task.WhenAll(tasks);
+                await Task.WhenAll(tasks).ConfigureAwait(false);
             }
-            catch
+            catch (Exception ex)
             {
-                // Suppress all exceptions, but tasks are still awaited
-                // Individual task exceptions will be handled below
+                // Suppress aggregate exception; individual task exceptions are handled below
+                _logger.Debug($"One or more MCP tool fetch tasks failed: {ex.Message}");
             }
 
             var results = fetchNeeded.Zip(tasks);
@@ -182,8 +182,8 @@ public class McpClientPlugin : BaseChatPlugin
     internal async Task<List<McpToolDetails>> FetchToolsFromServer(Uri url, McpClientPluginParams pluginParams)
     {
         IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.HeadersFactory());
-        var client = await McpClientFactory.CreateAsync(transport);
-        var tools = await client.ListToolsAsync();
+        var client = await McpClientFactory.CreateAsync(transport).ConfigureAwait(false);
+        var tools = await client.ListToolsAsync().ConfigureAwait(false);
 
         // Convert MCP tools to our format
         var mappedTools = tools.Select(t => new McpToolDetails()
@@ -226,7 +226,7 @@ public class McpClientPlugin : BaseChatPlugin
                 try
                 {
                     _logger.Debug($"Making call to {url} for tool {tool.Name}");
-                    string result = await CallMcpTool(url, tool, args.AsReadOnly(), pluginParams);
+                    string result = await CallMcpTool(url, tool, args.AsReadOnly(), pluginParams).ConfigureAwait(false);
                     _logger.Debug($"Received result from {tool.Name}: {result}");
                     return result;
                 }
@@ -242,8 +242,8 @@ public class McpClientPlugin : BaseChatPlugin
     internal async Task<string> CallMcpTool(Uri url, McpToolDetails tool, IReadOnlyDictionary<string, object?> args, McpClientPluginParams pluginParams)
     {
         IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.HeadersFactory());
-        var client = await McpClientFactory.CreateAsync(transport);
-        var response = await client.CallToolAsync(tool.Name, args);
+        var client = await McpClientFactory.CreateAsync(transport).ConfigureAwait(false);
+        var response = await client.CallToolAsync(tool.Name, args).ConfigureAwait(false);
 
         if (response.IsError == true)
         {

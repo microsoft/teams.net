@@ -19,6 +19,12 @@ public interface IStream
     /// </summary>
     /// <param name="text">the text chunk</param>
     public void Emit(string text);
+
+    /// <summary>
+    /// emit a text chunk asynchronously
+    /// </summary>
+    /// <param name="text">the text chunk</param>
+    public Task EmitAsync(string text);
 }
 
 /// <summary>
@@ -28,6 +34,11 @@ public class Stream(OnStreamChunk onChunk) : IStream
 {
     public void Emit(string text)
     {
-        onChunk(text).GetAwaiter().GetResult();
+        EmitAsync(text).ConfigureAwait(false).GetAwaiter().GetResult();
+    }
+
+    public Task EmitAsync(string text)
+    {
+        return onChunk(text);
     }
 }

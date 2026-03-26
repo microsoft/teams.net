@@ -22,7 +22,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<TypingActivity>());
+                await handler(context.ToActivityType<TypingActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is TypingActivity
@@ -39,7 +39,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<TypingActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<TypingActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is TypingActivity

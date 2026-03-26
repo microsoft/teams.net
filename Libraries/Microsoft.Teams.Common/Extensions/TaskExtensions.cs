@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 namespace Microsoft.Teams.Common.Extensions;
@@ -20,7 +20,7 @@ public static class TaskExtensions
         {
             if (max > 0)
             {
-                await Task.Delay(delay);
+                await Task.Delay(delay).ConfigureAwait(false);
                 return await Retry(taskFactory, max - 1, delay * 2).ConfigureAwait(false);
             }
             throw new Exception(ex.Message, ex);

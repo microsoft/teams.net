@@ -64,11 +64,14 @@ public partial class Context<TActivity> : IContext<TActivity>
                 UserId = Activity.From.Id,
                 ChannelId = Activity.ChannelId,
                 ConnectionName = options.ConnectionName ?? ConnectionName,
-            });
+            }).ConfigureAwait(false);
 
             return tokenResponse.Token;
         }
-        catch { }
+        catch (Exception ex)
+        {
+            Log.Debug($"Existing token retrieval failed, proceeding to token exchange: {ex.Message}");
+        }
 
         var tokenExchangeState = new Api.TokenExchange.State()
         {
@@ -88,17 +91,17 @@ public partial class Context<TActivity> : IContext<TActivity>
                 IsGroup = false,
                 Bot = Ref.Bot,
                 Members = [Activity.From]
-            });
+            }).ConfigureAwait(false);
 
             reference.Conversation.Id = id;
             reference.Conversation.IsGroup = false;
 
-            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, token);
-            await OnActivitySent(oauthCardActivity, ToActivityType());
+            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, token).ConfigureAwait(false);
+            await OnActivitySent(oauthCardActivity, ToActivityType()).ConfigureAwait(false);
         }
 
         var state = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(tokenExchangeState));
-        var resource = await api.Bots.SignIn.GetResourceAsync(new() { State = state });
+        var resource = await api.Bots.SignIn.GetResourceAsync(new() { State = state }).ConfigureAwait(false);
         var activity = new MessageActivity();
 
         activity.InputHint = InputHint.AcceptingInput;
@@ -119,8 +122,8 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]
         });
 
-        var res = await Sender.Send(activity, reference, token);
-        await OnActivitySent(res, ToActivityType());
+        var res = await Sender.Send(activity, reference, token).ConfigureAwait(false);
+        await OnActivitySent(res, ToActivityType()).ConfigureAwait(false);
         return null;
     }
 
@@ -140,13 +143,13 @@ public partial class Context<TActivity> : IContext<TActivity>
                 IsGroup = false,
                 Bot = Ref.Bot,
                 Members = [Activity.From]
-            });
+            }).ConfigureAwait(false);
 
             reference.Conversation.Id = id;
             reference.Conversation.IsGroup = false;
 
-            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, token);
-            await OnActivitySent(oauthCardActivity, ToActivityType());
+            var oauthCardActivity = await Sender.Send(new MessageActivity(options.OAuthCardText), reference, token).ConfigureAwait(false);
+            await OnActivitySent(oauthCardActivity, ToActivityType()).ConfigureAwait(false);
         }
 
         var activity = new MessageActivity();
@@ -170,8 +173,8 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]
         });
 
-        var res = await Sender.Send(activity, reference, token);
-        await OnActivitySent(res, ToActivityType());
+        var res = await Sender.Send(activity, reference, token).ConfigureAwait(false);
+        await OnActivitySent(res, ToActivityType()).ConfigureAwait(false);
     }
 
     public async Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default)
@@ -183,7 +186,7 @@ public partial class Context<TActivity> : IContext<TActivity>
             ChannelId = Ref.ChannelId,
             UserId = Activity.From.Id,
             ConnectionName = connectionName ?? ConnectionName,
-        });
+        }).ConfigureAwait(false);
     }
 }
 

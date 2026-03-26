@@ -61,8 +61,8 @@ public partial class Context<TActivity> : IContext<TActivity>
 {
     public async Task<T> Send<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
-        var res = await Sender.Send(activity, Ref, CancellationToken);
-        await OnActivitySent(res, ToActivityType<IActivity>());
+        var res = await Sender.Send(activity, Ref, cancellationToken).ConfigureAwait(false);
+        await OnActivitySent(res, ToActivityType<IActivity>()).ConfigureAwait(false);
         return res;
     }
 

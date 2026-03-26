@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Collections.Concurrent;
@@ -48,7 +48,7 @@ public partial class AspNetCorePlugin
             _queue.Enqueue(activity);
             _timeout = new Timer(_ =>
             {
-                _ = Flush();
+                _ = FlushSafe();
             }, null, 500, Timeout.Infinite);
         }
 
@@ -63,7 +63,7 @@ public partial class AspNetCorePlugin
             _queue.Enqueue(activity);
             _timeout = new Timer(_ =>
             {
-                _ = Flush();
+                _ = FlushSafe();
             }, null, 500, Timeout.Infinite);
         }
 
@@ -89,7 +89,7 @@ public partial class AspNetCorePlugin
             if (_result is not null) return _result;
             while (_id is null || _queue.Count > 0)
             {
-                await Task.Delay(50, cancellationToken);
+                await Task.Delay(50, cancellationToken).ConfigureAwait(false);
             }
 
             if (_text == string.Empty && _attachments.Count == 0) // when only informative updates are present
@@ -124,7 +124,7 @@ public partial class AspNetCorePlugin
         {
             if (_queue.Count == 0) return;
 
-            await _lock.WaitAsync();
+            await _lock.WaitAsync().ConfigureAwait(false);
 
             try
             {
@@ -170,7 +170,7 @@ public partial class AspNetCorePlugin
                 {
                     while (informativeUpdates.TryDequeue(out var typing))
                     {
-                        await SendActivity(typing);
+                        await SendActivity(typing).ConfigureAwait(false);
                     }
                 }
 
@@ -178,14 +178,14 @@ public partial class AspNetCorePlugin
                 if (_text != string.Empty)
                 {
                     var toSend = new TypingActivity(_text);
-                    await SendActivity(toSend);
+                    await SendActivity(toSend).ConfigureAwait(false);
                 }
 
                 if (_queue.Count > 0)
                 {
                     _timeout = new Timer(_ =>
                     {
-                        _ = Flush();
+                        _ = FlushSafe();
                     }, null, 500, Timeout.Infinite);
                 }
 
@@ -206,6 +206,19 @@ public partial class AspNetCorePlugin
             finally
             {
                 _lock.Release();
+            }
+        }
+
+        private async Task FlushSafe()
+        {
+            try
+            {
+                await Flush().ConfigureAwait(false);
+            }
+            catch
+            {
+                // Suppress exceptions from fire-and-forget timer callbacks
+                // to prevent unobserved task exceptions
             }
         }
     }

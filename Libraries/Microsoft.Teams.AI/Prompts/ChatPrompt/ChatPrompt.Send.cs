@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.AI.Messages;
@@ -10,17 +10,17 @@ public partial class ChatPrompt<TOptions>
 {
     public async Task<IMessage> Send(IMessage message, CancellationToken cancellationToken = default)
     {
-        return await Send(message, null, null, cancellationToken);
+        return await Send(message, null, null, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ModelMessage<string>> Send(string text, CancellationToken cancellationToken = default)
     {
-        return await Send(text, null, null, cancellationToken);
+        return await Send(text, null, null, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<ModelMessage<string>> Send(string text, OnStreamChunk? onChunk, CancellationToken cancellationToken = default)
     {
-        return await Send(text, null, onChunk, cancellationToken);
+        return await Send(text, null, onChunk, cancellationToken).ConfigureAwait(false);
     }
 
     public Task<ModelMessage<string>> Send(string text, IChatPrompt<TOptions>.RequestOptions? options, OnStreamChunk? onChunk = null, CancellationToken cancellationToken = default)
@@ -49,7 +49,7 @@ public partial class ChatPrompt<TOptions>
     {
         var messages = options?.Messages ?? Messages;
         var buffer = string.Empty;
-        var prompt = Template is not null ? await Template.Render(null, cancellationToken) : null;
+        var prompt = Template is not null ? await Template.Render(null, cancellationToken).ConfigureAwait(false) : null;
 
         async Task OnChunk(string chunk)
         {
@@ -58,7 +58,7 @@ public partial class ChatPrompt<TOptions>
 
             try
             {
-                await onChunk(buffer);
+                await onChunk(buffer).ConfigureAwait(false);
                 buffer = string.Empty;
             }
             catch { return; }
@@ -74,8 +74,8 @@ public partial class ChatPrompt<TOptions>
         // allow plugins to modify functions and instructions before each send
         foreach (var plugin in Plugins)
         {
-            functions = await plugin.OnBuildFunctions(this, functions, cancellationToken);
-            instructions = await plugin.OnBuildInstructions(this, instructions);
+            functions = await plugin.OnBuildFunctions(this, functions, cancellationToken).ConfigureAwait(false);
+            instructions = await plugin.OnBuildInstructions(this, instructions, cancellationToken).ConfigureAwait(false);
         }
 
         ChatModelOptions<TOptions> requestOptions = new(Invoke(functions))
@@ -94,23 +94,23 @@ public partial class ChatPrompt<TOptions>
 
             foreach (var plugin in Plugins)
             {
-                message = await plugin.OnBeforeSend(this, message, requestOptions.Options, cancellationToken);
+                message = await plugin.OnBeforeSend(this, message, requestOptions.Options, cancellationToken).ConfigureAwait(false);
             }
 
             if (onChunk is null)
             {
-                res = await Model.Send(message, requestOptions, cancellationToken);
+                res = await Model.Send(message, requestOptions, cancellationToken).ConfigureAwait(false);
             }
             else
             {
-                res = await Model.Send(message, requestOptions, new Stream(OnChunk), cancellationToken);
+                res = await Model.Send(message, requestOptions, new Stream(OnChunk), cancellationToken).ConfigureAwait(false);
             }
 
             Logger.Debug(res);
 
             foreach (var plugin in Plugins)
             {
-                res = (ModelMessage<string>)await plugin.OnAfterSend(this, res, requestOptions.Options, cancellationToken);
+                res = (ModelMessage<string>)await plugin.OnAfterSend(this, res, requestOptions.Options, cancellationToken).ConfigureAwait(false);
             }
 
             return res;

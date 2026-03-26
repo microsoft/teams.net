@@ -32,7 +32,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<InstallUpdateActivity>());
+                await handler(context.ToActivityType<InstallUpdateActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is InstallUpdateActivity
@@ -49,7 +49,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<InstallUpdateActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<InstallUpdateActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is InstallUpdateActivity

@@ -23,7 +23,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<SignIn.VerifyStateActivity>());
+                await handler(context.ToActivityType<SignIn.VerifyStateActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is SignIn.VerifyStateActivity
@@ -51,7 +51,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.VerifyState]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.VerifyStateActivity>()),
+            Handler = async context => await handler(context.ToActivityType<SignIn.VerifyStateActivity>()).ConfigureAwait(false),
             Selector = activity => activity is SignIn.VerifyStateActivity
         });
 
@@ -66,7 +66,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<SignIn.VerifyStateActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<SignIn.VerifyStateActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is SignIn.VerifyStateActivity
@@ -94,7 +94,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.VerifyState]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.VerifyStateActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<SignIn.VerifyStateActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is SignIn.VerifyStateActivity
         });
 

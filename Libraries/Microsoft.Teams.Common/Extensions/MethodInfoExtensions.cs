@@ -20,7 +20,12 @@ public static class MethodInfoExtensions
         if (res is Task task)
         {
             await task.ConfigureAwait(false);
-            return task.GetType().GetProperty("Result")?.GetValue(task);
+            var resultProperty = task.GetType().GetProperty("Result");
+            if (resultProperty is not null && task.GetType().IsGenericType)
+            {
+                return resultProperty.GetValue(task);
+            }
+            return null;
         }
 
         return res;

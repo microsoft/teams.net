@@ -66,5 +66,5 @@ public interface IChatPlugin
     /// <param name="prompt">the prompt</param>
     /// <param name="instructions">the instructions</param>
     /// <returns>the transformed instructions</returns>
-    public Task<DeveloperMessage?> OnBuildInstructions<TOptions>(IChatPrompt<TOptions> prompt, DeveloperMessage? instructions);
+    public Task<DeveloperMessage?> OnBuildInstructions<TOptions>(IChatPrompt<TOptions> prompt, DeveloperMessage? instructions, CancellationToken cancellationToken = default);
 }

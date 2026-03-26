@@ -36,7 +36,7 @@ public abstract class BaseChatPlugin : IChatPlugin
         return Task.FromResult(functions);
     }
 
-    public virtual Task<DeveloperMessage?> OnBuildInstructions<TOptions>(IChatPrompt<TOptions> prompt, DeveloperMessage? instructions)
+    public virtual Task<DeveloperMessage?> OnBuildInstructions<TOptions>(IChatPrompt<TOptions> prompt, DeveloperMessage? instructions, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(instructions);
     }

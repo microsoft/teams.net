@@ -39,7 +39,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<InvokeActivity>());
+                await handler(context.ToActivityType<InvokeActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is InvokeActivity
@@ -67,7 +67,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = ActivityType.Invoke,
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<InvokeActivity>()),
+            Handler = async context => await handler(context.ToActivityType<InvokeActivity>()).ConfigureAwait(false),
             Selector = activity => activity is InvokeActivity
         });
 
@@ -82,7 +82,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<InvokeActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<InvokeActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is InvokeActivity
@@ -110,7 +110,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = ActivityType.Invoke,
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<InvokeActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<InvokeActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is InvokeActivity
         });
 

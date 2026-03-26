@@ -26,7 +26,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.CardButtonClickedActivity>());
+                await handler(context.ToActivityType<MessageExtensions.CardButtonClickedActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.CardButtonClickedActivity
@@ -43,7 +43,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.CardButtonClickedActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageExtensions.CardButtonClickedActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.CardButtonClickedActivity

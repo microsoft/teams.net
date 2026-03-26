@@ -25,7 +25,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageUpdateActivity>());
+                await handler(context.ToActivityType<MessageUpdateActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageUpdateActivity
@@ -42,7 +42,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageUpdateActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageUpdateActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageUpdateActivity

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Common.Http;
@@ -40,7 +40,7 @@ public class ClientCredentials : IHttpCredentials
             { "scope", string.Join(",", scopes) }
         };
 
-        var res = await client.SendAsync<TokenResponse>(request, cancellationToken);
+        var res = await client.SendAsync<TokenResponse>(request, cancellationToken).ConfigureAwait(false);
         return res.Body;
     }
 }

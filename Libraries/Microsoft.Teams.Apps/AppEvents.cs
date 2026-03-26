@@ -22,7 +22,7 @@ public partial class App
 
             if (ex.Request?.Content is not null)
             {
-                var content = await ex.Request.Content.ReadAsStringAsync();
+                var content = await ex.Request.Content.ReadAsStringAsync().ConfigureAwait(false);
                 Logger.Error(content);
             }
         }
@@ -30,7 +30,7 @@ public partial class App
         foreach (var plugin in Plugins)
         {
             if (sender.Equals(plugin)) continue;
-            await plugin.OnError(this, sender, @event, cancellationToken);
+            await plugin.OnError(this, sender, @event, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -47,7 +47,7 @@ public partial class App
         foreach (var plugin in Plugins)
         {
             if (sender.Equals(plugin)) continue;
-            await plugin.OnActivitySent(this, sender, @event, cancellationToken);
+            await plugin.OnActivitySent(this, sender, @event, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -58,7 +58,7 @@ public partial class App
         foreach (var plugin in Plugins)
         {
             if (sender.Equals(plugin)) continue;
-            await plugin.OnActivityResponse(this, sender, @event, cancellationToken);
+            await plugin.OnActivityResponse(this, sender, @event, cancellationToken).ConfigureAwait(false);
         }
     }
 }

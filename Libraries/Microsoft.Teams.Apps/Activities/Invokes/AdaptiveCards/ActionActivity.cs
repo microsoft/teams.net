@@ -27,7 +27,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<AdaptiveCards.ActionActivity>());
+                await handler(context.ToActivityType<AdaptiveCards.ActionActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is AdaptiveCards.ActionActivity
@@ -42,7 +42,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>()),
+            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>()).ConfigureAwait(false),
             Selector = activity => activity is AdaptiveCards.ActionActivity
         });
 
@@ -55,7 +55,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>()),
+            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>()).ConfigureAwait(false),
             Selector = activity => activity is AdaptiveCards.ActionActivity
         });
 
@@ -70,7 +70,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<AdaptiveCards.ActionActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<AdaptiveCards.ActionActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is AdaptiveCards.ActionActivity
@@ -85,7 +85,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is AdaptiveCards.ActionActivity
         });
 
@@ -98,7 +98,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is AdaptiveCards.ActionActivity
         });
 

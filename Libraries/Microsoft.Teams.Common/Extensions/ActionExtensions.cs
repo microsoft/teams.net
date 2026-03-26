@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 namespace Microsoft.Teams.Common.Extensions;
@@ -14,10 +14,10 @@ public static class ActionExtensions
             cancelTokenSource?.Cancel();
             cancelTokenSource = new CancellationTokenSource();
 
-            Task.Delay(milliseconds, cancelTokenSource.Token)
+            _ = Task.Delay(milliseconds, cancelTokenSource.Token)
                 .ContinueWith(t =>
                 {
-                    if (t.IsCompleted && !t.IsFaulted)
+                    if (t.IsCompletedSuccessfully)
                     {
                         func(arg);
                     }
@@ -34,12 +34,12 @@ public static class ActionExtensions
             cancelTokenSource?.Cancel();
             cancelTokenSource = new CancellationTokenSource();
 
-            Task.Delay(milliseconds, cancelTokenSource.Token)
+            _ = Task.Delay(milliseconds, cancelTokenSource.Token)
                 .ContinueWith(async t =>
                 {
-                    if (t.IsCompleted && !t.IsFaulted)
+                    if (t.IsCompletedSuccessfully)
                     {
-                        await func();
+                        await func().ConfigureAwait(false);
                     }
                 }, TaskScheduler.Default);
         };

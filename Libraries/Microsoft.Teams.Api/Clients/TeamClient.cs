@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Common.Http;
@@ -32,14 +32,14 @@ public class TeamClient : Client
     public async Task<Team> GetByIdAsync(string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v3/teams/{id}");
-        var response = await _http.SendAsync<Team>(request, _cancellationToken);
+        var response = await _http.SendAsync<Team>(request, _cancellationToken).ConfigureAwait(false);
         return response.Body;
     }
 
     public async Task<List<Channel>> GetConversationsAsync(string id)
     {
         var request = HttpRequest.Get($"{ServiceUrl}v3/teams/{id}/conversations");
-        var response = await _http.SendAsync<List<Channel>>(request, _cancellationToken);
+        var response = await _http.SendAsync<List<Channel>>(request, _cancellationToken).ConfigureAwait(false);
         return response.Body;
     }
 }

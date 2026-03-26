@@ -26,7 +26,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>());
+                await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
@@ -41,7 +41,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
         });
 
@@ -54,7 +54,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>()).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
         });
 
@@ -69,7 +69,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
@@ -84,7 +84,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
         });
 
@@ -97,7 +97,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
         });
 

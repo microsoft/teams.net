@@ -23,7 +23,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<SignIn.TokenExchangeActivity>());
+                await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is SignIn.TokenExchangeActivity
@@ -38,7 +38,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()).ConfigureAwait(false),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
 
@@ -51,7 +51,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()).ConfigureAwait(false),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
 
@@ -64,7 +64,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()).ConfigureAwait(false),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
 
@@ -79,7 +79,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is SignIn.TokenExchangeActivity
@@ -94,7 +94,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
 
@@ -107,7 +107,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
 
@@ -120,7 +120,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
 
