@@ -70,7 +70,7 @@ public partial class Context<TActivity> : IContext<TActivity>
         }
         catch (Exception ex)
         {
-            Log.Debug($"Existing token retrieval failed, proceeding to token exchange: {ex.Message}");
+            Log.Debug("Existing token retrieval failed, proceeding to token exchange", ex);
         }
 
         var tokenExchangeState = new Api.TokenExchange.State()

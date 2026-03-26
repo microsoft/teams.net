@@ -12,6 +12,7 @@ public static class ActionExtensions
         return arg =>
         {
             cancelTokenSource?.Cancel();
+            cancelTokenSource?.Dispose();
             cancelTokenSource = new CancellationTokenSource();
 
             _ = Task.Delay(milliseconds, cancelTokenSource.Token)
@@ -32,6 +33,7 @@ public static class ActionExtensions
         return () =>
         {
             cancelTokenSource?.Cancel();
+            cancelTokenSource?.Dispose();
             cancelTokenSource = new CancellationTokenSource();
 
             _ = DebounceCore(func, milliseconds, cancelTokenSource.Token);
@@ -47,6 +49,11 @@ public static class ActionExtensions
             catch (OperationCanceledException)
             {
                 // Debounce was cancelled by a newer invocation
+            }
+            catch (Exception)
+            {
+                // Observe exception to prevent UnobservedTaskException.
+                // Callers use fire-and-forget; there is no upstream to propagate to.
             }
         }
     }

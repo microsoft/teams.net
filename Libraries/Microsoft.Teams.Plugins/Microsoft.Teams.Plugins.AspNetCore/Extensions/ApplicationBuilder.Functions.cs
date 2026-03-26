@@ -120,7 +120,7 @@ public static partial class ApplicationBuilderExtensions
                 var app = context.RequestServices.GetRequiredService<App>();
                 var log = app.Logger.Child("functions").Child(name);
 
-                if (context.Request.Headers.Authorization.First() is null)
+                if (context.Request.Headers.Authorization.FirstOrDefault() is null)
                 {
                     await Results.Unauthorized().ExecuteAsync(context).ConfigureAwait(false);
                     return;

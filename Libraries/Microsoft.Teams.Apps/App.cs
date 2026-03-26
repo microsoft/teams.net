@@ -302,7 +302,7 @@ public partial class App
         }
         catch (Exception ex)
         {
-            Logger.Debug($"Token retrieval failed, proceeding without token: {ex.Message}");
+            Logger.Debug("Token retrieval failed, proceeding without token", ex);
         }
 
         var path = @event.Activity.GetPath();

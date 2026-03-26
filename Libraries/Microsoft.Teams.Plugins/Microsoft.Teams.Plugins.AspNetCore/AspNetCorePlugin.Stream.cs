@@ -217,10 +217,15 @@ public partial class AspNetCorePlugin
             }
             catch (Exception)
             {
-                // Suppress exceptions from fire-and-forget timer callbacks
-                // to prevent unobserved task exceptions.
-                // Flush errors are transient (e.g. network hiccups) and the
-                // stream will retry on the next timer tick or Close().
+                // Reschedule a retry so Close() doesn't spin forever
+                // waiting for _id to be set after a transient send failure.
+                if (_queue.Count > 0 || _id is null && _count > 0)
+                {
+                    _timeout = new Timer(_ =>
+                    {
+                        _ = FlushSafe();
+                    }, null, 1000, Timeout.Infinite);
+                }
             }
         }
     }
