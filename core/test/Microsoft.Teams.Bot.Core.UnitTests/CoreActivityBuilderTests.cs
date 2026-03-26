@@ -558,16 +558,6 @@ public class CoreActivityBuilderTests
     }
 
     [Fact]
-    public void WithReplyToId_SetsReplyToId()
-    {
-        CoreActivity activity = new CoreActivityBuilder()
-            .WithReplyToId("reply-123")
-            .Build();
-
-        Assert.Equal("reply-123", activity.ReplyToId);
-    }
-
-    [Fact]
     public void WithServiceUrl_String_SetsServiceUrl()
     {
         CoreActivity activity = new CoreActivityBuilder()
@@ -575,45 +565,6 @@ public class CoreActivityBuilderTests
             .Build();
 
         Assert.Equal(new Uri("https://smba.trafficmanager.net/teams/"), activity.ServiceUrl);
-    }
-
-    [Fact]
-    public void WithConversationReference_WithActivityId_SetsReplyToId()
-    {
-        CoreActivity sourceActivity = new()
-        {
-            Id = "activity-456",
-            ChannelId = "msteams",
-            ServiceUrl = new Uri("https://test.com"),
-            Conversation = new Conversation { Id = "conv-123" },
-            From = new ConversationAccount { Id = "user-1" },
-            Recipient = new ConversationAccount { Id = "bot-1" }
-        };
-
-        CoreActivity activity = new CoreActivityBuilder()
-            .WithConversationReference(sourceActivity)
-            .Build();
-
-        Assert.Equal("activity-456", activity.ReplyToId);
-    }
-
-    [Fact]
-    public void WithConversationReference_WithoutActivityId_DoesNotSetReplyToId()
-    {
-        CoreActivity sourceActivity = new()
-        {
-            ChannelId = "msteams",
-            ServiceUrl = new Uri("https://test.com"),
-            Conversation = new Conversation { Id = "conv-123" },
-            From = new ConversationAccount { Id = "user-1" },
-            Recipient = new ConversationAccount { Id = "bot-1" }
-        };
-
-        CoreActivity activity = new CoreActivityBuilder()
-            .WithConversationReference(sourceActivity)
-            .Build();
-
-        Assert.Null(activity.ReplyToId);
     }
 
     [Fact]

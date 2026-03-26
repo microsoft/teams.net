@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -174,6 +175,38 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     {
         ArgumentNullException.ThrowIfNull(_activity);
         _activity.SuggestedActions = suggestedActions;
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a quoted reply entity and appends a placeholder to the activity text.
+    /// </summary>
+    /// <param name="messageId">The ID of the message to quote.</param>
+    /// <param name="text">Optional text, appended to the quoted message placeholder.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+    public TeamsActivityBuilder WithQuote(string messageId, string? text = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        _activity.Entities ??= [];
+        _activity.Entities.Add(new QuotedReplyEntity
+        {
+            QuotedReply = new QuotedReplyData { MessageId = messageId }
+        });
+
+        string? currentText = _activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
+        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
+        var newText = (currentText ?? "") + placeholder;
+        if (text != null)
+        {
+            newText += $" {text}";
+        }
+        WithProperty("text", newText);
+
+        CoreActivity baseActivity = _activity;
+        baseActivity.Entities = _activity.Entities.ToJsonArray();
+
         return this;
     }
 
