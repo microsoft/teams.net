@@ -65,7 +65,7 @@ public class TeamsActivity : CoreActivity
         // Convert base types to Teams-specific types
         if (activity.ChannelData is not null)
         {
-            ChannelData = new TeamsChannelData(activity.ChannelData);
+            ChannelData = TeamsChannelData.FromChannelData(activity.ChannelData);
         }
 
         if (activity.From is not null)
@@ -146,6 +146,7 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     [JsonPropertyName("entities")] public new EntityList? Entities { get; set; }
 
+    // TODO : mv attachments to MessageActivity if it's only used for messages.
     /// <summary>
     /// Attachments specific to Teams.
     /// </summary>
@@ -174,27 +175,6 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     [JsonPropertyName("localTimezone")]
     public string? LocalTimezone { get; set; }
-
-    /// <summary>
-    /// Gets or sets the suggested actions for the message.
-    /// </summary>
-    [JsonPropertyName("suggestedActions")]
-    public SuggestedActions? SuggestedActions { get; set; }
-
-
-    /// <summary>
-    /// Adds an entity to the activity's Entities collection.
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    public TeamsActivity AddEntity(Entity entity)
-    {
-        // TODO: Pick up nuances about entities.
-        // For eg, there can only be 1 single MessageEntity
-        Entities ??= [];
-        Entities.Add(entity);
-        return this;
-    }
 
     /// <summary>
     /// Creates a new TeamsActivityBuilder instance for building a TeamsActivity with a fluent API.

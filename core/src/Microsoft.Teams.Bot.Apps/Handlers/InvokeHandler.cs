@@ -23,8 +23,7 @@ public static class InvokeExtensions
 {
     /// <summary>
     /// Registers a catch-all handler for all invoke activities.
-    /// Cannot be combined with specific invoke handlers such as <see cref="AdaptiveCardExtensions.OnAdaptiveCardAction"/>,
-    /// <see cref="TaskExtensions.OnTaskFetch"/>, etc.
+    /// Cannot be combined with specific invoke handlers such as <see cref="AdaptiveCardExtensions.OnAdaptiveCardAction"/>
     /// </summary>
     /// <remarks>
     /// Breaking change: previously a catch-all invoke handler could be registered alongside specific invoke handlers. This combination now throws at registration time.

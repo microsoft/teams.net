@@ -32,8 +32,7 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
         }, cancellationToken);
 
 
-    var helpActivity = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    var helpActivity = MessageActivity.CreateBuilder()
         .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
         .WithSuggestedActions(new SuggestedActions()
          {
@@ -57,8 +56,7 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
 
     string replyText = $"You sent: `{context.Activity.Text}`. Type `help` to see available commands.";
 
-    TeamsActivity ta = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    MessageActivity ta = MessageActivity.CreateBuilder()
         .WithText(replyText)
         .AddMention(context.Activity.From)
         .Build();
@@ -144,8 +142,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
     // Send a targeted message visible only to the sender
-    TeamsActivity targeted = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    MessageActivity targeted = MessageActivity.CreateBuilder()
         .WithText("This is a targeted message only you can see!")
         .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();
@@ -155,8 +152,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
 
     // Update the targeted message (must use UpdateTargetedAsync to avoid setting Recipient on the update payload)
-    TeamsActivity updated = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    MessageActivity updated = MessageActivity.CreateBuilder()
         .WithText("This targeted message was updated!")
         .WithServiceUrl(context.Activity.ServiceUrl)
         .Build();
@@ -183,8 +179,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
-    var tmMsgToReact = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    var tmMsgToReact = MessageActivity.CreateBuilder()
         .WithText("I'm going to add and remove reactions to this message.")
         .WithRecipient(context.Activity.From, false)
         .WithServiceUrl(context.Activity.ServiceUrl)
@@ -264,8 +259,7 @@ teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
         ]
     };
 
-    var reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    var reply = MessageActivity.CreateBuilder()
         .WithText("Here are some suggested actions for you:")
         .WithSuggestedActions(suggestedActions)
         .Build();
@@ -329,7 +323,7 @@ teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
     string? feedbackValue = context.Activity.Value?.Action?.Data?["feedback"]?.ToString();
 
     TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithAttachment(TeamsAttachment.CreateBuilder()
+        .AddAttachment(TeamsAttachment.CreateBuilder()
             .WithAdaptiveCard(Cards.ResponseCard(feedbackValue))
             .Build()
         )
@@ -366,8 +360,7 @@ teamsApp.OnTaskSubmit(async (context, cancellationToken) =>
     string? name = data?["userName"]?.ToString();
     string? comment = data?["userComment"]?.ToString();
 
-    TeamsActivity reply = TeamsActivity.CreateBuilder()
-        .WithType(TeamsActivityType.Message)
+    MessageActivity reply = MessageActivity.CreateBuilder()
         .WithText($"**Task module submitted!**\n- Name: {name ?? "(empty)"}\n- Comment: {comment ?? "(empty)"}")
         .Build();
 

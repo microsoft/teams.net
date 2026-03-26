@@ -78,10 +78,6 @@ public class MessageActivity : TeamsActivity
             {
                 SuggestedActions = JsonSerializer.Deserialize<SuggestedActions>(je.GetRawText());
             }
-            else
-            {
-                SuggestedActions = suggestedActions as SuggestedActions;
-            }
             activity.Properties.Remove("suggestedActions");
         }
         /*
@@ -135,7 +131,21 @@ public class MessageActivity : TeamsActivity
     [JsonPropertyName("attachmentLayout")]
     public string? AttachmentLayout { get; set; }
 
-    
+    /// <summary>
+    /// Gets or sets the suggested actions for the message.
+    /// </summary>
+    [JsonPropertyName("suggestedActions")]
+    public SuggestedActions? SuggestedActions { get; set; }
+
+    /// <summary>
+    /// Creates a new <see cref="MessageActivityBuilder"/> instance.
+    /// </summary>
+    public static new MessageActivityBuilder CreateBuilder() => new();
+
+    /// <summary>
+    /// Creates a new <see cref="MessageActivityBuilder"/> initialized with an existing activity.
+    /// </summary>
+    public static MessageActivityBuilder CreateBuilder(MessageActivity activity) => new(activity);
 
     //TODO : Review properties
     /*

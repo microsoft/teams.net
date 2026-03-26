@@ -21,7 +21,8 @@ public class StreamingActivity : TeamsActivity
     {
         Text = text;
         StreamInfo = new StreamInfoEntity();
-        AddEntity(StreamInfo);
+        Entities ??= [];
+        Entities.Add(StreamInfo);
     }
 
     /// <summary>
@@ -34,4 +35,9 @@ public class StreamingActivity : TeamsActivity
     /// Gets the stream info entity for this streaming activity.
     /// </summary>
     public StreamInfoEntity StreamInfo { get; }
+
+    /// <summary>
+    /// Creates a new <see cref="StreamingActivityBuilder"/> with an initial text chunk.
+    /// </summary>
+    public static StreamingActivityBuilder CreateBuilder(string text = "") => new(text);
 }
