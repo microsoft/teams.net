@@ -70,6 +70,17 @@ public class MessageActivity : Activity
     {
         get => (Entities ?? []).Any(e => e is MentionEntity mention && mention.Mentioned.Id == Recipient.Id);
     }
+    /// <summary>
+    /// Get all quoted reply entities from this message.
+    /// </summary>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+#pragma warning disable ExperimentalTeamsQuotedReplies
+    public IReadOnlyList<QuotedReplyEntity> GetQuotedMessages()
+    {
+        return Entities?.OfType<QuotedReplyEntity>().ToList()
+            ?? new List<QuotedReplyEntity>();
+    }
+#pragma warning restore ExperimentalTeamsQuotedReplies
 
     public MessageActivity() : base(ActivityType.Message)
     {
@@ -153,12 +164,58 @@ public class MessageActivity : Activity
     }
 
     [Experimental("ExperimentalTeamsTargeted")]
-    #pragma warning disable ExperimentalTeamsTargeted
+#pragma warning disable ExperimentalTeamsTargeted
     public override MessageActivity WithRecipient(Account value, bool isTargeted = false)
     {
         return (MessageActivity)base.WithRecipient(value, isTargeted);
     }
-    #pragma warning restore ExperimentalTeamsTargeted
+#pragma warning restore ExperimentalTeamsTargeted
+
+    /// <summary>
+    /// Add a quoted message reference and append a placeholder to text.
+    /// Teams renders the quoted message as a preview bubble above the response text.
+    /// If text is provided, it is appended to the quoted message placeholder.
+    /// </summary>
+    /// <param name="messageId">the ID of the message to quote</param>
+    /// <param name="text">optional text, appended to the quoted message placeholder</param>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+#pragma warning disable ExperimentalTeamsQuotedReplies
+    public MessageActivity AddQuote(string messageId, string? text = null)
+    {
+        Entities ??= new List<IEntity>();
+        Entities.Add(new QuotedReplyEntity
+        {
+            QuotedReply = new QuotedReplyData { MessageId = messageId }
+        });
+        AddText($"<quoted messageId=\"{messageId}\"/>");
+        if (text != null)
+        {
+            AddText($" {text}");
+        }
+        return this;
+    }
+#pragma warning restore ExperimentalTeamsQuotedReplies
+
+    /// <summary>
+    /// Prepend a QuotedReply entity and placeholder before existing text.
+    /// Used by Reply()/Quote() for quote-above-response.
+    /// </summary>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+#pragma warning disable ExperimentalTeamsQuotedReplies
+    public MessageActivity PrependQuote(string messageId)
+    {
+        Entities ??= new List<IEntity>();
+        Entities.Add(new QuotedReplyEntity
+        {
+            QuotedReply = new QuotedReplyData { MessageId = messageId }
+        });
+        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
+        var hasText = !string.IsNullOrWhiteSpace(Text);
+        Text = hasText ? $"{placeholder} {Text}" : placeholder;
+        return this;
+    }
+#pragma warning restore ExperimentalTeamsQuotedReplies
+
 
     public MessageActivity AddAttachment(params Attachment[] value)
     {
