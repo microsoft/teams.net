@@ -75,7 +75,7 @@ internal sealed class BotAuthenticationHandler(
         {
             AcquireTokenOptions = new AcquireTokenOptions()
             {
-                AuthenticationOptionsName = AddBotApplicationExtensions.MsalConfigKey,
+                AuthenticationOptionsName = MsalConfigurationExtensions.MsalConfigKey,
             }
         };
 

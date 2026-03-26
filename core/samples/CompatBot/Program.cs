@@ -34,7 +34,7 @@ compatAdapter.Use(new MyCompatMiddleware());
 compatAdapter.Use(new MyCompatMiddleware());
 
 app.MapPost("/api/messages", async (IBotFrameworkHttpAdapter adapter, IBot bot, HttpRequest request, HttpResponse response, CancellationToken ct) =>
-    await adapter.ProcessAsync(request, response, bot, ct));
+    await adapter.ProcessAsync(request, response, bot, ct)).RequireAuthorization();
 
 app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string cid, CancellationToken ct) =>
 {
