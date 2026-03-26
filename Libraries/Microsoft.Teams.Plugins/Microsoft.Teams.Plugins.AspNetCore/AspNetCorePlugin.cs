@@ -138,7 +138,8 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
             {
                 var res = await Send(activity, reference, cancellationToken).ConfigureAwait(false);
                 return res;
-            }
+            },
+            Logger = Logger.Child("stream")
         };
     }
 
