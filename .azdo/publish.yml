@@ -2,16 +2,16 @@
 # For public releases, this pipeline (teams.net) is triggered manually.
 # It builds, tests, signs (Authenticode + NuGet), and packs the code, then pushes to nuget.org (requires approval).
 #
-# MIGRATED TO 1ESPT: This pipeline now extends from 1ES Pipeline Template to ensure
-# compliance with Microsoft security requirements and resolve drift warnings.
+# MIGRATED TO M365PT: This pipeline now extends from M365PT template to ensure
+# compliance with M365 security requirements and resolve 1ESPT drift warnings.
 # =============================================================================
 
 resources:
   repositories:
-  - repository: 1ESPipelineTemplates
+  - repository: M365PT
     type: git
-    name: 1ESPipelineTemplates/1ESPipelineTemplates
-    ref: refs/tags/release
+    name: Pipelines/M365PT
+    ref: refs/heads/main
 
 trigger: none
 
@@ -25,12 +25,14 @@ variables:
   nugetSignId: 'a94a770a-9a7b-4888-a3ea-24584b851e49'
 
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  template: v1/M365PT.yml@M365PT
   parameters:
     pool:
-      name: Azure-Pipelines-1ESPT-ExDShared
-      image: ubuntu-latest
-      os: linux
+      vmImage: 'ubuntu-22.04'
+
+    # Required for M365PT tracking and drift management
+    customBuildTags:
+    - ES365AIMigrationTooling
 
     stages:
     - stage: Build_Test_Sign_Pack
