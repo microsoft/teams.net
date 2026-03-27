@@ -31,7 +31,7 @@ public class SuggestedActions
     public SuggestedActions AddRecipients(params string[] recipients)
     {
         ArgumentNullException.ThrowIfNull(recipients);
-        foreach (var to in recipients)
+        foreach (string to in recipients)
         {
             To.Add(to);
         }
@@ -58,7 +58,7 @@ public class SuggestedActions
     public SuggestedActions AddActions(params SuggestedAction[] actions)
     {
         ArgumentNullException.ThrowIfNull(actions);
-        foreach (var action in actions)
+        foreach (SuggestedAction action in actions)
         {
             Actions.Add(action);
         }

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json.Serialization;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 
@@ -20,153 +21,63 @@ internal static class CompatTeamsInfoModels
         return channelData?.Meeting;
     }
 
-    /// <summary>
-    /// Converts a Core BatchOperationState to a Bot Framework BatchOperationState.
-    /// </summary>
-    /// <param name="state">The source state.</param>
-    /// <returns>The converted Bot Framework BatchOperationState.</returns>
-    public static Microsoft.Bot.Schema.Teams.BatchOperationState ToCompatBatchOperationState(this Microsoft.Teams.Bot.Apps.BatchOperationState state)
+    internal sealed class SendMessageToUsersRequest
     {
-        ArgumentNullException.ThrowIfNull(state);
+        /// <summary>
+        /// Gets or sets the list of members.
+        /// </summary>
+        [JsonPropertyName("members")]
+        public IList<TeamMember>? Members { get; set; }
 
-        BatchOperationState result = new()
-        {
-            State = state.State,
-            RetryAfter = state.RetryAfter?.DateTime,
-            TotalEntriesCount = state.TotalEntriesCount ?? 0
-        };
+        /// <summary>
+        /// Gets or sets the activity to send.
+        /// </summary>
+        [JsonPropertyName("activity")]
+        public object? Activity { get; set; }
 
-        // StatusMap in Bot Framework SDK is IDictionary<int, int> (read-only property)
-        // Map from BatchOperationStatusMap to the dictionary format
-        if (state.StatusMap != null)
-        {
-            if (state.StatusMap.Success.HasValue)
-            {
-                result.StatusMap[0] = state.StatusMap.Success.Value;
-            }
+        /// <summary>
+        /// Gets or sets the tenant ID.
+        /// </summary>
+        [JsonPropertyName("tenantId")]
+        public string? TenantId { get; set; }
+    }
 
-            if (state.StatusMap.Failed.HasValue)
-            {
-                result.StatusMap[1] = state.StatusMap.Failed.Value;
-            }
+    internal sealed class SendMessageToTeamRequest
+    {
+        /// <summary>
+        /// Gets or sets the activity to send.
+        /// </summary>
+        [JsonPropertyName("activity")]
+        public object? Activity { get; set; }
 
-            if (state.StatusMap.Throttled.HasValue)
-            {
-                result.StatusMap[2] = state.StatusMap.Throttled.Value;
-            }
+        /// <summary>
+        /// Gets or sets the team ID.
+        /// </summary>
+        [JsonPropertyName("teamId")]
+        public string? TeamId { get; set; }
 
-            if (state.StatusMap.Pending.HasValue)
-            {
-                result.StatusMap[3] = state.StatusMap.Pending.Value;
-            }
-        }
-
-        return result;
+        /// <summary>
+        /// Gets or sets the tenant ID.
+        /// </summary>
+        [JsonPropertyName("tenantId")]
+        public string? TenantId { get; set; }
     }
 
     /// <summary>
-    /// Converts a Core BatchFailedEntriesResponse to a Bot Framework BatchFailedEntriesResponse.
+    /// Request body for sending a message to all users in a tenant.
     /// </summary>
-    /// <param name="response">The source response.</param>
-    /// <returns>The converted Bot Framework BatchFailedEntriesResponse.</returns>
-    public static Microsoft.Bot.Schema.Teams.BatchFailedEntriesResponse ToCompatBatchFailedEntriesResponse(this Microsoft.Teams.Bot.Apps.BatchFailedEntriesResponse response)
+    internal sealed class SendMessageToTenantRequest
     {
-        ArgumentNullException.ThrowIfNull(response);
+        /// <summary>
+        /// Gets or sets the activity to send.
+        /// </summary>
+        [JsonPropertyName("activity")]
+        public object? Activity { get; set; }
 
-        BatchFailedEntriesResponse result = new()
-        {
-            ContinuationToken = response.ContinuationToken
-        };
-
-        // FailedEntries is a read-only property with private setter, populate via the collection
-        if (response.FailedEntries != null)
-        {
-            foreach (Apps.BatchFailedEntry entry in response.FailedEntries)
-            {
-                result.FailedEntries.Add(entry.ToCompatBatchFailedEntry());
-            }
-        }
-
-        return result;
-    }
-
-    /// <summary>
-    /// Converts a Core BatchFailedEntry to a Bot Framework BatchFailedEntry.
-    /// </summary>
-    /// <param name="entry">The source entry.</param>
-    /// <returns>The converted Bot Framework BatchFailedEntry.</returns>
-    public static Microsoft.Bot.Schema.Teams.BatchFailedEntry ToCompatBatchFailedEntry(this Microsoft.Teams.Bot.Apps.BatchFailedEntry entry)
-    {
-        ArgumentNullException.ThrowIfNull(entry);
-
-        return new Microsoft.Bot.Schema.Teams.BatchFailedEntry
-        {
-            EntryId = entry.Id,
-            Error = entry.Error
-        };
-    }
-
-    /// <summary>
-    /// Converts a Core TeamDetails to a Bot Framework TeamDetails.
-    /// </summary>
-    /// <param name="teamDetails">The source team details.</param>
-    /// <returns>The converted Bot Framework TeamDetails.</returns>
-    public static Microsoft.Bot.Schema.Teams.TeamDetails ToCompatTeamDetails(this Microsoft.Teams.Bot.Apps.TeamDetails teamDetails)
-    {
-        ArgumentNullException.ThrowIfNull(teamDetails);
-
-        return new Microsoft.Bot.Schema.Teams.TeamDetails
-        {
-            Id = teamDetails.Id,
-            Name = teamDetails.Name,
-            AadGroupId = teamDetails.AadGroupId,
-            ChannelCount = teamDetails.ChannelCount ?? 0,
-            MemberCount = teamDetails.MemberCount ?? 0,
-            Type = teamDetails.Type
-        };
-    }
-
-    /// <summary>
-    /// Converts a Core MeetingNotificationResponse to a Bot Framework MeetingNotificationResponse.
-    /// </summary>
-    /// <param name="response">The source response.</param>
-    /// <returns>The converted Bot Framework MeetingNotificationResponse.</returns>
-    public static Microsoft.Bot.Schema.Teams.MeetingNotificationResponse ToCompatMeetingNotificationResponse(this Microsoft.Teams.Bot.Apps.MeetingNotificationResponse response)
-    {
-        ArgumentNullException.ThrowIfNull(response);
-
-        return new Microsoft.Bot.Schema.Teams.MeetingNotificationResponse
-        {
-            RecipientsFailureInfo = response.RecipientsFailureInfo?.Select(r => r.ToCompatMeetingNotificationRecipientFailureInfo()).ToList()
-        };
-    }
-
-    /// <summary>
-    /// Converts a Core MeetingNotificationRecipientFailureInfo to a Bot Framework MeetingNotificationRecipientFailureInfo.
-    /// </summary>
-    /// <param name="info">The source failure info.</param>
-    /// <returns>The converted Bot Framework MeetingNotificationRecipientFailureInfo.</returns>
-    public static Microsoft.Bot.Schema.Teams.MeetingNotificationRecipientFailureInfo ToCompatMeetingNotificationRecipientFailureInfo(this Microsoft.Teams.Bot.Apps.MeetingNotificationRecipientFailureInfo info)
-    {
-        ArgumentNullException.ThrowIfNull(info);
-
-        return new Microsoft.Bot.Schema.Teams.MeetingNotificationRecipientFailureInfo
-        {
-            RecipientMri = info.RecipientMri,
-            ErrorCode = info.ErrorCode,
-            FailureReason = info.FailureReason
-        };
-    }
-
-    /// <summary>
-    /// Converts a Bot Framework TeamMember to a Core TeamMember.
-    /// </summary>
-    /// <param name="teamMember">The source team member.</param>
-    /// <returns>The converted Core TeamMember.</returns>
-    public static Microsoft.Teams.Bot.Apps.TeamMember FromCompatTeamMember(this Microsoft.Bot.Schema.Teams.TeamMember teamMember)
-    {
-        ArgumentNullException.ThrowIfNull(teamMember);
-
-        return new Microsoft.Teams.Bot.Apps.TeamMember(teamMember.Id);
+        /// <summary>
+        /// Gets or sets the tenant ID.
+        /// </summary>
+        [JsonPropertyName("tenantId")]
+        public string? TenantId { get; set; }
     }
 }
