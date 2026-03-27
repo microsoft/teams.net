@@ -2,7 +2,17 @@
 # This pipeline publishes preview packages. Manually triggered only.
 # - "Internal": pushes unsigned packages to the internal TeamsSDKPreviews feed.
 # - "Public": signs (Authenticode + NuGet) and pushes to nuget.org (requires approval).
+#
+# MIGRATED TO M365PT: This pipeline now extends from M365PT template to ensure
+# compliance with M365 security requirements and resolve 1ESPT drift warnings.
 # =============================================================================
+
+resources:
+  repositories:
+  - repository: M365PT
+    type: git
+    name: Pipelines/M365PT
+    ref: refs/heads/main
 
 trigger: none
 
@@ -17,9 +27,6 @@ parameters:
   - Internal
   - Public
 
-pool:
-  vmImage: 'ubuntu-22.04'
-
 variables:
   buildConfiguration: 'Release'
   folderPath: '$(Build.SourcesDirectory)'
@@ -28,131 +35,141 @@ variables:
     authenticodeSignId: '2d5c4ab9-0b7e-4f60-bb92-70322df77b94'
     nugetSignId: 'a94a770a-9a7b-4888-a3ea-24584b851e49'
 
-stages:
+extends:
+  template: v1/M365PT.yml@M365PT
+  parameters:
+    pool:
+      vmImage: 'ubuntu-22.04'
 
-- ${{ if eq(parameters.publishType, 'Internal') }}:
-  - stage: Build_Test_Pack_Push_Internal
-    displayName: 'Build, Test, Pack, and Push (Internal Preview)'
-    jobs:
-    - job: BuildTestPackPush
-      displayName: 'Build, Test, Pack, and Push to Internal Feed'
-      steps:
-        - checkout: self
+    # Required for M365PT tracking and drift management
+    customBuildTags:
+    - ES365AIMigrationTooling
 
-        - task: UseDotNet@2
-          displayName: 'Use .NET 8'
-          inputs:
-            packageType: 'sdk'
-            version: '8.0.x'
+    stages:
 
-        - task: UseDotNet@2
-          displayName: 'Use .NET 10'
-          inputs:
-            packageType: 'sdk'
-            version: '10.0.x'
+    - ${{ if eq(parameters.publishType, 'Internal') }}:
+      - stage: Build_Test_Pack_Push_Internal
+        displayName: 'Build, Test, Pack, and Push (Internal Preview)'
+        jobs:
+        - job: BuildTestPackPush
+          displayName: 'Build, Test, Pack, and Push to Internal Feed'
+          steps:
+            - checkout: self
 
-        - script: dotnet restore
-          displayName: 'Restore'
+            - task: UseDotNet@2
+              displayName: 'Use .NET 8'
+              inputs:
+                packageType: 'sdk'
+                version: '8.0.x'
 
-        - script: dotnet build --no-restore --configuration $(buildConfiguration)
-          displayName: 'Build'
+            - task: UseDotNet@2
+              displayName: 'Use .NET 10'
+              inputs:
+                packageType: 'sdk'
+                version: '10.0.x'
 
-        - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
-          displayName: 'Test'
+            - script: dotnet restore
+              displayName: 'Restore'
 
-        - task: PublishTestResults@2
-          displayName: 'Publish Test Results'
-          condition: succeededOrFailed()
-          inputs:
-            testResultsFormat: 'VSTest'
-            testResultsFiles: '**/*.trx'
-            mergeTestResults: true
+            - script: dotnet build --no-restore --configuration $(buildConfiguration)
+              displayName: 'Build'
 
-        - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration $(buildConfiguration)
-          displayName: 'Pack'
+            - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
+              displayName: 'Test'
 
-        - task: NuGetCommand@2
-          displayName: 'Push NuGet Packages to Internal Feed'
-          inputs:
-            command: push
-            packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-            nuGetFeedType: internal
-            publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
+            - task: PublishTestResults@2
+              displayName: 'Publish Test Results'
+              condition: succeededOrFailed()
+              inputs:
+                testResultsFormat: 'VSTest'
+                testResultsFiles: '**/*.trx'
+                mergeTestResults: true
 
-        - task: PublishPipelineArtifact@1
-          displayName: 'Publish NuGet Packages as Pipeline Artifact'
-          inputs:
-            targetPath: '$(Build.ArtifactStagingDirectory)'
-            artifact: 'PreviewPackages'
-            publishLocation: 'pipeline'
-
-- ${{ if eq(parameters.publishType, 'Public') }}:
-  - stage: Build_Test_Sign_Pack
-    displayName: 'Build, Test, Sign, and Pack (Public Preview)'
-    jobs:
-    - job: BuildTestSignPack
-      displayName: 'Build, Test, Sign, and Pack'
-      steps:
-        - checkout: self
-
-        - task: UseDotNet@2
-          displayName: 'Use .NET 8'
-          inputs:
-            packageType: 'sdk'
-            version: '8.0.x'
-
-        - task: UseDotNet@2
-          displayName: 'Use .NET 10'
-          inputs:
-            packageType: 'sdk'
-            version: '10.0.x'
-
-        - script: dotnet restore
-          displayName: 'Restore'
-
-        - script: dotnet build --no-restore --configuration $(buildConfiguration)
-          displayName: 'Build'
-
-        - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
-          displayName: 'Test'
-
-        - task: PublishTestResults@2
-          displayName: 'Publish Test Results'
-          condition: succeededOrFailed()
-          inputs:
-            testResultsFormat: 'VSTest'
-            testResultsFiles: '**/*.trx'
-            mergeTestResults: true
-
-        - template: templates/sign-and-pack.yaml
-
-        - task: PublishPipelineArtifact@1
-          displayName: 'Publish NuGet Packages as Pipeline Artifact'
-          inputs:
-            targetPath: '$(Build.ArtifactStagingDirectory)'
-            artifact: 'PreviewPackages'
-            publishLocation: 'pipeline'
-
-- ${{ if eq(parameters.publishType, 'Public') }}:
-  - stage: PushToNuGet
-    displayName: 'Push Preview Packages to nuget.org'
-    dependsOn: Build_Test_Sign_Pack
-    jobs:
-    - deployment: PushPackages
-      displayName: 'Manual Approval Required to Push Packages'
-      environment:
-        name: 'teams-net-publish'
-      strategy:
-        runOnce:
-          deploy:
-            steps:
-            - download: current
-              artifact: PreviewPackages
+            - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration $(buildConfiguration)
+              displayName: 'Pack'
 
             - task: NuGetCommand@2
-              displayName: 'Push NuGet Packages'
+              displayName: 'Push NuGet Packages to Internal Feed'
               inputs:
                 command: push
-                packagesToPush: '$(Pipeline.Workspace)/PreviewPackages/*.nupkg'
-                nuGetFeedType: external
-                publishFeedCredentials: 'Microsoft.Teams.*'
+                packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+                nuGetFeedType: internal
+                publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
+
+            - task: PublishPipelineArtifact@1
+              displayName: 'Publish NuGet Packages as Pipeline Artifact'
+              inputs:
+                targetPath: '$(Build.ArtifactStagingDirectory)'
+                artifact: 'PreviewPackages'
+                publishLocation: 'pipeline'
+
+    - ${{ if eq(parameters.publishType, 'Public') }}:
+      - stage: Build_Test_Sign_Pack
+        displayName: 'Build, Test, Sign, and Pack (Public Preview)'
+        jobs:
+        - job: BuildTestSignPack
+          displayName: 'Build, Test, Sign, and Pack'
+          steps:
+            - checkout: self
+
+            - task: UseDotNet@2
+              displayName: 'Use .NET 8'
+              inputs:
+                packageType: 'sdk'
+                version: '8.0.x'
+
+            - task: UseDotNet@2
+              displayName: 'Use .NET 10'
+              inputs:
+                packageType: 'sdk'
+                version: '10.0.x'
+
+            - script: dotnet restore
+              displayName: 'Restore'
+
+            - script: dotnet build --no-restore --configuration $(buildConfiguration)
+              displayName: 'Build'
+
+            - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
+              displayName: 'Test'
+
+            - task: PublishTestResults@2
+              displayName: 'Publish Test Results'
+              condition: succeededOrFailed()
+              inputs:
+                testResultsFormat: 'VSTest'
+                testResultsFiles: '**/*.trx'
+                mergeTestResults: true
+
+            - template: templates/sign-and-pack.yaml
+
+            - task: PublishPipelineArtifact@1
+              displayName: 'Publish NuGet Packages as Pipeline Artifact'
+              inputs:
+                targetPath: '$(Build.ArtifactStagingDirectory)'
+                artifact: 'PreviewPackages'
+                publishLocation: 'pipeline'
+
+    - ${{ if eq(parameters.publishType, 'Public') }}:
+      - stage: PushToNuGet
+        displayName: 'Push Preview Packages to nuget.org'
+        dependsOn: Build_Test_Sign_Pack
+        jobs:
+        - deployment: PushPackages
+          displayName: 'Manual Approval Required to Push Packages'
+          environment:
+            name: 'teams-net-publish'
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                - download: current
+                  artifact: PreviewPackages
+
+                - task: NuGetCommand@2
+                  displayName: 'Push NuGet Packages'
+                  inputs:
+                    command: push
+                    packagesToPush: '$(Pipeline.Workspace)/PreviewPackages/*.nupkg'
+                    nuGetFeedType: external
+                    publishFeedCredentials: 'Microsoft.Teams.*'
