@@ -70,11 +70,14 @@ extends:
                 packageType: 'sdk'
                 version: '10.0.x'
 
-            - task: DotNetCoreCLI@2
+            - task: NuGetAuthenticate@1
+              displayName: 'Authenticate with NuGet feeds'
+
+            - task: NuGetCommand@2
               displayName: 'Restore NuGet packages'
               inputs:
                 command: 'restore'
-                projects: '**/*.sln'
+                restoreSolution: '**/*.sln'
 
             - task: DotNetCoreCLI@2
               displayName: 'Build'
@@ -147,11 +150,14 @@ extends:
                 packageType: 'sdk'
                 version: '10.0.x'
 
-            - task: DotNetCoreCLI@2
+            - task: NuGetAuthenticate@1
+              displayName: 'Authenticate with NuGet feeds'
+
+            - task: NuGetCommand@2
               displayName: 'Restore NuGet packages'
               inputs:
                 command: 'restore'
-                projects: '**/*.sln'
+                restoreSolution: '**/*.sln'
 
             - task: DotNetCoreCLI@2
               displayName: 'Build'
