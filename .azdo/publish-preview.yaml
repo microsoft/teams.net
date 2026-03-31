@@ -185,7 +185,7 @@ extends:
                 testResultsFiles: '**/*.trx'
                 mergeTestResults: true
 
-            - template: templates/sign-and-pack.yaml
+            - template: .azdo/templates/sign-and-pack.yaml@self
 
             - task: 1ES.PublishPipelineArtifact@1
               displayName: 'Publish NuGet Packages as Pipeline Artifact'
