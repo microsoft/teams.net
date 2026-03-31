@@ -39,7 +39,9 @@ extends:
   template: v1/M365PT.yml@M365PT
   parameters:
     pool:
-      vmImage: 'ubuntu-22.04'
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: windows-latest
+      os: windows
 
     # Required for M365PT tracking and drift management
     customBuildTags:
