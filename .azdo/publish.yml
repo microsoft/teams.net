@@ -2,8 +2,8 @@
 # For public releases, this pipeline (teams.net) is triggered manually.
 # It builds, tests, signs (Authenticode + NuGet), and packs the code, then pushes to nuget.org (requires approval).
 #
-# MIGRATED TO M365PT: This pipeline now extends from M365PT template to ensure
-# compliance with M365 security requirements and resolve 1ESPT drift warnings.
+# MIGRATED TO 1ES OFFICIAL PIPELINE TEMPLATE: This pipeline now extends from
+# 1ES.Official.PipelineTemplate to ensure compliance with M365 security requirements.
 # =============================================================================
 
 resources:
@@ -29,7 +29,7 @@ extends:
   parameters:
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
-      image: windows-latest
+      image: windows-2022
       os: windows
 
     # Required for M365PT tracking and drift management
@@ -56,6 +56,22 @@ extends:
               packageType: 'sdk'
               version: '10.0.x'
 
+          - task: NuGetAuthenticate@1
+            displayName: 'Authenticate with NuGet feeds'
+
+          - pwsh: |
+              $nugetConfig = @"
+              <?xml version="1.0" encoding="utf-8"?>
+              <configuration>
+                <packageSources>
+                  <clear />
+                  <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
+                </packageSources>
+              </configuration>
+              "@
+              $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
+            displayName: 'Create nuget.config'
+
           - script: dotnet restore
             displayName: 'Restore'
 
@@ -73,12 +89,13 @@ extends:
               testResultsFiles: '**/*.trx'
               mergeTestResults: true
 
-          - template: templates/sign-and-pack.yaml
-        outputs:
-        - output: pipelineArtifact
-          displayName: 'Publish NuGet Packages as Pipeline Artifact'
-          targetPath: '$(Build.ArtifactStagingDirectory)'
-          artifactName: 'Packages'
+          - template: .azdo/templates/sign-and-pack.yaml@self
+
+          - task: 1ES.PublishPipelineArtifact@1
+            displayName: 'Publish NuGet Packages as Pipeline Artifact'
+            inputs:
+              targetPath: '$(Build.ArtifactStagingDirectory)'
+              artifactName: 'Packages'
 
     - stage: PushToNuGet
       displayName: 'Push NuGet Packages to nuget.org'
@@ -95,10 +112,13 @@ extends:
               - download: current
                 artifact: Packages
 
-              - task: NuGetCommand@2
+              - task: 1ES.PublishNuget@1
                 displayName: 'Push NuGet Packages to nuget.org'
                 inputs:
-                  command: push
+                  useDotNetTask: false
                   packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
+                  packageParentPath: '$(Pipeline.Workspace)/Packages'
                   nuGetFeedType: external
                   publishFeedCredentials: 'Microsoft.Teams.*'
+                  publishPackageMetadata: true
+                  retryCountOnTaskFailure: 2
