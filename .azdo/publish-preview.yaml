@@ -90,19 +90,20 @@ extends:
             - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration $(buildConfiguration)
               displayName: 'Pack'
 
+            - task: 1ES.PublishNuget@1
+              displayName: 'Push NuGet Packages to Internal Feed'
+              inputs:
+                packagesToPush: '!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg;$(Build.ArtifactStagingDirectory)/*.nupkg'
+                packageParentPath: '$(Build.ArtifactStagingDirectory)'
+                nuGetFeedType: internal
+                publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
+
             - task: PublishPipelineArtifact@1
               displayName: 'Publish NuGet Packages as Pipeline Artifact'
               inputs:
                 targetPath: '$(Build.ArtifactStagingDirectory)'
                 artifact: 'PreviewPackages'
                 publishLocation: 'pipeline'
-          outputs:
-          - output: nuget
-            displayName: 'Push NuGet Packages to Internal Feed'
-            packagesToPush: '!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg;$(Build.ArtifactStagingDirectory)/*.nupkg'
-            packageParentPath: '$(Build.ArtifactStagingDirectory)'
-            nuGetFeedType: internal
-            publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
 
     - ${{ if eq(parameters.publishType, 'Public') }}:
       - stage: Build_Test_Sign_Pack
