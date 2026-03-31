@@ -8,9 +8,9 @@
 
 resources:
   repositories:
-  - repository: m365Pipelines
+  - repository: 1esPipelines
     type: git
-    name: 1ESPipelineTemplates/M365GPT
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
 
 trigger: none
@@ -25,7 +25,7 @@ variables:
   nugetSignId: 'a94a770a-9a7b-4888-a3ea-24584b851e49'
 
 extends:
-  template: v1/M365.Official.PipelineTemplate.yml@m365Pipelines
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
