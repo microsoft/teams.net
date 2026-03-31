@@ -74,13 +74,11 @@ extends:
               mergeTestResults: true
 
           - template: templates/sign-and-pack.yaml
-
-          - task: PublishPipelineArtifact@1
-            displayName: 'Publish NuGet Packages as Pipeline Artifact'
-            inputs:
-              targetPath: '$(Build.ArtifactStagingDirectory)'
-              artifact: 'Packages'
-              publishLocation: 'pipeline'
+        outputs:
+        - output: pipelineArtifact
+          displayName: 'Publish NuGet Packages as Pipeline Artifact'
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifactName: 'Packages'
 
     - stage: PushToNuGet
       displayName: 'Push NuGet Packages to nuget.org'
