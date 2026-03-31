@@ -27,25 +27,27 @@ public class BotSignInClient : Client
 
     }
 
-    public async Task<string> GetUrlAsync(GetUrlRequest request)
+    public async Task<string> GetUrlAsync(GetUrlRequest request, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(
             $"https://token.botframework.com/api/botsignin/GetSignInUrl?{query}"
         );
 
-        var res = await _http.SendAsync(req, _cancellationToken).ConfigureAwait(false);
+        var res = await _http.SendAsync(req, token).ConfigureAwait(false);
         return res.Body;
     }
 
-    public async Task<SignIn.UrlResponse> GetResourceAsync(GetResourceRequest request)
+    public async Task<SignIn.UrlResponse> GetResourceAsync(GetResourceRequest request, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(
             $"https://token.botframework.com/api/botsignin/GetSignInResource?{query}"
         );
 
-        var res = await _http.SendAsync<SignIn.UrlResponse>(req, _cancellationToken).ConfigureAwait(false);
+        var res = await _http.SendAsync<SignIn.UrlResponse>(req, token).ConfigureAwait(false);
         return res.Body;
     }
 
