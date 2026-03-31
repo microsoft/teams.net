@@ -90,13 +90,17 @@ extends:
             - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration $(buildConfiguration)
               displayName: 'Pack'
 
-            - task: NuGetCommand@2
+            - task: 1ES.PublishNuget@1
               displayName: 'Push NuGet Packages to Internal Feed'
               inputs:
-                command: push
+                useDotNetTask: false
                 packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
-                nuGetFeedType: internal
+                packageParentPath: '$(Build.ArtifactStagingDirectory)'
                 publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
+                nuGetFeedType: internal
+                allowPackageConflicts: true
+                publishPackageMetadata: true
+                retryCountOnTaskFailure: 2
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish NuGet Packages as Pipeline Artifact'
@@ -164,10 +168,13 @@ extends:
                 - download: current
                   artifact: PreviewPackages
 
-                - task: NuGetCommand@2
+                - task: 1ES.PublishNuget@1
                   displayName: 'Push Preview Packages to nuget.org'
                   inputs:
-                    command: push
+                    useDotNetTask: false
                     packagesToPush: '$(Pipeline.Workspace)/PreviewPackages/*.nupkg'
+                    packageParentPath: '$(Pipeline.Workspace)/PreviewPackages'
                     nuGetFeedType: external
                     publishFeedCredentials: 'Microsoft.Teams.*'
+                    publishPackageMetadata: true
+                    retryCountOnTaskFailure: 2
