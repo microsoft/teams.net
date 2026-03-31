@@ -166,10 +166,11 @@ extends:
                 steps:
                 - download: current
                   artifact: PreviewPackages
-          outputs:
-          - output: nuget
-            displayName: 'Push Preview Packages to nuget.org'
-            useDotNetTask: true
-            packagesToPush: '!$(Pipeline.Workspace)/PreviewPackages/**/*.symbols.nupkg;$(Pipeline.Workspace)/PreviewPackages/*.nupkg'
-            packageParentPath: '$(Pipeline.Workspace)/PreviewPackages'
-            nuGetFeedType: external
+
+                - task: 1ES.PublishNuget@1
+                  displayName: 'Push Preview Packages to nuget.org'
+                  inputs:
+                    useDotNetTask: true
+                    packagesToPush: '!$(Pipeline.Workspace)/PreviewPackages/**/*.symbols.nupkg;$(Pipeline.Workspace)/PreviewPackages/*.nupkg'
+                    packageParentPath: '$(Pipeline.Workspace)/PreviewPackages'
+                    nuGetFeedType: external
