@@ -73,25 +73,14 @@ extends:
             - task: NuGetAuthenticate@1
               displayName: 'Authenticate with NuGet feeds'
 
-            - task: NuGetCommand@2
-              displayName: 'Restore NuGet packages'
-              inputs:
-                command: 'restore'
-                restoreSolution: '**/*.sln'
+            - script: dotnet restore
+              displayName: 'Restore'
 
-            - task: DotNetCoreCLI@2
+            - script: dotnet build --no-restore --configuration $(buildConfiguration)
               displayName: 'Build'
-              inputs:
-                command: 'build'
-                projects: '**/*.sln'
-                arguments: '--no-restore --configuration $(buildConfiguration)'
 
-            - task: DotNetCoreCLI@2
+            - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
               displayName: 'Test'
-              inputs:
-                command: 'test'
-                projects: '**/*Tests.csproj'
-                arguments: '--no-build --verbosity normal --logger trx --configuration $(buildConfiguration)'
 
             - task: PublishTestResults@2
               displayName: 'Publish Test Results'
@@ -153,25 +142,14 @@ extends:
             - task: NuGetAuthenticate@1
               displayName: 'Authenticate with NuGet feeds'
 
-            - task: NuGetCommand@2
-              displayName: 'Restore NuGet packages'
-              inputs:
-                command: 'restore'
-                restoreSolution: '**/*.sln'
+            - script: dotnet restore
+              displayName: 'Restore'
 
-            - task: DotNetCoreCLI@2
+            - script: dotnet build --no-restore --configuration $(buildConfiguration)
               displayName: 'Build'
-              inputs:
-                command: 'build'
-                projects: '**/*.sln'
-                arguments: '--no-restore --configuration $(buildConfiguration)'
 
-            - task: DotNetCoreCLI@2
+            - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
               displayName: 'Test'
-              inputs:
-                command: 'test'
-                projects: '**/*Tests.csproj'
-                arguments: '--no-build --verbosity normal --logger trx --configuration $(buildConfiguration)'
 
             - task: PublishTestResults@2
               displayName: 'Publish Test Results'
