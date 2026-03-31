@@ -3,8 +3,8 @@
 # - "Internal": pushes unsigned packages to the internal TeamsSDKPreviews feed.
 # - "Public": signs (Authenticode + NuGet) and pushes to nuget.org (requires approval).
 #
-# MIGRATED TO M365PT: This pipeline now extends from M365PT template to ensure
-# compliance with M365 security requirements and resolve 1ESPT drift warnings.
+# MIGRATED TO 1ES OFFICIAL PIPELINE TEMPLATE: This pipeline now extends from
+# 1ES.Official.PipelineTemplate to ensure compliance with M365 security requirements.
 # =============================================================================
 
 resources:
@@ -40,7 +40,7 @@ extends:
   parameters:
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
-      image: windows-latest
+      image: windows-2022
       os: windows
 
     # Required for M365PT tracking and drift management
@@ -107,7 +107,7 @@ extends:
               displayName: 'Pack'
               inputs:
                 command: 'pack'
-                packagesToPack: '**/*.csproj'
+                packagesToPack: 'Libraries/**/*.csproj'
                 nobuild: true
                 configuration: '$(buildConfiguration)'
                 outputDir: '$(Build.ArtifactStagingDirectory)'
@@ -121,7 +121,7 @@ extends:
                 packageParentPath: '$(Build.ArtifactStagingDirectory)'
                 publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
                 nuGetFeedType: internal
-                allowPackageConflicts: true
+                allowPackageConflicts: true  # Allow duplicate versions for preview testing
                 publishPackageMetadata: true
                 retryCountOnTaskFailure: 2
 
