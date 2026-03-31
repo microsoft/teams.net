@@ -101,11 +101,12 @@ extends:
                 allowPackageConflicts: true
                 publishPackageMetadata: true
                 retryCountOnTaskFailure: 2
-          outputs:
-          - output: pipelineArtifact
-            displayName: 'Publish NuGet Packages as Pipeline Artifact'
-            targetPath: '$(Build.ArtifactStagingDirectory)'
-            artifactName: 'PreviewPackages'
+
+            - task: 1ES.PublishPipelineArtifact@1
+              displayName: 'Publish NuGet Packages as Pipeline Artifact'
+              inputs:
+                targetPath: '$(Build.ArtifactStagingDirectory)'
+                artifactName: 'PreviewPackages'
 
     - ${{ if eq(parameters.publishType, 'Public') }}:
       - stage: Build_Test_Sign_Pack
@@ -146,11 +147,12 @@ extends:
                 mergeTestResults: true
 
             - template: templates/sign-and-pack.yaml
-          outputs:
-          - output: pipelineArtifact
-            displayName: 'Publish NuGet Packages as Pipeline Artifact'
-            targetPath: '$(Build.ArtifactStagingDirectory)'
-            artifactName: 'PreviewPackages'
+
+            - task: 1ES.PublishPipelineArtifact@1
+              displayName: 'Publish NuGet Packages as Pipeline Artifact'
+              inputs:
+                targetPath: '$(Build.ArtifactStagingDirectory)'
+                artifactName: 'PreviewPackages'
 
     - ${{ if eq(parameters.publishType, 'Public') }}:
       - stage: PushToNuGet
