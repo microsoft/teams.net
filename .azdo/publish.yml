@@ -96,11 +96,10 @@ extends:
               steps:
               - download: current
                 artifact: Packages
-
-              - task: NuGetCommand@2
-                displayName: 'Push NuGet Packages'
-                inputs:
-                  command: push
-                  packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
-                  nuGetFeedType: external
-                  publishFeedCredentials: 'Microsoft.Teams.*'
+        outputs:
+        - output: nuget
+          displayName: 'Push NuGet Packages to nuget.org'
+          useDotNetTask: true
+          packagesToPush: '!$(Pipeline.Workspace)/Packages/**/*.symbols.nupkg;$(Pipeline.Workspace)/Packages/*.nupkg'
+          packageParentPath: '$(Pipeline.Workspace)/Packages'
+          nuGetFeedType: external
