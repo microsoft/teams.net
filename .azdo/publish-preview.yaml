@@ -89,17 +89,19 @@ extends:
 
             - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration $(buildConfiguration)
               displayName: 'Pack'
+
+            - task: NuGetCommand@2
+              displayName: 'Push NuGet Packages to Internal Feed'
+              inputs:
+                command: push
+                packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+                nuGetFeedType: internal
+                publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish NuGet Packages as Pipeline Artifact'
             targetPath: '$(Build.ArtifactStagingDirectory)'
             artifactName: 'PreviewPackages'
-          - output: nuget
-            displayName: 'Push NuGet Packages to Internal Feed'
-            packagesToPush: '!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg;$(Build.ArtifactStagingDirectory)/*.nupkg'
-            packageParentPath: '$(Build.ArtifactStagingDirectory)'
-            nuGetFeedType: internal
-            publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
 
     - ${{ if eq(parameters.publishType, 'Public') }}:
       - stage: Build_Test_Sign_Pack
@@ -162,10 +164,10 @@ extends:
                 - download: current
                   artifact: PreviewPackages
 
-                - task: 1ES.PublishNuget@1
+                - task: NuGetCommand@2
                   displayName: 'Push Preview Packages to nuget.org'
                   inputs:
-                    useDotNetTask: true
-                    packagesToPush: '!$(Pipeline.Workspace)/PreviewPackages/**/*.symbols.nupkg;$(Pipeline.Workspace)/PreviewPackages/*.nupkg'
-                    packageParentPath: '$(Pipeline.Workspace)/PreviewPackages'
+                    command: push
+                    packagesToPush: '$(Pipeline.Workspace)/PreviewPackages/*.nupkg'
                     nuGetFeedType: external
+                    publishFeedCredentials: 'Microsoft.Teams.*'
