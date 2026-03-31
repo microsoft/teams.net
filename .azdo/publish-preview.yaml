@@ -73,6 +73,19 @@ extends:
             - task: NuGetAuthenticate@1
               displayName: 'Authenticate with NuGet feeds'
 
+            - pwsh: |
+                $nugetConfig = @"
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <clear />
+                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
+                  </packageSources>
+                </configuration>
+                "@
+                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
+              displayName: 'Create nuget.config'
+
             - script: dotnet restore
               displayName: 'Restore'
 
@@ -141,6 +154,19 @@ extends:
 
             - task: NuGetAuthenticate@1
               displayName: 'Authenticate with NuGet feeds'
+
+            - pwsh: |
+                $nugetConfig = @"
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <clear />
+                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
+                  </packageSources>
+                </configuration>
+                "@
+                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
+              displayName: 'Create nuget.config'
 
             - script: dotnet restore
               displayName: 'Restore'
