@@ -27,6 +27,7 @@ public static partial class Event
 
 public static partial class AppEventActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMeetingStart(this App app, Func<IContext<MeetingStartActivity>, Task> handler)
     {
         app.Router.Register(new Route()

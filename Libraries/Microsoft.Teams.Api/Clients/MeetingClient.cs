@@ -32,17 +32,19 @@ public class MeetingClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public async Task<Meeting> GetByIdAsync(string id)
+    public async Task<Meeting> GetByIdAsync(string id, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{id}");
-        var response = await _http.SendAsync<Meeting>(request, _cancellationToken);
+        var response = await _http.SendAsync<Meeting>(request, token);
         return response.Body;
     }
 
-    public async Task<MeetingParticipant> GetParticipantAsync(string meetingId, string id, string tenantId)
+    public async Task<MeetingParticipant> GetParticipantAsync(string meetingId, string id, string tenantId, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Get($"{ServiceUrl}v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}");
-        var response = await _http.SendAsync<MeetingParticipant>(request, _cancellationToken);
+        var response = await _http.SendAsync<MeetingParticipant>(request, token);
         return response.Body;
     }
 }
