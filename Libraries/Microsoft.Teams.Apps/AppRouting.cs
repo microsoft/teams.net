@@ -109,7 +109,7 @@ public partial class App
                     Exception = ex,
                     Context = context.ToActivityType<IActivity>()
                 },
-                context.CancellationToken
+                cancellationToken
             );
 
             if (ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.BadRequest && ex.StatusCode != HttpStatusCode.PreconditionFailed)
