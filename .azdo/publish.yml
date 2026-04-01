@@ -29,8 +29,8 @@ extends:
   parameters:
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
-      image: windows-2022
-      os: windows
+      image: ubuntu-24.04
+      os: linux
 
     # Required for M365PT tracking and drift management
     customBuildTags:
@@ -56,9 +56,6 @@ extends:
               packageType: 'sdk'
               version: '10.0.x'
 
-          - task: NuGetAuthenticate@1
-            displayName: 'Authenticate with NuGet feeds'
-
           - pwsh: |
               $nugetConfig = @"
               <?xml version="1.0" encoding="utf-8"?>
@@ -71,6 +68,9 @@ extends:
               "@
               $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
             displayName: 'Create nuget.config'
+
+          - task: NuGetAuthenticate@1
+            displayName: 'Authenticate with NuGet feeds'
 
           - script: dotnet restore
             displayName: 'Restore'
@@ -119,6 +119,5 @@ extends:
                   packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
                   packageParentPath: '$(Pipeline.Workspace)/Packages'
                   nuGetFeedType: external
-                  publishFeedCredentials: 'Microsoft.Teams.*'
                   publishPackageMetadata: true
                   retryCountOnTaskFailure: 2
