@@ -20,8 +20,8 @@
     <ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Compat\Microsoft.Teams.Bot.Compat.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Xunit" />
-  </ItemGroup>
+	<ItemGroup>
+		<Using Include="Xunit" />
+	</ItemGroup>
 
 </Project>

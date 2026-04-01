@@ -41,4 +41,21 @@ public static partial class AppEventActivityExtensions
 
         return app;
     }
+
+    public static App OnEvent(this App app, Func<IContext<EventActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.Event,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<EventActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is EventActivity
+        });
+
+        return app;
+    }
 }

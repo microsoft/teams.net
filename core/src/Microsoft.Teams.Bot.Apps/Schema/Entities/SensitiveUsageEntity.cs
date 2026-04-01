@@ -22,7 +22,7 @@ public class SensitiveUsageEntity : OMessageEntity
     [JsonPropertyName("name")]
     public required string Name
     {
-        get => base.Properties.TryGetValue("name", out var value) ? value?.ToString() ?? string.Empty : string.Empty;
+        get => base.Properties.TryGetValue("name", out object? value) ? value?.ToString() ?? string.Empty : string.Empty;
         set => base.Properties["name"] = value;
     }
 
@@ -32,7 +32,7 @@ public class SensitiveUsageEntity : OMessageEntity
     [JsonPropertyName("description")]
     public string? Description
     {
-        get => base.Properties.TryGetValue("description", out var value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("description", out object? value) ? value?.ToString() : null;
         set => base.Properties["description"] = value;
     }
 
@@ -42,7 +42,7 @@ public class SensitiveUsageEntity : OMessageEntity
     [JsonPropertyName("pattern")]
     public DefinedTerm? Pattern
     {
-        get => base.Properties.TryGetValue("pattern", out var value) ? value as DefinedTerm : null;
+        get => base.Properties.TryGetValue("pattern", out object? value) ? value as DefinedTerm : null;
         set => base.Properties["pattern"] = value;
     }
 }

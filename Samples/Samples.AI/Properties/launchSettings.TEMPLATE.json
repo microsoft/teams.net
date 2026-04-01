@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "bot-config": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Teams__TenantId": "",
+        "Teams__ClientId": "",
+        "Teams__ClientSecret": "",
+        "AzureOpenAIModel": "YOUR_AZURE_OPENAI_MODEL",  
+        "AzureOpenAIEndpoint": "https://your-azure-openai-endpoint/",  
+        "AzureOpenAIKey": "YOUR_AZURE_OPENAI_KEY"  
+      }
+    }
+  }
+}

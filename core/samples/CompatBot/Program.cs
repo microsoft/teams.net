@@ -3,12 +3,11 @@
 
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using CompatBot;
-
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Compat;
 using Microsoft.Bot.Schema;
+using Microsoft.Teams.Bot.Compat;
+using Microsoft.Teams.Bot.Core;
 
 // using Microsoft.Bot.Connector.Authentication;
 
@@ -35,7 +34,7 @@ compatAdapter.Use(new MyCompatMiddleware());
 compatAdapter.Use(new MyCompatMiddleware());
 
 app.MapPost("/api/messages", async (IBotFrameworkHttpAdapter adapter, IBot bot, HttpRequest request, HttpResponse response, CancellationToken ct) =>
-    await adapter.ProcessAsync(request, response, bot, ct));
+    await adapter.ProcessAsync(request, response, bot, ct)).RequireAuthorization();
 
 app.MapGet("/api/notify/{cid}", async (IBotFrameworkHttpAdapter adapter, string cid, CancellationToken ct) =>
 {

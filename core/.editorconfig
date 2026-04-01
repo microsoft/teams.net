@@ -12,7 +12,6 @@ indent_style = space
 indent_size = 4
 nullable = enable
 #dotnet_diagnostic.CS1591.severity = none ## Suppress missing XML comment warnings
-dotnet_diagnostic.CA1848.severity = warning
 
 #### Nullable Reference Types ####
 # Make nullable warnings strict

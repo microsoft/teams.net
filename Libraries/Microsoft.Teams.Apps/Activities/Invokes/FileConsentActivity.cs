@@ -44,4 +44,34 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnFileConsent(this App app, Func<IContext<FileConsentActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.FileConsent]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<FileConsentActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is FileConsentActivity
+        });
+
+        return app;
+    }
+
+    public static App OnFileConsent(this App app, Func<IContext<FileConsentActivity>, CancellationToken, Task<object?>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.FileConsent]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = context => handler(context.ToActivityType<FileConsentActivity>(), context.CancellationToken),
+            Selector = activity => activity is FileConsentActivity
+        });
+
+        return app;
+    }
 }

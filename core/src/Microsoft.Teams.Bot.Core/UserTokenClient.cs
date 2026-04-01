@@ -39,7 +39,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="include">The optional include parameter.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    public async Task<GetTokenStatusResult[]> GetTokenStatusAsync(string userId, string channelId, string? include = null, CancellationToken cancellationToken = default)
+    public virtual async Task<GetTokenStatusResult[]> GetTokenStatusAsync(string userId, string channelId, string? include = null, CancellationToken cancellationToken = default)
     {
         Dictionary<string, string?> queryParams = new()
         {
@@ -51,8 +51,8 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         {
             queryParams.Add("include", include);
         }
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/GetTokenStatus");
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/GetTokenStatus");
         IList<GetTokenStatusResult>? result = await _botHttpClient.SendAsync<IList<GetTokenStatusResult>>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -79,7 +79,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="code">The optional code.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    public async Task<GetTokenResult?> GetTokenAsync(string userId, string connectionName, string channelId, string? code = null, CancellationToken cancellationToken = default)
+    public virtual async Task<GetTokenResult?> GetTokenAsync(string userId, string connectionName, string channelId, string? code = null, CancellationToken cancellationToken = default)
     {
         Dictionary<string, string?> queryParams = new()
         {
@@ -93,7 +93,8 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("code", code);
         }
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/GetToken");
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/GetToken");
+
         return await _botHttpClient.SendAsync<GetTokenResult>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -113,7 +114,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="finalRedirect">The optional final redirect URL.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    public async Task<GetSignInResourceResult> GetSignInResource(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
+    public virtual async Task<GetSignInResourceResult> GetSignInResource(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
     {
         var tokenExchangeState = new
         {
@@ -136,7 +137,9 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("finalRedirect", finalRedirect);
         }
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/botsignin/GetSignInResource");
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/botsignin/GetSignInResource");
+
+
         return (await _botHttpClient.SendAsync<GetSignInResourceResult>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -155,7 +158,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="channelId">The channel ID.</param>
     /// <param name="exchangeToken">The token to exchange.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    public async Task<GetTokenResult> ExchangeTokenAsync(string userId, string connectionName, string channelId, string? exchangeToken, CancellationToken cancellationToken = default)
+    public virtual async Task<GetTokenResult> ExchangeTokenAsync(string userId, string connectionName, string channelId, string? exchangeToken, CancellationToken cancellationToken = default)
     {
         Dictionary<string, string?> queryParams = new()
         {
@@ -169,7 +172,8 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             token = exchangeToken
         };
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/exchange");
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/exchange");
+
         return (await _botHttpClient.SendAsync<GetTokenResult>(
             HttpMethod.Post,
             _apiEndpoint,
@@ -188,7 +192,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="channelId">Optional channel identifier. If provided, limits sign-out to tokens for this channel.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
     /// <returns>A task that represents the asynchronous sign-out operation.</returns>
-    public async Task SignOutUserAsync(string userId, string? connectionName = null, string? channelId = null, CancellationToken cancellationToken = default)
+    public virtual async Task SignOutUserAsync(string userId, string? connectionName = null, string? channelId = null, CancellationToken cancellationToken = default)
     {
         Dictionary<string, string?> queryParams = new()
         {
@@ -205,7 +209,9 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("channelId", channelId);
         }
 
-        _logger.LogInformation("Calling API endpoint: {Endpoint}", "api/usertoken/SignOut");
+        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/SignOut");
+
+
         await _botHttpClient.SendAsync(
             HttpMethod.Delete,
             _apiEndpoint,
@@ -225,7 +231,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="resourceUrls">The resource URLs.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    public async Task<IDictionary<string, GetTokenResult>> GetAadTokensAsync(string userId, string connectionName, string channelId, string[]? resourceUrls = null, CancellationToken cancellationToken = default)
+    public virtual async Task<IDictionary<string, GetTokenResult>> GetAadTokensAsync(string userId, string connectionName, string channelId, string[]? resourceUrls = null, CancellationToken cancellationToken = default)
     {
         var body = new
         {
@@ -235,7 +241,8 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             resourceUrls = resourceUrls ?? []
         };
 
-        _logger.LogInformation("Calling API endpoint with POST: {Endpoint}", "api/usertoken/GetAadTokens");
+        _logger.LogInformationGuarded("Calling API endpoint with POST: {Endpoint}", "api/usertoken/GetAadTokens");
+
         return (await _botHttpClient.SendAsync<Dictionary<string, GetTokenResult>>(
             HttpMethod.Post,
             _apiEndpoint,

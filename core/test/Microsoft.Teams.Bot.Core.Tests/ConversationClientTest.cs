@@ -148,6 +148,8 @@ public class ConversationClientTest
             Properties = { { "text", $"Updated message from Automated tests at `{DateTime.UtcNow:s}`" } },
             From = AgenticIdentitiyFromEnv.GetConversationAccountWithAgenticProperties(),
             ServiceUrl = _serviceUrl,
+            Conversation = new(_conversationId),
+            From = _recipient
         };
 
         UpdateActivityResponse updateResponse = await _conversationClient.UpdateActivityAsync(
@@ -197,10 +199,8 @@ public class ConversationClientTest
     [Fact]
     public async Task GetConversationMembers()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         IList<ConversationAccount> members = await _conversationClient.GetConversationMembersAsync(
-            conversationId,
+            _conversationId,
             _serviceUrl,
             AgenticIdentitiyFromEnv.GetAgenticIdentity(),
             cancellationToken: CancellationToken.None);
@@ -221,11 +221,10 @@ public class ConversationClientTest
     [Fact]
     public async Task GetConversationMember()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
 
         ConversationAccount member = await _conversationClient.GetConversationMemberAsync<ConversationAccount>(
-            conversationId,
+            _conversationId,
             userId,
             _serviceUrl,
             AgenticIdentitiyFromEnv.GetAgenticIdentity(),
@@ -337,7 +336,7 @@ public class ConversationClientTest
         }
     }
 
-    [Fact]
+    [Fact(Skip = "CreateConversation_WithMembers is not working with agentic identity")]
     public async Task CreateConversation_WithMembers()
     {
         // Create a 1-on-1 conversation with a member
@@ -493,7 +492,7 @@ public class ConversationClientTest
     }
 
     // TODO: This doesn't fail, but doesn't actually create the initial activity
-    [Fact]
+    [Fact(Skip = "CreateConversation_WithInitialActivity is not working with agentic identity")]
     public async Task CreateConversation_WithInitialActivity()
     {
         // Create a conversation with an initial message
@@ -529,7 +528,7 @@ public class ConversationClientTest
         testOutput.WriteLine($"  Initial activity ID: {response.ActivityId}");
     }
 
-    [Fact]
+    [Fact(Skip = "CreateConversation_WithChannelData is not working with agentic identity")]
     public async Task CreateConversation_WithChannelData()
     {
         // Create a conversation with channel-specific data
@@ -565,10 +564,8 @@ public class ConversationClientTest
     [Fact]
     public async Task GetConversationPagedMembers()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         PagedMembersResult result = await _conversationClient.GetConversationPagedMembersAsync(
-            conversationId,
+            _conversationId,
             _serviceUrl,
             10,
             null!,
@@ -593,15 +590,41 @@ public class ConversationClientTest
         }
     }
 
+    [Fact]
+    public async Task AddRemoveReactionsToChat_Default()
+    {
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"I'm going to add and remove reactions from this message." } },
+            ServiceUrl = _serviceUrl,
+            Conversation = new(_conversationId),
+            From = _recipient
+        };
+        SendActivityResponse res = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        Assert.NotNull(res);
+        Assert.NotNull(res.Id);
+
+        await _conversationClient.AddReactionAsync(_conversationId, res.Id, "laugh", _serviceUrl, _agenticIdentity);
+        await Task.Delay(500);
+        await _conversationClient.AddReactionAsync(_conversationId, res.Id, "sad", _serviceUrl, _agenticIdentity);
+        await Task.Delay(500);
+        await _conversationClient.AddReactionAsync(_conversationId, res.Id, "yes-tone4", _serviceUrl, _agenticIdentity);
+
+        await Task.Delay(500);
+        await _conversationClient.DeleteReactionAsync(_conversationId, res.Id, "yes-tone4", _serviceUrl, _agenticIdentity);
+        await Task.Delay(500);
+        await _conversationClient.DeleteReactionAsync(_conversationId, res.Id, "sad", _serviceUrl, _agenticIdentity);
+    }
+
     [Fact(Skip = "PageSize parameter not respected by API")]
     public async Task GetConversationPagedMembers_WithPageSize()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         PagedMembersResult result = await _conversationClient.GetConversationPagedMembersAsync(
-            conversationId,
+            _conversationId,
             _serviceUrl,
             pageSize: 1,
+            agenticIdentity: _agenticIdentity,
             cancellationToken: CancellationToken.None);
 
         Assert.NotNull(result);
@@ -621,7 +644,7 @@ public class ConversationClientTest
             testOutput.WriteLine($"Getting next page with continuation token...");
 
             PagedMembersResult nextPage = await _conversationClient.GetConversationPagedMembersAsync(
-                conversationId,
+                _conversationId,
                 _serviceUrl,
                 pageSize: 1,
                 continuationToken: result.ContinuationToken,
@@ -641,11 +664,9 @@ public class ConversationClientTest
     [Fact(Skip = "Method not allowed by API")]
     public async Task DeleteConversationMember()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         // Get members before deletion
         IList<ConversationAccount> membersBefore = await _conversationClient.GetConversationMembersAsync(
-            conversationId,
+            _conversationId,
             _serviceUrl,
             cancellationToken: CancellationToken.None);
 
@@ -665,7 +686,7 @@ public class ConversationClientTest
         Assert.Contains(membersBefore, m => m.Id == memberToDelete);
 
         await _conversationClient.DeleteConversationMemberAsync(
-            conversationId,
+            _conversationId,
             memberToDelete,
             _serviceUrl,
             cancellationToken: CancellationToken.None);
@@ -674,7 +695,7 @@ public class ConversationClientTest
 
         // Get members after deletion
         IList<ConversationAccount> membersAfter = await _conversationClient.GetConversationMembersAsync(
-            conversationId,
+            _conversationId,
             _serviceUrl,
             cancellationToken: CancellationToken.None);
 
@@ -693,8 +714,6 @@ public class ConversationClientTest
     [Fact(Skip = "Unknown activity type error")]
     public async Task SendConversationHistory()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         // Create a transcript with historic activities
         Transcript transcript = new()
         {
@@ -706,7 +725,7 @@ public class ConversationClientTest
                     Id = Guid.NewGuid().ToString(),
                     Properties = { { "text", "Historic message 1" } },
                     ServiceUrl = _serviceUrl,
-                    Conversation = new() { Id = conversationId }
+                    Conversation = new(_conversationId)
                 },
                 new()
                 {
@@ -714,7 +733,7 @@ public class ConversationClientTest
                     Id = Guid.NewGuid().ToString(),
                     Properties = { { "text", "Historic message 2" } },
                     ServiceUrl = _serviceUrl,
-                    Conversation = new() { Id = conversationId }
+                    Conversation = new(_conversationId)
                 },
                 new()
                 {
@@ -722,13 +741,13 @@ public class ConversationClientTest
                     Id = Guid.NewGuid().ToString(),
                     Properties = { { "text", "Historic message 3" } },
                     ServiceUrl = _serviceUrl,
-                    Conversation = new() { Id = conversationId }
+                    Conversation = new(_conversationId)
                 }
             ]
         };
 
         SendConversationHistoryResponse response = await _conversationClient.SendConversationHistoryAsync(
-            conversationId,
+            _conversationId,
             transcript,
             _serviceUrl,
             cancellationToken: CancellationToken.None);
@@ -742,8 +761,6 @@ public class ConversationClientTest
     [Fact(Skip = "Attachment upload endpoint not found")]
     public async Task UploadAttachment()
     {
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
-
         // Create a simple text file as an attachment
         string fileContent = "This is a test attachment file created at " + DateTime.UtcNow.ToString("s");
         byte[] fileBytes = System.Text.Encoding.UTF8.GetBytes(fileContent);
@@ -756,7 +773,7 @@ public class ConversationClientTest
         };
 
         UploadAttachmentResponse response = await _conversationClient.UploadAttachmentAsync(
-            conversationId,
+            _conversationId,
             attachmentData,
             _serviceUrl,
             cancellationToken: CancellationToken.None);

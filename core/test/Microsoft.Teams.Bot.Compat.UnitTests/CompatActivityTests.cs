@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using AdaptiveCards;
 using Microsoft.Bot.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
 using Newtonsoft.Json;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 
 namespace Microsoft.Teams.Bot.Compat.UnitTests
 {
@@ -17,7 +17,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         [Fact]
         public void FromCompatActivity_PreservesCoreProperties()
         {
-            var activity = new Activity
+            Activity activity = new()
             {
                 Type = ActivityTypes.Message,
                 ServiceUrl = "https://smba.trafficmanager.net/teams",
@@ -35,16 +35,16 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.Equal(activity.ServiceUrl, coreActivity.ServiceUrl?.ToString());
             Assert.Equal(activity.ChannelId, coreActivity.ChannelId);
             Assert.Equal(activity.Id, coreActivity.Id);
-            Assert.Equal(activity.From.Id, coreActivity.From.Id);
-            Assert.Equal(activity.From.Name, coreActivity.From.Name);
-            Assert.Equal(activity.Recipient.Id, coreActivity.Recipient.Id);
-            Assert.Equal(activity.Conversation.Id, coreActivity.Conversation.Id);
+            Assert.Equal(activity.From?.Id, coreActivity.From?.Id);
+            Assert.Equal(activity.From?.Name, coreActivity.From?.Name);
+            Assert.Equal(activity.Recipient?.Id, coreActivity.Recipient?.Id);
+            Assert.Equal(activity.Conversation?.Id, coreActivity.Conversation?.Id);
         }
 
         [Fact]
         public void FromCompatActivity_PreservesTextAndMetadata()
         {
-            var activity = new Activity
+            Activity activity = new()
             {
                 Type = ActivityTypes.Message,
                 Text = "Hello, this is a test message",
@@ -59,7 +59,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.NotNull(coreActivity);
             Assert.Equal(activity.Text, coreActivity.Properties["text"]?.ToString());
             Assert.Equal(activity.InputHint, coreActivity.Properties["inputHint"]?.ToString());
-            Assert.Equal(activity.ReplyToId, coreActivity.Properties["replyToId"]?.ToString());
+            Assert.Equal(activity.ReplyToId, coreActivity.ReplyToId);
             Assert.Equal(activity.Locale, coreActivity.Properties["locale"]?.ToString());
         }
 
@@ -81,18 +81,18 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.NotNull(coreActivity.Attachments);
             Assert.Single(coreActivity.Attachments);
 
-            var attachmentNode = coreActivity.Attachments[0];
+            JsonNode? attachmentNode = coreActivity.Attachments[0];
             Assert.NotNull(attachmentNode);
-            var attachmentObj = attachmentNode.AsObject();
+            JsonObject attachmentObj = attachmentNode.AsObject();
 
-            var contentType = attachmentObj["contentType"]?.GetValue<string>();
+            string? contentType = attachmentObj["contentType"]?.GetValue<string>();
             Assert.Equal("application/vnd.microsoft.card.adaptive", contentType);
 
-            var content = attachmentObj["content"];
+            JsonNode? content = attachmentObj["content"];
             Assert.NotNull(content);
-            var card = AdaptiveCard.FromJson(content.ToJsonString()).Card;
-            Assert.Equal(2, card.Body.Count);
-            var firstTextBlock = card.Body[0] as AdaptiveTextBlock;
+            AdaptiveCard card = AdaptiveCard.FromJson(content.ToJsonString()).Card;
+            Assert.Equal(2, card.Body?.Count);
+            AdaptiveTextBlock? firstTextBlock = card?.Body?[0] as AdaptiveTextBlock;
             Assert.NotNull(firstTextBlock);
             Assert.Equal("Mention a user by User Principle Name: Hello <at>Test User UPN</at>", firstTextBlock.Text);
         }
@@ -100,22 +100,22 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         [Fact]
         public void FromCompatActivity_PreservesMultipleAttachments()
         {
-            var activity = new Activity
+            Activity activity = new()
             {
                 Type = ActivityTypes.Message,
                 Attachments = new List<Attachment>
                 {
-                    new Attachment { ContentType = "text/plain", Content = "First attachment" },
-                    new Attachment { ContentType = "image/png", ContentUrl = "https://example.com/image.png" }
+                    new() { ContentType = "text/plain", Content = "First attachment" },
+                    new() { ContentType = "image/png", ContentUrl = "https://example.com/image.png" }
                 }
             };
 
             CoreActivity coreActivity = activity.FromCompatActivity();
 
             Assert.NotNull(coreActivity.Attachments);
-            Assert.Equal(2, coreActivity.Attachments.Count);
-            Assert.Equal("text/plain", coreActivity.Attachments[0]?["contentType"]?.GetValue<string>());
-            Assert.Equal("image/png", coreActivity.Attachments[1]?["contentType"]?.GetValue<string>());
+            Assert.Equal(2, coreActivity.Attachments?.Count);
+            Assert.Equal("text/plain", coreActivity.Attachments?[0]?["contentType"]?.GetValue<string>());
+            Assert.Equal("image/png", coreActivity.Attachments?[1]?["contentType"]?.GetValue<string>());
         }
 
         #endregion
@@ -133,7 +133,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.NotNull(coreActivity.Entities);
             Assert.Single(coreActivity.Entities);
 
-            var entity = coreActivity.Entities[0]?.AsObject();
+            JsonObject? entity = coreActivity.Entities[0]?.AsObject();
             Assert.NotNull(entity);
             Assert.Equal("https://schema.org/Message", entity["type"]?.GetValue<string>());
         }
@@ -147,12 +147,12 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             CoreActivity coreActivity = botActivity.FromCompatActivity();
 
             Assert.NotNull(coreActivity.Entities);
-            Assert.Equal(2, coreActivity.Entities.Count);
+            Assert.Equal(2, coreActivity.Entities?.Count);
 
-            var firstEntity = coreActivity.Entities[0]?.AsObject();
+            JsonObject? firstEntity = coreActivity.Entities?[0]?.AsObject();
             Assert.Equal("https://schema.org/Message", firstEntity?["type"]?.GetValue<string>());
 
-            var secondEntity = coreActivity.Entities[1]?.AsObject();
+            JsonObject? secondEntity = coreActivity.Entities?[1]?.AsObject();
             Assert.Equal("BotMessageMetadata", secondEntity?["type"]?.GetValue<string>());
         }
 
@@ -175,10 +175,10 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             string coreActivityJson = coreActivity.ToJson();
             JsonNode coreActivityNode = JsonNode.Parse(coreActivityJson)!;
 
-            var suggestedActions = coreActivityNode["suggestedActions"];
+            JsonNode? suggestedActions = coreActivityNode["suggestedActions"];
             Assert.NotNull(suggestedActions);
 
-            var actions = suggestedActions["actions"]?.AsArray();
+            JsonArray? actions = suggestedActions["actions"]?.AsArray();
             Assert.NotNull(actions);
             Assert.Equal(3, actions.Count);
         }
@@ -193,7 +193,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             string coreActivityJson = coreActivity.ToJson();
             JsonNode coreActivityNode = JsonNode.Parse(coreActivityJson)!;
 
-            var actions = coreActivityNode["suggestedActions"]?["actions"]?.AsArray();
+            JsonArray? actions = coreActivityNode["suggestedActions"]?["actions"]?.AsArray();
             Assert.NotNull(actions);
 
             // Verify Action.Odsl actions
@@ -217,7 +217,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         [Fact]
         public void FromCompatActivity_PreservesChannelData()
         {
-            var activity = new Activity
+            Activity activity = new()
             {
                 Type = ActivityTypes.Message,
                 ChannelData = new { customProperty = "customValue", nestedObject = new { key = "value" } }
@@ -241,7 +241,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.NotNull(coreActivity.ChannelData);
             Assert.True(coreActivity.ChannelData.Properties.ContainsKey("feedbackLoopEnabled"));
 
-            var feedbackLoopValue = (JsonElement)coreActivity.ChannelData.Properties["feedbackLoopEnabled"]!;
+            JsonElement feedbackLoopValue = (JsonElement)coreActivity.ChannelData.Properties["feedbackLoopEnabled"]!;
             Assert.True(feedbackLoopValue.GetBoolean());
         }
 
@@ -289,6 +289,144 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         {
             string testDataPath = Path.Combine(AppContext.BaseDirectory, "TestData", fileName);
             return File.ReadAllText(testDataPath);
+        }
+    }
+
+    public class FromCompatChannelAccountTests
+    {
+        [Fact]
+        public void FromCompatChannelAccount_MapsIdAndName()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Name = "Alice" };
+
+            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+
+            Assert.Equal("user-1", result.Id);
+            Assert.Equal("Alice", result.Name);
+        }
+
+        [Fact]
+        public void FromCompatChannelAccount_MapsAadObjectIdToProperties()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", AadObjectId = "aad-123" };
+
+            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+
+            Assert.True(result.Properties.TryGetValue("aadObjectId", out object? val));
+            Assert.Equal("aad-123", val?.ToString());
+        }
+
+        [Fact]
+        public void FromCompatChannelAccount_MapsRoleToUserRoleInProperties()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Role = "owner" };
+
+            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+
+            Assert.True(result.Properties.TryGetValue("userRole", out object? val));
+            Assert.Equal("owner", val?.ToString());
+        }
+
+        [Fact]
+        public void FromCompatChannelAccount_SkipsNullAadObjectIdAndRole()
+        {
+            Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1" };
+
+            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+
+            Assert.False(result.Properties.ContainsKey("aadObjectId"));
+            Assert.False(result.Properties.ContainsKey("userRole"));
+        }
+
+        [Fact]
+        public void FromCompatChannelAccount_ThrowsOnNull()
+        {
+            Microsoft.Bot.Schema.ChannelAccount? account = null;
+            Assert.Throws<ArgumentNullException>(() => account!.FromCompatChannelAccount());
+        }
+    }
+
+    public class FromCompatConversationParametersTests
+    {
+        [Fact]
+        public void FromCompatConversationParameters_MapsAllScalarFields()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new()
+            {
+                IsGroup = true,
+                TopicName = "Test Topic",
+                TenantId = "tenant-abc",
+                ChannelData = new { custom = "data" },
+            };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.True(result.IsGroup);
+            Assert.Equal("Test Topic", result.TopicName);
+            Assert.Equal("tenant-abc", result.TenantId);
+            Assert.NotNull(result.ChannelData);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_MapsBotAccount()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new()
+            {
+                Bot = new Microsoft.Bot.Schema.ChannelAccount { Id = "bot-1", Name = "MyBot" }
+            };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.NotNull(result.Bot);
+            Assert.Equal("bot-1", result.Bot.Id);
+            Assert.Equal("MyBot", result.Bot.Name);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_MapsMembers()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new()
+            {
+                Members =
+                [
+                    new Microsoft.Bot.Schema.ChannelAccount { Id = "user-1", Name = "Alice" },
+                    new Microsoft.Bot.Schema.ChannelAccount { Id = "user-2", Name = "Bob" },
+                ]
+            };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.NotNull(result.Members);
+            Assert.Equal(2, result.Members.Count);
+            Assert.Equal("user-1", result.Members[0].Id);
+            Assert.Equal("user-2", result.Members[1].Id);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_NullActivityProducesNullActivity()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new() { Activity = null };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.Null(result.Activity);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_NullBotProducesNullBot()
+        {
+            Microsoft.Bot.Schema.ConversationParameters parameters = new() { Bot = null };
+
+            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+
+            Assert.Null(result.Bot);
+        }
+
+        [Fact]
+        public void FromCompatConversationParameters_ThrowsOnNull()
+        {
+            Microsoft.Bot.Schema.ConversationParameters? parameters = null;
+            Assert.Throws<ArgumentNullException>(() => parameters!.FromCompatConversationParameters());
         }
     }
 }

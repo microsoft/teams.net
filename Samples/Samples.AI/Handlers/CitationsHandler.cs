@@ -9,7 +9,7 @@ public static class CitationsHandler
     /// <summary>
     /// Demo citations functionality
     /// </summary>
-    public static async Task HandleCitationsDemo(IContext<MessageActivity> context)
+    public static async Task HandleCitationsDemo(IContext<MessageActivity> context, CancellationToken cancellationToken = default)
     {
         Console.WriteLine($"[HANDLER] Citations demo handler invoked by user: {context.Activity.From.Name}");
 
@@ -43,6 +43,6 @@ public static class CitationsHandler
         }
 
         Console.WriteLine("[HANDLER] Sending message with citations to user");
-        await context.Send(messageActivity);
+        await context.Send(messageActivity, cancellationToken);
     }
 }

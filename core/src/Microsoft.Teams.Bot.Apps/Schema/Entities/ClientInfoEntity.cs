@@ -83,7 +83,7 @@ public class ClientInfoEntity : Entity
     [JsonPropertyName("locale")]
     public string? Locale
     {
-        get => base.Properties.TryGetValue("locale", out var value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("locale", out object? value) ? value?.ToString() : null;
         set => base.Properties["locale"] = value;
     }
 
@@ -93,7 +93,7 @@ public class ClientInfoEntity : Entity
     [JsonPropertyName("country")]
     public string? Country
     {
-        get => base.Properties.TryGetValue("country", out var value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("country", out object? value) ? value?.ToString() : null;
         set => base.Properties["country"] = value;
     }
 
@@ -103,7 +103,7 @@ public class ClientInfoEntity : Entity
     [JsonPropertyName("platform")]
     public string? Platform
     {
-        get => base.Properties.TryGetValue("platform", out var value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("platform", out object? value) ? value?.ToString() : null;
         set => base.Properties["platform"] = value;
     }
 
@@ -113,7 +113,7 @@ public class ClientInfoEntity : Entity
     [JsonPropertyName("timezone")]
     public string? Timezone
     {
-        get => base.Properties.TryGetValue("timezone", out var value) ? value?.ToString() : null;
+        get => base.Properties.TryGetValue("timezone", out object? value) ? value?.ToString() : null;
         set => base.Properties["timezone"] = value;
     }
 }

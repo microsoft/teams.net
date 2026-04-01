@@ -25,6 +25,10 @@ public static partial class SignIn
         /// </summary>
         [JsonPropertyName("value")]
         [JsonPropertyOrder(32)]
-        public new required Api.SignIn.StateVerifyQuery Value { get; set; }
+        public new required Api.SignIn.StateVerifyQuery Value
+        {
+            get => (Api.SignIn.StateVerifyQuery)base.Value!;
+            set => base.Value = value;
+        }
     }
 }

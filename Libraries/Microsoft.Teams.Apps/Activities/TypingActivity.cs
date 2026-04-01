@@ -30,4 +30,21 @@ public static partial class AppActivityExtensions
 
         return app;
     }
+
+    public static App OnTyping(this App app, Func<IContext<TypingActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.Typing,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<TypingActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is TypingActivity
+        });
+
+        return app;
+    }
 }

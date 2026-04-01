@@ -4,7 +4,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
@@ -24,6 +23,9 @@ public static class MessageExtensions
     /// <summary>
     /// Registers a handler for message activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -47,6 +49,9 @@ public static class MessageExtensions
     /// <summary>
     /// Registers a handler for message activities matching the specified pattern.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="pattern"></param>
     /// <param name="handler"></param>
@@ -54,7 +59,7 @@ public static class MessageExtensions
     public static TeamsBotApplication OnMessage(this TeamsBotApplication app, string pattern, MessageHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
-        var regex = new Regex(pattern);
+        Regex regex = new(pattern);
 
         app.Router.Register(new Route<MessageActivity>
         {
@@ -72,6 +77,9 @@ public static class MessageExtensions
     /// <summary>
     /// Registers a handler for message activities matching the specified regex.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="regex"></param>
     /// <param name="handler"></param>

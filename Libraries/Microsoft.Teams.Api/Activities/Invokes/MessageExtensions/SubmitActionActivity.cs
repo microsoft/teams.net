@@ -25,6 +25,10 @@ public static partial class MessageExtensions
         /// </summary>
         [JsonPropertyName("value")]
         [JsonPropertyOrder(32)]
-        public new required Api.MessageExtensions.Action Value { get; set; }
+        public new required Api.MessageExtensions.Action Value
+        {
+            get => (Api.MessageExtensions.Action)base.Value!;
+            set => base.Value = value;
+        }
     }
 }

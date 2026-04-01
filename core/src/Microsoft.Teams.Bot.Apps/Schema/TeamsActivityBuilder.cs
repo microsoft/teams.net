@@ -14,7 +14,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <summary>
     /// Initializes a new instance of the TeamsActivityBuilder class.
     /// </summary>
-    internal TeamsActivityBuilder() : base(TeamsActivity.FromActivity(new CoreActivity()))
+    internal TeamsActivityBuilder() : base(new TeamsActivity())
     {
     }
 
@@ -29,31 +29,31 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <summary>
     /// Sets the conversation (override for Teams-specific type).
     /// </summary>
-    protected override void SetConversation(Conversation conversation)
+    protected override void SetConversation(Conversation? conversation)
     {
         _activity.Conversation = conversation is TeamsConversation teamsConv
             ? teamsConv
-            : new TeamsConversation(conversation);
+            : TeamsConversation.FromConversation(conversation);
     }
 
     /// <summary>
     /// Sets the From account (override for Teams-specific type).
     /// </summary>
-    protected override void SetFrom(ConversationAccount from)
+    protected override void SetFrom(ConversationAccount? from)
     {
         _activity.From = from is TeamsConversationAccount teamsAccount
             ? teamsAccount
-            : new TeamsConversationAccount(from);
+            : TeamsConversationAccount.FromConversationAccount(from);
     }
 
     /// <summary>
     /// Sets the Recipient account (override for Teams-specific type).
     /// </summary>
-    protected override void SetRecipient(ConversationAccount recipient)
+    protected override void SetRecipient(ConversationAccount? recipient)
     {
         _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
             ? teamsAccount
-            : new TeamsConversationAccount(recipient);
+            : TeamsConversationAccount.FromConversationAccount(recipient);
     }
 
     /// <summary>
@@ -166,6 +166,18 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     }
 
     /// <summary>
+    /// With Suggested Actions
+    /// </summary>
+    /// <param name="suggestedActions"></param>
+    /// <returns></returns>
+    public TeamsActivityBuilder WithSuggestedActions(SuggestedActions suggestedActions)
+    {
+        ArgumentNullException.ThrowIfNull(_activity);
+        _activity.SuggestedActions = suggestedActions;
+        return this;
+    }
+
+    /// <summary>
     /// Adds a mention to the activity.
     /// </summary>
     /// <param name="account">The account to mention.</param>
@@ -199,6 +211,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     public override TeamsActivity Build()
     {
         _activity.Rebase();
+
         return _activity;
     }
 

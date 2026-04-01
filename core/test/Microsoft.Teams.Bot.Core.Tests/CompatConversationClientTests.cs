@@ -8,18 +8,32 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Compat;
 using Microsoft.Teams.Bot.Core;
+using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests
 {
     public class CompatConversationClientTests
     {
-        string serviceUrl = "https://smba.trafficmanager.net/amer/";
+        private readonly ITestOutputHelper _outputHelper;
+        private readonly string _serviceUrl = "https://smba.trafficmanager.net/amer/";
+        private readonly string _userId;
+        private readonly string _conversationId;
+        private readonly string _agenticAppBlueprintId;
+        private readonly string? _agenticAppId;
+        private readonly string? _agenticUserId;
 
-        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
-        string conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
+        public CompatConversationClientTests(ITestOutputHelper outputHelper)
+        {
+            _outputHelper = outputHelper;
+            _userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+            _conversationId = Environment.GetEnvironmentVariable("TEST_CONVERSATIONID") ?? throw new InvalidOperationException("TEST_ConversationId environment variable not set");
+
+            _agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? throw new InvalidOperationException("AzureAd__ClientId environment variable not set");
+            _agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");// ?? throw new InvalidOperationException("TEST_AGENTIC_APPID environment variable not set");
+            _agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");// ?? throw new InvalidOperationException("TEST_AGENTIC_USERID environment variable not set");
+        }
 
         [Fact(Skip = "not implemented")]
         public async Task GetMemberAsync()
@@ -30,10 +44,10 @@ namespace Microsoft.Bot.Core.Tests
 
             {
                 ChannelId = "msteams",
-                ServiceUrl = serviceUrl,
+                ServiceUrl = _serviceUrl,
                 Conversation = new ConversationAccount
                 {
-                    Id = conversationId
+                    Id = _conversationId
                 }
             };
 
@@ -41,9 +55,9 @@ namespace Microsoft.Bot.Core.Tests
                 string.Empty, conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    TeamsChannelAccount member = await TeamsInfo.GetMemberAsync(turnContext, userId, cancellationToken: cancellationToken);
+                    TeamsChannelAccount member = await TeamsInfo.GetMemberAsync(turnContext, _userId, cancellationToken: cancellationToken);
                     Assert.NotNull(member);
-                    Assert.Equal(userId, member.Id);
+                    Assert.Equal(_userId, member.Id);
 
                 }, CancellationToken.None);
         }
@@ -57,10 +71,20 @@ namespace Microsoft.Bot.Core.Tests
 
             {
                 ChannelId = "msteams",
-                ServiceUrl = serviceUrl,
-                Conversation = new ConversationAccount
+                ServiceUrl = _serviceUrl,
+                Conversation = new ConversationAccount()
                 {
-                    Id = conversationId
+                    Id = _conversationId
+                },
+                User = new ChannelAccount()
+                {
+                    Id = "28:fake-bot-id",
+                    Properties =
+                    {
+                        ["agenticAppId"] = _agenticAppId,
+                        ["agenticUserId"] = _agenticUserId,
+                        ["agenticAppBlueprintId"] = _agenticAppBlueprintId
+                    }
                 }
             };
 
@@ -68,11 +92,11 @@ namespace Microsoft.Bot.Core.Tests
                 string.Empty, conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var result = await TeamsInfo.GetPagedMembersAsync(turnContext, cancellationToken: cancellationToken);
+                    var result = await CompatTeamsInfo.GetPagedMembersAsync(turnContext, cancellationToken: cancellationToken);
                     Assert.NotNull(result);
                     Assert.True(result.Members.Count > 0);
                     var m0 = result.Members[0];
-                    Assert.Equal(userId, m0.Id);
+                    Assert.Equal(_userId, m0.Id);
 
                 }, CancellationToken.None);
         }
@@ -86,10 +110,10 @@ namespace Microsoft.Bot.Core.Tests
 
             {
                 ChannelId = "msteams",
-                ServiceUrl = serviceUrl,
+                ServiceUrl = _serviceUrl,
                 Conversation = new ConversationAccount
                 {
-                    Id = conversationId
+                    Id = _conversationId
                 }
             };
 
@@ -113,11 +137,14 @@ namespace Microsoft.Bot.Core.Tests
             IConfiguration configuration = builder.Build();
 
             ServiceCollection services = new();
-            services.AddSingleton<ILogger<BotApplication>>(NullLogger<BotApplication>.Instance);
-            services.AddSingleton<ILogger<ConversationClient>>(NullLogger<ConversationClient>.Instance);
             services.AddSingleton(configuration);
             services.AddCompatAdapter();
-            services.AddLogging(configure => configure.AddConsole());
+            services.AddLogging((builder) => {
+                builder.AddXUnit(_outputHelper);
+                builder.AddFilter("System.Net", LogLevel.Warning);
+                builder.AddFilter("Microsoft.Identity", LogLevel.Error);
+                builder.AddFilter("Microsoft.Teams", LogLevel.Information);
+            });
 
             var serviceProvider = services.BuildServiceProvider();
             CompatAdapter compatAdapter = (CompatAdapter)serviceProvider.GetRequiredService<IBotFrameworkHttpAdapter>();

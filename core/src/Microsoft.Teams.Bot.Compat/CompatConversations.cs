@@ -49,16 +49,13 @@ namespace Microsoft.Teams.Bot.Compat
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
 
-            Microsoft.Teams.Bot.Core.ConversationParameters convoParams = new()
-            {
-                Activity = parameters.Activity.FromCompatActivity()
-            };
+            Microsoft.Teams.Bot.Core.ConversationParameters convoParams = parameters.FromCompatConversationParameters();
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CreateConversationResponse res = await _client.CreateConversationAsync(
                 convoParams,
                 new Uri(ServiceUrl),
-                AgenticIdentity.FromProperties(convoParams.Activity?.From.Properties),
+                AgenticIdentity.FromProperties(convoParams.Activity?.From?.Properties),
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -232,6 +229,12 @@ namespace Microsoft.Teams.Bot.Compat
 
             CoreActivity coreActivity = activity.FromCompatActivity();
 
+            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
+            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
+            {
+                coreActivity.ServiceUrl = new Uri(ServiceUrl);
+            }
+
             // ReplyToActivity is not available in ConversationClient, use SendActivityAsync with replyToId in Properties
             coreActivity.Properties["replyToId"] = activityId;
             if (coreActivity.Conversation == null)
@@ -265,7 +268,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             Microsoft.Teams.Bot.Core.Transcript coreTranscript = new()
             {
-                Activities = transcript.Activities?.Select(a => a.FromCompatActivity() as CoreActivity).ToList()
+                Activities = transcript.Activities?.Select(a => a.FromCompatActivity()).ToList()
             };
 
             SendConversationHistoryResponse response = await _client.SendConversationHistoryAsync(
@@ -305,6 +308,12 @@ namespace Microsoft.Teams.Bot.Compat
 
             CoreActivity coreActivity = activity.FromCompatActivity();
 
+            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
+            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
+            {
+                coreActivity.ServiceUrl = new Uri(ServiceUrl);
+            }
+
             // Ensure conversation ID is set
             coreActivity.Conversation ??= new Microsoft.Teams.Bot.Core.Schema.Conversation { Id = conversationId };
 
@@ -339,6 +348,12 @@ namespace Microsoft.Teams.Bot.Compat
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CoreActivity coreActivity = activity.FromCompatActivity();
+
+            // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for updating activities
+            if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
+            {
+                coreActivity.ServiceUrl = new Uri(ServiceUrl);
+            }
 
             UpdateActivityResponse response = await _client.UpdateActivityAsync(conversationId, activityId, coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
 

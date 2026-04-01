@@ -25,18 +25,22 @@ public class ConversationAccount()
     public string? Name { get; set; }
 
     /// <summary>
+    /// Gets or sets a value indicating whether this is a targeted message visible only to this recipient.
+    /// </summary>
+    [JsonPropertyName("isTargeted")]
+    public bool? IsTargeted { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData]
-#pragma warning disable CA2227 // Collection properties should be read only
     public ExtendedPropertiesDictionary Properties { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 
     /// <summary>
     /// Gets the agentic identity from the account properties.
     /// </summary>
     /// <returns>An AgenticIdentity instance if properties contain agentic identity information; otherwise, null.</returns>
-    internal AgenticIdentity? GetAgenticIdentity()
+    public AgenticIdentity? GetAgenticIdentity()
     {
         Properties.TryGetValue("agenticAppId", out object? appIdObj);
         Properties.TryGetValue("agenticUserId", out object? userIdObj);

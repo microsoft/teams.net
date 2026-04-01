@@ -23,17 +23,17 @@ app.UseHttpsRedirection();
 var teams = app.UseTeams();
 app.AddTab("dialog-form", "Web/dialog-form");
 
-teams.OnMessage(async context =>
+teams.OnMessage(async (context, cancellationToken) =>
 {
     var activity = context.Activity;
     context.Log.Info($"[MESSAGE] Received: {SanitizeForLog(activity.Text)}");
     context.Log.Info($"[MESSAGE] From: {SanitizeForLog(activity.From?.Name ?? "unknown")}");
 
     var card = CreateDialogLauncherCard();
-    await context.Send(card);
+    await context.Send(card, cancellationToken);
 });
 
-teams.OnTaskFetch(context =>
+teams.OnTaskFetch((context, cancellationToken) =>
 {
     var activity = context.Activity;
     context.Log.Info("[TASK_FETCH] Task fetch request received");
@@ -62,7 +62,7 @@ teams.OnTaskFetch(context =>
     return Task.FromResult(response);
 });
 
-teams.OnTaskSubmit(async context =>
+teams.OnTaskSubmit(async (context, cancellationToken) =>
 {
     var activity = context.Activity;
     context.Log.Info("[TASK_SUBMIT] Task submit request received");
@@ -95,13 +95,13 @@ teams.OnTaskSubmit(async context =>
     {
         case "simple_form":
             var name = GetFormValue("name") ?? "Unknown";
-            await context.Send($"Hi {name}, thanks for submitting the form!");
+            await context.Send($"Hi {name}, thanks for submitting the form!", cancellationToken);
             return new Microsoft.Teams.Api.TaskModules.Response(new Microsoft.Teams.Api.TaskModules.MessageTask("Form was submitted"));
 
         case "webpage_dialog":
             var webName = GetFormValue("name") ?? "Unknown";
             var email = GetFormValue("email") ?? "No email";
-            await context.Send($"Hi {webName}, thanks for submitting the form! We got that your email is {email}");
+            await context.Send($"Hi {webName}, thanks for submitting the form! We got that your email is {email}", cancellationToken);
             return new Microsoft.Teams.Api.TaskModules.Response(new Microsoft.Teams.Api.TaskModules.MessageTask("Form submitted successfully"));
 
         case "webpage_dialog_step_1":
@@ -135,7 +135,7 @@ teams.OnTaskSubmit(async context =>
         case "webpage_dialog_step_2":
             var nameStep2 = GetFormValue("name") ?? "Unknown";
             var emailStep2 = GetFormValue("email") ?? "No email";
-            await context.Send($"Hi {nameStep2}, thanks for submitting the form! We got that your email is {emailStep2}");
+            await context.Send($"Hi {nameStep2}, thanks for submitting the form! We got that your email is {emailStep2}", cancellationToken);
             return new Microsoft.Teams.Api.TaskModules.Response(new Microsoft.Teams.Api.TaskModules.MessageTask("Multi-step form completed successfully"));
 
         default:

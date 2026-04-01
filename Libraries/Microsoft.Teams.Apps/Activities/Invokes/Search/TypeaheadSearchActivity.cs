@@ -90,4 +90,71 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnTypeaheadSearch(this App app, Func<IContext<SearchActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.Typeahead]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is SearchActivity search)
+                {
+                    return search.Value.Kind.IsTypeahead;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnTypeaheadSearch(this App app, Func<IContext<SearchActivity>, CancellationToken, Task<Response<SearchResponse>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.Typeahead]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken),
+            Selector = activity =>
+            {
+                if (activity is SearchActivity search)
+                {
+                    return search.Value.Kind.IsTypeahead;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnTypeaheadSearch(this App app, Func<IContext<SearchActivity>, CancellationToken, Task<SearchResponse>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.Typeahead]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken),
+            Selector = activity =>
+            {
+                if (activity is SearchActivity search)
+                {
+                    return search.Value.Kind.IsTypeahead;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
 }

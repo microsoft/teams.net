@@ -3,7 +3,6 @@
 
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.ConversationActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
@@ -23,6 +22,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for conversation update activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -45,6 +47,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for conversation update activities where members were added.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -67,6 +72,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for conversation update activities where members were removed.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -91,6 +99,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel created events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -113,6 +124,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel deleted events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -135,6 +149,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel renamed events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -145,29 +162,6 @@ public static class ConversationUpdateExtensions
         {
             Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelRenamed]),
             Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelRenamed,
-            Handler = async (ctx, cancellationToken) =>
-            {
-                await handler(ctx, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-
-    /*
-    /// <summary>
-    /// Registers a handler for channel restored events.
-    /// </summary>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
-    public static TeamsBotApplication OnChannelRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<ConversationUpdateActivity>
-        {
-            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelRestored]),
-            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelRestored,
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -221,6 +215,7 @@ public static class ConversationUpdateExtensions
         return app;
     }
 
+
     /// <summary>
     /// Registers a handler for channel member added events.
     /// </summary>
@@ -264,6 +259,29 @@ public static class ConversationUpdateExtensions
 
         return app;
     }
+
+    /*
+    /// <summary>
+    /// Registers a handler for channel restored events.
+    /// </summary>
+    /// <param name="app"></param>
+    /// <param name="handler"></param>
+    /// <returns></returns>
+    public static TeamsBotApplication OnChannelRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
+    {
+        ArgumentNullException.ThrowIfNull(app, nameof(app));
+        app.Router.Register(new Route<ConversationUpdateActivity>
+        {
+            Name = string.Join("/", [TeamsActivityType.ConversationUpdate, ConversationEventTypes.ChannelRestored]),
+            Selector = activity => activity.ChannelData?.EventType == ConversationEventTypes.ChannelRestored,
+            Handler = async (ctx, cancellationToken) =>
+            {
+                await handler(ctx, cancellationToken).ConfigureAwait(false);
+            }
+        });
+
+        return app;
+    }
     */
 
     // Team Event Handlers
@@ -271,6 +289,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team member added events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -293,6 +314,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team member removed events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -315,6 +339,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team archived events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -337,6 +364,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team deleted events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -359,6 +389,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team renamed events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -381,6 +414,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team unarchived events.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>

@@ -1,11 +1,13 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System.Text.Json;
-using Microsoft.Teams.Bot.Core;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core;
 
 namespace ABSTokenServiceClient
 {
-    [System.Diagnostics.CodeAnalysis.SuppressMessage("Performance", "CA1848:Use the LoggerMessage delegates", Justification = "<Pending>")]
     internal class UserTokenCLIService(UserTokenClient userTokenClient, ILogger<UserTokenCLIService> logger) : IHostedService
     {
         public Task StartAsync(CancellationToken cancellationToken)

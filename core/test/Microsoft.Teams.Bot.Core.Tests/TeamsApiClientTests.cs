@@ -21,6 +21,7 @@ public class TeamsApiClientTests
     private readonly ITestOutputHelper testOutput;
 
     public TeamsApiClientTests(ITestOutputHelper outputHelper)
+    public TeamsApiClientTests(ITestOutputHelper outputHelper)
     {
         testOutput = outputHelper;
         IConfigurationBuilder builder = new ConfigurationBuilder()
@@ -41,6 +42,19 @@ public class TeamsApiClientTests
         _serviceProvider = services.BuildServiceProvider();
         _teamsClient = _serviceProvider.GetRequiredService<TeamsApiClient>();
         _serviceUrl = new Uri(Environment.GetEnvironmentVariable("TEST_SERVICEURL") ?? "https://smba.trafficmanager.net/teams/");
+
+        string agenticAppBlueprintId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? throw new InvalidOperationException("AzureAd__ClientId environment variable not set");
+        string? agenticAppId = Environment.GetEnvironmentVariable("TEST_AGENTIC_APPID");// ?? throw new InvalidOperationException("TEST_AGENTIC_APPID environment variable not set");
+        string? agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");// ?? throw new InvalidOperationException("TEST_AGENTIC_USERID environment variable not set");
+
+        _agenticIdentity = null;
+        if (!string.IsNullOrEmpty(agenticAppId) && !string.IsNullOrEmpty(agenticUserId))
+        {
+            _recipient.Properties.Add("agenticAppBlueprintId", agenticAppBlueprintId);
+            _recipient.Properties.Add("agenticAppId", agenticAppId);
+            _recipient.Properties.Add("agenticUserId", agenticUserId);
+            _agenticIdentity = AgenticIdentity.FromProperties(_recipient.Properties);
+        }
     }
 
     #region Team Operations Tests
@@ -110,7 +124,7 @@ public class TeamsApiClientTests
 
     #region Meeting Operations Tests
 
-    [Fact]
+    [Fact(Skip = "FetchMeetingInfo requires permissions")]
     public async Task FetchMeetingInfo()
     {
         string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
@@ -144,7 +158,7 @@ public class TeamsApiClientTests
     public async Task FetchMeetingInfo_FailsWithInvalidMeetingId()
     {
         await Assert.ThrowsAsync<HttpRequestException>(()
-            => _teamsClient.FetchMeetingInfoAsync("invalid-meeting-id", _serviceUrl));
+            => _teamsClient.FetchMeetingInfoAsync("invalid-meeting-id", _serviceUrl, _agenticIdentity));
     }
 
     [Fact]

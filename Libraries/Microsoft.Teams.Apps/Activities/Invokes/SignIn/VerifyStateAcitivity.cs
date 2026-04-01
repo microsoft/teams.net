@@ -57,4 +57,47 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.VerifyState]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<SignIn.VerifyStateActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is SignIn.VerifyStateActivity
+        });
+
+        return app;
+    }
+
+    public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, CancellationToken, Task<object?>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.VerifyState]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = context => handler(context.ToActivityType<SignIn.VerifyStateActivity>(), context.CancellationToken),
+            Selector = activity => activity is SignIn.VerifyStateActivity
+        });
+
+        return app;
+    }
+
+    public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, CancellationToken, Task<Response?>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.VerifyState]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<SignIn.VerifyStateActivity>(), context.CancellationToken),
+            Selector = activity => activity is SignIn.VerifyStateActivity
+        });
+
+        return app;
+    }
 }

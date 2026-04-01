@@ -2,9 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
+using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
 
@@ -19,11 +18,23 @@ namespace Microsoft.Teams.Bot.Apps.Schema;
 [JsonSerializable(typeof(CoreActivity))]
 [JsonSerializable(typeof(TeamsActivity))]
 [JsonSerializable(typeof(MessageActivity))]
-[JsonSerializable(typeof(InvokeActivity))]
+[JsonSerializable(typeof(StreamingActivity))]
 [JsonSerializable(typeof(Entity))]
 [JsonSerializable(typeof(EntityList))]
 [JsonSerializable(typeof(MentionEntity))]
 [JsonSerializable(typeof(ClientInfoEntity))]
+[JsonSerializable(typeof(OMessageEntity))]
+[JsonSerializable(typeof(SensitiveUsageEntity))]
+[JsonSerializable(typeof(DefinedTerm))]
+[JsonSerializable(typeof(ProductInfoEntity))]
+[JsonSerializable(typeof(StreamInfoEntity))]
+[JsonSerializable(typeof(CitationEntity))]
+[JsonSerializable(typeof(CitationClaim))]
+[JsonSerializable(typeof(CitationAppearanceDocument))]
+[JsonSerializable(typeof(CitationImageObject))]
+[JsonSerializable(typeof(CitationAppearance))]
+[JsonSerializable(typeof(SuggestedActions))]
+[JsonSerializable(typeof(SuggestedAction))]
 [JsonSerializable(typeof(TeamsChannelData))]
 [JsonSerializable(typeof(ConversationAccount))]
 [JsonSerializable(typeof(TeamsConversationAccount))]

@@ -188,7 +188,7 @@ public class MeetingStartActivityTests
         }";
 
         var activity = JsonSerializer.Deserialize<MeetingStartActivity>(json);
-        
+
         Assert.NotNull(activity);
         Assert.NotNull(activity.Value);
         Assert.Equal("MCMxOTptZWV0aW5nX01UUm1NVFE1TkRZdE1UWXlZaTAwTm1ObExXSTRaVFF0TjJJMU1UWXpNMlJrWVRnM0B0aHJlYWQudjIjMA==", activity.Value.Id);
@@ -221,14 +221,14 @@ public class MeetingStartActivityTests
         };
 
         var json = JsonSerializer.Serialize(activity, CachedJsonSerializerOptions);
-        
+
         // Verify PascalCase in serialized JSON
         Assert.Contains("\"Id\":", json);
         Assert.Contains("\"MeetingType\":", json);
         Assert.Contains("\"JoinUrl\":", json);
         Assert.Contains("\"Title\":", json);
         Assert.Contains("\"StartTime\":", json);
-        
+
         // Verify round-trip deserialization
         var deserialized = JsonSerializer.Deserialize<MeetingStartActivity>(json);
         Assert.NotNull(deserialized);
@@ -257,7 +257,7 @@ public class MeetingStartActivityTests
         }";
 
         var activity = JsonSerializer.Deserialize<EventActivity>(json);
-        
+
         Assert.NotNull(activity);
         Assert.True(activity.Name.IsMeetingStart);
         var meetingStartActivity = activity as MeetingStartActivity;
@@ -284,7 +284,7 @@ public class MeetingStartActivityTests
         }";
 
         var activity = JsonSerializer.Deserialize<IActivity>(json);
-        
+
         Assert.NotNull(activity);
         var meetingStartActivity = activity as MeetingStartActivity;
         Assert.NotNull(meetingStartActivity);

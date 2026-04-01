@@ -1,15 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
+using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.UnitTests;
@@ -19,7 +13,7 @@ public class InvokeActivityTest
     [Fact]
     public void DefaultCtor()
     {
-        var ia = new InvokeActivity();
+        InvokeActivity ia = new();
         Assert.NotNull(ia);
         Assert.Equal(TeamsActivityType.Invoke, ia.Type);
         Assert.Null(ia.Name);
@@ -30,7 +24,7 @@ public class InvokeActivityTest
     [Fact]
     public void FromCoreActivityWithValue()
     {
-        var coreActivity = new CoreActivity
+        CoreActivity coreActivity = new()
         {
             Type = TeamsActivityType.Invoke,
             Value = JsonNode.Parse("{ \"key\": \"value\" }"),
@@ -40,7 +34,7 @@ public class InvokeActivityTest
                 { "name", "testName" }
             }
         };
-        var ia = InvokeActivity.FromActivity(coreActivity);
+        InvokeActivity ia = InvokeActivity.FromActivity(coreActivity);
         Assert.NotNull(ia);
         Assert.Equal(TeamsActivityType.Invoke, ia.Type);
         Assert.Equal("testName", ia.Name);

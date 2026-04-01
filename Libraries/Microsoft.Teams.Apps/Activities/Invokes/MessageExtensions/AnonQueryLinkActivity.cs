@@ -60,4 +60,47 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnAnonQueryLink(this App app, Func<IContext<MessageExtensions.AnonQueryLinkActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
+        });
+
+        return app;
+    }
+
+    public static App OnAnonQueryLink(this App app, Func<IContext<MessageExtensions.AnonQueryLinkActivity>, CancellationToken, Task<Response<Api.MessageExtensions.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>(), context.CancellationToken),
+            Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
+        });
+
+        return app;
+    }
+
+    public static App OnAnonQueryLink(this App app, Func<IContext<MessageExtensions.AnonQueryLinkActivity>, CancellationToken, Task<Api.MessageExtensions.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.AnonQueryLink]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.AnonQueryLinkActivity>(), context.CancellationToken),
+            Selector = activity => activity is MessageExtensions.AnonQueryLinkActivity
+        });
+
+        return app;
+    }
 }

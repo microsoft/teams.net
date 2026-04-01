@@ -21,22 +21,20 @@ public class TeamsActivity : CoreActivity
     {
         ArgumentNullException.ThrowIfNull(activity);
 
-        return TeamsActivityType.ActivityDeserializerMap.TryGetValue(activity.Type, out var factory)
+        return TeamsActivityType.ActivityDeserializerMap.TryGetValue(activity.Type, out Func<CoreActivity, TeamsActivity>? factory)
             ? factory(activity)
             : new TeamsActivity(activity);  // Fallback to base type
     }
 
     /// <summary>
     /// Overrides the ToJson method to serialize the TeamsActivity object to a JSON string.
-    /// Uses the activity type serializer map to select the appropriate JSON type info.
+    /// Uses the appropriate JSON type info based on the actual runtime type.
     /// </summary>
     /// <returns>A JSON string representation of the activity using the type-specific serializer.</returns>
     public override string ToJson()
-    {
-        return TeamsActivityType.ActivitySerializerMap.TryGetValue(Type, out var serializer)
+        => TeamsActivityType.ActivitySerializerMap.TryGetValue(GetType(), out Func<TeamsActivity, string>? serializer)
             ? serializer(this)
-            : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);  // Fallback to base type
-    }
+            : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
 
     /// <summary>
     /// Constructor with type parameter.
@@ -53,9 +51,7 @@ public class TeamsActivity : CoreActivity
     [JsonConstructor]
     public TeamsActivity()
     {
-        From = new TeamsConversationAccount();
-        Recipient = new TeamsConversationAccount();
-        Conversation = new TeamsConversation();
+        Type = TeamsActivityType.Message;
     }
 
     /// <summary>
@@ -71,9 +67,21 @@ public class TeamsActivity : CoreActivity
         {
             ChannelData = new TeamsChannelData(activity.ChannelData);
         }
-        From = new TeamsConversationAccount(activity.From);
-        Recipient = new TeamsConversationAccount(activity.Recipient);
-        Conversation = new TeamsConversation(activity.Conversation);
+
+        if (activity.From is not null)
+        {
+            From = TeamsConversationAccount.FromConversationAccount(activity.From);
+        }
+
+        if (activity.Recipient is not null)
+        {
+            Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient);
+        }
+
+        if (activity.Conversation is not null)
+        {
+            Conversation = TeamsConversation.FromConversation(activity.Conversation);
+        }
         Attachments = TeamsAttachment.FromJArray(activity.Attachments);
         Entities = EntityList.FromJsonArray(activity.Entities);
 
@@ -86,8 +94,8 @@ public class TeamsActivity : CoreActivity
     /// <returns></returns>
     internal TeamsActivity Rebase()
     {
-        base.Attachments = this.Attachments?.ToJsonArray();
-        base.Entities = this.Entities?.ToJsonArray();
+        base.Attachments = Attachments?.ToJsonArray();
+        base.Entities = Entities?.ToJsonArray();
 
         return this;
     }
@@ -97,9 +105,9 @@ public class TeamsActivity : CoreActivity
     /// Gets or sets the account information for the sender of the Teams conversation.
     /// </summary>
     [JsonPropertyName("from")]
-    public new TeamsConversationAccount From
+    public new TeamsConversationAccount? From
     {
-        get => (base.From as TeamsConversationAccount) ?? new TeamsConversationAccount(base.From);
+        get => base.From as TeamsConversationAccount;
         set => base.From = value;
     }
 
@@ -107,9 +115,9 @@ public class TeamsActivity : CoreActivity
     /// Gets or sets the account information for the recipient of the Teams conversation.
     /// </summary>
     [JsonPropertyName("recipient")]
-    public new TeamsConversationAccount Recipient
+    public new TeamsConversationAccount? Recipient
     {
-        get => (base.Recipient as TeamsConversationAccount) ?? new TeamsConversationAccount(base.Recipient);
+        get => base.Recipient as TeamsConversationAccount;
         set => base.Recipient = value;
     }
 
@@ -117,9 +125,9 @@ public class TeamsActivity : CoreActivity
     /// Gets or sets the conversation information for the Teams conversation.
     /// </summary>
     [JsonPropertyName("conversation")]
-    public new TeamsConversation Conversation
+    public new TeamsConversation? Conversation
     {
-        get => (base.Conversation as TeamsConversation) ?? new TeamsConversation(base.Conversation);
+        get => base.Conversation as TeamsConversation;
         set => base.Conversation = value;
     }
 
@@ -142,6 +150,37 @@ public class TeamsActivity : CoreActivity
     /// Attachments specific to Teams.
     /// </summary>
     [JsonPropertyName("attachments")] public new IList<TeamsAttachment>? Attachments { get; set; }
+
+    /// <summary>
+    /// UTC timestamp of when the activity was sent.
+    /// </summary>
+    [JsonPropertyName("timestamp")]
+    public string? Timestamp { get; set; }
+
+    /// <summary>
+    /// Local timestamp of when the activity was sent, including timezone offset.
+    /// </summary>
+    [JsonPropertyName("localTimestamp")]
+    public string? LocalTimestamp { get; set; }
+
+    /// <summary>
+    /// Locale of the activity set by the client (e.g., "en-US").
+    /// </summary>
+    [JsonPropertyName("locale")]
+    public string? Locale { get; set; }
+
+    /// <summary>
+    /// Local timezone of the client (e.g., "America/Los_Angeles").
+    /// </summary>
+    [JsonPropertyName("localTimezone")]
+    public string? LocalTimezone { get; set; }
+
+    /// <summary>
+    /// Gets or sets the suggested actions for the message.
+    /// </summary>
+    [JsonPropertyName("suggestedActions")]
+    public SuggestedActions? SuggestedActions { get; set; }
+
 
     /// <summary>
     /// Adds an entity to the activity's Entities collection.

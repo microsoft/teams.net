@@ -21,7 +21,7 @@ public static class HostApplicationBuilderExtensions
         builder.Services.AddSingleton(authentication);
         builder.Services.AddSingleton(adapter);
         builder.Services.AddTransient<IBot, TBot>();
-        
+
         return builder;
     }
 
@@ -30,7 +30,7 @@ public static class HostApplicationBuilderExtensions
         builder.Services.AddSingleton<BotFrameworkAuthentication, TBotFrameworkAuthentication>();
         builder.Services.AddSingleton<IBotFrameworkHttpAdapter, TBotFrameworkHttpAdapter>();
         builder.Services.AddTransient<IBot, TBot>();
-        
+
         return builder;
     }
 }

@@ -57,4 +57,47 @@ public static partial class AppInvokeActivityExtensions
 
         return app;
     }
+
+    public static App OnTaskSubmit(this App app, Func<IContext<Tasks.SubmitActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Tasks.Submit]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Tasks.SubmitActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is Tasks.SubmitActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTaskSubmit(this App app, Func<IContext<Tasks.SubmitActivity>, CancellationToken, Task<Response<Api.TaskModules.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Tasks.Submit]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<Tasks.SubmitActivity>(), context.CancellationToken),
+            Selector = activity => activity is Tasks.SubmitActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTaskSubmit(this App app, Func<IContext<Tasks.SubmitActivity>, CancellationToken, Task<Api.TaskModules.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Tasks.Submit]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<Tasks.SubmitActivity>(), context.CancellationToken),
+            Selector = activity => activity is Tasks.SubmitActivity
+        });
+
+        return app;
+    }
 }

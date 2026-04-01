@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -45,9 +46,7 @@ public class TeamsChannelDataSettings
     /// <remarks>This property stores extra JSON fields encountered during deserialization that do not map to
     /// known properties. It enables round-tripping of unknown or custom data without loss. The dictionary keys
     /// correspond to the property names in the JSON payload.</remarks>
-#pragma warning disable CA2227 // Collection properties should be read only
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
-#pragma warning restore CA2227 // Collection properties should be read only
 }
 
 /// <summary>
@@ -126,6 +125,13 @@ public class TeamsChannelData : ChannelData
             {
                 Source = JsonSerializer.Deserialize<TeamsChannelDataSource?>(sourceObjJE.GetRawText());
             }
+
+            if (cd.Properties.TryGetValue("feedbackLoopEnabled", out object? feedbackObj)
+                && feedbackObj is JsonElement jeFeedback
+                && jeFeedback.ValueKind is JsonValueKind.True or JsonValueKind.False)
+            {
+                FeedbackLoopEnabled = jeFeedback.GetBoolean();
+            }
         }
     }
 
@@ -161,7 +167,7 @@ public class TeamsChannelData : ChannelData
     [JsonPropertyName("tenant")] public TeamsChannelDataTenant? Tenant { get; set; }
 
     /// <summary>
-    /// Gets or sets the event type for conversation updates. See <see cref="ConversationActivities.ConversationEventTypes"/> for known values.
+    /// Gets or sets the event type for conversation updates. See <see cref="ConversationEventTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("eventType")] public string? EventType { get; set; }
 
@@ -169,5 +175,10 @@ public class TeamsChannelData : ChannelData
     /// Source information for the activity.
     /// </summary>
     [JsonPropertyName("source")] public TeamsChannelDataSource? Source { get; set; }
+
+    /// <summary>
+    /// Gets or sets whether the feedback loop (thumbs up/down) is enabled for the activity.
+    /// </summary>
+    [JsonPropertyName("feedbackLoopEnabled")] public bool? FeedbackLoopEnabled { get; set; }
 
 }

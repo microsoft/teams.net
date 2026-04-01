@@ -3,7 +3,6 @@
 
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.MessageActivities;
 
 namespace Microsoft.Teams.Bot.Apps.Handlers;
 
@@ -23,6 +22,9 @@ public static class MessageReactionExtensions
     /// <summary>
     /// Registers a handler for message reaction activities.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -45,6 +47,9 @@ public static class MessageReactionExtensions
     /// <summary>
     /// Registers a handler for message reaction activities where reactions were added.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>
@@ -67,6 +72,9 @@ public static class MessageReactionExtensions
     /// <summary>
     /// Registers a handler for message reaction activities where reactions were removed.
     /// </summary>
+    /// <remarks>
+    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
+    /// </remarks>
     /// <param name="app"></param>
     /// <param name="handler"></param>
     /// <returns></returns>

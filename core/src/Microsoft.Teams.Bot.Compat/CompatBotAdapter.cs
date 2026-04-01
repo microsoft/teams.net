@@ -5,10 +5,10 @@ using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Schema;
 using Newtonsoft.Json;
 
 
@@ -21,13 +21,18 @@ namespace Microsoft.Teams.Bot.Compat;
 /// <remarks>Use this adapter to bridge Bot Framework turn contexts and activities with a custom bot application.
 /// This class is intended for scenarios where integration with non-standard bot runtimes or legacy systems is
 /// required.</remarks>
-/// <param name="sp">The service provider used to resolve dependencies.</param>
-public class CompatBotAdapter(IServiceProvider sp) : BotAdapter
+/// <param name="botApplication">The Teams bot application instance.</param>
+/// <param name="httpContextAccessor">The HTTP context accessor.</param>
+/// <param name="logger">The logger instance.</param>
+public class CompatBotAdapter(
+    TeamsBotApplication botApplication,
+    IHttpContextAccessor? httpContextAccessor = null,
+    ILogger? logger = null) : BotAdapter
 {
     private readonly JsonSerializerOptions _writeIndentedJsonOptions = new() { WriteIndented = true };
-    private readonly TeamsBotApplication botApplication = sp.GetRequiredService<TeamsBotApplication>();
-    private readonly IHttpContextAccessor? httpContextAccessor = sp.GetService<IHttpContextAccessor>();
-    private readonly ILogger<CompatBotAdapter>? logger = sp.GetService<ILogger<CompatBotAdapter>>();
+    private readonly TeamsBotApplication botApplication = botApplication;
+    private readonly IHttpContextAccessor? httpContextAccessor = httpContextAccessor;
+    private readonly ILogger? logger = logger;
 
     /// <summary>
     /// Deletes an activity from the conversation.
@@ -39,7 +44,31 @@ public class CompatBotAdapter(IServiceProvider sp) : BotAdapter
     public override async Task DeleteActivityAsync(ITurnContext turnContext, ConversationReference reference, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        await botApplication.ConversationClient.DeleteActivityAsync(turnContext.Activity.FromCompatActivity(), cancellationToken: cancellationToken).ConfigureAwait(false);
+        ArgumentNullException.ThrowIfNull(reference);
+
+        // Extract values from conversation reference
+        string conversationId = reference.Conversation?.Id
+            ?? throw new ArgumentException("ConversationReference must contain a valid Conversation.Id", nameof(reference));
+
+        string activityId = reference.ActivityId
+            ?? throw new ArgumentException("ConversationReference must contain a valid ActivityId", nameof(reference));
+
+        string serviceUrlString = reference.ServiceUrl
+            ?? turnContext.Activity.ServiceUrl
+            ?? throw new ArgumentException("ServiceUrl must be provided", nameof(reference));
+
+        Uri serviceUrl = new(serviceUrlString);
+
+        // Extract agentic identity from turn context if available
+        AgenticIdentity? agenticIdentity = turnContext.Activity?.FromCompatActivity().From?.GetAgenticIdentity();
+
+        await botApplication.ConversationClient.DeleteActivityAsync(
+            conversationId,
+            activityId,
+            serviceUrl,
+            agenticIdentity,
+            customHeaders: null,
+            cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -74,7 +103,15 @@ public class CompatBotAdapter(IServiceProvider sp) : BotAdapter
                 return [new ResourceResponse() { Id = null }];
             }
 
-            SendActivityResponse? resp = await botApplication.SendActivityAsync(activity.FromCompatActivity(), cancellationToken).ConfigureAwait(false);
+            CoreActivity coreActivity = activity.FromCompatActivity();
+
+            // Ensure ServiceUrl is set from turn context if not already present
+            if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
+            {
+                coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
+            }
+
+            SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken).ConfigureAwait(false);
 
             logger?.LogInformation("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
 
@@ -96,10 +133,20 @@ public class CompatBotAdapter(IServiceProvider sp) : BotAdapter
     public override async Task<ResourceResponse> UpdateActivityAsync(ITurnContext turnContext, Activity activity, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(turnContext);
+
+        CoreActivity coreActivity = activity.FromCompatActivity();
+
+        // Ensure ServiceUrl is set from turn context if not already present
+        if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
+        {
+            coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
+        }
+
         UpdateActivityResponse res = await botApplication.ConversationClient.UpdateActivityAsync(
             activity.Conversation.Id,
             activity.Id,
-            activity.FromCompatActivity(),
+            coreActivity,
             cancellationToken: cancellationToken).ConfigureAwait(false);
         return new ResourceResponse() { Id = res.Id };
     }
