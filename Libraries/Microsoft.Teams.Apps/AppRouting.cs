@@ -83,7 +83,7 @@ public partial class App
                 ConnectionName = context.Activity.Value.ConnectionName,
                 UserId = context.Activity.From.Id,
                 ExchangeRequest = new() { Token = context.Activity.Value.Token },
-            });
+            }, cancellationToken);
 
             context.UserGraphToken = new JsonWebToken(res);
 
@@ -153,7 +153,8 @@ public partial class App
                 {
                     Context = context.ToActivityType<Api.Activities.Invokes.SignInActivity>(),
                     Token = res
-                }
+                },
+                cancellationToken
             );
             return new Response(HttpStatusCode.OK);
         }
