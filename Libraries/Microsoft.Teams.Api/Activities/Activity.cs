@@ -238,7 +238,17 @@ public partial class Activity : IActivity
     {
         Recipient = value;
         #pragma warning disable ExperimentalTeamsTargeted
-        IsTargeted = isTargeted;
+        Recipient.IsTargeted = null;
+        #pragma warning restore ExperimentalTeamsTargeted
+        return this;
+    }
+
+    [Experimental("ExperimentalTeamsTargeted")]
+    public virtual Activity WithRecipient(Account value, bool isTargeted)
+    {
+        Recipient = value;
+        #pragma warning disable ExperimentalTeamsTargeted
+        Recipient.IsTargeted = isTargeted ? true : null;
         #pragma warning restore ExperimentalTeamsTargeted
         return this;
     }
