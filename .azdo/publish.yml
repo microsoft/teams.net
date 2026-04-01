@@ -49,7 +49,6 @@ extends:
         displayName: 'Build, Test, Sign, and Pack'
         steps:
           - checkout: self
-
           - task: UseDotNet@2
             displayName: 'Use .NET 8'
             inputs:

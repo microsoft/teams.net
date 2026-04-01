@@ -63,7 +63,6 @@ extends:
           displayName: 'Build, Test, Pack, and Push to Internal Feed'
           steps:
             - checkout: self
-
             - task: UseDotNet@2
               displayName: 'Use .NET 8'
               inputs:
