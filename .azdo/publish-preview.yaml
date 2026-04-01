@@ -43,6 +43,12 @@ extends:
       image: ubuntu-24.04
       os: linux
 
+    sdl:
+      sourceAnalysisPool:
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-2022
+        os: windows
+
     # Required for M365PT tracking and drift management
     customBuildTags:
     - ES365AIMigrationTooling
