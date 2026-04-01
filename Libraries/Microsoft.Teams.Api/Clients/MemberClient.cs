@@ -29,23 +29,26 @@ public class MemberClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public async Task<List<Account>> GetAsync(string conversationId)
+    public async Task<List<Account>> GetAsync(string conversationId, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Get($"{ServiceUrl}v3/conversations/{conversationId}/members");
-        var response = await _http.SendAsync<List<Account>>(request, _cancellationToken);
+        var response = await _http.SendAsync<List<Account>>(request, token);
         return response.Body;
     }
 
-    public async Task<Account> GetByIdAsync(string conversationId, string memberId)
+    public async Task<Account> GetByIdAsync(string conversationId, string memberId, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Get($"{ServiceUrl}v3/conversations/{conversationId}/members/{memberId}");
-        var response = await _http.SendAsync<Account>(request, _cancellationToken);
+        var response = await _http.SendAsync<Account>(request, token);
         return response.Body;
     }
 
-    public async Task DeleteAsync(string conversationId, string memberId)
+    public async Task DeleteAsync(string conversationId, string memberId, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Delete($"{ServiceUrl}v3/conversations/{conversationId}/members/{memberId}");
-        await _http.SendAsync(request, _cancellationToken);
+        await _http.SendAsync(request, token);
     }
 }
