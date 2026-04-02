@@ -58,7 +58,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<SendActivityResponse?> ReplyAsync(string text, CancellationToken cancellationToken = default)
     {
         var reply = new MessageActivity(text);
@@ -71,7 +70,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<SendActivityResponse?> ReplyAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
