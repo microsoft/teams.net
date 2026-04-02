@@ -31,11 +31,11 @@ public static class ActivityQuotedReplyExtensions
     /// Teams renders the quoted message as a preview bubble above the response text.
     /// If text is provided, it is appended to the quoted message placeholder.
     /// </summary>
-    /// <param name="activity">The activity to add the quote to. Cannot be null.</param>
+    /// <param name="activity">The message activity to add the quote to. Cannot be null.</param>
     /// <param name="messageId">The ID of the message to quote. Cannot be null or whitespace.</param>
     /// <param name="text">Optional text, appended to the quoted message placeholder.</param>
     /// <returns>The created QuotedReplyEntity that was added to the activity.</returns>
-    public static QuotedReplyEntity AddQuote(this TeamsActivity activity, string messageId, string? text = null)
+    public static QuotedReplyEntity AddQuote(this MessageActivity activity, string messageId, string? text = null)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
@@ -44,14 +44,11 @@ public static class ActivityQuotedReplyExtensions
         activity.Entities ??= [];
         activity.Entities.Add(entity);
 
-        if (activity is MessageActivity msg)
+        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
+        activity.Text = (activity.Text ?? "") + placeholder;
+        if (text != null)
         {
-            var placeholder = $"<quoted messageId=\"{messageId}\"/>";
-            msg.Text = (msg.Text ?? "") + placeholder;
-            if (text != null)
-            {
-                msg.Text += $" {text}";
-            }
+            activity.Text += $" {text}";
         }
 
         activity.Rebase();
