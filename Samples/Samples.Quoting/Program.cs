@@ -10,7 +10,7 @@ builder.AddTeams().AddTeamsDevTools();
 var app = builder.Build();
 var teams = app.UseTeams();
 
-teams.OnActivity(async context =>
+teams.OnActivity(async (context, cancellationToken) =>
 {
     context.Log.Info($"[ACTIVITY] Type: {context.Activity.Type}, From: {context.Activity.From?.Name ?? "unknown"}");
     await context.Next();
