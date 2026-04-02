@@ -221,5 +221,6 @@ extends:
                     packagesToPush: '$(Pipeline.Workspace)/PreviewPackages/*.nupkg'
                     packageParentPath: '$(Pipeline.Workspace)/PreviewPackages'
                     nuGetFeedType: external
+                    publishFeedCredentials: 'Microsoft.Teams.*'
                     publishPackageMetadata: true
                     retryCountOnTaskFailure: 2
