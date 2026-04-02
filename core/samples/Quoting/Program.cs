@@ -101,7 +101,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     // Help / Default
     await context.SendActivityAsync(
         new MessageActivity(
-            "**Quoted Replies Test Bot**\n\n" +
+            "**Quoting Test Bot**\n\n" +
             "**Commands:**\n" +
             "- `test reply` - ReplyAsync() auto-quotes your message\n" +
             "- `test quote` - QuoteAsync() quotes a previously sent message\n" +

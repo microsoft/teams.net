@@ -1,6 +1,6 @@
-# QuotedReplies Sample
+# Quoting Sample
 
-Demonstrates reading and sending quoted replies in a Teams bot using the `quotedReply` entity.
+Demonstrates various ways to quote previous messages in a Teams bot using the `quotedReply` entity.
 
 ## Prerequisites
 
@@ -25,5 +25,5 @@ Demonstrates reading and sending quoted replies in a Teams bot using the `quoted
 
 1. Build and run:
    ```bash
-   dotnet run --project samples/QuotedReplies/QuotedReplies.csproj
+   dotnet run --project samples/Quoting/Quoting.csproj
    ```
