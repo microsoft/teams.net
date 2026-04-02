@@ -117,7 +117,7 @@ teams.OnMessage(async (context, cancellationToken) =>
     if (text.Contains("help"))
     {
         await context.Send(
-            "**Quoted Replies Test Bot**\n\n" +
+            "**Quoting Test Bot**\n\n" +
             "**Commands:**\n" +
             "- `test reply` - Reply() auto-quotes your message\n" +
             "- `test quote` - Quote() quotes a previously sent message\n" +
