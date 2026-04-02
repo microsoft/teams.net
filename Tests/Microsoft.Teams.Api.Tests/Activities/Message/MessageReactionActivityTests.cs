@@ -29,15 +29,7 @@ public class MessageReactionActivityTests
                 Name = "test-bot",
                 Role = Role.Bot
             }
-        }.AddReaction(new Messages.Reaction()
-        {
-            Type = Messages.ReactionType.Like,
-            User = new Messages.User()
-            {
-                Id = "100",
-                UserIdentityType = Messages.UserIdentityType.AnonymousGuest
-            }
-        });
+        };
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -74,15 +66,7 @@ public class MessageReactionActivityTests
                 Name = "test-bot",
                 Role = Role.Bot
             }
-        }.AddReaction(new Messages.Reaction()
-        {
-            Type = Messages.ReactionType.Like,
-            User = new Messages.User()
-            {
-                Id = "100",
-                UserIdentityType = Messages.UserIdentityType.AnonymousGuest
-            }
-        });
+        };
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -119,15 +103,7 @@ public class MessageReactionActivityTests
                 Name = "test-bot",
                 Role = Role.Bot
             }
-        }.AddReaction(new Messages.Reaction()
-        {
-            Type = Messages.ReactionType.Like,
-            User = new Messages.User()
-            {
-                Id = "100",
-                UserIdentityType = Messages.UserIdentityType.AnonymousGuest
-            }
-        });
+        };
 
         var json = JsonSerializer.Serialize(activity, new JsonSerializerOptions()
         {
@@ -166,15 +142,7 @@ public class MessageReactionActivityTests
                 Name = "test-bot",
                 Role = Role.Bot
             }
-        }.AddReaction(new Messages.Reaction()
-        {
-            Type = Messages.ReactionType.Like,
-            User = new Messages.User()
-            {
-                Id = "100",
-                UserIdentityType = Messages.UserIdentityType.AnonymousGuest
-            }
-        });
+        };
 
         Assert.Equivalent(expected, activity);
     }
@@ -204,15 +172,7 @@ public class MessageReactionActivityTests
                 Name = "test-bot",
                 Role = Role.Bot
             }
-        }.AddReaction(new Messages.Reaction()
-        {
-            Type = Messages.ReactionType.Like,
-            User = new Messages.User()
-            {
-                Id = "100",
-                UserIdentityType = Messages.UserIdentityType.AnonymousGuest
-            }
-        });
+        };
 
         Assert.Equivalent(expected, activity);
     }

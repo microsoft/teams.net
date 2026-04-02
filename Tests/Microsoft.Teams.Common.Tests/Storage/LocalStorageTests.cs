@@ -2,6 +2,7 @@
 using Microsoft.Teams.Common.Storage;
 
 namespace Microsoft.Teams.Common.Tests.Storage;
+
 public class LocalStorageTests
 {
     [Fact]

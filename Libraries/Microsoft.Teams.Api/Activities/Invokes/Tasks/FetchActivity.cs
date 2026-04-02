@@ -25,6 +25,10 @@ public static partial class Tasks
         /// </summary>
         [JsonPropertyName("value")]
         [JsonPropertyOrder(32)]
-        public new required TaskModules.Request Value { get; set; }
+        public new required TaskModules.Request Value
+        {
+            get => (TaskModules.Request)base.Value!;
+            set => base.Value = value;
+        }
     }
 }

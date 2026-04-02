@@ -24,6 +24,7 @@ public static partial class Search
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnAnswerSearch(this App app, Func<IContext<SearchActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -49,6 +50,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnAnswerSearch(this App app, Func<IContext<SearchActivity>, Task<Response<SearchResponse>>> handler)
     {
         app.Router.Register(new Route()
@@ -70,6 +72,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnAnswerSearch(this App app, Func<IContext<SearchActivity>, Task<SearchResponse>> handler)
     {
         app.Router.Register(new Route()
@@ -77,6 +80,73 @@ public static partial class AppInvokeActivityExtensions
             Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.SearchAnswer]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<SearchActivity>()),
+            Selector = activity =>
+            {
+                if (activity is SearchActivity search)
+                {
+                    return search.Value.Kind.IsSearchAnswer;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnAnswerSearch(this App app, Func<IContext<SearchActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.SearchAnswer]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is SearchActivity search)
+                {
+                    return search.Value.Kind.IsSearchAnswer;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnAnswerSearch(this App app, Func<IContext<SearchActivity>, CancellationToken, Task<Response<SearchResponse>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.SearchAnswer]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken),
+            Selector = activity =>
+            {
+                if (activity is SearchActivity search)
+                {
+                    return search.Value.Kind.IsSearchAnswer;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnAnswerSearch(this App app, Func<IContext<SearchActivity>, CancellationToken, Task<SearchResponse>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.SearchAnswer]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken),
             Selector = activity =>
             {
                 if (activity is SearchActivity search)

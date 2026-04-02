@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Api.Entities;
@@ -145,6 +146,19 @@ public class MessageActivity : Activity
         Text += text;
         return this;
     }
+
+    public override MessageActivity WithRecipient(Account value)
+    {
+        return (MessageActivity)base.WithRecipient(value);
+    }
+
+    [Experimental("ExperimentalTeamsTargeted")]
+    #pragma warning disable ExperimentalTeamsTargeted
+    public override MessageActivity WithRecipient(Account value, bool isTargeted = false)
+    {
+        return (MessageActivity)base.WithRecipient(value, isTargeted);
+    }
+    #pragma warning restore ExperimentalTeamsTargeted
 
     public MessageActivity AddAttachment(params Attachment[] value)
     {

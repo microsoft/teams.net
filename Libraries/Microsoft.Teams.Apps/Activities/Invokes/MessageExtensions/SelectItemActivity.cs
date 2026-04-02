@@ -18,6 +18,7 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -35,6 +36,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, Task<Response<Api.MessageExtensions.Response>>> handler)
     {
         app.Router.Register(new Route()
@@ -48,6 +50,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, Task<Api.MessageExtensions.Response>> handler)
     {
         app.Router.Register(new Route()
@@ -55,6 +58,49 @@ public static partial class AppInvokeActivityExtensions
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>()),
+            Selector = activity => activity is MessageExtensions.SelectItemActivity
+        });
+
+        return app;
+    }
+
+    public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is MessageExtensions.SelectItemActivity
+        });
+
+        return app;
+    }
+
+    public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, CancellationToken, Task<Response<Api.MessageExtensions.Response>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken),
+            Selector = activity => activity is MessageExtensions.SelectItemActivity
+        });
+
+        return app;
+    }
+
+    public static App OnSelectItem(this App app, Func<IContext<MessageExtensions.SelectItemActivity>, CancellationToken, Task<Api.MessageExtensions.Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken),
             Selector = activity => activity is MessageExtensions.SelectItemActivity
         });
 

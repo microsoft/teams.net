@@ -17,6 +17,7 @@ public static partial class Conversation
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConversationEnd(this App app, Func<IContext<EndOfConversationActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -26,6 +27,23 @@ public static partial class AppActivityExtensions
             Handler = async context =>
             {
                 await handler(context.ToActivityType<EndOfConversationActivity>());
+                return null;
+            },
+            Selector = activity => activity is EndOfConversationActivity
+        });
+
+        return app;
+    }
+
+    public static App OnConversationEnd(this App app, Func<IContext<EndOfConversationActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.EndOfConversation,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<EndOfConversationActivity>(), context.CancellationToken);
                 return null;
             },
             Selector = activity => activity is EndOfConversationActivity

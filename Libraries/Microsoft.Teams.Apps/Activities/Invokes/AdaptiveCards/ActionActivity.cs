@@ -19,6 +19,7 @@ public static partial class AdaptiveCard
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnAdaptiveCardAction(this App app, Func<IContext<AdaptiveCards.ActionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -36,6 +37,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnAdaptiveCardAction(this App app, Func<IContext<AdaptiveCards.ActionActivity>, Task<Response<ActionResponse>>> handler)
     {
         app.Router.Register(new Route()
@@ -49,6 +51,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnAdaptiveCardAction(this App app, Func<IContext<AdaptiveCards.ActionActivity>, Task<ActionResponse>> handler)
     {
         app.Router.Register(new Route()
@@ -56,6 +59,49 @@ public static partial class AppInvokeActivityExtensions
             Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>()),
+            Selector = activity => activity is AdaptiveCards.ActionActivity
+        });
+
+        return app;
+    }
+
+    public static App OnAdaptiveCardAction(this App app, Func<IContext<AdaptiveCards.ActionActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<AdaptiveCards.ActionActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is AdaptiveCards.ActionActivity
+        });
+
+        return app;
+    }
+
+    public static App OnAdaptiveCardAction(this App app, Func<IContext<AdaptiveCards.ActionActivity>, CancellationToken, Task<Response<ActionResponse>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>(), context.CancellationToken),
+            Selector = activity => activity is AdaptiveCards.ActionActivity
+        });
+
+        return app;
+    }
+
+    public static App OnAdaptiveCardAction(this App app, Func<IContext<AdaptiveCards.ActionActivity>, CancellationToken, Task<ActionResponse>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.AdaptiveCards.Action]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<AdaptiveCards.ActionActivity>(), context.CancellationToken),
             Selector = activity => activity is AdaptiveCards.ActionActivity
         });
 

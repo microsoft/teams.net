@@ -1,10 +1,10 @@
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Activities.Invokes;
-using Microsoft.Teams.Apps;
+using System.Collections.Concurrent;
+
 using Microsoft.Teams.AI.Models.OpenAI;
 using Microsoft.Teams.AI.Prompts;
 using Microsoft.Teams.AI.Templates;
-using System.Collections.Concurrent;
+using Microsoft.Teams.Api.Activities.Invokes;
+using Microsoft.Teams.Apps;
 
 namespace Samples.AI.Handlers;
 
@@ -22,7 +22,7 @@ public static class FeedbackHandler
     /// <summary>
     /// Handles the feedback loop command - sends an AI response with feedback buttons
     /// </summary>
-    public static async Task HandleFeedbackLoop(OpenAIChatModel model, IContext<Microsoft.Teams.Api.Activities.MessageActivity> context)
+    public static async Task HandleFeedbackLoop(OpenAIChatModel model, IContext<Microsoft.Teams.Api.Activities.MessageActivity> context, CancellationToken cancellationToken = default)
     {
         context.Log.Info($"[HANDLER] Feedback loop handler invoked with query: {context.Activity.Text}");
 
@@ -32,7 +32,7 @@ public static class FeedbackHandler
         });
 
         context.Log.Info("[HANDLER] Sending query to AI model...");
-        var result = await prompt.Send(context.Activity.Text);
+        var result = await prompt.Send(context.Activity.Text, cancellationToken);
 
         if (result.Content != null)
         {
@@ -47,7 +47,7 @@ public static class FeedbackHandler
             .AddFeedback(); // This adds the thumbs up/down buttons
 
             context.Log.Info("[HANDLER] Sending message with feedback buttons");
-            var sentActivity = await context.Send(messageActivity);
+            var sentActivity = await context.Send(messageActivity, cancellationToken);
 
             // Store the feedback data for later retrieval
             if (sentActivity.Id != null)
@@ -66,7 +66,7 @@ public static class FeedbackHandler
         else
         {
             context.Log.Warn("[HANDLER] AI did not generate a response");
-            await context.Reply("I did not generate a response.");
+            await context.Reply("I did not generate a response.", cancellationToken);
         }
     }
 

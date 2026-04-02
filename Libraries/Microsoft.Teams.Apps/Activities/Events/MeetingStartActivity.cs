@@ -27,6 +27,7 @@ public static partial class Event
 
 public static partial class AppEventActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMeetingStart(this App app, Func<IContext<MeetingStartActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -36,6 +37,23 @@ public static partial class AppEventActivityExtensions
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MeetingStartActivity>());
+                return null;
+            },
+            Selector = activity => activity is MeetingStartActivity
+        });
+
+        return app;
+    }
+
+    public static App OnMeetingStart(this App app, Func<IContext<MeetingStartActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Event, Name.MeetingStart]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MeetingStartActivity>(), context.CancellationToken);
                 return null;
             },
             Selector = activity => activity is MeetingStartActivity

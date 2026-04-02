@@ -1,6 +1,7 @@
 ﻿using Microsoft.Teams.Common.Extensions;
 
 namespace Microsoft.Teams.Common.Tests.Extensions;
+
 public class MethodInfoExtensionsTests
 {
     private class TestClass

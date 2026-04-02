@@ -7,7 +7,9 @@ using Microsoft.Teams.Plugins.External.McpClient;
 using Samples.McpClient;
 
 var builder = WebApplication.CreateBuilder(args);
+#pragma warning disable CS0612 // Type or member is obsolete
 builder.Services.AddTransient<Controller>().AddHttpContextAccessor();
+#pragma warning restore CS0612 // Type or member is obsolete
 builder.Services.AddSingleton((sp) => new McpClientPlugin().UseMcpServer("https://learn.microsoft.com/api/mcp"));
 builder.AddTeams().AddTeamsDevTools().AddOpenAI<DocsPrompt>();
 
