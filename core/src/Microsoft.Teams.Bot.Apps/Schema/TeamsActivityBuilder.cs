@@ -180,14 +180,21 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
 
     /// <summary>
     /// Adds a quoted reply entity and appends a placeholder to the activity text.
+    /// The activity type must be set to Message (via <see cref="CoreActivityBuilder{TActivity,TBuilder}.WithType"/>) before calling this method.
     /// </summary>
     /// <param name="messageId">The ID of the message to quote.</param>
     /// <param name="text">Optional text, appended to the quoted message placeholder.</param>
     /// <returns>The builder instance for chaining.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the activity type is not Message.</exception>
     [Experimental("ExperimentalTeamsQuotedReplies")]
     public TeamsActivityBuilder WithQuote(string messageId, string? text = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        if (_activity.Type != TeamsActivityType.Message)
+        {
+            throw new InvalidOperationException("WithQuote can only be used on message activities. Call WithType(TeamsActivityType.Message) first.");
+        }
 
         _activity.Entities ??= [];
         _activity.Entities.Add(new QuotedReplyEntity
