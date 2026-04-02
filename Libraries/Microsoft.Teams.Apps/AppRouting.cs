@@ -66,7 +66,7 @@ public partial class App
         return this;
     }
 
-    protected async Task<Response> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context, CancellationToken cancellationToken)
+    protected async Task<Response> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context, CancellationToken cancellationToken = default)
     {
         var connectionName = context.Activity.Value.ConnectionName;
 
@@ -126,7 +126,7 @@ public partial class App
         }
     }
 
-    protected async Task<object?> OnVerifyStateActivity(IContext<Api.Activities.Invokes.SignIn.VerifyStateActivity> context, CancellationToken cancellationToken)
+    protected async Task<object?> OnVerifyStateActivity(IContext<Api.Activities.Invokes.SignIn.VerifyStateActivity> context, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -199,7 +199,7 @@ public partial class App
     /// <item><term>interactionrequired</term><description>User interaction is required (handled via OAuth card fallback, does not typically reach the bot).</description></item>
     /// </list>
     /// </summary>
-    protected async Task<object?> OnSignInFailureActivity(IContext<Api.Activities.Invokes.SignIn.FailureActivity> context, CancellationToken cancellationToken)
+    protected async Task<object?> OnSignInFailureActivity(IContext<Api.Activities.Invokes.SignIn.FailureActivity> context, CancellationToken cancellationToken = default)
     {
         var failure = context.Activity.Value;
 
