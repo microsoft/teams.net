@@ -151,18 +151,13 @@ static string SanitizeForLog(string? input)
     return input.Replace("\r", "").Replace("\n", "");
 }
 
-static Microsoft.Teams.Cards.SubmitAction CreateTaskFetchSubmitAction(string title, string openDialogType)
+static Microsoft.Teams.Cards.SubmitAction CreateTaskFetchSubmitAction(string title, string dialogId)
 {
-    var submitActionData = new Microsoft.Teams.Cards.SubmitActionData
-    {
-        Msteams = new Microsoft.Teams.Cards.TaskFetchSubmitActionData()
-    };
-    submitActionData.NonSchemaProperties["opendialogtype"] = openDialogType;
-
     return new Microsoft.Teams.Cards.SubmitAction
     {
         Title = title,
-        Data = new Microsoft.Teams.Common.Union<string, Microsoft.Teams.Cards.SubmitActionData>(submitActionData)
+        Data = new Microsoft.Teams.Common.Union<string, Microsoft.Teams.Cards.SubmitActionData>(
+            new Microsoft.Teams.Cards.OpenDialogData(dialogId))
     };
 }
 
