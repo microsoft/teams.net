@@ -45,7 +45,7 @@ teams.OnTaskFetch((context, cancellationToken) =>
         return Task.FromResult(new Microsoft.Teams.Api.TaskModules.Response(new Microsoft.Teams.Api.TaskModules.MessageTask("No data found in the activity value")));
     }
 
-    var dialogType = data.Value.TryGetProperty("opendialogtype", out var dialogTypeElement) && dialogTypeElement.ValueKind == JsonValueKind.String
+    var dialogType = data.Value.TryGetProperty("dialog_id", out var dialogTypeElement) && dialogTypeElement.ValueKind == JsonValueKind.String
         ? dialogTypeElement.GetString()
         : null;
 
