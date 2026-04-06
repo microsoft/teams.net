@@ -49,7 +49,7 @@ public class TeamsSettings
     public CloudEnvironment ResolveCloud(CloudEnvironment? programmaticCloud = null)
     {
         var baseCloud = programmaticCloud
-            ?? (Cloud is not null ? CloudEnvironment.FromName(Cloud) : null)
+            ?? (!string.IsNullOrWhiteSpace(Cloud) ? CloudEnvironment.FromName(Cloud) : null)
             ?? CloudEnvironment.Public;
 
         return baseCloud.WithOverrides(

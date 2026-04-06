@@ -61,13 +61,13 @@ public class CloudEnvironment
         string channelService,
         string oauthRedirectUrl)
     {
-        LoginEndpoint = loginEndpoint;
+        LoginEndpoint = loginEndpoint.TrimEnd('/');
         LoginTenant = loginTenant;
         BotScope = botScope;
-        TokenServiceUrl = tokenServiceUrl;
+        TokenServiceUrl = tokenServiceUrl.TrimEnd('/');
         OpenIdMetadataUrl = openIdMetadataUrl;
         TokenIssuer = tokenIssuer;
-        ChannelService = channelService;
+        ChannelService = channelService.TrimEnd('/');
         OAuthRedirectUrl = oauthRedirectUrl;
     }
 
@@ -164,12 +164,22 @@ public class CloudEnvironment
     /// Resolves a cloud environment name (case-insensitive) to its corresponding instance.
     /// Valid names: "Public", "USGov", "USGovDoD", "China".
     /// </summary>
-    public static CloudEnvironment FromName(string name) => name.ToLowerInvariant() switch
+    public static CloudEnvironment FromName(string name)
     {
-        "public" => Public,
-        "usgov" => USGov,
-        "usgovdod" => USGovDoD,
-        "china" => China,
-        _ => throw new ArgumentException($"Unknown cloud environment: '{name}'. Valid values are: Public, USGov, USGovDoD, China.", nameof(name))
-    };
+        ArgumentNullException.ThrowIfNull(name);
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            throw new ArgumentException("Cloud environment name cannot be empty or whitespace.", nameof(name));
+        }
+
+        return name.ToLowerInvariant() switch
+        {
+            "public" => Public,
+            "usgov" => USGov,
+            "usgovdod" => USGovDoD,
+            "china" => China,
+            _ => throw new ArgumentException($"Unknown cloud environment: '{name}'. Valid values are: Public, USGov, USGovDoD, China.", nameof(name))
+        };
+    }
 }
