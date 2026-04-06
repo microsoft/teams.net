@@ -1,7 +1,8 @@
 # =============================================================================
-# This pipeline publishes preview packages. Manually triggered only.
+# This pipeline publishes NuGet packages. Manually triggered only.
 # - "Internal": pushes unsigned packages to the internal TeamsSDKPreviews feed.
 # - "Public": signs (Authenticode + NuGet) and pushes to nuget.org (requires approval).
+# Version is determined by Nerdbank.GitVersioning (nbgv) from version.json.
 #
 # MIGRATED TO 1ES OFFICIAL PIPELINE TEMPLATE: This pipeline now extends from
 # 1ES.Official.PipelineTemplate to ensure compliance with M365 security requirements.
@@ -57,7 +58,7 @@ extends:
 
     - ${{ if eq(parameters.publishType, 'Internal') }}:
       - stage: Build_Test_Pack_Push_Internal
-        displayName: 'Build, Test, Pack, and Push (Internal Preview)'
+        displayName: 'Build, Test, Pack, and Push (Internal)'
         jobs:
         - job: BuildTestPackPush
           displayName: 'Build, Test, Pack, and Push to Internal Feed'
@@ -134,11 +135,11 @@ extends:
               displayName: 'Publish NuGet Packages as Pipeline Artifact'
               inputs:
                 targetPath: '$(Build.ArtifactStagingDirectory)'
-                artifactName: 'PreviewPackages'
+                artifactName: 'Packages'
 
     - ${{ if eq(parameters.publishType, 'Public') }}:
       - stage: Build_Test_Sign_Pack
-        displayName: 'Build, Test, Sign, and Pack (Public Preview)'
+        displayName: 'Build, Test, Sign, and Pack (Public)'
         jobs:
         - job: BuildTestSignPack
           displayName: 'Build, Test, Sign, and Pack'
@@ -196,11 +197,11 @@ extends:
               displayName: 'Publish NuGet Packages as Pipeline Artifact'
               inputs:
                 targetPath: '$(Build.ArtifactStagingDirectory)'
-                artifactName: 'PreviewPackages'
+                artifactName: 'Packages'
 
     - ${{ if eq(parameters.publishType, 'Public') }}:
       - stage: PushToNuGet
-        displayName: 'Push Preview Packages to nuget.org'
+        displayName: 'Push Packages to nuget.org'
         dependsOn: Build_Test_Sign_Pack
         jobs:
         - deployment: PushPackages
@@ -212,14 +213,14 @@ extends:
               deploy:
                 steps:
                 - download: current
-                  artifact: PreviewPackages
+                  artifact: Packages
 
                 - task: 1ES.PublishNuget@1
-                  displayName: 'Push Preview Packages to nuget.org'
+                  displayName: 'Push Packages to nuget.org'
                   inputs:
                     useDotNetTask: false
-                    packagesToPush: '$(Pipeline.Workspace)/PreviewPackages/*.nupkg'
-                    packageParentPath: '$(Pipeline.Workspace)/PreviewPackages'
+                    packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
+                    packageParentPath: '$(Pipeline.Workspace)/Packages'
                     nuGetFeedType: external
                     publishFeedCredentials: 'Microsoft.Teams.*'
                     publishPackageMetadata: true
