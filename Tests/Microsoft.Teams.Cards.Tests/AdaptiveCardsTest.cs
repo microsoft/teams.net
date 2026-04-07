@@ -556,4 +556,63 @@ public class AdaptiveCardsTest
         Assert.Equal("Learn More", action.Title);
         Assert.Equal("https://adaptivecards.microsoft.com", action.Url);
     }
+
+    [Fact]
+    public void SubmitData_Should_Set_Action_Field()
+    {
+        var data = new SubmitData("save_profile");
+
+        var json = JsonSerializer.Serialize(data);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        Assert.True(root.TryGetProperty("action", out var actionElement));
+        Assert.Equal("save_profile", actionElement.GetString());
+    }
+
+    [Fact]
+    public void SubmitData_Should_Include_Extra_Data()
+    {
+        var data = new SubmitData("save_profile", new Dictionary<string, object?> { ["entity_id"] = "12345" });
+
+        var json = JsonSerializer.Serialize(data);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        Assert.True(root.TryGetProperty("action", out var actionElement));
+        Assert.Equal("save_profile", actionElement.GetString());
+        Assert.True(root.TryGetProperty("entity_id", out var entityElement));
+        Assert.Equal("12345", entityElement.GetString());
+    }
+
+    [Fact]
+    public void OpenDialogData_Should_Set_Msteams_And_DialogId()
+    {
+        var data = new OpenDialogData("simple_form");
+
+        var json = JsonSerializer.Serialize(data);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        Assert.True(root.TryGetProperty("msteams", out var msteamsElement));
+        Assert.Equal("task/fetch", msteamsElement.GetProperty("type").GetString());
+        Assert.True(root.TryGetProperty("dialog_id", out var dialogIdElement));
+        Assert.Equal("simple_form", dialogIdElement.GetString());
+    }
+
+    [Fact]
+    public void OpenDialogData_Should_Include_Extra_Data()
+    {
+        var data = new OpenDialogData("simple_form", new Dictionary<string, object?> { ["custom_key"] = "value" });
+
+        var json = JsonSerializer.Serialize(data);
+        using var doc = JsonDocument.Parse(json);
+        var root = doc.RootElement;
+
+        Assert.True(root.TryGetProperty("msteams", out _));
+        Assert.True(root.TryGetProperty("dialog_id", out var dialogIdElement));
+        Assert.Equal("simple_form", dialogIdElement.GetString());
+        Assert.True(root.TryGetProperty("custom_key", out var customElement));
+        Assert.Equal("value", customElement.GetString());
+    }
 }
