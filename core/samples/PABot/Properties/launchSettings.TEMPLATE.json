@@ -10,6 +10,8 @@
         "Logging__LogLevel__Microsoft": "Warning",
         "Logging__LogLevel__Microsoft.Teams": "Information",
         "Logging__LogLevel__Microsoft.Identity.Web": "Error",
+        "ConnectionName": "",
+        "SecondConnectionName": "",
         "MsalBot__Scope": "https://api.botframework.com/.default",
         "MsalBot__Instance": "https://login.microsoftonline.com/",
         "MsalBot__TenantId": "",
