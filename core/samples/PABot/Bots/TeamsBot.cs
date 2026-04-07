@@ -6,6 +6,7 @@ using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
+using Microsoft.Teams.Bot.Compat;
 
 namespace PABot.Bots
 {
@@ -40,7 +41,26 @@ namespace PABot.Bots
             {
                 if (member.Id != turnContext.Activity.Recipient.Id)
                 {
-                    await turnContext.SendActivityAsync(MessageFactory.Text("Welcome to AuthenticationBot. Type anything to get logged in. Type 'logout' to sign-out."), cancellationToken);
+                    string welcomeMessage = "Welcome to AuthenticationBot. Type anything to get logged in. Type 'logout' to sign-out.\n" +
+                                          "Try these commands:\n" +
+                                          "- /help - Show detailed help and bot capabilities\n" +
+                                          "- /member-info - Get your member details\n" +
+                                          "- /team-info - Get team details (in team context)\n" +
+                                          "- /create-conversation - Create 1:1 chat (from group chat)";
+
+                    await turnContext.SendActivityAsync(MessageFactory.Text(welcomeMessage), cancellationToken);
+
+                    // Use CompatTeamsInfo.GetMemberAsync to get detailed member information
+                    try
+                    {
+                        TeamsChannelAccount memberDetails = await CompatTeamsInfo.GetMemberAsync(turnContext, member.Id, cancellationToken);
+                        _logger.LogInformation("Member added: {Name} ({Email}), AAD Object ID: {AadObjectId}",
+                            memberDetails.Name, memberDetails.Email, memberDetails.AadObjectId);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogWarning(ex, "Could not retrieve member details for {MemberId}", member.Id);
+                    }
                 }
             }
         }
@@ -55,6 +75,41 @@ namespace PABot.Bots
         {
             string text = System.Text.RegularExpressions.Regex.Replace(
                 turnContext.Activity.Text ?? string.Empty, @"<at>[^<]*<\/at>", string.Empty).Trim();
+
+            if (text.Equals("/help", StringComparison.OrdinalIgnoreCase))
+            {
+                string helpMessage = "**PABot - Personal Assistant Bot**\n\n" +
+                                   "I'm a Teams bot that demonstrates authentication and Teams integration capabilities.\n\n" +
+                                   "**Authentication Features:**\n" +
+                                   "- Dual OAuth authentication (graph and graph-2 connections)\n" +
+                                   "- Sequential authentication flow - authenticate both connections one after another\n" +
+                                   "- Retrieve and display user profile information from Microsoft Graph\n" +
+                                   "- Show user profile photos\n" +
+                                   "- Display OAuth tokens for both connections\n\n" +
+                                   "**Available Commands:**\n" +
+                                   "- **/help** - Show this help message\n" +
+                                   "- **/member-info** - Get detailed information about your Teams member account\n" +
+                                   "  - Displays: Name, ID, AAD Object ID, User Principal Name, Email\n" +
+                                   "- **/team-info** - Get details about the current team (only works in team context)\n" +
+                                   "  - Displays: Team Name, ID, AAD Group ID\n" +
+                                   "- **/create-conversation** - Create a 1:1 conversation from a group chat\n" +
+                                   "  - Only available in group chat contexts\n" +
+                                   "- **logout** - Sign out from authenticated connections\n\n" +
+                                   "**How to use:**\n" +
+                                   "1. Send any message to start the authentication flow\n" +
+                                   "2. Authenticate with the first connection (graph)\n" +
+                                   "3. Authenticate with the second connection (graph-2)\n" +
+                                   "4. View your profile information automatically\n" +
+                                   "5. Use commands to explore Teams integration features\n\n" +
+                                   "**Technical Features:**\n" +
+                                   "- Uses CompatTeamsInfo for Teams member and team information\n" +
+                                   "- Demonstrates Microsoft Graph integration\n" +
+                                   "- Shows OAuth connection management\n" +
+                                   "- Logs detailed member information when users join";
+
+                await turnContext.SendActivityAsync(MessageFactory.Text(helpMessage), cancellationToken);
+                return;
+            }
 
             if (text.Equals("/create-conversation", StringComparison.OrdinalIgnoreCase))
             {
@@ -88,6 +143,44 @@ namespace PABot.Bots
                 await connectorClient.Conversations.SendToConversationAsync(conv.Id, message, cancellationToken);
 
                 await turnContext.SendActivityAsync(MessageFactory.Text("Done! Check your personal chat."), cancellationToken);
+                return;
+            }
+
+            if (text.Equals("/member-info", StringComparison.OrdinalIgnoreCase))
+            {
+                // Get member details using CompatTeamsInfo.GetMemberAsync
+                string userId = turnContext.Activity.From.Id;
+                TeamsChannelAccount member = await CompatTeamsInfo.GetMemberAsync(turnContext, userId, cancellationToken);
+
+                string memberInfo = $"Member Details:\n" +
+                                  $"- Name: {member.Name}\n" +
+                                  $"- ID: {member.Id}\n" +
+                                  $"- AAD Object ID: {member.AadObjectId}\n" +
+                                  $"- User Principal Name: {member.UserPrincipalName}\n" +
+                                  $"- Email: {member.Email}";
+
+                await turnContext.SendActivityAsync(MessageFactory.Text(memberInfo), cancellationToken);
+                return;
+            }
+
+            if (text.Equals("/team-info", StringComparison.OrdinalIgnoreCase))
+            {
+                // Get team details using CompatTeamsInfo.GetTeamDetailsAsync
+                TeamInfo? teamInfo = turnContext.Activity.TeamsGetTeamInfo();
+                if (teamInfo?.Id == null)
+                {
+                    await turnContext.SendActivityAsync(MessageFactory.Text("This command can only be used in a team context."), cancellationToken);
+                    return;
+                }
+
+                TeamDetails teamDetails = await CompatTeamsInfo.GetTeamDetailsAsync(turnContext, teamInfo.Id, cancellationToken);
+
+                string teamDetailsInfo = $"Team Details:\n" +
+                                       $"- Name: {teamDetails.Name}\n" +
+                                       $"- ID: {teamDetails.Id}\n" +
+                                       $"- AAD Group ID: {teamDetails.AadGroupId}";
+
+                await turnContext.SendActivityAsync(MessageFactory.Text(teamDetailsInfo), cancellationToken);
                 return;
             }
 
