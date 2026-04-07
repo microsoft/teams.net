@@ -45,6 +45,10 @@ public static class HostApplicationBuilderExtensions
             )
             { Cloud = cloud };
         }
+        else if (options.Credentials is ClientCredentials existingCredentials)
+        {
+            existingCredentials.Cloud = cloud;
+        }
 
         options.Logger ??= new ConsoleLogger(loggingSettings);
         var app = new App(options);

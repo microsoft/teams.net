@@ -79,6 +79,10 @@ public class TeamsSettings
             };
             options.Credentials = credentials;
         }
+        else if (options.Credentials is ClientCredentials existingCredentials)
+        {
+            existingCredentials.Cloud = cloud;
+        }
 
         return options;
     }
