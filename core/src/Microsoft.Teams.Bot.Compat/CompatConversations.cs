@@ -317,11 +317,11 @@ namespace Microsoft.Teams.Bot.Compat
             // Ensure conversation ID is set
             coreActivity.Conversation ??= new Microsoft.Teams.Bot.Core.Schema.Conversation { Id = conversationId };
 
-            SendActivityResponse response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
-                Id = response.Id
+                Id = response?.Id
             };
 
             return new HttpOperationResponse<ResourceResponse>

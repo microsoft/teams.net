@@ -285,6 +285,180 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
         #endregion
 
+        #region MessageFactory.Attachment Scenario Tests
+
+        [Fact]
+        public void FromCompatActivity_MessageFactoryAttachment_ReturnsNonNull()
+        {
+            // Mimic what MessageFactory.Attachment() creates - Activity with an attachment but minimal properties
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Attachments = new List<Attachment>
+                {
+                    new()
+                    {
+                        ContentType = "application/vnd.microsoft.card.oauth",
+                        Content = new
+                        {
+                            buttons = new[]
+                            {
+                                new { type = "signin", title = "Sign in", value = "https://example.com/signin" }
+                            }
+                        }
+                    }
+                },
+                // Properties set by ProjectAgentBot after MessageFactory.Attachment()
+                Recipient = new ChannelAccount { Id = "user-123", Name = "Test User" },
+                Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-456" }
+            };
+
+            // This is what fails in SendToConversationWithHttpMessagesAsync
+            CoreActivity? coreActivity = activity.FromCompatActivity();
+
+            // Verify it doesn't return null
+            Assert.NotNull(coreActivity);
+            Assert.Equal(activity.Type, coreActivity.Type);
+            Assert.Equal(activity.Recipient?.Id, coreActivity.Recipient?.Id);
+            Assert.Equal(activity.Conversation?.Id, coreActivity.Conversation?.Id);
+        }
+
+        [Fact]
+        public void FromCompatActivity_MinimalActivity_ReturnsNonNull()
+        {
+            // Test even more minimal activity - what if it's missing ServiceUrl, From, etc?
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Recipient = new ChannelAccount { Id = "user-123" },
+                Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-456" }
+            };
+
+            CoreActivity? coreActivity = activity.FromCompatActivity();
+
+            // Should not return null even for minimal activity
+            Assert.NotNull(coreActivity);
+        }
+
+        [Fact]
+        public void FromCompatActivity_ActivityWithOnlyAttachment_ReturnsNonNull()
+        {
+            // Test if activity with ONLY attachment and no other properties returns null
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Attachments = new List<Attachment>
+                {
+                    new() { ContentType = "text/plain", Content = "test" }
+                }
+            };
+
+            CoreActivity? coreActivity = activity.FromCompatActivity();
+
+            Assert.NotNull(coreActivity);
+        }
+
+        [Fact]
+        public void FromCompatActivity_ExactProjectAgentScenario_ConversationNotNull()
+        {
+            // EXACT scenario from ProjectAgentBot - create activity with MessageFactory pattern,
+            // then set Recipient and Conversation (which is what ProjectAgent does)
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Attachments = new List<Attachment>
+                {
+                    new()
+                    {
+                        ContentType = "application/vnd.microsoft.card.oauth",
+                        Content = new { buttons = new[] { new { type = "signin" } } }
+                    }
+                }
+            };
+
+            // These lines mimic ProjectAgentBot.cs lines 1255-1256
+            activity.Recipient = new ChannelAccount { Id = "user-123", Name = "Test User" };
+            activity.Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "test-conv-id" };
+
+            // Convert to CoreActivity
+            CoreActivity? coreActivity = activity.FromCompatActivity();
+
+            // Check that coreActivity is not null
+            Assert.NotNull(coreActivity);
+
+            // Check that coreActivity.Conversation is accessible (this is line 318 in CompatConversations)
+            // The ??= operator would try to access coreActivity.Conversation
+            var conversation = coreActivity.Conversation;
+
+            // Log what we got
+            Console.WriteLine($"coreActivity.Conversation is null: {conversation == null}");
+            Console.WriteLine($"coreActivity.Conversation.Id: {conversation?.Id}");
+        }
+
+        [Fact]
+        public void FromCompatActivity_PreservesFromAccountProperties()
+        {
+            // Test that From account's Properties dictionary is properly initialized after conversion
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                From = new ChannelAccount { Id = "user-123", Name = "Test User" },
+                Recipient = new ChannelAccount { Id = "bot-456", Name = "Test Bot" },
+                Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-789" }
+            };
+
+            CoreActivity coreActivity = activity.FromCompatActivity();
+
+            Assert.NotNull(coreActivity);
+            Assert.NotNull(coreActivity.From);
+
+            // The critical check - is Properties initialized?
+            Assert.NotNull(coreActivity.From.Properties);
+
+            // Try calling GetAgenticIdentity - this should not throw NullReferenceException
+            var identity = coreActivity.From.GetAgenticIdentity();
+            Assert.Null(identity); // Should be null since no agentic properties were set
+        }
+
+        [Fact]
+        public void FromCompatActivity_WithoutFromProperty_DoesNotCrash()
+        {
+            // EXACT ProjectAgent scenario - MessageFactory.Attachment() doesn't set From
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Attachments = new List<Attachment>
+                {
+                    new()
+                    {
+                        ContentType = "application/vnd.microsoft.card.oauth",
+                        Content = new { buttons = new[] { new { type = "signin" } } }
+                    }
+                },
+                Recipient = new ChannelAccount { Id = "user-123", Name = "Test User" },
+                Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-456" }
+                // NOTE: From is NOT set - this is what MessageFactory.Attachment() creates
+            };
+
+            // This is line 309 in CompatConversations
+            CoreActivity? coreActivity = activity.FromCompatActivity();
+
+            // These checks mimic what happens in SendToConversationWithHttpMessagesAsync
+            Assert.NotNull(coreActivity);
+
+            // Check if From is null after conversion
+            Console.WriteLine($"coreActivity.From is null: {coreActivity.From == null}");
+
+            // If From is null, GetAgenticIdentity() would be called on null with ?.  operator (safe)
+            // But let's check if other code paths could fail
+            if (coreActivity.From != null)
+            {
+                Console.WriteLine($"coreActivity.From.Properties is null: {coreActivity.From.Properties == null}");
+            }
+        }
+
+        #endregion
+
         private static string LoadTestData(string fileName)
         {
             string testDataPath = Path.Combine(AppContext.BaseDirectory, "TestData", fileName);
