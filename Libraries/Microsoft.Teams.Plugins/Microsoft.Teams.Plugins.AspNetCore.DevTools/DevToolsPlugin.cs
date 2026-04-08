@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
@@ -90,6 +91,14 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
     public Task OnInit(App app, CancellationToken cancellationToken = default)
     {
+        var hostEnvironment = _services.GetService<IHostEnvironment>();
+        if (hostEnvironment?.IsProduction() == true)
+        {
+            throw new InvalidOperationException(
+                "Devtools plugin cannot be used in production environments. " +
+                "Remove the devtools plugin from your app configuration.");
+        }
+
         foreach (var page in _settings.Pages)
         {
             AddPage(page);
