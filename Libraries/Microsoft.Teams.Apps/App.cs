@@ -40,6 +40,9 @@ public partial class App
     internal IHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
+
+    private readonly bool _skipServiceUrlValidation;
+    private readonly IEnumerable<string>? _additionalAllowedDomains;
     internal string UserAgent
     {
         get
@@ -59,6 +62,8 @@ public partial class App
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
+        _skipServiceUrlValidation = options?.SkipServiceUrlValidation ?? false;
+        _additionalAllowedDomains = options?.AdditionalAllowedDomains;
 
         TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
@@ -382,9 +387,15 @@ public partial class App
         var path = @event.Activity.GetPath();
         Logger.Debug(path);
 
+        var serviceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl;
+        if (!_skipServiceUrlValidation && !ServiceUrlValidator.IsAllowed(serviceUrl, _additionalAllowedDomains))
+        {
+            throw new InvalidOperationException($"Service URL '{serviceUrl}' is not from an allowed domain");
+        }
+
         var reference = new ConversationReference()
         {
-            ServiceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl,
+            ServiceUrl = serviceUrl,
             ChannelId = @event.Activity.ChannelId,
             Bot = @event.Activity.Recipient,
             User = @event.Activity.From,
