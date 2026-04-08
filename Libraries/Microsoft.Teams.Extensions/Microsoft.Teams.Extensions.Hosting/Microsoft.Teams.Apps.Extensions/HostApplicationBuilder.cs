@@ -67,6 +67,7 @@ public static class HostApplicationBuilderExtensions
 
         // cloud environment (base preset + per-endpoint overrides)
         var cloud = settings.ResolveCloud();
+        appBuilder = appBuilder.AddCloud(cloud);
 
         // client credentials
         if (settings.ClientId is not null && settings.ClientSecret is not null && !settings.Empty)

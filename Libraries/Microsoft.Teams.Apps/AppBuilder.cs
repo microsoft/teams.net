@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Api.Auth;
 using Microsoft.Teams.Apps.Plugins;
 
 namespace Microsoft.Teams.Apps;
@@ -95,6 +96,12 @@ public partial class AppBuilder
     public AppBuilder AddOAuth(string defaultConnectionName)
     {
         _options.OAuth = new OAuthSettings(defaultConnectionName);
+        return this;
+    }
+
+    public AppBuilder AddCloud(CloudEnvironment cloud)
+    {
+        _options.Cloud = cloud;
         return this;
     }
 
