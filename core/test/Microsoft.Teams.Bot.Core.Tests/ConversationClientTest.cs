@@ -68,7 +68,7 @@ public class ConversationClientTest
             Conversation = new(_conversationId),
             From = _recipient
         };
-        SendActivityResponse res = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        SendActivityResponse? res = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(res);
         Assert.NotNull(res.Id);
     }
@@ -102,7 +102,7 @@ public class ConversationClientTest
             From = _recipient
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        SendActivityResponse? sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -139,7 +139,7 @@ public class ConversationClientTest
             From = _recipient
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        SendActivityResponse? sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -238,7 +238,7 @@ public class ConversationClientTest
             From = _recipient
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        SendActivityResponse? sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -334,7 +334,7 @@ public class ConversationClientTest
             Conversation = new(response.Id)
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        SendActivityResponse? sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -382,7 +382,7 @@ public class ConversationClientTest
             Conversation = new(response.Id)
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        SendActivityResponse? sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -427,7 +427,7 @@ public class ConversationClientTest
             Conversation = new(response.Id)
         };
 
-        SendActivityResponse sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        SendActivityResponse? sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(sendResponse);
         Assert.NotNull(sendResponse.Id);
 
@@ -544,7 +544,7 @@ public class ConversationClientTest
             Conversation = new(_conversationId),
             From = _recipient
         };
-        SendActivityResponse res = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        SendActivityResponse? res = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
         Assert.NotNull(res);
         Assert.NotNull(res.Id);
 
