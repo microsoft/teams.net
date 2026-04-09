@@ -36,6 +36,9 @@ public class TeamsSettings
     /// <summary>Override the OAuth redirect URL.</summary>
     public string? OAuthRedirectUrl { get; set; }
 
+    /// <summary>Override the Microsoft Graph token scope.</summary>
+    public string? GraphScope { get; set; }
+
     public bool Empty
     {
         get { return ClientId == "" || ClientSecret == ""; }
@@ -60,7 +63,8 @@ public class TeamsSettings
             openIdMetadataUrl: OpenIdMetadataUrl,
             tokenIssuer: TokenIssuer,
             channelService: ChannelService,
-            oauthRedirectUrl: OAuthRedirectUrl
+            oauthRedirectUrl: OAuthRedirectUrl,
+            graphScope: GraphScope
         );
     }
 

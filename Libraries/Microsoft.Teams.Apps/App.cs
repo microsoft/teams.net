@@ -93,6 +93,7 @@ public partial class App
 
         Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
         Api.Bots.Token.ActiveBotScope = cloud.BotScope;
+        Api.Bots.Token.ActiveGraphScope = cloud.GraphScope;
         Api.Bots.SignIn.TokenServiceUrl = cloud.TokenServiceUrl;
         Api.Users.Token.TokenServiceUrl = cloud.TokenServiceUrl;
         Container = new Container();
