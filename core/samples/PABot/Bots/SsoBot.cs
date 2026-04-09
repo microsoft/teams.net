@@ -1,59 +1,290 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT License.
-
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
+using Newtonsoft.Json.Linq;
+using System.Net;
 
 namespace PABot.Bots
 {
+    /// <summary>
+    /// OAuth SSO Bot - Demonstrates OAuth Single Sign-On flow with token exchange.
+    ///
+    /// Flow:
+    /// 1. User sends any message
+    /// 2. Bot checks if user has a token
+    /// 3. If no token, sends OAuth SSO card with TokenExchangeResource
+    /// 4. Client attempts SSO token exchange by sending invoke activity
+    /// 5. Bot handles token exchange and responds with success/failure
+    /// 6. If token exchange fails, user clicks sign-in button for manual auth
+    /// </summary>
     public class SsoBot(ILogger<SsoBot> logger, IConfiguration configuration) : ActivityHandler
     {
         private readonly IConfiguration _configuration = configuration;
+        private const string ConnectionName = "graph-sso"; // From launchSettings.json
+
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
-            // Check if user is requesting the OAuth card test scenario
+            // Special test scenario to reproduce NullReferenceException bug
             if (turnContext.Activity.Text?.Contains("test oauth card", StringComparison.OrdinalIgnoreCase) == true)
             {
                 await TestOAuthCardSendScenario(turnContext, cancellationToken);
                 return;
             }
 
-            await turnContext.SendActivityAsync(MessageFactory.Text($"Echo: {turnContext.Activity.Text}"), cancellationToken);
+            UserTokenClient tokenClient = turnContext.TurnState.Get<UserTokenClient>();
 
-            UserTokenClient utc = turnContext.TurnState.Get<UserTokenClient>();
+            // Try to get existing token
+            TokenResponse token = await tokenClient.GetUserTokenAsync(
+                turnContext.Activity.From.Id,
+                ConnectionName,
+                turnContext.Activity.ChannelId,
+                null,
+                cancellationToken);
 
-            TokenStatus[] tokenStatus = await utc.GetTokenStatusAsync(turnContext.Activity.From.Id, turnContext.Activity.ChannelId, string.Empty, cancellationToken);
-
-            logger.LogInformation("Token status count");
-            //logger.LogInformation(JsonConvert.SerializeObject(tokenStatus));
-            await turnContext.SendActivityAsync($"Token status count: {tokenStatus.Length}");
-
-            foreach (TokenStatus ts in tokenStatus)
+            if (token != null && !string.IsNullOrEmpty(token.Token))
             {
-                if (ts.HasToken == true)
+                // User is authenticated - show token info
+                logger.LogInformation("User has valid token for connection '{ConnectionName}'", ConnectionName);
+                await turnContext.SendActivityAsync(
+                    MessageFactory.Text($"✅ You are signed in!\n\nToken (first 20 chars): {token.Token[..Math.Min(20, token.Token.Length)]}...\n\nYou said: {turnContext.Activity.Text}"),
+                    cancellationToken);
+            }
+            else
+            {
+                // No token - send OAuth SSO card
+                logger.LogInformation("No token found, sending OAuth SSO card");
+                await SendOAuthCardAsync(turnContext, cancellationToken);
+            }
+        }
+
+        protected override async Task<InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            logger.LogInformation("Received invoke activity: {Name}", turnContext.Activity.Name);
+
+            // Handle token exchange invoke (SSO)
+            if (turnContext.Activity.Name == SignInConstants.TokenExchangeOperationName)
+            {
+                return await OnTokenExchangeInvokeAsync(turnContext, cancellationToken);
+            }
+
+            // Handle signin verification invoke (manual sign-in fallback)
+            if (turnContext.Activity.Name == SignInConstants.VerifyStateOperationName)
+            {
+                return await OnVerifyStateInvokeAsync(turnContext, cancellationToken);
+            }
+
+            // Let base class handle other invokes (like Teams-specific invokes)
+            return await base.OnInvokeActivityAsync(turnContext, cancellationToken);
+        }
+
+        /// <summary>
+        /// Sends an OAuth SSO card with TokenExchangeResource to enable SSO.
+        /// </summary>
+        private async Task SendOAuthCardAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
+        {
+            UserTokenClient tokenClient = turnContext.TurnState.Get<UserTokenClient>();
+
+            // Get sign-in resource from token service (includes TokenExchangeResource for SSO)
+            SignInResource signInResource = await tokenClient.GetSignInResourceAsync(
+                ConnectionName,
+                (Activity)turnContext.Activity,
+                string.Empty,
+                cancellationToken);
+
+            logger.LogInformation("Got sign-in resource. SignInLink: {SignInLink}", signInResource.SignInLink);
+            logger.LogInformation("TokenExchangeResource.Id: {Id}, Uri: {Uri}",
+                signInResource.TokenExchangeResource?.Id,
+                signInResource.TokenExchangeResource?.Uri);
+
+            // Create OAuth SSO card
+            var oAuthCard = new OAuthCard
+            {
+                Text = "Please sign in to continue",
+                ConnectionName = ConnectionName,
+                TokenExchangeResource = signInResource.TokenExchangeResource,
+                TokenPostResource = signInResource.TokenPostResource,
+                Buttons = new[]
                 {
-                    TokenResponse tokenResponse = await utc.GetUserTokenAsync(turnContext.Activity.From.Id, turnContext.Activity.ChannelId, ts.ConnectionName, null, cancellationToken);
-                    //logger.LogInformation("Token for connection '{ConnectionName}': {Token}", ts.ConnectionName, tokenResponse?.Token);
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Token for connection '{ts.ConnectionName}': {tokenResponse?.Token}"), cancellationToken);
+                    new CardAction
+                    {
+                        Title = "Sign In",
+                        Text = "Sign in",
+                        Type = ActionTypes.Signin,
+                        Value = signInResource.SignInLink
+                    }
+                }
+            };
+
+            var reply = MessageFactory.Attachment(oAuthCard.ToAttachment());
+            await turnContext.SendActivityAsync(reply, cancellationToken);
+        }
+
+        /// <summary>
+        /// Handles token exchange invoke for SSO.
+        /// Client sends this invoke with a token it obtained, and the bot exchanges it for a token for the configured connection.
+        /// </summary>
+        private async Task<InvokeResponse> OnTokenExchangeInvokeAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            logger.LogInformation("Processing token exchange invoke");
+
+            // Parse token exchange request from invoke value
+            TokenExchangeInvokeRequest? tokenExchangeRequest = (turnContext.Activity.Value as JObject)?.ToObject<TokenExchangeInvokeRequest>();
+
+            if (tokenExchangeRequest == null)
+            {
+                logger.LogWarning("Token exchange request is null");
+                return CreateInvokeResponse(
+                    HttpStatusCode.BadRequest,
+                    new TokenExchangeInvokeResponse
+                    {
+                        Id = null,
+                        ConnectionName = ConnectionName,
+                        FailureDetail = "The bot received an InvokeActivity that is missing a TokenExchangeInvokeRequest value."
+                    });
+            }
+
+            logger.LogInformation("Token exchange request - Id: {Id}, ConnectionName: {ConnectionName}",
+                tokenExchangeRequest.Id, tokenExchangeRequest.ConnectionName);
+
+            // Validate connection name matches
+            if (tokenExchangeRequest.ConnectionName != ConnectionName)
+            {
+                logger.LogWarning("Connection name mismatch. Expected: {Expected}, Got: {Got}",
+                    ConnectionName, tokenExchangeRequest.ConnectionName);
+                return CreateInvokeResponse(
+                    HttpStatusCode.BadRequest,
+                    new TokenExchangeInvokeResponse
+                    {
+                        Id = tokenExchangeRequest.Id,
+                        ConnectionName = ConnectionName,
+                        FailureDetail = "The bot received a TokenExchangeInvokeRequest with a ConnectionName that does not match."
+                    });
+            }
+
+            UserTokenClient tokenClient = turnContext.TurnState.Get<UserTokenClient>();
+
+            // Attempt token exchange
+            TokenResponse? tokenExchangeResponse = null;
+            try
+            {
+                tokenExchangeResponse = await tokenClient.ExchangeTokenAsync(
+                    turnContext.Activity.From.Id,
+                    ConnectionName,
+                    turnContext.Activity.ChannelId,
+                    new TokenExchangeRequest { Token = tokenExchangeRequest.Token },
+                    cancellationToken);
+
+                logger.LogInformation("Token exchange result: {Success}",
+                    tokenExchangeResponse != null && !string.IsNullOrEmpty(tokenExchangeResponse.Token) ? "Success" : "Failed");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Token exchange failed with exception");
+                // tokenExchangeResponse stays null
+            }
+
+            // Check if token exchange succeeded
+            if (tokenExchangeResponse == null || string.IsNullOrEmpty(tokenExchangeResponse.Token))
+            {
+                logger.LogWarning("Token exchange failed - no token received");
+                return CreateInvokeResponse(
+                    HttpStatusCode.PreconditionFailed,
+                    new TokenExchangeInvokeResponse
+                    {
+                        Id = tokenExchangeRequest.Id,
+                        ConnectionName = ConnectionName,
+                        FailureDetail = "Token exchange failed. The bot was unable to exchange the token."
+                    });
+            }
+
+            // Success!
+            logger.LogInformation("✅ Token exchange successful!");
+            return CreateInvokeResponse(
+                HttpStatusCode.OK,
+                new TokenExchangeInvokeResponse
+                {
+                    Id = tokenExchangeRequest.Id,
+                    ConnectionName = ConnectionName
+                });
+        }
+
+        /// <summary>
+        /// Handles signin verification invoke for manual sign-in fallback.
+        /// When SSO token exchange fails, user clicks sign-in button and completes auth in browser.
+        /// Teams then sends this invoke with a "magic code" that the bot must use to get the token.
+        /// </summary>
+        private async Task<InvokeResponse> OnVerifyStateInvokeAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+        {
+            logger.LogInformation("Processing signin/verifyState invoke (manual sign-in fallback)");
+
+            // Extract magic code from invoke value
+            var magicCodeObject = turnContext.Activity.Value as JObject;
+            var magicCode = magicCodeObject?.GetValue("state", StringComparison.Ordinal)?.ToString();
+
+            if (string.IsNullOrEmpty(magicCode))
+            {
+                logger.LogWarning("Magic code is missing from signin/verifyState invoke");
+                return CreateInvokeResponse(HttpStatusCode.BadRequest, null);
+            }
+
+            logger.LogInformation("Magic code received: {MagicCode}", magicCode[..Math.Min(10, magicCode.Length)] + "...");
+
+            UserTokenClient tokenClient = turnContext.TurnState.Get<UserTokenClient>();
+
+            // Getting the token follows a different flow in Teams. At the signin completion, Teams
+            // will send the bot an "invoke" activity that contains a "magic" code. This code MUST
+            // then be used to try fetching the token from Botframework service within some time
+            // period. We try here. If it succeeds, we return 200 with an empty body. If it fails
+            // with a retriable error, we return 500. Teams will re-send another invoke in this case.
+            // If it fails with a non-retriable error, we return 404. Teams will not retry in that case.
+            try
+            {
+                TokenResponse? token = await tokenClient.GetUserTokenAsync(
+                    turnContext.Activity.From.Id,
+                    ConnectionName,
+                    turnContext.Activity.ChannelId,
+                    magicCode,
+                    cancellationToken);
+
+                if (token != null && !string.IsNullOrEmpty(token.Token))
+                {
+                    logger.LogInformation("✅ Magic code verification successful! User is now signed in.");
+
+                    // Success - return 200 with empty body
+                    return CreateInvokeResponse(HttpStatusCode.OK, null);
                 }
                 else
                 {
-                    //logger.LogInformation("No token for connection '{ConnectionName}'", ts.ConnectionName);
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"No token for connection '{ts.ConnectionName}'"), cancellationToken);
+                    logger.LogWarning("Magic code verification failed - token is null or empty");
 
-                    Activity? a = turnContext.Activity as Activity;
-                    SignInResource signInResource = await utc.GetSignInResourceAsync(ts.ConnectionName, a, string.Empty, cancellationToken);
-                    //logger.LogInformation("Sign-in resource for connection '{ConnectionName}': {SignInLink}", ts.ConnectionName, signInResource.SignInLink);
-                    await turnContext.SendActivityAsync(MessageFactory.Text($"Sign-in resource for connection '{ts.ConnectionName}': {signInResource.SignInLink}"), cancellationToken);
-
+                    // Token is null - return 404, Teams will NOT retry
+                    return CreateInvokeResponse(HttpStatusCode.NotFound, null);
                 }
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Exception during magic code verification");
+
+                // Exception occurred - return 500, Teams WILL retry
+                return CreateInvokeResponse(HttpStatusCode.InternalServerError, null);
+            }
+        }
+
+        /// <summary>
+        /// Creates an InvokeResponse with the specified status code and body.
+        /// </summary>
+        private static InvokeResponse CreateInvokeResponse(HttpStatusCode statusCode, object? body)
+        {
+            return new InvokeResponse
+            {
+                Status = (int)statusCode,
+                Body = body
+            };
         }
 
         /// <summary>
@@ -121,14 +352,6 @@ namespace PABot.Bots
 
                 // Create activity using MessageFactory.Attachment - this is what ProjectAgentBot does
                 IMessageActivity activity = MessageFactory.Attachment(oAuthSsoCard.ToAttachment());
-
-                activity.ChannelId = turnContext.Activity.ChannelId; // Set channel ID
-
-                activity.From = turnContext.Activity.Recipient; // Set 'from' as the bot (recipient of the incoming message)
-
-                activity.ReplyToId = turnContext.Activity.Id; // Set ReplyToId to the incoming message ID
-
-                activity.Locale = turnContext.Activity.Locale; // Set locale
 
                 ((Microsoft.Bot.Schema.Activity)activity).AttachmentLayout = null;
 

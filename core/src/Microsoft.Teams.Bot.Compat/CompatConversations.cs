@@ -246,11 +246,11 @@ namespace Microsoft.Teams.Bot.Compat
                 coreActivity.Conversation.Id = conversationId;
             }
 
-            SendActivityResponse response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
-                Id = response.Id
+                Id = response?.Id ?? string.Empty
             };
 
             return new HttpOperationResponse<ResourceResponse>
@@ -321,7 +321,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             ResourceResponse resourceResponse = new()
             {
-                Id = response?.Id
+                Id = response?.Id ?? string.Empty
             };
 
             return new HttpOperationResponse<ResourceResponse>
