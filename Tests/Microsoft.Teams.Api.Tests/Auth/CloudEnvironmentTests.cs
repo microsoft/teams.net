@@ -18,8 +18,6 @@ public class CloudEnvironmentTests
         Assert.Equal("https://token.botframework.com", env.TokenServiceUrl);
         Assert.Equal("https://login.botframework.com/v1/.well-known/openidconfiguration", env.OpenIdMetadataUrl);
         Assert.Equal("https://api.botframework.com", env.TokenIssuer);
-        Assert.Equal("", env.ChannelService);
-        Assert.Equal("https://token.botframework.com/.auth/web/redirect", env.OAuthRedirectUrl);
     }
 
     [Fact]
@@ -33,8 +31,6 @@ public class CloudEnvironmentTests
         Assert.Equal("https://tokengcch.botframework.azure.us", env.TokenServiceUrl);
         Assert.Equal("https://login.botframework.azure.us/v1/.well-known/openidconfiguration", env.OpenIdMetadataUrl);
         Assert.Equal("https://api.botframework.us", env.TokenIssuer);
-        Assert.Equal("https://botframework.azure.us", env.ChannelService);
-        Assert.Equal("https://tokengcch.botframework.azure.us/.auth/web/redirect", env.OAuthRedirectUrl);
     }
 
     [Fact]
@@ -48,8 +44,6 @@ public class CloudEnvironmentTests
         Assert.Equal("https://apiDoD.botframework.azure.us", env.TokenServiceUrl);
         Assert.Equal("https://login.botframework.azure.us/v1/.well-known/openidconfiguration", env.OpenIdMetadataUrl);
         Assert.Equal("https://api.botframework.us", env.TokenIssuer);
-        Assert.Equal("https://botframework.azure.us", env.ChannelService);
-        Assert.Equal("https://apiDoD.botframework.azure.us/.auth/web/redirect", env.OAuthRedirectUrl);
     }
 
     [Fact]
@@ -63,8 +57,6 @@ public class CloudEnvironmentTests
         Assert.Equal("https://token.botframework.azure.cn", env.TokenServiceUrl);
         Assert.Equal("https://login.botframework.azure.cn/v1/.well-known/openidconfiguration", env.OpenIdMetadataUrl);
         Assert.Equal("https://api.botframework.azure.cn", env.TokenIssuer);
-        Assert.Equal("https://botframework.azure.cn", env.ChannelService);
-        Assert.Equal("https://token.botframework.azure.cn/.auth/web/redirect", env.OAuthRedirectUrl);
     }
 
     [Theory]
@@ -125,8 +117,6 @@ public class CloudEnvironmentTests
         Assert.Equal(env.TokenServiceUrl, result.TokenServiceUrl);
         Assert.Equal(env.OpenIdMetadataUrl, result.OpenIdMetadataUrl);
         Assert.Equal(env.TokenIssuer, result.TokenIssuer);
-        Assert.Equal(env.ChannelService, result.ChannelService);
-        Assert.Equal(env.OAuthRedirectUrl, result.OAuthRedirectUrl);
     }
 
     [Fact]
@@ -147,8 +137,6 @@ public class CloudEnvironmentTests
         Assert.Equal(env.BotScope, result.BotScope);
         Assert.Equal(env.OpenIdMetadataUrl, result.OpenIdMetadataUrl);
         Assert.Equal(env.TokenIssuer, result.TokenIssuer);
-        Assert.Equal(env.ChannelService, result.ChannelService);
-        Assert.Equal(env.OAuthRedirectUrl, result.OAuthRedirectUrl);
     }
 
     [Fact]
@@ -163,8 +151,7 @@ public class CloudEnvironmentTests
             tokenServiceUrl: "d",
             openIdMetadataUrl: "e",
             tokenIssuer: "f",
-            channelService: "g",
-            oauthRedirectUrl: "h"
+            graphScope: "g"
         );
 
         Assert.Equal("a", result.LoginEndpoint);
@@ -173,8 +160,7 @@ public class CloudEnvironmentTests
         Assert.Equal("d", result.TokenServiceUrl);
         Assert.Equal("e", result.OpenIdMetadataUrl);
         Assert.Equal("f", result.TokenIssuer);
-        Assert.Equal("g", result.ChannelService);
-        Assert.Equal("h", result.OAuthRedirectUrl);
+        Assert.Equal("g", result.GraphScope);
     }
 
     [Fact]

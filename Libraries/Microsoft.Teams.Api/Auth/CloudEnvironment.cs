@@ -41,17 +41,6 @@ public class CloudEnvironment
     public string TokenIssuer { get; }
 
     /// <summary>
-    /// The channel service URL. Empty for public cloud; set for sovereign clouds
-    /// (e.g. "https://botframework.azure.us").
-    /// </summary>
-    public string ChannelService { get; }
-
-    /// <summary>
-    /// The OAuth redirect URL (e.g. "https://token.botframework.com/.auth/web/redirect").
-    /// </summary>
-    public string OAuthRedirectUrl { get; }
-
-    /// <summary>
     /// The Microsoft Graph token scope (e.g. "https://graph.microsoft.com/.default").
     /// </summary>
     public string GraphScope { get; }
@@ -63,8 +52,6 @@ public class CloudEnvironment
         string tokenServiceUrl,
         string openIdMetadataUrl,
         string tokenIssuer,
-        string channelService,
-        string oauthRedirectUrl,
         string graphScope)
     {
         LoginEndpoint = loginEndpoint.TrimEnd('/');
@@ -73,8 +60,6 @@ public class CloudEnvironment
         TokenServiceUrl = tokenServiceUrl.TrimEnd('/');
         OpenIdMetadataUrl = openIdMetadataUrl;
         TokenIssuer = tokenIssuer;
-        ChannelService = channelService.TrimEnd('/');
-        OAuthRedirectUrl = oauthRedirectUrl;
         GraphScope = graphScope;
     }
 
@@ -88,8 +73,6 @@ public class CloudEnvironment
         tokenServiceUrl: "https://token.botframework.com",
         openIdMetadataUrl: "https://login.botframework.com/v1/.well-known/openidconfiguration",
         tokenIssuer: "https://api.botframework.com",
-        channelService: "",
-        oauthRedirectUrl: "https://token.botframework.com/.auth/web/redirect",
         graphScope: "https://graph.microsoft.com/.default"
     );
 
@@ -103,8 +86,6 @@ public class CloudEnvironment
         tokenServiceUrl: "https://tokengcch.botframework.azure.us",
         openIdMetadataUrl: "https://login.botframework.azure.us/v1/.well-known/openidconfiguration",
         tokenIssuer: "https://api.botframework.us",
-        channelService: "https://botframework.azure.us",
-        oauthRedirectUrl: "https://tokengcch.botframework.azure.us/.auth/web/redirect",
         graphScope: "https://graph.microsoft.us/.default"
     );
 
@@ -118,8 +99,6 @@ public class CloudEnvironment
         tokenServiceUrl: "https://apiDoD.botframework.azure.us",
         openIdMetadataUrl: "https://login.botframework.azure.us/v1/.well-known/openidconfiguration",
         tokenIssuer: "https://api.botframework.us",
-        channelService: "https://botframework.azure.us",
-        oauthRedirectUrl: "https://apiDoD.botframework.azure.us/.auth/web/redirect",
         graphScope: "https://dod-graph.microsoft.us/.default"
     );
 
@@ -133,8 +112,6 @@ public class CloudEnvironment
         tokenServiceUrl: "https://token.botframework.azure.cn",
         openIdMetadataUrl: "https://login.botframework.azure.cn/v1/.well-known/openidconfiguration",
         tokenIssuer: "https://api.botframework.azure.cn",
-        channelService: "https://botframework.azure.cn",
-        oauthRedirectUrl: "https://token.botframework.azure.cn/.auth/web/redirect",
         graphScope: "https://microsoftgraph.chinacloudapi.cn/.default"
     );
 
@@ -149,13 +126,11 @@ public class CloudEnvironment
         string? tokenServiceUrl = null,
         string? openIdMetadataUrl = null,
         string? tokenIssuer = null,
-        string? channelService = null,
-        string? oauthRedirectUrl = null,
         string? graphScope = null)
     {
         if (loginEndpoint is null && loginTenant is null && botScope is null &&
             tokenServiceUrl is null && openIdMetadataUrl is null && tokenIssuer is null &&
-            channelService is null && oauthRedirectUrl is null && graphScope is null)
+            graphScope is null)
         {
             return this;
         }
@@ -167,8 +142,6 @@ public class CloudEnvironment
             tokenServiceUrl ?? TokenServiceUrl,
             openIdMetadataUrl ?? OpenIdMetadataUrl,
             tokenIssuer ?? TokenIssuer,
-            channelService ?? ChannelService,
-            oauthRedirectUrl ?? OAuthRedirectUrl,
             graphScope ?? GraphScope
         );
     }

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Api.Auth;
@@ -30,12 +30,6 @@ public class TeamsSettings
     /// <summary>Override the token issuer for Bot Framework tokens.</summary>
     public string? TokenIssuer { get; set; }
 
-    /// <summary>Override the channel service URL.</summary>
-    public string? ChannelService { get; set; }
-
-    /// <summary>Override the OAuth redirect URL.</summary>
-    public string? OAuthRedirectUrl { get; set; }
-
     /// <summary>Override the Microsoft Graph token scope.</summary>
     public string? GraphScope { get; set; }
 
@@ -62,8 +56,6 @@ public class TeamsSettings
             tokenServiceUrl: TokenServiceUrl,
             openIdMetadataUrl: OpenIdMetadataUrl,
             tokenIssuer: TokenIssuer,
-            channelService: ChannelService,
-            oauthRedirectUrl: OAuthRedirectUrl,
             graphScope: GraphScope
         );
     }
