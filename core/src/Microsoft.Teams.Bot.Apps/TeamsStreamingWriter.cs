@@ -101,9 +101,14 @@ public sealed class TeamsStreamingWriter
             _streamId ??= response?.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
-        catch (HttpRequestException ex) when (ex.Message.Contains("Content stream was cancelled by user", StringComparison.OrdinalIgnoreCase))
+        catch (HttpRequestException ex)
         {
-            _cancelled = true;
+            if (ex.Message.Contains("cancelled by user", StringComparison.OrdinalIgnoreCase))
+            {
+                _cancelled = true;
+                return;
+            }
+            throw;
         }
     }
 
