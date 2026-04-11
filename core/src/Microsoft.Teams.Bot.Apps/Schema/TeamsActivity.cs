@@ -114,7 +114,13 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("from")]
     public new TeamsConversationAccount? From
     {
-        get => base.From as TeamsConversationAccount;
+        get
+        {
+            System.Diagnostics.Debug.Assert(
+                base.From is null or TeamsConversationAccount,
+                $"TeamsActivity.From expected TeamsConversationAccount but found {base.From?.GetType().Name}");
+            return base.From as TeamsConversationAccount;
+        }
         set => base.From = value;
     }
 
@@ -124,7 +130,13 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("recipient")]
     public new TeamsConversationAccount? Recipient
     {
-        get => base.Recipient as TeamsConversationAccount;
+        get
+        {
+            System.Diagnostics.Debug.Assert(
+                base.Recipient is null or TeamsConversationAccount,
+                $"TeamsActivity.Recipient expected TeamsConversationAccount but found {base.Recipient?.GetType().Name}");
+            return base.Recipient as TeamsConversationAccount;
+        }
         set => base.Recipient = value;
     }
 
@@ -134,7 +146,13 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("conversation")]
     public new TeamsConversation? Conversation
     {
-        get => base.Conversation as TeamsConversation;
+        get
+        {
+            System.Diagnostics.Debug.Assert(
+                base.Conversation is null or TeamsConversation,
+                $"TeamsActivity.Conversation expected TeamsConversation but found {base.Conversation?.GetType().Name}");
+            return base.Conversation as TeamsConversation;
+        }
         set => base.Conversation = value;
     }
 
@@ -144,7 +162,13 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("channelData")]
     public new TeamsChannelData? ChannelData
     {
-        get => base.ChannelData as TeamsChannelData;
+        get
+        {
+            System.Diagnostics.Debug.Assert(
+                base.ChannelData is null or TeamsChannelData,
+                $"TeamsActivity.ChannelData expected TeamsChannelData but found {base.ChannelData?.GetType().Name}");
+            return base.ChannelData as TeamsChannelData;
+        }
         set => base.ChannelData = value;
     }
 
