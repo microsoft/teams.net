@@ -107,7 +107,8 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("from")]
     public new TeamsConversationAccount? From
     {
-        get => base.From as TeamsConversationAccount;
+        get => base.From as TeamsConversationAccount
+            ?? (base.From is not null ? TeamsConversationAccount.FromConversationAccount(base.From) : null);
         set => base.From = value;
     }
 
@@ -117,7 +118,8 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("recipient")]
     public new TeamsConversationAccount? Recipient
     {
-        get => base.Recipient as TeamsConversationAccount;
+        get => base.Recipient as TeamsConversationAccount
+            ?? (base.Recipient is not null ? TeamsConversationAccount.FromConversationAccount(base.Recipient) : null);
         set => base.Recipient = value;
     }
 
@@ -127,7 +129,8 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("conversation")]
     public new TeamsConversation? Conversation
     {
-        get => base.Conversation as TeamsConversation;
+        get => base.Conversation as TeamsConversation
+            ?? (base.Conversation is not null ? TeamsConversation.FromConversation(base.Conversation) : null);
         set => base.Conversation = value;
     }
 
@@ -137,7 +140,8 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("channelData")]
     public new TeamsChannelData? ChannelData
     {
-        get => base.ChannelData as TeamsChannelData;
+        get => base.ChannelData as TeamsChannelData
+            ?? (base.ChannelData is not null ? new TeamsChannelData(base.ChannelData) : null);
         set => base.ChannelData = value;
     }
 

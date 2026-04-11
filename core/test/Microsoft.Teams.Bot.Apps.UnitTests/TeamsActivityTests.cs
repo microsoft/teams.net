@@ -425,5 +425,74 @@ public class TeamsActivityTests
             }
             """;
 
+    // ── P2-3 / CAST-01: as-cast null guard tests ─────────────────────────────
 
+    [Fact]
+    public void From_WhenBaseHoldsPlainConversationAccount_ReturnsWrappedTeamsConversationAccount()
+    {
+        // Arrange – bypass the TeamsActivity setter by writing directly to the base field
+        // via a CoreActivity (simulates what JSON deserialization into CoreActivity does).
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "from": { "id": "user-1", "name": "Alice" }
+            }
+            """);
+
+        // Act – create TeamsActivity from the core activity (base field holds ConversationAccount)
+        TeamsActivity teamsActivity = TeamsActivity.FromActivity(coreActivity);
+
+        // Assert – the shadowed getter must not silently return null
+        Assert.NotNull(teamsActivity.From);
+        Assert.Equal("user-1", teamsActivity.From!.Id);
+        Assert.Equal("Alice", teamsActivity.From.Name);
+    }
+
+    [Fact]
+    public void Recipient_WhenBaseHoldsPlainConversationAccount_ReturnsWrappedTeamsConversationAccount()
+    {
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "recipient": { "id": "bot-1", "name": "MyBot" }
+            }
+            """);
+
+        TeamsActivity teamsActivity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.NotNull(teamsActivity.Recipient);
+        Assert.Equal("bot-1", teamsActivity.Recipient!.Id);
+    }
+
+    [Fact]
+    public void Conversation_WhenBaseHoldsPlainConversation_ReturnsWrappedTeamsConversation()
+    {
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "conversation": { "id": "conv-99", "tenantId": "tenant-42" }
+            }
+            """);
+
+        TeamsActivity teamsActivity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.NotNull(teamsActivity.Conversation);
+        Assert.Equal("conv-99", teamsActivity.Conversation!.Id);
+        Assert.Equal("tenant-42", teamsActivity.Conversation.TenantId);
+    }
+
+    [Fact]
+    public void ChannelData_WhenBaseHoldsPlainChannelData_ReturnsTeamsChannelData()
+    {
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "channelData": { "tenant": { "id": "tenant-55" } }
+            }
+            """);
+
+        TeamsActivity teamsActivity = TeamsActivity.FromActivity(coreActivity);
+
+        Assert.NotNull(teamsActivity.ChannelData);
+    }
 }
