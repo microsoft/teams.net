@@ -210,15 +210,10 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
 
         if (typeof(T) == typeof(string))
         {
-            try
-            {
-                T? result = JsonSerializer.Deserialize<T>(responseString, DefaultJsonOptions);
-                return result ?? (T)(object)responseString;
-            }
-            catch (JsonException)
-            {
-                return (T)(object)responseString;
-            }
+            // For string responses, try to unwrap a JSON-quoted string first; if the body is
+            // already plain text (not JSON), return it as-is. The explicit helper avoids the
+            // fragile (T)(object) double-cast which throws InvalidCastException when T != string.
+            return DeserializeAsString<T>(responseString);
         }
 
         T? deserializedResult = JsonSerializer.Deserialize<T>(responseString, DefaultJsonOptions);
@@ -230,6 +225,28 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
         }
 
         return deserializedResult;
+    }
+
+    /// <summary>
+    /// Handles the <c>T == string</c> branch of response deserialization without the fragile
+    /// <c>(T)(object)value</c> double-cast. Tries to deserialize a JSON-quoted string; falls back
+    /// to the raw response text when the body is not valid JSON.
+    /// </summary>
+    private static T? DeserializeAsString<T>(string responseString)
+    {
+        // The caller guarantees typeof(T) == typeof(string), but the compiler can't see that,
+        // so we keep the cast in one explicit, well-documented place.
+        try
+        {
+            string? jsonString = JsonSerializer.Deserialize<string>(responseString, DefaultJsonOptions);
+            string result = jsonString ?? responseString;
+            return (T)(object)result;
+        }
+        catch (JsonException)
+        {
+            // Body is plain text (not JSON-encoded); return it verbatim.
+            return (T)(object)responseString;
+        }
     }
 
     private static string FormatResponseHeaders(HttpResponseMessage response)
