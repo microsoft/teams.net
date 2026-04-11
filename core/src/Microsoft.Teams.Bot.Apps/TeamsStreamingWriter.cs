@@ -101,7 +101,7 @@ public sealed class TeamsStreamingWriter
             _streamId ??= response?.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
-        catch (HttpRequestException ex) when (ex.Message.Contains("Content stream was cancelled by user", StringComparison.OrdinalIgnoreCase))
+        catch (HttpRequestException ex) when (IsStreamCancelled(ex))
         {
             _cancelled = true;
         }
@@ -129,6 +129,27 @@ public sealed class TeamsStreamingWriter
         await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities, feedbackEnabled), cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _finalized = true;
+    }
+
+    /// <summary>
+    /// Returns <see langword="true"/> when the <see cref="HttpRequestException"/> indicates that the
+    /// Teams streaming channel has cancelled the current stream. Checking the HTTP status code (499)
+    /// is more robust than matching against the exception message string, which can change across SDK
+    /// or .NET version updates (A-009).
+    ///
+    /// Fallback: if the status code is absent (e.g. network-level errors), the message text is still
+    /// inspected as a secondary signal so legitimate cancellations are not missed.
+    /// </summary>
+    private static bool IsStreamCancelled(HttpRequestException ex)
+    {
+        // 499 "Client Closed Request" is the Teams API's structured signal for stream cancellation.
+        if (ex.StatusCode == System.Net.HttpStatusCode.RequestTimeout ||
+            (int?)ex.StatusCode == 499)
+            return true;
+
+        // Fallback text match for environments where the status code is not propagated.
+        return ex.Message.Contains("Content stream was cancelled by user", StringComparison.OrdinalIgnoreCase)
+            || ex.Message.Contains("stream was closed", StringComparison.OrdinalIgnoreCase);
     }
 
     private TeamsActivity BuildActivity(string text, string streamType, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false)
