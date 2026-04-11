@@ -80,7 +80,21 @@ public class MentionEntity : Entity
     [JsonPropertyName("mentioned")]
     public ConversationAccount? Mentioned
     {
-        get => base.Properties.TryGetValue("mentioned", out object? value) ? value as ConversationAccount : null;
+        get
+        {
+            if (!base.Properties.TryGetValue("mentioned", out object? value))
+                return null;
+            if (value is ConversationAccount account)
+                return account;
+            if (value is System.Text.Json.JsonElement je)
+            {
+                ConversationAccount? deserialized = je.Deserialize<ConversationAccount>();
+                if (deserialized is not null)
+                    base.Properties["mentioned"] = deserialized;
+                return deserialized;
+            }
+            return null;
+        }
         set => base.Properties["mentioned"] = value;
     }
 

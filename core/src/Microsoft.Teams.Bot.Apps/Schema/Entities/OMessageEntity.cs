@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
@@ -25,7 +26,21 @@ public class OMessageEntity : Entity
     [JsonPropertyName("additionalType")]
     public IList<string>? AdditionalType
     {
-        get => base.Properties.TryGetValue("additionalType", out object? value) ? value as IList<string> : null;
+        get
+        {
+            if (!base.Properties.TryGetValue("additionalType", out object? value))
+                return null;
+            if (value is IList<string> list)
+                return list;
+            if (value is System.Text.Json.JsonElement je)
+            {
+                IList<string>? deserialized = je.Deserialize<IList<string>>();
+                if (deserialized is not null)
+                    base.Properties["additionalType"] = deserialized;
+                return deserialized;
+            }
+            return null;
+        }
         set => base.Properties["additionalType"] = value;
     }
 }

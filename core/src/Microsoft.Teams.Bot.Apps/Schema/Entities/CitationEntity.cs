@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
@@ -134,7 +135,21 @@ public class CitationEntity : OMessageEntity
     [JsonPropertyName("citation")]
     public IList<CitationClaim>? Citation
     {
-        get => base.Properties.TryGetValue("citation", out object? value) ? value as IList<CitationClaim> : null;
+        get
+        {
+            if (!base.Properties.TryGetValue("citation", out object? value))
+                return null;
+            if (value is IList<CitationClaim> list)
+                return list;
+            if (value is System.Text.Json.JsonElement je)
+            {
+                IList<CitationClaim>? deserialized = je.Deserialize<IList<CitationClaim>>();
+                if (deserialized is not null)
+                    base.Properties["citation"] = deserialized;
+                return deserialized;
+            }
+            return null;
+        }
         set => base.Properties["citation"] = value;
     }
 }

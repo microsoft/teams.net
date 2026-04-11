@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
@@ -42,7 +43,21 @@ public class SensitiveUsageEntity : OMessageEntity
     [JsonPropertyName("pattern")]
     public DefinedTerm? Pattern
     {
-        get => base.Properties.TryGetValue("pattern", out object? value) ? value as DefinedTerm : null;
+        get
+        {
+            if (!base.Properties.TryGetValue("pattern", out object? value))
+                return null;
+            if (value is DefinedTerm term)
+                return term;
+            if (value is System.Text.Json.JsonElement je)
+            {
+                DefinedTerm? deserialized = je.Deserialize<DefinedTerm>();
+                if (deserialized is not null)
+                    base.Properties["pattern"] = deserialized;
+                return deserialized;
+            }
+            return null;
+        }
         set => base.Properties["pattern"] = value;
     }
 }
