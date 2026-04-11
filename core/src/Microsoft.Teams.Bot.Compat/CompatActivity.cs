@@ -2,12 +2,14 @@
 // Licensed under the MIT License.
 
 using System.Text;
+using System.Text.Json;
 using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
 using Newtonsoft.Json;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Microsoft.Teams.Bot.Compat;
 
@@ -74,37 +76,37 @@ public static class CompatActivity
 
         if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
         {
-            channelAccount.AadObjectId = aadObjectId?.ToString();
+            channelAccount.AadObjectId = ExtractStringProperty(account.Properties, "aadObjectId");
         }
 
         if (account.Properties.TryGetValue("userRole", out object? userRole))
         {
-            channelAccount.Role = userRole?.ToString();
+            channelAccount.Role = ExtractStringProperty(account.Properties, "userRole");
         }
 
         if (account.Properties.TryGetValue("userPrincipalName", out object? userPrincipalName))
         {
-            channelAccount.Properties.Add("userPrincipalName", userPrincipalName?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("userPrincipalName", ExtractStringProperty(account.Properties, "userPrincipalName") ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("givenName", out object? givenName))
         {
-            channelAccount.Properties.Add("givenName", givenName?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("givenName", ExtractStringProperty(account.Properties, "givenName") ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("surname", out object? surname))
         {
-            channelAccount.Properties.Add("surname", surname?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("surname", ExtractStringProperty(account.Properties, "surname") ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("email", out object? email))
         {
-            channelAccount.Properties.Add("email", email?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("email", ExtractStringProperty(account.Properties, "email") ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("tenantId", out object? tenantId))
         {
-            channelAccount.Properties.Add("tenantId", tenantId?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("tenantId", ExtractStringProperty(account.Properties, "tenantId") ?? string.Empty);
         }
 
         return channelAccount;
@@ -237,32 +239,32 @@ public static class CompatActivity
         // Extract properties from Properties dictionary
         if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
         {
-            teamsChannelAccount.AadObjectId = aadObjectId?.ToString();
+            teamsChannelAccount.AadObjectId = ExtractStringProperty(account.Properties, "aadObjectId");
         }
 
         if (account.Properties.TryGetValue("userPrincipalName", out object? userPrincipalName))
         {
-            teamsChannelAccount.UserPrincipalName = userPrincipalName?.ToString();
+            teamsChannelAccount.UserPrincipalName = ExtractStringProperty(account.Properties, "userPrincipalName");
         }
 
         if (account.Properties.TryGetValue("givenName", out object? givenName))
         {
-            teamsChannelAccount.GivenName = givenName?.ToString();
+            teamsChannelAccount.GivenName = ExtractStringProperty(account.Properties, "givenName");
         }
 
         if (account.Properties.TryGetValue("surname", out object? surname))
         {
-            teamsChannelAccount.Surname = surname?.ToString();
+            teamsChannelAccount.Surname = ExtractStringProperty(account.Properties, "surname");
         }
 
         if (account.Properties.TryGetValue("email", out object? email))
         {
-            teamsChannelAccount.Email = email?.ToString();
+            teamsChannelAccount.Email = ExtractStringProperty(account.Properties, "email");
         }
 
         if (account.Properties.TryGetValue("tenantId", out object? tenantId))
         {
-            teamsChannelAccount.Properties.Add("tenantId", tenantId?.ToString() ?? string.Empty);
+            teamsChannelAccount.Properties.Add("tenantId", ExtractStringProperty(account.Properties, "tenantId") ?? string.Empty);
         }
 
         return teamsChannelAccount;
@@ -321,5 +323,23 @@ public static class CompatActivity
         return channelData?.Team;
     }
 
+    /// <summary>
+    /// Extracts a string value from a properties dictionary, handling JsonElement values from STJ deserialization.
+    /// </summary>
+    private static string? ExtractStringProperty(Dictionary<string, object?> properties, string key)
+    {
+        if (!properties.TryGetValue(key, out object? value))
+            return null;
 
+        return value switch
+        {
+            null => null,
+            string s => s,
+            System.Text.Json.JsonElement je when je.ValueKind == System.Text.Json.JsonValueKind.String
+                => je.GetString(),
+            System.Text.Json.JsonElement je
+                => je.ToString(),
+            _ => value.ToString()
+        };
+    }
 }

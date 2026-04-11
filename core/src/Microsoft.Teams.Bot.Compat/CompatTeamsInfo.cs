@@ -22,11 +22,6 @@ public static class CompatTeamsInfo
 {
     #region Helper Methods
 
-    private static readonly System.Text.Json.JsonSerializerOptions s_jsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
     private static ConversationClient GetConversationClient(ITurnContext turnContext)
     {
         IConnectorClient connectorClient = turnContext.TurnState.Get<IConnectorClient>()
@@ -354,8 +349,9 @@ public static class CompatTeamsInfo
         AgenticIdentity identity = GetIdentity(turnContext);
 
         // Convert Bot Framework MeetingNotificationBase to Core MeetingNotificationBase using JSON round-trip
+        // Use same serializer for both directions to avoid naming-convention mismatches
         string json = Newtonsoft.Json.JsonConvert.SerializeObject(notification);
-        AppsTeams.TargetedMeetingNotification? coreNotification = System.Text.Json.JsonSerializer.Deserialize<AppsTeams.TargetedMeetingNotification>(json, s_jsonOptions);
+        AppsTeams.TargetedMeetingNotification? coreNotification = Newtonsoft.Json.JsonConvert.DeserializeObject<AppsTeams.TargetedMeetingNotification>(json);
 
 
         AppsTeams.MeetingNotificationResponse result = await client.SendMeetingNotificationAsync(
