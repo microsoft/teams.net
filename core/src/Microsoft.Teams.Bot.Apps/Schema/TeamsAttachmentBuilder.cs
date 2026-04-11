@@ -106,8 +106,19 @@ public class TeamsAttachmentBuilder
         return this;
     }
 
+    private bool _built;
+
     /// <summary>
-    /// Builds the attachment.
+    /// Builds and returns the attachment. Throws <see cref="InvalidOperationException"/> if called
+    /// more than once; once built the builder is sealed to prevent post-<c>Build()</c> mutations
+    /// from corrupting an already-returned attachment (A-014).
     /// </summary>
-    public TeamsAttachment Build() => _attachment;
+    public TeamsAttachment Build()
+    {
+        if (_built)
+            throw new InvalidOperationException(
+                "Build() has already been called on this builder. Create a new builder instance for each attachment.");
+        _built = true;
+        return _attachment;
+    }
 }
