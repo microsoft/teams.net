@@ -124,7 +124,12 @@ public class CitationEntity : OMessageEntity
         if (entity is CitationEntity citationEntity)
         {
             Citation = citationEntity.Citation != null
-                ? new List<CitationClaim>(citationEntity.Citation)
+                ? citationEntity.Citation.Select(c => new CitationClaim
+                {
+                    Type = c.Type,
+                    Position = c.Position,
+                    Appearance = c.Appearance
+                }).ToList()
                 : null;
         }
     }
