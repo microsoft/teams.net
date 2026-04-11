@@ -142,10 +142,11 @@ internal sealed class BotConfig
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Extract IConfiguration from service collection
         ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
         IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
-            ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+            ?? throw new InvalidOperationException(
+                "IConfiguration must be registered before calling AddBotApplication. " +
+                "Call builder.Configuration or services.AddSingleton<IConfiguration>(...) first.");
 
         // Get logger using the helper method from AddBotApplicationExtensions
         ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));

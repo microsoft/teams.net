@@ -214,16 +214,7 @@ public static class AddBotApplicationExtensions
         ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
         ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
 
-        // If logger factory is available as an instance, use it directly
-        if (loggerFactory != null)
-        {
-            return loggerFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions));
-        }
-
-        // Otherwise, build a temporary service provider to create the logger
-        using ServiceProvider tempProvider = services.BuildServiceProvider();
-        ILoggerFactory? tempFactory = tempProvider.GetService<ILoggerFactory>();
-        return (ILogger?)tempFactory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
+        return (ILogger?)loggerFactory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
             ?? Extensions.Logging.Abstractions.NullLogger.Instance;
     }
 }
