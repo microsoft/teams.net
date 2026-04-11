@@ -36,7 +36,8 @@ public class TeamsActivity : CoreActivity
         if (TeamsActivityType.ActivitySerializerMap.TryGetValue(GetType(), out Func<TeamsActivity, string>? serializer))
             return serializer(this);
 
-        System.Diagnostics.Debug.Fail(
+        System.Diagnostics.Debug.Assert(
+            GetType() == typeof(TeamsActivity),
             $"No serializer registered for activity type '{GetType().Name}'. " +
             "Add an entry to TeamsActivityType.ActivitySerializerMap.");
 
