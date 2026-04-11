@@ -213,7 +213,9 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
             try
             {
                 T? result = JsonSerializer.Deserialize<T>(responseString, DefaultJsonOptions);
-                return result ?? (T)(object)responseString;
+                if (result is not null)
+                    return result;
+                return (T)(object)responseString;
             }
             catch (JsonException)
             {
