@@ -353,8 +353,10 @@ public static class CompatTeamsInfo
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
 
-        // Convert Bot Framework MeetingNotificationBase to Core MeetingNotificationBase using JSON round-trip
-        string json = Newtonsoft.Json.JsonConvert.SerializeObject(notification);
+        // Convert Bot Framework MeetingNotificationBase to Core MeetingNotificationBase using a
+        // single-serializer (STJ) round-trip. The previous Newtonsoft→STJ two-leg round-trip could
+        // drop fields whose camelCase/PascalCase conventions differ between the two serializers.
+        string json = System.Text.Json.JsonSerializer.Serialize(notification, s_jsonOptions);
         AppsTeams.TargetedMeetingNotification? coreNotification = System.Text.Json.JsonSerializer.Deserialize<AppsTeams.TargetedMeetingNotification>(json, s_jsonOptions);
 
 
