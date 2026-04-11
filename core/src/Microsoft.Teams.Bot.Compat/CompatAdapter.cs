@@ -24,6 +24,7 @@ namespace Microsoft.Teams.Bot.Compat;
 public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
 {
     private readonly TeamsBotApplication _teamsBotApplication;
+    private static readonly AsyncLocal<Func<CoreActivity, CancellationToken, Task>?> _currentCallback = new();
 
     /// <summary>
     /// Creates a new instance of the <see cref="CompatAdapter"/> class.
@@ -38,6 +39,8 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
         : base(teamsBotApplication, httpContextAccessor, logger)
     {
         _teamsBotApplication = teamsBotApplication;
+        _teamsBotApplication.OnActivity = (activity, ct) =>
+            _currentCallback.Value?.Invoke(activity, ct) ?? Task.CompletedTask;
     }
 
     /// <summary>
@@ -55,7 +58,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
         ArgumentNullException.ThrowIfNull(bot);
 
         CoreActivity? coreActivity = null;
-        _teamsBotApplication.OnActivity = async (activity, ct) =>
+        _currentCallback.Value = async (activity, ct) =>
         {
             coreActivity = activity;
             TurnContext turnContext = new(this, activity.ToCompatActivity());
