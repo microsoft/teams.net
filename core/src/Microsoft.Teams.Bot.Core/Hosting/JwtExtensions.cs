@@ -20,6 +20,25 @@ using Microsoft.IdentityModel.Validators;
 namespace Microsoft.Teams.Bot.Core.Hosting
 {
     /// <summary>
+    /// Caches OpenID Connect configuration managers per OIDC authority.
+    /// The cached managers are shared across all JWT authentication handlers.
+    /// </summary>
+    internal sealed class OidcConfigCache
+    {
+        private readonly ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>>
+            _cache = new(StringComparer.OrdinalIgnoreCase);
+
+        public ConfigurationManager<OpenIdConnectConfiguration> GetOrAdd(
+            string authority,
+            bool requireHttps)
+            => _cache.GetOrAdd(authority, a =>
+                new ConfigurationManager<OpenIdConnectConfiguration>(
+                    a,
+                    new OpenIdConnectConfigurationRetriever(),
+                    new HttpDocumentRetriever { RequireHttps = requireHttps }));
+    }
+
+    /// <summary>
     /// Provides extension methods for configuring JWT authentication and authorization for bots and agents.
     /// </summary>
     public static class JwtExtensions
@@ -189,8 +208,11 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// </remarks>
         private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)
         {
-            // One ConfigurationManager per OIDC authority, shared safely across all requests.
-            ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
+            // Use a shared OidcConfigCache to properly manage ConfigurationManager lifetimes.
+            OidcConfigCache configCache = new();
+
+            // Cache of pre-fetched signing keys per authority to avoid blocking in the synchronous resolver.
+            ConcurrentDictionary<string, ICollection<SecurityKey>> signingKeyCache = new(StringComparer.OrdinalIgnoreCase);
 
             builder.AddJwtBearer(schemeName, jwtOptions =>
             {
@@ -213,13 +235,15 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                             ? BotOIDC
                             : $"{EntraOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
 
-                        ConfigurationManager<OpenIdConnectConfiguration> manager = configManagerCache.GetOrAdd(authority, a =>
-                            new ConfigurationManager<OpenIdConnectConfiguration>(
-                                a,
-                                new OpenIdConnectConfigurationRetriever(),
-                                new HttpDocumentRetriever { RequireHttps = jwtOptions.RequireHttpsMetadata }));
+                        // Return cached keys if available; fallback to synchronous fetch for first call
+                        if (signingKeyCache.TryGetValue(authority, out ICollection<SecurityKey>? cachedKeys))
+                        {
+                            return cachedKeys;
+                        }
 
+                        ConfigurationManager<OpenIdConnectConfiguration> manager = configCache.GetOrAdd(authority, jwtOptions.RequireHttpsMetadata);
                         OpenIdConnectConfiguration config = manager.GetConfigurationAsync(CancellationToken.None).GetAwaiter().GetResult();
+                        signingKeyCache[authority] = config.SigningKeys;
                         return config.SigningKeys;
                     }
                 };
@@ -321,7 +345,9 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         {
             ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
             IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
-                ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+                ?? throw new InvalidOperationException(
+                    "IConfiguration must be registered before calling AddBotAuthentication. " +
+                    "Call builder.Configuration or services.AddSingleton<IConfiguration>(...) first.");
 
             return BotConfig.Resolve(configuration, sectionName);
         }
