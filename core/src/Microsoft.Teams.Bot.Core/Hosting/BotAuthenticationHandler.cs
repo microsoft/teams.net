@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.IdentityModel.Tokens.Jwt;
+using Microsoft.IdentityModel.JsonWebTokens;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -115,10 +115,15 @@ internal sealed class BotAuthenticationHandler(
             return;
         }
 
-
-        JwtSecurityToken jwtToken = new(token);
-        string claims = Environment.NewLine + string.Join(Environment.NewLine, jwtToken.Claims.Select(c => $"  {c.Type}: {c.Value}"));
-        _logTokenClaims(_logger, claims, null);
-
+        try
+        {
+            JsonWebToken jwtToken = new(token);
+            string claims = Environment.NewLine + string.Join(Environment.NewLine, jwtToken.Claims.Select(c => $"  {c.Type}: {c.Value}"));
+            _logTokenClaims(_logger, claims, null);
+        }
+        catch (ArgumentException ex)
+        {
+            _logger.LogTrace("Failed to parse token for logging: {Error}", ex.Message);
+        }
     }
 }
