@@ -115,12 +115,13 @@ namespace Microsoft.Teams.Bot.Compat
 
         public async Task<HttpOperationResponse<IList<ChannelAccount>>> GetActivityMembersWithHttpMessagesAsync(string conversationId, string activityId, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             IList<Microsoft.Teams.Bot.Core.Schema.ConversationAccount> members = await _client.GetActivityMembersAsync(
                 conversationId,
                 activityId,
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 null,
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
@@ -197,10 +198,11 @@ namespace Microsoft.Teams.Bot.Compat
 
         public async Task<HttpOperationResponse<ConversationsResult>> GetConversationsWithHttpMessagesAsync(string? continuationToken = null, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             GetConversationsResponse conversations = await _client.GetConversationsAsync(
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 continuationToken,
                 null,
                 convertedHeaders,
