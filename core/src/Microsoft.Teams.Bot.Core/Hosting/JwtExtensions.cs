@@ -189,8 +189,11 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// </remarks>
         private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)
         {
-            // One ConfigurationManager per OIDC authority, shared safely across all requests.
-            ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
+            // One JwksKeyCache per OIDC authority. The cache pre-warms in the background so the
+            // synchronous IssuerSigningKeyResolver can almost always serve from a volatile field
+            // without blocking any threads. Blocking only occurs on the very first request for a
+            // new authority before the background fetch has completed (cold start).
+            ConcurrentDictionary<string, JwksKeyCache> keyCacheByAuthority = new(StringComparer.OrdinalIgnoreCase);
 
             builder.AddJwtBearer(schemeName, jwtOptions =>
             {
@@ -213,14 +216,10 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                             ? BotOIDC
                             : $"{EntraOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
 
-                        ConfigurationManager<OpenIdConnectConfiguration> manager = configManagerCache.GetOrAdd(authority, a =>
-                            new ConfigurationManager<OpenIdConnectConfiguration>(
-                                a,
-                                new OpenIdConnectConfigurationRetriever(),
-                                new HttpDocumentRetriever { RequireHttps = jwtOptions.RequireHttpsMetadata }));
+                        JwksKeyCache cache = keyCacheByAuthority.GetOrAdd(authority, a =>
+                            new JwksKeyCache(a, jwtOptions.RequireHttpsMetadata));
 
-                        OpenIdConnectConfiguration config = manager.GetConfigurationAsync(CancellationToken.None).GetAwaiter().GetResult();
-                        return config.SigningKeys;
+                        return cache.GetKeys();
                     }
                 };
                 jwtOptions.TokenValidationParameters.EnableAadSigningKeyIssuerValidation();
@@ -330,5 +329,65 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             context.RequestServices.GetService<ILoggerFactory>()?.CreateLogger(typeof(JwtExtensions).FullName ?? "JwtExtensions")
             ?? fallback
             ?? NullLogger.Instance;
+    }
+
+    /// <summary>
+    /// Maintains a background-refreshed cache of OIDC signing keys for a single authority so that
+    /// the synchronous <see cref="TokenValidationParameters.IssuerSigningKeyResolver"/> delegate
+    /// can serve keys without blocking any thread-pool thread on the hot request path.
+    ///
+    /// On the very first call (cold start), before the background fetch has completed, the method
+    /// falls back to a blocking fetch executed on a dedicated thread-pool thread to avoid capturing
+    /// any ambient <see cref="System.Threading.SynchronizationContext"/> and preventing deadlocks.
+    /// </summary>
+    internal sealed class JwksKeyCache
+    {
+        private readonly ConfigurationManager<OpenIdConnectConfiguration> _manager;
+
+        // Written only by RefreshAsync; read by GetKeys() on every request.
+        // Volatile ensures reads see the latest write without a lock.
+        private volatile IReadOnlyList<SecurityKey> _cached = [];
+
+        internal JwksKeyCache(string authority, bool requireHttps)
+        {
+            _manager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                authority,
+                new OpenIdConnectConfigurationRetriever(),
+                new HttpDocumentRetriever { RequireHttps = requireHttps });
+
+            // Kick off the first fetch in the background; do not block the startup path.
+            _ = Task.Run(() => RefreshAsync(CancellationToken.None));
+        }
+
+        // Overload for testing: allows injecting a pre-built ConfigurationManager.
+        internal JwksKeyCache(ConfigurationManager<OpenIdConnectConfiguration> manager)
+        {
+            _manager = manager;
+            _ = Task.Run(() => RefreshAsync(CancellationToken.None));
+        }
+
+        /// <summary>
+        /// Returns cached signing keys. On a warm cache this is always allocation-free and
+        /// non-blocking. On a cold cache (background fetch not yet complete) it blocks briefly
+        /// on a pool thread to avoid sync-context deadlocks.
+        /// </summary>
+        internal IEnumerable<SecurityKey> GetKeys()
+        {
+            IReadOnlyList<SecurityKey> snapshot = _cached;
+            if (snapshot.Count > 0)
+                return snapshot;
+
+            // Cold path: background warm-up has not completed yet.
+            // Task.Run avoids capturing any ambient SynchronizationContext.
+            return Task.Run(() => RefreshAsync(CancellationToken.None)).GetAwaiter().GetResult();
+        }
+
+        private async Task<IReadOnlyList<SecurityKey>> RefreshAsync(CancellationToken ct)
+        {
+            OpenIdConnectConfiguration config = await _manager.GetConfigurationAsync(ct).ConfigureAwait(false);
+            IReadOnlyList<SecurityKey> fresh = [.. config.SigningKeys];
+            _cached = fresh;
+            return fresh;
+        }
     }
 }
