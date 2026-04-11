@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -94,16 +93,21 @@ internal sealed class BotAuthenticationHandler(
             !string.IsNullOrEmpty(agenticIdentity.AgenticAppId) &&
             !string.IsNullOrEmpty(agenticIdentity.AgenticUserId))
         {
-            _logAgenticToken(_logger, agenticIdentity.AgenticAppId, null);
-
-            options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, Guid.Parse(agenticIdentity.AgenticUserId));
-            string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([_scope], options, null, cancellationToken).ConfigureAwait(false);
-            return token;
+            if (!Guid.TryParse(agenticIdentity.AgenticUserId, out Guid agenticUserGuid))
+            {
+                _logger.LogWarning("AgenticUserId '{AgenticUserId}' is not a valid GUID; falling back to app-only token.", agenticIdentity.AgenticUserId);
+            }
+            else
+            {
+                _logAgenticToken(_logger, agenticIdentity.AgenticAppId, null);
+                options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserGuid);
+                string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([_scope], options, null, cancellationToken).ConfigureAwait(false);
+                return token;
+            }
         }
 
         _logAppOnlyToken(_logger, _scope, null);
         string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(_scope, options, cancellationToken).ConfigureAwait(false);
-
 
         return appToken;
     }
@@ -115,10 +119,18 @@ internal sealed class BotAuthenticationHandler(
             return;
         }
 
-
-        JwtSecurityToken jwtToken = new(token);
-        string claims = Environment.NewLine + string.Join(Environment.NewLine, jwtToken.Claims.Select(c => $"  {c.Type}: {c.Value}"));
-        _logTokenClaims(_logger, claims, null);
-
+        try
+        {
+            // Use JsonWebToken (non-deprecated) instead of JwtSecurityToken.
+            // Wrap in try/catch because the token string may be malformed (e.g. an opaque
+            // MSI token) and we must never crash the send pipeline due to trace logging.
+            Microsoft.IdentityModel.JsonWebTokens.JsonWebToken jwt = new(token);
+            string claims = Environment.NewLine + string.Join(Environment.NewLine, jwt.Claims.Select(c => $"  {c.Type}: {c.Value}"));
+            _logTokenClaims(_logger, claims, null);
+        }
+        catch (Exception ex) when (ex is ArgumentException or System.Text.Json.JsonException)
+        {
+            _logger.LogTrace("Could not parse token for claim logging: {Message}", ex.Message);
+        }
     }
 }
