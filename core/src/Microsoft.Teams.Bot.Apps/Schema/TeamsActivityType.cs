@@ -100,5 +100,12 @@ public static class TeamsActivityType
     {
         [typeof(MessageActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageActivity),
         [typeof(StreamingActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.StreamingActivity),
+        [typeof(MessageReactionActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageReactionActivity),
+        [typeof(MessageUpdateActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageUpdateActivity),
+        [typeof(MessageDeleteActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageDeleteActivity),
+        [typeof(ConversationUpdateActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.ConversationUpdateActivity),
+        [typeof(InstallUpdateActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.InstallUpdateActivity),
+        [typeof(InvokeActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.InvokeActivity),
+        [typeof(EventActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.EventActivity),
     };
 }

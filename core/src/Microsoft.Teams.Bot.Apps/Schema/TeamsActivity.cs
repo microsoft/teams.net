@@ -32,9 +32,16 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     /// <returns>A JSON string representation of the activity using the type-specific serializer.</returns>
     public override string ToJson()
-        => TeamsActivityType.ActivitySerializerMap.TryGetValue(GetType(), out Func<TeamsActivity, string>? serializer)
-            ? serializer(this)
-            : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
+    {
+        if (TeamsActivityType.ActivitySerializerMap.TryGetValue(GetType(), out Func<TeamsActivity, string>? serializer))
+            return serializer(this);
+
+        System.Diagnostics.Debug.Fail(
+            $"No serializer registered for activity type '{GetType().Name}'. " +
+            "Add an entry to TeamsActivityType.ActivitySerializerMap.");
+
+        return ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
+    }
 
     /// <summary>
     /// Constructor with type parameter.
