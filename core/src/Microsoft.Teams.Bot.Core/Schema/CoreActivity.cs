@@ -10,7 +10,18 @@ namespace Microsoft.Teams.Bot.Core.Schema;
 /// <summary>
 /// Represents a dictionary for storing extended properties as key-value pairs.
 /// </summary>
-public class ExtendedPropertiesDictionary : Dictionary<string, object?> { }
+public class ExtendedPropertiesDictionary : Dictionary<string, object?>
+{
+    /// <summary>
+    /// Initializes a new empty instance.
+    /// </summary>
+    public ExtendedPropertiesDictionary() { }
+
+    /// <summary>
+    /// Initializes a new instance by copying entries from an existing dictionary.
+    /// </summary>
+    public ExtendedPropertiesDictionary(IDictionary<string, object?> dictionary) : base(dictionary) { }
+}
 
 /// <summary>
 /// Represents a core activity object that encapsulates the data and metadata for a bot interaction.
@@ -149,10 +160,10 @@ public class CoreActivity
         From = activity.From;
         Recipient = activity.Recipient;
         Conversation = activity.Conversation;
-        Entities = activity.Entities;
-        Attachments = activity.Attachments;
-        Properties = activity.Properties;
-        Value = activity.Value;
+        Entities = activity.Entities?.DeepClone().AsArray();
+        Attachments = activity.Attachments?.DeepClone().AsArray();
+        Properties = new ExtendedPropertiesDictionary(activity.Properties);
+        Value = activity.Value?.DeepClone();
 
     }
 
