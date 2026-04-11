@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Core.Schema;
+
 namespace Microsoft.Teams.Bot.Apps.Schema;
 
 /// <summary>
@@ -109,5 +111,16 @@ public class TeamsAttachmentBuilder
     /// <summary>
     /// Builds the attachment.
     /// </summary>
-    public TeamsAttachment Build() => _attachment;
+    public TeamsAttachment Build()
+    {
+        return new TeamsAttachment
+        {
+            ContentType = _attachment.ContentType,
+            Content = _attachment.Content,
+            ContentUrl = _attachment.ContentUrl,
+            Name = _attachment.Name,
+            ThumbnailUrl = _attachment.ThumbnailUrl,
+            Properties = new ExtendedPropertiesDictionary(_attachment.Properties)
+        };
+    }
 }
