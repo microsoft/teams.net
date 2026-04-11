@@ -80,7 +80,23 @@ public class BotApplication
     /// <returns></returns>
     /// <exception cref="InvalidOperationException"></exception>
     /// <exception cref="BotHandlerException"></exception>
-    public virtual async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
+    public virtual Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
+        => ProcessAsync(httpContext, activityHandler: null, cancellationToken);
+
+    /// <summary>
+    /// Processes an incoming HTTP request using an explicit per-request activity handler instead of the
+    /// shared <see cref="OnActivity"/> field. Use this overload when the caller needs to supply a
+    /// request-scoped handler without mutating the shared field (prevents race conditions under concurrency).
+    /// </summary>
+    /// <param name="httpContext">The HTTP context containing the incoming activity.</param>
+    /// <param name="activityHandler">
+    /// A per-request handler to invoke, or <see langword="null"/> to fall back to <see cref="OnActivity"/>.
+    /// </param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns></returns>
+    /// <exception cref="InvalidOperationException"></exception>
+    /// <exception cref="BotHandlerException"></exception>
+    public virtual async Task ProcessAsync(HttpContext httpContext, Func<CoreActivity, CancellationToken, Task>? activityHandler, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(_conversationClient);
@@ -97,6 +113,8 @@ public class BotApplication
 
         _logger.LogTraceGuarded("Received activity: {Activity}", activity.ToJson());
 
+        Func<CoreActivity, CancellationToken, Task>? handler = activityHandler ?? this.OnActivity;
+
         // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
         using (_logger.BeginScope("ActivityType={ActivityType} ActivityId={ActivityId} ServiceUrl={ServiceUrl} MSCV={MSCV}",
             activity.Type, activity.Id, activity.ServiceUrl, httpContext.Request.GetCorrelationVector()))
@@ -104,7 +122,7 @@ public class BotApplication
             try
             {
                 CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
-                await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
+                await MiddleWare.RunPipelineAsync(this, activity, handler, 0, token).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

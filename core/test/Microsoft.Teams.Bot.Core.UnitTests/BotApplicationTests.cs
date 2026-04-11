@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 using Microsoft.AspNetCore.Http;
@@ -195,6 +196,72 @@ public class BotApplicationTests
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             botApp.SendActivityAsync(null!));
+    }
+
+    [Fact]
+    public async Task ProcessAsync_WithActivityHandlerOverride_UsesProvidedHandlerNotSharedField()
+    {
+        // Arrange
+        BotApplication botApp = CreateBotApplication();
+
+        // Set a sentinel on the shared field to detect if it is incorrectly invoked
+        bool sharedFieldInvoked = false;
+        botApp.OnActivity = (_, _) =>
+        {
+            sharedFieldInvoked = true;
+            return Task.CompletedTask;
+        };
+
+        CoreActivity activity = new() { Type = ActivityType.Message, Id = "act-override" };
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+
+        bool perRequestHandlerInvoked = false;
+        Func<CoreActivity, CancellationToken, Task> perRequestHandler = (_, _) =>
+        {
+            perRequestHandlerInvoked = true;
+            return Task.CompletedTask;
+        };
+
+        // Act
+        await botApp.ProcessAsync(httpContext, perRequestHandler, CancellationToken.None);
+
+        // Assert – only the per-request handler must fire; the shared field must not
+        Assert.True(perRequestHandlerInvoked);
+        Assert.False(sharedFieldInvoked);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_ConcurrentRequests_EachHandlerReceivesItsOwnActivity()
+    {
+        // Arrange
+        BotApplication botApp = CreateBotApplication();
+
+        int concurrency = 20;
+        ConcurrentDictionary<string, string> observedActivities = new();
+
+        // Act – fire concurrently; each request supplies its own scoped handler
+        await Parallel.ForEachAsync(Enumerable.Range(0, concurrency), async (i, ct) =>
+        {
+            string activityId = $"act-{i}";
+            CoreActivity activity = new() { Type = ActivityType.Message, Id = activityId };
+            DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+
+            Func<CoreActivity, CancellationToken, Task> handler = (act, _) =>
+            {
+                observedActivities[activityId] = act.Id!;
+                return Task.CompletedTask;
+            };
+
+            await botApp.ProcessAsync(httpContext, handler, ct);
+        });
+
+        // Assert – every handler must have received exactly its own activity (no cross-contamination)
+        Assert.Equal(concurrency, observedActivities.Count);
+        for (int i = 0; i < concurrency; i++)
+        {
+            string expected = $"act-{i}";
+            Assert.Equal(expected, observedActivities[expected]);
+        }
     }
 
     private static BotApplicationOptions CreateOptions(string appId) =>

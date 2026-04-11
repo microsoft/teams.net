@@ -55,7 +55,11 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
         ArgumentNullException.ThrowIfNull(bot);
 
         CoreActivity? coreActivity = null;
-        _teamsBotApplication.OnActivity = async (activity, ct) =>
+
+        // Use a local, per-request handler passed directly to ProcessAsync.
+        // This avoids mutating the shared OnActivity field, which would cause a race condition
+        // when multiple requests are processed concurrently.
+        async Task compatHandler(CoreActivity activity, CancellationToken ct)
         {
             coreActivity = activity;
             TurnContext turnContext = new(this, activity.ToCompatActivity());
@@ -64,11 +68,11 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
             await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
-        };
+        }
 
         try
         {
-            await _teamsBotApplication.ProcessAsync(httpRequest.HttpContext, cancellationToken).ConfigureAwait(false);
+            await _teamsBotApplication.ProcessAsync(httpRequest.HttpContext, compatHandler, cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
