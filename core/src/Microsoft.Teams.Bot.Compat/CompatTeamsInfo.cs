@@ -445,7 +445,8 @@ public static class CompatTeamsInfo
         TeamsApiClient client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        Activity concreteActivity = activity as Activity ?? throw new ArgumentException($"Expected Activity but received {activity.GetType().Name}.", nameof(activity));
+        CoreActivity coreActivity = concreteActivity.FromCompatActivity();
 
         List<AppsTeams.TeamMember> coreTeamsMembers = teamsMembers.Select(m => m.FromCompatTeamMember()).ToList();
 
@@ -477,7 +478,8 @@ public static class CompatTeamsInfo
         TeamsApiClient client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        Activity concreteActivity = activity as Activity ?? throw new ArgumentException($"Expected Activity but received {activity.GetType().Name}.", nameof(activity));
+        CoreActivity coreActivity = concreteActivity.FromCompatActivity();
 
         List<AppsTeams.TeamMember> coreChannelsMembers = channelsMembers.Select(m => m.FromCompatTeamMember()).ToList();
 
@@ -509,7 +511,8 @@ public static class CompatTeamsInfo
         TeamsApiClient client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        Activity concreteActivity = activity as Activity ?? throw new ArgumentException($"Expected Activity but received {activity.GetType().Name}.", nameof(activity));
+        CoreActivity coreActivity = concreteActivity.FromCompatActivity();
 
         return await client.SendMessageToAllUsersInTeamAsync(
             coreActivity, teamId, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
@@ -536,7 +539,8 @@ public static class CompatTeamsInfo
         TeamsApiClient client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        Activity concreteActivity = activity as Activity ?? throw new ArgumentException($"Expected Activity but received {activity.GetType().Name}.", nameof(activity));
+        CoreActivity coreActivity = concreteActivity.FromCompatActivity();
 
         return await client.SendMessageToAllUsersInTenantAsync(
             coreActivity, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
@@ -575,7 +579,7 @@ public static class CompatTeamsInfo
         {
             IsGroup = true,
             ChannelData = new BotFrameworkTeams.TeamsChannelData { Channel = new BotFrameworkTeams.ChannelInfo { Id = teamsChannelId } },
-            Activity = (Activity)activity,
+            Activity = activity as Activity ?? throw new ArgumentException($"Expected Activity but received {activity.GetType().Name}.", nameof(activity)),
         };
 
         await turnContext.Adapter.CreateConversationAsync(
