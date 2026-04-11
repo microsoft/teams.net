@@ -27,6 +27,20 @@ public static class CompatTeamsInfo
         PropertyNameCaseInsensitive = true
     };
 
+    /// <summary>
+    /// Casts <paramref name="activity"/> to the concrete Bot Framework <see cref="Activity"/> type.
+    /// Throws <see cref="ArgumentException"/> with a descriptive message when the cast fails so callers
+    /// receive a clear error instead of an <see cref="InvalidCastException"/>.
+    /// </summary>
+    private static Activity RequireActivity(IActivity? activity, string paramName)
+    {
+        ArgumentNullException.ThrowIfNull(activity, paramName);
+        return activity as Activity
+            ?? throw new ArgumentException(
+                $"The activity must be an instance of {nameof(Activity)}; received {activity.GetType().Name}.",
+                paramName);
+    }
+
     private static ConversationClient GetConversationClient(ITurnContext turnContext)
     {
         IConnectorClient connectorClient = turnContext.TurnState.Get<IConnectorClient>()
@@ -444,14 +458,14 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
+        Activity botActivity = RequireActivity(activity, nameof(activity));
         teamsMembers = teamsMembers ?? throw new InvalidOperationException($"{nameof(teamsMembers)} is required.");
         tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
         TeamsApiClient client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        CoreActivity coreActivity = botActivity.FromCompatActivity();
 
         List<AppsTeams.TeamMember> coreTeamsMembers = teamsMembers.Select(m => m.FromCompatTeamMember()).ToList();
 
@@ -476,14 +490,14 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
+        Activity botActivity = RequireActivity(activity, nameof(activity));
         channelsMembers = channelsMembers ?? throw new InvalidOperationException($"{nameof(channelsMembers)} is required.");
         tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
         TeamsApiClient client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        CoreActivity coreActivity = botActivity.FromCompatActivity();
 
         List<AppsTeams.TeamMember> coreChannelsMembers = channelsMembers.Select(m => m.FromCompatTeamMember()).ToList();
 
@@ -508,14 +522,14 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
+        Activity botActivity = RequireActivity(activity, nameof(activity));
         teamId = teamId ?? throw new InvalidOperationException($"{nameof(teamId)} is required.");
         tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
         TeamsApiClient client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        CoreActivity coreActivity = botActivity.FromCompatActivity();
 
         return await client.SendMessageToAllUsersInTeamAsync(
             coreActivity, teamId, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
@@ -536,13 +550,13 @@ public static class CompatTeamsInfo
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(turnContext);
-        activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
+        Activity botActivity = RequireActivity(activity, nameof(activity));
         tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
         TeamsApiClient client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        CoreActivity coreActivity = botActivity.FromCompatActivity();
 
         return await client.SendMessageToAllUsersInTenantAsync(
             coreActivity, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
@@ -581,7 +595,7 @@ public static class CompatTeamsInfo
         {
             IsGroup = true,
             ChannelData = new BotFrameworkTeams.TeamsChannelData { Channel = new BotFrameworkTeams.ChannelInfo { Id = teamsChannelId } },
-            Activity = (Activity)activity,
+            Activity = RequireActivity(activity, nameof(activity)),
         };
 
         await turnContext.Adapter.CreateConversationAsync(
