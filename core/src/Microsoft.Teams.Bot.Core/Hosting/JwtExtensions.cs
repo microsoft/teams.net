@@ -318,9 +318,13 @@ namespace Microsoft.Teams.Bot.Core.Hosting
 
         private static BotConfig ResolveBotConfig(IServiceCollection services, string sectionName)
         {
+            // Avoid BuildServiceProvider() which creates duplicate singletons (DI-01).
+            // Fail fast with a clear message if IConfiguration is not yet registered.
             ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
             IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
-                ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+                ?? throw new InvalidOperationException(
+                    "IConfiguration is not registered in the service collection. " +
+                    "Ensure services.AddSingleton<IConfiguration>(...) is called before AddBotAuthentication/AddBotAuthorization.");
 
             return BotConfig.Resolve(configuration, sectionName);
         }

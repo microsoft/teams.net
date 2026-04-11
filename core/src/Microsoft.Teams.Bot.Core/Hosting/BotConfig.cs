@@ -142,10 +142,14 @@ internal sealed class BotConfig
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Extract IConfiguration from service collection
+        // Extract IConfiguration from the service collection without building a throwaway container.
+        // Calling BuildServiceProvider() here creates duplicate singleton instances and causes a
+        // DI container leak (DI-01). Fail fast with a clear message if IConfiguration is absent.
         ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
         IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
-            ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+            ?? throw new InvalidOperationException(
+                "IConfiguration is not registered in the service collection. " +
+                "Call services.AddSingleton<IConfiguration>(...) before calling this method.");
 
         // Get logger using the helper method from AddBotApplicationExtensions
         ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));
