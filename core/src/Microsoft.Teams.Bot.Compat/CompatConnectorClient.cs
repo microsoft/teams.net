@@ -37,8 +37,7 @@ namespace Microsoft.Teams.Bot.Compat
 
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            GC.SuppressFinalize(this);
+            // Nothing to dispose - all resources are owned by the injected CompatConversations.
         }
     }
 }
