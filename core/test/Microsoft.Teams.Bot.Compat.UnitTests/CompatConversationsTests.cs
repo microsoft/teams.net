@@ -383,5 +383,34 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             return mock;
         }
+
+        // ── P4-3 / A-022: ServiceUrl null guard ──────────────────────────────────
+
+        [Fact]
+        public async Task GetActivityMembersWithHttpMessagesAsync_WithNullServiceUrl_ThrowsArgumentException()
+        {
+            Mock<ConversationClient> mockClient = CreateMockConversationClient();
+            CompatConversations conversations = new(mockClient.Object)
+            {
+                ServiceUrl = null   // intentionally not set
+            };
+
+            await Assert.ThrowsAnyAsync<ArgumentException>(
+                () => conversations.GetActivityMembersWithHttpMessagesAsync(
+                    TestConversationId, TestActivityId));
+        }
+
+        [Fact]
+        public async Task GetConversationsWithHttpMessagesAsync_WithNullServiceUrl_ThrowsArgumentException()
+        {
+            Mock<ConversationClient> mockClient = CreateMockConversationClient();
+            CompatConversations conversations = new(mockClient.Object)
+            {
+                ServiceUrl = null
+            };
+
+            await Assert.ThrowsAnyAsync<ArgumentException>(
+                () => conversations.GetConversationsWithHttpMessagesAsync());
+        }
     }
 }
