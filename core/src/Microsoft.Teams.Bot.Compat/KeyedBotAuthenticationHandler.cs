@@ -115,7 +115,12 @@ internal sealed class KeyedBotAuthenticationHandler : DelegatingHandler
                 agenticIdentity.AgenticAppId,
                 agenticIdentity.AgenticUserId);
 
-            options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, Guid.Parse(agenticIdentity.AgenticUserId));
+            if (!Guid.TryParse(agenticIdentity.AgenticUserId, out Guid agenticUserId))
+            {
+                throw new InvalidOperationException(
+                    $"AgenticUserId '{agenticIdentity.AgenticUserId}' is not a valid GUID.");
+            }
+            options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserId);
             string token = await _authorizationHeaderProvider
                 .CreateAuthorizationHeaderAsync([_scope], options, null, cancellationToken)
                 .ConfigureAwait(false);
