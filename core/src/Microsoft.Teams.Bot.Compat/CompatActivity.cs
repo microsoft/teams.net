@@ -74,37 +74,37 @@ public static class CompatActivity
 
         if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
         {
-            channelAccount.AadObjectId = aadObjectId?.ToString();
+            channelAccount.AadObjectId = ExtractString(aadObjectId);
         }
 
         if (account.Properties.TryGetValue("userRole", out object? userRole))
         {
-            channelAccount.Role = userRole?.ToString();
+            channelAccount.Role = ExtractString(userRole);
         }
 
         if (account.Properties.TryGetValue("userPrincipalName", out object? userPrincipalName))
         {
-            channelAccount.Properties.Add("userPrincipalName", userPrincipalName?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("userPrincipalName", ExtractString(userPrincipalName) ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("givenName", out object? givenName))
         {
-            channelAccount.Properties.Add("givenName", givenName?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("givenName", ExtractString(givenName) ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("surname", out object? surname))
         {
-            channelAccount.Properties.Add("surname", surname?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("surname", ExtractString(surname) ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("email", out object? email))
         {
-            channelAccount.Properties.Add("email", email?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("email", ExtractString(email) ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("tenantId", out object? tenantId))
         {
-            channelAccount.Properties.Add("tenantId", tenantId?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("tenantId", ExtractString(tenantId) ?? string.Empty);
         }
 
         return channelAccount;
@@ -237,32 +237,32 @@ public static class CompatActivity
         // Extract properties from Properties dictionary
         if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
         {
-            teamsChannelAccount.AadObjectId = aadObjectId?.ToString();
+            teamsChannelAccount.AadObjectId = ExtractString(aadObjectId);
         }
 
         if (account.Properties.TryGetValue("userPrincipalName", out object? userPrincipalName))
         {
-            teamsChannelAccount.UserPrincipalName = userPrincipalName?.ToString();
+            teamsChannelAccount.UserPrincipalName = ExtractString(userPrincipalName);
         }
 
         if (account.Properties.TryGetValue("givenName", out object? givenName))
         {
-            teamsChannelAccount.GivenName = givenName?.ToString();
+            teamsChannelAccount.GivenName = ExtractString(givenName);
         }
 
         if (account.Properties.TryGetValue("surname", out object? surname))
         {
-            teamsChannelAccount.Surname = surname?.ToString();
+            teamsChannelAccount.Surname = ExtractString(surname);
         }
 
         if (account.Properties.TryGetValue("email", out object? email))
         {
-            teamsChannelAccount.Email = email?.ToString();
+            teamsChannelAccount.Email = ExtractString(email);
         }
 
         if (account.Properties.TryGetValue("tenantId", out object? tenantId))
         {
-            teamsChannelAccount.Properties.Add("tenantId", tenantId?.ToString() ?? string.Empty);
+            teamsChannelAccount.Properties.Add("tenantId", ExtractString(tenantId) ?? string.Empty);
         }
 
         return teamsChannelAccount;
@@ -320,6 +320,18 @@ public static class CompatActivity
         Microsoft.Bot.Schema.Teams.TeamsChannelData channelData = activity.GetChannelData<Microsoft.Bot.Schema.Teams.TeamsChannelData>();
         return channelData?.Team;
     }
+
+    /// <summary>
+    /// Extracts a string value from an <c>object?</c> that may hold either a plain string or a
+    /// <see cref="System.Text.Json.JsonElement"/> (the runtime type produced by STJ
+    /// <c>[JsonExtensionData]</c> dictionaries). Calling <c>.ToString()</c> on a
+    /// <see cref="System.Text.Json.JsonElement"/> returns the JSON source text (e.g. with surrounding
+    /// quotes for strings), not the unescaped value — this helper returns the correct string (A-007).
+    /// </summary>
+    internal static string? ExtractString(object? value) =>
+        value is System.Text.Json.JsonElement je
+            ? (je.ValueKind == System.Text.Json.JsonValueKind.String ? je.GetString() : je.GetRawText())
+            : value?.ToString();
 
 
 }
