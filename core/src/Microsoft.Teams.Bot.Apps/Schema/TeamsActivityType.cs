@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Bot.Apps.Handlers;
+using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -95,10 +96,19 @@ public static class TeamsActivityType
 
     /// <summary>
     /// Registry of serializers keyed by concrete activity type, mirroring <see cref="ActivityDeserializerMap"/>.
+    /// Every type registered in <see cref="ActivityDeserializerMap"/> must also appear here so that
+    /// a serialization round-trip preserves all subtype-specific fields.
     /// </summary>
     internal static readonly Dictionary<Type, Func<TeamsActivity, string>> ActivitySerializerMap = new()
     {
         [typeof(MessageActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageActivity),
         [typeof(StreamingActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.StreamingActivity),
+        [typeof(MessageReactionActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageReactionActivity),
+        [typeof(MessageUpdateActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageUpdateActivity),
+        [typeof(MessageDeleteActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.MessageDeleteActivity),
+        [typeof(ConversationUpdateActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.ConversationUpdateActivity),
+        [typeof(InstallUpdateActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.InstallUpdateActivity),
+        [typeof(InvokeActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.InvokeActivity),
+        [typeof(EventActivity)] = a => a.ToJson(TeamsActivityJsonContext.Default.EventActivity),
     };
 }
