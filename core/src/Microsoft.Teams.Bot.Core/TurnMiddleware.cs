@@ -17,7 +17,8 @@ namespace Microsoft.Teams.Bot.Core;
 /// </remarks>
 internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddleware>
 {
-    private readonly IList<ITurnMiddleware> _middlewares = [];
+    private readonly List<ITurnMiddleware> _middlewares = [];
+    private ITurnMiddleware[]? _frozen;
 
     /// <summary>
     /// Adds a middleware component to the end of the pipeline.
@@ -26,6 +27,8 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
     /// <returns>The current TurnMiddleware instance for method chaining.</returns>
     internal TurnMiddleware Use(ITurnMiddleware middleware)
     {
+        if (_frozen is not null)
+            throw new InvalidOperationException("Cannot add middleware after the pipeline has started executing.");
         _middlewares.Add(middleware);
         return this;
     }
@@ -55,11 +58,13 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
     /// <returns>A task that represents the asynchronous pipeline execution.</returns>
     public Task RunPipelineAsync(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
     {
-        if (nextMiddlewareIndex == _middlewares.Count)
+        ITurnMiddleware[] pipeline = _frozen ??= [.. _middlewares];
+
+        if (nextMiddlewareIndex == pipeline.Length)
         {
             return callback is not null ? callback!(activity, cancellationToken) ?? Task.CompletedTask : Task.CompletedTask;
         }
-        ITurnMiddleware nextMiddleware = _middlewares[nextMiddlewareIndex];
+        ITurnMiddleware nextMiddleware = pipeline[nextMiddlewareIndex];
         return nextMiddleware.OnTurnAsync(
             botApplication,
             activity,
