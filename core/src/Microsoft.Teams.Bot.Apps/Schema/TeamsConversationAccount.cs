@@ -34,11 +34,19 @@ public class TeamsConversationAccount : ConversationAccount
         {
             return null;
         }
-        TeamsConversationAccount result = new();
-        result.Id = conversationAccount.Id;
-        result.Name = conversationAccount.Name;
-        result.IsTargeted = conversationAccount.IsTargeted;
-        result.Properties = conversationAccount.Properties;
+        // Copy Properties entries into a new dictionary so that mutations on the returned
+        // account's Properties do not propagate back to the source (COPY-01 / A-013).
+        ExtendedPropertiesDictionary copiedProperties = [];
+        foreach (KeyValuePair<string, object?> kv in conversationAccount.Properties)
+            copiedProperties[kv.Key] = kv.Value;
+
+        TeamsConversationAccount result = new()
+        {
+            Id = conversationAccount.Id,
+            Name = conversationAccount.Name,
+            IsTargeted = conversationAccount.IsTargeted,
+            Properties = copiedProperties
+        };
         return result;
     }
 

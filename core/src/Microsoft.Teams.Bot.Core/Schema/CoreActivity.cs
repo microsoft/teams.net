@@ -132,7 +132,9 @@ public class CoreActivity
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="CoreActivity"/> class by copying properties from another activity.
+    /// Creates a new instance of the <see cref="CoreActivity"/> class by deep-copying properties from
+    /// another activity. Mutable reference types (JsonArray, JsonNode, ConversationAccount, ChannelData,
+    /// ExtendedPropertiesDictionary) are cloned so that mutations on the copy do not affect the original.
     /// </summary>
     /// <param name="activity">The source activity to copy from.</param>
     protected CoreActivity(CoreActivity activity)
@@ -145,16 +147,30 @@ public class CoreActivity
         Type = activity.Type;
         // TODO: Figure out why this is needed...
         // ReplyToId = activity.ReplyToId;
-        ChannelData = activity.ChannelData;
-        From = activity.From;
-        Recipient = activity.Recipient;
-        Conversation = activity.Conversation;
-        Entities = activity.Entities;
-        Attachments = activity.Attachments;
-        Properties = activity.Properties;
-        Value = activity.Value;
 
+        // Deep-copy mutable reference types via JSON serialization/deserialization so that
+        // mutations on the copy do not propagate back to the original (COPY-01 / A-013).
+        ChannelData = DeepCopy(activity.ChannelData, CoreActivityJsonContext.Default.ChannelData);
+        From = DeepCopy(activity.From, CoreActivityJsonContext.Default.ConversationAccount);
+        Recipient = DeepCopy(activity.Recipient, CoreActivityJsonContext.Default.ConversationAccount);
+        Conversation = DeepCopy(activity.Conversation, CoreActivityJsonContext.Default.Conversation);
+        Entities = activity.Entities is not null
+            ? JsonNode.Parse(activity.Entities.ToJsonString())?.AsArray()
+            : null;
+        Attachments = activity.Attachments is not null
+            ? JsonNode.Parse(activity.Attachments.ToJsonString())?.AsArray()
+            : null;
+        Value = activity.Value is not null
+            ? JsonNode.Parse(activity.Value.ToJsonString())
+            : null;
+        Properties = [];
+        foreach (KeyValuePair<string, object?> kv in activity.Properties)
+            Properties[kv.Key] = kv.Value;
     }
+
+    /// <summary>Serializes and deserializes <paramref name="source"/> to produce an independent deep copy.</summary>
+    private static T? DeepCopy<T>(T? source, JsonTypeInfo<T> typeInfo) where T : class
+        => source is null ? null : JsonSerializer.Deserialize(JsonSerializer.Serialize(source, typeInfo), typeInfo);
 
     /// <summary>
     /// Serializes the current activity to a JSON string.

@@ -122,8 +122,15 @@ public class CitationEntity : OMessageEntity
             : null;
         if (entity is CitationEntity citationEntity)
         {
+            // Deep-copy each CitationClaim so that mutations on the clone's list items
+            // do not affect the original (COPY-01 / A-015). Re-serialize via STJ because
+            // CitationClaim contains a nested CitationAppearanceDocument reference.
             Citation = citationEntity.Citation != null
-                ? new List<CitationClaim>(citationEntity.Citation)
+                ? citationEntity.Citation
+                    .Select(c => System.Text.Json.JsonSerializer.Deserialize(
+                        System.Text.Json.JsonSerializer.Serialize(c, TeamsActivityJsonContext.Default.CitationClaim),
+                        TeamsActivityJsonContext.Default.CitationClaim)!)
+                    .ToList()
                 : null;
         }
     }
