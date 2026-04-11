@@ -31,7 +31,15 @@ public class EntityList : List<Entity>
 
             foreach (KeyValuePair<string, object?> property in entity.Properties)
             {
-                jsonObject[property.Key] = property.Value as JsonNode ?? JsonValue.Create(property.Value);
+                JsonNode? node = property.Value switch
+                {
+                    JsonNode jn => jn,
+                    // JsonElement (produced by STJ [JsonExtensionData]) must be re-parsed to JsonNode
+                    JsonElement je => JsonNode.Parse(je.GetRawText()),
+                    null => null,
+                    _ => JsonValue.Create(property.Value)
+                };
+                jsonObject[property.Key] = node;
             }
             jsonArray.Add(jsonObject);
         }
@@ -59,10 +67,6 @@ public class EntityList : List<Entity>
                 && typeValue.GetValue<string>() is string typeString)
             {
 
-                // TODO: Should be able to support unknown types (PA uses BotMessageMetadata).
-                // TODO: Investigate if there is any way for Parent to avoid
-                // Knowing the children.
-                // Maybe a registry pattern, or Converters?
                 Entity? entity = typeString switch
                 {
                     "clientInfo" => item.Deserialize<ClientInfoEntity>(options),
@@ -70,7 +74,10 @@ public class EntityList : List<Entity>
                     "message" or "https://schema.org/Message" => DeserializeMessageEntity(item, options),
                     "ProductInfo" => item.Deserialize<ProductInfoEntity>(options),
                     "streaminfo" => item.Deserialize<StreamInfoEntity>(options),
-                    _ => null
+                    // Unknown types: deserialize as base Entity so all raw JSON fields are
+                    // preserved in the Properties [JsonExtensionData] dictionary rather than
+                    // being silently discarded (A-008).
+                    _ => item.Deserialize<Entity>(options)
                 };
                 if (entity != null)
                     entities.Add(entity);
