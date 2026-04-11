@@ -17,17 +17,37 @@ namespace Microsoft.Teams.Bot.Core;
 /// </remarks>
 internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddleware>
 {
-    private readonly IList<ITurnMiddleware> _middlewares = [];
+    private ITurnMiddleware[] _frozen = [];
+    private readonly List<ITurnMiddleware> _building = [];
+    private bool _isFrozen;
 
     /// <summary>
     /// Adds a middleware component to the end of the pipeline.
+    /// Throws <see cref="InvalidOperationException"/> if called after <see cref="Freeze"/>.
     /// </summary>
     /// <param name="middleware">The middleware to add. Cannot be null.</param>
     /// <returns>The current TurnMiddleware instance for method chaining.</returns>
     internal TurnMiddleware Use(ITurnMiddleware middleware)
     {
-        _middlewares.Add(middleware);
+        if (_isFrozen)
+            throw new InvalidOperationException(
+                "Middleware cannot be added after the pipeline has been frozen (A-020). " +
+                "Register all middleware before the application starts.");
+
+        _building.Add(middleware);
         return this;
+    }
+
+    /// <summary>
+    /// Seals the middleware list and converts it to a read-only array. Call this once during
+    /// application startup (e.g. from IHostedService.StartAsync) to enforce the invariant that
+    /// no middleware is registered after the first request is processed (A-020).
+    /// Subsequent calls to <see cref="Use"/> will throw <see cref="InvalidOperationException"/>.
+    /// </summary>
+    internal void Freeze()
+    {
+        _frozen = [.. _building];
+        _isFrozen = true;
     }
 
     /// <summary>
@@ -46,20 +66,17 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
 
     /// <summary>
     /// Recursively executes the middleware pipeline starting from the specified index.
+    /// Uses the frozen array when frozen (fast path); falls back to the building list
+    /// during startup before Freeze() is called.
     /// </summary>
-    /// <param name="botApplication">The bot application processing the turn.</param>
-    /// <param name="activity">The activity to process.</param>
-    /// <param name="callback">Optional callback to invoke after all middleware has executed.</param>
-    /// <param name="nextMiddlewareIndex">The index of the next middleware to execute in the pipeline.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous pipeline execution.</returns>
     public Task RunPipelineAsync(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
     {
-        if (nextMiddlewareIndex == _middlewares.Count)
+        IList<ITurnMiddleware> middlewares = _isFrozen ? _frozen : _building;
+        if (nextMiddlewareIndex == middlewares.Count)
         {
             return callback is not null ? callback!(activity, cancellationToken) ?? Task.CompletedTask : Task.CompletedTask;
         }
-        ITurnMiddleware nextMiddleware = _middlewares[nextMiddlewareIndex];
+        ITurnMiddleware nextMiddleware = middlewares[nextMiddlewareIndex];
         return nextMiddleware.OnTurnAsync(
             botApplication,
             activity,
@@ -69,7 +86,8 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
 
     public IEnumerator<ITurnMiddleware> GetEnumerator()
     {
-        return _middlewares.GetEnumerator();
+        IList<ITurnMiddleware> middlewares = _isFrozen ? _frozen : _building;
+        return middlewares.GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()

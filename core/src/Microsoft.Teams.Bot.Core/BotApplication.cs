@@ -148,6 +148,13 @@ public class BotApplication
     }
 
     /// <summary>
+    /// Seals the middleware pipeline so that no further middleware can be added after startup.
+    /// Call this from <c>IHostedService.StartAsync</c> or any equivalent startup hook.
+    /// Any subsequent call to <see cref="UseMiddleware"/> will throw <see cref="InvalidOperationException"/> (A-020).
+    /// </summary>
+    public void FreezeMiddleware() => MiddleWare.Freeze();
+
+    /// <summary>
     /// Sends the specified activity to the conversation asynchronously.
     /// </summary>
     /// <param name="activity">The activity to send to the conversation. Cannot be null.</param>
