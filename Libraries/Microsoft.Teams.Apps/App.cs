@@ -244,7 +244,7 @@ public partial class App
     /// send an activity proactively to a channel thread.
     /// In channels, constructs a threaded conversation ID from the conversation ID
     /// and message ID, then sends to that thread.
-    /// In flat scopes (1:1, group chat, meetings), sends as a normal message -
+    /// In scopes that do not support threading (group chat, meetings), sends as a normal message -
     /// the message ID is ignored.
     /// </summary>
     /// <param name="conversationId">the channel or conversation ID</param>
