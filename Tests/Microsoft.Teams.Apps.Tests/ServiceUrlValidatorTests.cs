@@ -36,9 +36,21 @@ public class ServiceUrlValidatorTests
     [InlineData("https://evil.com")]
     [InlineData("https://botframework.com.evil.com")]
     [InlineData("https://attacker.net/api")]
+    [InlineData("https://attacker.trafficmanager.net")]
     public void IsAllowed_RejectsUnknownDomains(string serviceUrl)
     {
         Assert.False(ServiceUrlValidator.IsAllowed(serviceUrl));
+    }
+
+    // --- Trafficmanager narrowing ---
+
+    [Theory]
+    [InlineData("https://smba.trafficmanager.net/teams/")]
+    [InlineData("https://smba.trafficmanager.net/amer/")]
+    [InlineData("https://smba.onyx.prod.teams.trafficmanager.net")]
+    public void IsAllowed_AcceptsSmbaTrafficManager(string serviceUrl)
+    {
+        Assert.True(ServiceUrlValidator.IsAllowed(serviceUrl));
     }
 
     // --- Empty / null ---

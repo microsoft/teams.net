@@ -16,7 +16,6 @@ public static class ServiceUrlValidator
     [
         // Public cloud
         ".botframework.com",
-        ".trafficmanager.net",
         // US Government
         ".botframework.azure.us",
         ".teams.microsoft.com",
@@ -43,6 +42,10 @@ public static class ServiceUrlValidator
 
         if (hostname is "localhost" or "127.0.0.1")
             return true;
+
+        // trafficmanager.net is a shared Azure service; only allow smba-prefixed hostnames
+        if (hostname.EndsWith(".trafficmanager.net") || hostname == "trafficmanager.net")
+            return hostname.StartsWith("smba");
 
         var allDomains = additionalDomains is not null
             ? DefaultAllowedDomains.Concat(additionalDomains)
