@@ -8,7 +8,10 @@ namespace Microsoft.Teams.Apps;
 public partial interface IContext<TActivity>
 {
     /// <summary>
-    /// send an activity to the conversation
+    /// send an activity in the current conversation without quoting.
+    /// In channels, sends to the current thread. In flat scopes (1:1,
+    /// group chat, meetings), sends as a normal message.
+    /// To send with a visual quote of the inbound message, use <see cref="Reply{T}"/>.
     /// </summary>
     /// <param name="activity">activity activity to send</param>
     /// <param name="cancellationToken">optional cancellation token</param>
@@ -29,7 +32,10 @@ public partial interface IContext<TActivity>
     public Task<MessageActivity> Send(Cards.AdaptiveCard card, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// send an activity to the conversation as a reply
+    /// send an activity in the current conversation with a visual quote
+    /// of the inbound message. In channels, sends to the current thread
+    /// with a quoted reply. In flat scopes, sends with a quoted reply.
+    /// To send without quoting, use <see cref="Send{T}"/>.
     /// </summary>
     /// <param name="activity">activity activity to send</param>
     /// <param name="cancellationToken">optional cancellation token</param>
