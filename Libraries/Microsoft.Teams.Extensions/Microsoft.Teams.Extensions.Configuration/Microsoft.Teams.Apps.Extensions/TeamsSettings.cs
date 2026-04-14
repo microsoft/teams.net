@@ -11,6 +11,7 @@ public class TeamsSettings
     public string? ClientSecret { get; set; }
     public string? TenantId { get; set; }
     public string? Cloud { get; set; }
+    public string[]? AdditionalAllowedDomains { get; set; }
 
     /// <summary>Override the Azure AD login endpoint.</summary>
     public string? LoginEndpoint { get; set; }
@@ -78,6 +79,11 @@ public class TeamsSettings
         else if (options.Credentials is ClientCredentials existingCredentials)
         {
             existingCredentials.Cloud = cloud;
+        }
+
+        if (AdditionalAllowedDomains is { Length: > 0 })
+        {
+            options.AdditionalAllowedDomains = AdditionalAllowedDomains;
         }
 
         return options;
