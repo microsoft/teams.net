@@ -51,6 +51,6 @@ public static class ServiceUrlValidator
             ? DefaultAllowedDomains.Concat(additionalDomains)
             : DefaultAllowedDomains;
 
-        return allDomains.Any(domain => hostname.EndsWith(domain.ToLowerInvariant()));
+        return allDomains.Any(domain => domain == "*" || hostname.EndsWith(domain.ToLowerInvariant()));
     }
 }

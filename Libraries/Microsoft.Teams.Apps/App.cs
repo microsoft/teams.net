@@ -41,7 +41,6 @@ public partial class App
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
 
-    private readonly bool _skipServiceUrlValidation;
     private readonly IEnumerable<string>? _additionalAllowedDomains;
     internal string UserAgent
     {
@@ -62,7 +61,6 @@ public partial class App
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
-        _skipServiceUrlValidation = options?.SkipServiceUrlValidation ?? false;
         _additionalAllowedDomains = options?.AdditionalAllowedDomains;
 
         TokenClient = new Common.Http.HttpClient();
@@ -388,7 +386,7 @@ public partial class App
         Logger.Debug(path);
 
         var serviceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl;
-        if (!_skipServiceUrlValidation && !ServiceUrlValidator.IsAllowed(serviceUrl, _additionalAllowedDomains))
+        if (!ServiceUrlValidator.IsAllowed(serviceUrl, _additionalAllowedDomains))
         {
             throw new InvalidOperationException($"Service URL '{serviceUrl}' is not from an allowed domain");
         }
