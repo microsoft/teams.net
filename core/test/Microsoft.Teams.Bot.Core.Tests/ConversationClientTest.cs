@@ -604,6 +604,459 @@ public class ConversationClientTest
         }
     }
 
+    #region Targeted Operation Tests
+
+    [Fact]
+    public async Task UpdateTargetedActivity()
+    {
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+
+        // First send a targeted activity
+        CoreActivity activity = CoreActivity.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithServiceUrl(_serviceUrl)
+            .WithConversation(new(_conversationId))
+            .WithFrom(_recipient)
+            .WithRecipient(new ConversationAccount() { Id = userId }, isTargeted: true)
+            .WithProperty("text", $"Targeted message for UpdateTargeted test at `{DateTime.UtcNow:s}`")
+            .Build();
+
+        SendActivityResponse? sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        Assert.NotNull(sendResponse);
+        Assert.NotNull(sendResponse.Id);
+
+        // Now update it as targeted
+        CoreActivity updatedActivity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"Updated targeted message at `{DateTime.UtcNow:s}`" } },
+            ServiceUrl = _serviceUrl,
+        };
+
+        UpdateActivityResponse updateResponse = await _conversationClient.UpdateTargetedActivityAsync(
+            _conversationId,
+            sendResponse.Id,
+            updatedActivity,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(updateResponse);
+        Assert.NotNull(updateResponse.Id);
+    }
+
+    [Fact]
+    public async Task DeleteTargetedActivity()
+    {
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+
+        // First send a targeted activity
+        CoreActivity activity = CoreActivity.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithServiceUrl(_serviceUrl)
+            .WithConversation(new(_conversationId))
+            .WithFrom(_recipient)
+            .WithRecipient(new ConversationAccount() { Id = userId }, isTargeted: true)
+            .WithProperty("text", $"Targeted message to delete at `{DateTime.UtcNow:s}`")
+            .Build();
+
+        SendActivityResponse? sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        Assert.NotNull(sendResponse);
+        Assert.NotNull(sendResponse.Id);
+
+        await Task.Delay(TimeSpan.FromSeconds(2));
+
+        await _conversationClient.DeleteTargetedActivityAsync(
+            _conversationId,
+            sendResponse.Id,
+            _serviceUrl,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        // If no exception was thrown, the delete was successful
+    }
+
+    [Fact]
+    public async Task DeleteActivity_WithCoreActivityOverload()
+    {
+        // First send an activity
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"Message to delete via CoreActivity overload at `{DateTime.UtcNow:s}`" } },
+            ServiceUrl = _serviceUrl,
+            Conversation = new(_conversationId),
+            From = _recipient
+        };
+
+        SendActivityResponse? sendResponse = await _conversationClient.SendActivityAsync(activity, cancellationToken: CancellationToken.None);
+        Assert.NotNull(sendResponse);
+        Assert.NotNull(sendResponse.Id);
+
+        await Task.Delay(TimeSpan.FromSeconds(2));
+
+        // Delete using the CoreActivity overload
+        CoreActivity deleteActivity = new()
+        {
+            Id = sendResponse.Id,
+            ServiceUrl = _serviceUrl,
+            Conversation = new(_conversationId),
+            From = _recipient
+        };
+
+        await _conversationClient.DeleteActivityAsync(deleteActivity, cancellationToken: CancellationToken.None);
+
+        // If no exception was thrown, the delete was successful
+    }
+
+    #endregion
+
+    #region Argument Validation Tests
+
+    [Fact]
+    public async Task SendActivityAsync_ThrowsOnNullActivity()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.SendActivityAsync(null!));
+    }
+
+    [Fact]
+    public async Task SendActivityAsync_ThrowsOnNullConversation()
+    {
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            ServiceUrl = _serviceUrl,
+            Conversation = null!
+        };
+
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.SendActivityAsync(activity));
+    }
+
+    [Fact]
+    public async Task SendActivityAsync_ThrowsOnNullServiceUrl()
+    {
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Conversation = new(_conversationId),
+            ServiceUrl = null!
+        };
+
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.SendActivityAsync(activity));
+    }
+
+    [Fact]
+    public async Task UpdateActivityAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.UpdateActivityAsync(null!, "activityId", new CoreActivity()));
+    }
+
+    [Fact]
+    public async Task UpdateActivityAsync_ThrowsOnEmptyConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.UpdateActivityAsync("", "activityId", new CoreActivity()));
+    }
+
+    [Fact]
+    public async Task UpdateActivityAsync_ThrowsOnNullActivityId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.UpdateActivityAsync("convId", null!, new CoreActivity()));
+    }
+
+    [Fact]
+    public async Task UpdateActivityAsync_ThrowsOnNullActivity()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.UpdateActivityAsync("convId", "activityId", null!));
+    }
+
+    [Fact]
+    public async Task UpdateTargetedActivityAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.UpdateTargetedActivityAsync(null!, "activityId", new CoreActivity()));
+    }
+
+    [Fact]
+    public async Task UpdateTargetedActivityAsync_ThrowsOnNullActivityId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.UpdateTargetedActivityAsync("convId", null!, new CoreActivity()));
+    }
+
+    [Fact]
+    public async Task UpdateTargetedActivityAsync_ThrowsOnNullActivity()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.UpdateTargetedActivityAsync("convId", "activityId", null!));
+    }
+
+    [Fact]
+    public async Task DeleteActivityAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.DeleteActivityAsync(null!, "activityId", _serviceUrl));
+    }
+
+    [Fact]
+    public async Task DeleteActivityAsync_ThrowsOnNullActivityId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.DeleteActivityAsync("convId", null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task DeleteActivityAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.DeleteActivityAsync("convId", "activityId", null!));
+    }
+
+    [Fact]
+    public async Task DeleteActivityAsync_CoreActivity_ThrowsOnNullActivity()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.DeleteActivityAsync((CoreActivity)null!));
+    }
+
+    [Fact]
+    public async Task DeleteTargetedActivityAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.DeleteTargetedActivityAsync(null!, "activityId", _serviceUrl));
+    }
+
+    [Fact]
+    public async Task DeleteTargetedActivityAsync_ThrowsOnNullActivityId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.DeleteTargetedActivityAsync("convId", null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task DeleteTargetedActivityAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.DeleteTargetedActivityAsync("convId", "activityId", null!));
+    }
+
+    [Fact]
+    public async Task GetConversationMembersAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.GetConversationMembersAsync(null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task GetConversationMembersAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.GetConversationMembersAsync("convId", null!));
+    }
+
+    [Fact]
+    public async Task GetConversationMemberAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.GetConversationMemberAsync<ConversationAccount>(null!, "userId", _serviceUrl));
+    }
+
+    [Fact]
+    public async Task GetConversationMemberAsync_ThrowsOnNullUserId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.GetConversationMemberAsync<ConversationAccount>("convId", null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task GetConversationMemberAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.GetConversationMemberAsync<ConversationAccount>("convId", "userId", null!));
+    }
+
+    [Fact]
+    public async Task GetConversationsAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.GetConversationsAsync(null!));
+    }
+
+    [Fact]
+    public async Task GetActivityMembersAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.GetActivityMembersAsync(null!, "activityId", _serviceUrl));
+    }
+
+    [Fact]
+    public async Task GetActivityMembersAsync_ThrowsOnNullActivityId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.GetActivityMembersAsync("convId", null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task GetActivityMembersAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.GetActivityMembersAsync("convId", "activityId", null!));
+    }
+
+    [Fact]
+    public async Task CreateConversationAsync_ThrowsOnNullParameters()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.CreateConversationAsync(null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task CreateConversationAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.CreateConversationAsync(new ConversationParameters(), null!));
+    }
+
+    [Fact]
+    public async Task GetConversationPagedMembersAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.GetConversationPagedMembersAsync(null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task GetConversationPagedMembersAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.GetConversationPagedMembersAsync("convId", null!));
+    }
+
+    [Fact]
+    public async Task DeleteConversationMemberAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.DeleteConversationMemberAsync(null!, "memberId", _serviceUrl));
+    }
+
+    [Fact]
+    public async Task DeleteConversationMemberAsync_ThrowsOnNullMemberId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.DeleteConversationMemberAsync("convId", null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task DeleteConversationMemberAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.DeleteConversationMemberAsync("convId", "memberId", null!));
+    }
+
+    [Fact]
+    public async Task SendConversationHistoryAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.SendConversationHistoryAsync(null!, new Transcript(), _serviceUrl));
+    }
+
+    [Fact]
+    public async Task SendConversationHistoryAsync_ThrowsOnNullTranscript()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.SendConversationHistoryAsync("convId", null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task SendConversationHistoryAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.SendConversationHistoryAsync("convId", new Transcript(), null!));
+    }
+
+    [Fact]
+    public async Task UploadAttachmentAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.UploadAttachmentAsync(null!, new AttachmentData(), _serviceUrl));
+    }
+
+    [Fact]
+    public async Task UploadAttachmentAsync_ThrowsOnNullAttachmentData()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.UploadAttachmentAsync("convId", null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task UploadAttachmentAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.UploadAttachmentAsync("convId", new AttachmentData(), null!));
+    }
+
+    [Fact]
+    public async Task AddReactionAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.AddReactionAsync(null!, "activityId", "like", _serviceUrl));
+    }
+
+    [Fact]
+    public async Task AddReactionAsync_ThrowsOnNullActivityId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.AddReactionAsync("convId", null!, "like", _serviceUrl));
+    }
+
+    [Fact]
+    public async Task AddReactionAsync_ThrowsOnNullReactionType()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.AddReactionAsync("convId", "activityId", null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task AddReactionAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.AddReactionAsync("convId", "activityId", "like", null!));
+    }
+
+    [Fact]
+    public async Task DeleteReactionAsync_ThrowsOnNullConversationId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.DeleteReactionAsync(null!, "activityId", "like", _serviceUrl));
+    }
+
+    [Fact]
+    public async Task DeleteReactionAsync_ThrowsOnNullActivityId()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.DeleteReactionAsync("convId", null!, "like", _serviceUrl));
+    }
+
+    [Fact]
+    public async Task DeleteReactionAsync_ThrowsOnNullReactionType()
+    {
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _conversationClient.DeleteReactionAsync("convId", "activityId", null!, _serviceUrl));
+    }
+
+    [Fact]
+    public async Task DeleteReactionAsync_ThrowsOnNullServiceUrl()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _conversationClient.DeleteReactionAsync("convId", "activityId", "like", null!));
+    }
+
+    #endregion
+
     [Fact(Skip = "Method not allowed by API")]
     public async Task DeleteConversationMember()
     {

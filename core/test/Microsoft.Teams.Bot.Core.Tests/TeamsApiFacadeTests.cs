@@ -640,4 +640,431 @@ public class TeamsApiFacadeTests
         await Assert.ThrowsAsync<ArgumentNullException>(()
             => _teamsBotApplication.Api.Conversations.Activities.GetMembersAsync((TeamsActivity)null!));
     }
+
+    #region ConversationsApi Integration Tests
+
+    [Fact(Skip = "CreateConversation is not working with agentic identity")]
+    public async Task Api_Conversations_CreateAsync()
+    {
+        ConversationParameters parameters = new()
+        {
+            IsGroup = false,
+            Members =
+            [
+                new()
+                {
+                    Id = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set"),
+                }
+            ],
+            TenantId = Environment.GetEnvironmentVariable("AzureAd__TenantId") ?? throw new InvalidOperationException("AzureAd__TenantId environment variable not set")
+        };
+
+        CreateConversationResponse response = await _teamsBotApplication.Api.Conversations.CreateAsync(
+            parameters,
+            _serviceUrl,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(response);
+        Assert.NotNull(response.Id);
+
+        Console.WriteLine($"Created conversation via Api.Conversations.CreateAsync: {response.Id}");
+    }
+
+    #endregion
+
+    #region ReactionsApi Integration Tests
+
+    [Fact]
+    public async Task Api_Conversations_Reactions_AddAndDeleteAsync()
+    {
+        // First send an activity to react to
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"Message for Reactions facade test at `{DateTime.UtcNow:s}`" } },
+            ServiceUrl = _serviceUrl,
+            Conversation = new(_conversationId),
+            From = _recipient
+        };
+
+        SendActivityResponse? sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
+        Assert.NotNull(sendResponse?.Id);
+
+        TeamsActivity teamsActivity = new()
+        {
+            ServiceUrl = _serviceUrl,
+            Conversation = new TeamsConversation { Id = _conversationId },
+            From = TeamsConversationAccount.FromConversationAccount(_recipient)
+        };
+
+        // Add a reaction
+        await _teamsBotApplication.Api.Conversations.Reactions.AddAsync(
+            teamsActivity,
+            sendResponse.Id,
+            "laugh",
+            cancellationToken: CancellationToken.None);
+
+        await Task.Delay(500);
+
+        // Remove the reaction
+        await _teamsBotApplication.Api.Conversations.Reactions.DeleteAsync(
+            teamsActivity,
+            sendResponse.Id,
+            "laugh",
+            cancellationToken: CancellationToken.None);
+
+        Console.WriteLine($"Added and removed reaction via Api.Conversations.Reactions on activity {sendResponse.Id}");
+    }
+
+    [Fact]
+    public async Task Api_Conversations_Reactions_AddAsync_ThrowsOnNullActivity()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _teamsBotApplication.Api.Conversations.Reactions.AddAsync((TeamsActivity)null!, "activityId", "like"));
+    }
+
+    [Fact]
+    public async Task Api_Conversations_Reactions_DeleteAsync_ThrowsOnNullActivity()
+    {
+        await Assert.ThrowsAsync<ArgumentNullException>(()
+            => _teamsBotApplication.Api.Conversations.Reactions.DeleteAsync((TeamsActivity)null!, "activityId", "like"));
+    }
+
+    [Fact]
+    public async Task Api_Conversations_Reactions_AddAsync_ThrowsOnNullActivityId()
+    {
+        TeamsActivity teamsActivity = new() { ServiceUrl = _serviceUrl, Conversation = new TeamsConversation { Id = _conversationId } };
+        await Assert.ThrowsAsync<ArgumentException>(()
+            => _teamsBotApplication.Api.Conversations.Reactions.AddAsync(teamsActivity, null!, "like"));
+    }
+
+    #endregion
+
+    #region ActivitiesApi Missing Integration Tests
+
+    [Fact(Skip = "Unknown activity type error")]
+    public async Task Api_Conversations_Activities_SendHistoryAsync()
+    {
+        TeamsActivity teamsActivity = new()
+        {
+            ServiceUrl = _serviceUrl,
+            Conversation = new TeamsConversation { Id = _conversationId },
+            From = TeamsConversationAccount.FromConversationAccount(_recipient)
+        };
+
+        Transcript transcript = new()
+        {
+            Activities =
+            [
+                new()
+                {
+                    Type = ActivityType.Message,
+                    Id = Guid.NewGuid().ToString(),
+                    Properties = { { "text", "Historic message via facade" } },
+                    ServiceUrl = _serviceUrl,
+                    Conversation = new(_conversationId)
+                }
+            ]
+        };
+
+        SendConversationHistoryResponse response = await _teamsBotApplication.Api.Conversations.Activities.SendHistoryAsync(
+            teamsActivity,
+            transcript,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(response);
+        Console.WriteLine($"Sent conversation history via facade: {response.Id}");
+    }
+
+    #endregion
+
+    #region MembersApi Missing Integration Tests
+
+    [Fact(Skip = "Method not allowed by API")]
+    public async Task Api_Conversations_Members_DeleteAsync()
+    {
+        string memberToDelete = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+
+        TeamsActivity teamsActivity = new()
+        {
+            ServiceUrl = _serviceUrl,
+            Conversation = new TeamsConversation { Id = _conversationId },
+            From = TeamsConversationAccount.FromConversationAccount(_recipient)
+        };
+
+        await _teamsBotApplication.Api.Conversations.Members.DeleteAsync(
+            teamsActivity,
+            memberToDelete,
+            cancellationToken: CancellationToken.None);
+
+        Console.WriteLine($"Deleted member {memberToDelete} via Api.Conversations.Members.DeleteAsync");
+    }
+
+    #endregion
+
+    #region MeetingsApi Missing Integration Tests
+
+    [Fact(Skip = "Requires active meeting context")]
+    public async Task Api_Meetings_SendNotificationAsync()
+    {
+        string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
+        string participantId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+
+        var notification = new TargetedMeetingNotification
+        {
+            Value = new TargetedMeetingNotificationValue
+            {
+                Recipients = [participantId],
+                Surfaces =
+                [
+                    new MeetingNotificationSurface
+                    {
+                        Surface = "meetingStage",
+                        ContentType = "task",
+                        Content = new { title = "Test Notification", url = "https://example.com" }
+                    }
+                ]
+            }
+        };
+
+        MeetingNotificationResponse result = await _teamsBotApplication.Api.Meetings.SendNotificationAsync(
+            meetingId,
+            notification,
+            _serviceUrl,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(result);
+        Console.WriteLine($"Meeting notification sent via facade to meeting {meetingId}");
+    }
+
+    #endregion
+
+    #region BatchApi Missing Integration Tests
+
+    [Fact(Skip = "Batch operations require special permissions")]
+    public async Task Api_Batch_SendToUsersAsync()
+    {
+        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"Batch message via facade at `{DateTime.UtcNow:s}`" } }
+        };
+
+        string operationId = await _teamsBotApplication.Api.Batch.SendToUsersAsync(
+            activity,
+            [new TeamMember(userId)],
+            tenantId,
+            _serviceUrl,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(operationId);
+        Assert.NotEmpty(operationId);
+        Console.WriteLine($"Batch SendToUsers via facade. Operation ID: {operationId}");
+    }
+
+    [Fact(Skip = "Batch operations require special permissions")]
+    public async Task Api_Batch_SendToTenantAsync()
+    {
+        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"Tenant-wide message via facade at `{DateTime.UtcNow:s}`" } }
+        };
+
+        string operationId = await _teamsBotApplication.Api.Batch.SendToTenantAsync(
+            activity,
+            tenantId,
+            _serviceUrl,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(operationId);
+        Assert.NotEmpty(operationId);
+        Console.WriteLine($"Batch SendToTenant via facade. Operation ID: {operationId}");
+    }
+
+    [Fact(Skip = "Batch operations require special permissions")]
+    public async Task Api_Batch_SendToTeamAsync()
+    {
+        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string teamId = Environment.GetEnvironmentVariable("TEST_TEAMID") ?? throw new InvalidOperationException("TEST_TEAMID environment variable not set");
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"Team-wide message via facade at `{DateTime.UtcNow:s}`" } }
+        };
+
+        string operationId = await _teamsBotApplication.Api.Batch.SendToTeamAsync(
+            activity,
+            teamId,
+            tenantId,
+            _serviceUrl,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(operationId);
+        Assert.NotEmpty(operationId);
+        Console.WriteLine($"Batch SendToTeam via facade. Operation ID: {operationId}");
+    }
+
+    [Fact(Skip = "Batch operations require special permissions")]
+    public async Task Api_Batch_SendToChannelsAsync()
+    {
+        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string channelId = Environment.GetEnvironmentVariable("TEST_CHANNELID") ?? throw new InvalidOperationException("TEST_CHANNELID environment variable not set");
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"Channel batch message via facade at `{DateTime.UtcNow:s}`" } }
+        };
+
+        string operationId = await _teamsBotApplication.Api.Batch.SendToChannelsAsync(
+            activity,
+            [new TeamMember(channelId)],
+            tenantId,
+            _serviceUrl,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(operationId);
+        Assert.NotEmpty(operationId);
+        Console.WriteLine($"Batch SendToChannels via facade. Operation ID: {operationId}");
+    }
+
+    [Fact(Skip = "Requires valid operation ID from batch operation")]
+    public async Task Api_Batch_GetFailedEntriesAsync()
+    {
+        string operationId = Environment.GetEnvironmentVariable("TEST_OPERATION_ID") ?? throw new InvalidOperationException("TEST_OPERATION_ID environment variable not set");
+
+        BatchFailedEntriesResponse result = await _teamsBotApplication.Api.Batch.GetFailedEntriesAsync(
+            operationId,
+            _serviceUrl,
+            agenticIdentity: _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(result);
+        Console.WriteLine($"Failed entries via facade for operation {operationId}");
+    }
+
+    [Fact(Skip = "Requires valid operation ID from batch operation")]
+    public async Task Api_Batch_CancelAsync()
+    {
+        string operationId = Environment.GetEnvironmentVariable("TEST_OPERATION_ID") ?? throw new InvalidOperationException("TEST_OPERATION_ID environment variable not set");
+
+        await _teamsBotApplication.Api.Batch.CancelAsync(
+            operationId,
+            _serviceUrl,
+            _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+
+        Console.WriteLine($"Operation {operationId} cancelled via facade");
+    }
+
+    #endregion
+
+    #region UserTokenApi Integration Tests
+
+    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    public async Task Api_Users_Token_GetAsync()
+    {
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+        string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME") ?? throw new InvalidOperationException("TEST_CONNECTION_NAME environment variable not set");
+
+        var result = await _teamsBotApplication.Api.Users.Token.GetAsync(
+            userId,
+            connectionName,
+            "msteams",
+            cancellationToken: CancellationToken.None);
+
+        Console.WriteLine($"GetAsync result: {(result != null ? "Token found" : "No token")}");
+    }
+
+    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    public async Task Api_Users_Token_GetStatusAsync()
+    {
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+
+        var result = await _teamsBotApplication.Api.Users.Token.GetStatusAsync(
+            userId,
+            "msteams",
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(result);
+        Console.WriteLine($"Token status results: {result.Length}");
+    }
+
+    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    public async Task Api_Users_Token_GetSignInResourceAsync()
+    {
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+        string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME") ?? throw new InvalidOperationException("TEST_CONNECTION_NAME environment variable not set");
+
+        var result = await _teamsBotApplication.Api.Users.Token.GetSignInResourceAsync(
+            userId,
+            connectionName,
+            "msteams",
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.NotNull(result.SignInLink);
+        Console.WriteLine($"Sign-in resource via facade: {result.SignInLink}");
+    }
+
+    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    public async Task Api_Users_Token_ExchangeAsync()
+    {
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+        string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME") ?? throw new InvalidOperationException("TEST_CONNECTION_NAME environment variable not set");
+
+        var result = await _teamsBotApplication.Api.Users.Token.ExchangeAsync(
+            userId,
+            connectionName,
+            "msteams",
+            "test-exchange-token",
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(result);
+        Console.WriteLine($"Exchange token via facade: Token={result.Token != null}");
+    }
+
+    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    public async Task Api_Users_Token_SignOutAsync()
+    {
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+
+        await _teamsBotApplication.Api.Users.Token.SignOutAsync(
+            userId,
+            cancellationToken: CancellationToken.None);
+
+        Console.WriteLine("SignOutAsync completed via facade");
+    }
+
+    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    public async Task Api_Users_Token_GetAadTokensAsync()
+    {
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+        string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME") ?? throw new InvalidOperationException("TEST_CONNECTION_NAME environment variable not set");
+
+        var result = await _teamsBotApplication.Api.Users.Token.GetAadTokensAsync(
+            userId,
+            connectionName,
+            "msteams",
+            ["https://graph.microsoft.com"],
+            cancellationToken: CancellationToken.None);
+
+        Assert.NotNull(result);
+        Console.WriteLine($"AAD tokens via facade: {result.Count} entries");
+    }
+
+    #endregion
 }

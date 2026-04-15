@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Apps;
@@ -48,6 +49,7 @@ public static class TeamsBotApplicationHostingExtensions
         services.AddBotClient<TeamsApiClient>(TeamsApiClient.TeamsHttpClientName, botConfig);
 
         services.AddBotApplication<TApp>(botConfig);
+        services.AddSingleton<ApiClientFactory>();
         return services;
     }
 
