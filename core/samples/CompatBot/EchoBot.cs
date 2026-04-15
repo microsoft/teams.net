@@ -44,7 +44,7 @@ internal class EchoBot(TeamsBotApplication teamsBotApp, ConversationState conver
         // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
 
         var incomingCoreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
-        TeamsActivity tm = TeamsActivity.CreateBuilder()
+        MessageActivity tm = MessageActivity.CreateBuilder()
             .WithConversation(new Conversation { Id = incomingCoreActivity.Conversation?.Id! })
             .WithText("Hello TM !")
             .WithRecipient(incomingCoreActivity.From, true)

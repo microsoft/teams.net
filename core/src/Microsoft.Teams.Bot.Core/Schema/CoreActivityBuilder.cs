@@ -34,7 +34,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="activity">The source activity to copy conversation reference from.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithConversationReference(TActivity activity)
+    public TBuilder WithConversationReference(CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(activity.ChannelId);

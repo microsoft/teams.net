@@ -32,7 +32,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <returns></returns>
     public Task<SendActivityResponse?> SendActivityAsync(string text, CancellationToken cancellationToken = default)
         => TeamsBotApplication.SendActivityAsync(
-            new TeamsActivityBuilder()
+            MessageActivity.CreateBuilder()
                 .WithConversationReference(Activity)
                 .WithText(text)
                 .Build(), cancellationToken);

@@ -121,8 +121,7 @@ public class TeamsActivityTests
     [Fact]
     public void TeamsActivityBuilder_FluentAPI()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .WithText("Hello World")
             .WithChannelId("msteams")
             .AddMention(new ConversationAccount
@@ -133,7 +132,7 @@ public class TeamsActivityTests
             .Build();
 
         Assert.Equal(ActivityType.Message, activity.Type);
-        Assert.Equal("<at>TestUser</at> Hello World", activity.Properties["text"]);
+        Assert.Equal("<at>TestUser</at> Hello World", activity.Text);
         Assert.Equal("msteams", activity.ChannelId);
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
@@ -147,8 +146,7 @@ public class TeamsActivityTests
     [Fact]
     public void Serialize_TeamsActivity_WithEntities()
     {
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
+        MessageActivity activity = MessageActivity.CreateBuilder()
             .WithText("Hello World")
             .WithChannelId("msteams")
             .Build();

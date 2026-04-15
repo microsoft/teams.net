@@ -2,8 +2,49 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
+
+/// <summary>
+/// Extension methods for activity stream info.
+/// </summary>
+public static class ActivityStreamInfoExtensions
+{
+    /// <summary>
+    /// Adds a stream info entity to the activity.
+    /// </summary>
+    /// <param name="activity">The activity to add stream info to. Cannot be null.</param>
+    /// <param name="streamType">The stream type. See <see cref="StreamType"/> for possible values.</param>
+    /// <param name="streamId">Optional stream identifier.</param>
+    /// <param name="streamSequence">Optional stream sequence number.</param>
+    /// <returns>The created StreamInfoEntity that was added to the activity.</returns>
+    public static StreamInfoEntity AddStreamInfo(this TeamsActivity activity, string streamType, string? streamId = null, int? streamSequence = null)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        StreamInfoEntity streamInfo = new()
+        {
+            StreamType = streamType,
+            StreamId = streamId,
+            StreamSequence = streamSequence
+        };
+        activity.Entities ??= [];
+        activity.Entities.Add(streamInfo);
+        activity.Rebase();
+        return streamInfo;
+    }
+
+    /// <summary>
+    /// Gets the stream info entity from the activity's entity collection, if present.
+    /// </summary>
+    /// <param name="activity">The activity to read from. Cannot be null.</param>
+    /// <returns>The StreamInfoEntity if found; otherwise, null.</returns>
+    public static StreamInfoEntity? GetStreamInfo(this TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return activity.Entities?.FirstOrDefault(e => e is StreamInfoEntity) as StreamInfoEntity;
+    }
+}
 
 /// <summary>
 /// Stream info entity.

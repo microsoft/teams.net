@@ -91,16 +91,6 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
-    public void WithText_SetsTextContent()
-    {
-        TeamsActivity activity = builder
-            .WithText("Hello, World!")
-            .Build();
-
-        Assert.Equal("Hello, World!", activity.Properties["text"]);
-    }
-
-    [Fact]
     public void WithFrom_SetsSenderAccount()
     {
         TeamsConversationAccount? fromAccount = TeamsConversationAccount.FromConversationAccount(new ConversationAccount
@@ -138,8 +128,6 @@ public class TeamsActivityBuilderTests
     public void WithConversation_SetsConversationInfo()
     {
         Conversation baseConversation = new Conversation("conversation-id");
-
-        Assert.NotNull(baseConversation);
         baseConversation.Properties.Add("tenantId", "tenant-123");
         baseConversation.Properties.Add("conversationType", "channel");
         TeamsConversation? conversation = TeamsConversation.FromConversation(baseConversation);
@@ -211,24 +199,6 @@ public class TeamsActivityBuilderTests
         Assert.Single(activity.Attachments);
         Assert.Equal("application/json", activity.Attachments[0].ContentType);
         Assert.Equal("test-attachment", activity.Attachments[0].Name);
-    }
-
-    [Fact]
-    public void WithAttachment_SetsSingleAttachment()
-    {
-        TeamsAttachment attachment = new()
-        {
-            ContentType = "application/json",
-            Name = "single"
-        };
-
-        TeamsActivity activity = builder
-            .WithAttachment(attachment)
-            .Build();
-
-        Assert.NotNull(activity.Attachments);
-        Assert.Single(activity.Attachments);
-        Assert.Equal("single", activity.Attachments[0].Name);
     }
 
     [Fact]
@@ -307,12 +277,12 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
-    public void WithAdaptiveCardAttachment_ConfigureActionAppliesChanges()
+    public void AddAdaptiveCardAttachment_WithConfigure_AppliesChanges()
     {
         var adaptiveCard = new { type = "AdaptiveCard" };
 
         TeamsActivity activity = builder
-            .WithAdaptiveCardAttachment(adaptiveCard, b => b.WithName("feedback"))
+            .AddAdaptiveCardAttachment(adaptiveCard, b => b.WithName("feedback"))
             .Build();
 
         Assert.NotNull(activity.Attachments);
@@ -327,194 +297,24 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
-    public void AddMention_WithNullAccount_ThrowsArgumentNullException()
-    {
-        Assert.Throws<ArgumentNullException>(() => builder.AddMention(null!));
-    }
-
-    [Fact]
-    public void AddMention_WithAccountAndDefaultText_AddsMentionAndUpdatesText()
-    {
-        ConversationAccount account = new()
-        {
-            Id = "user-123",
-            Name = "John Doe"
-        };
-
-        TeamsActivity activity = builder
-            .WithText("said hello")
-            .AddMention(account)
-            .Build();
-
-        Assert.Equal("<at>John Doe</at> said hello", activity.Properties["text"]);
-        Assert.NotNull(activity.Entities);
-        Assert.Single(activity.Entities);
-
-        MentionEntity? mention = activity.Entities[0] as MentionEntity;
-        Assert.NotNull(mention);
-        Assert.Equal("user-123", mention.Mentioned?.Id);
-        Assert.Equal("John Doe", mention.Mentioned?.Name);
-        Assert.Equal("<at>John Doe</at>", mention.Text);
-    }
-
-    [Fact]
-    public void AddMention_WithCustomText_UsesCustomText()
-    {
-        ConversationAccount account = new()
-        {
-            Id = "user-123",
-            Name = "John Doe"
-        };
-
-        TeamsActivity activity = builder
-            .WithText("replied")
-            .AddMention(account, "CustomName")
-            .Build();
-
-        Assert.Equal("<at>CustomName</at> replied", activity.Properties["text"]);
-
-        MentionEntity? mention = activity.Entities![0] as MentionEntity;
-        Assert.NotNull(mention);
-        Assert.Equal("<at>CustomName</at>", mention.Text);
-    }
-
-    [Fact]
-    public void AddMention_WithAddTextFalse_DoesNotUpdateText()
-    {
-        ConversationAccount account = new()
-        {
-            Id = "user-123",
-            Name = "John Doe"
-        };
-
-        TeamsActivity activity = builder
-            .WithText("original text")
-            .AddMention(account, addText: false)
-            .Build();
-
-        Assert.Equal("original text", activity.Properties["text"]);
-        Assert.NotNull(activity.Entities);
-        Assert.Single(activity.Entities);
-    }
-
-    [Fact]
-    public void AddMention_MultipleMentions_AddsAllMentions()
-    {
-        ConversationAccount account1 = new() { Id = "user-1", Name = "User One" };
-        ConversationAccount account2 = new() { Id = "user-2", Name = "User Two" };
-
-        TeamsActivity activity = builder
-            .WithText("message")
-            .AddMention(account1)
-            .AddMention(account2)
-            .Build();
-
-        Assert.Equal("<at>User Two</at> <at>User One</at> message", activity.Properties["text"]);
-        Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities?.Count);
-    }
-
-    [Fact]
-    public void FluentAPI_CompleteActivity_BuildsCorrectly()
-    {
-        TeamsActivity activity = builder
-            .WithType(TeamsActivityType.Message)
-            .WithId("activity-123")
-            .WithChannelId("msteams")
-            .WithText("Test message")
-            .WithServiceUrl(new Uri("https://smba.trafficmanager.net/teams/"))
-            .WithFrom(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
-            {
-                Id = "sender-id",
-                Name = "Sender"
-            }))
-            .WithRecipient(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
-            {
-                Id = "recipient-id",
-                Name = "Recipient"
-            }))
-            .WithConversation(TeamsConversation.FromConversation(new Conversation
-            {
-                Id = "conv-id"
-            }))
-            .AddEntity(new ClientInfoEntity { Locale = "en-US" })
-            .AddAttachment(new TeamsAttachment { ContentType = "text/html" })
-            .AddMention(new ConversationAccount { Id = "user-1", Name = "User" })
-            .Build();
-
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
-        Assert.Equal("activity-123", activity.Id);
-        Assert.Equal("msteams", activity.ChannelId);
-        Assert.Equal("<at>User</at> Test message", activity.Properties["text"]);
-        Assert.Equal("sender-id", activity.From?.Id);
-        Assert.Equal("recipient-id", activity.Recipient?.Id);
-        Assert.Equal("conv-id", activity.Conversation?.Id);
-        Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities?.Count); // ClientInfo + Mention
-        Assert.NotNull(activity.Attachments);
-        Assert.Single(activity.Attachments);
-    }
-
-    [Fact]
     public void FluentAPI_MethodChaining_ReturnsBuilderInstance()
     {
-
         TeamsActivityBuilder result1 = builder.WithId("id");
-        TeamsActivityBuilder result2 = builder.WithText("text");
-        TeamsActivityBuilder result3 = builder.WithType(TeamsActivityType.Message);
+        TeamsActivityBuilder result2 = builder.WithType(TeamsActivityType.Message);
 
         Assert.Same(builder, result1);
         Assert.Same(builder, result2);
-        Assert.Same(builder, result3);
     }
 
     [Fact]
     public void Build_CalledMultipleTimes_ReturnsSameInstance()
     {
-        builder
-            .WithId("test-id");
+        builder.WithId("test-id");
 
         TeamsActivity activity1 = builder.Build();
         TeamsActivity activity2 = builder.Build();
 
         Assert.Same(activity1, activity2);
-    }
-
-    [Fact]
-    public void Builder_ModifyingExistingActivity_PreservesOriginalData()
-    {
-        TeamsActivity original = new()
-        {
-            Id = "original-id",
-            Type = TeamsActivityType.Message
-        };
-        original.Properties["text"] = "original text";
-
-        TeamsActivity modified = TeamsActivity.CreateBuilder(original)
-            .WithText("modified text")
-            .Build();
-
-        Assert.Equal("original-id", modified.Id);
-        Assert.Equal("modified text", modified.Properties["text"]);
-        Assert.Equal(TeamsActivityType.Message, modified.Type);
-    }
-
-    [Fact]
-    public void AddMention_UpdatesBaseEntityCollection()
-    {
-        ConversationAccount account = new()
-        {
-            Id = "user-123",
-            Name = "Test User"
-        };
-
-        TeamsActivity activity = builder
-            .AddMention(account)
-            .Build();
-
-        CoreActivity baseActivity = activity;
-        Assert.NotNull(baseActivity.Entities);
-        Assert.NotEmpty(baseActivity.Entities);
     }
 
     [Fact]
@@ -531,7 +331,6 @@ public class TeamsActivityBuilderTests
     public void AddEntity_NullEntitiesCollection_InitializesCollection()
     {
         TeamsActivity activity = builder.Build();
-
         Assert.Null(activity.Entities);
 
         ClientInfoEntity entity = new() { Locale = "en-US" };
@@ -546,7 +345,6 @@ public class TeamsActivityBuilderTests
     public void AddAttachment_NullAttachmentsCollection_InitializesCollection()
     {
         TeamsActivity activity = builder.Build();
-
         Assert.Null(activity.Attachments);
 
         TeamsAttachment attachment = new() { ContentType = "text/html" };
@@ -558,22 +356,6 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
-    public void Builder_EmptyText_AddMention_PrependsMention()
-    {
-        ConversationAccount account = new()
-        {
-            Id = "user-123",
-            Name = "User"
-        };
-
-        TeamsActivity activity = builder
-            .AddMention(account)
-            .Build();
-
-        Assert.Equal("<at>User</at> ", activity.Properties["text"]);
-    }
-
-    [Fact]
     public void WithConversationReference_WithNullActivity_ThrowsArgumentNullException()
     {
         Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(null!));
@@ -582,7 +364,6 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithConversationReference_WithNullChannelId_ThrowsArgumentNullException()
     {
-
         TeamsActivity sourceActivity = new()
         {
             ChannelId = null,
@@ -623,7 +404,6 @@ public class TeamsActivityBuilderTests
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
-
         Assert.NotNull(result.Conversation);
     }
 
@@ -640,7 +420,6 @@ public class TeamsActivityBuilderTests
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
-
         Assert.NotNull(result.From);
     }
 
@@ -657,7 +436,6 @@ public class TeamsActivityBuilderTests
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
-
         Assert.NotNull(result.From);
     }
 
@@ -736,29 +514,9 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
-    public void AddMention_WithAccountWithNullName_UsesNullText()
-    {
-        ConversationAccount account = new()
-        {
-            Id = "user-123",
-            Name = null
-        };
-
-        TeamsActivity activity = builder
-            .WithText("message")
-            .AddMention(account)
-            .Build();
-
-        Assert.Equal("<at></at> message", activity.Properties["text"]);
-        Assert.NotNull(activity.Entities);
-        Assert.Single(activity.Entities);
-    }
-
-    [Fact]
     public void Build_MultipleCalls_ReturnsRebasedActivity()
     {
-        builder
-            .AddEntity(new ClientInfoEntity { Locale = "en-US" });
+        builder.AddEntity(new ClientInfoEntity { Locale = "en-US" });
 
         TeamsActivity activity1 = builder.Build();
         CoreActivity baseActivity1 = activity1;
@@ -771,83 +529,5 @@ public class TeamsActivityBuilderTests
         Assert.Same(activity1, activity2);
         Assert.NotNull(baseActivity2.Entities);
         Assert.Equal(2, activity2.Entities!.Count);
-    }
-
-    [Fact]
-    public void IntegrationTest_CreateComplexActivity()
-    {
-        Uri serviceUrl = new("https://smba.trafficmanager.net/amer/test/");
-        TeamsChannelData channelData = new()
-        {
-            TeamsChannelId = "19:channel@thread.tacv2",
-            TeamsTeamId = "19:team@thread.tacv2"
-        };
-
-        Conversation conv = new()
-        {
-            Id = "conv-001",
-            Properties =
-            {
-                { "tenantId", "tenant-001" },
-                { "conversationType", "channel" }
-            }
-        };
-
-        TeamsConversation? tc = TeamsConversation.FromConversation(conv);
-        Assert.NotNull(tc);
-
-        TeamsActivity activity = builder
-            .WithType(TeamsActivityType.Message)
-            .WithId("msg-001")
-            .WithServiceUrl(serviceUrl)
-            .WithChannelId("msteams")
-            .WithText("Please review this document")
-            .WithFrom(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
-            {
-                Id = "bot-id",
-                Name = "Bot"
-            }))
-            .WithRecipient(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
-            {
-                Id = "user-id",
-                Name = "User"
-            }))
-            .WithConversation(tc)
-            .WithChannelData(channelData)
-            .AddEntity(new ClientInfoEntity
-            {
-                Locale = "en-US",
-                Country = "US",
-                Platform = "Web"
-            })
-            .AddAttachment(new TeamsAttachment
-            {
-                ContentType = "application/vnd.microsoft.card.adaptive",
-                Name = "adaptive-card.json"
-            })
-            .AddMention(new ConversationAccount
-            {
-                Id = "manager-id",
-                Name = "Manager"
-            }, "Manager")
-            .Build();
-
-        // Verify all properties
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
-        Assert.Equal("msg-001", activity.Id);
-        Assert.Equal(serviceUrl, activity.ServiceUrl);
-        Assert.Equal("msteams", activity.ChannelId);
-        Assert.Equal("<at>Manager</at> Please review this document", activity.Properties["text"]);
-        Assert.Equal("bot-id", activity.From?.Id);
-        Assert.Equal("user-id", activity.Recipient?.Id);
-        Assert.Equal("conv-001", activity.Conversation?.Id);
-        Assert.Equal("tenant-001", activity.Conversation?.TenantId);
-        Assert.Equal("channel", activity.Conversation?.ConversationType);
-        Assert.NotNull(activity.ChannelData);
-        Assert.Equal("19:channel@thread.tacv2", activity.ChannelData?.TeamsChannelId);
-        Assert.NotNull(activity.Entities);
-        Assert.Equal(2, activity.Entities?.Count); // ClientInfo + Mention
-        Assert.NotNull(activity.Attachments);
-        Assert.Single(activity.Attachments);
     }
 }

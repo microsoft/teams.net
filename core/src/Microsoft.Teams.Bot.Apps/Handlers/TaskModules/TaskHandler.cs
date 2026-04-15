@@ -5,7 +5,7 @@ using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Handlers;
+namespace Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 
 /// <summary>
 /// Delegate for handling task module invoke activities.

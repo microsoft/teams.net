@@ -65,74 +65,79 @@ public class TeamsChannelData : ChannelData
     /// Creates a new instance of the <see cref="TeamsChannelData"/> class from the specified <see cref="ChannelData"/> object.
     /// </summary>
     /// <param name="cd"></param>
-    public TeamsChannelData(ChannelData? cd)
+    public static TeamsChannelData? FromChannelData(ChannelData? cd)
     {
-        if (cd is not null)
+        if (cd is null)
         {
-            //TODO : is channel id needed ? what is teamschannleid and teamsteamid ?
-            if (cd.Properties.TryGetValue("teamsChannelId", out object? channelIdObj)
-                && channelIdObj is JsonElement jeChannelId
-                && jeChannelId.ValueKind == JsonValueKind.String)
-            {
-                TeamsChannelId = jeChannelId.GetString();
-            }
-
-            if (cd.Properties.TryGetValue("teamsTeamId", out object? teamIdObj)
-                && teamIdObj is JsonElement jeTeamId
-                && jeTeamId.ValueKind == JsonValueKind.String)
-            {
-                TeamsTeamId = jeTeamId.GetString();
-            }
-
-            if (cd.Properties.TryGetValue("settings", out object? settingsObj)
-                && settingsObj is JsonElement settingsObjJE
-                && settingsObjJE.ValueKind == JsonValueKind.Object)
-            {
-                Settings = JsonSerializer.Deserialize<TeamsChannelDataSettings?>(settingsObjJE.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("channel", out object? channelObj)
-                && channelObj is JsonElement channelObjJE
-                && channelObjJE.ValueKind == JsonValueKind.Object)
-            {
-                Channel = JsonSerializer.Deserialize<TeamsChannel?>(channelObjJE.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("tenant", out object? tenantObj)
-                && tenantObj is JsonElement je
-                && je.ValueKind == JsonValueKind.Object)
-            {
-                Tenant = JsonSerializer.Deserialize<TeamsChannelDataTenant>(je.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("eventType", out object? eventTypeObj)
-                && eventTypeObj is JsonElement jeEventType
-                && jeEventType.ValueKind == JsonValueKind.String)
-            {
-                EventType = jeEventType.GetString();
-            }
-
-            if (cd.Properties.TryGetValue("team", out object? teamObj)
-                && teamObj is JsonElement teamObjJE
-                && teamObjJE.ValueKind == JsonValueKind.Object)
-            {
-                Team = JsonSerializer.Deserialize<Team?>(teamObjJE.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("source", out object? sourceObj)
-                && sourceObj is JsonElement sourceObjJE
-                && sourceObjJE.ValueKind == JsonValueKind.Object)
-            {
-                Source = JsonSerializer.Deserialize<TeamsChannelDataSource?>(sourceObjJE.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("feedbackLoopEnabled", out object? feedbackObj)
-                && feedbackObj is JsonElement jeFeedback
-                && jeFeedback.ValueKind is JsonValueKind.True or JsonValueKind.False)
-            {
-                FeedbackLoopEnabled = jeFeedback.GetBoolean();
-            }
+            return null;
         }
+
+        TeamsChannelData result = new();
+
+        //TODO : is channel id needed ? what is teamschannleid and teamsteamid ?
+        if (cd.Properties.TryGetValue("teamsChannelId", out object? channelIdObj)
+            && channelIdObj is JsonElement jeChannelId
+            && jeChannelId.ValueKind == JsonValueKind.String)
+        {
+            result.TeamsChannelId = jeChannelId.GetString();
+        }
+
+        if (cd.Properties.TryGetValue("teamsTeamId", out object? teamIdObj)
+            && teamIdObj is JsonElement jeTeamId
+            && jeTeamId.ValueKind == JsonValueKind.String)
+        {
+            result.TeamsTeamId = jeTeamId.GetString();
+        }
+
+        if (cd.Properties.TryGetValue("settings", out object? settingsObj)
+            && settingsObj is JsonElement settingsObjJE
+            && settingsObjJE.ValueKind == JsonValueKind.Object)
+        {
+            result.Settings = JsonSerializer.Deserialize<TeamsChannelDataSettings?>(settingsObjJE.GetRawText());
+        }
+
+        if (cd.Properties.TryGetValue("channel", out object? channelObj)
+            && channelObj is JsonElement channelObjJE
+            && channelObjJE.ValueKind == JsonValueKind.Object)
+        {
+            result.Channel = JsonSerializer.Deserialize<TeamsChannel?>(channelObjJE.GetRawText());
+        }
+
+        if (cd.Properties.TryGetValue("tenant", out object? tenantObj)
+            && tenantObj is JsonElement je
+            && je.ValueKind == JsonValueKind.Object)
+        {
+            result.Tenant = JsonSerializer.Deserialize<TeamsChannelDataTenant>(je.GetRawText());
+        }
+
+        if (cd.Properties.TryGetValue("eventType", out object? eventTypeObj)
+            && eventTypeObj is JsonElement jeEventType
+            && jeEventType.ValueKind == JsonValueKind.String)
+        {
+            result.EventType = jeEventType.GetString();
+        }
+
+        if (cd.Properties.TryGetValue("team", out object? teamObj)
+            && teamObj is JsonElement teamObjJE
+            && teamObjJE.ValueKind == JsonValueKind.Object)
+        {
+            result.Team = JsonSerializer.Deserialize<Team?>(teamObjJE.GetRawText());
+        }
+
+        if (cd.Properties.TryGetValue("source", out object? sourceObj)
+            && sourceObj is JsonElement sourceObjJE
+            && sourceObjJE.ValueKind == JsonValueKind.Object)
+        {
+            result.Source = JsonSerializer.Deserialize<TeamsChannelDataSource?>(sourceObjJE.GetRawText());
+        }
+
+        if (cd.Properties.TryGetValue("feedbackLoopEnabled", out object? feedbackObj)
+            && feedbackObj is JsonElement jeFeedback
+            && jeFeedback.ValueKind is JsonValueKind.True or JsonValueKind.False)
+        {
+            result.FeedbackLoopEnabled = jeFeedback.GetBoolean();
+        }
+        return result;
     }
 
 
