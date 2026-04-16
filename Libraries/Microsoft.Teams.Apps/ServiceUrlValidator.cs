@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Api.Auth;
+
 namespace Microsoft.Teams.Apps;
 
 /// <summary>
@@ -9,28 +11,12 @@ namespace Microsoft.Teams.Apps;
 public static class ServiceUrlValidator
 {
     /// <summary>
-    /// Default allowed service URL domain suffixes for Bot Framework.
-    /// Covers public, government, sovereign, and regional clouds.
+    /// Validates that a service URL hostname is allowed.
+    /// Checks against the cloud environment's allowed service URLs,
+    /// plus any additional domains provided by the caller.
+    /// Localhost is always allowed for local development.
     /// </summary>
-    private static readonly string[] DefaultAllowedDomains =
-    [
-        // Public cloud
-        ".botframework.com",
-        // US Government
-        ".botframework.azure.us",
-        ".teams.microsoft.com",
-        ".teams.microsoft.us",
-        // China (21Vianet)
-        ".botframework.azure.cn",
-        ".teams.microsoftonline.cn",
-    ];
-
-    /// <summary>
-    /// Validates that a service URL belongs to a known allowed domain.
-    /// Returns true if the URL's hostname ends with one of the allowed domain suffixes,
-    /// or if the hostname is localhost (for local development).
-    /// </summary>
-    public static bool IsAllowed(string serviceUrl, IEnumerable<string>? additionalDomains = null)
+    public static bool IsAllowed(string serviceUrl, CloudEnvironment cloud, IEnumerable<string>? additionalDomains = null)
     {
         if (string.IsNullOrEmpty(serviceUrl))
             return true; // No URL to validate
@@ -43,14 +29,15 @@ public static class ServiceUrlValidator
         if (hostname is "localhost" or "127.0.0.1")
             return true;
 
-        // trafficmanager.net is a shared Azure service; only allow smba-prefixed hostnames
-        if (hostname.EndsWith(".trafficmanager.net") || hostname == "trafficmanager.net")
-            return hostname.StartsWith("smba");
+        var additional = additionalDomains?.ToList() ?? [];
+        if (additional.Contains("*"))
+            return true;
 
-        var allDomains = additionalDomains is not null
-            ? DefaultAllowedDomains.Concat(additionalDomains)
-            : DefaultAllowedDomains;
+        // Check against cloud environment's allowed FQDNs
+        if (cloud.AllowedServiceUrls.Any(allowed => hostname == allowed.ToLowerInvariant()))
+            return true;
 
-        return allDomains.Any(domain => domain == "*" || hostname.EndsWith(domain.ToLowerInvariant()));
+        // Check against additional domains (suffix match)
+        return additional.Any(domain => hostname.EndsWith(domain.ToLowerInvariant()));
     }
 }
