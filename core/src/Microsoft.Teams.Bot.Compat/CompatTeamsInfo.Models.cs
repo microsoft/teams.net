@@ -20,98 +20,98 @@ internal static class CompatTeamsInfoModels
         return channelData?.Meeting;
     }
 
-    /// <summary>
-    /// Converts a Core BatchOperationState to a Bot Framework BatchOperationState.
-    /// </summary>
-    /// <param name="state">The source state.</param>
-    /// <returns>The converted Bot Framework BatchOperationState.</returns>
-    public static Microsoft.Bot.Schema.Teams.BatchOperationState ToCompatBatchOperationState(this Microsoft.Teams.Bot.Apps.BatchOperationState state)
-    {
-        ArgumentNullException.ThrowIfNull(state);
+    ///// <summary>
+    ///// Converts a Core BatchOperationState to a Bot Framework BatchOperationState.
+    ///// </summary>
+    ///// <param name="state">The source state.</param>
+    ///// <returns>The converted Bot Framework BatchOperationState.</returns>
+    //public static Microsoft.Bot.Schema.Teams.BatchOperationState ToCompatBatchOperationState(this Microsoft.Teams.Bot.Apps.Api.BatchOperationState state)
+    //{
+    //    ArgumentNullException.ThrowIfNull(state);
 
-        BatchOperationState result = new()
-        {
-            State = state.State,
-            RetryAfter = state.RetryAfter?.DateTime,
-            TotalEntriesCount = state.TotalEntriesCount ?? 0
-        };
+    //    BatchOperationState result = new()
+    //    {
+    //        State = state.State,
+    //        RetryAfter = state.RetryAfter?.DateTime,
+    //        TotalEntriesCount = state.TotalEntriesCount ?? 0
+    //    };
 
-        // StatusMap in Bot Framework SDK is IDictionary<int, int> (read-only property)
-        // Map from BatchOperationStatusMap to the dictionary format
-        if (state.StatusMap != null)
-        {
-            if (state.StatusMap.Success.HasValue)
-            {
-                result.StatusMap[0] = state.StatusMap.Success.Value;
-            }
+    //    // StatusMap in Bot Framework SDK is IDictionary<int, int> (read-only property)
+    //    // Map from BatchOperationStatusMap to the dictionary format
+    //    if (state.StatusMap != null)
+    //    {
+    //        if (state.StatusMap.Success.HasValue)
+    //        {
+    //            result.StatusMap[0] = state.StatusMap.Success.Value;
+    //        }
 
-            if (state.StatusMap.Failed.HasValue)
-            {
-                result.StatusMap[1] = state.StatusMap.Failed.Value;
-            }
+    //        if (state.StatusMap.Failed.HasValue)
+    //        {
+    //            result.StatusMap[1] = state.StatusMap.Failed.Value;
+    //        }
 
-            if (state.StatusMap.Throttled.HasValue)
-            {
-                result.StatusMap[2] = state.StatusMap.Throttled.Value;
-            }
+    //        if (state.StatusMap.Throttled.HasValue)
+    //        {
+    //            result.StatusMap[2] = state.StatusMap.Throttled.Value;
+    //        }
 
-            if (state.StatusMap.Pending.HasValue)
-            {
-                result.StatusMap[3] = state.StatusMap.Pending.Value;
-            }
-        }
+    //        if (state.StatusMap.Pending.HasValue)
+    //        {
+    //            result.StatusMap[3] = state.StatusMap.Pending.Value;
+    //        }
+    //    }
 
-        return result;
-    }
+    //    return result;
+    //}
 
-    /// <summary>
-    /// Converts a Core BatchFailedEntriesResponse to a Bot Framework BatchFailedEntriesResponse.
-    /// </summary>
-    /// <param name="response">The source response.</param>
-    /// <returns>The converted Bot Framework BatchFailedEntriesResponse.</returns>
-    public static Microsoft.Bot.Schema.Teams.BatchFailedEntriesResponse ToCompatBatchFailedEntriesResponse(this Microsoft.Teams.Bot.Apps.BatchFailedEntriesResponse response)
-    {
-        ArgumentNullException.ThrowIfNull(response);
+    ///// <summary>
+    ///// Converts a Core BatchFailedEntriesResponse to a Bot Framework BatchFailedEntriesResponse.
+    ///// </summary>
+    ///// <param name="response">The source response.</param>
+    ///// <returns>The converted Bot Framework BatchFailedEntriesResponse.</returns>
+    //public static Microsoft.Bot.Schema.Teams.BatchFailedEntriesResponse ToCompatBatchFailedEntriesResponse(this Microsoft.Teams.Bot.Apps.BatchFailedEntriesResponse response)
+    //{
+    //    ArgumentNullException.ThrowIfNull(response);
 
-        BatchFailedEntriesResponse result = new()
-        {
-            ContinuationToken = response.ContinuationToken
-        };
+    //    BatchFailedEntriesResponse result = new()
+    //    {
+    //        ContinuationToken = response.ContinuationToken
+    //    };
 
-        // FailedEntries is a read-only property with private setter, populate via the collection
-        if (response.FailedEntries != null)
-        {
-            foreach (Apps.BatchFailedEntry entry in response.FailedEntries)
-            {
-                result.FailedEntries.Add(entry.ToCompatBatchFailedEntry());
-            }
-        }
+    //    // FailedEntries is a read-only property with private setter, populate via the collection
+    //    if (response.FailedEntries != null)
+    //    {
+    //        foreach (Apps.BatchFailedEntry entry in response.FailedEntries)
+    //        {
+    //            result.FailedEntries.Add(entry.ToCompatBatchFailedEntry());
+    //        }
+    //    }
 
-        return result;
-    }
+    //    return result;
+    //}
 
-    /// <summary>
-    /// Converts a Core BatchFailedEntry to a Bot Framework BatchFailedEntry.
-    /// </summary>
-    /// <param name="entry">The source entry.</param>
-    /// <returns>The converted Bot Framework BatchFailedEntry.</returns>
-    public static Microsoft.Bot.Schema.Teams.BatchFailedEntry ToCompatBatchFailedEntry(this Microsoft.Teams.Bot.Apps.BatchFailedEntry entry)
-    {
-        ArgumentNullException.ThrowIfNull(entry);
+    ///// <summary>
+    ///// Converts a Core BatchFailedEntry to a Bot Framework BatchFailedEntry.
+    ///// </summary>
+    ///// <param name="entry">The source entry.</param>
+    ///// <returns>The converted Bot Framework BatchFailedEntry.</returns>
+    //public static Microsoft.Bot.Schema.Teams.BatchFailedEntry ToCompatBatchFailedEntry(this Microsoft.Teams.Bot.Apps.BatchFailedEntry entry)
+    //{
+    //    ArgumentNullException.ThrowIfNull(entry);
 
-        return new Microsoft.Bot.Schema.Teams.BatchFailedEntry
-        {
-            EntryId = entry.Id,
-            Error = entry.Error
-        };
-    }
+    //    return new Microsoft.Bot.Schema.Teams.BatchFailedEntry
+    //    {
+    //        EntryId = entry.Id,
+    //        Error = entry.Error
+    //    };
+    //}
 
     /// <summary>
     /// Converts a Core TeamDetails to a Bot Framework TeamDetails.
     /// </summary>
     /// <param name="teamDetails">The source team details.</param>
     /// <returns>The converted Bot Framework TeamDetails.</returns>
-    public static Microsoft.Bot.Schema.Teams.TeamDetails ToCompatTeamDetails(this Microsoft.Teams.Bot.Apps.TeamDetails teamDetails)
+    public static Microsoft.Bot.Schema.Teams.TeamDetails ToCompatTeamDetails(this Microsoft.Teams.Bot.Apps.Schema.Team teamDetails)
     {
         ArgumentNullException.ThrowIfNull(teamDetails);
 
@@ -126,47 +126,47 @@ internal static class CompatTeamsInfoModels
         };
     }
 
-    /// <summary>
-    /// Converts a Core MeetingNotificationResponse to a Bot Framework MeetingNotificationResponse.
-    /// </summary>
-    /// <param name="response">The source response.</param>
-    /// <returns>The converted Bot Framework MeetingNotificationResponse.</returns>
-    public static Microsoft.Bot.Schema.Teams.MeetingNotificationResponse ToCompatMeetingNotificationResponse(this Microsoft.Teams.Bot.Apps.MeetingNotificationResponse response)
-    {
-        ArgumentNullException.ThrowIfNull(response);
+    ///// <summary>
+    ///// Converts a Core MeetingNotificationResponse to a Bot Framework MeetingNotificationResponse.
+    ///// </summary>
+    ///// <param name="response">The source response.</param>
+    ///// <returns>The converted Bot Framework MeetingNotificationResponse.</returns>
+    //public static Microsoft.Bot.Schema.Teams.MeetingNotificationResponse ToCompatMeetingNotificationResponse(this Microsoft.Teams.Bot.Apps.MeetingNotificationResponse response)
+    //{
+    //    ArgumentNullException.ThrowIfNull(response);
 
-        return new Microsoft.Bot.Schema.Teams.MeetingNotificationResponse
-        {
-            RecipientsFailureInfo = response.RecipientsFailureInfo?.Select(r => r.ToCompatMeetingNotificationRecipientFailureInfo()).ToList()
-        };
-    }
+    //    return new Microsoft.Bot.Schema.Teams.MeetingNotificationResponse
+    //    {
+    //        RecipientsFailureInfo = response.RecipientsFailureInfo?.Select(r => r.ToCompatMeetingNotificationRecipientFailureInfo()).ToList()
+    //    };
+    //}
 
-    /// <summary>
-    /// Converts a Core MeetingNotificationRecipientFailureInfo to a Bot Framework MeetingNotificationRecipientFailureInfo.
-    /// </summary>
-    /// <param name="info">The source failure info.</param>
-    /// <returns>The converted Bot Framework MeetingNotificationRecipientFailureInfo.</returns>
-    public static Microsoft.Bot.Schema.Teams.MeetingNotificationRecipientFailureInfo ToCompatMeetingNotificationRecipientFailureInfo(this Microsoft.Teams.Bot.Apps.MeetingNotificationRecipientFailureInfo info)
-    {
-        ArgumentNullException.ThrowIfNull(info);
+    ///// <summary>
+    ///// Converts a Core MeetingNotificationRecipientFailureInfo to a Bot Framework MeetingNotificationRecipientFailureInfo.
+    ///// </summary>
+    ///// <param name="info">The source failure info.</param>
+    ///// <returns>The converted Bot Framework MeetingNotificationRecipientFailureInfo.</returns>
+    //public static Microsoft.Bot.Schema.Teams.MeetingNotificationRecipientFailureInfo ToCompatMeetingNotificationRecipientFailureInfo(this Microsoft.Teams.Bot.Apps.MeetingNotificationRecipientFailureInfo info)
+    //{
+    //    ArgumentNullException.ThrowIfNull(info);
 
-        return new Microsoft.Bot.Schema.Teams.MeetingNotificationRecipientFailureInfo
-        {
-            RecipientMri = info.RecipientMri,
-            ErrorCode = info.ErrorCode,
-            FailureReason = info.FailureReason
-        };
-    }
+    //    return new Microsoft.Bot.Schema.Teams.MeetingNotificationRecipientFailureInfo
+    //    {
+    //        RecipientMri = info.RecipientMri,
+    //        ErrorCode = info.ErrorCode,
+    //        FailureReason = info.FailureReason
+    //    };
+    //}
 
-    /// <summary>
-    /// Converts a Bot Framework TeamMember to a Core TeamMember.
-    /// </summary>
-    /// <param name="teamMember">The source team member.</param>
-    /// <returns>The converted Core TeamMember.</returns>
-    public static Microsoft.Teams.Bot.Apps.TeamMember FromCompatTeamMember(this Microsoft.Bot.Schema.Teams.TeamMember teamMember)
-    {
-        ArgumentNullException.ThrowIfNull(teamMember);
+    ///// <summary>
+    ///// Converts a Bot Framework TeamMember to a Core TeamMember.
+    ///// </summary>
+    ///// <param name="teamMember">The source team member.</param>
+    ///// <returns>The converted Core TeamMember.</returns>
+    //public static Microsoft.Teams.Bot.Apps.TeamMember FromCompatTeamMember(this Microsoft.Bot.Schema.Teams.TeamMember teamMember)
+    //{
+    //    ArgumentNullException.ThrowIfNull(teamMember);
 
-        return new Microsoft.Teams.Bot.Apps.TeamMember(teamMember.Id);
-    }
+    //    return new Microsoft.Teams.Bot.Apps.TeamMember(teamMember.Id);
+    //}
 }

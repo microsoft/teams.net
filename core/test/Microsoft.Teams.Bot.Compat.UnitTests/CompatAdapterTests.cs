@@ -7,6 +7,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Core;
 using Moq;
 
@@ -18,10 +19,10 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         public async Task ContinueConversationAsync_WhenCastToBotAdapter_BuildsTurnContextWithUnderlyingClients()
         {
             // Arrange
-            (CompatAdapter? compatAdapter, TeamsApiClient? teamsApiClient) = CreateCompatAdapter();
+            (CompatAdapter? compatAdapter, Microsoft.Teams.Bot.Apps.Api.Clients.ApiClient? teamsApiClient) = CreateCompatAdapter();
 
             // Cast to BotAdapter to ensure we're using the base class method
-            BotAdapter botAdapter = compatAdapter;
+            BotAdapter botAdapter = compatAdapter!;
 
             ConversationReference conversationReference = new()
             {
@@ -33,14 +34,14 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             bool callbackInvoked = false;
             Microsoft.Bot.Connector.Authentication.UserTokenClient? capturedUserTokenClient = null;
             Microsoft.Bot.Connector.IConnectorClient? capturedConnectorClient = null;
-            Microsoft.Teams.Bot.Apps.TeamsApiClient? capturedTeamsApiClient = null;
+            Microsoft.Teams.Bot.Apps.Api.Clients.ApiClient? capturedTeamsApiClient = null;
 
             BotCallbackHandler callback = async (turnContext, cancellationToken) =>
             {
                 callbackInvoked = true;
                 capturedUserTokenClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.Authentication.UserTokenClient>();
                 capturedConnectorClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.IConnectorClient>();
-                capturedTeamsApiClient = turnContext.TurnState.Get<Microsoft.Teams.Bot.Apps.TeamsApiClient>();
+                capturedTeamsApiClient = turnContext.TurnState.Get<Microsoft.Teams.Bot.Apps.Api.Clients.ApiClient>();
                 await Task.CompletedTask;
             };
 
@@ -69,7 +70,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.Same(teamsApiClient, capturedTeamsApiClient);
         }
 
-        private static (CompatAdapter, TeamsApiClient) CreateCompatAdapter()
+        private static (CompatAdapter, ApiClient) CreateCompatAdapter()
         {
             HttpClient httpClient = new();
             ConversationClient conversationClient = new(httpClient, NullLogger<ConversationClient>.Instance);
@@ -78,7 +79,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             mockConfig.Setup(c => c["UserTokenApiEndpoint"]).Returns("https://token.botframework.com");
 
             UserTokenClient userTokenClient = new(httpClient, mockConfig.Object, NullLogger<UserTokenClient>.Instance);
-            TeamsApiClient teamsApiClient = new(httpClient, NullLogger<TeamsApiClient>.Instance);
+            ApiClient teamsApiClient = new(new Uri("https://service.url"), httpClient, NullLogger<ApiClient>.Instance);
 
             TeamsBotApplication teamsBotApplication = new(
                 conversationClient,

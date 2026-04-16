@@ -6,6 +6,7 @@ using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -22,10 +23,10 @@ public static class CompatTeamsInfo
 {
     #region Helper Methods
 
-    private static readonly System.Text.Json.JsonSerializerOptions s_jsonOptions = new()
-    {
-        PropertyNameCaseInsensitive = true
-    };
+    //private static readonly System.Text.Json.JsonSerializerOptions s_jsonOptions = new()
+    //{
+    //    PropertyNameCaseInsensitive = true
+    //};
 
     private static ConversationClient GetConversationClient(ITurnContext turnContext)
     {
@@ -40,10 +41,10 @@ public static class CompatTeamsInfo
         throw new InvalidOperationException("Connector client is not compatible.");
     }
 
-    private static TeamsApiClient GetTeamsApiClient(ITurnContext turnContext)
+    private static ApiClient GetTeamsApiClient(ITurnContext turnContext)
     {
-        return turnContext.TurnState.Get<TeamsApiClient>()
-            ?? throw new InvalidOperationException("This method requires TeamsApiClient.");
+        return turnContext.TurnState.Get<ApiClient>()
+            ?? throw new InvalidOperationException("This method requires ApiClient.");
     }
 
     private static string GetServiceUrl(ITurnContext turnContext)
@@ -286,14 +287,14 @@ public static class CompatTeamsInfo
         meetingId ??= turnContext.Activity.TeamsGetMeetingInfo()?.Id
             ?? throw new InvalidOperationException("The meetingId can only be null if turnContext is within the scope of a MS Teams Meeting.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
+        var client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
 
-        AppsTeams.MeetingInfo result = await client.FetchMeetingInfoAsync(
-            meetingId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+        var result = await client.Meetings.GetByIdAsync(
+            meetingId, cancellationToken).ConfigureAwait(false);
 
-        return result.ToCompatMeetingInfo();
+        return new BotFrameworkTeams.MeetingInfo(); // TODO: Map the result to BotFrameworkTeams.MeetingInfo once the API is finalized and we have the necessary details in the result to perform the mapping.
     }
 
     /// <summary>
@@ -320,49 +321,49 @@ public static class CompatTeamsInfo
         tenantId ??= turnContext.Activity.GetChannelData<BotFrameworkTeams.TeamsChannelData>()?.Tenant?.Id
             ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
+        var client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
 
-        MeetingParticipant result = await client.FetchParticipantAsync(
-            meetingId, participantId, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+        var result = await client.Meetings.GetParticipantAsync(
+            meetingId, participantId, tenantId, cancellationToken).ConfigureAwait(false);
 
-        return result.ToCompatTeamsMeetingParticipant();
+        return new TeamsMeetingParticipant(); // TODO: Map the result to BotFrameworkTeams.TeamsMeetingParticipant once the API is finalized and we have the necessary details in the result to perform the mapping.
     }
 
-    /// <summary>
-    /// Sends a notification to meeting participants. This functionality is available only in teams meeting scoped conversations.
-    /// </summary>
-    /// <param name="turnContext">Turn context.</param>
-    /// <param name="notification">The notification to send to Teams.</param>
-    /// <param name="meetingId">The id of the Teams meeting. BotFrameworkTeams.TeamsChannelData.Meeting.Id will be used if none provided.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Meeting notification response.</returns>
-    public static async Task<BotFrameworkTeams.MeetingNotificationResponse> SendMeetingNotificationAsync(
-        ITurnContext turnContext,
-        BotFrameworkTeams.MeetingNotificationBase? notification,
-        string? meetingId = null,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(turnContext);
-        meetingId ??= turnContext.Activity.TeamsGetMeetingInfo()?.Id
-            ?? throw new InvalidOperationException("This method is only valid within the scope of a MS Teams Meeting.");
-        notification = notification ?? throw new InvalidOperationException($"{nameof(notification)} is required.");
+    ///// <summary>
+    ///// Sends a notification to meeting participants. This functionality is available only in teams meeting scoped conversations.
+    ///// </summary>
+    ///// <param name="turnContext">Turn context.</param>
+    ///// <param name="notification">The notification to send to Teams.</param>
+    ///// <param name="meetingId">The id of the Teams meeting. BotFrameworkTeams.TeamsChannelData.Meeting.Id will be used if none provided.</param>
+    ///// <param name="cancellationToken">Cancellation token.</param>
+    ///// <returns>Meeting notification response.</returns>
+    //public static async Task<BotFrameworkTeams.MeetingNotificationResponse> SendMeetingNotificationAsync(
+    //    ITurnContext turnContext,
+    //    BotFrameworkTeams.MeetingNotificationBase? notification,
+    //    string? meetingId = null,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    ArgumentNullException.ThrowIfNull(turnContext);
+    //    meetingId ??= turnContext.Activity.TeamsGetMeetingInfo()?.Id
+    //        ?? throw new InvalidOperationException("This method is only valid within the scope of a MS Teams Meeting.");
+    //    notification = notification ?? throw new InvalidOperationException($"{nameof(notification)} is required.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
+    //    var client = GetTeamsApiClient(turnContext);
+    //    Uri serviceUrl = new(GetServiceUrl(turnContext));
+    //    AgenticIdentity identity = GetIdentity(turnContext);
 
-        // Convert Bot Framework MeetingNotificationBase to Core MeetingNotificationBase using JSON round-trip
-        string json = Newtonsoft.Json.JsonConvert.SerializeObject(notification);
-        AppsTeams.TargetedMeetingNotification? coreNotification = System.Text.Json.JsonSerializer.Deserialize<AppsTeams.TargetedMeetingNotification>(json, s_jsonOptions);
+    //    // Convert Bot Framework MeetingNotificationBase to Core MeetingNotificationBase using JSON round-trip
+    //    string json = Newtonsoft.Json.JsonConvert.SerializeObject(notification);
+    //    AppsTeams.TargetedMeetingNotification? coreNotification = System.Text.Json.JsonSerializer.Deserialize<AppsTeams.TargetedMeetingNotification>(json, s_jsonOptions);
 
 
-        AppsTeams.MeetingNotificationResponse result = await client.SendMeetingNotificationAsync(
-            meetingId, coreNotification!, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+    //    AppsTeams.MeetingNotificationResponse result = await client.Meetings SendMeetingNotificationAsync(
+    //        meetingId, coreNotification!, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
-        return result.ToCompatMeetingNotificationResponse();
-    }
+    //    return result.ToCompatMeetingNotificationResponse();
+    //}
 
     #endregion
 
@@ -384,14 +385,18 @@ public static class CompatTeamsInfo
         string t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
+        var client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
 
-        AppsTeams.TeamDetails result = await client.FetchTeamDetailsAsync(
-            t, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+        var result = await client.Teams.GetByIdAsync(t, cancellationToken).ConfigureAwait(false);
 
-        return result.ToCompatTeamDetails();
+        return new TeamDetails
+        {
+            Id = result?.Id,
+            Name = result?.Name,
+            AadGroupId = result?.AadGroupId
+        };
     }
 
     /// <summary>
@@ -411,140 +416,140 @@ public static class CompatTeamsInfo
         string t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
+        var client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
 
-        ChannelList channelList = await client.FetchChannelListAsync(
-            t, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+        var channelList = await client.Teams.GetConversationsAsync(t, cancellationToken).ConfigureAwait(false);
 
-        return channelList.Channels?.Select(c => c.ToCompatChannelInfo()).ToList() ?? [];
+        return channelList?.Select(c => c.ToCompatChannelInfo()).ToList() ?? [];
     }
 
     #endregion
 
     #region Batch Messaging Methods
 
-    /// <summary>
-    /// Sends a message to the provided list of Teams members.
-    /// </summary>
-    /// <param name="turnContext">Turn context.</param>
-    /// <param name="activity">The activity to send.</param>
-    /// <param name="teamsMembers">The list of members.</param>
-    /// <param name="tenantId">The tenant ID.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The operation Id.</returns>
-    public static async Task<string> SendMessageToListOfUsersAsync(
-        ITurnContext turnContext,
-        IActivity activity,
-        IList<BotFrameworkTeams.TeamMember> teamsMembers,
-        string tenantId,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(turnContext);
-        activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
-        teamsMembers = teamsMembers ?? throw new InvalidOperationException($"{nameof(teamsMembers)} is required.");
-        tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
+    // TODO: Implement batch messaging methods once the APIs are finalized. This includes SendMessageToListOfUsersAsync, SendMessageToListOfChannelsAsync, SendMessageToAllUsersInTeamAsync, and SendMessageToAllUsersInTenantAsync.
+    ///// <summary>
+    ///// Sends a message to the provided list of Teams members.
+    ///// </summary>
+    ///// <param name="turnContext">Turn context.</param>
+    ///// <param name="activity">The activity to send.</param>
+    ///// <param name="teamsMembers">The list of members.</param>
+    ///// <param name="tenantId">The tenant ID.</param>
+    ///// <param name="cancellationToken">Cancellation token.</param>
+    ///// <returns>The operation Id.</returns>
+    //public static async Task<string> SendMessageToListOfUsersAsync(
+    //    ITurnContext turnContext,
+    //    IActivity activity,
+    //    IList<BotFrameworkTeams.TeamMember> teamsMembers,
+    //    string tenantId,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    ArgumentNullException.ThrowIfNull(turnContext);
+    //    activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
+    //    teamsMembers = teamsMembers ?? throw new InvalidOperationException($"{nameof(teamsMembers)} is required.");
+    //    tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+    //    var client = GetTeamsApiClient(turnContext);
+    //    Uri serviceUrl = new(GetServiceUrl(turnContext));
+    //    AgenticIdentity identity = GetIdentity(turnContext);
+    //    CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
 
-        List<AppsTeams.TeamMember> coreTeamsMembers = teamsMembers.Select(m => m.FromCompatTeamMember()).ToList();
+    //    List<AppsTeams.TeamMember> coreTeamsMembers = teamsMembers.Select(m => m.FromCompatTeamMember()).ToList();
 
-        return await client.SendMessageToListOfUsersAsync(
-            coreActivity, coreTeamsMembers, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
-    }
+    //    return await client.SendMessageToListOfUsersAsync(
+    //        coreActivity, coreTeamsMembers, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+    //}
 
-    /// <summary>
-    /// Sends a message to the provided list of Teams channels.
-    /// </summary>
-    /// <param name="turnContext">Turn context.</param>
-    /// <param name="activity">The activity to send.</param>
-    /// <param name="channelsMembers">The list of channels.</param>
-    /// <param name="tenantId">The tenant ID.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The operation Id.</returns>
-    public static async Task<string> SendMessageToListOfChannelsAsync(
-        ITurnContext turnContext,
-        IActivity activity,
-        IList<BotFrameworkTeams.TeamMember> channelsMembers,
-        string tenantId,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(turnContext);
-        activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
-        channelsMembers = channelsMembers ?? throw new InvalidOperationException($"{nameof(channelsMembers)} is required.");
-        tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
+    ///// <summary>
+    ///// Sends a message to the provided list of Teams channels.
+    ///// </summary>
+    ///// <param name="turnContext">Turn context.</param>
+    ///// <param name="activity">The activity to send.</param>
+    ///// <param name="channelsMembers">The list of channels.</param>
+    ///// <param name="tenantId">The tenant ID.</param>
+    ///// <param name="cancellationToken">Cancellation token.</param>
+    ///// <returns>The operation Id.</returns>
+    //public static async Task<string> SendMessageToListOfChannelsAsync(
+    //    ITurnContext turnContext,
+    //    IActivity activity,
+    //    IList<BotFrameworkTeams.TeamMember> channelsMembers,
+    //    string tenantId,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    ArgumentNullException.ThrowIfNull(turnContext);
+    //    activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
+    //    channelsMembers = channelsMembers ?? throw new InvalidOperationException($"{nameof(channelsMembers)} is required.");
+    //    tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+    //    TeamsApiClient client = GetTeamsApiClient(turnContext);
+    //    Uri serviceUrl = new(GetServiceUrl(turnContext));
+    //    AgenticIdentity identity = GetIdentity(turnContext);
+    //    CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
 
-        List<AppsTeams.TeamMember> coreChannelsMembers = channelsMembers.Select(m => m.FromCompatTeamMember()).ToList();
+    //    List<AppsTeams.TeamMember> coreChannelsMembers = channelsMembers.Select(m => m.FromCompatTeamMember()).ToList();
 
-        return await client.SendMessageToListOfChannelsAsync(
-            coreActivity, coreChannelsMembers, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
-    }
+    //    return await client.SendMessageToListOfChannelsAsync(
+    //        coreActivity, coreChannelsMembers, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+    //}
 
-    /// <summary>
-    /// Sends a message to all the users in a team.
-    /// </summary>
-    /// <param name="turnContext">The turn context.</param>
-    /// <param name="activity">The activity to send to the users in the team.</param>
-    /// <param name="teamId">The team ID.</param>
-    /// <param name="tenantId">The tenant ID.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The operation Id.</returns>
-    public static async Task<string> SendMessageToAllUsersInTeamAsync(
-        ITurnContext turnContext,
-        IActivity activity,
-        string teamId,
-        string tenantId,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(turnContext);
-        activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
-        teamId = teamId ?? throw new InvalidOperationException($"{nameof(teamId)} is required.");
-        tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
+    ///// <summary>
+    ///// Sends a message to all the users in a team.
+    ///// </summary>
+    ///// <param name="turnContext">The turn context.</param>
+    ///// <param name="activity">The activity to send to the users in the team.</param>
+    ///// <param name="teamId">The team ID.</param>
+    ///// <param name="tenantId">The tenant ID.</param>
+    ///// <param name="cancellationToken">Cancellation token.</param>
+    ///// <returns>The operation Id.</returns>
+    //public static async Task<string> SendMessageToAllUsersInTeamAsync(
+    //    ITurnContext turnContext,
+    //    IActivity activity,
+    //    string teamId,
+    //    string tenantId,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    ArgumentNullException.ThrowIfNull(turnContext);
+    //    activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
+    //    teamId = teamId ?? throw new InvalidOperationException($"{nameof(teamId)} is required.");
+    //    tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+    //    var client = GetTeamsApiClient(turnContext);
+    //    Uri serviceUrl = new(GetServiceUrl(turnContext));
+    //    AgenticIdentity identity = GetIdentity(turnContext);
+    //    CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
 
-        return await client.SendMessageToAllUsersInTeamAsync(
-            coreActivity, teamId, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
-    }
+    //    return await client.SendMessageToAllUsersInTeamAsync(
+    //        coreActivity, teamId, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+    //}
 
-    /// <summary>
-    /// Sends a message to all the users in a tenant.
-    /// </summary>
-    /// <param name="turnContext">The turn context.</param>
-    /// <param name="activity">The activity to send to the tenant.</param>
-    /// <param name="tenantId">The tenant ID.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The operation Id.</returns>
-    public static async Task<string> SendMessageToAllUsersInTenantAsync(
-        ITurnContext turnContext,
-        IActivity activity,
-        string tenantId,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(turnContext);
-        activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
-        tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
+    ///// <summary>
+    ///// Sends a message to all the users in a tenant.
+    ///// </summary>
+    ///// <param name="turnContext">The turn context.</param>
+    ///// <param name="activity">The activity to send to the tenant.</param>
+    ///// <param name="tenantId">The tenant ID.</param>
+    ///// <param name="cancellationToken">Cancellation token.</param>
+    ///// <returns>The operation Id.</returns>
+    //public static async Task<string> SendMessageToAllUsersInTenantAsync(
+    //    ITurnContext turnContext,
+    //    IActivity activity,
+    //    string tenantId,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    ArgumentNullException.ThrowIfNull(turnContext);
+    //    activity = activity ?? throw new InvalidOperationException($"{nameof(activity)} is required.");
+    //    tenantId = tenantId ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+    //    TeamsApiClient client = GetTeamsApiClient(turnContext);
+    //    Uri serviceUrl = new(GetServiceUrl(turnContext));
+    //    AgenticIdentity identity = GetIdentity(turnContext);
+    //    CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
 
-        return await client.SendMessageToAllUsersInTenantAsync(
-            coreActivity, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
-    }
+    //    return await client.SendMessageToAllUsersInTenantAsync(
+    //        coreActivity, tenantId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+    //}
 
     /// <summary>
     /// Creates a new thread in a team chat and sends an activity to that new thread.
@@ -603,80 +608,80 @@ public static class CompatTeamsInfo
 
     #region Batch Operation Management
 
-    /// <summary>
-    /// Gets the state of an operation.
-    /// </summary>
-    /// <param name="turnContext">Turn context.</param>
-    /// <param name="operationId">The operationId to get the state of.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The state and responses of the operation.</returns>
-    public static async Task<BotFrameworkTeams.BatchOperationState> GetOperationStateAsync(
-        ITurnContext turnContext,
-        string operationId,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(turnContext);
-        operationId = operationId ?? throw new InvalidOperationException($"{nameof(operationId)} is required.");
+    ///// <summary>
+    ///// Gets the state of an operation.
+    ///// </summary>
+    ///// <param name="turnContext">Turn context.</param>
+    ///// <param name="operationId">The operationId to get the state of.</param>
+    ///// <param name="cancellationToken">Cancellation token.</param>
+    ///// <returns>The state and responses of the operation.</returns>
+    //public static async Task<BotFrameworkTeams.BatchOperationState> GetOperationStateAsync(
+    //    ITurnContext turnContext,
+    //    string operationId,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    ArgumentNullException.ThrowIfNull(turnContext);
+    //    operationId = operationId ?? throw new InvalidOperationException($"{nameof(operationId)} is required.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
+    //    TeamsApiClient client = GetTeamsApiClient(turnContext);
+    //    Uri serviceUrl = new(GetServiceUrl(turnContext));
+    //    AgenticIdentity identity = GetIdentity(turnContext);
 
-        AppsTeams.BatchOperationState result = await client.GetOperationStateAsync(
-            operationId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+    //    AppsTeams.BatchOperationState result = await client.GetOperationStateAsync(
+    //        operationId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
-        return result.ToCompatBatchOperationState();
-    }
+    //    return result.ToCompatBatchOperationState();
+    //}
 
-    /// <summary>
-    /// Gets the failed entries of a batch operation.
-    /// </summary>
-    /// <param name="turnContext">The turn context.</param>
-    /// <param name="operationId">The operationId to get the failed entries of.</param>
-    /// <param name="continuationToken">The continuation token.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>The list of failed entries of the operation.</returns>
-    public static async Task<BotFrameworkTeams.BatchFailedEntriesResponse> GetPagedFailedEntriesAsync(
-        ITurnContext turnContext,
-        string operationId,
-        string? continuationToken = null,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(turnContext);
-        operationId = operationId ?? throw new InvalidOperationException($"{nameof(operationId)} is required.");
+    ///// <summary>
+    ///// Gets the failed entries of a batch operation.
+    ///// </summary>
+    ///// <param name="turnContext">The turn context.</param>
+    ///// <param name="operationId">The operationId to get the failed entries of.</param>
+    ///// <param name="continuationToken">The continuation token.</param>
+    ///// <param name="cancellationToken">Cancellation token.</param>
+    ///// <returns>The list of failed entries of the operation.</returns>
+    //public static async Task<BotFrameworkTeams.BatchFailedEntriesResponse> GetPagedFailedEntriesAsync(
+    //    ITurnContext turnContext,
+    //    string operationId,
+    //    string? continuationToken = null,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    ArgumentNullException.ThrowIfNull(turnContext);
+    //    operationId = operationId ?? throw new InvalidOperationException($"{nameof(operationId)} is required.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
+    //    TeamsApiClient client = GetTeamsApiClient(turnContext);
+    //    Uri serviceUrl = new(GetServiceUrl(turnContext));
+    //    AgenticIdentity identity = GetIdentity(turnContext);
 
-        AppsTeams.BatchFailedEntriesResponse result = await client.GetPagedFailedEntriesAsync(
-            operationId, serviceUrl, continuationToken, identity, null, cancellationToken).ConfigureAwait(false);
+    //    AppsTeams.BatchFailedEntriesResponse result = await client.GetPagedFailedEntriesAsync(
+    //        operationId, serviceUrl, continuationToken, identity, null, cancellationToken).ConfigureAwait(false);
 
-        return result.ToCompatBatchFailedEntriesResponse();
-    }
+    //    return result.ToCompatBatchFailedEntriesResponse();
+    //}
 
-    /// <summary>
-    /// Cancels a batch operation by its id.
-    /// </summary>
-    /// <param name="turnContext">The turn context.</param>
-    /// <param name="operationId">The id of the operation to cancel.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>A task representing the asynchronous operation.</returns>
-    public static async Task CancelOperationAsync(
-        ITurnContext turnContext,
-        string operationId,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(turnContext);
-        operationId = operationId ?? throw new InvalidOperationException($"{nameof(operationId)} is required.");
+    ///// <summary>
+    ///// Cancels a batch operation by its id.
+    ///// </summary>
+    ///// <param name="turnContext">The turn context.</param>
+    ///// <param name="operationId">The id of the operation to cancel.</param>
+    ///// <param name="cancellationToken">Cancellation token.</param>
+    ///// <returns>A task representing the asynchronous operation.</returns>
+    //public static async Task CancelOperationAsync(
+    //    ITurnContext turnContext,
+    //    string operationId,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    ArgumentNullException.ThrowIfNull(turnContext);
+    //    operationId = operationId ?? throw new InvalidOperationException($"{nameof(operationId)} is required.");
 
-        TeamsApiClient client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
+    //    TeamsApiClient client = GetTeamsApiClient(turnContext);
+    //    Uri serviceUrl = new(GetServiceUrl(turnContext));
+    //    AgenticIdentity identity = GetIdentity(turnContext);
 
-        await client.CancelOperationAsync(
-            operationId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
-    }
+    //    await client.CancelOperationAsync(
+    //        operationId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
+    //}
 
     #endregion
 }

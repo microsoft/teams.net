@@ -62,7 +62,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
             turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
-            turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
+            turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.Api.Clients.ApiClient>(_teamsBotApplication.TeamsApiClient);
             await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
         };
 
@@ -112,7 +112,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
         using TurnContext turnContext = new(this, reference.GetContinuationActivity());
         turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
         turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl }));
-        turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient);
+        turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.Api.Clients.ApiClient>(_teamsBotApplication.TeamsApiClient);
         await RunPipelineAsync(turnContext, callback, cancellationToken).ConfigureAwait(false);
     }
 }

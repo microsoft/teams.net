@@ -138,28 +138,28 @@ public static class CompatActivity
     /// </summary>
     /// <param name="meetingInfo"></param>
     /// <returns></returns>
-    public static Microsoft.Bot.Schema.Teams.MeetingInfo ToCompatMeetingInfo(this Microsoft.Teams.Bot.Apps.MeetingInfo meetingInfo)
+    public static Microsoft.Bot.Schema.Teams.MeetingInfo ToCompatMeetingInfo(this Microsoft.Teams.Bot.Apps.Api.Clients.MeetingInfo meetingInfo)
     {
         ArgumentNullException.ThrowIfNull(meetingInfo);
 
         return new Microsoft.Bot.Schema.Teams.MeetingInfo
         {
-            Details = meetingInfo.Details != null ? new Microsoft.Bot.Schema.Teams.MeetingDetails
-            {
-                Id = meetingInfo.Details.Id,
-                MsGraphResourceId = meetingInfo.Details.MsGraphResourceId,
-                ScheduledStartTime = meetingInfo.Details.ScheduledStartTime?.DateTime,
-                ScheduledEndTime = meetingInfo.Details.ScheduledEndTime?.DateTime,
-                JoinUrl = meetingInfo.Details.JoinUrl,
-                Title = meetingInfo.Details.Title,
-                Type = meetingInfo.Details.Type
-            } : null,
-            Conversation = meetingInfo.Conversation != null ? new Microsoft.Bot.Schema.ConversationAccount
-            {
-                Id = meetingInfo.Conversation.Id,
-                Name = meetingInfo.Conversation.Name
-            } : null,
-            Organizer = meetingInfo.Organizer != null ? meetingInfo.Organizer.ToCompatTeamsChannelAccount() : null
+            //Details = meetingInfo.Details != null ? new Microsoft.Bot.Schema.Teams.MeetingDetails
+            //{
+            //    Id = meetingInfo.Details.Id,
+            //    MsGraphResourceId = meetingInfo.Details.MsGraphResourceId,
+            //    ScheduledStartTime = meetingInfo.Details.ScheduledStartTime?.DateTime,
+            //    ScheduledEndTime = meetingInfo.Details.ScheduledEndTime?.DateTime,
+            //    JoinUrl = meetingInfo.Details.JoinUrl,
+            //    Title = meetingInfo.Details.Title,
+            //    Type = meetingInfo.Details.Type
+            //} : null,
+            //Conversation = meetingInfo.Conversation != null ? new Microsoft.Bot.Schema.ConversationAccount
+            //{
+            //    Id = meetingInfo.Conversation.Id,
+            //    Name = meetingInfo.Conversation.Name
+            //} : null,
+            //Organizer = meetingInfo.Organizer != null ? meetingInfo.Organizer.ToCompatTeamsChannelAccount() : null
         };
     }
 
@@ -168,7 +168,7 @@ public static class CompatActivity
     /// </summary>
     /// <param name="participant"></param>
     /// <returns></returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsMeetingParticipant ToCompatTeamsMeetingParticipant(this Microsoft.Teams.Bot.Apps.MeetingParticipant participant)
+    public static Microsoft.Bot.Schema.Teams.TeamsMeetingParticipant ToCompatTeamsMeetingParticipant(this Microsoft.Teams.Bot.Apps.Api.Clients.MeetingParticipant participant)
     {
         ArgumentNullException.ThrowIfNull(participant);
 
