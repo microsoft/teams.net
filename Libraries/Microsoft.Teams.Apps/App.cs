@@ -390,7 +390,8 @@ public partial class App
         var serviceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl;
         if (!ServiceUrlValidator.IsAllowed(serviceUrl, _cloud, _additionalAllowedDomains))
         {
-            throw new InvalidOperationException($"Service URL '{serviceUrl}' is not from an allowed domain");
+            Logger.Warn($"Rejected service URL: {serviceUrl}");
+            throw new InvalidOperationException("Service URL is not from an allowed domain");
         }
 
         var reference = new ConversationReference()
