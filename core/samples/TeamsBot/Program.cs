@@ -173,7 +173,6 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
     await context.TeamsBotApplication.Api.Conversations.Activities.DeleteTargetedAsync(
         context.Activity.Conversation.Id!,
         sendResponse.Id!,
-        context.Activity.ServiceUrl,
         cancellationToken: cancellationToken);
 });
 
@@ -196,7 +195,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
 
     // Add a waving hand reaction
     await context.TeamsBotApplication.Api.Conversations.Reactions.AddAsync(
-        context.Activity,
+        context.Activity.Conversation.Id,
         response!.Id!,
         "1f44b_wavinghand-tone4",
         cancellationToken: cancellationToken);
@@ -205,7 +204,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
 
     // Add a beaming face reaction
     await context.TeamsBotApplication.Api.Conversations.Reactions.AddAsync(
-        context.Activity,
+        context.Activity.Conversation.Id,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
         cancellationToken: cancellationToken);
@@ -214,7 +213,7 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
 
     // Remove the beaming face reaction
     await context.TeamsBotApplication.Api.Conversations.Reactions.DeleteAsync(
-        context.Activity,
+        context.Activity.Conversation.Id,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
         cancellationToken: cancellationToken);

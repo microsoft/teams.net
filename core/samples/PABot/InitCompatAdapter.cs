@@ -8,6 +8,7 @@ using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 
@@ -272,11 +273,11 @@ namespace PABot
             });
 
             // Register TeamsApiClient
-            services.AddSingleton<TeamsApiClient>(sp =>
+            services.AddSingleton<ApiClient>(sp =>
             {
                 HttpClient httpClient = sp.GetRequiredService<IHttpClientFactory>()
                     .CreateClient("TeamsApiClient");
-                return new TeamsApiClient(httpClient, sp.GetRequiredService<ILogger<TeamsApiClient>>());
+                return new ApiClient(new Uri("https://graph.microsoft.com/v1.0/"), httpClient, sp.GetRequiredService<ILogger<ApiClient>>()); // TODO: initialize the base URL
             });
 
             // Register TeamsBotApplication
@@ -285,7 +286,7 @@ namespace PABot
                 return new TeamsBotApplication(
                     sp.GetRequiredService<ConversationClient>(),
                     sp.GetRequiredService<UserTokenClient>(),
-                    sp.GetRequiredService<TeamsApiClient>(),
+                    sp.GetRequiredService<ApiClient>(),
                     sp.GetRequiredService<IHttpContextAccessor>(),
                     sp.GetRequiredService<ILogger<TeamsBotApplication>>()
                 );
