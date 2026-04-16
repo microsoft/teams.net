@@ -151,6 +151,43 @@ public class CompatBotAdapter(
         return new ResourceResponse() { Id = res.Id };
     }
 
+    /// <summary>
+    /// Creates a new conversation and invokes the callback with a turn context for the new conversation.
+    /// </summary>
+    public override async Task CreateConversationAsync(
+        string botAppId,
+        string channelId,
+        string serviceUrl,
+        string audience,
+        Microsoft.Bot.Schema.ConversationParameters conversationParameters,
+        BotCallbackHandler callback,
+        CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNull(conversationParameters);
+        ArgumentNullException.ThrowIfNull(callback);
+
+        Core.ConversationParameters coreParams = conversationParameters.FromCompatConversationParameters();
+
+        CreateConversationResponse response = await botApplication.ConversationClient.CreateConversationAsync(
+            coreParams,
+            new Uri(serviceUrl),
+            customHeaders: null,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        // Build a synthetic conversationUpdate activity for the callback
+        Activity conversationUpdateActivity = new()
+        {
+            Type = ActivityTypes.Event,
+            ChannelId = channelId,
+            ServiceUrl = response.ServiceUrl?.ToString() ?? serviceUrl,
+            Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = response.Id },
+            Id = response.ActivityId,
+        };
+
+        using TurnContext turnContext = new(this, conversationUpdateActivity);
+        await callback(turnContext, cancellationToken).ConfigureAwait(false);
+    }
+
     private void WriteInvokeResponseToHttpResponse(InvokeResponse? invokeResponse)
     {
         ArgumentNullException.ThrowIfNull(invokeResponse);

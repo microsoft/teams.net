@@ -412,6 +412,15 @@ public class BatchFailedEntry
 }
 
 /// <summary>
+/// Response from a batch send operation containing the operation ID.
+/// </summary>
+internal sealed class BatchOperationResponse
+{
+    [JsonPropertyName("operationId")]
+    public string? OperationId { get; set; }
+}
+
+/// <summary>
 /// Request body for sending a message to a list of users.
 /// </summary>
 internal sealed class SendMessageToUsersRequest

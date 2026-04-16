@@ -24,13 +24,19 @@ namespace Microsoft.Teams.Bot.Compat
         /// </summary>
         public IConversations Conversations => conversations;
 
-        public Uri BaseUri { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
+        public Uri BaseUri
+        {
+            get => string.IsNullOrWhiteSpace(conversations.ServiceUrl)
+                ? throw new InvalidOperationException("ServiceUrl is not set on the compat conversations adapter")
+                : new Uri(conversations.ServiceUrl);
+            set => conversations.ServiceUrl = value?.ToString();
+        }
 
         public JsonSerializerSettings SerializationSettings => throw new NotImplementedException();
 
         public JsonSerializerSettings DeserializationSettings => throw new NotImplementedException();
 
-        public ServiceClientCredentials Credentials => throw new NotImplementedException();
+        public ServiceClientCredentials Credentials => new TokenCredentials("compat-stub");
 
         public IAttachments Attachments => throw new NotImplementedException();
 

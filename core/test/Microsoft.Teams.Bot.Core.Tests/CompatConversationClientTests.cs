@@ -35,19 +35,28 @@ namespace Microsoft.Bot.Core.Tests
             _agenticUserId = Environment.GetEnvironmentVariable("TEST_AGENTIC_USERID");// ?? throw new InvalidOperationException("TEST_AGENTIC_USERID environment variable not set");
         }
 
-        [Fact(Skip = "not implemented")]
+        [Fact]
         public async Task GetMemberAsync()
         {
-
+            // TeamsInfo.GetMemberAsync hard-casts IConversations to the concrete Conversations class,
+            // which is incompatible with CompatConversations. Use CompatTeamsInfo instead.
             var compatAdapter = InitializeCompatAdapter();
             ConversationReference conversationReference = new ConversationReference
-
             {
                 ChannelId = "msteams",
                 ServiceUrl = _serviceUrl,
                 Conversation = new ConversationAccount
                 {
                     Id = _conversationId
+                },
+                User = new ChannelAccount()
+                {
+                    Properties =
+                    {
+                        { "agenticAppBlueprintId", _agenticAppBlueprintId },
+                        { "agenticAppId", _agenticAppId },
+                        { "agenticUserId", _agenticUserId },
+                    }
                 }
             };
 
@@ -55,9 +64,16 @@ namespace Microsoft.Bot.Core.Tests
                 string.Empty, conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    TeamsChannelAccount member = await TeamsInfo.GetMemberAsync(turnContext, _userId, cancellationToken: cancellationToken);
+                    // Resolve pairwise MRI first
+                    var pagedResult = await CompatTeamsInfo.GetPagedMembersAsync(turnContext, cancellationToken: cancellationToken);
+                    string aadUserId = _userId.Replace("29:", "");
+                    var matchedMember = pagedResult.Members.FirstOrDefault(m =>
+                        string.Equals(m.AadObjectId, aadUserId, StringComparison.OrdinalIgnoreCase));
+                    Assert.NotNull(matchedMember);
+
+                    TeamsChannelAccount member = await CompatTeamsInfo.GetMemberAsync(turnContext, matchedMember.Id, cancellationToken: cancellationToken);
                     Assert.NotNull(member);
-                    Assert.Equal(_userId, member.Id);
+                    Assert.Equal(matchedMember.Id, member.Id);
 
                 }, CancellationToken.None);
         }
@@ -95,25 +111,38 @@ namespace Microsoft.Bot.Core.Tests
                     var result = await CompatTeamsInfo.GetPagedMembersAsync(turnContext, cancellationToken: cancellationToken);
                     Assert.NotNull(result);
                     Assert.True(result.Members.Count > 0);
+                    // Member IDs are pairwise-encrypted MRIs, not the AAD-based TEST_USER_ID
                     var m0 = result.Members[0];
-                    Assert.Equal(_userId, m0.Id);
+                    Assert.NotNull(m0.Id);
+                    Assert.StartsWith("29:", m0.Id);
 
                 }, CancellationToken.None);
         }
 
-        [Fact(Skip = "not implemented")]
+        [Trait("Category", "needs-meeting-context")]
+        [Fact]
         public async Task GetMeetingInfo()
         {
+            // TeamsInfo.GetMeetingInfoAsync uses TeamsConnectorClient which requires real credentials.
+            // Use CompatTeamsInfo instead, which delegates to the Core SDK's ConversationClient.
             string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
             var compatAdapter = InitializeCompatAdapter();
             ConversationReference conversationReference = new ConversationReference
-
             {
                 ChannelId = "msteams",
                 ServiceUrl = _serviceUrl,
                 Conversation = new ConversationAccount
                 {
                     Id = _conversationId
+                },
+                User = new ChannelAccount()
+                {
+                    Properties =
+                    {
+                        { "agenticAppBlueprintId", _agenticAppBlueprintId },
+                        { "agenticAppId", _agenticAppId },
+                        { "agenticUserId", _agenticUserId },
+                    }
                 }
             };
 
@@ -121,7 +150,7 @@ namespace Microsoft.Bot.Core.Tests
                 string.Empty, conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var result = await TeamsInfo.GetMeetingInfoAsync(turnContext, meetingId, cancellationToken);
+                    var result = await CompatTeamsInfo.GetMeetingInfoAsync(turnContext, meetingId, cancellationToken);
                     Assert.NotNull(result);
 
                 }, CancellationToken.None);

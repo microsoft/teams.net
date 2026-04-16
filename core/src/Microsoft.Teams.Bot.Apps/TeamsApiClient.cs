@@ -99,8 +99,7 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(meetingId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
-
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{meetingId}";
 
         logger?.LogTrace("Fetching meeting info from {Url}", url);
 
@@ -130,8 +129,7 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         ArgumentException.ThrowIfNullOrWhiteSpace(participantId);
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
-
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(participantId)}?tenantId={Uri.EscapeDataString(tenantId)}";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{meetingId}/participants/{Uri.EscapeDataString(participantId)}?tenantId={Uri.EscapeDataString(tenantId)}";
 
         logger?.LogTrace("Fetching meeting participant from {Url}", url);
 
@@ -159,8 +157,7 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         ArgumentException.ThrowIfNullOrWhiteSpace(meetingId);
         ArgumentNullException.ThrowIfNull(notification);
         ArgumentNullException.ThrowIfNull(serviceUrl);
-
-        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}/notification";
+        string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{meetingId}/notification";
         string body = JsonSerializer.Serialize(notification);
 
         logger?.LogTrace("Sending meeting notification to {Url}: {Notification}", url, body);
@@ -211,12 +208,12 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
 
         logger?.LogTrace("Sending message to list of users at {Url}: {Request}", url, body);
 
-        return (await _botHttpClient.SendAsync<string>(
+        return (await _botHttpClient.SendAsync<BatchOperationResponse>(
             HttpMethod.Post,
             url,
             body,
             CreateRequestOptions(agenticIdentity, "sending message to list of users", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+            cancellationToken).ConfigureAwait(false))!.OperationId!;
     }
 
     /// <summary>
@@ -246,12 +243,12 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
 
         logger?.LogTrace("Sending message to all users in tenant at {Url}: {Request}", url, body);
 
-        return (await _botHttpClient.SendAsync<string>(
+        return (await _botHttpClient.SendAsync<BatchOperationResponse>(
             HttpMethod.Post,
             url,
             body,
             CreateRequestOptions(agenticIdentity, "sending message to all users in tenant", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+            cancellationToken).ConfigureAwait(false))!.OperationId!;
     }
 
     /// <summary>
@@ -284,12 +281,12 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
 
         logger?.LogTrace("Sending message to all users in team at {Url}: {Request}", url, body);
 
-        return (await _botHttpClient.SendAsync<string>(
+        return (await _botHttpClient.SendAsync<BatchOperationResponse>(
             HttpMethod.Post,
             url,
             body,
             CreateRequestOptions(agenticIdentity, "sending message to all users in team", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+            cancellationToken).ConfigureAwait(false))!.OperationId!;
     }
 
     /// <summary>
@@ -326,12 +323,12 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
 
         logger?.LogTrace("Sending message to list of channels at {Url}: {Request}", url, body);
 
-        return (await _botHttpClient.SendAsync<string>(
+        return (await _botHttpClient.SendAsync<BatchOperationResponse>(
             HttpMethod.Post,
             url,
             body,
             CreateRequestOptions(agenticIdentity, "sending message to list of channels", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+            cancellationToken).ConfigureAwait(false))!.OperationId!;
     }
 
     #endregion

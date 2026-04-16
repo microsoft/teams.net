@@ -38,7 +38,8 @@ public class UserTokenClientTests
 
     #region Integration Tests
 
-    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    [Trait("Category", "needs-oauth-connection")]
+    [Fact]
     public async Task GetTokenAsync_WithValidParams()
     {
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
@@ -54,7 +55,7 @@ public class UserTokenClientTests
         Console.WriteLine($"GetTokenAsync result: {(result != null ? "Token found" : "No token")}");
     }
 
-    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    [Fact]
     public async Task GetTokenStatusAsync_WithValidParams()
     {
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
@@ -74,7 +75,8 @@ public class UserTokenClientTests
         }
     }
 
-    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    [Trait("Category", "needs-oauth-connection")]
+    [Fact]
     public async Task GetSignInResource_WithValidParams()
     {
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
@@ -93,7 +95,8 @@ public class UserTokenClientTests
         Console.WriteLine($"  - SignInLink: {result.SignInLink}");
     }
 
-    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    [Trait("Category", "needs-oauth-connection")]
+    [Fact]
     public async Task ExchangeTokenAsync_WithValidParams()
     {
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
@@ -111,7 +114,7 @@ public class UserTokenClientTests
         Console.WriteLine($"Exchange token result: Token={result.Token != null}");
     }
 
-    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    [Fact]
     public async Task SignOutUserAsync_WithValidParams()
     {
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
@@ -127,7 +130,8 @@ public class UserTokenClientTests
         Console.WriteLine("SignOutUserAsync completed successfully");
     }
 
-    [Fact(Skip = "Requires valid user token and OAuth connection")]
+    [Trait("Category", "needs-oauth-connection")]
+    [Fact]
     public async Task GetAadTokensAsync_WithValidParams()
     {
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");

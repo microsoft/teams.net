@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
@@ -50,6 +51,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetMemberAsync_WithValidUserId_ReturnsMember()
         {
+            var resolvedUserId = await ResolveUserMriAsync();
             var adapter = InitializeCompatAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
@@ -60,11 +62,11 @@ namespace Microsoft.Bot.Core.Tests
                 {
                     TeamsChannelAccount member = await CompatTeamsInfo.GetMemberAsync(
                         turnContext,
-                        _userId,
+                        resolvedUserId,
                         cancellationToken);
 
                     Assert.NotNull(member);
-                    Assert.Equal(_userId, member.Id);
+                    Assert.Equal(resolvedUserId, member.Id);
                 },
                 CancellationToken.None);
         }
@@ -119,6 +121,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetTeamMemberAsync_WithValidUserId_ReturnsMember()
         {
+            var resolvedUserId = await ResolveUserMriAsync();
             var adapter = InitializeCompatAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
@@ -129,12 +132,12 @@ namespace Microsoft.Bot.Core.Tests
                 {
                     var member = await CompatTeamsInfo.GetTeamMemberAsync(
                         turnContext,
-                        _userId,
+                        resolvedUserId,
                         _teamId,
                         cancellationToken);
 
                     Assert.NotNull(member);
-                    Assert.Equal(_userId, member.Id);
+                    Assert.Equal(resolvedUserId, member.Id);
                 },
                 CancellationToken.None);
         }
@@ -186,7 +189,8 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "permissions needed")]
+        [Trait("Category", "needs-meeting-context")]
+        [Fact]
         public async Task GetMeetingInfoAsync_WithMeetingId_ReturnsMeetingInfo()
         {
             var adapter = InitializeCompatAdapter();
@@ -208,6 +212,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
+        [Trait("Category", "needs-meeting-context")]
         [Fact]
         public async Task GetMeetingParticipantAsync_WithParticipantId_ReturnsParticipant()
         {
@@ -219,10 +224,11 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
+                    // Meeting participant API expects AAD object ID, not the 29: MRI
                     var participant = await CompatTeamsInfo.GetMeetingParticipantAsync(
                         turnContext,
                         _meetingId,
-                        _userId,
+                        _userId.Replace("29:", ""),
                         _tenantId,
                         cancellationToken);
 
@@ -232,7 +238,9 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Permissions")]
+        [Trait("Category", "needs-meeting-context")]
+        [Trait("Category", "needs-valid-domains")]
+        [Fact]
         public async Task SendMeetingNotificationAsync_SendsNotification()
         {
             var adapter = InitializeCompatAdapter();
@@ -246,11 +254,12 @@ namespace Microsoft.Bot.Core.Tests
                     // Create a simple targeted meeting notification
                     // Note: In real scenarios, you would construct the proper notification object
                     // with surfaces and content according to the Teams schema
+                    // Recipient needs AAD object ID, not 29: MRI
                     var notification = new TargetedMeetingNotification
                     {
                         Value = new TargetedMeetingNotificationValue
                         {
-                            Recipients = new List<string> { _userId },
+                            Recipients = new List<string> { _userId.Replace("29:", "") },
                             Surfaces = new List<Surface>
                             {
                                 new MeetingStageSurface<TaskModuleContinueResponse>()
@@ -261,7 +270,7 @@ namespace Microsoft.Bot.Core.Tests
                                         Value = new TaskModuleTaskInfo
                                         {
                                             Title = "Test Notification",
-                                            Url = "https://www.example.com",
+                                            Url = "https://klljrqz0-3978.usw2.devtunnels.ms/meetings",
                                             Height = 200,
                                             Width = 400
                                         }
@@ -331,6 +340,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
+        [Trait("Category", "batch-isolation")]
         [Fact]
         public async Task SendMessageToListOfUsersAsync_ReturnsOperationId()
         {
@@ -371,6 +381,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
+        [Trait("Category", "batch-isolation")]
         [Fact]
         public async Task SendMessageToListOfChannelsAsync_ReturnsOperationId()
         {
@@ -410,6 +421,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
+        [Trait("Category", "batch-isolation")]
         [Fact]
         public async Task SendMessageToAllUsersInTeamAsync_ReturnsOperationId()
         {
@@ -440,6 +452,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
+        [Trait("Category", "batch-isolation")]
         [Fact]
         public async Task SendMessageToAllUsersInTenantAsync_ReturnsOperationId()
         {
@@ -469,7 +482,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Not implemented")]
+        [Fact]
         public async Task SendMessageToTeamsChannelAsync_CreatesConversationAndSendsMessage()
         {
             var adapter = InitializeCompatAdapter();
@@ -501,18 +514,21 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Internal Server Error")]
+        [Trait("Category", "batch-isolation")]
+        [Fact]
         public async Task GetOperationStateAsync_WithOperationId_ReturnsState()
         {
             var adapter = InitializeCompatAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
-            var operationId = "amer_9e0e3ba8-c562-440f-ba9d-10603ee31837";
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
+                    // First send a batch to get a valid operation ID
+                    var operationId = await SendBatchForOperationIdAsync(turnContext, cancellationToken);
+
                     var state = await CompatTeamsInfo.GetOperationStateAsync(
                         turnContext,
                         operationId,
@@ -524,18 +540,20 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "Internal Server Error")]
+        [Trait("Category", "batch-isolation")]
+        [Fact]
         public async Task GetPagedFailedEntriesAsync_WithOperationId_ReturnsFailedEntries()
         {
             var adapter = InitializeCompatAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
-            var operationId = "amer_9e0e3ba8-c562-440f-ba9d-10603ee31837";
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
+                    var operationId = await SendBatchForOperationIdAsync(turnContext, cancellationToken);
+
                     var response = await CompatTeamsInfo.GetPagedFailedEntriesAsync(
                         turnContext,
                         operationId,
@@ -546,18 +564,20 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        [Fact(Skip = "internal error")]
+        [Trait("Category", "batch-isolation")]
+        [Fact]
         public async Task CancelOperationAsync_WithOperationId_CancelsOperation()
         {
             var adapter = InitializeCompatAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
-            var operationId = "amer_9e0e3ba8-c562-440f-ba9d-10603ee31837";
 
             await adapter.ContinueConversationAsync(
                 string.Empty,
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
+                    var operationId = await SendBatchForOperationIdAsync(turnContext, cancellationToken);
+
                     await CompatTeamsInfo.CancelOperationAsync(
                         turnContext,
                         operationId,
@@ -567,6 +587,34 @@ namespace Microsoft.Bot.Core.Tests
                     Assert.True(true);
                 },
                 CancellationToken.None);
+        }
+
+        private static async Task<string> SendBatchForOperationIdAsync(ITurnContext turnContext, CancellationToken cancellationToken)
+        {
+            var activity = new Activity
+            {
+                Type = ActivityTypes.Message,
+                Text = $"Batch for operation state test at {DateTime.UtcNow:s}"
+            };
+            string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID not set");
+            string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID not set");
+
+            string userId2 = Environment.GetEnvironmentVariable("TEST_USER_ID_2") ?? userId;
+            var members = new List<TeamMember>
+            {
+                new TeamMember(userId),
+                new TeamMember(userId2),
+                new TeamMember("29:placeholder-3"),
+                new TeamMember("29:placeholder-4"),
+                new TeamMember("29:placeholder-5"),
+            };
+
+            return await CompatTeamsInfo.SendMessageToListOfUsersAsync(
+                turnContext,
+                activity,
+                members,
+                tenantId,
+                cancellationToken);
         }
 
         private CompatAdapter InitializeCompatAdapter()
@@ -590,6 +638,34 @@ namespace Microsoft.Bot.Core.Tests
             var serviceProvider = services.BuildServiceProvider();
             CompatAdapter compatAdapter = (CompatAdapter)serviceProvider.GetRequiredService<IBotFrameworkHttpAdapter>();
             return compatAdapter;
+        }
+
+        private async Task<string> ResolveUserMriAsync()
+        {
+            var adapter = InitializeCompatAdapter();
+            var conversationReference = CreateConversationReference(_conversationId);
+            var aadObjectId = _userId.Contains(':') ? _userId.Split(':')[1] : _userId;
+            string? resolvedMri = null;
+
+            await adapter.ContinueConversationAsync(
+                string.Empty,
+                conversationReference,
+                async (turnContext, cancellationToken) =>
+                {
+                    var result = await CompatTeamsInfo.GetPagedMembersAsync(
+                        turnContext,
+                        pageSize: 200,
+                        cancellationToken: cancellationToken);
+
+                    var matched = result.Members.FirstOrDefault(m =>
+                        string.Equals(m.AadObjectId, aadObjectId, StringComparison.OrdinalIgnoreCase));
+
+                    resolvedMri = matched?.Id ?? throw new InvalidOperationException(
+                        $"Could not find member with AadObjectId '{aadObjectId}' in paged members list.");
+                },
+                CancellationToken.None);
+
+            return resolvedMri!;
         }
 
         private ConversationReference CreateConversationReference(string conversationId)

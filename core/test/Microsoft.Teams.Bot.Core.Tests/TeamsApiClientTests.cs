@@ -55,6 +55,33 @@ public class TeamsApiClientTests
         }
     }
 
+    private async Task<string> SendBatchAndGetOperationIdAsync()
+    {
+        string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID not set");
+        string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID not set");
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"Batch for operation state test at `{DateTime.UtcNow:s}`" } }
+        };
+
+        // Batch API requires 5-1000 unique members
+        string userId2 = Environment.GetEnvironmentVariable("TEST_USER_ID_2") ?? userId;
+        IList<TeamMember> members =
+        [
+            new TeamMember(userId),
+            new TeamMember(userId2),
+            new TeamMember("29:placeholder-3"),
+            new TeamMember("29:placeholder-4"),
+            new TeamMember("29:placeholder-5"),
+        ];
+
+        return await _teamsClient.SendMessageToListOfUsersAsync(
+            activity, members, tenantId, _serviceUrl, _agenticIdentity,
+            cancellationToken: CancellationToken.None);
+    }
+
     #region Team Operations Tests
 
     [Fact]
@@ -122,7 +149,8 @@ public class TeamsApiClientTests
 
     #region Meeting Operations Tests
 
-    [Fact(Skip = "FetchMeetingInfo requires permissions")]
+    [Trait("Category", "needs-meeting-context")]
+    [Fact]
     public async Task FetchMeetingInfo()
     {
         string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
@@ -159,11 +187,13 @@ public class TeamsApiClientTests
             => _teamsClient.FetchMeetingInfoAsync("invalid-meeting-id", _serviceUrl, _agenticIdentity));
     }
 
+    [Trait("Category", "needs-meeting-context")]
     [Fact]
     public async Task FetchParticipant()
     {
         string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
-        string participantId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+        // Meeting participant API expects the AAD object ID, not the 29: MRI
+        string participantId = (Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set")).Replace("29:", "");
         string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set");
 
         MeetingParticipant result = await _teamsClient.FetchParticipantAsync(
@@ -189,11 +219,14 @@ public class TeamsApiClientTests
         }
     }
 
-    [Fact(Skip = "Requires active meeting context")]
+    [Trait("Category", "needs-meeting-context")]
+    [Trait("Category", "needs-valid-domains")]
+    [Fact]
     public async Task SendMeetingNotification()
     {
         string meetingId = Environment.GetEnvironmentVariable("TEST_MEETINGID") ?? throw new InvalidOperationException("TEST_MEETINGID environment variable not set");
-        string participantId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
+        // Notification recipients need the pairwise MRI, not the AAD-based 29: format
+        string participantId = (Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set")).Replace("29:", "");
 
         var notification = new TargetedMeetingNotification
         {
@@ -206,7 +239,7 @@ public class TeamsApiClientTests
                     {
                         Surface = "meetingStage",
                         ContentType = "task",
-                        Content = new { title = "Test Notification", url = "https://example.com" }
+                        Content = new { title = "Test Notification", url = "https://klljrqz0-3978.usw2.devtunnels.ms/meetings" }
                     }
                 ]
             }
@@ -236,10 +269,11 @@ public class TeamsApiClientTests
 
     #region Batch Message Operations Tests
 
-    [Fact(Skip = "Batch operations require special permissions")]
+    [Trait("Category", "batch-isolation")]
+    [Fact]
     public async Task SendMessageToListOfUsers()
     {
-        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set");
         string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new InvalidOperationException("TEST_USER_ID environment variable not set");
 
         CoreActivity activity = new()
@@ -267,10 +301,11 @@ public class TeamsApiClientTests
         Console.WriteLine($"Batch message sent. Operation ID: {operationId}");
     }
 
-    [Fact(Skip = "Batch operations require special permissions")]
+    [Trait("Category", "batch-isolation")]
+    [Fact]
     public async Task SendMessageToAllUsersInTenant()
     {
-        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set");
 
         CoreActivity activity = new()
         {
@@ -291,10 +326,11 @@ public class TeamsApiClientTests
         Console.WriteLine($"Tenant-wide message sent. Operation ID: {operationId}");
     }
 
-    [Fact(Skip = "Batch operations require special permissions")]
+    [Trait("Category", "batch-isolation")]
+    [Fact]
     public async Task SendMessageToAllUsersInTeam()
     {
-        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set");
         string teamId = Environment.GetEnvironmentVariable("TEST_TEAMID") ?? throw new InvalidOperationException("TEST_TEAMID environment variable not set");
 
         CoreActivity activity = new()
@@ -317,10 +353,11 @@ public class TeamsApiClientTests
         Console.WriteLine($"Team-wide message sent. Operation ID: {operationId}");
     }
 
-    [Fact(Skip = "Batch operations require special permissions")]
+    [Trait("Category", "batch-isolation")]
+    [Fact]
     public async Task SendMessageToListOfChannels()
     {
-        string tenantId = Environment.GetEnvironmentVariable("TENANT_ID") ?? throw new InvalidOperationException("TENANT_ID environment variable not set");
+        string tenantId = Environment.GetEnvironmentVariable("TEST_TENANTID") ?? throw new InvalidOperationException("TEST_TENANTID environment variable not set");
         string channelId = Environment.GetEnvironmentVariable("TEST_CHANNELID") ?? throw new InvalidOperationException("TEST_CHANNELID environment variable not set");
 
         CoreActivity activity = new()
@@ -352,10 +389,11 @@ public class TeamsApiClientTests
 
     #region Batch Operation Management Tests
 
-    [Fact(Skip = "Requires valid operation ID from batch operation")]
+    [Trait("Category", "batch-isolation")]
+    [Fact]
     public async Task GetOperationState()
     {
-        string operationId = Environment.GetEnvironmentVariable("TEST_OPERATION_ID") ?? throw new InvalidOperationException("TEST_OPERATION_ID environment variable not set");
+        string operationId = await SendBatchAndGetOperationIdAsync();
 
         BatchOperationState result = await _teamsClient.GetOperationStateAsync(
             operationId,
@@ -389,10 +427,11 @@ public class TeamsApiClientTests
             => _teamsClient.GetOperationStateAsync("invalid-operation-id", _serviceUrl, _agenticIdentity));
     }
 
-    [Fact(Skip = "Requires valid operation ID from batch operation")]
+    [Trait("Category", "batch-isolation")]
+    [Fact]
     public async Task GetPagedFailedEntries()
     {
-        string operationId = Environment.GetEnvironmentVariable("TEST_OPERATION_ID") ?? throw new InvalidOperationException("TEST_OPERATION_ID environment variable not set");
+        string operationId = await SendBatchAndGetOperationIdAsync();
 
         BatchFailedEntriesResponse result = await _teamsClient.GetPagedFailedEntriesAsync(
             operationId,
@@ -422,10 +461,11 @@ public class TeamsApiClientTests
         }
     }
 
-    [Fact(Skip = "Requires valid operation ID from batch operation")]
+    [Trait("Category", "batch-isolation")]
+    [Fact]
     public async Task CancelOperation()
     {
-        string operationId = Environment.GetEnvironmentVariable("TEST_OPERATION_ID") ?? throw new InvalidOperationException("TEST_OPERATION_ID environment variable not set");
+        string operationId = await SendBatchAndGetOperationIdAsync();
 
         await _teamsClient.CancelOperationAsync(
             operationId,
