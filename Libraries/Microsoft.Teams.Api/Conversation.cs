@@ -72,7 +72,7 @@ public class Conversation
     /// <param name="conversationId">the conversation to thread into (e.g. <c>19:abc@thread.skype</c>)</param>
     /// <param name="messageId">the thread root message ID (must be a non-zero numeric string)</param>
     /// <returns>the threaded conversation ID (e.g. <c>19:abc@thread.skype;messageid=123</c>)</returns>
-    public static string ToThreadId(string conversationId, string messageId)
+    public static string ToThreadedConversationId(string conversationId, string messageId)
     {
         if (string.IsNullOrEmpty(conversationId))
         {

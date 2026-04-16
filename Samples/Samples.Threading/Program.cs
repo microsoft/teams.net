@@ -49,19 +49,19 @@ teams.OnMessage(async (context, cancellationToken) =>
     }
 
     // ============================================
-    // ToThreadId() + teams.Send() — advanced manual control (channels only)
+    // ToThreadedConversationId() + teams.Send() — advanced manual control (channels only)
     // ============================================
     if (text.Contains("test manual"))
     {
-        // ToThreadId() is only valid for conversations that support threading
+        // ToThreadedConversationId() is only valid for conversations that support threading
         var baseId = conversationId.Split(';')[0];
         if (!baseId.EndsWith("@thread.tacv2") && !baseId.EndsWith("@thread.skype") && !baseId.EndsWith("@unq.gbl.spaces"))
         {
             await context.Reply("This command doesn't support threading in this conversation type.", cancellationToken);
             return;
         }
-        var threadId = Microsoft.Teams.Api.Conversation.ToThreadId(conversationId, threadRootId);
-        await teams.Send(threadId, "This was sent using ToThreadId() + teams.Send() for manual control.", cancellationToken: cancellationToken);
+        var threadId = Microsoft.Teams.Api.Conversation.ToThreadedConversationId(conversationId, threadRootId);
+        await teams.Send(threadId, "This was sent using ToThreadedConversationId() + teams.Send() for manual control.", cancellationToken: cancellationToken);
         return;
     }
 
@@ -76,7 +76,7 @@ teams.OnMessage(async (context, cancellationToken) =>
             "- `test reply` - context.Reply() reactive threaded reply\n" +
             "- `test send` - context.Send() to same thread without quoting\n" +
             "- `test proactive` - teams.Reply() proactive threaded reply\n" +
-            "- `test manual` - ToThreadId() + teams.Send() for advanced control",
+            "- `test manual` - ToThreadedConversationId() + teams.Send() for advanced control",
             cancellationToken);
         return;
     }

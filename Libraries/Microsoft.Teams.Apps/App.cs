@@ -176,7 +176,7 @@ public partial class App
     /// send an activity proactively to a conversation.
     /// Sends to the exact conversation ID provided. For channel threads,
     /// the conversation ID must include <c>;messageid=</c> -- use
-    /// <see cref="Conversation.ToThreadId"/> to construct it, or use
+    /// <see cref="Conversation.ToThreadedConversationId"/> to construct it, or use
     /// <see cref="Reply{T}(string, string, T, CancellationToken)"/> which handles this automatically.
     /// </summary>
     public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
@@ -258,7 +258,7 @@ public partial class App
         // Group chats and meetings use @thread.v2 which does not support threading.
         var supportsThreading = baseId.EndsWith("@thread.tacv2") || baseId.EndsWith("@thread.skype") || baseId.EndsWith("@unq.gbl.spaces");
         var targetId = supportsThreading
-            ? Conversation.ToThreadId(conversationId, messageId)
+            ? Conversation.ToThreadedConversationId(conversationId, messageId)
             : conversationId;
         return Send(targetId, activity, cancellationToken: cancellationToken);
     }
