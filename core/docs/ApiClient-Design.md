@@ -9,15 +9,15 @@ The `ApiClient` class (`Microsoft.Teams.Bot.Apps.Api.Clients`) provides a hierar
 ```
 ApiClient (top-level facade)
 ├── Bots              → BotClient
-│   └── SignIn        → BotSignInClient           [BotHttpClient → token.botframework.com]
-├── Conversations     → V3ConversationClient       [delegates to core ConversationClient]
+│   └── SignIn        → BotSignInClient              [BotHttpClient → token.botframework.com]
+├── Conversations     → ConversationApiClient         [delegates to core ConversationClient]
 │   ├── Activities    → ActivityClient
 │   ├── Members       → MemberClient
-│   └── Reactions     → ReactionClient
+│   └── Reactions     → ReactionClient               [Experimental]
 ├── Users             → UserClient
-│   └── Token         → V3UserTokenClient          [BotHttpClient → token.botframework.com]
-├── Teams             → TeamClient                 [BotHttpClient → serviceUrl/v3/teams/]
-└── Meetings          → MeetingClient              [BotHttpClient → serviceUrl/v1/meetings/]
+│   └── Token         → UserTokenApiClient            [BotHttpClient → token.botframework.com]
+├── Teams             → TeamClient                    [BotHttpClient → serviceUrl/v3/teams/]
+└── Meetings          → MeetingClient                 [BotHttpClient → serviceUrl/v1/meetings/]
 ```
 
 ### Two HTTP strategies
@@ -27,6 +27,13 @@ ApiClient (top-level facade)
 | Conversations (Activities, Members, Reactions) | Delegates to core `ConversationClient` | Reuses auth, logging, agents-channel handling, agentic identity support |
 | Teams, Meetings | Uses `BotHttpClient` directly | No core client equivalent exists for these endpoints |
 | Bots.SignIn, Users.Token | Uses `BotHttpClient` directly | Calls `token.botframework.com`, separate from conversation endpoints |
+
+### Experimental APIs
+
+| Feature | Diagnostic ID | Notes |
+|---|---|---|
+| `ReactionClient` | `ExperimentalTeamsReactions` | Reactions endpoint assumed but not confirmed in Teams Bot Framework API |
+| `ActivityClient.CreateTargetedAsync` / `UpdateTargetedAsync` / `DeleteTargetedAsync` | `ExperimentalTeamsTargeted` | Targeted (recipient-only visible) activities; not supported in team channel conversations |
 
 ## Construction & Scoping
 
@@ -42,12 +49,13 @@ The Bot Framework service URL is per-request (comes from `activity.ServiceUrl`),
 ```csharp
 // Registered automatically by AddTeamsBotApplication()
 // The [ActivatorUtilitiesConstructor] attribute tells DI to prefer this constructor
+[ActivatorUtilitiesConstructor]
 public ApiClient(HttpClient httpClient, ConversationClient conversationClient, ILogger? logger = null, ...)
 ```
 
 `AddTeamsBotApplication()` calls `AddBotClient<ApiClient>(...)` which registers `ApiClient` as a typed HTTP client with `BotAuthenticationHandler`. The `ConversationClient` dependency is resolved from DI automatically.
 
-**Important:** The base `ApiClient` has `Conversations`, `Teams`, and `Meetings` set to `null`. Accessing them directly causes `NullReferenceException`. Always use `ForServiceUrl()` or `Context.Api` to get a scoped instance.
+**Important:** The base `ApiClient` has `Conversations`, `Teams`, and `Meetings` set to `null!`. Only `Bots` and `Users` are available on the unscoped instance. Accessing `Conversations`, `Teams`, or `Meetings` directly causes `NullReferenceException`. Always use `ForServiceUrl()` or `Context.Api` to get a scoped instance.
 
 ### Per-request scoping via Context.Api
 
@@ -75,15 +83,14 @@ await scoped.Conversations.Activities.CreateAsync(conversationId, activity);
 
 `ForServiceUrl` shares the underlying `BotHttpClient` and `ConversationClient` — only the sub-client wrappers are new allocations.
 
-### Fully initialized (for tests or known serviceUrl)
+### Constructors
 
-```csharp
-ApiClient client = new(
-    new Uri("https://smba.trafficmanager.net/teams/"),
-    httpClient,
-    conversationClient,
-    logger);
-```
+| Constructor | Use case |
+|---|---|
+| `ApiClient(HttpClient, ConversationClient, ILogger?, string)` | DI registration (marked `[ActivatorUtilitiesConstructor]`) |
+| `ApiClient(Uri, HttpClient, ConversationClient, ILogger?, string)` | Fully initialized with known serviceUrl |
+| `ApiClient(ApiClient)` | Copy constructor |
+| Private: `ApiClient(BotHttpClient, ConversationClient, string, Uri)` | Used by `ForServiceUrl` — shares HTTP client |
 
 ## Delegation Pattern
 
@@ -120,9 +127,9 @@ ReactionClient.AddAsync(conversationId, activityId, reactionType)
 | `UpdateAsync(conversationId, id, activity)` | `UpdateActivityAsync(conversationId, id, activity)` | Sets `ServiceUrl` on activity |
 | `ReplyAsync(conversationId, id, activity)` | `SendActivityAsync(activity)` | Sets `ReplyToId`, `ServiceUrl`, `Conversation` |
 | `DeleteAsync(conversationId, id)` | `DeleteActivityAsync(conversationId, id, serviceUrl)` | |
-| `CreateTargetedAsync(conversationId, activity)` | `SendActivityAsync(activity)` | Sets `Recipient.IsTargeted = true` |
-| `UpdateTargetedAsync(conversationId, id, activity)` | `UpdateTargetedActivityAsync(conversationId, id, activity)` | Sets `ServiceUrl` on activity |
-| `DeleteTargetedAsync(conversationId, id)` | `DeleteTargetedActivityAsync(conversationId, id, serviceUrl)` | |
+| `CreateTargetedAsync(conversationId, activity)` | `SendActivityAsync(activity)` | Sets `Recipient.IsTargeted = true` [Experimental] |
+| `UpdateTargetedAsync(conversationId, id, activity)` | `UpdateTargetedActivityAsync(conversationId, id, activity)` | Sets `ServiceUrl` [Experimental] |
+| `DeleteTargetedAsync(conversationId, id)` | `DeleteTargetedActivityAsync(conversationId, id, serviceUrl)` | [Experimental] |
 
 #### MemberClient → ConversationClient
 
@@ -133,35 +140,66 @@ ReactionClient.AddAsync(conversationId, activityId, reactionType)
 | `GetByIdAsync<T>(conversationId, memberId)` | `GetConversationMemberAsync<T>(conversationId, memberId, serviceUrl)` |
 | `DeleteAsync(conversationId, memberId)` | `DeleteConversationMemberAsync(conversationId, memberId, serviceUrl)` |
 
-#### ReactionClient → ConversationClient
+#### ReactionClient → ConversationClient [Experimental]
 
 | ReactionClient | ConversationClient |
 |---|---|
 | `AddAsync(conversationId, activityId, reactionType)` | `AddReactionAsync(conversationId, activityId, reactionType, serviceUrl)` |
 | `DeleteAsync(conversationId, activityId, reactionType)` | `DeleteReactionAsync(conversationId, activityId, reactionType, serviceUrl)` |
 
-#### V3ConversationClient → ConversationClient
+#### ConversationApiClient → ConversationClient
 
-| V3ConversationClient | ConversationClient |
+| ConversationApiClient | ConversationClient |
 |---|---|
 | `CreateAsync(parameters)` | `CreateConversationAsync(parameters, serviceUrl)` |
+
+#### TeamClient (direct HTTP)
+
+| TeamClient | Endpoint |
+|---|---|
+| `GetByIdAsync(id)` | `GET {serviceUrl}/v3/teams/{id}` |
+| `GetConversationsAsync(id)` | `GET {serviceUrl}/v3/teams/{id}/conversations` |
+
+#### MeetingClient (direct HTTP)
+
+| MeetingClient | Endpoint |
+|---|---|
+| `GetByIdAsync(id)` | `GET {serviceUrl}/v1/meetings/{id}` |
+| `GetParticipantAsync(meetingId, id, tenantId)` | `GET {serviceUrl}/v1/meetings/{meetingId}/participants/{id}?tenantId={tenantId}` |
+
+#### BotSignInClient (direct HTTP)
+
+| BotSignInClient | Endpoint |
+|---|---|
+| `GetUrlAsync(state, ...)` | `GET {tokenApi}/api/botsignin/GetSignInUrl?state={state}` |
+| `GetResourceAsync(state, ...)` | `GET {tokenApi}/api/botsignin/GetSignInResource?state={state}` |
+
+#### UserTokenApiClient (direct HTTP)
+
+| UserTokenApiClient | Endpoint |
+|---|---|
+| `GetAsync(userId, connectionName, channelId, ...)` | `GET {tokenApi}/api/usertoken/GetToken?...` |
+| `GetAadAsync(userId, connectionName, channelId, ...)` | `POST {tokenApi}/api/usertoken/GetAadTokens?...` |
+| `GetStatusAsync(userId, channelId, ...)` | `GET {tokenApi}/api/usertoken/GetTokenStatus?...` |
+| `SignOutAsync(userId, connectionName, channelId)` | `DELETE {tokenApi}/api/usertoken/SignOut?...` |
+| `ExchangeAsync(userId, connectionName, channelId, token)` | `POST {tokenApi}/api/usertoken/exchange?...` |
 
 ## File Layout
 
 ```
 core/src/Microsoft.Teams.Bot.Apps/Api/Clients/
 ├── ApiClient.cs              Top-level facade, DI entry point, ForServiceUrl factory
-├── V3ConversationClient.cs   Conversation facade → delegates to core ConversationClient
-├── ActivityClient.cs         Activity CRUD → delegates to core ConversationClient
+├── ConversationApiClient.cs  Conversation facade → delegates to core ConversationClient
+├── ActivityClient.cs         Activity CRUD + targeted → delegates to core ConversationClient
 ├── MemberClient.cs           Member operations → delegates to core ConversationClient
-├── ReactionClient.cs         Reaction operations → delegates to core ConversationClient
+├── ReactionClient.cs         Reaction operations → delegates to core ConversationClient [Experimental]
 ├── TeamClient.cs             Team info → BotHttpClient (v3/teams/)
 ├── MeetingClient.cs          Meeting info → BotHttpClient (v1/meetings/) + models
 ├── BotClient.cs              Bot facade (groups SignIn)
 ├── BotSignInClient.cs        Sign-in URLs → BotHttpClient (token.botframework.com)
 ├── BotTokenClient.cs         Static scope constants
 ├── UserClient.cs             User facade (groups Token)
-└── V3UserTokenClient.cs      User token ops → BotHttpClient (token.botframework.com)
+└── UserTokenApiClient.cs     User token ops → BotHttpClient (token.botframework.com)
 ```
 
 ## Integration with Context and Handlers
@@ -176,18 +214,25 @@ This is the primary way handlers should access the API clients. It ensures the s
 
 ## Integration with CompatTeamsInfo
 
-`CompatTeamsInfo` retrieves `ApiClient` from `TurnState` and uses sub-clients for Teams-specific operations:
+`CompatTeamsInfo` retrieves clients from `TurnState`:
 
-- `client.Meetings.GetByIdAsync(meetingId)` — meeting info
-- `client.Meetings.GetParticipantAsync(meetingId, participantId, tenantId)` — meeting participant
-- `client.Teams.GetByIdAsync(teamId)` — team details
-- `client.Teams.GetConversationsAsync(teamId)` — channel list
+- **`ApiClient`** (from `TurnState.Get<ApiClient>()`) for Teams/Meetings operations:
+  - `client.Teams.GetByIdAsync(teamId)` — team details
+  - `client.Teams.GetConversationsAsync(teamId)` — channel list
+  - `client.Meetings.GetParticipantAsync(meetingId, participantId, tenantId)` — meeting participant
 
-Member operations go through the core `ConversationClient` directly (not via `ApiClient`).
+- **`ConversationClient`** (from `CompatConnectorClient` in `TurnState.Get<IConnectorClient>()`) for member operations:
+  - `GetConversationMemberAsync<TeamsConversationAccount>(...)` — single member
+  - `GetConversationMembersAsync(...)` — all members
+  - `GetConversationPagedMembersAsync(...)` — paged members
 
-The `CompatAdapter` should scope the `ApiClient` before storing it in `TurnState`:
+**Note on CompatAdapter scoping:** The `CompatAdapter` currently stores the unscoped `TeamsApiClient` in `TurnState` (line 59). This works because `CompatTeamsInfo` uses the `ApiClient` sub-clients which are scoped. However, `CompatAdapter` should ideally scope the `ApiClient` before storing:
 
 ```csharp
+// Current (unscoped — Teams/Meetings sub-clients are null):
+turnContext.TurnState.Add<ApiClient>(_teamsBotApplication.TeamsApiClient);
+
+// Should be (scoped):
 ApiClient scopedClient = _teamsBotApplication.TeamsApiClient.ForServiceUrl(new Uri(activity.ServiceUrl));
 turnContext.TurnState.Add<ApiClient>(scopedClient);
 ```
@@ -196,3 +241,4 @@ turnContext.TurnState.Add<ApiClient>(scopedClient);
 
 - **BatchClient**: Batch messaging operations (`SendMessageToListOfUsersAsync`, etc.) need a new sub-client on `ApiClient` using `BotHttpClient` for the `v3/batch/conversation/` endpoints.
 - **MeetingClient.SendMeetingNotificationAsync**: Meeting notification support needs to be added along with notification model types.
+- **CompatAdapter scoping**: Fix `CompatAdapter` to call `ForServiceUrl` before storing `ApiClient` in `TurnState`.
