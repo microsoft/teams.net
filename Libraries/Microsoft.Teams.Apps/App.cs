@@ -256,7 +256,7 @@ public partial class App
         var baseId = conversationId.Split(';')[0];
         // Channels use @thread.tacv2 or @thread.skype, 1:1 chats use @unq.gbl.spaces.
         // Group chats and meetings use @thread.v2 which does not support threading.
-        var supportsThreading = baseId.EndsWith("@thread.tacv2") || baseId.EndsWith("@thread.skype") || baseId.EndsWith("@unq.gbl.spaces");
+        var supportsThreading = baseId.EndsWith("@thread.tacv2", StringComparison.Ordinal) || baseId.EndsWith("@thread.skype", StringComparison.Ordinal) || baseId.EndsWith("@unq.gbl.spaces", StringComparison.Ordinal);
         var targetId = supportsThreading
             ? Conversation.ToThreadedConversationId(conversationId, messageId)
             : conversationId;

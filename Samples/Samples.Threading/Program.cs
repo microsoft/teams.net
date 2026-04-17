@@ -12,7 +12,7 @@ var teams = app.UseTeams();
 
 teams.OnMessage(async (context, cancellationToken) =>
 {
-    var text = (context.Activity.Text ?? "").ToLower();
+    var text = (context.Activity.Text ?? "").ToLowerInvariant();
     var conversationId = context.Ref.Conversation.Id;
     var messageId = context.Activity.Id!;
 
@@ -49,7 +49,7 @@ teams.OnMessage(async (context, cancellationToken) =>
     }
 
     // ============================================
-    // ToThreadedConversationId() + teams.Send() — advanced manual control (channels only)
+    // ToThreadedConversationId() + teams.Send() — advanced manual control (channels and 1:1 chats only)
     // ============================================
     if (text.Contains("test manual"))
     {
