@@ -271,31 +271,31 @@ public static class CompatTeamsInfo
 
     #region Meeting Methods
 
-    /// <summary>
-    /// Gets the information for the given meeting id.
-    /// </summary>
-    /// <param name="turnContext">Turn context.</param>
-    /// <param name="meetingId">The BASE64-encoded id of the Teams meeting.</param>
-    /// <param name="cancellationToken">Cancellation token.</param>
-    /// <returns>Meeting information.</returns>
-    public static async Task<BotFrameworkTeams.MeetingInfo> GetMeetingInfoAsync(
-        ITurnContext turnContext,
-        string? meetingId = null,
-        CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(turnContext);
-        meetingId ??= turnContext.Activity.TeamsGetMeetingInfo()?.Id
-            ?? throw new InvalidOperationException("The meetingId can only be null if turnContext is within the scope of a MS Teams Meeting.");
+    ///// <summary>
+    ///// Gets the information for the given meeting id.
+    ///// </summary>
+    ///// <param name="turnContext">Turn context.</param>
+    ///// <param name="meetingId">The BASE64-encoded id of the Teams meeting.</param>
+    ///// <param name="cancellationToken">Cancellation token.</param>
+    ///// <returns>Meeting information.</returns>
+    //public static async Task<BotFrameworkTeams.MeetingInfo> GetMeetingInfoAsync(
+    //    ITurnContext turnContext,
+    //    string? meetingId = null,
+    //    CancellationToken cancellationToken = default)
+    //{
+    //    ArgumentNullException.ThrowIfNull(turnContext);
+    //    meetingId ??= turnContext.Activity.TeamsGetMeetingInfo()?.Id
+    //        ?? throw new InvalidOperationException("The meetingId can only be null if turnContext is within the scope of a MS Teams Meeting.");
 
-        var client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
+    //    var client = GetTeamsApiClient(turnContext);
+    //    // Uri serviceUrl = new(GetServiceUrl(turnContext));
+    //    AgenticIdentity identity = GetIdentity(turnContext);
 
-        var result = await client.Meetings.GetByIdAsync(
-            meetingId, cancellationToken).ConfigureAwait(false);
+    //    var result = await client.Meetings.GetByIdAsync(
+    //        meetingId, cancellationToken).ConfigureAwait(false);
 
-        return new BotFrameworkTeams.MeetingInfo(); // TODO: Map the result to BotFrameworkTeams.MeetingInfo once the API is finalized and we have the necessary details in the result to perform the mapping.
-    }
+    //    return new BotFrameworkTeams.MeetingInfo(); // TODO: Map the result to BotFrameworkTeams.MeetingInfo once the API is finalized and we have the necessary details in the result to perform the mapping.
+    //}
 
     /// <summary>
     /// Gets the details for the given meeting participant. This only works in teams meeting scoped conversations.
@@ -322,13 +322,25 @@ public static class CompatTeamsInfo
             ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
         var client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
+        //AgenticIdentity identity = GetIdentity(turnContext);
 
         var result = await client.Meetings.GetParticipantAsync(
             meetingId, participantId, tenantId, cancellationToken).ConfigureAwait(false);
-
-        return new TeamsMeetingParticipant(); // TODO: Map the result to BotFrameworkTeams.TeamsMeetingParticipant once the API is finalized and we have the necessary details in the result to perform the mapping.
+        
+        return new TeamsMeetingParticipant()
+        {
+            Conversation = new Microsoft.Bot.Schema.ConversationAccount {  Id = result?.Conversation?.Id },
+            Meeting = new MeetingParticipantInfo()
+            {
+                InMeeting = result?.Meeting?.InMeeting,
+                Role = result?.Meeting?.Role
+            },
+            User = new()
+            {
+                Id = result?.User?.Id,
+                Name = result?.User?.Name
+            }
+        };
     }
 
     ///// <summary>
@@ -386,8 +398,6 @@ public static class CompatTeamsInfo
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
         var client = GetTeamsApiClient(turnContext);
-        Uri serviceUrl = new(GetServiceUrl(turnContext));
-        AgenticIdentity identity = GetIdentity(turnContext);
 
         var result = await client.Teams.GetByIdAsync(t, cancellationToken).ConfigureAwait(false);
 

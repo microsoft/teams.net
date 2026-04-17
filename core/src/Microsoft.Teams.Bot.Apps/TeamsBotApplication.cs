@@ -61,7 +61,7 @@ public class TeamsBotApplication : BotApplication
         : base(conversationClient, userTokenClient, logger, options)
     {
         _teamsApiClient = teamsApiClient;
-        Api = new ApiClient(new Uri("https://graph.microsoft.com/v1.0/"), null!, logger); // TODO: inject HttpClient
+        Api = teamsApiClient;
         Router = new Router(logger);
         OnActivity = async (activity, cancellationToken) =>
         {

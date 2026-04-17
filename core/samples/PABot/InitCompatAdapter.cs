@@ -73,7 +73,7 @@ namespace PABot
             RegisterHttpClients(services, config);
 
             // Register Bot Framework clients
-            RegisterBotClients(services, config);
+            RegisterBotClients(services);
         }
 
         private static AdapterConfig ReadAdapterConfig(IServiceCollection services)
@@ -251,7 +251,7 @@ namespace PABot
                 .AddHttpMessageHandler(sp => CreatePACustomAuthHandler(sp, config));
         }
 
-        private static void RegisterBotClients(IServiceCollection services, AdapterConfig config)
+        private static void RegisterBotClients(IServiceCollection services)
         {
             // Register ConversationClient
             services.AddSingleton<ConversationClient>(sp =>
@@ -293,7 +293,7 @@ namespace PABot
             });
         }
 
-        private static DelegatingHandler CreatePACustomAuthHandler(IServiceProvider sp, AdapterConfig config)
+        private static PACustomAuthHandler CreatePACustomAuthHandler(IServiceProvider sp, AdapterConfig config)
         {
             // Use bot scope if available, otherwise use agent scope
             string? botScope = config.BotIdentity?.Scope;

@@ -21,24 +21,18 @@ namespace Microsoft.Teams.Bot.Compat;
 /// The adapter allows registration of middleware and error handling delegates, and supports processing HTTP requests
 /// and continuing conversations. Thread safety is not guaranteed; instances should not be shared across concurrent
 /// requests.</remarks>
-public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
+/// <remarks>
+/// Creates a new instance of the <see cref="CompatAdapter"/> class.
+/// </remarks>
+/// <param name="teamsBotApplication">The Teams bot application instance.</param>
+/// <param name="httpContextAccessor">The HTTP context accessor.</param>
+/// <param name="logger">The logger instance.</param>
+public class CompatAdapter(
+    TeamsBotApplication teamsBotApplication,
+    IHttpContextAccessor? httpContextAccessor = null,
+    ILogger? logger = null) : CompatBotAdapter(teamsBotApplication, httpContextAccessor, logger), IBotFrameworkHttpAdapter
 {
-    private readonly TeamsBotApplication _teamsBotApplication;
-
-    /// <summary>
-    /// Creates a new instance of the <see cref="CompatAdapter"/> class.
-    /// </summary>
-    /// <param name="teamsBotApplication">The Teams bot application instance.</param>
-    /// <param name="httpContextAccessor">The HTTP context accessor.</param>
-    /// <param name="logger">The logger instance.</param>
-    public CompatAdapter(
-        TeamsBotApplication teamsBotApplication,
-        IHttpContextAccessor? httpContextAccessor = null,
-        ILogger? logger = null)
-        : base(teamsBotApplication, httpContextAccessor, logger)
-    {
-        _teamsBotApplication = teamsBotApplication;
-    }
+    private readonly TeamsBotApplication _teamsBotApplication = teamsBotApplication;
 
     /// <summary>
     /// Processes an incoming HTTP request and generates an appropriate HTTP response using the provided bot instance.

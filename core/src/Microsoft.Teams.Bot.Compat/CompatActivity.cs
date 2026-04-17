@@ -174,7 +174,7 @@ public static class CompatActivity
 
         return new Microsoft.Bot.Schema.Teams.TeamsMeetingParticipant
         {
-            User = participant.User != null ? participant.User.ToCompatTeamsChannelAccount() : null,
+            User = participant.User?.ToCompatTeamsChannelAccount(),
             Meeting = participant.Meeting != null ? new Microsoft.Bot.Schema.Teams.MeetingParticipantInfo
             {
                 Role = participant.Meeting.Role,

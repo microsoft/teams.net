@@ -36,14 +36,14 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Microsoft.Bot.Connector.IConnectorClient? capturedConnectorClient = null;
             Microsoft.Teams.Bot.Apps.Api.Clients.ApiClient? capturedTeamsApiClient = null;
 
-            BotCallbackHandler callback = async (turnContext, cancellationToken) =>
+            async Task callback(ITurnContext turnContext, CancellationToken cancellationToken)
             {
                 callbackInvoked = true;
                 capturedUserTokenClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.Authentication.UserTokenClient>();
                 capturedConnectorClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.IConnectorClient>();
                 capturedTeamsApiClient = turnContext.TurnState.Get<Microsoft.Teams.Bot.Apps.Api.Clients.ApiClient>();
                 await Task.CompletedTask;
-            };
+            }
 
             // Act
             await botAdapter.ContinueConversationAsync(
@@ -58,12 +58,12 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             // Verify UserTokenClient is CompatUserTokenClient (check by type name since it's internal)
             Assert.NotNull(capturedUserTokenClient);
             Assert.Equal("CompatUserTokenClient", capturedUserTokenClient.GetType().Name);
-            Assert.IsAssignableFrom<Microsoft.Bot.Connector.Authentication.UserTokenClient>(capturedUserTokenClient);
+            Assert.IsType<Microsoft.Bot.Connector.Authentication.UserTokenClient>(capturedUserTokenClient, exactMatch: false);
 
             // Verify ConnectorClient is CompatConnectorClient (check by type name since it's internal)
             Assert.NotNull(capturedConnectorClient);
             Assert.Equal("CompatConnectorClient", capturedConnectorClient.GetType().Name);
-            Assert.IsAssignableFrom<Microsoft.Bot.Connector.IConnectorClient>(capturedConnectorClient);
+            Assert.IsType<Microsoft.Bot.Connector.IConnectorClient>(capturedConnectorClient, exactMatch: false);
 
             // Verify TeamsApiClient is the same instance we set up
             Assert.NotNull(capturedTeamsApiClient);

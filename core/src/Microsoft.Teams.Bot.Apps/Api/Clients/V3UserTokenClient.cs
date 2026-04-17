@@ -63,7 +63,7 @@ public class V3UserTokenClient
         ];
 
         string url = $"{_tokenApiEndpoint}/api/usertoken/GetAadTokens?{string.Join("&", queryParams)}";
-        var body = new { resourceUrls = resourceUrls ?? new List<string>() };
+        var body = new { resourceUrls = resourceUrls ?? [] };
         string bodyJson = JsonSerializer.Serialize(body, JsonOptions);
 
         return await _http.SendAsync<IDictionary<string, GetTokenResult>>(
