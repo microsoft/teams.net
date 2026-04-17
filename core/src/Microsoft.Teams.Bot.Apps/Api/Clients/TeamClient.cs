@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Http;
 
@@ -35,6 +36,13 @@ public class TeamClient
     public async Task<List<TeamsChannel>?> GetConversationsAsync(string id, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v3/teams/{Uri.EscapeDataString(id)}/conversations";
-        return await _http.SendAsync<List<TeamsChannel>>(HttpMethod.Get, url, body: null, options: null, cancellationToken).ConfigureAwait(false);
+        ConversationListResponse? response = await _http.SendAsync<ConversationListResponse>(HttpMethod.Get, url, body: null, options: null, cancellationToken).ConfigureAwait(false);
+        return response?.Conversations;
+    }
+
+    private sealed class ConversationListResponse
+    {
+        [JsonPropertyName("conversations")]
+        public List<TeamsChannel>? Conversations { get; set; }
     }
 }

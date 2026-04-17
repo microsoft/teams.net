@@ -28,34 +28,49 @@ ApiClient (top-level facade)
 | Teams, Meetings | Uses `BotHttpClient` directly | No core client equivalent exists for these endpoints |
 | Bots.SignIn, Users.Token | Uses `BotHttpClient` directly | Calls `token.botframework.com`, separate from conversation endpoints |
 
-## Construction Patterns
+## Construction & Scoping
 
-### DI-friendly (no serviceUrl)
+### The serviceUrl problem
+
+The Bot Framework service URL is per-request (comes from `activity.ServiceUrl`), but `ApiClient` is per-application (DI singleton). The `ApiClient` solves this with a two-step pattern:
+
+1. **DI registration** creates a base `ApiClient` without a serviceUrl
+2. **Per-request**, `ForServiceUrl(uri)` creates a lightweight scoped copy with all sub-clients bound
+
+### DI-friendly constructor (no serviceUrl)
 
 ```csharp
-// Startup — registered via AddTeamsBotApplication() or manually
-services.AddSingleton<ApiClient>(sp =>
+// Registered automatically by AddTeamsBotApplication()
+// The [ActivatorUtilitiesConstructor] attribute tells DI to prefer this constructor
+public ApiClient(HttpClient httpClient, ConversationClient conversationClient, ILogger? logger = null, ...)
+```
+
+`AddTeamsBotApplication()` calls `AddBotClient<ApiClient>(...)` which registers `ApiClient` as a typed HTTP client with `BotAuthenticationHandler`. The `ConversationClient` dependency is resolved from DI automatically.
+
+**Important:** The base `ApiClient` has `Conversations`, `Teams`, and `Meetings` set to `null`. Accessing them directly causes `NullReferenceException`. Always use `ForServiceUrl()` or `Context.Api` to get a scoped instance.
+
+### Per-request scoping via Context.Api
+
+In activity handlers, use the `Context.Api` property which auto-scopes to the current activity's service URL:
+
+```csharp
+// In a handler — Context.Api is lazy-initialized via ForServiceUrl(Activity.ServiceUrl)
+botApp.OnMessage(async (ctx, ct) =>
 {
-    HttpClient httpClient = sp.GetRequiredService<IHttpClientFactory>().CreateClient("ApiClient");
-    ConversationClient conversationClient = sp.GetRequiredService<ConversationClient>();
-    return new ApiClient(httpClient, conversationClient, sp.GetRequiredService<ILogger<ApiClient>>());
+    var members = await ctx.Api.Conversations.Members.GetAsync(conversationId, ct);
+    var team = await ctx.Api.Teams.GetByIdAsync(teamId, ct);
 });
 ```
 
-The `[ActivatorUtilitiesConstructor]` attribute marks this as the preferred constructor for DI, avoiding ambiguity with the fully-initialized constructor.
+**Do NOT use `ctx.TeamsBotApplication.Api.Conversations`** — that is the unscoped base client and will throw `NullReferenceException`.
 
-ServiceUrl-dependent sub-clients (`Conversations`, `Teams`, `Meetings`) are `null` until `ForServiceUrl` is called.
+### ForServiceUrl (explicit scoping)
 
-### Per-request scoping
+For code outside handlers (e.g., proactive messaging, compat layer):
 
 ```csharp
-// Per-request — creates a lightweight copy with serviceUrl-bound sub-clients
 ApiClient scoped = baseApiClient.ForServiceUrl(activity.ServiceUrl);
-
-// Now safe to use
 await scoped.Conversations.Activities.CreateAsync(conversationId, activity);
-await scoped.Teams.GetByIdAsync(teamId);
-await scoped.Meetings.GetByIdAsync(meetingId);
 ```
 
 `ForServiceUrl` shares the underlying `BotHttpClient` and `ConversationClient` — only the sub-client wrappers are new allocations.
@@ -70,7 +85,7 @@ ApiClient client = new(
     logger);
 ```
 
-## Delegation Pattern (Option C)
+## Delegation Pattern
 
 The conversation sub-clients (`ActivityClient`, `MemberClient`, `ReactionClient`) delegate to the core `ConversationClient` rather than duplicating HTTP logic. This ensures:
 
@@ -135,7 +150,7 @@ ReactionClient.AddAsync(conversationId, activityId, reactionType)
 
 ```
 core/src/Microsoft.Teams.Bot.Apps/Api/Clients/
-├── ApiClient.cs              Top-level facade, DI entry point
+├── ApiClient.cs              Top-level facade, DI entry point, ForServiceUrl factory
 ├── V3ConversationClient.cs   Conversation facade → delegates to core ConversationClient
 ├── ActivityClient.cs         Activity CRUD → delegates to core ConversationClient
 ├── MemberClient.cs           Member operations → delegates to core ConversationClient
@@ -149,11 +164,28 @@ core/src/Microsoft.Teams.Bot.Apps/Api/Clients/
 └── V3UserTokenClient.cs      User token ops → BotHttpClient (token.botframework.com)
 ```
 
+## Integration with Context and Handlers
+
+The `Context<TActivity>` class exposes a lazy `Api` property:
+
+```csharp
+public ApiClient Api => _api ??= TeamsBotApplication.Api.ForServiceUrl(Activity.ServiceUrl);
+```
+
+This is the primary way handlers should access the API clients. It ensures the scoped `ApiClient` is created once per request and reused across multiple calls within the same handler.
+
 ## Integration with CompatTeamsInfo
 
-`CompatTeamsInfo` retrieves `ApiClient` from `TurnState` and uses it for Teams-specific operations (meetings, team details, channels). Member operations go through the core `ConversationClient` directly.
+`CompatTeamsInfo` retrieves `ApiClient` from `TurnState` and uses sub-clients for Teams-specific operations:
 
-The `CompatAdapter` should scope the `ApiClient` per-request before storing it in `TurnState`:
+- `client.Meetings.GetByIdAsync(meetingId)` — meeting info
+- `client.Meetings.GetParticipantAsync(meetingId, participantId, tenantId)` — meeting participant
+- `client.Teams.GetByIdAsync(teamId)` — team details
+- `client.Teams.GetConversationsAsync(teamId)` — channel list
+
+Member operations go through the core `ConversationClient` directly (not via `ApiClient`).
+
+The `CompatAdapter` should scope the `ApiClient` before storing it in `TurnState`:
 
 ```csharp
 ApiClient scopedClient = _teamsBotApplication.TeamsApiClient.ForServiceUrl(new Uri(activity.ServiceUrl));
@@ -164,4 +196,3 @@ turnContext.TurnState.Add<ApiClient>(scopedClient);
 
 - **BatchClient**: Batch messaging operations (`SendMessageToListOfUsersAsync`, etc.) need a new sub-client on `ApiClient` using `BotHttpClient` for the `v3/batch/conversation/` endpoints.
 - **MeetingClient.SendMeetingNotificationAsync**: Meeting notification support needs to be added along with notification model types.
-- **DI registration**: `AddTeamsBotApplication` should register `ApiClient` using the DI-friendly constructor automatically.
