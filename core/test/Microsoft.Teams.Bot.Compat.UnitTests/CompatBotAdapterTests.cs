@@ -259,6 +259,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             ApiClient mockTeamsApiClient = new(
                 new Uri("https://service.url"),
                 new HttpClient(),
+                mockConversationClient.Object,
                 NullLogger<ApiClient>.Instance);
 
             Mock<TeamsBotApplication> mock = new(
@@ -280,6 +281,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             ApiClient mockTeamsApiClient = new(
                 new Uri("https://service.url"),
                 new HttpClient(),
+                conversationClient,
                 NullLogger<ApiClient>.Instance);
             TeamsBotApplication teamsBotApplication = new(
                 conversationClient,

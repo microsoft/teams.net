@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core.Http;
+
+using CoreConversationClient = Microsoft.Teams.Bot.Core.ConversationClient;
 
 namespace Microsoft.Teams.Bot.Apps.Api.Clients;
 
@@ -14,15 +17,16 @@ namespace Microsoft.Teams.Bot.Apps.Api.Clients;
 /// This client can be constructed in two ways:
 /// </para>
 /// <list type="bullet">
-/// <item><b>DI-friendly (no serviceUrl)</b> — Use <see cref="ApiClient(HttpClient, ILogger, string)"/>
+/// <item><b>DI-friendly (no serviceUrl)</b> — Use <see cref="ApiClient(HttpClient, CoreConversationClient, ILogger, string)"/>
 /// and call <see cref="ForServiceUrl"/> per-request to create a scoped instance.</item>
-/// <item><b>Fully initialized</b> — Use <see cref="ApiClient(Uri, HttpClient, ILogger, string)"/>
+/// <item><b>Fully initialized</b> — Use <see cref="ApiClient(Uri, HttpClient, CoreConversationClient, ILogger, string)"/>
 /// when the service URL is known upfront.</item>
 /// </list>
 /// </remarks>
 public class ApiClient
 {
     private readonly BotHttpClient _http;
+    private readonly CoreConversationClient _conversationClient;
     private readonly string _tokenApiEndpoint;
 
     /// <summary>
@@ -62,13 +66,17 @@ public class ApiClient
     /// Use <see cref="ForServiceUrl"/> to create a scoped instance bound to a specific service URL.
     /// </summary>
     /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <c>BotAuthenticationHandler</c>).</param>
+    /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
     /// <param name="logger">Optional logger.</param>
     /// <param name="tokenApiEndpoint">Optional token API endpoint override. Defaults to https://token.botframework.com.</param>
-    public ApiClient(HttpClient httpClient, ILogger? logger = null, string tokenApiEndpoint = "https://token.botframework.com")
+    [ActivatorUtilitiesConstructor]
+    public ApiClient(HttpClient httpClient, CoreConversationClient conversationClient, ILogger? logger = null, string tokenApiEndpoint = "https://token.botframework.com")
     {
         ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(conversationClient);
 
         _http = new BotHttpClient(httpClient, logger);
+        _conversationClient = conversationClient;
         _tokenApiEndpoint = tokenApiEndpoint;
         Bots = new BotClient(_http, tokenApiEndpoint);
         Users = new UserClient(_http, tokenApiEndpoint);
@@ -85,22 +93,24 @@ public class ApiClient
     /// </summary>
     /// <param name="serviceUrl">The Bot Framework service URL.</param>
     /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <c>BotAuthenticationHandler</c>).</param>
+    /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
     /// <param name="logger">Optional logger.</param>
     /// <param name="tokenApiEndpoint">Optional token API endpoint override. Defaults to https://token.botframework.com.</param>
-    public ApiClient(Uri serviceUrl, HttpClient httpClient, ILogger? logger = null, string tokenApiEndpoint = "https://token.botframework.com")
+    public ApiClient(Uri serviceUrl, HttpClient httpClient, CoreConversationClient conversationClient, ILogger? logger = null, string tokenApiEndpoint = "https://token.botframework.com")
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
         ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(conversationClient);
 
-        string url = serviceUrl.ToString();
         _http = new BotHttpClient(httpClient, logger);
+        _conversationClient = conversationClient;
         _tokenApiEndpoint = tokenApiEndpoint;
         ServiceUrl = serviceUrl;
         Bots = new BotClient(_http, tokenApiEndpoint);
-        Conversations = new V3ConversationClient(url, _http);
+        Conversations = new V3ConversationClient(serviceUrl, conversationClient);
         Users = new UserClient(_http, tokenApiEndpoint);
-        Teams = new TeamClient(url, _http);
-        Meetings = new MeetingClient(url, _http);
+        Teams = new TeamClient(serviceUrl.ToString(), _http);
+        Meetings = new MeetingClient(serviceUrl.ToString(), _http);
     }
 
     /// <summary>
@@ -112,6 +122,7 @@ public class ApiClient
 
         ServiceUrl = client.ServiceUrl;
         _http = client._http;
+        _conversationClient = client._conversationClient;
         _tokenApiEndpoint = client._tokenApiEndpoint;
         Bots = client.Bots;
         Conversations = client.Conversations;
@@ -120,18 +131,18 @@ public class ApiClient
         Meetings = client.Meetings;
     }
 
-    // Private constructor for ForServiceUrl — shares BotHttpClient
-    private ApiClient(BotHttpClient http, string tokenApiEndpoint, Uri serviceUrl)
+    // Private constructor for ForServiceUrl — shares BotHttpClient and ConversationClient
+    private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, string tokenApiEndpoint, Uri serviceUrl)
     {
         _http = http;
+        _conversationClient = conversationClient;
         _tokenApiEndpoint = tokenApiEndpoint;
         ServiceUrl = serviceUrl;
-        string url = serviceUrl.ToString();
         Bots = new BotClient(http, tokenApiEndpoint);
-        Conversations = new V3ConversationClient(url, http);
+        Conversations = new V3ConversationClient(serviceUrl, conversationClient);
         Users = new UserClient(http, tokenApiEndpoint);
-        Teams = new TeamClient(url, http);
-        Meetings = new MeetingClient(url, http);
+        Teams = new TeamClient(serviceUrl.ToString(), http);
+        Meetings = new MeetingClient(serviceUrl.ToString(), http);
     }
 
     /// <summary>
@@ -143,6 +154,6 @@ public class ApiClient
     public virtual ApiClient ForServiceUrl(Uri serviceUrl)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
-        return new ApiClient(_http, _tokenApiEndpoint, serviceUrl);
+        return new ApiClient(_http, _conversationClient, _tokenApiEndpoint, serviceUrl);
     }
 }

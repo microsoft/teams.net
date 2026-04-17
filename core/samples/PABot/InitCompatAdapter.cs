@@ -272,12 +272,12 @@ namespace PABot
                     sp.GetRequiredService<ILogger<UserTokenClient>>());
             });
 
-            // Register TeamsApiClient
+            // Register ApiClient (no serviceUrl — use ForServiceUrl per-request)
             services.AddSingleton<ApiClient>(sp =>
             {
                 HttpClient httpClient = sp.GetRequiredService<IHttpClientFactory>()
                     .CreateClient("TeamsApiClient");
-                return new ApiClient(new Uri("https://graph.microsoft.com/v1.0/"), httpClient, sp.GetRequiredService<ILogger<ApiClient>>()); // TODO: initialize the base URL
+                return new ApiClient(httpClient, sp.GetRequiredService<ConversationClient>(), sp.GetRequiredService<ILogger<ApiClient>>());
             });
 
             // Register TeamsBotApplication

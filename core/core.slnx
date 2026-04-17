@@ -38,6 +38,7 @@
   <Folder Name="/Tests/">
     <Project Path="samples/Proactive/Proactive.csproj" Id="69f021eb-451b-4dd3-b848-137d764ba586" />
     <Project Path="test/ABSTokenServiceClient/ABSTokenServiceClient.csproj" />
+    <Project Path="test/IntegrationTests/IntegrationTests.csproj" Id="a72af344-2ee5-4a55-9a39-55482f6786c1" />
     <Project Path="test/Microsoft.Teams.Bot.Apps.UnitTests/Microsoft.Teams.Bot.Apps.UnitTests.csproj" Id="16f5e8eb-ccb0-40e6-9630-a9d936d6ccde" />
     <Project Path="test/Microsoft.Teams.Bot.Compat.UnitTests/Microsoft.Teams.Bot.Compat.UnitTests.csproj" Id="17f5e8eb-ccb0-40e6-9630-a9d936d6ccde" />
     <Project Path="test/Microsoft.Teams.Bot.Core.UnitTests/Microsoft.Teams.Bot.Core.UnitTests.csproj" Id="8e6790ed-0352-45f6-b3dc-0c4c3bcab038" />

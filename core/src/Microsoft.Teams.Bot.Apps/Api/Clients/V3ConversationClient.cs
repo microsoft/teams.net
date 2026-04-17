@@ -1,31 +1,20 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Http;
-using Microsoft.Teams.Bot.Core.Schema;
+
+using CoreConversationClient = Microsoft.Teams.Bot.Core.ConversationClient;
 
 namespace Microsoft.Teams.Bot.Apps.Api.Clients;
 
 /// <summary>
 /// Client for managing conversations, exposing sub-clients for activities, members, and reactions.
+/// Delegates to the core <see cref="CoreConversationClient"/>.
 /// </summary>
 public class V3ConversationClient
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
-    };
-
-    private readonly BotHttpClient _http;
-    private readonly string _serviceUrl;
-
-    /// <summary>
-    /// The service URL for this conversation client.
-    /// </summary>
-    internal string ServiceUrlString => _serviceUrl;
+    private readonly CoreConversationClient _client;
+    private readonly Uri _serviceUrl;
 
     /// <summary>
     /// Client for activity operations.
@@ -42,22 +31,20 @@ public class V3ConversationClient
     /// </summary>
     public ReactionClient Reactions { get; }
 
-    internal V3ConversationClient(string serviceUrl, BotHttpClient http)
+    internal V3ConversationClient(Uri serviceUrl, CoreConversationClient client)
     {
-        _serviceUrl = serviceUrl.TrimEnd('/');
-        _http = http;
-        Activities = new ActivityClient(serviceUrl, http);
-        Members = new MemberClient(serviceUrl, http);
-        Reactions = new ReactionClient(serviceUrl, http);
+        _serviceUrl = serviceUrl;
+        _client = client;
+        Activities = new ActivityClient(serviceUrl, client);
+        Members = new MemberClient(serviceUrl, client);
+        Reactions = new ReactionClient(serviceUrl, client);
     }
 
     /// <summary>
     /// Create a new conversation.
     /// </summary>
-    public async Task<CreateConversationResponse?> CreateAsync(ConversationParameters request, CancellationToken cancellationToken = default)
+    public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, CancellationToken cancellationToken = default)
     {
-        string url = $"{_serviceUrl}/v3/conversations";
-        string body = JsonSerializer.Serialize(request, JsonOptions);
-        return await _http.SendAsync<CreateConversationResponse>(HttpMethod.Post, url, body, null, cancellationToken).ConfigureAwait(false);
+        return _client.CreateConversationAsync(request, _serviceUrl, cancellationToken: cancellationToken);
     }
 }
