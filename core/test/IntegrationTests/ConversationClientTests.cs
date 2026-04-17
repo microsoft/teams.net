@@ -18,6 +18,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     public ConversationClientTests(IntegrationTestFixture fixture, ITestOutputHelper output)
     {
         _f = fixture;
+        _f.OutputHelper = output;
         _output = output;
     }
 
@@ -137,7 +138,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Skip = "Reactions API returns NotFound — needs service-url scoped auth")]
+    [Fact(Skip = "Reactions endpoint does not exist in Teams Bot Framework API (experimental/assumed route)")]
     public async Task AddAndDeleteReaction()
     {
         CoreActivity activity = new()

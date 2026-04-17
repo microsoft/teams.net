@@ -22,6 +22,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     public CreateConversationTests(IntegrationTestFixture fixture, ITestOutputHelper output)
     {
         _f = fixture;
+        _f.OutputHelper = output;
         _output = output;
         _api = _f.ScopedApiClient;
     }

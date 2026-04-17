@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Bot.Apps.Api.Clients;
 /// <summary>
 /// Client for user token operations.
 /// </summary>
-public class V3UserTokenClient
+public class UserTokenApiClient
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -21,7 +21,7 @@ public class V3UserTokenClient
     private readonly BotHttpClient _http;
     private readonly string _tokenApiEndpoint;
 
-    internal V3UserTokenClient(BotHttpClient http, string tokenApiEndpoint = "https://token.botframework.com")
+    internal UserTokenApiClient(BotHttpClient http, string tokenApiEndpoint = "https://token.botframework.com")
     {
         _http = http;
         _tokenApiEndpoint = tokenApiEndpoint.TrimEnd('/');

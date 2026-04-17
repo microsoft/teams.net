@@ -13,10 +13,10 @@ public class UserClient
     /// <summary>
     /// Client for user token operations.
     /// </summary>
-    public V3UserTokenClient Token { get; }
+    public UserTokenApiClient Token { get; }
 
     internal UserClient(BotHttpClient http, string tokenApiEndpoint = "https://token.botframework.com")
     {
-        Token = new V3UserTokenClient(http, tokenApiEndpoint);
+        Token = new UserTokenApiClient(http, tokenApiEndpoint);
     }
 }

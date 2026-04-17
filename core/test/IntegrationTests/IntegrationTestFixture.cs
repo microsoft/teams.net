@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using MartinCostello.Logging.XUnit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -8,6 +9,7 @@ using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
+using Xunit.Abstractions;
 
 namespace IntegrationTests;
 
@@ -15,7 +17,7 @@ namespace IntegrationTests;
 /// Shared fixture that configures DI, acquires tokens, and exposes clients for integration tests.
 /// Reused across test classes via IClassFixture to avoid repeated token acquisition.
 /// </summary>
-public class IntegrationTestFixture : IDisposable
+public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
 {
     public ServiceProvider ServiceProvider { get; }
     public ConversationClient ConversationClient { get; }
@@ -32,6 +34,11 @@ public class IntegrationTestFixture : IDisposable
     public string? UserId2 { get; }
     public AgenticIdentity? AgenticIdentity { get; }
 
+    /// <summary>
+    /// Set by each test class constructor to route ILogger output to xUnit's test output.
+    /// </summary>
+    public ITestOutputHelper? OutputHelper { get; set; }
+
     public IntegrationTestFixture()
     {
         IConfiguration configuration = new ConfigurationBuilder()
@@ -42,9 +49,10 @@ public class IntegrationTestFixture : IDisposable
         ServiceCollection services = new();
         services.AddLogging(builder =>
         {
+            builder.AddXUnit(this);
             builder.AddFilter("System.Net", LogLevel.Warning);
             builder.AddFilter("Microsoft.Identity", LogLevel.Error);
-            builder.AddFilter("Microsoft.Teams", LogLevel.Trace);
+            builder.AddFilter("Microsoft.Teams", LogLevel.Information);
         });
         services.AddSingleton(configuration);
         services.AddTeamsBotApplication();

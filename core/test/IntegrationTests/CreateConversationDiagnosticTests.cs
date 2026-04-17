@@ -29,6 +29,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     public CreateConversationDiagnosticTests(IntegrationTestFixture fixture, ITestOutputHelper output)
     {
         _f = fixture;
+        _f.OutputHelper = output;
         _output = output;
     }
 
@@ -82,7 +83,8 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         try
         {
             var parsed = JsonSerializer.Deserialize<JsonElement>(responseBody);
-            string pretty = JsonSerializer.Serialize(parsed, new JsonSerializerOptions { WriteIndented = true });
+            
+            string pretty = JsonSerializer.Serialize(parsed, JsonOpts);
             _output.WriteLine($"\nResponse body:\n{pretty}");
         }
         catch

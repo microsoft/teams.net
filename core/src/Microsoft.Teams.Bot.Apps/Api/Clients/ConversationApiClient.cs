@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Bot.Core;
 
 using CoreConversationClient = Microsoft.Teams.Bot.Core.ConversationClient;
@@ -11,7 +12,7 @@ namespace Microsoft.Teams.Bot.Apps.Api.Clients;
 /// Client for managing conversations, exposing sub-clients for activities, members, and reactions.
 /// Delegates to the core <see cref="CoreConversationClient"/>.
 /// </summary>
-public class V3ConversationClient
+public class ConversationApiClient
 {
     private readonly CoreConversationClient _client;
     private readonly Uri _serviceUrl;
@@ -29,15 +30,18 @@ public class V3ConversationClient
     /// <summary>
     /// Client for reaction operations.
     /// </summary>
+    [Experimental("ExperimentalTeamsReactions")]
     public ReactionClient Reactions { get; }
 
-    internal V3ConversationClient(Uri serviceUrl, CoreConversationClient client)
+    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client)
     {
         _serviceUrl = serviceUrl;
         _client = client;
         Activities = new ActivityClient(serviceUrl, client);
         Members = new MemberClient(serviceUrl, client);
+#pragma warning disable ExperimentalTeamsReactions // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         Reactions = new ReactionClient(serviceUrl, client);
+#pragma warning restore ExperimentalTeamsReactions // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     /// <summary>

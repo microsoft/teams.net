@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Teams.Bot.Apps.Api;
 using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Core.Hosting;
 

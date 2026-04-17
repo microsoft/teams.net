@@ -23,6 +23,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     public ApiClientTests(IntegrationTestFixture fixture, ITestOutputHelper output)
     {
         _f = fixture;
+        _f.OutputHelper = output;
         _output = output;
         _api = _f.ScopedApiClient;
     }
@@ -115,6 +116,82 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #endregion
 
+    #region Targeted Activities
+
+    [Fact(Skip = "Targeted activities are not supported in team channel conversations")]
+    public async Task Activities_CreateTargetedAsync()
+    {
+        // Targeted activities require a valid Recipient — get a real member ID
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        Assert.NotEmpty(members);
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Recipient = new ConversationAccount { Id = members[0].Id },
+            Properties = { { "text", $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`" } }
+        };
+
+        SendActivityResponse? res = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);
+
+        Assert.NotNull(res);
+        Assert.NotNull(res.Id);
+        _output.WriteLine($"Created targeted activity: {res.Id}");
+    }
+
+    [Fact(Skip = "Targeted activities are not supported in team channel conversations")]
+    public async Task Activities_UpdateTargetedAsync()
+    {
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        Assert.NotEmpty(members);
+
+        CoreActivity original = new()
+        {
+            Type = ActivityType.Message,
+            Recipient = new ConversationAccount { Id = members[0].Id },
+            Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`" } }
+        };
+
+        SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, original);
+        Assert.NotNull(sent?.Id);
+
+        CoreActivity updated = new()
+        {
+            Type = ActivityType.Message,
+            Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Updated at `{DateTime.UtcNow:s}`" } }
+        };
+
+        UpdateActivityResponse? res = await _api.Conversations.Activities.UpdateTargetedAsync(
+            _f.ConversationId, sent.Id, updated);
+
+        Assert.NotNull(res?.Id);
+        _output.WriteLine($"Updated targeted activity: {res.Id}");
+    }
+
+    [Fact(Skip = "Targeted activities are not supported in team channel conversations")]
+    public async Task Activities_DeleteTargetedAsync()
+    {
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        Assert.NotEmpty(members);
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Recipient = new ConversationAccount { Id = members[0].Id },
+            Properties = { { "text", $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`" } }
+        };
+
+        SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);
+        Assert.NotNull(sent?.Id);
+
+        await Task.Delay(2000);
+
+        await _api.Conversations.Activities.DeleteTargetedAsync(_f.ConversationId, sent.Id);
+        _output.WriteLine($"Deleted targeted activity: {sent.Id}");
+    }
+
+    #endregion
+
     #region Members
 
     [Fact]
@@ -167,7 +244,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Reactions
 
-    [Fact(Skip = "Reactions API returns NotFound — needs service-url scoped auth")]
+    [Fact(Skip = "Reactions endpoint does not exist in Teams Bot Framework API (experimental/assumed route)")]
     public async Task Reactions_AddAndDelete()
     {
         CoreActivity activity = new()
@@ -232,14 +309,133 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Skip = "Requires AAD object ID, not pairwise bot framework ID")]
+    [Fact]
     public async Task Meetings_GetParticipantAsync()
     {
+        // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
+        // Get the AAD object ID from a human member (bots don't have one).
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        Assert.NotEmpty(members);
+
+        string? aadObjectId = null;
+        foreach (ConversationAccount m in members)
+        {
+            TeamsConversationAccount tm = await _api.Conversations.Members
+                .GetByIdAsync<TeamsConversationAccount>(_f.ConversationId, m.Id!);
+            _output.WriteLine($"Member: {tm.Name} — AadObjectId: {tm.AadObjectId ?? "(null)"}, Properties: [{string.Join(", ", tm.Properties.Keys)}]");
+            if (tm.AadObjectId is not null)
+            {
+                aadObjectId = tm.AadObjectId;
+                break;
+            }
+        }
+
+        if (aadObjectId is null)
+        {
+            _output.WriteLine("SKIP: No members with AAD object ID found in test conversation");
+            return;
+        }
+
         MeetingParticipant? participant = await _api.Meetings.GetParticipantAsync(
-            _f.MeetingId, _f.UserId, _f.TenantId);
+            _f.MeetingId, aadObjectId, _f.TenantId);
 
         Assert.NotNull(participant);
         _output.WriteLine($"Participant: {participant.User?.Id} — Role: {participant.Meeting?.Role}, InMeeting: {participant.Meeting?.InMeeting}");
+    }
+
+    #endregion
+
+    #region Bots — SignIn
+
+    [Fact(Skip = "Requires a valid OAuth connection name configured for the bot")]
+    public async Task Bots_SignIn_GetUrlAsync()
+    {
+        string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
+            ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
+
+        // State must be a proper Bot Framework sign-in state JSON
+        string state = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            ConnectionName = connectionName,
+            Conversation = new { Id = _f.ConversationId },
+            MsAppId = _f.BotAppId
+        });
+
+        string? url = await _api.Bots.SignIn.GetUrlAsync(state);
+
+        Assert.NotNull(url);
+        Assert.StartsWith("https://", url);
+        _output.WriteLine($"SignIn URL: {url}");
+    }
+
+    [Fact(Skip = "Requires a valid OAuth connection name configured for the bot")]
+    public async Task Bots_SignIn_GetResourceAsync()
+    {
+        string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
+            ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
+
+        string state = System.Text.Json.JsonSerializer.Serialize(new
+        {
+            ConnectionName = connectionName,
+            Conversation = new { Id = _f.ConversationId },
+            MsAppId = _f.BotAppId
+        });
+
+        var resource = await _api.Bots.SignIn.GetResourceAsync(state);
+
+        Assert.NotNull(resource);
+        _output.WriteLine($"SignIn Resource: {resource.SignInLink}");
+    }
+
+    #endregion
+
+    #region Users — Token
+
+    [Fact]
+    public async Task Users_Token_GetStatusAsync()
+    {
+        // Get a valid member ID from the conversation
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        Assert.NotEmpty(members);
+        string userId = members[0].Id!;
+
+        IList<GetTokenStatusResult>? statuses = await _api.Users.Token.GetStatusAsync(userId, "msteams");
+
+        // May return null or empty if user has no token connections — that's OK
+        _output.WriteLine($"Token statuses: {statuses?.Count ?? 0} connections");
+        if (statuses is not null)
+        {
+            foreach (var s in statuses)
+            {
+                _output.WriteLine($"  Connection: {s.ConnectionName}, HasToken: {s.HasToken}");
+            }
+        }
+    }
+
+    [Fact(Skip = "Requires TEST_CONNECTION_NAME to be configured with an OAuth connection")]
+    public async Task Users_Token_GetAsync()
+    {
+        string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
+            ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
+
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        Assert.NotEmpty(members);
+
+        var result = await _api.Users.Token.GetAsync(members[0].Id!, connectionName, "msteams");
+        _output.WriteLine($"Token: {(result is not null ? "acquired" : "not available")}");
+    }
+
+    [Fact(Skip = "Requires TEST_CONNECTION_NAME to be configured with an OAuth connection")]
+    public async Task Users_Token_SignOutAsync()
+    {
+        string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
+            ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
+
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        Assert.NotEmpty(members);
+
+        await _api.Users.Token.SignOutAsync(members[0].Id!, connectionName, "msteams");
+        _output.WriteLine("SignOut completed");
     }
 
     #endregion

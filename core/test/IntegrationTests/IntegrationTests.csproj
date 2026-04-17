@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+	<NoWarn>$(NoWarn);ExperimentalTeamsTargeted;ExperimentalTeamsReactions</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -17,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Apps\Microsoft.Teams.Bot.Apps.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Compat\Microsoft.Teams.Bot.Compat.csproj" />
   </ItemGroup>
 
   <ItemGroup>

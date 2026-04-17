@@ -45,12 +45,4 @@ public class MemberClient
     {
         return GetByIdAsync<ConversationAccount>(conversationId, memberId, cancellationToken);
     }
-
-    /// <summary>
-    /// Remove a member from a conversation.
-    /// </summary>
-    public Task DeleteAsync(string conversationId, string memberId, CancellationToken cancellationToken = default)
-    {
-        return _client.DeleteConversationMemberAsync(conversationId, memberId, _serviceUrl, cancellationToken: cancellationToken);
-    }
 }

@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps.Api;
 using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Routing;

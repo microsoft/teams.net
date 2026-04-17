@@ -44,7 +44,7 @@ public class ApiClient
     /// <summary>
     /// Client for conversation operations (activities, members, reactions).
     /// </summary>
-    public virtual V3ConversationClient Conversations { get; }
+    public virtual ConversationApiClient Conversations { get; }
 
     /// <summary>
     /// Client for user-level operations (token).
@@ -107,7 +107,7 @@ public class ApiClient
         _tokenApiEndpoint = tokenApiEndpoint;
         ServiceUrl = serviceUrl;
         Bots = new BotClient(_http, tokenApiEndpoint);
-        Conversations = new V3ConversationClient(serviceUrl, conversationClient);
+        Conversations = new ConversationApiClient(serviceUrl, conversationClient);
         Users = new UserClient(_http, tokenApiEndpoint);
         Teams = new TeamClient(serviceUrl.ToString(), _http);
         Meetings = new MeetingClient(serviceUrl.ToString(), _http);
@@ -139,7 +139,7 @@ public class ApiClient
         _tokenApiEndpoint = tokenApiEndpoint;
         ServiceUrl = serviceUrl;
         Bots = new BotClient(http, tokenApiEndpoint);
-        Conversations = new V3ConversationClient(serviceUrl, conversationClient);
+        Conversations = new ConversationApiClient(serviceUrl, conversationClient);
         Users = new UserClient(http, tokenApiEndpoint);
         Teams = new TeamClient(serviceUrl.ToString(), http);
         Meetings = new MeetingClient(serviceUrl.ToString(), http);

@@ -5,12 +5,10 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
-using AppsTeams = Microsoft.Teams.Bot.Apps;
 using BotFrameworkTeams = Microsoft.Bot.Schema.Teams;
 
 namespace Microsoft.Teams.Bot.Compat;
@@ -60,6 +58,106 @@ public static class CompatTeamsInfo
     }
 
     #endregion
+
+
+
+
+    private static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+
+        return new Microsoft.Bot.Schema.Teams.TeamsChannelAccount
+        {
+            Id = account.Id,
+            Name = account.Name,
+            AadObjectId = account.AadObjectId,
+            Email = account.Email,
+            GivenName = account.GivenName,
+            Surname = account.Surname,
+            UserPrincipalName = account.UserPrincipalName,
+            UserRole = account.UserRole,
+            TenantId = account.TenantId
+        };
+    }
+
+
+
+    /// <summary>
+    /// Converts a Bot Framework ConversationParameters to a Core ConversationParameters.
+    /// </summary>
+    public static Microsoft.Teams.Bot.Core.ConversationParameters FromCompatConversationParameters(this Microsoft.Bot.Schema.ConversationParameters parameters)
+    {
+        ArgumentNullException.ThrowIfNull(parameters);
+
+        return new Microsoft.Teams.Bot.Core.ConversationParameters
+        {
+            IsGroup = parameters.IsGroup,
+            Bot = parameters.Bot?.FromCompatChannelAccount(),
+            Members = parameters.Members?.Select(m => m.FromCompatChannelAccount()).ToList(),
+            TopicName = parameters.TopicName,
+            Activity = parameters.Activity?.FromCompatActivity(),
+            ChannelData = parameters.ChannelData,
+            TenantId = parameters.TenantId,
+        };
+    }
+
+    /// <summary>
+    /// Gets the TeamInfo object from the current activity.
+    /// </summary>
+    /// <param name="activity">The activity.</param>
+    /// <returns>The current activity's team's information, or null.</returns>
+    private static TeamInfo? TeamsGetTeamInfo(this Activity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        Microsoft.Bot.Schema.Teams.TeamsChannelData channelData = activity.GetChannelData<Microsoft.Bot.Schema.Teams.TeamsChannelData>();
+        return channelData?.Team;
+    }
+
+    private static Microsoft.Bot.Schema.Teams.TeamsMeetingParticipant ToCompatTeamsMeetingParticipant(this Microsoft.Teams.Bot.Apps.Api.Clients.MeetingParticipant participant)
+    {
+        ArgumentNullException.ThrowIfNull(participant);
+
+        return new Microsoft.Bot.Schema.Teams.TeamsMeetingParticipant
+        {
+            User = participant.User?.ToCompatTeamsChannelAccount(),
+            Meeting = participant.Meeting != null ? new Microsoft.Bot.Schema.Teams.MeetingParticipantInfo
+            {
+                Role = participant.Meeting.Role,
+                InMeeting = participant.Meeting.InMeeting
+            } : null,
+            Conversation = participant.Conversation != null ? new Microsoft.Bot.Schema.ConversationAccount
+            {
+                Id = participant.Conversation.Id
+            } : null
+        };
+    }
+
+    private static Microsoft.Bot.Schema.Teams.ChannelInfo ToCompatChannelInfo(this Microsoft.Teams.Bot.Apps.Schema.TeamsChannel channel)
+    {
+        ArgumentNullException.ThrowIfNull(channel);
+
+        return new Microsoft.Bot.Schema.Teams.ChannelInfo
+        {
+            Id = channel.Id,
+            Name = channel.Name
+        };
+    }
+
+    /// <summary>
+    /// Converts a Core PagedMembersResult to a Bot Framework TeamsPagedMembersResult.
+    /// </summary>
+    /// <param name="pagedMembers"></param>
+    /// <returns></returns>
+    public static Microsoft.Bot.Schema.Teams.TeamsPagedMembersResult ToCompatTeamsPagedMembersResult(this Microsoft.Teams.Bot.Core.PagedMembersResult pagedMembers)
+    {
+        ArgumentNullException.ThrowIfNull(pagedMembers);
+
+        return new Microsoft.Bot.Schema.Teams.TeamsPagedMembersResult
+        {
+            ContinuationToken = pagedMembers.ContinuationToken,
+            Members = pagedMembers.Members?.Select(m => m.ToCompatTeamsChannelAccount()).ToList()
+        };
+    }
 
     #region Member & Participant Methods
 
@@ -271,31 +369,93 @@ public static class CompatTeamsInfo
 
     #region Meeting Methods
 
-    ///// <summary>
-    ///// Gets the information for the given meeting id.
-    ///// </summary>
-    ///// <param name="turnContext">Turn context.</param>
-    ///// <param name="meetingId">The BASE64-encoded id of the Teams meeting.</param>
-    ///// <param name="cancellationToken">Cancellation token.</param>
-    ///// <returns>Meeting information.</returns>
-    //public static async Task<BotFrameworkTeams.MeetingInfo> GetMeetingInfoAsync(
-    //    ITurnContext turnContext,
-    //    string? meetingId = null,
-    //    CancellationToken cancellationToken = default)
-    //{
-    //    ArgumentNullException.ThrowIfNull(turnContext);
-    //    meetingId ??= turnContext.Activity.TeamsGetMeetingInfo()?.Id
-    //        ?? throw new InvalidOperationException("The meetingId can only be null if turnContext is within the scope of a MS Teams Meeting.");
+    private static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Bot.Core.Schema.ConversationAccount account)
+    {
+        ArgumentNullException.ThrowIfNull(account);
 
-    //    var client = GetTeamsApiClient(turnContext);
-    //    // Uri serviceUrl = new(GetServiceUrl(turnContext));
-    //    AgenticIdentity identity = GetIdentity(turnContext);
+        TeamsChannelAccount teamsChannelAccount = new()
+        {
+            Id = account.Id,
+            Name = account.Name
+        };
 
-    //    var result = await client.Meetings.GetByIdAsync(
-    //        meetingId, cancellationToken).ConfigureAwait(false);
+        // Extract properties from Properties dictionary
+        if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
+        {
+            teamsChannelAccount.AadObjectId = aadObjectId?.ToString();
+        }
 
-    //    return new BotFrameworkTeams.MeetingInfo(); // TODO: Map the result to BotFrameworkTeams.MeetingInfo once the API is finalized and we have the necessary details in the result to perform the mapping.
-    //}
+        if (account.Properties.TryGetValue("userPrincipalName", out object? userPrincipalName))
+        {
+            teamsChannelAccount.UserPrincipalName = userPrincipalName?.ToString();
+        }
+
+        if (account.Properties.TryGetValue("givenName", out object? givenName))
+        {
+            teamsChannelAccount.GivenName = givenName?.ToString();
+        }
+
+        if (account.Properties.TryGetValue("surname", out object? surname))
+        {
+            teamsChannelAccount.Surname = surname?.ToString();
+        }
+
+        if (account.Properties.TryGetValue("email", out object? email))
+        {
+            teamsChannelAccount.Email = email?.ToString();
+        }
+
+        if (account.Properties.TryGetValue("tenantId", out object? tenantId))
+        {
+            teamsChannelAccount.Properties.Add("tenantId", tenantId?.ToString() ?? string.Empty);
+        }
+
+        return teamsChannelAccount;
+    }
+
+
+    /// <summary>
+    /// Gets the information for the given meeting id.
+    /// </summary>
+    /// <param name="turnContext">Turn context.</param>
+    /// <param name="meetingId">The BASE64-encoded id of the Teams meeting.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <returns>Meeting information.</returns>
+    public static async Task<BotFrameworkTeams.MeetingInfo> GetMeetingInfoAsync(
+        ITurnContext turnContext,
+        string? meetingId = null,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(turnContext);
+        meetingId ??= turnContext.Activity.TeamsGetMeetingInfo()?.Id
+            ?? throw new InvalidOperationException("The meetingId can only be null if turnContext is within the scope of a MS Teams Meeting.");
+
+        ApiClient client = GetTeamsApiClient(turnContext);
+        Meeting? meetingInfo = await client.Meetings.GetByIdAsync(
+            meetingId, cancellationToken).ConfigureAwait(false);
+
+        if (meetingInfo is null) return null!;
+
+        return new BotFrameworkTeams.MeetingInfo()
+        {
+            Details = meetingInfo.Details != null ? new Microsoft.Bot.Schema.Teams.MeetingDetails
+            {
+                Id = meetingInfo.Details.Id,
+                //MsGraphResourceId = meetingInfo.Details.MsGraphResourceId,
+                //ScheduledStartTime = meetingInfo.Details.ScheduledStartTime?.DateTime,
+                //ScheduledEndTime = meetingInfo.Details.ScheduledEndTime?.DateTime,
+                JoinUrl = meetingInfo.Details.JoinUrl,
+                Title = meetingInfo.Details.Title,
+                Type = meetingInfo.Details.Type
+            } : null,
+            Conversation = meetingInfo.Conversation != null ? new Microsoft.Bot.Schema.ConversationAccount
+            {
+                Id = meetingInfo.Conversation.Id
+                //Name = meetingInfo.Conversation.
+            } : null,
+            Organizer = meetingInfo.Organizer?.ToCompatTeamsChannelAccount()
+        };
+    }
 
     /// <summary>
     /// Gets the details for the given meeting participant. This only works in teams meeting scoped conversations.
@@ -321,15 +481,15 @@ public static class CompatTeamsInfo
         tenantId ??= turnContext.Activity.GetChannelData<BotFrameworkTeams.TeamsChannelData>()?.Tenant?.Id
             ?? throw new InvalidOperationException($"{nameof(tenantId)} is required.");
 
-        var client = GetTeamsApiClient(turnContext);
+        ApiClient client = GetTeamsApiClient(turnContext);
         //AgenticIdentity identity = GetIdentity(turnContext);
 
-        var result = await client.Meetings.GetParticipantAsync(
+        MeetingParticipant? result = await client.Meetings.GetParticipantAsync(
             meetingId, participantId, tenantId, cancellationToken).ConfigureAwait(false);
-        
+
         return new TeamsMeetingParticipant()
         {
-            Conversation = new Microsoft.Bot.Schema.ConversationAccount {  Id = result?.Conversation?.Id },
+            Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = result?.Conversation?.Id },
             Meeting = new MeetingParticipantInfo()
             {
                 InMeeting = result?.Meeting?.InMeeting,
@@ -397,9 +557,9 @@ public static class CompatTeamsInfo
         string t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
-        var client = GetTeamsApiClient(turnContext);
+        ApiClient client = GetTeamsApiClient(turnContext);
 
-        var result = await client.Teams.GetByIdAsync(t, cancellationToken).ConfigureAwait(false);
+        Team? result = await client.Teams.GetByIdAsync(t, cancellationToken).ConfigureAwait(false);
 
         return new TeamDetails
         {
@@ -426,11 +586,11 @@ public static class CompatTeamsInfo
         string t = teamId ?? turnContext.Activity.TeamsGetTeamInfo()?.Id
             ?? throw new InvalidOperationException("This method is only valid within the scope of MS Teams Team.");
 
-        var client = GetTeamsApiClient(turnContext);
+        ApiClient client = GetTeamsApiClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
 
-        var channelList = await client.Teams.GetConversationsAsync(t, cancellationToken).ConfigureAwait(false);
+        List<TeamsChannel>? channelList = await client.Teams.GetConversationsAsync(t, cancellationToken).ConfigureAwait(false);
 
         return channelList?.Select(c => c.ToCompatChannelInfo()).ToList() ?? [];
     }
