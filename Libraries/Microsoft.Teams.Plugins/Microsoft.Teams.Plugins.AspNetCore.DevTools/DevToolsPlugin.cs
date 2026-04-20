@@ -92,7 +92,9 @@ public class DevToolsPlugin : IAspNetCorePlugin
     public Task OnInit(App app, CancellationToken cancellationToken = default)
     {
         var hostEnvironment = _services.GetService<IHostEnvironment>();
-        if (hostEnvironment?.IsProduction() == true)
+        var isProduction = hostEnvironment?.IsProduction()
+            ?? string.Equals(Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"), "Production", StringComparison.OrdinalIgnoreCase);
+        if (isProduction)
         {
             throw new InvalidOperationException(
                 "Devtools plugin cannot be used in production environments. " +

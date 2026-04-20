@@ -67,7 +67,7 @@ public class CloudEnvironment
         OpenIdMetadataUrl = openIdMetadataUrl;
         TokenIssuer = tokenIssuer;
         GraphScope = graphScope;
-        AllowedServiceUrls = allowedServiceUrls ?? [];
+        AllowedServiceUrls = allowedServiceUrls is not null ? Array.AsReadOnly(allowedServiceUrls) : [];
     }
 
     /// <summary>

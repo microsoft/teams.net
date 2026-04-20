@@ -19,7 +19,7 @@ public class AppOptions
     public CloudEnvironment? Cloud { get; set; }
 
     /// <summary>
-    /// Additional allowed service URL domain suffixes beyond the built-in defaults.
+    /// Additional allowed service URL hostnames beyond the built-in defaults.
     /// Use this if your bot receives activities from non-standard channels.
     /// </summary>
     public IEnumerable<string>? AdditionalAllowedDomains { get; set; }

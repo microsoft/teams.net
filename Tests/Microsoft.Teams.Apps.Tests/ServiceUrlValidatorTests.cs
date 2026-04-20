@@ -89,14 +89,14 @@ public class ServiceUrlValidatorTests
     [Fact]
     public void IsAllowed_AcceptsAdditionalDomains()
     {
-        var additional = new[] { ".custom-channel.com" };
+        var additional = new[] { "api.custom-channel.com" };
         Assert.True(ServiceUrlValidator.IsAllowed("https://api.custom-channel.com", CloudEnvironment.Public, additional));
     }
 
     [Fact]
     public void IsAllowed_RejectsWhenNotInAdditionalDomains()
     {
-        var additional = new[] { ".custom-channel.com" };
+        var additional = new[] { "api.custom-channel.com" };
         Assert.False(ServiceUrlValidator.IsAllowed("https://evil.com", CloudEnvironment.Public, additional));
     }
 

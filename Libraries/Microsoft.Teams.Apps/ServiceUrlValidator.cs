@@ -16,7 +16,7 @@ public static class ServiceUrlValidator
     /// plus any additional domains provided by the caller.
     /// Localhost is always allowed for local development.
     /// </summary>
-    public static bool IsAllowed(string serviceUrl, CloudEnvironment cloud, IEnumerable<string>? additionalDomains = null)
+    public static bool IsAllowed(string? serviceUrl, CloudEnvironment cloud, IEnumerable<string>? additionalDomains = null)
     {
         if (string.IsNullOrEmpty(serviceUrl))
             return true; // No URL to validate
@@ -29,15 +29,13 @@ public static class ServiceUrlValidator
         if (hostname is "localhost" or "127.0.0.1")
             return true;
 
-        var additional = additionalDomains?.ToList() ?? [];
-        if (additional.Contains("*"))
+        if (!string.Equals(uri.Scheme, Uri.UriSchemeHttps, StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        var allowed = cloud.AllowedServiceUrls.Concat(additionalDomains ?? []).Select(d => d.ToLowerInvariant()).ToList();
+        if (allowed.Contains("*"))
             return true;
 
-        // Check against cloud environment's allowed FQDNs
-        if (cloud.AllowedServiceUrls.Any(allowed => hostname == allowed.ToLowerInvariant()))
-            return true;
-
-        // Check against additional domains (suffix match)
-        return additional.Any(domain => hostname.EndsWith(domain.ToLowerInvariant()));
+        return allowed.Contains(hostname);
     }
 }
