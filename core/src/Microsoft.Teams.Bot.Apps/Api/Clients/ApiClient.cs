@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Core.Http;
 
 using CoreConversationClient = Microsoft.Teams.Bot.Core.ConversationClient;
+using CoreUserTokenClient = Microsoft.Teams.Bot.Core.UserTokenClient;
 
 namespace Microsoft.Teams.Bot.Apps.Api.Clients;
 
@@ -17,9 +18,9 @@ namespace Microsoft.Teams.Bot.Apps.Api.Clients;
 /// This client can be constructed in two ways:
 /// </para>
 /// <list type="bullet">
-/// <item><b>DI-friendly (no serviceUrl)</b> — Use <see cref="ApiClient(HttpClient, CoreConversationClient, ILogger, string)"/>
+/// <item><b>DI-friendly (no serviceUrl)</b> — Use <see cref="ApiClient(HttpClient, CoreConversationClient, CoreUserTokenClient, ILogger)"/>
 /// and call <see cref="ForServiceUrl"/> per-request to create a scoped instance.</item>
-/// <item><b>Fully initialized</b> — Use <see cref="ApiClient(Uri, HttpClient, CoreConversationClient, ILogger, string)"/>
+/// <item><b>Fully initialized</b> — Use <see cref="ApiClient(Uri, HttpClient, CoreConversationClient, CoreUserTokenClient, ILogger)"/>
 /// when the service URL is known upfront.</item>
 /// </list>
 /// </remarks>
@@ -27,7 +28,7 @@ public class ApiClient
 {
     private readonly BotHttpClient _http;
     private readonly CoreConversationClient _conversationClient;
-    private readonly string _tokenApiEndpoint;
+    private readonly CoreUserTokenClient _userTokenClient;
 
     /// <summary>
     /// The service URL used by this client.
@@ -67,19 +68,20 @@ public class ApiClient
     /// </summary>
     /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <c>BotAuthenticationHandler</c>).</param>
     /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
+    /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
-    /// <param name="tokenApiEndpoint">Optional token API endpoint override. Defaults to https://token.botframework.com.</param>
     [ActivatorUtilitiesConstructor]
-    public ApiClient(HttpClient httpClient, CoreConversationClient conversationClient, ILogger? logger = null, string tokenApiEndpoint = "https://token.botframework.com")
+    public ApiClient(HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(conversationClient);
+        ArgumentNullException.ThrowIfNull(userTokenClient);
 
         _http = new BotHttpClient(httpClient, logger);
         _conversationClient = conversationClient;
-        _tokenApiEndpoint = tokenApiEndpoint;
-        Bots = new BotClient(_http, tokenApiEndpoint);
-        Users = new UserClient(_http, tokenApiEndpoint);
+        _userTokenClient = userTokenClient;
+        Bots = new BotClient(userTokenClient);
+        Users = new UserClient(userTokenClient);
 
         // ServiceUrl-dependent sub-clients require ForServiceUrl() before use
         ServiceUrl = null!;
@@ -94,21 +96,22 @@ public class ApiClient
     /// <param name="serviceUrl">The Bot Framework service URL.</param>
     /// <param name="httpClient">An <see cref="HttpClient"/> configured with authentication (e.g., via DI with <c>BotAuthenticationHandler</c>).</param>
     /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
+    /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
-    /// <param name="tokenApiEndpoint">Optional token API endpoint override. Defaults to https://token.botframework.com.</param>
-    public ApiClient(Uri serviceUrl, HttpClient httpClient, CoreConversationClient conversationClient, ILogger? logger = null, string tokenApiEndpoint = "https://token.botframework.com")
+    public ApiClient(Uri serviceUrl, HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(conversationClient);
+        ArgumentNullException.ThrowIfNull(userTokenClient);
 
         _http = new BotHttpClient(httpClient, logger);
         _conversationClient = conversationClient;
-        _tokenApiEndpoint = tokenApiEndpoint;
+        _userTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
-        Bots = new BotClient(_http, tokenApiEndpoint);
+        Bots = new BotClient(userTokenClient);
         Conversations = new ConversationApiClient(serviceUrl, conversationClient);
-        Users = new UserClient(_http, tokenApiEndpoint);
+        Users = new UserClient(userTokenClient);
         Teams = new TeamClient(serviceUrl.ToString(), _http);
         Meetings = new MeetingClient(serviceUrl.ToString(), _http);
     }
@@ -123,7 +126,7 @@ public class ApiClient
         ServiceUrl = client.ServiceUrl;
         _http = client._http;
         _conversationClient = client._conversationClient;
-        _tokenApiEndpoint = client._tokenApiEndpoint;
+        _userTokenClient = client._userTokenClient;
         Bots = client.Bots;
         Conversations = client.Conversations;
         Users = client.Users;
@@ -131,16 +134,16 @@ public class ApiClient
         Meetings = client.Meetings;
     }
 
-    // Private constructor for ForServiceUrl — shares BotHttpClient and ConversationClient
-    private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, string tokenApiEndpoint, Uri serviceUrl)
+    // Private constructor for ForServiceUrl — shares BotHttpClient, ConversationClient, and UserTokenClient
+    private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, Uri serviceUrl)
     {
         _http = http;
         _conversationClient = conversationClient;
-        _tokenApiEndpoint = tokenApiEndpoint;
+        _userTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
-        Bots = new BotClient(http, tokenApiEndpoint);
+        Bots = new BotClient(userTokenClient);
         Conversations = new ConversationApiClient(serviceUrl, conversationClient);
-        Users = new UserClient(http, tokenApiEndpoint);
+        Users = new UserClient(userTokenClient);
         Teams = new TeamClient(serviceUrl.ToString(), http);
         Meetings = new MeetingClient(serviceUrl.ToString(), http);
     }
@@ -154,6 +157,6 @@ public class ApiClient
     public virtual ApiClient ForServiceUrl(Uri serviceUrl)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
-        return new ApiClient(_http, _conversationClient, _tokenApiEndpoint, serviceUrl);
+        return new ApiClient(_http, _conversationClient, _userTokenClient, serviceUrl);
     }
 }

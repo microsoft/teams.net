@@ -192,7 +192,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         IEnumerable<TeamsChannelAccount> result = await CompatTeamsInfo.GetTeamMembersAsync(ctx, _f.TeamId);
 
         Assert.NotNull(result);
-        List<TeamsChannelAccount> members = result.ToList();
+        List<TeamsChannelAccount> members = [.. result];
         Assert.NotEmpty(members);
 
         foreach (TeamsChannelAccount m in members)

@@ -79,7 +79,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             mockConfig.Setup(c => c["UserTokenApiEndpoint"]).Returns("https://token.botframework.com");
 
             UserTokenClient userTokenClient = new(httpClient, mockConfig.Object, NullLogger<UserTokenClient>.Instance);
-            ApiClient teamsApiClient = new(new Uri("https://service.url"), httpClient, conversationClient, NullLogger<ApiClient>.Instance);
+            ApiClient teamsApiClient = new(new Uri("https://service.url"), httpClient, conversationClient, userTokenClient, NullLogger<ApiClient>.Instance);
 
             TeamsBotApplication teamsBotApplication = new(
                 conversationClient,

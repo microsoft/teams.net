@@ -1,7 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text;
+using System.Text.Json;
 using Microsoft.Teams.Bot.Apps.Api.Clients;
+using Microsoft.Teams.Bot.Apps.Handlers.MessageExtension;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -347,19 +350,22 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Bots — SignIn
 
-    [Fact(Skip = "Requires a valid OAuth connection name configured for the bot")]
+    [Fact]
     public async Task Bots_SignIn_GetUrlAsync()
     {
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
-        // State must be a proper Bot Framework sign-in state JSON
-        string state = System.Text.Json.JsonSerializer.Serialize(new
+        var tokenExchangeState = new
         {
             ConnectionName = connectionName,
-            Conversation = new { Id = _f.ConversationId },
-            MsAppId = _f.BotAppId
-        });
+            Conversation = new
+            {
+                User = new ConversationAccount { Id = _f.UserId },
+            }
+        };
+        string tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState);
+        string state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
 
         string? url = await _api.Bots.SignIn.GetUrlAsync(state);
 
@@ -368,18 +374,23 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"SignIn URL: {url}");
     }
 
-    [Fact(Skip = "Requires a valid OAuth connection name configured for the bot")]
+    [Fact]
     public async Task Bots_SignIn_GetResourceAsync()
     {
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
-        string state = System.Text.Json.JsonSerializer.Serialize(new
+        var tokenExchangeState = new
         {
             ConnectionName = connectionName,
-            Conversation = new { Id = _f.ConversationId },
-            MsAppId = _f.BotAppId
-        });
+            Conversation = new
+            {
+                User = new ConversationAccount { Id = _f.UserId },
+            }
+        };
+        string tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState);
+        string state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
+
 
         var resource = await _api.Bots.SignIn.GetResourceAsync(state);
 
@@ -412,7 +423,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Skip = "Requires TEST_CONNECTION_NAME to be configured with an OAuth connection")]
+    [Fact]
     public async Task Users_Token_GetAsync()
     {
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
@@ -425,7 +436,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Token: {(result is not null ? "acquired" : "not available")}");
     }
 
-    [Fact(Skip = "Requires TEST_CONNECTION_NAME to be configured with an OAuth connection")]
+    [Fact]
     public async Task Users_Token_SignOutAsync()
     {
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")

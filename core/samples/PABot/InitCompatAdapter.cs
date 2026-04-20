@@ -277,7 +277,7 @@ namespace PABot
             {
                 HttpClient httpClient = sp.GetRequiredService<IHttpClientFactory>()
                     .CreateClient("TeamsApiClient");
-                return new ApiClient(httpClient, sp.GetRequiredService<ConversationClient>(), sp.GetRequiredService<ILogger<ApiClient>>());
+                return new ApiClient(httpClient, sp.GetRequiredService<ConversationClient>(), sp.GetRequiredService<UserTokenClient>(), sp.GetRequiredService<ILogger<ApiClient>>());
             });
 
             // Register TeamsBotApplication

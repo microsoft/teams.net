@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Core.Http;
+using CoreUserTokenClient = Microsoft.Teams.Bot.Core.UserTokenClient;
 
 namespace Microsoft.Teams.Bot.Apps.Api.Clients;
 
@@ -15,8 +15,8 @@ public class BotClient
     /// </summary>
     public BotSignInClient SignIn { get; }
 
-    internal BotClient(BotHttpClient http, string tokenApiEndpoint = "https://token.botframework.com")
+    internal BotClient(CoreUserTokenClient userTokenClient)
     {
-        SignIn = new BotSignInClient(http, tokenApiEndpoint);
+        SignIn = new BotSignInClient(userTokenClient);
     }
 }

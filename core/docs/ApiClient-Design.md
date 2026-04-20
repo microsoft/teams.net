@@ -9,24 +9,24 @@ The `ApiClient` class (`Microsoft.Teams.Bot.Apps.Api.Clients`) provides a hierar
 ```
 ApiClient (top-level facade)
 ├── Bots              → BotClient
-│   └── SignIn        → BotSignInClient              [BotHttpClient → token.botframework.com]
+│   └── SignIn        → BotSignInClient              [delegates to core UserTokenClient]
 ├── Conversations     → ConversationApiClient         [delegates to core ConversationClient]
 │   ├── Activities    → ActivityClient
 │   ├── Members       → MemberClient
 │   └── Reactions     → ReactionClient               [Experimental]
 ├── Users             → UserClient
-│   └── Token         → UserTokenApiClient            [BotHttpClient → token.botframework.com]
+│   └── Token         → UserTokenApiClient            [delegates to core UserTokenClient]
 ├── Teams             → TeamClient                    [BotHttpClient → serviceUrl/v3/teams/]
 └── Meetings          → MeetingClient                 [BotHttpClient → serviceUrl/v1/meetings/]
 ```
 
-### Two HTTP strategies
+### HTTP strategies
 
-| Sub-client | HTTP strategy | Why |
+| Sub-client | Strategy | Why |
 |---|---|---|
 | Conversations (Activities, Members, Reactions) | Delegates to core `ConversationClient` | Reuses auth, logging, agents-channel handling, agentic identity support |
+| Bots.SignIn, Users.Token | Delegates to core `UserTokenClient` | Reuses auth, logging, agentic identity; single source of truth for token API calls |
 | Teams, Meetings | Uses `BotHttpClient` directly | No core client equivalent exists for these endpoints |
-| Bots.SignIn, Users.Token | Uses `BotHttpClient` directly | Calls `token.botframework.com`, separate from conversation endpoints |
 
 ### Experimental APIs
 
@@ -50,10 +50,10 @@ The Bot Framework service URL is per-request (comes from `activity.ServiceUrl`),
 // Registered automatically by AddTeamsBotApplication()
 // The [ActivatorUtilitiesConstructor] attribute tells DI to prefer this constructor
 [ActivatorUtilitiesConstructor]
-public ApiClient(HttpClient httpClient, ConversationClient conversationClient, ILogger? logger = null, ...)
+public ApiClient(HttpClient httpClient, ConversationClient conversationClient, UserTokenClient userTokenClient, ILogger? logger = null)
 ```
 
-`AddTeamsBotApplication()` calls `AddBotClient<ApiClient>(...)` which registers `ApiClient` as a typed HTTP client with `BotAuthenticationHandler`. The `ConversationClient` dependency is resolved from DI automatically.
+`AddTeamsBotApplication()` calls `AddBotClient<ApiClient>(...)` which registers `ApiClient` as a typed HTTP client with `BotAuthenticationHandler`. The `ConversationClient` and `UserTokenClient` dependencies are resolved from DI automatically.
 
 **Important:** The base `ApiClient` has `Conversations`, `Teams`, and `Meetings` set to `null!`. Only `Bots` and `Users` are available on the unscoped instance. Accessing `Conversations`, `Teams`, or `Meetings` directly causes `NullReferenceException`. Always use `ForServiceUrl()` or `Context.Api` to get a scoped instance.
 
@@ -81,25 +81,30 @@ ApiClient scoped = baseApiClient.ForServiceUrl(activity.ServiceUrl);
 await scoped.Conversations.Activities.CreateAsync(conversationId, activity);
 ```
 
-`ForServiceUrl` shares the underlying `BotHttpClient` and `ConversationClient` — only the sub-client wrappers are new allocations.
+`ForServiceUrl` shares the underlying `BotHttpClient`, `ConversationClient`, and `UserTokenClient` — only the sub-client wrappers are new allocations.
 
 ### Constructors
 
 | Constructor | Use case |
 |---|---|
-| `ApiClient(HttpClient, ConversationClient, ILogger?, string)` | DI registration (marked `[ActivatorUtilitiesConstructor]`) |
-| `ApiClient(Uri, HttpClient, ConversationClient, ILogger?, string)` | Fully initialized with known serviceUrl |
+| `ApiClient(HttpClient, ConversationClient, UserTokenClient, ILogger?)` | DI registration (marked `[ActivatorUtilitiesConstructor]`) |
+| `ApiClient(Uri, HttpClient, ConversationClient, UserTokenClient, ILogger?)` | Fully initialized with known serviceUrl |
 | `ApiClient(ApiClient)` | Copy constructor |
-| Private: `ApiClient(BotHttpClient, ConversationClient, string, Uri)` | Used by `ForServiceUrl` — shares HTTP client |
+| Private: `ApiClient(BotHttpClient, ConversationClient, UserTokenClient, Uri)` | Used by `ForServiceUrl` — shares clients |
 
 ## Delegation Pattern
 
-The conversation sub-clients (`ActivityClient`, `MemberClient`, `ReactionClient`) delegate to the core `ConversationClient` rather than duplicating HTTP logic. This ensures:
+The Apps-layer sub-clients delegate to core clients rather than duplicating HTTP logic:
+
+- **Conversation sub-clients** (`ActivityClient`, `MemberClient`, `ReactionClient`) → core `ConversationClient`
+- **Token/SignIn sub-clients** (`UserTokenApiClient`, `BotSignInClient`) → core `UserTokenClient`
+
+This ensures:
 
 - Single source of truth for URL construction, auth, and error handling
 - Agents-channel ID truncation logic is preserved
-- Agentic identity support works transparently
-- Custom headers and logging from `ConversationClient` apply
+- Agentic identity support works transparently for all operations
+- Custom headers and logging from core clients apply
 
 ### Parameter bridging
 
@@ -167,22 +172,22 @@ ReactionClient.AddAsync(conversationId, activityId, reactionType)
 | `GetByIdAsync(id)` | `GET {serviceUrl}/v1/meetings/{id}` |
 | `GetParticipantAsync(meetingId, id, tenantId)` | `GET {serviceUrl}/v1/meetings/{meetingId}/participants/{id}?tenantId={tenantId}` |
 
-#### BotSignInClient (direct HTTP)
+#### BotSignInClient → UserTokenClient
 
-| BotSignInClient | Endpoint |
+| BotSignInClient | UserTokenClient |
 |---|---|
-| `GetUrlAsync(state, ...)` | `GET {tokenApi}/api/botsignin/GetSignInUrl?state={state}` |
-| `GetResourceAsync(state, ...)` | `GET {tokenApi}/api/botsignin/GetSignInResource?state={state}` |
+| `GetUrlAsync(state, codeChallenge?, emulatorUrl?, finalRedirect?)` | `GetSignInUrlAsync(state, codeChallenge?, emulatorUrl?, finalRedirect?)` |
+| `GetResourceAsync(state, codeChallenge?, emulatorUrl?, finalRedirect?)` | `GetSignInResourceAsync(state, codeChallenge?, emulatorUrl?, finalRedirect?)` |
 
-#### UserTokenApiClient (direct HTTP)
+#### UserTokenApiClient → UserTokenClient
 
-| UserTokenApiClient | Endpoint |
-|---|---|
-| `GetAsync(userId, connectionName, channelId, ...)` | `GET {tokenApi}/api/usertoken/GetToken?...` |
-| `GetAadAsync(userId, connectionName, channelId, ...)` | `POST {tokenApi}/api/usertoken/GetAadTokens?...` |
-| `GetStatusAsync(userId, channelId, ...)` | `GET {tokenApi}/api/usertoken/GetTokenStatus?...` |
-| `SignOutAsync(userId, connectionName, channelId)` | `DELETE {tokenApi}/api/usertoken/SignOut?...` |
-| `ExchangeAsync(userId, connectionName, channelId, token)` | `POST {tokenApi}/api/usertoken/exchange?...` |
+| UserTokenApiClient | UserTokenClient | Notes |
+|---|---|---|
+| `GetAsync(userId, connectionName, channelId, code?)` | `GetTokenAsync(userId, connectionName, channelId, code?)` | |
+| `GetAadAsync(userId, connectionName, channelId, resourceUrls?)` | `GetAadTokensAsync(userId, connectionName, channelId, resourceUrls?)` | `IList<string>?` → `string[]?` |
+| `GetStatusAsync(userId, channelId, includeFilter?)` | `GetTokenStatusAsync(userId, channelId, include?)` | Returns `GetTokenStatusResult[]` as `IList<>?` |
+| `SignOutAsync(userId, connectionName, channelId)` | `SignOutUserAsync(userId, connectionName?, channelId?)` | |
+| `ExchangeAsync(userId, connectionName, channelId, token)` | `ExchangeTokenAsync(userId, connectionName, channelId, token?)` | |
 
 ## File Layout
 
@@ -196,10 +201,10 @@ core/src/Microsoft.Teams.Bot.Apps/Api/Clients/
 ├── TeamClient.cs             Team info → BotHttpClient (v3/teams/)
 ├── MeetingClient.cs          Meeting info → BotHttpClient (v1/meetings/) + models
 ├── BotClient.cs              Bot facade (groups SignIn)
-├── BotSignInClient.cs        Sign-in URLs → BotHttpClient (token.botframework.com)
+├── BotSignInClient.cs        Sign-in URLs → delegates to core UserTokenClient
 ├── BotTokenClient.cs         Static scope constants
 ├── UserClient.cs             User facade (groups Token)
-└── UserTokenApiClient.cs     User token ops → BotHttpClient (token.botframework.com)
+└── UserTokenApiClient.cs     User token ops → delegates to core UserTokenClient
 ```
 
 ## Integration with Context and Handlers

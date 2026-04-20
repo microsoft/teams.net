@@ -7,5 +7,6 @@
   <Folder Name="/Solution Items/">
     <File Path="../.runsettings" />
   </Folder>
+  <Project Path="ABSTokenServiceClient/ABSTokenServiceClient.csproj" />
   <Project Path="IntegrationTests/IntegrationTests.csproj" />
 </Solution>

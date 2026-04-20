@@ -1,53 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Http;
+
+using CoreUserTokenClient = Microsoft.Teams.Bot.Core.UserTokenClient;
 
 namespace Microsoft.Teams.Bot.Apps.Api.Clients;
 
 /// <summary>
 /// Client for user token operations.
+/// Delegates to the core <see cref="CoreUserTokenClient"/>.
 /// </summary>
 public class UserTokenApiClient
 {
-    private static readonly JsonSerializerOptions JsonOptions = new()
-    {
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-    };
+    private readonly CoreUserTokenClient _client;
 
-    private readonly BotHttpClient _http;
-    private readonly string _tokenApiEndpoint;
-
-    internal UserTokenApiClient(BotHttpClient http, string tokenApiEndpoint = "https://token.botframework.com")
+    internal UserTokenApiClient(CoreUserTokenClient client)
     {
-        _http = http;
-        _tokenApiEndpoint = tokenApiEndpoint.TrimEnd('/');
+        _client = client;
     }
 
     /// <summary>
     /// Get a user token for a connection.
     /// </summary>
-    public async Task<GetTokenResult?> GetAsync(string userId, string connectionName, string channelId, string? code = null, CancellationToken cancellationToken = default)
+    public Task<GetTokenResult?> GetAsync(string userId, string connectionName, string channelId, string? code = null, CancellationToken cancellationToken = default)
     {
-        List<string> queryParams =
-        [
-            $"userId={Uri.EscapeDataString(userId)}",
-            $"connectionName={Uri.EscapeDataString(connectionName)}",
-            $"channelId={Uri.EscapeDataString(channelId)}"
-        ];
-
-        if (!string.IsNullOrEmpty(code))
-            queryParams.Add($"code={Uri.EscapeDataString(code)}");
-
-        string url = $"{_tokenApiEndpoint}/api/usertoken/GetToken?{string.Join("&", queryParams)}";
-
-        return await _http.SendAsync<GetTokenResult>(
-            HttpMethod.Get, url, body: null,
-            new BotRequestOptions { ReturnNullOnNotFound = true },
-            cancellationToken).ConfigureAwait(false);
+        return _client.GetTokenAsync(userId, connectionName, channelId, code, cancellationToken);
     }
 
     /// <summary>
@@ -55,19 +33,7 @@ public class UserTokenApiClient
     /// </summary>
     public async Task<IDictionary<string, GetTokenResult>?> GetAadAsync(string userId, string connectionName, string channelId, IList<string>? resourceUrls = null, CancellationToken cancellationToken = default)
     {
-        List<string> queryParams =
-        [
-            $"userId={Uri.EscapeDataString(userId)}",
-            $"connectionName={Uri.EscapeDataString(connectionName)}",
-            $"channelId={Uri.EscapeDataString(channelId)}"
-        ];
-
-        string url = $"{_tokenApiEndpoint}/api/usertoken/GetAadTokens?{string.Join("&", queryParams)}";
-        var body = new { resourceUrls = resourceUrls ?? [] };
-        string bodyJson = JsonSerializer.Serialize(body, JsonOptions);
-
-        return await _http.SendAsync<IDictionary<string, GetTokenResult>>(
-            HttpMethod.Post, url, bodyJson, null, cancellationToken).ConfigureAwait(false);
+        return await _client.GetAadTokensAsync(userId, connectionName, channelId, resourceUrls?.ToArray(), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -75,34 +41,15 @@ public class UserTokenApiClient
     /// </summary>
     public async Task<IList<GetTokenStatusResult>?> GetStatusAsync(string userId, string channelId, string? includeFilter = null, CancellationToken cancellationToken = default)
     {
-        List<string> queryParams =
-        [
-            $"userId={Uri.EscapeDataString(userId)}",
-            $"channelId={Uri.EscapeDataString(channelId)}"
-        ];
-
-        if (!string.IsNullOrEmpty(includeFilter))
-            queryParams.Add($"includeFilter={Uri.EscapeDataString(includeFilter)}");
-
-        string url = $"{_tokenApiEndpoint}/api/usertoken/GetTokenStatus?{string.Join("&", queryParams)}";
-        return await _http.SendAsync<IList<GetTokenStatusResult>>(
-            HttpMethod.Get, url, body: null, options: null, cancellationToken).ConfigureAwait(false);
+        return await _client.GetTokenStatusAsync(userId, channelId, includeFilter, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Sign a user out of a connection.
     /// </summary>
-    public async Task SignOutAsync(string userId, string connectionName, string channelId, CancellationToken cancellationToken = default)
+    public Task SignOutAsync(string userId, string connectionName, string channelId, CancellationToken cancellationToken = default)
     {
-        List<string> queryParams =
-        [
-            $"userId={Uri.EscapeDataString(userId)}",
-            $"connectionName={Uri.EscapeDataString(connectionName)}",
-            $"channelId={Uri.EscapeDataString(channelId)}"
-        ];
-
-        string url = $"{_tokenApiEndpoint}/api/usertoken/SignOut?{string.Join("&", queryParams)}";
-        await _http.SendAsync(HttpMethod.Delete, url, body: null, options: null, cancellationToken).ConfigureAwait(false);
+        return _client.SignOutUserAsync(userId, connectionName, channelId, cancellationToken);
     }
 
     /// <summary>
@@ -110,18 +57,6 @@ public class UserTokenApiClient
     /// </summary>
     public async Task<GetTokenResult?> ExchangeAsync(string userId, string connectionName, string channelId, string exchangeToken, CancellationToken cancellationToken = default)
     {
-        List<string> queryParams =
-        [
-            $"userId={Uri.EscapeDataString(userId)}",
-            $"connectionName={Uri.EscapeDataString(connectionName)}",
-            $"channelId={Uri.EscapeDataString(channelId)}"
-        ];
-
-        string url = $"{_tokenApiEndpoint}/api/usertoken/exchange?{string.Join("&", queryParams)}";
-        var body = new { token = exchangeToken };
-        string bodyJson = JsonSerializer.Serialize(body, JsonOptions);
-
-        return await _http.SendAsync<GetTokenResult>(
-            HttpMethod.Post, url, bodyJson, null, cancellationToken).ConfigureAwait(false);
+        return await _client.ExchangeTokenAsync(userId, connectionName, channelId, exchangeToken, cancellationToken).ConfigureAwait(false);
     }
 }
