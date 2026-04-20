@@ -396,7 +396,8 @@ public partial class Activity : IActivity
 
     /// <summary>
     /// Legacy builder method of enabling default message feedback.
-    /// </param>
+    /// </summary>
+    /// <param name="value">Whether to enable default message feedback.</param>
     public virtual Activity AddFeedback(bool value = true)
     {
         ChannelData ??= new();
