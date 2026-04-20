@@ -251,10 +251,11 @@ public partial class App
     }
 
     /// <summary>
-    /// send an activity proactively as a threaded reply.
+    /// send an activity proactively to a conversation, optionally as a threaded reply.
     /// Constructs a threaded conversation ID from the conversation ID
     /// and message ID via <see cref="Conversation.ToThreadedConversationId"/>,
-    /// then sends to that thread.
+    /// then sends to that thread. The service determines whether threading is
+    /// supported for the given conversation type.
     /// </summary>
     /// <param name="conversationId">the conversation ID</param>
     /// <param name="messageId">the thread root message ID</param>
