@@ -22,7 +22,7 @@ public static partial class AppInvokeActivityExtensions
     /// Registers a handler for <c>message/fetchTask</c> activities.
     /// The bot should return a task module response containing the dialog to show the user.
     /// </summary>
-    public static App OnMessageFetchTask(this App app, Func<IContext<Messages.FetchTaskActivity>, CancellationToken, Task<Response<Api.TaskModules.Response>>> handler)
+    public static App OnMessageFetchTask(this App app, Func<IContext<Messages.FetchTaskActivity>, CancellationToken, Task<Api.TaskModules.Response>> handler)
     {
         app.Router.Register(new Route()
         {

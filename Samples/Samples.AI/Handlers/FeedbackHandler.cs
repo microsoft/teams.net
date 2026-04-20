@@ -80,7 +80,7 @@ public static class FeedbackHandler
     /// Builds the task module (dialog) shown when the user clicks a feedback
     /// button on a message whose feedback loop type is <c>custom</c>.
     /// </summary>
-    public static Response<TaskModules.Response> HandleFeedbackFetchTask(IContext<Messages.FetchTaskActivity> context)
+    public static TaskModules.Response HandleFeedbackFetchTask(IContext<Messages.FetchTaskActivity> context)
     {
         var reaction = context.Activity.Value.Data.ActionValue.Reaction;
         context.Log.Info($"[HANDLER] Feedback fetch-task invoked, reaction: {reaction}");
@@ -104,11 +104,11 @@ public static class FeedbackHandler
             }
         };
 
-        return new Response<TaskModules.Response>(new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo
+        return new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo
         {
             Title = "Feedback",
             Card = new Attachment(card),
-        })));
+        }));
     }
 
     /// <summary>

@@ -52,7 +52,7 @@ public class FetchTaskActivityTests
             Assert.True(context.Activity.Type.IsInvoke);
             Assert.True(context.Activity.Name == Name.Messages.FetchTask);
             Assert.True(context.Activity.Value.Data.ActionValue.Reaction.IsLike);
-            return Task.FromResult(new Response<TaskModules.Response>(new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo { Title = "Feedback" }))));
+            return Task.FromResult(new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo { Title = "Feedback" })));
         });
 
         var res = await _app.Process<TestPlugin>(_token, SetupFetchTaskActivity());
@@ -71,7 +71,7 @@ public class FetchTaskActivityTests
         _app.OnMessageFetchTask((context, ct) =>
         {
             calls++;
-            return Task.FromResult(new Response<TaskModules.Response>(new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo()))));
+            return Task.FromResult(new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo())));
         });
 
         var res = await _app.Process<TestPlugin>(_token, new TypingActivity());
@@ -90,7 +90,7 @@ public class FetchTaskActivityTests
         _app.OnMessageFetchTask((context, ct) =>
         {
             calls++;
-            return Task.FromResult(new Response<TaskModules.Response>(new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo()))));
+            return Task.FromResult(new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo())));
         });
 
         var submit = new Messages.SubmitActionActivity
@@ -117,7 +117,7 @@ public class FetchTaskActivityTests
         {
             calls++;
             Assert.True(context.Activity.Value.Data.ActionValue.Reaction.IsDislike);
-            return Task.FromResult(new Response<TaskModules.Response>(new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo()))));
+            return Task.FromResult(new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo())));
         });
 
         var res = await _app.Process<TestPlugin>(_token, SetupFetchTaskActivity("dislike"));
@@ -139,3 +139,4 @@ public class FetchTaskActivityTests
         }
     }
 }
+
