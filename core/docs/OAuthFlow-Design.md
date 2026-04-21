@@ -14,8 +14,9 @@ Teams SSO requires coordinating multiple moving parts:
 2. Sending an OAuthCard with a `TokenExchangeResource` to trigger silent SSO
 3. Handling `signin/tokenExchange` invoke activities (with deduplication)
 4. Handling `signin/verifyState` invoke activities (fallback sign-in flow)
-5. Handling magic codes arriving as plain messages (non-AAD providers)
-6. Calling `UserTokenClient.ExchangeTokenAsync` to complete the on-behalf-of exchange
+5. Handling `signin/failure` invoke activities (client-side SSO failures)
+6. Handling magic codes arriving as plain messages (non-AAD providers)
+7. Calling `UserTokenClient.ExchangeTokenAsync` to complete the on-behalf-of exchange
 
 Without an abstraction, every bot developer must wire this up manually. `OAuthFlow` reduces it to a few method calls.
 
@@ -29,7 +30,8 @@ TeamsBotApplication
 │   ├── ... existing routes ...
 │   ├── message/oauth/magicCode            ← registered by OAuthFlow (magic code interception)
 │   ├── invoke/signin/tokenExchange        ← registered by OAuthFlow
-│   └── invoke/signin/verifyState          ← registered by OAuthFlow
+│   ├── invoke/signin/verifyState          ← registered by OAuthFlow
+│   └── invoke/signin/failure              ← registered by OAuthFlow (client-side SSO failures)
 └── OAuthFlow (one per connection)
     ├── SignInAsync()        → silent token check + OAuthCard
     ├── SignOutAsync()       → revoke token
@@ -191,15 +193,19 @@ teams.OnSignInFailure(async (context, cancellationToken) => {
 **New**: Per-connection handler on the `OAuthFlow` instance:
 ```csharp
 // New
-graphAuth.OnSignInFailure(async (context, ct) => {
+graphAuth.OnSignInFailure(async (context, failure, ct) => {
     // context is Context<TeamsActivity>
-    await context.SendActivityAsync("Sign-in failed.", ct);
+    // failure is non-null for signin/failure invokes (client-side SSO errors)
+    if (failure is not null)
+        await context.SendActivityAsync($"Sign-in failed: {failure.Code} — {failure.Message}", ct);
+    else
+        await context.SendActivityAsync("Sign-in failed.", ct);
 });
 ```
 
 Key differences:
 - **Scope**: Per-connection instead of app-level.
-- **Failure details**: Old provides `SignIn.Failure` with `Code` and `Message` via the activity value. New does not expose structured failure details (the failure is logged internally).
+- **Failure details**: Old provides `SignIn.Failure` with `Code` and `Message` via the activity value. New provides `SignInFailureValue?` — non-null with structured `Code`/`Message` for `signin/failure` invokes (client-side SSO errors), null for server-side token exchange or verify-state failures.
 - **`context.Send` → `context.SendActivityAsync`**: Method name change (see below).
 
 ### 8. `context.Send()` → `context.SendActivityAsync()`
@@ -240,6 +246,71 @@ This affects all code inside `OnSignInComplete` and `OnSignInFailure` callbacks.
 
 **New**: `OnSignInComplete` and `OnSignInFailure` are terminal callbacks, not middleware. They do not participate in the route chain.
 
+### 13. Automatic user token retrieval on every activity removed
+
+**Old (v2)**: `App.Process()` (App.cs:299-311) silently calls `api.Users.Token.GetAsync()` for **every** inbound activity, using `OAuth.DefaultConnectionName` (defaults to `"graph"`). If a token exists, it sets `context.IsSignedIn = true` and populates `context.UserGraphToken`. If the call fails, the exception is silently swallowed. This means `IsSignedIn` is always pre-populated by the time the developer's handler runs, even if no OAuth flow was configured.
+
+**New**: No automatic token retrieval. `IsSignedIn` and `GetTokenAsync` are only called when the developer explicitly invokes them. There is no implicit per-turn token check.
+
+**Impact**: Old code that relied on `context.IsSignedIn` being `true` on the first message (without calling `SignIn()`) must now explicitly call `await context.IsSignedInAsync()` or `await context.SignIn()` to check for a cached token.
+
+### 14. Bot token retrieval on startup removed
+
+**Old (v2)**: `App.Start()` (App.cs:130-141) eagerly calls `Api.Bots.Token.GetAsync(Credentials, TokenClient)` to obtain the bot's own access token at startup. If the call fails, it logs `"Failed to get bot token on app startup."` and continues (non-fatal). A lazy `TokenFactory` (App.cs:64-90) also refreshes the bot token on demand when it expires.
+
+**New**: Bot-to-service authentication is handled at the Core level (`BotApplication` / `BotConfig.ClientId`) and does not surface in the OAuthFlow layer. There is no explicit bot token fetch on startup in the Apps layer.
+
+**Impact**: No developer action required -- this is an internal framework change.
+
+### 15. No deduplication in old SDK
+
+**Old (v2)**: The `OnTokenExchangeActivity` handler (AppRouting.cs:69-127) has **no deduplication logic**. Every `signin/tokenExchange` invoke triggers a token exchange call to the Token Service. Duplicate exchanges from multiple Teams endpoints (mobile, desktop, web) all hit the Token Service independently. The `OnSignIn` event fires for each.
+
+**New**: `OAuthFlow` deduplicates `signin/tokenExchange` by exchange ID using an in-process `ConcurrentDictionary<string, DateTimeOffset>` with a 5-minute TTL. Duplicates receive a `200` no-op response without calling the Token Service or firing callbacks.
+
+**Impact**: Old code that observed multiple `OnSignIn` events per sign-in (one per endpoint) will now only see `OnSignInComplete` fire once (per instance). Handlers that were designed to be idempotent to tolerate duplicates will still work.
+
+### 16. `signin/failure` invoke handler — now registered (parity achieved)
+
+**Old (v2)**: `OnSignInFailureActivity` (AppRouting.cs:182-225) handles the `signin/failure` invoke sent by the Teams client when SSO fails. It parses 9 documented failure codes:
+- `installappfailed`, `authrequestfailed`, `installedappnotfound`, `invokeerror`, `resourcematchfailed`, `oauthcardnotvalid`, `tokenmissing`, `userconsentrequired`, `interactionrequired`
+
+Each failure is logged with the user ID, conversation ID, failure code, and message. The handler returns `200` to acknowledge. The `OnSignInFailure` app-level event fires with the structured failure details.
+
+**New**: A `signin/failure` invoke handler is registered automatically by `AddOAuthFlow`. It logs the failure code and message (with extra guidance for `resourcematchfailed`), then fires the `OnSignInFailure` callback on **all** registered flows (since the invoke carries no connection name). The `SignInFailureHandler` delegate receives a `SignInFailureValue?` parameter containing the structured `Code` and `Message` from the Teams client.
+
+**Differences from v2**:
+- **Scope**: Per-connection `OnSignInFailure` callback (fired on all flows) instead of a single app-level event.
+- **Delegate signature**: `SignInFailureHandler(Context<TeamsActivity>, SignInFailureValue?, CancellationToken)`. The `SignInFailureValue` parameter is non-null for `signin/failure` invokes and null for server-side token exchange / verify-state failures.
+
+### 17. Token exchange error response mapping — now matches v2 (parity achieved)
+
+**Old (v2)**: The `OnTokenExchangeActivity` handler (AppRouting.cs:102-127) catches `HttpException` and maps error codes selectively:
+- `NotFound`, `BadRequest`, `PreconditionFailed` → responds with `PreconditionFailed` (412) and `TokenExchange.InvokeResponse` body containing `Id`, `ConnectionName`, `FailureDetail`
+- All other status codes (e.g., `Unauthorized`, `Forbidden`) → responds with the **original** HTTP status code
+
+**New**: `OAuthFlow.HandleTokenExchangeAsync` now uses the same selective mapping:
+- `NotFound`, `BadRequest`, `PreconditionFailed` (or null status code) → responds with `InvokeResponse(412)` and a `TokenExchangeInvokeResponse` body containing `Id`, `ConnectionName`, `FailureDetail`
+- All other status codes → responds with the **original** HTTP status code
+
+**Differences from v2**:
+- `FailureDetail` contains `ex.Message` (concise) instead of `ex.ToString()` (full stack trace). This avoids leaking internal implementation details in the invoke response while still providing diagnostic information.
+
+### 18. `signin/verifyState` error response — now matches v2 (parity achieved)
+
+**Old (v2)**: The `OnVerifyStateActivity` handler (AppRouting.cs:129-180):
+- Missing `State` parameter → returns `NotFound` (404) with a log warning
+- Token exchange failure (`NotFound`, `BadRequest`, `PreconditionFailed`) → returns `PreconditionFailed` (412)
+- Other HTTP errors → returns the original status code
+
+**New**: `OAuthFlow.HandleVerifyStateAsync` now uses the same error mapping:
+- Null invoke payload → returns `404` (at route level)
+- Null `State` parameter → returns `404` with a log warning
+- No token returned → returns `412`
+- HTTP failure (`NotFound`, `BadRequest`, `PreconditionFailed`) → returns `412`
+- Other HTTP errors → returns the original status code
+- No registered flow matched → returns `404`
+
 ### Summary Table
 
 | Feature | Old (v2) `Microsoft.Teams.Apps` | New `Microsoft.Teams.Bot.Apps` | Breaking? |
@@ -259,6 +330,12 @@ This affects all code inside `OnSignInComplete` and `OnSignInFailure` callbacks.
 | `context.Next()` in auth | Available | Not applicable | Yes |
 | `IsSignedInAsync()` | Not available | New method | N/A (addition) |
 | `GetConnectionStatusAsync()` | Not available | New method | N/A (addition) |
+| User token pre-fetch per activity | Automatic (silent, every turn) | On-demand only | Yes (behavioral) |
+| Bot token fetch on startup | `App.Start()` fetches eagerly | Handled at Core level | No (internal) |
+| Token exchange deduplication | None (every invoke hits Token Service) | `ConcurrentDictionary` by exchange ID, 5-min TTL | Yes (behavioral) |
+| `signin/failure` invoke | App-level handler, 9 failure codes | Per-connection `OnSignInFailure` with `SignInFailureValue` | No (parity) |
+| Token exchange error response | 412 + body for expected, original for others | 412 + `TokenExchangeInvokeResponse` for expected, original for others | No (parity) |
+| `signin/verifyState` error response | 404 (missing state), 412 (exchange failure) | 404 (missing state), 412 (exchange failure) | No (parity) |
 
 ## API Surface
 
@@ -276,13 +353,14 @@ public static class OAuthFlowExtensions
 }
 ```
 
-`AddOAuthFlow` registers three routes on the app's `Router`:
+`AddOAuthFlow` registers four routes on the app's `Router`:
 
 | Route name | Activity type | Purpose |
 |---|---|---|
 | `message/oauth/magicCode` | Message (4-8 digit text) | Magic code interception for non-AAD providers |
 | `invoke/signin/tokenExchange` | Invoke | SSO silent token exchange |
 | `invoke/signin/verifyState` | Invoke | Fallback sign-in verification |
+| `invoke/signin/failure` | Invoke | Teams client-side SSO failure notification |
 
 ### Context Methods
 
@@ -346,6 +424,7 @@ public delegate Task SignInCompleteHandler(
 
 public delegate Task SignInFailureHandler(
     Context<TeamsActivity> context,
+    SignInFailureValue? failure,
     CancellationToken cancellationToken);
 ```
 
@@ -402,8 +481,9 @@ Teams client sends invoke: signin/tokenExchange
     │
     ├─ 4. Call UserTokenClient.ExchangeTokenAsync(userId, connectionName, channelId, token)
     │     ├─ Success → fire OnSignInComplete, respond InvokeResponse(200)
-    │     └─ Failure → fire OnSignInFailure, respond InvokeResponse(412)
-    │              (412 tells Teams to show the sign-in card as fallback)
+    │     └─ Failure → fire OnSignInFailure(context, null, ct):
+    │           ├─ NotFound/BadRequest/PreconditionFailed → respond 412 + TokenExchangeInvokeResponse body
+    │           └─ Other status codes (401, 403, etc.) → respond with original status code
     │
     └─ 5. Record exchange Id as processed (dedup)
 ```
@@ -414,15 +494,19 @@ Teams client sends invoke: signin/tokenExchange
 Teams client sends invoke: signin/verifyState
     │
     ├─ 1. Deserialize value → SignInVerifyStateValue { State }
-    │     (State is the code from the popup sign-in redirect)
+    │     ├─ Null payload → respond 404
+    │     └─ Parsed ↓
     │
     ├─ 2. Try each registered OAuthFlow (verifyState has no connectionName):
     │     For each flow:
-    │       Call UserTokenClient.GetTokenAsync(userId, connectionName, channelId, code: state)
-    │       ├─ Token returned → fire OnSignInComplete, respond InvokeResponse(200), stop
-    │       └─ No token → try next flow
+    │       ├─ Null State → respond 404
+    │       └─ Call UserTokenClient.GetTokenAsync(userId, connectionName, channelId, code: state)
+    │           ├─ Token returned → fire OnSignInComplete, respond InvokeResponse(200), stop
+    │           ├─ HttpException (expected) → fire OnSignInFailure, respond 412
+    │           ├─ HttpException (other) → fire OnSignInFailure, respond original status code
+    │           └─ No token → fire OnSignInFailure, respond 412
     │
-    ├─ 3. If no flow succeeded → respond InvokeResponse(400)
+    ├─ 3. If no flow succeeded → respond 404
     │
     └─ Done
 ```
@@ -438,6 +522,23 @@ Message activity with 4-8 digit numeric text arrives
     │     └─ No token → try next flow
     │
     └─ 2. If no flow redeemed the code → message continues to other handlers
+```
+
+### signin/failure Invoke Handler
+
+```
+Teams client sends invoke: signin/failure
+    │
+    ├─ 1. Deserialize value → SignInFailureValue { Code, Message }
+    │     (e.g., Code="resourcematchfailed", Message="...")
+    │
+    ├─ 2. Log warning with user ID, conversation ID, failure code, and message.
+    │     Extra guidance logged for "resourcematchfailed" (check Entra app Expose an API).
+    │
+    ├─ 3. Fire OnSignInFailure(context, failureValue, ct) on ALL registered flows
+    │     (no connection name in payload → notify all)
+    │
+    └─ 4. Respond InvokeResponse(200) to acknowledge
 ```
 
 ### Deduplication
@@ -559,6 +660,7 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 
 - **`signin/tokenExchange`**: dispatches by `connectionName` from the invoke value (exact match).
 - **`signin/verifyState`**: tries each registered flow sequentially (no connection name in the payload).
+- **`signin/failure`**: fires `OnSignInFailure` on all registered flows (no connection name in the payload).
 - **`message/oauth/magicCode`**: tries each registered flow sequentially (magic code has no connection context).
 
 ## File Placement
@@ -570,6 +672,8 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 | `OAuthOptions.cs` | `Microsoft.Teams.Bot.Apps/Auth/OAuthOptions.cs` |
 | `SignInTokenExchangeValue.cs` | `Microsoft.Teams.Bot.Apps/Auth/SignInTokenExchangeValue.cs` |
 | `SignInVerifyStateValue.cs` | `Microsoft.Teams.Bot.Apps/Auth/SignInVerifyStateValue.cs` |
+| `SignInFailureValue.cs` | `Microsoft.Teams.Bot.Apps/Auth/SignInFailureValue.cs` |
+| `TokenExchangeInvokeResponse.cs` | `Microsoft.Teams.Bot.Apps/Auth/TokenExchangeInvokeResponse.cs` |
 | `OAuthCard.cs` | `Microsoft.Teams.Bot.Apps/Schema/OAuthCard.cs` |
 
 ## Changes to Core
@@ -586,11 +690,12 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 | Scenario | Behavior |
 |---|---|
 | SSO not supported (channel scope) | SSO only works in personal and group chat. In channels, the OAuthCard shows the sign-in button directly (no token exchange). |
-| User denies consent | Teams sends `signin/tokenExchange` but exchange fails. OAuthFlow responds 412, Teams shows sign-in button fallback. `OnSignInFailure` fires. |
+| User denies consent | Teams sends `signin/tokenExchange` but exchange fails. OAuthFlow responds 412 with `TokenExchangeInvokeResponse` body, Teams shows sign-in button fallback. `OnSignInFailure` fires with `failure: null`. |
+| Teams SSO client failure | Teams sends `signin/failure` invoke with structured `Code`/`Message`. OAuthFlow logs the failure, fires `OnSignInFailure` on all flows with `failure: SignInFailureValue`, responds 200. |
 | Duplicate `signin/tokenExchange` | Deduplicated by exchange ID. First wins, duplicates get 200 no-op. |
 | Token expired | `GetTokenAsync` returns null (token store returns 404). `SignInAsync` re-initiates the flow. |
 | Auto-discovery with multiple connections | Throws `InvalidOperationException` listing available connections. |
-| `signin/verifyState` with multiple connections | Tries each registered flow until one succeeds (200). Returns 400 if none match. |
+| `signin/verifyState` with multiple connections | Tries each registered flow until one succeeds (200). Returns 404 if none match. |
 | `IsSignedIn` with multiple connections | Checks the first registered connection, logs `Trace.TraceWarning`. Prefer `IsSignedInAsync(connectionName)`. |
 | Magic code in message | Intercepted by `message/oauth/magicCode` route. Tries each flow. If none redeem it, the message continues to other handlers. |
 | Missing `MsAppId` in sign-in state | Token Service returns `tokenExchangeResource: null`. SSO and automatic verify-state fail. OAuthFlow includes `MsAppId` from `BotApplication.AppId` to prevent this. |

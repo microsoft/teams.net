@@ -22,8 +22,11 @@ public delegate Task SignInCompleteHandler(Context<TeamsActivity> context, GetTo
 /// Delegate invoked when an OAuth token exchange or sign-in verification fails.
 /// </summary>
 /// <param name="context">The activity context.</param>
+/// <param name="failure">Optional failure details. Non-null when the failure originates from a Teams client-side
+/// <c>signin/failure</c> invoke (contains the structured failure code and message).
+/// Null when the failure is a server-side token exchange or verify-state failure.</param>
 /// <param name="cancellationToken">A cancellation token.</param>
-public delegate Task SignInFailureHandler(Context<TeamsActivity> context, CancellationToken cancellationToken);
+public delegate Task SignInFailureHandler(Context<TeamsActivity> context, SignInFailureValue? failure, CancellationToken cancellationToken);
 
 /// <summary>
 /// Provides a high-level abstraction for Teams Bot SSO authentication.
@@ -286,21 +289,50 @@ public class OAuthFlow
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'. Returning 412 for fallback.", connectionName, userId);
+            _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+            return await HandleTokenExchangeFailureAsync(context, exchangeValue, ex.StatusCode, ex.Message, cancellationToken).ConfigureAwait(false);
         }
         catch (InvalidOperationException ex)
         {
-            _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'. Returning 412 for fallback.", connectionName, userId);
+            _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+            return await HandleTokenExchangeFailureAsync(context, exchangeValue, null, ex.Message, cancellationToken).ConfigureAwait(false);
         }
 
+        // Token was null without exception — treat as expected failure
+        return await HandleTokenExchangeFailureAsync(context, exchangeValue, null, "Token exchange returned null token.", cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<InvokeResponse> HandleTokenExchangeFailureAsync(
+        Context<InvokeActivity> context,
+        SignInTokenExchangeValue exchangeValue,
+        System.Net.HttpStatusCode? statusCode,
+        string? failureDetail,
+        CancellationToken cancellationToken)
+    {
         if (_onSignInFailure is not null)
         {
             Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
-            await _onSignInFailure(baseContext, cancellationToken).ConfigureAwait(false);
+            await _onSignInFailure(baseContext, null, cancellationToken).ConfigureAwait(false);
         }
 
-        // 412 tells Teams to show the sign-in card as fallback
-        return new InvokeResponse(412);
+        // For unexpected status codes (e.g., 401 Unauthorized, 403 Forbidden),
+        // return the original status code so the caller can distinguish the failure.
+        if (statusCode.HasValue
+            && statusCode.Value != System.Net.HttpStatusCode.NotFound
+            && statusCode.Value != System.Net.HttpStatusCode.BadRequest
+            && statusCode.Value != System.Net.HttpStatusCode.PreconditionFailed)
+        {
+            return new InvokeResponse((int)statusCode.Value);
+        }
+
+        // 412 tells Teams to show the sign-in card as fallback.
+        // Include a response body with the exchange ID and failure detail for diagnostics.
+        return new InvokeResponse(412, new TokenExchangeInvokeResponse
+        {
+            Id = exchangeValue.Id,
+            ConnectionName = exchangeValue.ConnectionName,
+            FailureDetail = failureDetail
+        });
     }
 
     /// <summary>
@@ -321,33 +353,92 @@ public class OAuthFlow
     /// </summary>
     internal async Task<InvokeResponse> HandleVerifyStateAsync(Context<InvokeActivity> context, SignInVerifyStateValue verifyValue, CancellationToken cancellationToken)
     {
+        if (verifyValue.State is null)
+        {
+            _logger.LogWarning(
+                "Verify state: state parameter is null for conversation '{ConversationId}', user '{UserId}'.",
+                context.Activity.Conversation?.Id,
+                context.Activity.From?.Id);
+            return new InvokeResponse(404);
+        }
+
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
         string connectionName = _connectionName ?? throw new InvalidOperationException("Connection name has not been resolved.");
 
-        GetTokenResult? tokenResult = await _app.UserTokenClient
-            .GetTokenAsync(userId, connectionName, channelId, code: verifyValue.State, cancellationToken: cancellationToken)
-            .ConfigureAwait(false);
-
-        if (tokenResult?.Token is not null)
+        try
         {
-            _logger.LogDebug("Verify state succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
-            if (_onSignInComplete is not null)
+            GetTokenResult? tokenResult = await _app.UserTokenClient
+                .GetTokenAsync(userId, connectionName, channelId, code: verifyValue.State, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            if (tokenResult?.Token is not null)
+            {
+                _logger.LogDebug("Verify state succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+                if (_onSignInComplete is not null)
+                {
+                    Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+                    await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
+                }
+                return new InvokeResponse(200);
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Verify state failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+
+            if (_onSignInFailure is not null)
             {
                 Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
-                await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
+                await _onSignInFailure(baseContext, null, cancellationToken).ConfigureAwait(false);
             }
-            return new InvokeResponse(200);
+
+            // For unexpected status codes, return the original code
+            if (ex.StatusCode.HasValue
+                && ex.StatusCode.Value != System.Net.HttpStatusCode.NotFound
+                && ex.StatusCode.Value != System.Net.HttpStatusCode.BadRequest
+                && ex.StatusCode.Value != System.Net.HttpStatusCode.PreconditionFailed)
+            {
+                return new InvokeResponse((int)ex.StatusCode.Value);
+            }
+
+            // 412 tells Teams to fall back to the sign-in card
+            return new InvokeResponse(412);
         }
 
-        _logger.LogWarning("Verify state failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+        _logger.LogWarning("Verify state failed for connection '{ConnectionName}', user '{UserId}'. No token returned.", connectionName, userId);
         if (_onSignInFailure is not null)
         {
             Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
-            await _onSignInFailure(baseContext, cancellationToken).ConfigureAwait(false);
+            await _onSignInFailure(baseContext, null, cancellationToken).ConfigureAwait(false);
         }
 
-        return new InvokeResponse(400);
+        // 412 tells Teams to fall back to the sign-in card
+        return new InvokeResponse(412);
+    }
+
+    /// <summary>
+    /// Handles the signin/failure invoke activity sent by the Teams client when SSO fails client-side.
+    /// </summary>
+    internal async Task<InvokeResponse> HandleSignInFailureAsync(Context<InvokeActivity> context, SignInFailureValue failureValue, CancellationToken cancellationToken)
+    {
+        _logger.LogWarning(
+            "Sign-in failed for user '{UserId}' in conversation '{ConversationId}': {FailureCode} — {FailureMessage}.{Guidance}",
+            context.Activity.From?.Id,
+            context.Activity.Conversation?.Id,
+            failureValue.Code,
+            failureValue.Message,
+            string.Equals(failureValue.Code, "resourcematchfailed", StringComparison.OrdinalIgnoreCase)
+                ? " Verify that your Entra app registration has 'Expose an API' configured with the correct Application ID URI matching your OAuth connection's Token Exchange URL."
+                : string.Empty);
+
+        if (_onSignInFailure is not null)
+        {
+            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+            await _onSignInFailure(baseContext, failureValue, cancellationToken).ConfigureAwait(false);
+        }
+
+        return new InvokeResponse(200);
     }
 
     private async Task<string> ResolveConnectionNameAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken) where TActivity : TeamsActivity

@@ -131,6 +131,26 @@ public static class OAuthFlowExtensions
             }
         });
 
+        // signin/failure - Teams client-side SSO failure notification
+        app.Router.Register(new Route<InvokeActivity>
+        {
+            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SignInFailure),
+            Selector = activity => activity.Name == InvokeNames.SignInFailure,
+            HandlerWithReturn = async (ctx, cancellationToken) =>
+            {
+                InvokeActivity<SignInFailureValue> typedActivity = new(ctx.Activity);
+                SignInFailureValue failureValue = typedActivity.Value ?? new SignInFailureValue();
+
+                // signin/failure doesn't carry a connection name, so notify all registered flows
+                foreach (OAuthFlow flow in registry.GetAllFlows())
+                {
+                    await flow.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                }
+
+                return new InvokeResponse(200);
+            }
+        });
+
         // signin/verifyState
         app.Router.Register(new Route<InvokeActivity>
         {
@@ -143,7 +163,7 @@ public static class OAuthFlowExtensions
 
                 if (verifyValue is null)
                 {
-                    return new InvokeResponse(400);
+                    return new InvokeResponse(404);
                 }
 
                 // verifyState doesn't carry a connection name, so try each registered flow
