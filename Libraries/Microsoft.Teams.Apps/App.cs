@@ -40,6 +40,9 @@ public partial class App
     internal IHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
+
+    private readonly IEnumerable<string>? _additionalAllowedDomains;
+    private readonly CloudEnvironment _cloud;
     internal string UserAgent
     {
         get
@@ -51,12 +54,21 @@ public partial class App
 
     public App(AppOptions? options = null)
     {
+        var cloud = options?.Cloud ?? CloudEnvironment.Public;
+        _cloud = cloud;
+
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
         Credentials = options?.Credentials;
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
+        _additionalAllowedDomains = options?.AdditionalAllowedDomains;
+
+        if (_additionalAllowedDomains?.Contains("*") == true)
+        {
+            Logger.Warn("Service URL validation is disabled via wildcard in AdditionalAllowedDomains");
+        }
 
         TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
@@ -77,7 +89,7 @@ public partial class App
 
                 if (Token.IsExpired)
                 {
-                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(BotTokenClient.BotScope)])
+                    var res = Credentials.Resolve(TokenClient, [.. Token.Scopes.DefaultIfEmpty(Api!.Bots.Token.ActiveBotScope)])
                     .ConfigureAwait(false)
                     .GetAwaiter()
                     .GetResult();
@@ -90,6 +102,10 @@ public partial class App
         };
 
         Api = new ApiClient("https://smba.trafficmanager.net/teams/", Client);
+        Api.Bots.Token.ActiveBotScope = cloud.BotScope;
+        Api.Bots.Token.ActiveGraphScope = cloud.GraphScope;
+        Api.Bots.SignIn.TokenServiceUrl = cloud.TokenServiceUrl;
+        Api.Users.Token.TokenServiceUrl = cloud.TokenServiceUrl;
         Container = new Container();
         Container.Register(Logger);
         Container.Register(Storage);
@@ -167,23 +183,18 @@ public partial class App
     }
 
     /// <summary>
-    /// send an activity to the conversation
+    /// send an activity proactively to a conversation.
+    /// Sends to the exact conversation ID provided. For channel threads,
+    /// the conversation ID must include <c>;messageid=</c> -- use
+    /// <see cref="Conversation.ToThreadedConversationId"/> to construct it, or use
+    /// <see cref="Reply{T}(string, string, T, CancellationToken)"/> which handles this automatically.
     /// </summary>
-    /// <param name="activity">activity activity to send</param>
     public async Task<T> Send<T>(string conversationId, T activity, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default) where T : IActivity
     {
         if (Id is null)
         {
             throw new InvalidOperationException("app not started");
         }
-
-        // Validate targeted messages in proactive context
-        #pragma warning disable ExperimentalTeamsTargeted
-        if (activity is MessageActivity messageActivity && messageActivity.IsTargeted == true && messageActivity.Recipient is null)
-        {
-            throw new InvalidOperationException("Targeted messages sent proactively must specify an explicit recipient ID. Use WithRecipient(new Account { Id = recipientId }, true) with an explicit recipient.");
-        }
-        #pragma warning restore ExperimentalTeamsTargeted
 
         var reference = new ConversationReference()
         {
@@ -198,7 +209,7 @@ public partial class App
             Conversation = new()
             {
                 Id = conversationId,
-                Type = conversationType ?? ConversationType.Personal
+                Type = conversationType
             }
         };
 
@@ -237,6 +248,74 @@ public partial class App
     public async Task<MessageActivity> Send(string conversationId, Cards.AdaptiveCard card, ConversationType? conversationType = null, string? serviceUrl = null, CancellationToken cancellationToken = default)
     {
         return await Send(conversationId, new MessageActivity().AddAttachment(card), conversationType, serviceUrl, cancellationToken);
+    }
+
+    /// <summary>
+    /// send an activity proactively to a channel thread.
+    /// In channels, constructs a threaded conversation ID from the conversation ID
+    /// and message ID, then sends to that thread.
+    /// In scopes that do not support threading (group chat, meetings), sends as a normal message -
+    /// the message ID is ignored.
+    /// </summary>
+    /// <param name="conversationId">the channel or conversation ID</param>
+    /// <param name="messageId">the thread root message ID</param>
+    /// <param name="activity">the activity to send</param>
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<T> Reply<T>(string conversationId, string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity
+    {
+        var baseId = conversationId.Split(';')[0];
+        // Channels use @thread.tacv2 or @thread.skype, 1:1 chats use @unq.gbl.spaces.
+        // Group chats and meetings use @thread.v2 which does not support threading.
+        var supportsThreading = baseId.EndsWith("@thread.tacv2", StringComparison.Ordinal) || baseId.EndsWith("@thread.skype", StringComparison.Ordinal) || baseId.EndsWith("@unq.gbl.spaces", StringComparison.Ordinal);
+        var targetId = supportsThreading
+            ? Conversation.ToThreadedConversationId(conversationId, messageId)
+            : conversationId;
+        return Send(targetId, activity, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// send an activity proactively to a conversation.
+    /// Sends to the exact conversation ID provided - threaded if
+    /// it contains <c>;messageid=</c>, flat otherwise.
+    /// </summary>
+    /// <param name="conversationId">the conversation to send to</param>
+    /// <param name="activity">the activity to send</param>
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<T> Reply<T>(string conversationId, T activity, CancellationToken cancellationToken = default) where T : IActivity
+    {
+        return Send(conversationId, activity, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// send a message proactively to a thread
+    /// </summary>
+    public Task<MessageActivity> Reply(string conversationId, string messageId, string text, CancellationToken cancellationToken = default)
+    {
+        return Reply(conversationId, messageId, new MessageActivity(text), cancellationToken);
+    }
+
+    /// <summary>
+    /// send a message proactively to a conversation
+    /// </summary>
+    public Task<MessageActivity> Reply(string conversationId, string text, CancellationToken cancellationToken = default)
+    {
+        return Reply<MessageActivity>(conversationId, new MessageActivity(text), cancellationToken);
+    }
+
+    /// <summary>
+    /// send a card proactively to a thread
+    /// </summary>
+    public Task<MessageActivity> Reply(string conversationId, string messageId, Cards.AdaptiveCard card, CancellationToken cancellationToken = default)
+    {
+        return Reply(conversationId, messageId, new MessageActivity().AddAttachment(card), cancellationToken);
+    }
+
+    /// <summary>
+    /// send a card proactively to a conversation
+    /// </summary>
+    public Task<MessageActivity> Reply(string conversationId, Cards.AdaptiveCard card, CancellationToken cancellationToken = default)
+    {
+        return Reply<MessageActivity>(conversationId, new MessageActivity().AddAttachment(card), cancellationToken);
     }
 
     /// <summary>
@@ -313,9 +392,16 @@ public partial class App
         var path = @event.Activity.GetPath();
         Logger.Debug(path);
 
+        var serviceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl;
+        if (!ServiceUrlValidator.IsAllowed(serviceUrl, _cloud, _additionalAllowedDomains))
+        {
+            Logger.Warn($"Rejected service URL: {serviceUrl}");
+            throw new InvalidOperationException("Service URL is not from an allowed domain");
+        }
+
         var reference = new ConversationReference()
         {
-            ServiceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl,
+            ServiceUrl = serviceUrl,
             ChannelId = @event.Activity.ChannelId,
             Bot = @event.Activity.Recipient,
             User = @event.Activity.From,
