@@ -15,8 +15,7 @@ Teams SSO requires coordinating multiple moving parts:
 3. Handling `signin/tokenExchange` invoke activities (with deduplication)
 4. Handling `signin/verifyState` invoke activities (fallback sign-in flow)
 5. Handling `signin/failure` invoke activities (client-side SSO failures)
-6. Handling magic codes arriving as plain messages (non-AAD providers)
-7. Calling `UserTokenClient.ExchangeTokenAsync` to complete the on-behalf-of exchange
+6. Calling `UserTokenClient.ExchangeTokenAsync` to complete the on-behalf-of exchange
 
 Without an abstraction, every bot developer must wire this up manually. `OAuthFlow` reduces it to a few method calls.
 
@@ -28,7 +27,6 @@ TeamsBotApplication
 ├── OAuthRegistry                          ← holds all OAuthFlow instances
 ├── Router
 │   ├── ... existing routes ...
-│   ├── message/oauth/magicCode            ← registered by OAuthFlow (magic code interception)
 │   ├── invoke/signin/tokenExchange        ← registered by OAuthFlow
 │   ├── invoke/signin/verifyState          ← registered by OAuthFlow
 │   └── invoke/signin/failure              ← registered by OAuthFlow (client-side SSO failures)
@@ -175,7 +173,7 @@ graphAuth.OnSignInComplete(async (context, tokenResponse, ct) => {
 
 Key differences:
 - **Scope**: Old is app-level (one handler for all connections). New is per-connection.
-- **Context type**: Old provides `IContext<SignInActivity>`. New provides `Context<TeamsActivity>` because the sign-in can complete from invoke (tokenExchange, verifyState) or message (magic code) activities.
+- **Context type**: Old provides `IContext<SignInActivity>`. New provides `Context<TeamsActivity>` because the sign-in can complete from invoke (tokenExchange, verifyState) activities.
 - **Token type**: Old provides `Token.Response` (with `ConnectionName`, `Token`, `Expiration`, `Properties`). New provides `GetTokenResult` (with `ConnectionName`, `Token`).
 - **Plugin parameter**: Old receives the plugin instance. New does not -- the context has access to `TeamsBotApplication`.
 
@@ -353,11 +351,10 @@ public static class OAuthFlowExtensions
 }
 ```
 
-`AddOAuthFlow` registers four routes on the app's `Router`:
+`AddOAuthFlow` registers three routes on the app's `Router`:
 
 | Route name | Activity type | Purpose |
 |---|---|---|
-| `message/oauth/magicCode` | Message (4-8 digit text) | Magic code interception for non-AAD providers |
 | `invoke/signin/tokenExchange` | Invoke | SSO silent token exchange |
 | `invoke/signin/verifyState` | Invoke | Fallback sign-in verification |
 | `invoke/signin/failure` | Invoke | Teams client-side SSO failure notification |
@@ -435,19 +432,15 @@ public delegate Task SignInFailureHandler(
 ```
 Developer calls context.SignIn(options) or oauth.SignInAsync(context)
     │
-    ├─ 1. Check if message text is a magic code (4-8 digits)
-    │     ├─ Yes → call GetTokenAsync(code) → return token if redeemed
-    │     └─ No ↓
-    │
-    ├─ 2. Call UserTokenClient.GetTokenAsync(userId, connectionName, channelId)
+    ├─ 1. Call UserTokenClient.GetTokenAsync(userId, connectionName, channelId)
     │     ├─ Token exists → return token string
     │     └─ No token ↓
     │
-    ├─ 3. Build token exchange state with MsAppId (from BotApplication.AppId)
+    ├─ 2. Build token exchange state with MsAppId (from BotApplication.AppId)
     │     Call UserTokenClient.GetSignInResourceAsync(state)
     │     Returns: SignInLink, TokenExchangeResource, TokenPostResource
     │
-    ├─ 4. Build OAuthCard attachment (serialized as JsonElement for AOT compat):
+    ├─ 3. Build OAuthCard attachment (serialized as JsonElement for AOT compat):
     │     {
     │       contentType: "application/vnd.microsoft.card.oauth",
     │       content: {
@@ -459,9 +452,9 @@ Developer calls context.SignIn(options) or oauth.SignInAsync(context)
     │       }
     │     }
     │
-    ├─ 5. Send activity with OAuthCard attachment
+    ├─ 4. Send activity with OAuthCard attachment
     │
-    └─ 6. Return null (sign-in pending)
+    └─ 5. Return null (sign-in pending)
 ```
 
 **Critical**: The state must include `MsAppId` (from `BotApplication.AppId`, sourced from `BotConfig.ClientId`). Without it, the Token Service returns `tokenExchangeResource: null` and Teams cannot perform SSO or automatic verify-state after popup sign-in.
@@ -509,19 +502,6 @@ Teams client sends invoke: signin/verifyState
     ├─ 3. If no flow succeeded → respond 404
     │
     └─ Done
-```
-
-### Magic Code Message Handler
-
-```
-Message activity with 4-8 digit numeric text arrives
-    │
-    ├─ 1. Try each registered OAuthFlow:
-    │     Call UserTokenClient.GetTokenAsync(userId, connectionName, channelId, code: text)
-    │     ├─ Token returned → fire OnSignInComplete via HandleMagicCodeRedeemAsync, stop
-    │     └─ No token → try next flow
-    │
-    └─ 2. If no flow redeemed the code → message continues to other handlers
 ```
 
 ### signin/failure Invoke Handler
@@ -661,7 +641,6 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 - **`signin/tokenExchange`**: dispatches by `connectionName` from the invoke value (exact match).
 - **`signin/verifyState`**: tries each registered flow sequentially (no connection name in the payload).
 - **`signin/failure`**: fires `OnSignInFailure` on all registered flows (no connection name in the payload).
-- **`message/oauth/magicCode`**: tries each registered flow sequentially (magic code has no connection context).
 
 ## File Placement
 
@@ -697,7 +676,6 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 | Auto-discovery with multiple connections | Throws `InvalidOperationException` listing available connections. |
 | `signin/verifyState` with multiple connections | Tries each registered flow until one succeeds (200). Returns 404 if none match. |
 | `IsSignedIn` with multiple connections | Checks the first registered connection, logs `Trace.TraceWarning`. Prefer `IsSignedInAsync(connectionName)`. |
-| Magic code in message | Intercepted by `message/oauth/magicCode` route. Tries each flow. If none redeem it, the message continues to other handlers. |
 | Missing `MsAppId` in sign-in state | Token Service returns `tokenExchangeResource: null`. SSO and automatic verify-state fail. OAuthFlow includes `MsAppId` from `BotApplication.AppId` to prevent this. |
-| Non-AAD providers (GitHub, etc.) | No `tokenExchangeResource` returned regardless of `MsAppId`. Sign-in completes via popup + `signin/verifyState` or magic code. |
+| Non-AAD providers (GitHub, etc.) | No `tokenExchangeResource` returned regardless of `MsAppId`. Sign-in completes via popup + `signin/verifyState`. |
 | OAuthCard JSON serialization | `OAuthCard` is serialized to `JsonElement` before attaching, to avoid `NotSupportedException` from the source-generated `TeamsActivityJsonContext`. |

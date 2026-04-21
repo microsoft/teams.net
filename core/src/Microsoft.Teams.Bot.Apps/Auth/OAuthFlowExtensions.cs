@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Apps.Handlers;
@@ -74,38 +72,6 @@ public static class OAuthFlowExtensions
 
     private static void RegisterRoutes(TeamsBotApplication app, OAuthFlowRegistry registry)
     {
-        // Magic code handler: intercepts numeric messages (4-8 digits) that may be OAuth magic codes
-        // from the fallback sign-in flow (non-AAD providers like GitHub).
-        // Registered as a message route so it runs alongside other matching message handlers.
-        app.Router.Register(new Route<MessageActivity>
-        {
-            Name = "message/oauth/magicCode",
-            Selector = msg => IsMagicCode(msg.Text),
-            Handler = async (ctx, cancellationToken) =>
-            {
-                string code = ctx.Activity.Text!.Trim();
-                string userId = ctx.Activity.From?.Id ?? throw new InvalidOperationException("Activity.From.Id is required.");
-                string channelId = ctx.Activity.ChannelId ?? throw new InvalidOperationException("Activity.ChannelId is required.");
-
-                // Try each registered flow to see which one can redeem the code
-                foreach (OAuthFlow flow in registry.GetAllFlows())
-                {
-                    string? connectionName = flow.ConnectionName;
-                    if (connectionName is null) continue;
-
-                    GetTokenResult? tokenResult = await app.UserTokenClient
-                        .GetTokenAsync(userId, connectionName, channelId, code: code, cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-
-                    if (tokenResult?.Token is not null)
-                    {
-                        await flow.HandleMagicCodeRedeemAsync(ctx, tokenResult, cancellationToken).ConfigureAwait(false);
-                        return;
-                    }
-                }
-            }
-        });
-
         // signin/tokenExchange
         app.Router.Register(new Route<InvokeActivity>
         {
@@ -186,12 +152,6 @@ public static class OAuthFlowExtensions
     {
         _ = app; // Reserved for future use (e.g., resolving ILoggerFactory from DI)
         return NullLogger.Instance;
-    }
-
-    private static bool IsMagicCode([NotNullWhen(true)] string? text)
-    {
-        string? trimmed = text?.Trim();
-        return trimmed is not null && trimmed.Length is >= 4 and <= 8 && trimmed.All(char.IsAsciiDigit);
     }
 }
 

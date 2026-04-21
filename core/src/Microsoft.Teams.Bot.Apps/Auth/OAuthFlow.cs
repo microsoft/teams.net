@@ -11,9 +11,9 @@ using Microsoft.Teams.Bot.Core;
 namespace Microsoft.Teams.Bot.Apps.Auth;
 
 /// <summary>
-/// Delegate invoked after a successful OAuth token exchange, sign-in verification, or magic code redemption.
+/// Delegate invoked after a successful OAuth token exchange or sign-in verification.
 /// </summary>
-/// <param name="context">The activity context. May be an invoke context (SSO/verifyState) or a message context (magic code).</param>
+/// <param name="context">The activity context (invoke context from SSO or verifyState).</param>
 /// <param name="tokenResponse">The token result containing the access token and connection name.</param>
 /// <param name="cancellationToken">A cancellation token.</param>
 public delegate Task SignInCompleteHandler(Context<TeamsActivity> context, GetTokenResult tokenResponse, CancellationToken cancellationToken);
@@ -131,23 +131,7 @@ public class OAuthFlow
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        // 1. Check if the message text is a magic code (fallback sign-in for non-AAD providers)
-        string? messageText = context.Activity.Properties.TryGetValue("text", out object? textObj) ? textObj?.ToString()?.Trim() : null;
-        if (IsMagicCode(messageText))
-        {
-            _logger.LogDebug("Detected magic code in message text for connection '{ConnectionName}'. Attempting to redeem.", connectionName);
-            GetTokenResult? codeToken = await _app.UserTokenClient
-                .GetTokenAsync(userId, connectionName, channelId, code: messageText, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-
-            if (codeToken?.Token is not null)
-            {
-                _logger.LogDebug("Magic code redeemed successfully for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
-                return codeToken.Token;
-            }
-        }
-
-        // 2. Try silent token acquisition
+        // 1. Try silent token acquisition
         GetTokenResult? existingToken = await _app.UserTokenClient.GetTokenAsync(userId, connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
         if (existingToken?.Token is not null)
         {
@@ -155,7 +139,7 @@ public class OAuthFlow
             return existingToken.Token;
         }
 
-        // 3. No token - get sign-in resource and send OAuthCard
+        // 2. No token - get sign-in resource and send OAuthCard
         _logger.LogDebug("No cached token for connection '{ConnectionName}'. Initiating sign-in flow.", connectionName);
 
         // Build state with MsAppId so the Token Service returns TokenExchangeResource for SSO
@@ -201,7 +185,7 @@ public class OAuthFlow
 
         TeamsActivity oauthActivity = TeamsActivity.CreateBuilder()
             .WithConversationReference(context.Activity)
-            //.WithRecipient(context.Activity.From, true)
+            .WithRecipient(context.Activity.From, true)
             .WithAttachment(attachment)
             .Build();
 
@@ -343,20 +327,7 @@ public class OAuthFlow
     }
 
     /// <summary>
-    /// Handles a magic code redeemed from a message activity (non-AAD provider fallback).
-    /// </summary>
-    internal async Task HandleMagicCodeRedeemAsync(Context<MessageActivity> context, GetTokenResult tokenResult, CancellationToken cancellationToken)
-    {
-        _logger.LogDebug("Magic code redeemed for connection '{ConnectionName}', user '{UserId}'.", tokenResult.ConnectionName, context.Activity.From?.Id);
-        if (_onSignInComplete is not null)
-        {
-            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
-            await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
-        }
-    }
-
-    /// <summary>
-    /// Handles the signin/verifyState invoke activity (fallback magic-code flow).
+    /// Handles the signin/verifyState invoke activity.
     /// </summary>
     internal async Task<InvokeResponse> HandleVerifyStateAsync(Context<InvokeActivity> context, SignInVerifyStateValue verifyValue, CancellationToken cancellationToken)
     {
@@ -517,10 +488,4 @@ public class OAuthFlow
     private static string GetChannelId<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
         => context.Activity.ChannelId ?? throw new InvalidOperationException("Activity.ChannelId is required for OAuth operations.");
 
-    /// <summary>
-    /// Magic codes are 4-8 digit numeric strings sent by the user after completing
-    /// OAuth sign-in in a popup (fallback flow for non-AAD providers like GitHub).
-    /// </summary>
-    private static bool IsMagicCode([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? text)
-        => text is not null && text.Length is >= 4 and <= 8 && text.All(char.IsAsciiDigit);
 }
