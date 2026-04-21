@@ -26,6 +26,7 @@ public class BotApplication
     protected BotApplication()
     {
         _logger = NullLogger<BotApplication>.Instance;
+        AppId = string.Empty;
         MiddleWare = new TurnMiddleware();
     }
 
@@ -43,12 +44,18 @@ public class BotApplication
     {
         options ??= new();
         _logger = logger;
+        AppId = options.AppId;
         MiddleWare = new TurnMiddleware();
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
         logger.LogInformationGuarded("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", GetType().Name, options.AppId, Version);
     }
 
+
+    /// <summary>
+    /// Gets the application (client) ID configured for this bot.
+    /// </summary>
+    public string AppId { get; }
 
     /// <summary>
     /// Gets the client used to manage and interact with conversations.

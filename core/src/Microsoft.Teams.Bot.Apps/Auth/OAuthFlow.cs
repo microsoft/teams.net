@@ -1,0 +1,412 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System.Collections.Concurrent;
+using System.Text.Json;
+using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Apps.Handlers;
+using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Bot.Core;
+
+namespace Microsoft.Teams.Bot.Apps.Auth;
+
+/// <summary>
+/// Delegate invoked after a successful OAuth token exchange, sign-in verification, or magic code redemption.
+/// </summary>
+/// <param name="context">The activity context. May be an invoke context (SSO/verifyState) or a message context (magic code).</param>
+/// <param name="tokenResponse">The token result containing the access token and connection name.</param>
+/// <param name="cancellationToken">A cancellation token.</param>
+public delegate Task SignInCompleteHandler(Context<TeamsActivity> context, GetTokenResult tokenResponse, CancellationToken cancellationToken);
+
+/// <summary>
+/// Delegate invoked when an OAuth token exchange or sign-in verification fails.
+/// </summary>
+/// <param name="context">The activity context.</param>
+/// <param name="cancellationToken">A cancellation token.</param>
+public delegate Task SignInFailureHandler(Context<TeamsActivity> context, CancellationToken cancellationToken);
+
+/// <summary>
+/// Provides a high-level abstraction for Teams Bot SSO authentication.
+/// Encapsulates silent token acquisition, SSO token exchange, fallback sign-in, and sign-out.
+/// </summary>
+public class OAuthFlow
+{
+    private readonly TeamsBotApplication _app;
+    private readonly ILogger _logger;
+    private string? _connectionName;
+    private bool _connectionResolved;
+    private SignInCompleteHandler? _onSignInComplete;
+    private SignInFailureHandler? _onSignInFailure;
+
+    // Deduplication cache for signin/tokenExchange invoke activities.
+    // Teams may send duplicates from multiple endpoints (mobile, desktop, web).
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _processedExchanges = new();
+
+    internal OAuthFlow(TeamsBotApplication app, string? connectionName, ILogger logger)
+    {
+        _app = app;
+        _connectionName = connectionName;
+        _connectionResolved = connectionName is not null;
+        _logger = logger;
+    }
+
+    /// <summary>
+    /// The OAuth connection name. Null until resolved when using auto-discovery mode.
+    /// </summary>
+    public string? ConnectionName => _connectionName;
+
+    /// <summary>
+    /// Register a callback invoked after a successful token exchange (SSO or fallback sign-in).
+    /// </summary>
+    /// <param name="handler">The handler to invoke on successful sign-in.</param>
+    /// <returns>This <see cref="OAuthFlow"/> instance for chaining.</returns>
+    public OAuthFlow OnSignInComplete(SignInCompleteHandler handler)
+    {
+        _onSignInComplete = handler;
+        return this;
+    }
+
+    /// <summary>
+    /// Register a callback invoked when token exchange fails.
+    /// </summary>
+    /// <param name="handler">The handler to invoke on sign-in failure.</param>
+    /// <returns>This <see cref="OAuthFlow"/> instance for chaining.</returns>
+    public OAuthFlow OnSignInFailure(SignInFailureHandler handler)
+    {
+        _onSignInFailure = handler;
+        return this;
+    }
+
+    /// <summary>
+    /// Attempt silent token acquisition from the Bot Framework Token Store.
+    /// </summary>
+    /// <typeparam name="TActivity">The activity type.</typeparam>
+    /// <param name="context">The current turn context.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The access token string, or null if no token is cached.</returns>
+    public async Task<string?> GetTokenAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        string connectionName = await ResolveConnectionNameAsync(context, cancellationToken).ConfigureAwait(false);
+        string userId = GetUserId(context);
+        string channelId = GetChannelId(context);
+
+        GetTokenResult? result = await _app.UserTokenClient.GetTokenAsync(userId, connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return result?.Token;
+    }
+
+    /// <summary>
+    /// Attempt silent token acquisition; if no token is available, send an OAuthCard to initiate the SSO flow.
+    /// </summary>
+    /// <typeparam name="TActivity">The activity type.</typeparam>
+    /// <param name="context">The current turn context.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The token if already cached, or null if SSO was initiated (the result will arrive via <see cref="OnSignInComplete"/>).</returns>
+    public Task<string?> SignInAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
+        => SignInAsync(context, options: null, cancellationToken);
+
+    /// <summary>
+    /// Attempt silent token acquisition; if no token is available, send an OAuthCard to initiate the SSO flow.
+    /// </summary>
+    /// <typeparam name="TActivity">The activity type.</typeparam>
+    /// <param name="context">The current turn context.</param>
+    /// <param name="options">OAuth options for customizing the sign-in card text.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The token if already cached, or null if SSO was initiated (the result will arrive via <see cref="OnSignInComplete"/>).</returns>
+    public async Task<string?> SignInAsync<TActivity>(Context<TActivity> context, OAuthOptions? options, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        options ??= new OAuthOptions();
+        string connectionName = await ResolveConnectionNameAsync(context, cancellationToken).ConfigureAwait(false);
+        string userId = GetUserId(context);
+        string channelId = GetChannelId(context);
+
+        // 1. Check if the message text is a magic code (fallback sign-in for non-AAD providers)
+        string? messageText = context.Activity.Properties.TryGetValue("text", out object? textObj) ? textObj?.ToString()?.Trim() : null;
+        if (IsMagicCode(messageText))
+        {
+            _logger.LogDebug("Detected magic code in message text for connection '{ConnectionName}'. Attempting to redeem.", connectionName);
+            GetTokenResult? codeToken = await _app.UserTokenClient
+                .GetTokenAsync(userId, connectionName, channelId, code: messageText, cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
+
+            if (codeToken?.Token is not null)
+            {
+                _logger.LogDebug("Magic code redeemed successfully for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+                return codeToken.Token;
+            }
+        }
+
+        // 2. Try silent token acquisition
+        GetTokenResult? existingToken = await _app.UserTokenClient.GetTokenAsync(userId, connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        if (existingToken?.Token is not null)
+        {
+            _logger.LogDebug("Token found in store for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+            return existingToken.Token;
+        }
+
+        // 3. No token - get sign-in resource and send OAuthCard
+        _logger.LogDebug("No cached token for connection '{ConnectionName}'. Initiating sign-in flow.", connectionName);
+
+        // Build state with MsAppId so the Token Service returns TokenExchangeResource for SSO
+        var tokenExchangeState = new
+        {
+            ConnectionName = connectionName,
+            Conversation = new
+            {
+                ActivityId = context.Activity.Id,
+                Bot = new { Id = context.Activity.Recipient?.Id },
+                ChannelId = channelId,
+                Conversation = new { Id = context.Activity.Conversation?.Id },
+                ServiceUrl = context.Activity.ServiceUrl?.ToString(),
+                User = new { Id = userId }
+            },
+            MsAppId = _app.AppId
+        };
+        string state = Convert.ToBase64String(JsonSerializer.SerializeToUtf8Bytes(tokenExchangeState));
+
+        GetSignInResourceResult signInResource = await _app.UserTokenClient
+            .GetSignInResourceAsync(state, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        OAuthCard oauthCard = new()
+        {
+            Text = options.OAuthCardText,
+            ConnectionName = connectionName,
+            Buttons =
+            [
+                new SuggestedAction(ActionType.SignIn, options.SignInButtonText) { Value = signInResource.SignInLink }
+            ],
+            TokenExchangeResource = signInResource.TokenExchangeResource,
+            TokenPostResource = signInResource.TokenPostResource
+        };
+
+        // Serialize to JsonElement so the source-generated JSON context can handle it
+        JsonElement oauthCardJson = JsonSerializer.SerializeToElement(oauthCard);
+
+        TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
+            .WithContentType(AttachmentContentType.OAuthCard)
+            .WithContent(oauthCardJson)
+            .Build();
+
+        TeamsActivity oauthActivity = TeamsActivity.CreateBuilder()
+            .WithConversationReference(context.Activity)
+            //.WithRecipient(context.Activity.From, true)
+            .WithAttachment(attachment)
+            .Build();
+
+        await context.SendActivityAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
+        return null;
+    }
+
+    /// <summary>
+    /// Sign the user out, revoking their token from the Bot Framework Token Store.
+    /// </summary>
+    /// <typeparam name="TActivity">The activity type.</typeparam>
+    /// <param name="context">The current turn context.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    public async Task SignOutAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        string connectionName = await ResolveConnectionNameAsync(context, cancellationToken).ConfigureAwait(false);
+        string userId = GetUserId(context);
+        string channelId = GetChannelId(context);
+
+        _logger.LogDebug("Signing out user '{UserId}' from connection '{ConnectionName}'.", userId, connectionName);
+        await _app.UserTokenClient.SignOutUserAsync(userId, connectionName, channelId, cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Check whether the user has a valid cached token for this flow's connection.
+    /// </summary>
+    /// <typeparam name="TActivity">The activity type.</typeparam>
+    /// <param name="context">The current turn context.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>True if the user has a valid token; false otherwise.</returns>
+    public async Task<bool> IsSignedInAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
+    {
+        string? token = await GetTokenAsync(context, cancellationToken).ConfigureAwait(false);
+        return token is not null;
+    }
+
+    /// <summary>
+    /// Get the token status for all configured OAuth connections.
+    /// This calls GetTokenStatus which returns every connection registered on the bot,
+    /// so the developer never needs to enumerate connection names manually.
+    /// </summary>
+    /// <typeparam name="TActivity">The activity type.</typeparam>
+    /// <param name="context">The current turn context.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A list of token status results for all configured connections.</returns>
+    public async Task<IList<GetTokenStatusResult>> GetConnectionStatusAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        string userId = GetUserId(context);
+        string channelId = GetChannelId(context);
+
+        return await _app.UserTokenClient.GetTokenStatusAsync(userId, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Handles the signin/tokenExchange invoke activity.
+    /// </summary>
+    internal async Task<InvokeResponse> HandleTokenExchangeAsync(Context<InvokeActivity> context, SignInTokenExchangeValue exchangeValue, CancellationToken cancellationToken)
+    {
+        string exchangeId = exchangeValue.Id ?? string.Empty;
+
+        // Deduplication: Teams sends duplicate exchanges from multiple endpoints
+        if (!_processedExchanges.TryAdd(exchangeId, DateTimeOffset.UtcNow))
+        {
+            _logger.LogDebug("Duplicate signin/tokenExchange with Id '{ExchangeId}' - returning 200 no-op.", exchangeId);
+            return new InvokeResponse(200);
+        }
+
+        CleanupExpiredExchanges();
+
+        string userId = GetUserId(context);
+        string channelId = GetChannelId(context);
+        string connectionName = exchangeValue.ConnectionName ?? _connectionName ?? throw new InvalidOperationException("Connection name could not be determined from the token exchange value.");
+
+        try
+        {
+            GetTokenResult tokenResult = await _app.UserTokenClient
+                .ExchangeTokenAsync(userId, connectionName, channelId, exchangeValue.Token, cancellationToken)
+                .ConfigureAwait(false);
+
+            if (tokenResult?.Token is not null)
+            {
+                _logger.LogDebug("Token exchange succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+                if (_onSignInComplete is not null)
+                {
+                    Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+                    await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
+                }
+                return new InvokeResponse(200);
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'. Returning 412 for fallback.", connectionName, userId);
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'. Returning 412 for fallback.", connectionName, userId);
+        }
+
+        if (_onSignInFailure is not null)
+        {
+            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+            await _onSignInFailure(baseContext, cancellationToken).ConfigureAwait(false);
+        }
+
+        // 412 tells Teams to show the sign-in card as fallback
+        return new InvokeResponse(412);
+    }
+
+    /// <summary>
+    /// Handles a magic code redeemed from a message activity (non-AAD provider fallback).
+    /// </summary>
+    internal async Task HandleMagicCodeRedeemAsync(Context<MessageActivity> context, GetTokenResult tokenResult, CancellationToken cancellationToken)
+    {
+        _logger.LogDebug("Magic code redeemed for connection '{ConnectionName}', user '{UserId}'.", tokenResult.ConnectionName, context.Activity.From?.Id);
+        if (_onSignInComplete is not null)
+        {
+            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+            await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Handles the signin/verifyState invoke activity (fallback magic-code flow).
+    /// </summary>
+    internal async Task<InvokeResponse> HandleVerifyStateAsync(Context<InvokeActivity> context, SignInVerifyStateValue verifyValue, CancellationToken cancellationToken)
+    {
+        string userId = GetUserId(context);
+        string channelId = GetChannelId(context);
+        string connectionName = _connectionName ?? throw new InvalidOperationException("Connection name has not been resolved.");
+
+        GetTokenResult? tokenResult = await _app.UserTokenClient
+            .GetTokenAsync(userId, connectionName, channelId, code: verifyValue.State, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        if (tokenResult?.Token is not null)
+        {
+            _logger.LogDebug("Verify state succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+            if (_onSignInComplete is not null)
+            {
+                Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+                await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
+            }
+            return new InvokeResponse(200);
+        }
+
+        _logger.LogWarning("Verify state failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+        if (_onSignInFailure is not null)
+        {
+            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+            await _onSignInFailure(baseContext, cancellationToken).ConfigureAwait(false);
+        }
+
+        return new InvokeResponse(400);
+    }
+
+    private async Task<string> ResolveConnectionNameAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken) where TActivity : TeamsActivity
+    {
+        if (_connectionResolved && _connectionName is not null)
+        {
+            return _connectionName;
+        }
+
+        // Auto-discover: call GetTokenStatus to find configured connections
+        string userId = GetUserId(context);
+        string channelId = GetChannelId(context);
+
+        GetTokenStatusResult[] statuses = await _app.UserTokenClient
+            .GetTokenStatusAsync(userId, channelId, cancellationToken: cancellationToken)
+            .ConfigureAwait(false);
+
+        if (statuses.Length == 0)
+        {
+            throw new InvalidOperationException("No OAuth connections are configured on this bot. Configure an OAuth connection in the Azure Bot resource settings.");
+        }
+
+        if (statuses.Length > 1)
+        {
+            string connectionNames = string.Join(", ", statuses.Select(s => $"'{s.ConnectionName}'"));
+            throw new InvalidOperationException(
+                $"Multiple OAuth connections found: {connectionNames}. " +
+                $"Specify the connection name explicitly when calling AddOAuthFlow(connectionName).");
+        }
+
+        _connectionName = statuses[0].ConnectionName ?? throw new InvalidOperationException("The configured OAuth connection has no name.");
+        _connectionResolved = true;
+        _logger.LogDebug("Auto-discovered OAuth connection: '{ConnectionName}'.", _connectionName);
+
+        return _connectionName;
+    }
+
+    private void CleanupExpiredExchanges()
+    {
+        DateTimeOffset cutoff = DateTimeOffset.UtcNow.AddMinutes(-5);
+        foreach (var kvp in _processedExchanges)
+        {
+            if (kvp.Value < cutoff)
+            {
+                _processedExchanges.TryRemove(kvp.Key, out _);
+            }
+        }
+    }
+
+    private static string GetUserId<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+        => context.Activity.From?.Id ?? throw new InvalidOperationException("Activity.From.Id is required for OAuth operations.");
+
+    private static string GetChannelId<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+        => context.Activity.ChannelId ?? throw new InvalidOperationException("Activity.ChannelId is required for OAuth operations.");
+
+    /// <summary>
+    /// Magic codes are 4-8 digit numeric strings sent by the user after completing
+    /// OAuth sign-in in a popup (fallback flow for non-AAD providers like GitHub).
+    /// </summary>
+    private static bool IsMagicCode([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? text)
+        => text is not null && text.Length is >= 4 and <= 8 && text.All(char.IsAsciiDigit);
+}

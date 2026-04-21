@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Apps.Schema;
@@ -123,6 +124,30 @@ public class MessageActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("text")]
     public string? Text { get; set; }
+
+    /// <summary>
+    /// Gets the message text with the bot (recipient) @mention removed and trimmed.
+    /// In group chats, Teams prepends "&lt;at&gt;botname&lt;/at&gt;" to the text when the bot is mentioned.
+    /// This property strips that mention so handlers can match on the user's intent alone.
+    /// </summary>
+    [JsonIgnore]
+    public string? TextWithoutMentions
+    {
+        get
+        {
+            string? text = Text;
+            if (text is null) return null;
+
+            foreach (MentionEntity mention in this.GetMentions())
+            {
+                if (mention.Mentioned?.Id == Recipient?.Id && mention.Text is not null)
+                {
+                    text = text.Replace(mention.Text, string.Empty, StringComparison.OrdinalIgnoreCase);
+                }
+            }
+            return text.Trim();
+        }
+    }
     /// <summary>
     /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
     /// </summary>

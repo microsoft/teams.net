@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps.Api.Clients;
+using Microsoft.Teams.Bot.Apps.Auth;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
@@ -23,6 +24,11 @@ public class TeamsBotApplication : BotApplication
     /// Gets the router for dispatching Teams activities to registered routes.
     /// </summary>
     internal Router Router { get; }
+
+    /// <summary>
+    /// Gets the registry of OAuthFlow instances. Set by AddOAuthFlow.
+    /// </summary>
+    internal OAuthFlowRegistry? OAuthRegistry { get; set; }
 
     /// <summary>
     /// Gets the client used to interact with the Teams API service.
