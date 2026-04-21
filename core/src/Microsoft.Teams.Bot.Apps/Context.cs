@@ -105,6 +105,12 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// prefer <see cref="IsSignedInAsync"/> with an explicit connection name instead.
     /// Returns false if no OAuthFlow is registered.
     /// </summary>
+    /// <remarks>
+    /// This property blocks the calling thread (sync-over-async) while querying
+    /// the Bot Framework Token Service. Under high concurrency this can cause
+    /// thread-pool starvation. Prefer <see cref="IsSignedInAsync"/> in new code.
+    /// </remarks>
+    [Obsolete("Use IsSignedInAsync() instead. This property blocks the calling thread and can cause thread-pool starvation under load.")]
     public bool IsSignedIn
     {
         get
