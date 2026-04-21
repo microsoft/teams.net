@@ -48,6 +48,14 @@ public class TeamsValidationSettings
         {
             validIssuers.Add($"{LoginEndpoint}/{tenantId}/");
         }
+        else
+        {
+            // When no tenant ID is configured, issuer validation will be skipped.
+            // This accepts tokens from any Azure AD tenant.
+            System.Diagnostics.Trace.TraceWarning(
+                "No tenant ID provided for Entra token validation. " +
+                "Issuer validation will be skipped, accepting tokens from any tenant.");
+        }
         return validIssuers;
     }
 
