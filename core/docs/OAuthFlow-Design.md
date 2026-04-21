@@ -67,81 +67,198 @@ OAuthFlow (Apps layer - developer-facing)
 
 ## Breaking Changes from Teams SDK v2 (Spark)
 
-### Delegate signature: `Context<TeamsActivity>` instead of typed context
+This section documents every API and behavioral difference between the old `Context<TActivity>` (in `Microsoft.Teams.Apps`) and the new `Context<TActivity>` (in `Microsoft.Teams.Bot.Apps`) related to SSO/Auth.
 
-The Teams SDK v2 `OnSignIn` callback receives a typed `IContext<SignInActivity>`. Our `SignInCompleteHandler` and `SignInFailureHandler` delegates use `Context<TeamsActivity>` (the base type) because the sign-in completion can originate from three different activity types:
+### 1. `context.ConnectionName` removed
 
-- `InvokeActivity` -- SSO token exchange (`signin/tokenExchange`)
-- `InvokeActivity` -- verify state (`signin/verifyState`)
-- `MessageActivity` -- magic code redemption
+**Old (v2)**: `Context<TActivity>` has a `required string ConnectionName` property that holds the app's default connection name (set during context construction, defaults to `"graph"`). `SignIn()` and `SignOut()` fall back to this when no explicit connection name is given.
+
+**New**: No `ConnectionName` property on context. The default connection is resolved from the `OAuthFlowRegistry` -- if a single `OAuthFlow` is registered, it is used as the default. If multiple are registered, the developer must specify the connection name per-call.
 
 ```csharp
-// Teams SDK v2
-app.OnSignIn(async (plugin, @event, cancellationToken) => {
-    var token = @event.Token;
-    var context = @event.Context; // IContext<SignInActivity>
-});
+// Old (v2) -- default connection baked into context
+await context.SignIn(); // uses context.ConnectionName ("graph")
 
-// OAuthFlow
+// New -- resolved from OAuthFlowRegistry
+bot.AddOAuthFlow("graph"); // single flow → becomes the default
+await context.SignIn();    // works (single flow auto-resolves)
+
+// New -- multiple flows, must be explicit
+bot.AddOAuthFlow("graph");
+bot.AddOAuthFlow("gh");
+await context.SignIn(new OAuthOptions { ConnectionName = "gh" });
+```
+
+**Migration**: Replace reads of `context.ConnectionName` with the explicit connection name in `OAuthOptions` or `SignOut(connectionName)`.
+
+### 2. `context.IsSignedIn` semantics changed
+
+**Old (v2)**: `IsSignedIn` is a read/write `bool` property (`{ get; set; }`). It is set to `true` by the framework when a `signin/tokenExchange` invoke completes successfully during the current turn. It is a **per-turn flag**, not a token-store query. It reflects whether the sign-in **just happened** in this turn, not whether a token exists in the store.
+
+**New**: `IsSignedIn` is a read-only `bool` property that **synchronously queries the token store** (`GetAwaiter().GetResult()`). It checks whether the user has a cached token right now, regardless of what happened during this turn. It cannot be set by the developer.
+
+| | Old (v2) | New |
+|---|---|---|
+| Type | `bool { get; set; }` | `bool { get; }` |
+| Source of truth | Framework sets it during the turn | Queries token store on each access |
+| Async | No (already computed) | No (sync-over-async) |
+| Multi-connection | N/A (one default connection) | Checks first registered flow, logs warning if multiple |
+| Writable | Yes | No |
+
+**Recommended migration**: Use `IsSignedInAsync(connectionName?)` for async, connection-aware checks:
+
+```csharp
+// Old (v2)
+if (!context.IsSignedIn) { await context.SignIn(); return; }
+
+// New (preferred)
+if (!await context.IsSignedInAsync("graph", ct)) { await context.SignIn(new OAuthOptions { ConnectionName = "graph" }, ct); return; }
+
+// New (backwards-compat, single connection only)
+if (!context.IsSignedIn) { await context.SignIn(ct); return; }
+```
+
+### 3. `context.UserGraphToken` removed
+
+**Old (v2)**: `Context<TActivity>` has a `JsonWebToken? UserGraphToken` property set by the framework's `OnTokenExchangeActivity` handler after a successful token exchange. It provides parsed JWT access to the Graph token (claims, expiry, etc.).
+
+**New**: No `UserGraphToken` property. The token is returned as a raw `string` from `SignIn()` / `GetTokenAsync()` / `OnSignInComplete`. If JWT parsing is needed, the developer must parse it themselves.
+
+```csharp
+// Old (v2)
+var graphClient = new SimpleGraphClient(context.UserGraphToken?.ToString()!);
+
+// New
+string? token = await context.SignIn(new OAuthOptions { ConnectionName = "graph" }, ct);
+var graphClient = new SimpleGraphClient(token!);
+```
+
+### 4. `context.SignIn(SSOOptions)` overload removed
+
+**Old (v2)**: Two `SignIn` overloads exist:
+- `SignIn(OAuthOptions?)` -- OAuth flow via Bot Framework Token Service
+- `SignIn(SSOOptions)` -- Direct SSO flow with custom scopes and sign-in link (bypasses Token Service, constructs its own `TokenExchangeResource`)
+
+**New**: Only `SignIn(OAuthOptions?)` is available. The SSO flow is handled transparently when the OAuth connection is configured as Azure AD v2 -- the `TokenExchangeResource` is returned by the Token Service when `MsAppId` is included in the state.
+
+**Migration**: Remove `SSOOptions` usage. Configure the OAuth connection in Azure Bot settings with the appropriate scopes. The `OAuthFlow` handles SSO automatically for Azure AD connections.
+
+### 5. `context.SignIn()` return type is the same but semantics differ
+
+**Old (v2)**: `SignIn(OAuthOptions?)` returns `Task<string?>`. Returns the cached token if found, otherwise sends OAuthCard and returns `null`. The `SignIn(SSOOptions)` overload returns `Task` (void).
+
+**New**: `SignIn(OAuthOptions?)` returns `Task<string?>` with the same semantics -- token if cached, `null` if OAuthCard sent. No void overload.
+
+This is **API-compatible** for the `OAuthOptions` overload. Breaking only for `SSOOptions` users.
+
+### 6. `OnSignInComplete` callback signature
+
+**Old (v2)**: Sign-in success is delivered via an app-level event:
+```csharp
+// Old (v2)
+teams.OnSignIn(async (plugin, @event, cancellationToken) => {
+    var token = @event.Token;                    // Token.Response object
+    var context = @event.Context;                // IContext<SignInActivity>
+});
+```
+
+**New**: Sign-in success is delivered via a per-connection callback:
+```csharp
+// New
 graphAuth.OnSignInComplete(async (context, tokenResponse, ct) => {
+    string token = tokenResponse.Token!;         // GetTokenResult
     // context is Context<TeamsActivity> (base type)
-    string token = tokenResponse.Token;
 });
 ```
 
-### `IsSignedIn` is synchronous (sync-over-async)
+Key differences:
+- **Scope**: Old is app-level (one handler for all connections). New is per-connection.
+- **Context type**: Old provides `IContext<SignInActivity>`. New provides `Context<TeamsActivity>` because the sign-in can complete from invoke (tokenExchange, verifyState) or message (magic code) activities.
+- **Token type**: Old provides `Token.Response` (with `ConnectionName`, `Token`, `Expiration`, `Properties`). New provides `GetTokenResult` (with `ConnectionName`, `Token`).
+- **Plugin parameter**: Old receives the plugin instance. New does not -- the context has access to `TeamsBotApplication`.
 
-The Teams SDK v2 `context.IsSignedIn` is set by the framework during activity processing. Our `IsSignedIn` property makes a synchronous call to the token store (`GetAwaiter().GetResult()`).
+### 7. `OnSignInFailure` callback signature and scope
 
-For new code, prefer the async `IsSignedInAsync(connectionName?)` method:
-
+**Old (v2)**: App-level handler receiving the failure activity:
 ```csharp
-// Backwards-compatible (sync, single/default connection only)
-if (!context.IsSignedIn) { ... }
-
-// Preferred (async, connection-aware)
-if (!await context.IsSignedInAsync("gh", ct)) { ... }
+// Old (v2)
+teams.OnSignInFailure(async (context, cancellationToken) => {
+    var failure = context.Activity.Value; // SignIn.Failure { Code, Message }
+    await context.Send("Sign-in failed.", cancellationToken);
+});
 ```
 
-When multiple connections are registered, `IsSignedIn` checks the **first** registered connection and logs a warning via `Trace.TraceWarning`.
-
-### `context.SignIn()` returns `Task<string?>` not `Task`
-
-The Teams SDK v2 `context.SignIn()` returns `Task` (void). Our `context.SignIn()` returns `Task<string?>` -- the cached token if available, or `null` if the sign-in flow was initiated:
-
+**New**: Per-connection handler on the `OAuthFlow` instance:
 ```csharp
-// Teams SDK v2
-await context.SignIn(new OAuthOptions { ... }, cancellationToken);
-// must check context.IsSignedIn separately
-
-// OAuthFlow
-string? token = await context.SignIn(new OAuthOptions { ... }, ct);
-if (token is not null) { /* already signed in, use token */ }
-// else: OAuthCard sent, token arrives via OnSignInComplete
+// New
+graphAuth.OnSignInFailure(async (context, ct) => {
+    // context is Context<TeamsActivity>
+    await context.SendActivityAsync("Sign-in failed.", ct);
+});
 ```
 
-### No `OnSignInFailure` on context -- use OAuthFlow instance
+Key differences:
+- **Scope**: Per-connection instead of app-level.
+- **Failure details**: Old provides `SignIn.Failure` with `Code` and `Message` via the activity value. New does not expose structured failure details (the failure is logged internally).
+- **`context.Send` → `context.SendActivityAsync`**: Method name change (see below).
 
-The Teams SDK v2 has `app.OnSignInFailure(handler)` at the app level. In OAuthFlow, failure handlers are per-connection on the `OAuthFlow` instance:
+### 8. `context.Send()` → `context.SendActivityAsync()`
 
-```csharp
-// Teams SDK v2
-teams.OnSignInFailure(async (context, cancellationToken) => { ... });
+**Old (v2)**: `context.Send(string)` and `context.Send<T>(T activity)`.
 
-// OAuthFlow
-graphAuth.OnSignInFailure(async (context, ct) => { ... });
-```
+**New**: `context.SendActivityAsync(string)` and `context.SendActivityAsync(TeamsActivity)`.
 
-### `OAuthOptions` namespace
+This affects all code inside `OnSignInComplete` and `OnSignInFailure` callbacks.
 
-Teams SDK v2: `Microsoft.Teams.Apps.OAuthOptions`
-OAuthFlow: `Microsoft.Teams.Bot.Apps.Auth.OAuthOptions`
+### 9. Group chat handling removed from `SignIn`
 
-Same shape: `ConnectionName`, `OAuthCardText`, `SignInButtonText`.
+**Old (v2)**: `Context.SignIn()` detects group chats (`Activity.Conversation.IsGroup == true`) and automatically creates a 1:1 conversation with the user before sending the OAuthCard, because group chats don't support SSO.
 
-### Message routing strips bot mentions
+**New**: `OAuthFlow.SignInAsync()` does not handle the group-chat-to-1:1 conversion. The OAuthCard is sent to the current conversation. For group chats, the sign-in card will show the button (no SSO), but the popup flow still works.
 
-`OnMessage` pattern matching now uses `MessageActivity.TextWithoutMentions` instead of `Text`. This means `@botname help` correctly matches the pattern `^help$`. The raw `Text` property still contains the full text with mentions for handlers that need it.
+**Migration**: If group chat SSO is required, the developer must create the 1:1 conversation manually before calling `context.SignIn()`.
+
+### 10. `OAuthOptions` namespace and defaults
+
+| | Old (v2) | New |
+|---|---|---|
+| Namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Bot.Apps.Auth` |
+| Base class | `SignInOptions` (abstract) | None (standalone class) |
+| `OAuthCardText` default | `"Please Sign In..."` | `"Please Sign In"` |
+| `SignInButtonText` default | `"Sign In"` | `"Sign In"` |
+| `ConnectionName` | Falls back to `context.ConnectionName` | Falls back to single registered `OAuthFlow` |
+
+### 11. `SSOOptions` class removed
+
+**Old (v2)**: `SSOOptions : SignInOptions` with `required string[] Scopes` and `required string SignInLink`.
+
+**New**: Not available. SSO is handled automatically for Azure AD connections via the `TokenExchangeResource` mechanism.
+
+### 12. No `context.Next()` equivalent in auth handlers
+
+**Old (v2)**: `context.Next()` continues the middleware/route chain. The `OnSignIn` event handler can call `context.Next()` to continue processing.
+
+**New**: `OnSignInComplete` and `OnSignInFailure` are terminal callbacks, not middleware. They do not participate in the route chain.
+
+### Summary Table
+
+| Feature | Old (v2) `Microsoft.Teams.Apps` | New `Microsoft.Teams.Bot.Apps` | Breaking? |
+|---|---|---|---|
+| `context.ConnectionName` | `required string` property | Removed (resolved from registry) | Yes |
+| `context.IsSignedIn` | `bool { get; set; }` (per-turn flag) | `bool { get; }` (queries token store) | Yes (semantic) |
+| `context.UserGraphToken` | `JsonWebToken?` property | Removed | Yes |
+| `context.SignIn(OAuthOptions?)` | Returns `Task<string?>` | Returns `Task<string?>` | No |
+| `context.SignIn(SSOOptions)` | Returns `Task` | Removed | Yes |
+| `context.SignOut(string?)` | Returns `Task` | Returns `Task` | No |
+| `OnSignIn` event | App-level, `SignInEvent` | Per-connection `OnSignInComplete` | Yes |
+| `OnSignInFailure` event | App-level, `SignIn.Failure` | Per-connection `OnSignInFailure` | Yes |
+| `OAuthOptions` namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Bot.Apps.Auth` | Yes |
+| `SSOOptions` | Available | Removed | Yes |
+| Group chat 1:1 fallback | Automatic | Manual | Yes (behavioral) |
+| `context.Send()` | Available | `context.SendActivityAsync()` | Yes (rename) |
+| `context.Next()` in auth | Available | Not applicable | Yes |
+| `IsSignedInAsync()` | Not available | New method | N/A (addition) |
+| `GetConnectionStatusAsync()` | Not available | New method | N/A (addition) |
 
 ## API Surface
 
