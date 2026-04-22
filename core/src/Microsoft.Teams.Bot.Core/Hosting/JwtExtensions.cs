@@ -24,9 +24,6 @@ namespace Microsoft.Teams.Bot.Core.Hosting
     /// </summary>
     public static class JwtExtensions
     {
-        internal const string BotOIDC = "https://login.botframework.com/v1/.well-known/openid-configuration";
-        internal const string EntraOIDC = "https://login.microsoftonline.com/";
-
         /// <summary>
         /// Adds JWT authentication for bots and agents using configuration from appsettings.
         /// </summary>
@@ -37,7 +34,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, string aadSectionName = "AzureAd", ILogger? logger = null)
         {
             BotConfig botConfig = ResolveBotConfig(services, aadSectionName);
-            return services.AddBotAuthentication(botConfig.ClientId, botConfig.TenantId, aadSectionName, logger);
+            return services.AddBotAuthentication(botConfig.ClientId, botConfig.TenantId, aadSectionName, logger, botConfig.Cloud);
         }
 
         /// <summary>
@@ -48,16 +45,18 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// <param name="tenantId">The Azure AD tenant ID. Can be empty for multi-tenant scenarios.</param>
         /// <param name="schemeName">The authentication scheme name. Defaults to "AzureAd".</param>
         /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
+        /// <param name="cloud">The cloud environment for sovereign cloud support. Defaults to <see cref="CloudEnvironment.Public"/>.</param>
         /// <returns>An <see cref="AuthenticationBuilder"/> for further authentication configuration.</returns>
         public static AuthenticationBuilder AddBotAuthentication(
             this IServiceCollection services,
             string clientId,
             string tenantId = "",
             string schemeName = "AzureAd",
-            ILogger? logger = null)
+            ILogger? logger = null,
+            CloudEnvironment? cloud = null)
         {
             AuthenticationBuilder builder = services.AddAuthentication();
-            builder.AddBotAuthentication(clientId, tenantId, schemeName, logger);
+            builder.AddBotAuthentication(clientId, tenantId, schemeName, logger, cloud);
             return builder;
         }
 
@@ -70,13 +69,15 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// <param name="tenantId">The Azure AD tenant ID. Can be empty for multi-tenant scenarios.</param>
         /// <param name="schemeName">The authentication scheme name.</param>
         /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
+        /// <param name="cloud">The cloud environment for sovereign cloud support. Defaults to <see cref="CloudEnvironment.Public"/>.</param>
         /// <returns>The <see cref="AuthenticationBuilder"/> for chaining.</returns>
         public static AuthenticationBuilder AddBotAuthentication(
             this AuthenticationBuilder builder,
             string clientId,
             string tenantId = "",
             string schemeName = "AzureAd",
-            ILogger? logger = null)
+            ILogger? logger = null,
+            CloudEnvironment? cloud = null)
         {
             if (string.IsNullOrWhiteSpace(clientId))
             {
@@ -84,7 +85,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
             }
             else
             {
-                builder.AddTeamsJwtBearer(schemeName, clientId, tenantId, logger);
+                builder.AddTeamsJwtBearer(schemeName, clientId, tenantId, cloud ?? CloudEnvironment.Public, logger);
             }
             return builder;
         }
@@ -115,7 +116,7 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         {
             logger ??= NullLogger.Instance;
 
-            return services.AddBotAuthorization(botConfig.ClientId, botConfig.TenantId, botConfig.SectionName, logger);
+            return services.AddBotAuthorization(botConfig.ClientId, botConfig.TenantId, botConfig.SectionName, logger, botConfig.Cloud);
         }
 
         /// <summary>
@@ -126,15 +127,17 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// <param name="tenantId">The Azure AD tenant ID. Can be empty for multi-tenant scenarios.</param>
         /// <param name="schemeName">The authentication scheme name. Defaults to "AzureAd".</param>
         /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
+        /// <param name="cloud">The cloud environment for sovereign cloud support. Defaults to <see cref="CloudEnvironment.Public"/>.</param>
         /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
         public static AuthorizationBuilder AddBotAuthorization(
             this IServiceCollection services,
             string clientId,
             string tenantId = "",
             string schemeName = "AzureAd",
-            ILogger? logger = null)
+            ILogger? logger = null,
+            CloudEnvironment? cloud = null)
         {
-            services.AddBotAuthentication(clientId, tenantId, schemeName, logger);
+            services.AddBotAuthentication(clientId, tenantId, schemeName, logger, cloud);
 
             return services
                 .AddAuthorizationBuilder()
@@ -145,19 +148,19 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                 });
         }
 
-        private static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId)
+        internal static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId, CloudEnvironment cloud)
         {
             // Bot Framework tokens
-            if (issuer.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase))
+            if (issuer.Equals(cloud.TokenIssuer, StringComparison.OrdinalIgnoreCase))
                 return issuer;
 
-            // Entra tokens � bot-to-bot (agent) and user (tab/API)
+            // Entra tokens - bot-to-bot (agent) and user (tab/API)
             // Use the token's own tid claim for multi-tenant; fall back to configured tenant
             (_, string? tid) = GetTokenClaims(token);
             string? effectiveTenant = string.IsNullOrEmpty(configuredTenantId) ? tid : configuredTenantId;
 
             if (effectiveTenant is not null &&
-                (issuer == $"https://login.microsoftonline.com/{effectiveTenant}/v2.0" ||
+                (issuer == $"{cloud.LoginEndpoint}/{effectiveTenant}/v2.0" ||
                  issuer == $"https://sts.windows.net/{effectiveTenant}/"))
                 return issuer;
 
@@ -176,18 +179,19 @@ namespace Microsoft.Teams.Bot.Core.Hosting
         /// <param name="schemeName">The authentication scheme name.</param>
         /// <param name="audience">The application (client) ID used to validate the audience of tokens.</param>
         /// <param name="tenantId">The Azure AD tenant ID.</param>
+        /// <param name="cloud">The cloud environment providing per-cloud endpoints (issuer, OIDC metadata, login).</param>
         /// <param name="logger">Optional logger for authentication events.</param>
         /// <returns>The authentication builder for chaining.</returns>
         /// <remarks>
         /// This method configures authentication to support both types of tokens:
         /// <list type="bullet">
-        /// <item><description>Bot Framework tokens: Issued by the Bot Connector service when channels send activities to your bot (issuer: https://api.botframework.com).</description></item>
-        /// <item><description>Entra ID tokens: Issued by Azure AD when the bot is registered as an agentic application (issuer: https://login.microsoftonline.com). See https://learn.microsoft.com/en-us/microsoft-agent-365/developer/identity#understanding-agent-identity-components</description></item>
+        /// <item><description>Bot Framework tokens: Issued by the Bot Connector service when channels send activities to your bot. The expected issuer is <see cref="CloudEnvironment.TokenIssuer"/>.</description></item>
+        /// <item><description>Entra ID tokens: Issued by Azure AD when the bot is registered as an agentic application. The expected issuer is derived from <see cref="CloudEnvironment.LoginEndpoint"/>. See https://learn.microsoft.com/en-us/microsoft-agent-365/developer/identity#understanding-agent-identity-components</description></item>
         /// </list>
         /// The signing keys for both token types are dynamically resolved at runtime using OpenID Connect discovery,
         /// allowing the same authentication configuration to validate tokens from multiple issuers.
         /// </remarks>
-        private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)
+        private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, CloudEnvironment cloud, ILogger? logger = null)
         {
             // One ConfigurationManager per OIDC authority, shared safely across all requests.
             ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
@@ -203,15 +207,15 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidAudiences = [audience, $"api://{audience}"],
-                    IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId),
+                    IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId, cloud),
                     IssuerSigningKeyResolver = (_, securityToken, _, _) =>
                     {
                         (string? iss, string? tid) = GetTokenClaims(securityToken);
                         if (iss is null) return [];
 
-                        string authority = iss.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
-                            ? BotOIDC
-                            : $"{EntraOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
+                        string authority = iss.Equals(cloud.TokenIssuer, StringComparison.OrdinalIgnoreCase)
+                            ? cloud.OpenIdMetadataUrl
+                            : $"{cloud.LoginEndpoint}/{tid ?? cloud.LoginTenant}/v2.0/.well-known/openid-configuration";
 
                         logger.LogTraceGuarded("Resolving signing keys from OIDC authority '{Authority}' for issuer '{Issuer}'.", authority, iss);
 
