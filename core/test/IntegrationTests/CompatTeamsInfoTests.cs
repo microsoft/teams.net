@@ -252,12 +252,13 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     public async Task GetTeamChannelsAsync_ReturnsChannels()
     {
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        IList<ChannelInfo> result = await CompatTeamsInfo.GetTeamChannelsAsync(ctx, _f.TeamId);
+        ConversationList result = await CompatTeamsInfo.GetTeamChannelsAsync(ctx, _f.TeamId);
 
         Assert.NotNull(result);
-        Assert.NotEmpty(result);
+        Assert.NotNull(result.Conversations);
+        Assert.NotEmpty(result.Conversations);
 
-        foreach (ChannelInfo ch in result)
+        foreach (ChannelInfo ch in result.Conversations)
         {
             _output.WriteLine($"Channel: {ch.Id} — {ch.Name}");
         }
@@ -267,11 +268,12 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     public async Task GetTeamChannelsAsync_InfersTeamIdFromActivity()
     {
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        IList<ChannelInfo> result = await CompatTeamsInfo.GetTeamChannelsAsync(ctx);
+        ConversationList result = await CompatTeamsInfo.GetTeamChannelsAsync(ctx);
 
         Assert.NotNull(result);
-        Assert.NotEmpty(result);
-        _output.WriteLine($"Channels (inferred): {result.Count} channels found");
+        Assert.NotNull(result.Conversations);
+        Assert.NotEmpty(result.Conversations);
+        _output.WriteLine($"Channels (inferred): {result.Conversations.Count} channels found");
     }
 
     #endregion

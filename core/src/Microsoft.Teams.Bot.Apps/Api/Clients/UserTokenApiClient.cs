@@ -31,10 +31,6 @@ public class UserTokenApiClient
     /// <summary>
     /// Get AAD tokens for specified resources.
     /// </summary>
-    /// <remarks>
-    /// The async/await here bridges the nullability difference between the core client
-    /// (non-nullable return) and this API surface (nullable return).
-    /// </remarks>
     public async Task<IDictionary<string, GetTokenResult>?> GetAadAsync(string userId, string connectionName, string channelId, IList<string>? resourceUrls = null, CancellationToken cancellationToken = default)
     {
         return await _client.GetAadTokensAsync(userId, connectionName, channelId, resourceUrls?.ToArray(), cancellationToken).ConfigureAwait(false);
@@ -43,10 +39,6 @@ public class UserTokenApiClient
     /// <summary>
     /// Get the token status for a user's connections.
     /// </summary>
-    /// <remarks>
-    /// The async/await here bridges the type difference between the core client
-    /// (<c>GetTokenStatusResult[]</c>) and this API surface (<c>IList</c>, nullable).
-    /// </remarks>
     public async Task<IList<GetTokenStatusResult>?> GetStatusAsync(string userId, string channelId, string? includeFilter = null, CancellationToken cancellationToken = default)
     {
         return await _client.GetTokenStatusAsync(userId, channelId, includeFilter, cancellationToken).ConfigureAwait(false);
@@ -63,10 +55,6 @@ public class UserTokenApiClient
     /// <summary>
     /// Exchange a token for another token.
     /// </summary>
-    /// <remarks>
-    /// The async/await here bridges the nullability difference between the core client
-    /// (non-nullable return) and this API surface (nullable return).
-    /// </remarks>
     public async Task<GetTokenResult?> ExchangeAsync(string userId, string connectionName, string channelId, string exchangeToken, CancellationToken cancellationToken = default)
     {
         return await _client.ExchangeTokenAsync(userId, connectionName, channelId, exchangeToken, cancellationToken).ConfigureAwait(false);
