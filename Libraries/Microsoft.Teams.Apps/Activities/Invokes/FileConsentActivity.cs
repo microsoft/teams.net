@@ -15,6 +15,7 @@ public class FileConsentAttribute() : InvokeAttribute(Api.Activities.Invokes.Nam
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnFileConsent(this App app, Func<IContext<FileConsentActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -32,6 +33,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnFileConsent(this App app, Func<IContext<FileConsentActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()

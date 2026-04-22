@@ -3,7 +3,7 @@
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Core;
 using PABot;
 using PABot.Bots;
 using PABot.Dialogs;
@@ -17,7 +17,7 @@ builder.Services.AddTeamsBotApplications();
 builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(sp =>
 {
     return new AdapterWithErrorHandler(
-        sp.GetRequiredService<TeamsBotApplication>(),
+        sp.GetRequiredService<BotApplication>(),
         sp.GetRequiredService<IHttpContextAccessor>(),
         sp.GetRequiredService<IConfiguration>(),
         sp.GetRequiredService<ILogger<IBotFrameworkHttpAdapter>>(),

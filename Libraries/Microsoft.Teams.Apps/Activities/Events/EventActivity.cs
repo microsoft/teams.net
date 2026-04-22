@@ -25,6 +25,7 @@ public class EventAttribute : ActivityAttribute
 
 public static partial class AppEventActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnEvent(this App app, Func<IContext<EventActivity>, Task> handler)
     {
         app.Router.Register(new Route()
