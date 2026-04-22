@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
@@ -123,7 +124,7 @@ public class CitationEntity : OMessageEntity
         if (entity is CitationEntity citationEntity)
         {
             Citation = citationEntity.Citation != null
-                ? new List<CitationClaim>(citationEntity.Citation)
+                ? citationEntity.Citation.Select(c => new CitationClaim(c)).ToList()
                 : null;
         }
     }
@@ -144,6 +145,19 @@ public class CitationEntity : OMessageEntity
 /// </summary>
 public class CitationClaim
 {
+    /// <summary>Initializes a new instance of <see cref="CitationClaim"/>.</summary>
+    public CitationClaim() { }
+
+    /// <summary>Creates a deep copy of <paramref name="other"/>.</summary>
+    [SetsRequiredMembers]
+    public CitationClaim(CitationClaim other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+        Type = other.Type;
+        Position = other.Position;
+        Appearance = new CitationAppearanceDocument(other.Appearance);
+    }
+
     /// <summary>
     /// Gets or sets the schema.org type. Always "Claim".
     /// </summary>
@@ -168,6 +182,25 @@ public class CitationClaim
 /// </summary>
 public class CitationAppearanceDocument
 {
+    /// <summary>Initializes a new instance of <see cref="CitationAppearanceDocument"/>.</summary>
+    public CitationAppearanceDocument() { }
+
+    /// <summary>Creates a deep copy of <paramref name="other"/>.</summary>
+    [SetsRequiredMembers]
+    public CitationAppearanceDocument(CitationAppearanceDocument other)
+    {
+        ArgumentNullException.ThrowIfNull(other);
+        Type = other.Type;
+        Name = other.Name;
+        Text = other.Text;
+        Url = other.Url;
+        Abstract = other.Abstract;
+        EncodingFormat = other.EncodingFormat;
+        Image = other.Image is null ? null : new CitationImageObject { Type = other.Image.Type, Name = other.Image.Name };
+        Keywords = other.Keywords != null ? new List<string>(other.Keywords) : null;
+        UsageInfo = other.UsageInfo;
+    }
+
     /// <summary>
     /// Gets or sets the schema.org type. Always "DigitalDocument".
     /// </summary>
