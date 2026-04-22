@@ -8,8 +8,8 @@ using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Bot.Core.Schema;
 using TeamsBot;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
@@ -36,13 +36,13 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
         .WithType(TeamsActivityType.Message)
         .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
         .WithSuggestedActions(new SuggestedActions()
-         {
-             To = [context.Activity.From?.Id!],
-             Actions = [
+        {
+            To = [context.Activity.From?.Id!],
+            Actions = [
                     new SuggestedAction(ActionType.IMBack, "hello") { Value = "hello" },
                     new SuggestedAction(ActionType.IMBack, "feedback") { Value = "feedback" },
                  ]
-         })
+        })
         .Build();
 
     await context.SendActivityAsync(helpActivity, cancellationToken);

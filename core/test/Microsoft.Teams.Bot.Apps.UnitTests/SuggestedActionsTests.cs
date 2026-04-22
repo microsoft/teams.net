@@ -202,7 +202,7 @@ public class SuggestedActionsTests
         Assert.Empty(activity.SuggestedActions.Actions);
     }
 
-    
+
 
     [Fact]
     public void MessageActivity_WithSuggestedActions()
