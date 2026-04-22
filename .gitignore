@@ -9,7 +9,7 @@
 # local app settings files
 appsettings.Local.json
 appsettings.Development.json
-launchsettings.json
+launchSettings.json
 
 .claude/
 

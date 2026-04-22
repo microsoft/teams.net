@@ -309,6 +309,72 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.Equal(TestConversationId, capturedActivity.Conversation.Id);
         }
 
+        [Fact]
+        public async Task SendToConversationWithHttpMessagesAsync_WhenSendActivityReturnsNull_ReturnsStringEmptyForId()
+        {
+            // This test verifies the fix for the OAuth card null reference bug
+            // When APX returns 202 Accepted with no body, SendActivityAsync returns null
+            // We should return string.Empty for Id instead of null to maintain API contract
+
+            // Arrange
+            Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
+            mockConversationClient
+                .Setup(c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((SendActivityResponse?)null); // Simulate 202 Accepted with no body
+
+            CompatConversations compatConversations = new(mockConversationClient.Object)
+            {
+                ServiceUrl = TestServiceUrl
+            };
+
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Text = "Test message"
+            };
+
+            // Act
+            var result = await compatConversations.SendToConversationWithHttpMessagesAsync(TestConversationId, activity);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Body);
+            Assert.Equal(string.Empty, result.Body.Id); // Should be string.Empty, not null
+        }
+
+        [Fact]
+        public async Task ReplyToActivityWithHttpMessagesAsync_WhenSendActivityReturnsNull_ReturnsStringEmptyForId()
+        {
+            // This test verifies the fix for the OAuth card null reference bug in ReplyToActivity
+            // When APX returns 202 Accepted with no body, SendActivityAsync returns null
+            // We should return string.Empty for Id instead of null to maintain API contract
+
+            // Arrange
+            Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
+            mockConversationClient
+                .Setup(c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<Dictionary<string, string>>(), It.IsAny<CancellationToken>()))
+                .ReturnsAsync((SendActivityResponse?)null); // Simulate 202 Accepted with no body
+
+            CompatConversations compatConversations = new(mockConversationClient.Object)
+            {
+                ServiceUrl = TestServiceUrl
+            };
+
+            Activity activity = new()
+            {
+                Type = ActivityTypes.Message,
+                Text = "Test reply"
+            };
+
+            // Act
+            var result = await compatConversations.ReplyToActivityWithHttpMessagesAsync(TestConversationId, TestActivityId, activity);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(result.Body);
+            Assert.Equal(string.Empty, result.Body.Id); // Should be string.Empty, not null
+        }
+
         private static Mock<ConversationClient> CreateMockConversationClient()
         {
             Mock<ConversationClient> mock = new(

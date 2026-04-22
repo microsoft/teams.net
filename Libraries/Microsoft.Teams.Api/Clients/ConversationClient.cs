@@ -57,10 +57,11 @@ public class ConversationClient : Client
         #pragma warning restore ExperimentalTeamsReactions
     }
 
-    public async Task<ConversationResource> CreateAsync(CreateRequest request)
+    public async Task<ConversationResource> CreateAsync(CreateRequest request, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var req = HttpRequest.Post($"{ServiceUrl}v3/conversations", body: request);
-        var res = await _http.SendAsync<ConversationResource>(req, _cancellationToken);
+        var res = await _http.SendAsync<ConversationResource>(req, token);
         return res.Body;
     }
 

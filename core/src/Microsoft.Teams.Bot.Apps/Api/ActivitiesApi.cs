@@ -33,8 +33,8 @@ public class ActivitiesApi
     /// <param name="activity">The activity to send. Must contain valid conversation and service URL information.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
-    public Task<SendActivityResponse> SendAsync(
+    /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity, or null if the response has no body.</returns>
+    public Task<SendActivityResponse?> SendAsync(
         CoreActivity activity,
         CustomHeaders? customHeaders = null,
         CancellationToken cancellationToken = default)

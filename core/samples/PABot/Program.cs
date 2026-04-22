@@ -32,8 +32,9 @@ builder.Services.AddSingleton<ConversationState>();
 builder.Services.AddSingleton<MainDialog>();
 
 // Register bot (pick between TeamsBot & EchoBot)
-//builder.Services.AddTransient<IBot, TeamsBot<MainDialog>>();
-builder.Services.AddTransient<IBot, EchoBot>();
+// builder.Services.AddTransient<IBot, TeamsBot<MainDialog>>();
+// builder.Services.AddTransient<IBot, EchoBot>();
+builder.Services.AddTransient<IBot, SsoBot>();
 
 WebApplication app = builder.Build();
 

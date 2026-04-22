@@ -479,7 +479,7 @@ public class MessageActivityTests
     {
         var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "1" });
 
-        Assert.False(activity.IsTargeted);
+        Assert.Null(activity.Recipient.IsTargeted);
         Assert.NotNull(activity.Recipient);
     }
 
@@ -488,7 +488,7 @@ public class MessageActivityTests
     {
         var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "1" }, true);
 
-        Assert.True(activity.IsTargeted);
+        Assert.True(activity.Recipient.IsTargeted);
         Assert.NotNull(activity.Recipient);
     }
 
@@ -497,7 +497,7 @@ public class MessageActivityTests
     {
         var activity = new MessageActivity("hello").WithRecipient(new Account() { Id = "user-123", Name = "user", Role = Role.User }, true);
 
-        Assert.True(activity.IsTargeted);
+        Assert.True(activity.Recipient.IsTargeted);
         Assert.NotNull(activity.Recipient);
         Assert.Equal("user-123", activity.Recipient.Id);
         Assert.Equal("user", activity.Recipient.Name);
@@ -516,7 +516,7 @@ public class MessageActivityTests
         Assert.Equal("hello world", activity.Text);
         Assert.NotNull(activity.Recipient);
         Assert.Equal("user-123", activity.Recipient.Id);
-        Assert.False(activity.IsTargeted);
+        Assert.Null(activity.Recipient.IsTargeted);
     }
 
     [Fact]
@@ -534,11 +534,11 @@ public class MessageActivityTests
             DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
         });
 
-        // IsTargeted is not serialized (JsonIgnore) - it's only used internally for SDK routing
-        Assert.DoesNotContain("\"isTargeted\"", json);
+        // IsTargeted is serialized in the recipient object
+        Assert.Contains("\"isTargeted\": true", json);
         Assert.Contains("\"text\": \"targeted message\"", json);
         // Verify the property is still set on the object
-        Assert.True(activity.IsTargeted);
+        Assert.True(activity.Recipient.IsTargeted);
     }
 
     [Fact]
@@ -550,7 +550,7 @@ public class MessageActivityTests
             .WithImportance(Importance.High); 
 
         Assert.Equal("Hello", msg.Text);
-        Assert.True(msg.IsTargeted);
+        Assert.True(msg.Recipient.IsTargeted);
         Assert.NotNull(msg.Recipient);
         Assert.Equal("user-123", msg.Recipient.Id);
         Assert.Equal("Test User", msg.Recipient.Name);
