@@ -33,7 +33,7 @@ internal static class MsalConfigurationExtensions
         }
         else if (botConfig.MsalConfigurationSection != null)
         {
-            services.ConfigureMSALFromConfig(botConfig.MsalConfigurationSection);
+            services.ConfigureMSALFromConfig(botConfig.MsalConfigurationSection, botConfig.Cloud);
         }
         else
         {
@@ -43,14 +43,54 @@ internal static class MsalConfigurationExtensions
         return true;
     }
 
-    private static IServiceCollection ConfigureMSALFromConfig(this IServiceCollection services, IConfigurationSection msalConfigSection)
+    private static IServiceCollection ConfigureMSALFromConfig(this IServiceCollection services, IConfigurationSection msalConfigSection, CloudEnvironment cloud)
     {
         ArgumentNullException.ThrowIfNull(msalConfigSection);
+
+        string? sectionInstance = msalConfigSection["Instance"];
+        string? sectionAuthority = msalConfigSection["Authority"];
+        ValidateSectionMatchesCloud(msalConfigSection.Path, sectionInstance, sectionAuthority, cloud);
+
         services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, msalConfigSection);
+
+        // Fall back to Cloud's login endpoint when the section didn't set Instance or Authority.
+        // Lets `Cloud: "USGov"` alone configure sovereign correctly; honors the section when it's explicit.
+        if (string.IsNullOrWhiteSpace(sectionInstance) && string.IsNullOrWhiteSpace(sectionAuthority))
+        {
+            services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
+            {
+                options.Instance = cloud.LoginEndpoint + "/";
+            });
+        }
         return services;
     }
 
-    private static IServiceCollection ConfigureMSALWithSecret(this IServiceCollection services, string tenantId, string clientId, string clientSecret)
+    private static void ValidateSectionMatchesCloud(string sectionPath, string? sectionInstance, string? sectionAuthority, CloudEnvironment cloud)
+    {
+        string expected = NormalizeEndpoint(cloud.LoginEndpoint);
+
+        if (!string.IsNullOrWhiteSpace(sectionInstance) &&
+            !NormalizeEndpoint(sectionInstance).Equals(expected, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"MSAL configuration conflict: '{sectionPath}:Instance' is '{sectionInstance}' " +
+                $"but Cloud resolves login endpoint to '{cloud.LoginEndpoint}'. " +
+                $"Either remove Instance from the MSAL section (Cloud will set it) or change Cloud to match.");
+        }
+
+        if (!string.IsNullOrWhiteSpace(sectionAuthority) &&
+            !NormalizeEndpoint(sectionAuthority).StartsWith(expected, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                $"MSAL configuration conflict: '{sectionPath}:Authority' is '{sectionAuthority}' " +
+                $"but Cloud resolves login endpoint to '{cloud.LoginEndpoint}'. " +
+                $"Either remove Authority from the MSAL section (Cloud will set Instance) or change Cloud to match.");
+        }
+    }
+
+    private static string NormalizeEndpoint(string value) => value.TrimEnd('/');
+
+    private static IServiceCollection ConfigureMSALWithSecret(this IServiceCollection services, string tenantId, string clientId, string clientSecret, CloudEnvironment cloud)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
@@ -58,7 +98,7 @@ internal static class MsalConfigurationExtensions
 
         services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
-            options.Instance = "https://login.microsoftonline.com/";
+            options.Instance = cloud.LoginEndpoint + "/";
             options.TenantId = tenantId;
             options.ClientId = clientId;
             options.ClientCredentials = [
@@ -72,7 +112,7 @@ internal static class MsalConfigurationExtensions
         return services;
     }
 
-    private static IServiceCollection ConfigureMSALWithFIC(this IServiceCollection services, string tenantId, string clientId, string? ficClientId)
+    private static IServiceCollection ConfigureMSALWithFIC(this IServiceCollection services, string tenantId, string clientId, string? ficClientId, CloudEnvironment cloud)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentException.ThrowIfNullOrWhiteSpace(clientId);
@@ -88,7 +128,7 @@ internal static class MsalConfigurationExtensions
 
         services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
-            options.Instance = "https://login.microsoftonline.com/";
+            options.Instance = cloud.LoginEndpoint + "/";
             options.TenantId = tenantId;
             options.ClientId = clientId;
             options.ClientCredentials = [
@@ -98,7 +138,7 @@ internal static class MsalConfigurationExtensions
         return services;
     }
 
-    private static IServiceCollection ConfigureMSALWithUMI(this IServiceCollection services, string tenantId, string clientId, string? managedIdentityClientId = null)
+    private static IServiceCollection ConfigureMSALWithUMI(this IServiceCollection services, string tenantId, string clientId, CloudEnvironment cloud, string? managedIdentityClientId = null)
     {
         ArgumentNullException.ThrowIfNullOrWhiteSpace(tenantId);
         ArgumentNullException.ThrowIfNullOrWhiteSpace(clientId);
@@ -114,7 +154,7 @@ internal static class MsalConfigurationExtensions
 
         services.Configure<MicrosoftIdentityApplicationOptions>(MsalConfigKey, options =>
         {
-            options.Instance = "https://login.microsoftonline.com/";
+            options.Instance = cloud.LoginEndpoint + "/";
             options.TenantId = tenantId;
             options.ClientId = clientId;
         });
@@ -127,18 +167,18 @@ internal static class MsalConfigurationExtensions
         if (!string.IsNullOrEmpty(botConfig.ClientSecret))
         {
             _logUsingClientSecret(logger, null);
-            services.ConfigureMSALWithSecret(botConfig.TenantId, botConfig.ClientId, botConfig.ClientSecret);
+            services.ConfigureMSALWithSecret(botConfig.TenantId, botConfig.ClientId, botConfig.ClientSecret, botConfig.Cloud);
         }
         else if (string.IsNullOrEmpty(botConfig.FicClientId) || botConfig.FicClientId == botConfig.ClientId)
         {
             _logUsingUMI(logger, null);
-            services.ConfigureMSALWithUMI(botConfig.TenantId, botConfig.ClientId, botConfig.FicClientId);
+            services.ConfigureMSALWithUMI(botConfig.TenantId, botConfig.ClientId, botConfig.Cloud, botConfig.FicClientId);
         }
         else
         {
             bool isSystemAssigned = IsSystemAssignedManagedIdentity(botConfig.FicClientId);
             _logUsingFIC(logger, isSystemAssigned ? "System-Assigned" : "User-Assigned", null);
-            services.ConfigureMSALWithFIC(botConfig.TenantId, botConfig.ClientId, botConfig.FicClientId);
+            services.ConfigureMSALWithFIC(botConfig.TenantId, botConfig.ClientId, botConfig.FicClientId, botConfig.Cloud);
         }
         return services;
     }

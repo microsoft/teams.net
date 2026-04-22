@@ -127,8 +127,9 @@ public class CloudEnvironment
     );
 
     /// <summary>
-    /// Creates a new <see cref="CloudEnvironment"/> by applying non-null overrides on top of this instance.
-    /// Returns the same instance if all overrides are null (no allocation).
+    /// Creates a new <see cref="CloudEnvironment"/> by applying non-null, non-whitespace overrides on top of this instance.
+    /// Returns the same instance if all overrides are effectively unset (no allocation).
+    /// Blank/whitespace inputs are treated as unset so empty config values don't override valid defaults.
     /// </summary>
     public CloudEnvironment WithOverrides(
         string? loginEndpoint = null,
@@ -139,6 +140,14 @@ public class CloudEnvironment
         string? tokenIssuer = null,
         string? graphScope = null)
     {
+        loginEndpoint = NullIfWhiteSpace(loginEndpoint);
+        loginTenant = NullIfWhiteSpace(loginTenant);
+        botScope = NullIfWhiteSpace(botScope);
+        tokenServiceUrl = NullIfWhiteSpace(tokenServiceUrl);
+        openIdMetadataUrl = NullIfWhiteSpace(openIdMetadataUrl);
+        tokenIssuer = NullIfWhiteSpace(tokenIssuer);
+        graphScope = NullIfWhiteSpace(graphScope);
+
         if (loginEndpoint is null && loginTenant is null && botScope is null &&
             tokenServiceUrl is null && openIdMetadataUrl is null && tokenIssuer is null &&
             graphScope is null)
@@ -156,6 +165,9 @@ public class CloudEnvironment
             graphScope ?? GraphScope
         );
     }
+
+    private static string? NullIfWhiteSpace(string? value) =>
+        string.IsNullOrWhiteSpace(value) ? null : value;
 
     /// <summary>
     /// Resolves a cloud environment name (case-insensitive) to its corresponding instance.

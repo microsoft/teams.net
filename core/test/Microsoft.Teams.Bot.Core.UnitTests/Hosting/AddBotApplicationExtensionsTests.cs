@@ -323,4 +323,250 @@ public class AddBotApplicationExtensionsTests
         // Assert
         Assert.Equal("core-client-id", GetAppId(serviceProvider));
     }
+
+    // --- MSAL Instance / Authority validation + Cloud fallback ---
+
+    [Fact]
+    public void AddConversationClient_SectionInstanceMatchesCloud_Succeeds()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "cid",
+            ["AzureAd:TenantId"] = "tid",
+            ["AzureAd:Cloud"] = "USGov",
+            ["AzureAd:Instance"] = "https://login.microsoftonline.us/"
+        };
+
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
+
+        AssertMsalOptions(serviceProvider, "cid", "tid", "https://login.microsoftonline.us/");
+    }
+
+    [Fact]
+    public void AddConversationClient_SectionInstanceConflictsWithCloud_Throws()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "cid",
+            ["AzureAd:TenantId"] = "tid",
+            ["AzureAd:Cloud"] = "USGov",
+            ["AzureAd:Instance"] = "https://login.microsoftonline.com/"
+        };
+
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
+            () => BuildServiceProvider(configData));
+        Assert.Contains("AzureAd:Instance", ex.Message);
+        Assert.Contains("https://login.microsoftonline.com/", ex.Message);
+        Assert.Contains("https://login.microsoftonline.us", ex.Message);
+    }
+
+    [Fact]
+    public void AddConversationClient_SectionInstanceMissing_FallsBackToCloud()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "cid",
+            ["AzureAd:TenantId"] = "tid",
+            ["AzureAd:Cloud"] = "USGov"
+        };
+
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
+
+        AssertMsalOptions(serviceProvider, "cid", "tid", "https://login.microsoftonline.us/");
+    }
+
+    [Fact]
+    public void AddConversationClient_SectionAuthorityMatchesCloud_Succeeds()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "cid",
+            ["AzureAd:TenantId"] = "tid",
+            ["AzureAd:Cloud"] = "USGov",
+            ["AzureAd:Authority"] = "https://login.microsoftonline.us/tid/v2.0"
+        };
+
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
+
+        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
+            .Get(MsalConfigurationExtensions.MsalConfigKey);
+        Assert.Equal("cid", msalOptions.ClientId);
+    }
+
+    [Fact]
+    public void AddConversationClient_SectionAuthorityConflictsWithCloud_Throws()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "cid",
+            ["AzureAd:TenantId"] = "tid",
+            ["AzureAd:Cloud"] = "USGov",
+            ["AzureAd:Authority"] = "https://login.microsoftonline.com/tid/v2.0"
+        };
+
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(
+            () => BuildServiceProvider(configData));
+        Assert.Contains("AzureAd:Authority", ex.Message);
+        Assert.Contains("https://login.microsoftonline.com/tid/v2.0", ex.Message);
+    }
+
+    [Fact]
+    public void AddConversationClient_DefaultCloud_InstanceDefaultsToPublic()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "cid",
+            ["AzureAd:TenantId"] = "tid"
+        };
+
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
+
+        AssertMsalOptions(serviceProvider, "cid", "tid", "https://login.microsoftonline.com/");
+    }
+
+    [Fact]
+    public void AddConversationClient_RawCredentials_ConfiguresCloudAwareInstance()
+    {
+        // Core-config path (no MSAL section) should set MSAL Instance from Cloud.
+        Dictionary<string, string?> configData = new()
+        {
+            ["CLIENT_ID"] = "cid",
+            ["TENANT_ID"] = "tid",
+            ["CLIENT_SECRET"] = "secret",
+            ["CLOUD"] = "USGov"
+        };
+
+        ServiceProvider serviceProvider = BuildServiceProvider(configData);
+
+        AssertMsalOptions(serviceProvider, "cid", "tid", "https://login.microsoftonline.us/");
+    }
+
+    // --- Per-endpoint override binding (BotConfig.ResolveCloud) ---
+
+    [Fact]
+    public void BotConfig_FromMsalConfig_AppliesTokenIssuerOverrideFromSection()
+    {
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "cid",
+                ["AzureAd:Cloud"] = "USGov",
+                ["AzureAd:TokenIssuer"] = "https://custom.issuer"
+            })
+            .Build();
+
+        BotConfig result = BotConfig.FromMsalConfig(config);
+
+        Assert.Equal("https://custom.issuer", result.Cloud.TokenIssuer);
+        Assert.Equal(CloudEnvironment.USGov.LoginEndpoint, result.Cloud.LoginEndpoint);
+    }
+
+    [Fact]
+    public void BotConfig_FromMsalConfig_AppliesMultipleEndpointOverrides()
+    {
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "cid",
+                ["AzureAd:Cloud"] = "USGov",
+                ["AzureAd:TokenIssuer"] = "https://iss",
+                ["AzureAd:TokenServiceUrl"] = "https://tsu",
+                ["AzureAd:GraphScope"] = "https://graph.override/.default"
+            })
+            .Build();
+
+        BotConfig result = BotConfig.FromMsalConfig(config);
+
+        Assert.Equal("https://iss", result.Cloud.TokenIssuer);
+        Assert.Equal("https://tsu", result.Cloud.TokenServiceUrl);
+        Assert.Equal("https://graph.override/.default", result.Cloud.GraphScope);
+    }
+
+    [Fact]
+    public void BotConfig_FromMsalConfig_SectionOverrideWinsOverRoot()
+    {
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "cid",
+                ["AzureAd:Cloud"] = "USGov",
+                ["AzureAd:TokenIssuer"] = "https://section",
+                ["TokenIssuer"] = "https://root"
+            })
+            .Build();
+
+        BotConfig result = BotConfig.FromMsalConfig(config);
+
+        Assert.Equal("https://section", result.Cloud.TokenIssuer);
+    }
+
+    [Fact]
+    public void BotConfig_FromMsalConfig_FallsBackToRootOverride()
+    {
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "cid",
+                ["AzureAd:Cloud"] = "USGov",
+                ["TokenIssuer"] = "https://root"
+            })
+            .Build();
+
+        BotConfig result = BotConfig.FromMsalConfig(config);
+
+        Assert.Equal("https://root", result.Cloud.TokenIssuer);
+    }
+
+    [Fact]
+    public void BotConfig_FromMsalConfig_WhitespaceOverrideIgnored()
+    {
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["AzureAd:ClientId"] = "cid",
+                ["AzureAd:Cloud"] = "USGov",
+                ["AzureAd:TokenIssuer"] = "   "
+            })
+            .Build();
+
+        BotConfig result = BotConfig.FromMsalConfig(config);
+
+        Assert.Equal(CloudEnvironment.USGov.TokenIssuer, result.Cloud.TokenIssuer);
+    }
+
+    [Fact]
+    public void BotConfig_FromBFConfig_AppliesEndpointOverrides()
+    {
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["MicrosoftAppId"] = "cid",
+                ["Cloud"] = "USGov",
+                ["TokenIssuer"] = "https://bf-custom"
+            })
+            .Build();
+
+        BotConfig result = BotConfig.FromBFConfig(config);
+
+        Assert.Equal("https://bf-custom", result.Cloud.TokenIssuer);
+    }
+
+    [Fact]
+    public void BotConfig_FromCoreConfig_AppliesEndpointOverrides()
+    {
+        IConfiguration config = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["CLIENT_ID"] = "cid",
+                ["CLOUD"] = "China",
+                ["TokenIssuer"] = "https://core-custom"
+            })
+            .Build();
+
+        BotConfig result = BotConfig.FromCoreConfig(config);
+
+        Assert.Equal("https://core-custom", result.Cloud.TokenIssuer);
+        Assert.Equal(CloudEnvironment.China.LoginEndpoint, result.Cloud.LoginEndpoint);
+    }
 }

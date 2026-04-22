@@ -77,7 +77,7 @@ internal sealed class BotConfig
     public static BotConfig FromBFConfig(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        var cloud = ResolveCloud(configuration["Cloud"]);
+        var cloud = ResolveCloud(configuration["Cloud"], key => configuration[key]);
         return new()
         {
             TenantId = configuration["MicrosoftAppTenantId"] ?? string.Empty,
@@ -101,7 +101,7 @@ internal sealed class BotConfig
     public static BotConfig FromCoreConfig(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
-        var cloud = ResolveCloud(configuration["CLOUD"] ?? configuration["Cloud"]);
+        var cloud = ResolveCloud(configuration["CLOUD"] ?? configuration["Cloud"], key => configuration[key]);
         return new()
         {
             TenantId = configuration["TENANT_ID"] ?? string.Empty,
@@ -128,7 +128,7 @@ internal sealed class BotConfig
     {
         ArgumentNullException.ThrowIfNull(configuration);
         IConfigurationSection section = configuration.GetSection(sectionName);
-        var cloud = ResolveCloud(section["Cloud"] ?? configuration["Cloud"]);
+        var cloud = ResolveCloud(section["Cloud"] ?? configuration["Cloud"], key => section[key] ?? configuration[key]);
         return new()
         {
             TenantId = section["TenantId"] ?? string.Empty,
@@ -205,8 +205,26 @@ internal sealed class BotConfig
         return new BotConfig { SectionName = sectionName };
     }
 
-    private static CloudEnvironment ResolveCloud(string? cloudName) =>
-        string.IsNullOrWhiteSpace(cloudName) ? CloudEnvironment.Public : CloudEnvironment.FromName(cloudName);
+    /// <summary>
+    /// Resolves a base cloud from <paramref name="cloudName"/> (or Public if unset) and applies any
+    /// per-endpoint overrides read via <paramref name="readOverride"/>.
+    /// Override keys: LoginEndpoint, LoginTenant, BotScope, TokenServiceUrl, OpenIdMetadataUrl, TokenIssuer, GraphScope.
+    /// </summary>
+    private static CloudEnvironment ResolveCloud(string? cloudName, Func<string, string?> readOverride)
+    {
+        var baseCloud = string.IsNullOrWhiteSpace(cloudName)
+            ? CloudEnvironment.Public
+            : CloudEnvironment.FromName(cloudName);
+
+        return baseCloud.WithOverrides(
+            loginEndpoint: readOverride("LoginEndpoint"),
+            loginTenant: readOverride("LoginTenant"),
+            botScope: readOverride("BotScope"),
+            tokenServiceUrl: readOverride("TokenServiceUrl"),
+            openIdMetadataUrl: readOverride("OpenIdMetadataUrl"),
+            tokenIssuer: readOverride("TokenIssuer"),
+            graphScope: readOverride("GraphScope"));
+    }
 
     private static readonly Action<ILogger, Exception?> _logUsingBFConfig =
         LoggerMessage.Define(LogLevel.Debug, new(1), "Resolved bot configuration from Bot Framework configuration keys");
