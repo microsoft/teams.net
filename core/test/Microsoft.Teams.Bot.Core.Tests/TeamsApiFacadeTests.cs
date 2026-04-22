@@ -182,7 +182,7 @@ public class TeamsApiFacadeTests
             From = _recipient
         };
 
-        SendActivityResponse res = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(
+        SendActivityResponse? res = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(
             activity,
             cancellationToken: CancellationToken.None);
 
@@ -207,7 +207,7 @@ public class TeamsApiFacadeTests
             .WithProperty("text", $"TM Message via Api.Conversations.Activities.SendAsync at `{DateTime.UtcNow:s}`")
             .Build();
 
-        SendActivityResponse res = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(
+        SendActivityResponse? res = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(
             activity,
             cancellationToken: CancellationToken.None);
 
@@ -250,7 +250,7 @@ public class TeamsApiFacadeTests
             From = _recipient
         };
 
-        SendActivityResponse sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
+        SendActivityResponse? sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
         Assert.NotNull(sendResponse?.Id);
 
         // Now update the activity
@@ -287,7 +287,7 @@ public class TeamsApiFacadeTests
             From = _recipient
         };
 
-        SendActivityResponse sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
+        SendActivityResponse? sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
         Assert.NotNull(sendResponse?.Id);
 
         // Wait a bit before deleting
@@ -317,7 +317,7 @@ public class TeamsApiFacadeTests
             From = _recipient
         };
 
-        SendActivityResponse sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
+        SendActivityResponse? sendResponse = await _teamsBotApplication.Api.Conversations.Activities.SendAsync(activity);
         Assert.NotNull(sendResponse?.Id);
 
         // Now get activity members

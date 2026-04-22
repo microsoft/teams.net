@@ -72,8 +72,8 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException("Cannot send an informative update after streaming has started.");
 
         _sequence++;
-        SendActivityResponse response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
-        _streamId ??= response.Id;
+        SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
+        _streamId ??= response?.Id;
     }
 
     /// <summary>
@@ -97,8 +97,8 @@ public sealed class TeamsStreamingWriter
         _sequence++;
         try
         {
-            SendActivityResponse response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
-            _streamId ??= response.Id;
+            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
+            _streamId ??= response?.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
         catch (HttpRequestException ex) when (ex.Message.Contains("Content stream was cancelled by user", StringComparison.OrdinalIgnoreCase))
