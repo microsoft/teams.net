@@ -17,6 +17,7 @@ public static partial class Message
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMessageDelete(this App app, Func<IContext<MessageDeleteActivity>, Task> handler)
     {
         app.Router.Register(new Route()

@@ -45,7 +45,7 @@ teams.OnTaskFetch((context, cancellationToken) =>
         return Task.FromResult(new Microsoft.Teams.Api.TaskModules.Response(new Microsoft.Teams.Api.TaskModules.MessageTask("No data found in the activity value")));
     }
 
-    var dialogType = data.Value.TryGetProperty("opendialogtype", out var dialogTypeElement) && dialogTypeElement.ValueKind == JsonValueKind.String
+    var dialogType = data.Value.TryGetProperty("dialog_id", out var dialogTypeElement) && dialogTypeElement.ValueKind == JsonValueKind.String
         ? dialogTypeElement.GetString()
         : null;
 
@@ -151,6 +151,16 @@ static string SanitizeForLog(string? input)
     return input.Replace("\r", "").Replace("\n", "");
 }
 
+static Microsoft.Teams.Cards.SubmitAction CreateTaskFetchSubmitAction(string title, string dialogId)
+{
+    return new Microsoft.Teams.Cards.SubmitAction
+    {
+        Title = title,
+        Data = new Microsoft.Teams.Common.Union<string, Microsoft.Teams.Cards.SubmitActionData>(
+            new Microsoft.Teams.Cards.OpenDialogData(dialogId))
+    };
+}
+
 static Microsoft.Teams.Cards.AdaptiveCard CreateDialogLauncherCard()
 {
     var card = new Microsoft.Teams.Cards.AdaptiveCard
@@ -165,26 +175,10 @@ static Microsoft.Teams.Cards.AdaptiveCard CreateDialogLauncherCard()
         },
         Actions = new List<Microsoft.Teams.Cards.Action>
         {
-            new Microsoft.Teams.Cards.TaskFetchAction(
-                Microsoft.Teams.Cards.TaskFetchAction.FromObject(new { opendialogtype = "simple_form" }))
-            {
-                Title = "Simple form test"
-            },
-            new Microsoft.Teams.Cards.TaskFetchAction(
-                Microsoft.Teams.Cards.TaskFetchAction.FromObject(new { opendialogtype = "webpage_dialog" }))
-            {
-                Title = "Webpage Dialog"
-            },
-            new Microsoft.Teams.Cards.TaskFetchAction(
-                Microsoft.Teams.Cards.TaskFetchAction.FromObject(new { opendialogtype = "multi_step_form" }))
-            {
-                Title = "Multi-step Form"
-            },
-            new Microsoft.Teams.Cards.TaskFetchAction(
-                Microsoft.Teams.Cards.TaskFetchAction.FromObject(new { opendialogtype = "mixed_example" }))
-            {
-                Title = "Mixed Example"
-            }
+            CreateTaskFetchSubmitAction("Simple form test", "simple_form"),
+            CreateTaskFetchSubmitAction("Webpage Dialog", "webpage_dialog"),
+            CreateTaskFetchSubmitAction("Multi-step Form", "multi_step_form"),
+            CreateTaskFetchSubmitAction("Mixed Example", "mixed_example")
         }
     };
 

@@ -146,10 +146,6 @@ public partial class Activity : IActivity
     [JsonPropertyOrder(130)]
     public ChannelData? ChannelData { get; set; }
 
-    [JsonIgnore]
-    [Experimental("ExperimentalTeamsTargeted")]
-    public bool IsTargeted { get; set; }
-
     [JsonExtensionData]
     public IDictionary<string, object?> Properties { get; set; } = new Dictionary<string, object?>();
 
@@ -227,14 +223,6 @@ public partial class Activity : IActivity
     }
 
     public virtual Activity WithRecipient(Account value)
-    {
-        #pragma warning disable ExperimentalTeamsTargeted
-        return WithRecipient(value, false);
-        #pragma warning restore ExperimentalTeamsTargeted
-    }
-
-    [Experimental("ExperimentalTeamsTargeted")]
-    public virtual Activity WithRecipient(Account value, bool isTargeted)
     {
         Recipient = value;
         #pragma warning disable ExperimentalTeamsTargeted
@@ -439,13 +427,6 @@ public partial class Activity : IActivity
         Timestamp ??= from.Timestamp;
         LocalTimestamp ??= from.LocalTimestamp;
         AddEntity(from.Entities?.ToArray() ?? []);
-
-        #pragma warning disable ExperimentalTeamsTargeted
-        if (from.IsTargeted)
-        {
-            IsTargeted = true;
-        }
-        #pragma warning restore ExperimentalTeamsTargeted
 
         if (from.ChannelData is not null)
         {
