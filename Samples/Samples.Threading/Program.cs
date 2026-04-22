@@ -49,17 +49,10 @@ teams.OnMessage(async (context, cancellationToken) =>
     }
 
     // ============================================
-    // ToThreadedConversationId() + teams.Send() — advanced manual control (channels and 1:1 chats only)
+    // ToThreadedConversationId() + teams.Send() — advanced manual control
     // ============================================
     if (text.Contains("test manual"))
     {
-        // ToThreadedConversationId() is only valid for conversations that support threading
-        var baseId = conversationId.Split(';')[0];
-        if (!baseId.EndsWith("@thread.tacv2") && !baseId.EndsWith("@thread.skype") && !baseId.EndsWith("@unq.gbl.spaces"))
-        {
-            await context.Reply("This command doesn't support threading in this conversation type.", cancellationToken);
-            return;
-        }
         var threadId = Microsoft.Teams.Api.Conversation.ToThreadedConversationId(conversationId, threadRootId);
         await teams.Send(threadId, "This was sent using ToThreadedConversationId() + teams.Send() for manual control.", cancellationToken: cancellationToken);
         return;
