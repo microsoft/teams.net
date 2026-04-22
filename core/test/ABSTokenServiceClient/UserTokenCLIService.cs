@@ -22,8 +22,8 @@ namespace ABSTokenServiceClient
 
         protected async Task ExecuteAsync(CancellationToken cancellationToken)
         {
-            const string userId = "your-user-id";
-            const string connectionName = "graph";
+            string userId = Environment.GetEnvironmentVariable("TEST_USER_ID") ?? throw new ArgumentNullException("TEST_USER_ID not found");
+            string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME") ?? throw new ArgumentNullException("TEST Connection name nor found");
             const string channelId = "msteams";
 
             logger.LogInformation("Application started");

@@ -19,6 +19,7 @@ public static partial class Config
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -36,6 +37,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task<Response<ConfigResponse>>> handler)
     {
         app.Router.Register(new Route()
@@ -49,6 +51,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task<ConfigResponse>> handler)
     {
         app.Router.Register(new Route()

@@ -144,7 +144,16 @@ teamsApp.OnMessage(@"^/weather\b", async (context, cancellationToken) =>
     }
 });
 
-// Feedback submission handler
+// Custom feedback fetch-task handler.
+// Teams fires this when the user clicks a feedback button on a message whose
+// feedback loop type is 'custom' — the bot must return a task module dialog.
+teamsApp.OnMessageFetchTask((context, cancellationToken) =>
+{
+    context.Log.Info($"[HANDLER] Feedback fetch-task received");
+    return Task.FromResult(FeedbackHandler.HandleFeedbackFetchTask(context));
+});
+
+// Feedback submission handler (fires after the user submits the dialog above).
 teamsApp.OnFeedback((context, cancellationToken) =>
 {
     context.Log.Info($"[HANDLER] Feedback submission received");

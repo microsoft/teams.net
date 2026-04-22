@@ -4,64 +4,64 @@ This document provides a comprehensive mapping of Bot Framework TeamsInfo static
 
 ## Overview
 
-The `CompatTeamsInfo` class provides a compatibility layer that adapts the Bot Framework v4 SDK TeamsInfo API to use the Teams Bot Core SDK. It implements 19 static methods organized into four functional categories.
+The `CompatTeamsInfo` class provides a compatibility layer that adapts the Bot Framework v4 SDK TeamsInfo API to use the Teams Bot Core SDK. It maps 19 static methods organized into four functional categories.
 
 ## API Method Mappings
 
 ### Member & Participant Methods
 
-| Method | REST Endpoint | Client | Description |
-|--------|--------------|--------|-------------|
-| `GetMemberAsync` | `GET /v3/conversations/{conversationId}/members/{userId}` | ConversationClient | Gets a single conversation member by user ID |
-| `GetMembersAsync` ⚠️ | `GET /v3/conversations/{conversationId}/members` | ConversationClient | Gets all conversation members (deprecated - use paged version) |
-| `GetPagedMembersAsync` | `GET /v3/conversations/{conversationId}/pagedmembers?pageSize={pageSize}&continuationToken={token}` | ConversationClient | Gets paginated list of conversation members |
-| `GetTeamMemberAsync` | `GET /v3/conversations/{teamId}/members/{userId}` | ConversationClient | Gets a single team member by user ID |
-| `GetTeamMembersAsync` ⚠️ | `GET /v3/conversations/{teamId}/members` | ConversationClient | Gets all team members (deprecated - use paged version) |
-| `GetPagedTeamMembersAsync` | `GET /v3/conversations/{teamId}/pagedmembers?pageSize={pageSize}&continuationToken={token}` | ConversationClient | Gets paginated list of team members |
+| Method | REST Endpoint | Client | Status |
+|--------|--------------|--------|--------|
+| `GetMemberAsync` | `GET /v3/conversations/{conversationId}/members/{userId}` | ConversationClient | Implemented |
+| `GetMembersAsync` | `GET /v3/conversations/{conversationId}/members` | ConversationClient | Implemented (deprecated) |
+| `GetPagedMembersAsync` | `GET /v3/conversations/{conversationId}/pagedmembers?pageSize=&continuationToken=` | ConversationClient | Implemented |
+| `GetTeamMemberAsync` | `GET /v3/conversations/{teamId}/members/{userId}` | ConversationClient | Implemented |
+| `GetTeamMembersAsync` | `GET /v3/conversations/{teamId}/members` | ConversationClient | Implemented (deprecated) |
+| `GetPagedTeamMembersAsync` | `GET /v3/conversations/{teamId}/pagedmembers?pageSize=&continuationToken=` | ConversationClient | Implemented |
 
-⚠️ *Deprecated by Microsoft Teams - use paged versions instead*
+> `GetMembersAsync` and `GetTeamMembersAsync` are deprecated by Microsoft Teams. Use paged versions instead.
 
 ### Meeting Methods
 
-| Method | REST Endpoint | Client | Description |
-|--------|--------------|--------|-------------|
-| `GetMeetingInfoAsync` | `GET /v1/meetings/{meetingId}` | TeamsApiClient | Gets meeting information by meeting ID |
-| `GetMeetingParticipantAsync` | `GET /v1/meetings/{meetingId}/participants/{participantId}?tenantId={tenantId}` | TeamsApiClient | Gets a specific meeting participant's information |
-| `SendMeetingNotificationAsync` | `POST /v1/meetings/{meetingId}/notification` | TeamsApiClient | Sends an in-meeting notification to participants |
+| Method | REST Endpoint | Client | Status |
+|--------|--------------|--------|--------|
+| `GetMeetingInfoAsync` | `GET /v1/meetings/{meetingId}` | ApiClient.Meetings | Implemented |
+| `GetMeetingParticipantAsync` | `GET /v1/meetings/{meetingId}/participants/{participantId}?tenantId={tenantId}` | ApiClient.Meetings | Implemented |
+| `SendMeetingNotificationAsync` | `POST /v1/meetings/{meetingId}/notification` | — | Commented out (needs `MeetingClient.SendMeetingNotificationAsync`) |
+
+> `GetMeetingParticipantAsync` requires an AAD object ID for `participantId`, not a Bot Framework MRI or pairwise ID.
 
 ### Team & Channel Methods
 
-| Method | REST Endpoint | Client | Description |
-|--------|--------------|--------|-------------|
-| `GetTeamDetailsAsync` | `GET /v3/teams/{teamId}` | TeamsApiClient | Gets detailed information about a team |
-| `GetTeamChannelsAsync` | `GET /v3/teams/{teamId}/channels` | TeamsApiClient | Gets list of channels in a team |
+| Method | REST Endpoint | Client | Status |
+|--------|--------------|--------|--------|
+| `GetTeamDetailsAsync` | `GET /v3/teams/{teamId}` | ApiClient.Teams | Implemented — uses `client.Teams.GetByIdAsync()` |
+| `GetTeamChannelsAsync` | `GET /v3/teams/{teamId}/conversations` | ApiClient.Teams | Implemented — uses `client.Teams.GetConversationsAsync()` |
 
 ### Batch Messaging Methods
 
-| Method | REST Endpoint | Client | Description |
-|--------|--------------|--------|-------------|
-| `SendMessageToListOfUsersAsync` | `POST /v3/batch/conversation/users/` | TeamsApiClient | Sends a message to a list of users |
-| `SendMessageToListOfChannelsAsync` | `POST /v3/batch/conversation/channels/` | TeamsApiClient | Sends a message to a list of channels |
-| `SendMessageToAllUsersInTeamAsync` | `POST /v3/batch/conversation/team/` | TeamsApiClient | Sends a message to all users in a team |
-| `SendMessageToAllUsersInTenantAsync` | `POST /v3/batch/conversation/tenant/` | TeamsApiClient | Sends a message to all users in a tenant |
-| `SendMessageToTeamsChannelAsync` | Uses Bot Framework Adapter | BotAdapter.CreateConversationAsync | Creates a conversation in a Teams channel and sends a message |
+| Method | REST Endpoint | Client | Status |
+|--------|--------------|--------|--------|
+| `SendMessageToListOfUsersAsync` | `POST /v3/batch/conversation/users/` | — | Commented out (needs BatchClient) |
+| `SendMessageToListOfChannelsAsync` | `POST /v3/batch/conversation/channels/` | — | Commented out (needs BatchClient) |
+| `SendMessageToAllUsersInTeamAsync` | `POST /v3/batch/conversation/team/` | — | Commented out (needs BatchClient) |
+| `SendMessageToAllUsersInTenantAsync` | `POST /v3/batch/conversation/tenant/` | — | Commented out (needs BatchClient) |
+| `SendMessageToTeamsChannelAsync` | Uses Bot Framework Adapter | BotAdapter.CreateConversationAsync | Implemented |
 
 ### Batch Operation Management Methods
 
-| Method | REST Endpoint | Client | Description |
-|--------|--------------|--------|-------------|
-| `GetOperationStateAsync` | `GET /v3/batch/conversation/{operationId}` | TeamsApiClient | Gets the state of a batch operation |
-| `GetPagedFailedEntriesAsync` | `GET /v3/batch/conversation/failedentries/{operationId}?continuationToken={token}` | TeamsApiClient | Gets failed entries from a batch operation |
-| `CancelOperationAsync` | `DELETE /v3/batch/conversation/{operationId}` | TeamsApiClient | Cancels a batch operation |
+| Method | REST Endpoint | Client | Status |
+|--------|--------------|--------|--------|
+| `GetOperationStateAsync` | `GET /v3/batch/conversation/{operationId}` | — | Commented out (needs BatchClient) |
+| `GetPagedFailedEntriesAsync` | `GET /v3/batch/conversation/failedentries/{operationId}?continuationToken=` | — | Commented out (needs BatchClient) |
+| `CancelOperationAsync` | `DELETE /v3/batch/conversation/{operationId}` | — | Commented out (needs BatchClient) |
 
 ## Client Distribution
 
-The implementation uses two primary clients from the Teams Bot Core SDK:
+### ConversationClient (6 methods) — Implemented
 
-### ConversationClient (6 methods)
-Used for member and participant operations in conversations and teams. Accessed via the `IConnectorClient` in TurnState.
+Used for member and participant operations in conversations and teams. Accessed via the `CompatConnectorClient` in TurnState (`turnContext.TurnState.Get<IConnectorClient>()` → cast to `CompatConnectorClient` → `CompatConversations._client`).
 
-**Methods:**
 - GetMemberAsync
 - GetMembersAsync
 - GetPagedMembersAsync
@@ -69,131 +69,93 @@ Used for member and participant operations in conversations and teams. Accessed 
 - GetTeamMembersAsync
 - GetPagedTeamMembersAsync
 
-### TeamsApiClient (12 methods)
-Used for Teams-specific operations including meetings, team details, channels, and batch messaging. Added to TurnState by the CompatAdapter.
+### ApiClient sub-clients (4 methods) — Implemented
 
-**Methods:**
-- GetMeetingInfoAsync
-- GetMeetingParticipantAsync
-- SendMeetingNotificationAsync
-- GetTeamDetailsAsync
-- GetTeamChannelsAsync
-- SendMessageToListOfUsersAsync
-- SendMessageToListOfChannelsAsync
-- SendMessageToAllUsersInTeamAsync
-- SendMessageToAllUsersInTenantAsync
-- GetOperationStateAsync
-- GetPagedFailedEntriesAsync
-- CancelOperationAsync
+`ApiClient` is stored in TurnState by `CompatAdapter`. Must be scoped to serviceUrl via `ForServiceUrl()` before use. Uses sub-clients:
 
-### Bot Framework Adapter (1 method)
-One method uses the Bot Framework adapter directly for backward compatibility.
+- `ApiClient.Meetings.GetByIdAsync()` — GetMeetingInfoAsync
+- `ApiClient.Meetings.GetParticipantAsync()` — GetMeetingParticipantAsync
+- `ApiClient.Teams.GetByIdAsync()` — GetTeamDetailsAsync
+- `ApiClient.Teams.GetConversationsAsync()` — GetTeamChannelsAsync
 
-**Methods:**
-- SendMessageToTeamsChannelAsync
+### Bot Framework Adapter (1 method) — Implemented
 
-## Implementation Details
+- SendMessageToTeamsChannelAsync — uses `turnContext.Adapter.CreateConversationAsync()`
 
-### Model Conversion Strategy
+### Not yet implemented (8 methods) — Commented out
 
-The implementation uses two strategies for converting between Bot Framework and Core SDK models:
+These methods are commented out in `CompatTeamsInfo` pending new client support:
 
-1. **Direct Property Mapping**: For simple models like `TeamsChannelAccount`, `ChannelInfo`, etc.
-2. **JSON Round-Trip**: For complex models like `TeamDetails`, `MeetingNotificationResponse`, `BatchOperationState`, etc.
+- SendMeetingNotificationAsync — needs `MeetingClient.SendMeetingNotificationAsync`
+- SendMessageToListOfUsersAsync — needs BatchClient
+- SendMessageToListOfChannelsAsync — needs BatchClient
+- SendMessageToAllUsersInTeamAsync — needs BatchClient
+- SendMessageToAllUsersInTenantAsync — needs BatchClient
+- GetOperationStateAsync — needs BatchClient
+- GetPagedFailedEntriesAsync — needs BatchClient
+- CancelOperationAsync — needs BatchClient
 
-### Type Conversions
+## Migration Checklist
 
-Key extension methods in `CompatActivity.cs`:
+| Item | Status |
+|---|---|
+| Member operations via ConversationClient | Done |
+| Meeting info via ApiClient.Meetings | Done |
+| Meeting participant via ApiClient.Meetings | Done |
+| Team details via ApiClient.Teams | Done |
+| Team channels via ApiClient.Teams | Done |
+| SendMessageToTeamsChannelAsync via adapter | Done |
+| Batch messaging (4 methods) | Needs BatchClient on ApiClient |
+| Batch operations (3 methods) | Needs BatchClient on ApiClient |
+| Meeting notifications | Needs MeetingClient.SendMeetingNotificationAsync |
+| CompatAdapter scopes ApiClient per-request | Needs update to call ForServiceUrl |
 
-| Extension Method | Source Type | Target Type | Strategy |
-|------------------|-------------|-------------|----------|
-| `ToCompatTeamsChannelAccount` | Core TeamsConversationAccount | BF TeamsChannelAccount | Direct mapping |
-| `ToCompatMeetingInfo` | Core MeetingInfo | BF MeetingInfo | Direct mapping |
-| `ToCompatTeamsMeetingParticipant` | Core MeetingParticipant | BF TeamsMeetingParticipant | Direct mapping |
-| `ToCompatChannelInfo` | Core Channel | BF ChannelInfo | Direct mapping |
-| `ToCompatTeamsPagedMembersResult` | Core PagedMembersResult | BF TeamsPagedMembersResult | Direct mapping |
-| `ToCompatTeamDetails` | Core TeamDetails | BF TeamDetails | JSON round-trip |
-| `ToCompatMeetingNotificationResponse` | Core MeetingNotificationResponse | BF MeetingNotificationResponse | JSON round-trip |
-| `ToCompatBatchOperationState` | Core BatchOperationState | BF BatchOperationState | JSON round-trip |
-| `ToCompatBatchFailedEntriesResponse` | Core BatchFailedEntriesResponse | BF BatchFailedEntriesResponse | JSON round-trip |
-| `FromCompatTeamMember` | BF TeamMember | Core TeamMember | JSON round-trip |
+## Type Conversions
 
-### Authentication
+Key extension methods in `CompatActivity.cs` and `CompatTeamsInfo.Models.cs`:
 
-All methods use `AgenticIdentity` extracted from the turn context activity properties for authentication with the Teams services.
+| Extension Method | Source Type | Target Type | Used By | Status |
+|---|---|---|---|---|
+| `ToCompatTeamsChannelAccount` | `ConversationAccount` | BF `TeamsChannelAccount` | GetMember/GetMembers/GetTeamMember/GetTeamMembers | Working |
+| `ToCompatTeamsPagedMembersResult` | `PagedMembersResult` | BF `TeamsPagedMembersResult` | GetPagedMembers/GetPagedTeamMembers | Working |
+| `ToCompatChannelInfo` | `TeamsChannel` | BF `ChannelInfo` | GetTeamChannelsAsync | Working |
+| `ToCompatTeamDetails` | `Apps.Schema.Team` | BF `TeamDetails` | Defined but unused — GetTeamDetailsAsync uses inline mapping | Available |
+| `ToCompatTeamsMeetingParticipant` | `MeetingParticipant` | BF `TeamsMeetingParticipant` | Defined but unused — GetMeetingParticipantAsync uses inline mapping | Available |
+| `ToCompatBatchOperationState` | `BatchOperationState` | BF `BatchOperationState` | — | Commented out (needs models) |
+| `ToCompatBatchFailedEntriesResponse` | `BatchFailedEntriesResponse` | BF `BatchFailedEntriesResponse` | — | Commented out (needs models) |
+| `ToCompatMeetingNotificationResponse` | `MeetingNotificationResponse` | BF `MeetingNotificationResponse` | — | Commented out (needs models) |
+| `FromCompatTeamMember` | BF `TeamMember` | `Apps.TeamMember` | — | Commented out (needs models) |
 
-### Service URL
+## Authentication
 
-All API calls use the service URL from the turn context activity (`turnContext.Activity.ServiceUrl`), which points to the appropriate Teams channel service endpoint.
+All methods use `AgenticIdentity` extracted from the turn context activity properties for authentication with the Teams services. The identity is obtained by converting the Bot Framework `Activity` to a `CoreActivity` and extracting agentic properties from `From.Properties`.
 
-## Usage Examples
+## Service URL
 
-### Getting a Team Member
+All API calls use the service URL from the turn context activity (`turnContext.Activity.ServiceUrl`):
 
-```csharp
-var member = await TeamsInfo.GetMemberAsync(turnContext, userId, cancellationToken);
-Console.WriteLine($"Member: {member.Name} ({member.Email})");
-```
+- **ConversationClient** methods receive `serviceUrl` as a `Uri` parameter directly
+- **ApiClient** sub-client methods use the serviceUrl baked into the scoped client instance
 
-### Getting Meeting Information
-
-```csharp
-var meetingInfo = await TeamsInfo.GetMeetingInfoAsync(turnContext, meetingId, cancellationToken);
-Console.WriteLine($"Meeting: {meetingInfo.Details.Title}");
-```
-
-### Sending a Batch Message
-
-```csharp
-var activity = MessageFactory.Text("Hello from bot!");
-var members = new List<TeamMember> { new TeamMember(userId1), new TeamMember(userId2) };
-var operationId = await TeamsInfo.SendMessageToListOfUsersAsync(
-    turnContext, activity, members, tenantId, cancellationToken);
-
-// Check operation status
-var state = await TeamsInfo.GetOperationStateAsync(turnContext, operationId, cancellationToken);
-Console.WriteLine($"Operation state: {state.State}");
-```
-
-### Getting Team Channels
-
-```csharp
-var channels = await TeamsInfo.GetTeamChannelsAsync(turnContext, teamId, cancellationToken);
-foreach (var channel in channels)
-{
-    Console.WriteLine($"Channel: {channel.Name} ({channel.Id})");
-}
-```
+The `CompatAdapter` must store a **scoped** `ApiClient` in TurnState for Teams/Meetings sub-clients to work. Currently it stores the unscoped base instance — this is a known pending fix (see [ApiClient Design](ApiClient-Design.md#integration-with-compatteamsinfo)).
 
 ## Testing
 
-Comprehensive integration tests are available in `test/Microsoft.Teams.Bot.Core.Tests/CompatTeamsInfoTests.cs`. All tests are marked with `[Fact(Skip = "Requires live service credentials")]` and require environment variables to be set for live testing:
+Integration tests are available in `core/test/IntegrationTests/`:
 
-- `TEST_USER_ID`
-- `TEST_CONVERSATIONID`
-- `TEST_TEAMID`
-- `TEST_CHANNELID`
-- `TEST_MEETINGID`
-- `TEST_TENANTID`
+| Test File | Coverage |
+|---|---|
+| `CompatTeamsInfoTests.cs` | 14 tests covering all implemented CompatTeamsInfo methods via real API calls with a simulated TurnContext |
+| `ApiClientTests.cs` | Direct tests for ApiClient sub-clients (Activities, Members, Teams, Meetings, UserToken, BotSignIn) |
+| `ConversationClientTests.cs` | Core ConversationClient operations |
+| `CreateConversationTests.cs` | Conversation creation patterns |
 
-## Modified Core Models
-
-To support full compatibility, the following Core SDK models were enhanced:
-
-### TeamsConversationAccount
-Added properties to match Bot Framework `TeamsChannelAccount`:
-- `GivenName`
-- `Surname`
-- `Email`
-- `UserPrincipalName`
-- `UserRole`
-- `TenantId`
-
-### MeetingInfo
-Changed `Organizer` property type from `ConversationAccount` to `TeamsConversationAccount` to match Bot Framework schema.
+Tests require the `integration.runsettings` file with environment variables:
+- `TEST_USER_ID`, `TEST_CONVERSATIONID`, `TEST_TEAMID`, `TEST_CHANNELID`, `TEST_MEETINGID`, `TEST_TENANTID`
+- Azure AD credentials (`AzureAd__TenantId`, `AzureAd__ClientId`, `AzureAd__ClientSecret`)
 
 ## References
 
+- [ApiClient Design Document](ApiClient-Design.md) — Architecture, delegation patterns, and scoping
+- [CreateConversation API Behavior](CreateConversation-API-Behavior.md) — Detailed API behavior with request/response examples
 - [Bot Framework TeamsInfo Source](https://github.com/microsoft/botbuilder-dotnet/blob/main/libraries/Microsoft.Bot.Builder/Teams/TeamsInfo.cs)
-- [Teams REST API Documentation](https://docs.microsoft.com/en-us/azure/bot-service/rest-api/bot-framework-rest-connector-api-reference)
-- [Teams Meeting Notifications](https://docs.microsoft.com/en-us/microsoftteams/platform/apps-in-teams-meetings/meeting-apps-apis)

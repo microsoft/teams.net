@@ -15,6 +15,7 @@ public class HandoffAttribute() : InvokeAttribute(Api.Activities.Invokes.Name.Ha
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnHandoff(this App app, Func<IContext<HandoffActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -32,6 +33,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnHandoff(this App app, Func<IContext<HandoffActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()
