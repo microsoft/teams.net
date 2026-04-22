@@ -63,7 +63,10 @@ public class ChannelData
     public App? App { get; set; }
 
     /// <summary>
-    /// Whether or not the feedback loop feature is enabled
+    /// Legacy feedback loop flag. Setting this to <c>true</c> is equivalent to
+    /// <c>FeedbackLoop = new FeedbackLoop(FeedbackType.Default)</c>.
+    /// Prefer setting <see cref="FeedbackLoop"/> directly; this field is normalized
+    /// by <see cref="Activities.Activity.WithData(ChannelData)"/>.
     /// </summary>
     [JsonPropertyName("feedbackLoopEnabled")]
     [JsonPropertyOrder(7)]
@@ -108,6 +111,17 @@ public class ChannelData
     [JsonPropertyName("membershipSource")]
     [JsonPropertyOrder(14)]
     public MembershipSource? MembershipSource { get; set; }
+
+    /// <summary>
+    /// Feedback loop configuration.
+    /// Set <c>Type</c> to <see cref="FeedbackType.Custom"/> to trigger a
+    /// <c>message/fetchTask</c> invoke for a bot-provided task module dialog.
+    /// Set <c>Type</c> to <see cref="FeedbackType.Default"/> for the standard
+    /// Teams thumbs up/down UI.
+    /// </summary>
+    [JsonPropertyName("feedbackLoop")]
+    [JsonPropertyOrder(15)]
+    public FeedbackLoop? FeedbackLoop { get; set; }
 
     /// <summary>
     /// All extra data present
