@@ -251,26 +251,19 @@ public partial class App
     }
 
     /// <summary>
-    /// send an activity proactively to a channel thread.
-    /// In channels, constructs a threaded conversation ID from the conversation ID
-    /// and message ID, then sends to that thread.
-    /// In scopes that do not support threading (group chat, meetings), sends as a normal message -
-    /// the message ID is ignored.
+    /// send an activity proactively to a conversation, optionally as a threaded reply.
+    /// Constructs a threaded conversation ID from the conversation ID
+    /// and message ID via <see cref="Conversation.ToThreadedConversationId"/>,
+    /// then sends to that thread. The service determines whether threading is
+    /// supported for the given conversation type.
     /// </summary>
-    /// <param name="conversationId">the channel or conversation ID</param>
+    /// <param name="conversationId">the conversation ID</param>
     /// <param name="messageId">the thread root message ID</param>
     /// <param name="activity">the activity to send</param>
     /// <param name="cancellationToken">optional cancellation token</param>
     public Task<T> Reply<T>(string conversationId, string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
-        var baseId = conversationId.Split(';')[0];
-        // Channels use @thread.tacv2 or @thread.skype, 1:1 chats use @unq.gbl.spaces.
-        // Group chats and meetings use @thread.v2 which does not support threading.
-        var supportsThreading = baseId.EndsWith("@thread.tacv2", StringComparison.Ordinal) || baseId.EndsWith("@thread.skype", StringComparison.Ordinal) || baseId.EndsWith("@unq.gbl.spaces", StringComparison.Ordinal);
-        var targetId = supportsThreading
-            ? Conversation.ToThreadedConversationId(conversationId, messageId)
-            : conversationId;
-        return Send(targetId, activity, cancellationToken: cancellationToken);
+        return Send(Conversation.ToThreadedConversationId(conversationId, messageId), activity, cancellationToken: cancellationToken);
     }
 
     /// <summary>
