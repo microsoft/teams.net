@@ -5,6 +5,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core.Hosting;
 using Microsoft.Teams.Bot.Core.Http;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -15,8 +16,10 @@ namespace Microsoft.Teams.Bot.Core;
 /// </summary>
 /// <remarks>
 /// This client provides methods for OAuth token management including retrieving tokens, exchanging tokens,
-/// signing out users, and managing AAD tokens. The client communicates with the Bot Framework Token Service
-/// API endpoint (defaults to https://token.botframework.com but can be configured via UserTokenApiEndpoint).
+/// signing out users, and managing AAD tokens. The token service base URL is resolved (in priority order)
+/// from <c>UserTokenApiEndpoint</c>, from the <c>TokenServiceUrl</c> override (under <c>AzureAd</c> or root),
+/// or from the cloud preset chosen by <c>AzureAd:Cloud</c> / <c>Cloud</c> / <c>CLOUD</c>. Defaults to
+/// <see cref="CloudEnvironment.Public"/>'s token service if nothing is configured.
 /// </remarks>
 /// <param name="httpClient">The HTTP client for making requests to the token service.</param>
 /// <param name="configuration">Configuration containing the UserTokenApiEndpoint setting and other bot configuration.</param>
@@ -25,8 +28,31 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
 {
     internal const string UserTokenHttpClientName = "BotUserTokenClient";
     private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
-    private readonly string _apiEndpoint = configuration["UserTokenApiEndpoint"] ?? "https://token.botframework.com";
+    private readonly string _apiEndpoint = ResolveApiEndpoint(configuration);
     private readonly JsonSerializerOptions _defaultOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+
+    internal static string ResolveApiEndpoint(IConfiguration configuration)
+    {
+        // Explicit override: preserved for backward compatibility.
+        string? explicitEndpoint = configuration["UserTokenApiEndpoint"];
+        if (!string.IsNullOrWhiteSpace(explicitEndpoint))
+        {
+            return explicitEndpoint;
+        }
+
+        string? cloudName = configuration["AzureAd:Cloud"]
+            ?? configuration["Cloud"]
+            ?? configuration["CLOUD"];
+        CloudEnvironment baseCloud = string.IsNullOrWhiteSpace(cloudName)
+            ? CloudEnvironment.Public
+            : CloudEnvironment.FromName(cloudName);
+
+        // Apply per-endpoint override (section-scoped wins over root), matching BotConfig.ResolveCloud.
+        string? tokenServiceUrlOverride = configuration["AzureAd:TokenServiceUrl"]
+            ?? configuration["TokenServiceUrl"];
+
+        return baseCloud.WithOverrides(tokenServiceUrl: tokenServiceUrlOverride).TokenServiceUrl;
+    }
 
     internal AgenticIdentity? AgenticIdentity { get; set; }
 
