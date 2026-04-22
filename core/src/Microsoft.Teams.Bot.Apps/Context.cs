@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Linq;
 using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Apps.Auth;
 using Microsoft.Teams.Bot.Apps.Schema;
@@ -147,7 +148,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<IList<GetTokenStatusResult>> GetConnectionStatusAsync(CancellationToken cancellationToken = default)
     {
         OAuthFlowRegistry registry = TeamsBotApplication.OAuthRegistry
-            ?? throw new InvalidOperationException("No OAuthFlow registered. Call AddOAuthFlow() on the TeamsBotApplication first.");
+            ?? throw new InvalidOperationException("No OAuthFlow registered. Call AddOAuthFlow(connectionName) on the TeamsBotApplication first.");
 
         // Use any flow -- GetConnectionStatusAsync returns all connections regardless
         OAuthFlow flow = registry.ResolveSingle()
@@ -159,15 +160,21 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     private OAuthFlow ResolveOAuthFlow(string? connectionName)
     {
         OAuthFlowRegistry registry = TeamsBotApplication.OAuthRegistry
-            ?? throw new InvalidOperationException("No OAuthFlow registered. Call AddOAuthFlow() on the TeamsBotApplication first.");
+            ?? throw new InvalidOperationException("No OAuthFlow registered. Call AddOAuthFlow(connectionName) on the TeamsBotApplication first.");
 
         if (connectionName is not null)
         {
-            return registry.Resolve(connectionName)
-                ?? throw new InvalidOperationException($"No OAuthFlow registered for connection '{connectionName}'.");
+            OAuthFlow? flow = registry.Resolve(connectionName);
+            if (flow is not null) return flow;
+
+            string registered = string.Join(", ", registry.GetRegisteredConnectionNames().Select(n => $"'{n}'"));
+            throw new InvalidOperationException(
+                $"No OAuthFlow registered for connection '{connectionName}'. " +
+                $"Registered connections: {(registered.Length > 0 ? registered : "(none)")}.");
         }
 
         return registry.ResolveSingle()
-            ?? throw new InvalidOperationException("Multiple OAuthFlow instances registered. Specify a connection name.");
+            ?? throw new InvalidOperationException(
+                "Multiple OAuthFlow instances registered. Specify a connection name in OAuthOptions or SignOut(connectionName).");
     }
 }

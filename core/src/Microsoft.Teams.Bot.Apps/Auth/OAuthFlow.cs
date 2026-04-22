@@ -32,19 +32,11 @@ public delegate Task SignInFailureHandler(Context<TeamsActivity> context, SignIn
 /// Provides a high-level abstraction for Teams Bot SSO authentication.
 /// Encapsulates silent token acquisition, SSO token exchange, fallback sign-in, and sign-out.
 /// </summary>
-/// <remarks>
-/// This class owns a <see cref="SemaphoreSlim"/> for connection name auto-discovery,
-/// but is not disposable because it lives for the lifetime of the application.
-/// </remarks>
-[System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA1001:Types that own disposable fields should be disposable",
-    Justification = "SemaphoreSlim lives for the app lifetime and does not need explicit disposal.")]
 public class OAuthFlow
 {
     private readonly TeamsBotApplication _app;
     private readonly ILogger _logger;
-    private string? _connectionName;
-    private volatile bool _connectionResolved;
-    private readonly SemaphoreSlim _connectionResolveLock = new(1, 1);
+    private readonly string _connectionName;
     private SignInCompleteHandler? _onSignInComplete;
     private SignInFailureHandler? _onSignInFailure;
 
@@ -52,18 +44,17 @@ public class OAuthFlow
     // Teams may send duplicates from multiple endpoints (mobile, desktop, web).
     private readonly ConcurrentDictionary<string, DateTimeOffset> _processedExchanges = new();
 
-    internal OAuthFlow(TeamsBotApplication app, string? connectionName, ILogger logger)
+    internal OAuthFlow(TeamsBotApplication app, string connectionName, ILogger logger)
     {
         _app = app;
         _connectionName = connectionName;
-        _connectionResolved = connectionName is not null;
         _logger = logger;
     }
 
     /// <summary>
-    /// The OAuth connection name. Null until resolved when using auto-discovery mode.
+    /// The OAuth connection name.
     /// </summary>
-    public string? ConnectionName => _connectionName;
+    public string ConnectionName => _connectionName;
 
     /// <summary>
     /// Register a callback invoked after a successful token exchange (SSO or fallback sign-in).
@@ -97,11 +88,10 @@ public class OAuthFlow
     public async Task<string?> GetTokenAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(context);
-        string connectionName = await ResolveConnectionNameAsync(context, cancellationToken).ConfigureAwait(false);
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        GetTokenResult? result = await _app.UserTokenClient.GetTokenAsync(userId, connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        GetTokenResult? result = await _app.UserTokenClient.GetTokenAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
         return result?.Token;
     }
 
@@ -127,25 +117,24 @@ public class OAuthFlow
     {
         ArgumentNullException.ThrowIfNull(context);
         options ??= new OAuthOptions();
-        string connectionName = await ResolveConnectionNameAsync(context, cancellationToken).ConfigureAwait(false);
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
         // 1. Try silent token acquisition
-        GetTokenResult? existingToken = await _app.UserTokenClient.GetTokenAsync(userId, connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        GetTokenResult? existingToken = await _app.UserTokenClient.GetTokenAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
         if (existingToken?.Token is not null)
         {
-            _logger.LogDebug("Token found in store for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
+            _logger.LogDebug("Token found in store for connection '{ConnectionName}', user '{UserId}'.", _connectionName, userId);
             return existingToken.Token;
         }
 
         // 2. No token - get sign-in resource and send OAuthCard
-        _logger.LogDebug("No cached token for connection '{ConnectionName}'. Initiating sign-in flow.", connectionName);
+        _logger.LogDebug("No cached token for connection '{ConnectionName}'. Initiating sign-in flow.", _connectionName);
 
         // Build state with MsAppId so the Token Service returns TokenExchangeResource for SSO
         var tokenExchangeState = new
         {
-            ConnectionName = connectionName,
+            ConnectionName = _connectionName,
             Conversation = new
             {
                 ActivityId = context.Activity.Id,
@@ -166,7 +155,7 @@ public class OAuthFlow
         OAuthCard oauthCard = new()
         {
             Text = options.OAuthCardText,
-            ConnectionName = connectionName,
+            ConnectionName = _connectionName,
             Buttons =
             [
                 new SuggestedAction(ActionType.SignIn, options.SignInButtonText) { Value = signInResource.SignInLink }
@@ -202,12 +191,11 @@ public class OAuthFlow
     public async Task SignOutAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(context);
-        string connectionName = await ResolveConnectionNameAsync(context, cancellationToken).ConfigureAwait(false);
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
-        _logger.LogDebug("Signing out user '{UserId}' from connection '{ConnectionName}'.", userId, connectionName);
-        await _app.UserTokenClient.SignOutUserAsync(userId, connectionName, channelId, cancellationToken).ConfigureAwait(false);
+        _logger.LogDebug("Signing out user '{UserId}' from connection '{ConnectionName}'.", userId, _connectionName);
+        await _app.UserTokenClient.SignOutUserAsync(userId, _connectionName, channelId, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -259,7 +247,7 @@ public class OAuthFlow
 
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
-        string connectionName = exchangeValue.ConnectionName ?? _connectionName ?? throw new InvalidOperationException("Connection name could not be determined from the token exchange value.");
+        string connectionName = exchangeValue.ConnectionName ?? _connectionName;
 
         try
         {
@@ -342,7 +330,7 @@ public class OAuthFlow
 
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
-        string connectionName = _connectionName ?? throw new InvalidOperationException("Connection name has not been resolved.");
+        string connectionName = _connectionName;
 
         try
         {
@@ -417,57 +405,6 @@ public class OAuthFlow
         }
 
         return new InvokeResponse(200);
-    }
-
-    private async Task<string> ResolveConnectionNameAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken) where TActivity : TeamsActivity
-    {
-        // Fast path: already resolved (volatile read ensures visibility across cores)
-        if (_connectionResolved && _connectionName is not null)
-        {
-            return _connectionName;
-        }
-
-        // Serialize auto-discovery so only one concurrent call hits the Token Service
-        await _connectionResolveLock.WaitAsync(cancellationToken).ConfigureAwait(false);
-        try
-        {
-            // Double-check after acquiring lock
-            if (_connectionResolved && _connectionName is not null)
-            {
-                return _connectionName;
-            }
-
-            // Auto-discover: call GetTokenStatus to find configured connections
-            string userId = GetUserId(context);
-            string channelId = GetChannelId(context);
-
-            GetTokenStatusResult[] statuses = await _app.UserTokenClient
-                .GetTokenStatusAsync(userId, channelId, cancellationToken: cancellationToken)
-                .ConfigureAwait(false);
-
-            if (statuses.Length == 0)
-            {
-                throw new InvalidOperationException("No OAuth connections are configured on this bot. Configure an OAuth connection in the Azure Bot resource settings.");
-            }
-
-            if (statuses.Length > 1)
-            {
-                string connectionNames = string.Join(", ", statuses.Select(s => $"'{s.ConnectionName}'"));
-                throw new InvalidOperationException(
-                    $"Multiple OAuth connections found: {connectionNames}. " +
-                    $"Specify the connection name explicitly when calling AddOAuthFlow(connectionName).");
-            }
-
-            _connectionName = statuses[0].ConnectionName ?? throw new InvalidOperationException("The configured OAuth connection has no name.");
-            _connectionResolved = true;
-            _logger.LogDebug("Auto-discovered OAuth connection: '{ConnectionName}'.", _connectionName);
-
-            return _connectionName;
-        }
-        finally
-        {
-            _connectionResolveLock.Release();
-        }
     }
 
     private void CleanupExpiredExchanges()

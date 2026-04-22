@@ -36,25 +36,6 @@ public static class OAuthFlowExtensions
         return flow;
     }
 
-    /// <summary>
-    /// Register an <see cref="OAuthFlow"/> that auto-discovers the connection name
-    /// via GetTokenStatus on first use. Use this when only one OAuth connection is configured.
-    /// </summary>
-    /// <param name="app">The Teams bot application.</param>
-    /// <returns>The <see cref="OAuthFlow"/> instance for configuring callbacks.</returns>
-    public static OAuthFlow AddOAuthFlow(this TeamsBotApplication app)
-    {
-        ArgumentNullException.ThrowIfNull(app);
-
-        OAuthFlowRegistry registry = GetOrCreateRegistry(app);
-        ILogger logger = GetLogger(app);
-
-        OAuthFlow flow = new(app, connectionName: null, logger);
-        registry.RegisterAutoDiscover(flow);
-
-        return flow;
-    }
-
     private static OAuthFlowRegistry GetOrCreateRegistry(TeamsBotApplication app)
     {
         if (app.OAuthRegistry is not null)
@@ -135,7 +116,6 @@ public static class OAuthFlowExtensions
                 // verifyState doesn't carry a connection name, so try each registered flow
                 foreach (OAuthFlow flow in registry.GetAllFlows())
                 {
-                    if (flow.ConnectionName is null) continue;
                     InvokeResponse response = await flow.HandleVerifyStateAsync(ctx, verifyValue, cancellationToken).ConfigureAwait(false);
                     if (response.Status == 200)
                     {
@@ -162,7 +142,6 @@ public static class OAuthFlowExtensions
 internal sealed class OAuthFlowRegistry
 {
     private readonly Dictionary<string, OAuthFlow> _flows = new(StringComparer.OrdinalIgnoreCase);
-    private OAuthFlow? _autoDiscoverFlow;
 
     internal void Register(string connectionName, OAuthFlow flow)
     {
@@ -170,15 +149,6 @@ internal sealed class OAuthFlowRegistry
         {
             throw new InvalidOperationException($"An OAuthFlow is already registered for connection '{connectionName}'.");
         }
-    }
-
-    internal void RegisterAutoDiscover(OAuthFlow flow)
-    {
-        if (_autoDiscoverFlow is not null)
-        {
-            throw new InvalidOperationException("Only one auto-discover OAuthFlow can be registered. Specify connection names explicitly for multiple connections.");
-        }
-        _autoDiscoverFlow = flow;
     }
 
     /// <summary>
@@ -191,12 +161,6 @@ internal sealed class OAuthFlowRegistry
             return flow;
         }
 
-        // If there's an auto-discover flow, use it
-        if (_autoDiscoverFlow is not null)
-        {
-            return _autoDiscoverFlow;
-        }
-
         // If there's exactly one named flow, use it
         if (_flows.Count == 1)
         {
@@ -207,36 +171,21 @@ internal sealed class OAuthFlowRegistry
     }
 
     /// <summary>
-    /// Returns all registered flows (both named and auto-discover).
+    /// Returns all registered flows.
     /// </summary>
-    internal IEnumerable<OAuthFlow> GetAllFlows()
-    {
-        foreach (OAuthFlow flow in _flows.Values)
-        {
-            yield return flow;
-        }
-        if (_autoDiscoverFlow is not null)
-        {
-            yield return _autoDiscoverFlow;
-        }
-    }
+    internal IEnumerable<OAuthFlow> GetAllFlows() => _flows.Values;
 
     /// <summary>
     /// Resolve when there's no connection name in the payload (e.g., verifyState).
+    /// Returns the single registered flow, or null if zero or multiple flows exist.
     /// </summary>
     internal OAuthFlow? ResolveSingle()
     {
-        if (_autoDiscoverFlow is not null)
-        {
-            return _autoDiscoverFlow;
-        }
-
         if (_flows.Count == 1)
         {
             return _flows.Values.First();
         }
 
-        // Multiple flows and no way to disambiguate
         return null;
     }
 
@@ -247,10 +196,9 @@ internal sealed class OAuthFlowRegistry
     /// </summary>
     internal OAuthFlow? ResolveSingleWithWarning()
     {
-        OAuthFlow? single = ResolveSingle();
-        if (single is not null)
+        if (_flows.Count == 1)
         {
-            return single;
+            return _flows.Values.First();
         }
 
         if (_flows.Count > 1)
@@ -264,4 +212,9 @@ internal sealed class OAuthFlowRegistry
 
         return null;
     }
+
+    /// <summary>
+    /// Returns all registered connection names, for use in error messages.
+    /// </summary>
+    internal IEnumerable<string> GetRegisteredConnectionNames() => _flows.Keys;
 }

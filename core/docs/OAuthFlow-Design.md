@@ -83,7 +83,7 @@ await context.SignIn(); // uses context.ConnectionName ("graph")
 bot.AddOAuthFlow("graph"); // single flow → becomes the default
 await context.SignIn();    // works (single flow auto-resolves)
 
-// New -- multiple flows, must be explicit
+// New -- multiple flows, must specify connection
 bot.AddOAuthFlow("graph");
 bot.AddOAuthFlow("gh");
 await context.SignIn(new OAuthOptions { ConnectionName = "gh" });
@@ -344,10 +344,6 @@ public static class OAuthFlowExtensions
 {
     /// Register an OAuthFlow with an explicit connection name.
     public static OAuthFlow AddOAuthFlow(this TeamsBotApplication app, string connectionName);
-
-    /// Register an OAuthFlow that auto-discovers the connection name
-    /// via GetTokenStatus on first use.
-    public static OAuthFlow AddOAuthFlow(this TeamsBotApplication app);
 }
 ```
 
@@ -386,7 +382,7 @@ public class Context<TActivity> where TActivity : TeamsActivity
 ```csharp
 public class OAuthFlow
 {
-    public string? ConnectionName { get; }
+    public string ConnectionName { get; }
 
     public Task<string?> GetTokenAsync<TActivity>(Context<TActivity> context, CancellationToken ct = default);
     public Task<string?> SignInAsync<TActivity>(Context<TActivity> context, CancellationToken ct = default);
@@ -541,16 +537,6 @@ bot.AddOAuthFlow("GraphConnection", options =>
 
 Until this is implemented, multi-instance deployments should be aware that `OnSignInComplete` may fire on more than one instance for the same sign-in. Handlers should be idempotent.
 
-### Auto-Discovery (no connection name)
-
-When `AddOAuthFlow()` is called without a connection name:
-
-1. On first call to `SignInAsync` / `GetTokenAsync` / `IsSignedInAsync`, calls `UserTokenClient.GetTokenStatusAsync(userId, channelId)`.
-2. `GetTokenStatus` returns **all** configured OAuth connections on the bot (regardless of whether the user has a token).
-3. If exactly one connection exists, uses it automatically.
-4. If multiple connections exist, throws `InvalidOperationException` with a message listing the available connections and asking the developer to specify one.
-5. The resolved connection name is cached for subsequent calls.
-
 ## Multi-Connection Sample
 
 A bot that uses **two** OAuth connections: one for Microsoft Graph and one for GitHub.
@@ -673,7 +659,7 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 | Teams SSO client failure | Teams sends `signin/failure` invoke with structured `Code`/`Message`. OAuthFlow logs the failure, fires `OnSignInFailure` on all flows with `failure: SignInFailureValue`, responds 200. |
 | Duplicate `signin/tokenExchange` | Deduplicated by exchange ID. First wins, duplicates get 200 no-op. |
 | Token expired | `GetTokenAsync` returns null (token store returns 404). `SignInAsync` re-initiates the flow. |
-| Auto-discovery with multiple connections | Throws `InvalidOperationException` listing available connections. |
+| Missing connection name with multiple flows | Throws `InvalidOperationException` listing registered connections. |
 | `signin/verifyState` with multiple connections | Tries each registered flow until one succeeds (200). Returns 404 if none match. |
 | `IsSignedIn` with multiple connections | Checks the first registered connection, logs `Trace.TraceWarning`. Prefer `IsSignedInAsync(connectionName)`. |
 | Missing `MsAppId` in sign-in state | Token Service returns `tokenExchangeResource: null`. SSO and automatic verify-state fail. OAuthFlow includes `MsAppId` from `BotApplication.AppId` to prevent this. |
