@@ -6,7 +6,6 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -21,18 +20,24 @@ namespace Microsoft.Teams.Bot.Compat;
 /// The adapter allows registration of middleware and error handling delegates, and supports processing HTTP requests
 /// and continuing conversations. Thread safety is not guaranteed; instances should not be shared across concurrent
 /// requests.</remarks>
-/// <remarks>
-/// Creates a new instance of the <see cref="CompatAdapter"/> class.
-/// </remarks>
-/// <param name="teamsBotApplication">The Teams bot application instance.</param>
-/// <param name="httpContextAccessor">The HTTP context accessor.</param>
-/// <param name="logger">The logger instance.</param>
-public class CompatAdapter(
-    TeamsBotApplication teamsBotApplication,
-    IHttpContextAccessor? httpContextAccessor = null,
-    ILogger? logger = null) : CompatBotAdapter(teamsBotApplication, httpContextAccessor, logger), IBotFrameworkHttpAdapter
+public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
 {
-    private readonly TeamsBotApplication _teamsBotApplication = teamsBotApplication;
+    private readonly BotApplication _teamsBotApplication;
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="CompatAdapter"/> class.
+    /// </summary>
+    /// <param name="teamsBotApplication">The Teams bot application instance.</param>
+    /// <param name="httpContextAccessor">The HTTP context accessor.</param>
+    /// <param name="logger">The logger instance.</param>
+    public CompatAdapter(
+        BotApplication teamsBotApplication,
+        IHttpContextAccessor? httpContextAccessor = null,
+        ILogger? logger = null)
+        : base(teamsBotApplication, httpContextAccessor, logger)
+    {
+        _teamsBotApplication = teamsBotApplication;
+    }
 
     /// <summary>
     /// Processes an incoming HTTP request and generates an appropriate HTTP response using the provided bot instance.
@@ -56,7 +61,7 @@ public class CompatAdapter(
             turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
-            turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.Api.Clients.ApiClient>(_teamsBotApplication.TeamsApiClient);
+            //turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient); // TODO: review TeamsInfo needs
             await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
         };
 
@@ -106,7 +111,6 @@ public class CompatAdapter(
         using TurnContext turnContext = new(this, reference.GetContinuationActivity());
         turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
         turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl }));
-        turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.Api.Clients.ApiClient>(_teamsBotApplication.TeamsApiClient);
         await RunPipelineAsync(turnContext, callback, cancellationToken).ConfigureAwait(false);
     }
 }
