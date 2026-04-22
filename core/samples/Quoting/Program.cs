@@ -12,93 +12,85 @@ WebApplication webApp = webAppBuilder.Build();
 
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
+// Inbound quoted replies — fires on every message, echoes metadata when a quote is present.
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
-    var activity = context.Activity;
-    var text = activity.Text?.ToLowerInvariant()?.Trim() ?? "";
+    var quote = context.Activity.GetQuotedMessages().FirstOrDefault()?.QuotedReply;
+    if (quote == null) return;
 
-    // Read inbound quoted replies
-    var quotes = activity.GetQuotedMessages().ToList();
-    if (quotes.Count > 0)
+    var info = $"Quoted message ID: {quote.MessageId}";
+    if (quote.SenderName != null) info += $"\nFrom: {quote.SenderName}";
+    if (quote.Preview != null) info += $"\nPreview: \"{quote.Preview}\"";
+    if (quote.IsReplyDeleted == true) info += "\n(deleted)";
+    if (quote.ValidatedMessageReference == true) info += "\n(validated)";
+
+    await context.SendActivityAsync(
+        new MessageActivity($"You sent a message with a quoted reply:\n\n{info}") { TextFormat = TextFormats.Markdown },
+        cancellationToken);
+});
+
+// ReplyAsync() — auto-quotes the inbound message
+teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
+{
+    await context.ReplyAsync("Thanks for your message! This reply auto-quotes it.", cancellationToken);
+});
+
+// QuoteAsync() — quote a previously sent message by ID
+teamsApp.OnMessage("(?i)^test quote$", async (context, cancellationToken) =>
+{
+    var sent = await context.SendActivityAsync("The meeting has been moved to 3 PM tomorrow.", cancellationToken);
+    if (sent?.Id != null)
     {
-        var quote = quotes[0].QuotedReply;
-        var info = $"Quoted message ID: {quote?.MessageId}";
-        if (quote?.SenderName != null) info += $"\nFrom: {quote.SenderName}";
-        if (quote?.Preview != null) info += $"\nPreview: \"{quote.Preview}\"";
-        if (quote?.IsReplyDeleted == true) info += "\n(deleted)";
-        if (quote?.ValidatedMessageReference == true) info += "\n(validated)";
-
-        await context.SendActivityAsync(
-            new MessageActivity($"You sent a message with a quoted reply:\n\n{info}") { TextFormat = TextFormats.Markdown },
-            cancellationToken);
-        return;
+        await context.QuoteAsync(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
     }
+});
 
-    // ReplyAsync() — auto-quotes the inbound message
-    if (text.Contains("test reply"))
+// AddQuote() extension — builder with response
+teamsApp.OnMessage("(?i)^test add$", async (context, cancellationToken) =>
+{
+    var sent = await context.SendActivityAsync("Please review the latest PR before end of day.", cancellationToken);
+    if (sent?.Id != null)
     {
-        await context.ReplyAsync("Thanks for your message! This reply auto-quotes it.", cancellationToken);
-        return;
+        MessageActivity msg = new();
+        msg.AddQuote(sent.Id, "Done! Left my comments on the PR.");
+        await context.SendActivityAsync(msg, cancellationToken);
     }
+});
 
-    // QuoteAsync() — quote a previously sent message by ID
-    if (text.Contains("test quote"))
+// Multi-quote with mixed responses
+teamsApp.OnMessage("(?i)^test multi$", async (context, cancellationToken) =>
+{
+    var sentA = await context.SendActivityAsync("We need to update the API docs before launch.", cancellationToken);
+    var sentB = await context.SendActivityAsync("The design mockups are ready for review.", cancellationToken);
+    var sentC = await context.SendActivityAsync("CI pipeline is green on main.", cancellationToken);
+
+    if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
     {
-        var sent = await context.SendActivityAsync("The meeting has been moved to 3 PM tomorrow.", cancellationToken);
-        if (sent?.Id != null)
-        {
-            await context.QuoteAsync(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
-        }
-        return;
+        MessageActivity msg = new();
+        msg.AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.");
+        msg.AddQuote(sentB.Id, "Looks great, approved!");
+        msg.AddQuote(sentC.Id);
+        await context.SendActivityAsync(msg, cancellationToken);
     }
+});
 
-    // AddQuote() extension — builder with response
-    if (text.Contains("test add"))
+// Builder pattern — WithQuote on TeamsActivityBuilder
+teamsApp.OnMessage("(?i)^test builder$", async (context, cancellationToken) =>
+{
+    var sent = await context.SendActivityAsync("Deployment to staging is complete.", cancellationToken);
+    if (sent?.Id != null)
     {
-        var sent = await context.SendActivityAsync("Please review the latest PR before end of day.", cancellationToken);
-        if (sent?.Id != null)
-        {
-            MessageActivity msg = new();
-            msg.AddQuote(sent.Id, "Done! Left my comments on the PR.");
-            await context.SendActivityAsync(msg, cancellationToken);
-        }
-        return;
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithQuote(sent.Id, "Verified — all smoke tests passing.")
+            .Build();
+        await context.SendActivityAsync(reply, cancellationToken);
     }
+});
 
-    // Multi-quote with mixed responses
-    if (text.Contains("test multi"))
-    {
-        var sentA = await context.SendActivityAsync("We need to update the API docs before launch.", cancellationToken);
-        var sentB = await context.SendActivityAsync("The design mockups are ready for review.", cancellationToken);
-        var sentC = await context.SendActivityAsync("CI pipeline is green on main.", cancellationToken);
-
-        if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
-        {
-            MessageActivity msg = new();
-            msg.AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.");
-            msg.AddQuote(sentB.Id, "Looks great, approved!");
-            msg.AddQuote(sentC.Id);
-            await context.SendActivityAsync(msg, cancellationToken);
-        }
-        return;
-    }
-
-    // Builder pattern — WithQuote on TeamsActivityBuilder
-    if (text.Contains("test builder"))
-    {
-        var sent = await context.SendActivityAsync("Deployment to staging is complete.", cancellationToken);
-        if (sent?.Id != null)
-        {
-            TeamsActivity reply = TeamsActivity.CreateBuilder()
-                .WithType(TeamsActivityType.Message)
-                .WithQuote(sent.Id, "Verified — all smoke tests passing.")
-                .Build();
-            await context.SendActivityAsync(reply, cancellationToken);
-        }
-        return;
-    }
-
-    // Help / Default
+// Help
+teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
+{
     await context.SendActivityAsync(
         new MessageActivity(
             "**Quoting Test Bot**\n\n" +
