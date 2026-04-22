@@ -6,8 +6,9 @@ using Microsoft.Teams.Common;
 namespace Microsoft.Teams.Cards;
 
 /// <summary>
-/// Defines an invoke action. This action is used to trigger a bot action.
+/// This class is deprecated. Please use <see cref="InvokeSubmitActionData"/> instead. This will be removed in a future version of the SDK.
 /// </summary>
+[Obsolete("This class is deprecated. Use InvokeSubmitActionData instead. This will be removed in a future version of the SDK.")]
 public class InvokeAction : SubmitAction
 {
     /// <summary>
@@ -18,7 +19,7 @@ public class InvokeAction : SubmitAction
     {
         Data = new Union<string, SubmitActionData>(new SubmitActionData
         {
-            Msteams = new InvokeSubmitActionData(value)
+            Msteams = new InvokeSubmitActionData(new Union<object, CollabStageInvokeDataValue>(value))
         });
     }
 }

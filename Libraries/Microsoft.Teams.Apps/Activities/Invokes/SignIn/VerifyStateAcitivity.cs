@@ -15,6 +15,7 @@ public class VerifyStateAttribute() : InvokeAttribute(Api.Activities.Invokes.Nam
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -32,6 +33,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()
@@ -45,6 +47,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnVerifyState(this App app, Func<IContext<SignIn.VerifyStateActivity>, Task<Response?>> handler)
     {
         app.Router.Register(new Route()
