@@ -83,8 +83,12 @@ public class ApiClient : Client
     {
         ServiceUrl = client.ServiceUrl;
         Bots = new BotClient(_http, cancellationToken);
+        Bots.Token.ActiveBotScope = client.Bots.Token.ActiveBotScope;
+        Bots.Token.ActiveGraphScope = client.Bots.Token.ActiveGraphScope;
+        Bots.SignIn.TokenServiceUrl = client.Bots.SignIn.TokenServiceUrl;
         Conversations = new ConversationClient(ServiceUrl, _http, cancellationToken);
         Users = new UserClient(_http, cancellationToken);
+        Users.Token.TokenServiceUrl = client.Users.Token.TokenServiceUrl;
         Teams = new TeamClient(ServiceUrl, _http, cancellationToken);
         Meetings = new MeetingClient(ServiceUrl, _http, cancellationToken);
     }

@@ -184,7 +184,7 @@ static Microsoft.Teams.Cards.AdaptiveCard CreateBasicAdaptiveCard()
             new ExecuteAction
             {
                 Title = "Submit",
-                Data = new Union<string, SubmitActionData>(new SubmitActionData { NonSchemaProperties = new Dictionary<string, object?> { { "action", "submit_basic" } } }),
+                Data = new Union<string, SubmitActionData>(new SubmitData("submit_basic")),
                 AssociatedInputs = AssociatedInputs.Auto
             }
         }
@@ -208,7 +208,7 @@ static Microsoft.Teams.Cards.AdaptiveCard CreateProfileCard()
             new ExecuteAction
             {
                 Title = "Save",
-                Data = new Union<string, SubmitActionData>(new SubmitActionData { NonSchemaProperties = new Dictionary<string, object?> { { "action", "save_profile" }, { "entity_id", "12345" } } }),
+                Data = new Union<string, SubmitActionData>(new SubmitData("save_profile", new Dictionary<string, object?> { ["entity_id"] = "12345" })),
                 AssociatedInputs = AssociatedInputs.Auto
             },
             new OpenUrlAction("https://adaptivecards.microsoft.com") { Title = "Learn More" }
@@ -233,7 +233,7 @@ static Microsoft.Teams.Cards.AdaptiveCard CreateProfileCardWithValidation()
             new ExecuteAction
             {
                 Title = "Save",
-                Data = new Union<string, SubmitActionData>(new SubmitActionData { NonSchemaProperties = new Dictionary<string, object?> { { "action", "save_profile" } } }),
+                Data = new Union<string, SubmitActionData>(new SubmitData("save_profile")),
                 AssociatedInputs = AssociatedInputs.Auto
             }
         }
@@ -255,7 +255,7 @@ static Microsoft.Teams.Cards.AdaptiveCard CreateFeedbackCard()
             new ExecuteAction
             {
                 Title = "Submit Feedback",
-                Data = new Union<string, SubmitActionData>(new SubmitActionData { NonSchemaProperties = new Dictionary<string, object?> { { "action", "submit_feedback" } } }),
+                Data = new Union<string, SubmitActionData>(new SubmitData("submit_feedback")),
                 AssociatedInputs = AssociatedInputs.Auto
             }
         }
@@ -291,7 +291,7 @@ static Microsoft.Teams.Cards.AdaptiveCard CreateTaskFormCard()
             new ExecuteAction
             {
                 Title = "Create Task",
-                Data = new Union<string, SubmitActionData>(new SubmitActionData { NonSchemaProperties = new Dictionary<string, object?> { { "action", "create_task" } } }),
+                Data = new Union<string, SubmitActionData>(new SubmitData("create_task")),
                 AssociatedInputs = AssociatedInputs.Auto,
                 Style = ActionStyle.Positive
             }

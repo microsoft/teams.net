@@ -7,8 +7,6 @@ using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Hosting;
 
@@ -73,7 +71,7 @@ namespace PABot
             RegisterHttpClients(services, config);
 
             // Register Bot Framework clients
-            RegisterBotClients(services);
+            RegisterBotClients(services, config);
         }
 
         private static AdapterConfig ReadAdapterConfig(IServiceCollection services)
@@ -251,7 +249,7 @@ namespace PABot
                 .AddHttpMessageHandler(sp => CreatePACustomAuthHandler(sp, config));
         }
 
-        private static void RegisterBotClients(IServiceCollection services)
+        private static void RegisterBotClients(IServiceCollection services, AdapterConfig config)
         {
             // Register ConversationClient
             services.AddSingleton<ConversationClient>(sp =>
@@ -272,28 +270,19 @@ namespace PABot
                     sp.GetRequiredService<ILogger<UserTokenClient>>());
             });
 
-            // Register ApiClient (no serviceUrl — use ForServiceUrl per-request)
-            services.AddSingleton<ApiClient>(sp =>
-            {
-                HttpClient httpClient = sp.GetRequiredService<IHttpClientFactory>()
-                    .CreateClient("TeamsApiClient");
-                return new ApiClient(httpClient, sp.GetRequiredService<ConversationClient>(), sp.GetRequiredService<UserTokenClient>(), sp.GetRequiredService<ILogger<ApiClient>>());
-            });
 
             // Register TeamsBotApplication
-            services.AddSingleton<TeamsBotApplication>(sp =>
+            services.AddSingleton<BotApplication>(sp =>
             {
-                return new TeamsBotApplication(
+                return new BotApplication(
                     sp.GetRequiredService<ConversationClient>(),
                     sp.GetRequiredService<UserTokenClient>(),
-                    sp.GetRequiredService<ApiClient>(),
-                    sp.GetRequiredService<IHttpContextAccessor>(),
-                    sp.GetRequiredService<ILogger<TeamsBotApplication>>()
+                    sp.GetRequiredService<ILogger<BotApplication>>()
                 );
             });
         }
 
-        private static PACustomAuthHandler CreatePACustomAuthHandler(IServiceProvider sp, AdapterConfig config)
+        private static DelegatingHandler CreatePACustomAuthHandler(IServiceProvider sp, AdapterConfig config)
         {
             // Use bot scope if available, otherwise use agent scope
             string? botScope = config.BotIdentity?.Scope;

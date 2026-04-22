@@ -14,6 +14,7 @@ public class TypingAttribute() : ActivityAttribute(ActivityType.Typing, typeof(T
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTyping(this App app, Func<IContext<TypingActivity>, Task> handler)
     {
         app.Router.Register(new Route()
