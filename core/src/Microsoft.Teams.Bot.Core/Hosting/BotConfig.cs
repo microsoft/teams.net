@@ -25,8 +25,6 @@ internal sealed class BotConfig
     /// </summary>
     public const string SystemManagedIdentityIdentifier = "system";
 
-    private const string BotScope = "https://api.botframework.com/.default";
-
     private const string DefaultSectionName = "AzureAd";
 
     /// <summary>
@@ -57,10 +55,16 @@ internal sealed class BotConfig
     public string SectionName { get; set; } = DefaultSectionName;
 
     /// <summary>
-    /// Gets or sets the scope for token acquisition.
-    /// Defaults to "https://api.botframework.com/.default" if not specified.
+    /// Gets or sets the cloud environment for sovereign cloud support.
+    /// Defaults to <see cref="CloudEnvironment.Public"/> if not specified.
     /// </summary>
-    public string Scope { get; set; } = BotScope;
+    public CloudEnvironment Cloud { get; set; } = CloudEnvironment.Public;
+
+    /// <summary>
+    /// Gets or sets the scope for token acquisition.
+    /// Defaults to the cloud environment's <see cref="CloudEnvironment.BotScope"/>.
+    /// </summary>
+    public string Scope { get; set; } = CloudEnvironment.Public.BotScope;
 
     internal IConfigurationSection? MsalConfigurationSection { get; set; }
 
@@ -73,12 +77,14 @@ internal sealed class BotConfig
     public static BotConfig FromBFConfig(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
+        var cloud = ResolveCloud(configuration["Cloud"]);
         return new()
         {
             TenantId = configuration["MicrosoftAppTenantId"] ?? string.Empty,
             ClientId = configuration["MicrosoftAppId"] ?? string.Empty,
             ClientSecret = configuration["MicrosoftAppPassword"],
-            Scope = configuration["Scope"] ?? BotScope
+            Cloud = cloud,
+            Scope = configuration["Scope"] ?? cloud.BotScope
         };
     }
 
@@ -95,13 +101,15 @@ internal sealed class BotConfig
     public static BotConfig FromCoreConfig(IConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
+        var cloud = ResolveCloud(configuration["CLOUD"] ?? configuration["Cloud"]);
         return new()
         {
             TenantId = configuration["TENANT_ID"] ?? string.Empty,
             ClientId = configuration["CLIENT_ID"] ?? string.Empty,
             ClientSecret = configuration["CLIENT_SECRET"],
             FicClientId = configuration["MANAGED_IDENTITY_CLIENT_ID"],
-            Scope = configuration["Scope"] ?? BotScope,
+            Cloud = cloud,
+            Scope = configuration["Scope"] ?? cloud.BotScope,
         };
     }
 
@@ -120,12 +128,14 @@ internal sealed class BotConfig
     {
         ArgumentNullException.ThrowIfNull(configuration);
         IConfigurationSection section = configuration.GetSection(sectionName);
+        var cloud = ResolveCloud(section["Cloud"] ?? configuration["Cloud"]);
         return new()
         {
             TenantId = section["TenantId"] ?? string.Empty,
             ClientId = section["ClientId"] ?? string.Empty,
             ClientSecret = section["ClientSecret"],
-            Scope = section["Scope"] ?? BotScope,
+            Cloud = cloud,
+            Scope = section["Scope"] ?? cloud.BotScope,
             MsalConfigurationSection = section,
             SectionName = sectionName
         };
@@ -194,6 +204,9 @@ internal sealed class BotConfig
         _logNoConfigFound(logger, null);
         return new BotConfig { SectionName = sectionName };
     }
+
+    private static CloudEnvironment ResolveCloud(string? cloudName) =>
+        string.IsNullOrWhiteSpace(cloudName) ? CloudEnvironment.Public : CloudEnvironment.FromName(cloudName);
 
     private static readonly Action<ILogger, Exception?> _logUsingBFConfig =
         LoggerMessage.Define(LogLevel.Debug, new(1), "Resolved bot configuration from Bot Framework configuration keys");

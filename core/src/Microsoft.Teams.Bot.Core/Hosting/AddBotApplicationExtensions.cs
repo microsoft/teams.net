@@ -105,13 +105,10 @@ public static class AddBotApplicationExtensions
     /// <returns>The service collection for method chaining.</returns>
     internal static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, BotConfig botConfig) where TApp : BotApplication
     {
-        services.AddSingleton<BotApplicationOptions>(sp =>
+        services.AddSingleton<BotApplicationOptions>(_ => new BotApplicationOptions
         {
-            IConfiguration config = sp.GetRequiredService<IConfiguration>();
-            return new BotApplicationOptions
-            {
-                AppId = botConfig.ClientId
-            };
+            AppId = botConfig.ClientId,
+            Cloud = botConfig.Cloud
         });
         services.AddHttpContextAccessor();
         services.AddBotAuthorization(botConfig);
@@ -168,6 +165,7 @@ public static class AddBotApplicationExtensions
             {
                 options.Scope = botConfig.Scope;
                 options.SectionName = botConfig.SectionName;
+                options.Cloud = botConfig.Cloud;
             });
 
         // TODO: This shouldn't be called multiple times. It will being called once for each client we support.

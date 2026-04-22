@@ -20,4 +20,9 @@ public sealed class BotApplicationOptions
     /// Defaults to 5 minutes. Set to <see cref="Timeout.InfiniteTimeSpan"/> to disable the timeout.
     /// </summary>
     public TimeSpan ProcessActivityTimeout { get; set; } = TimeSpan.FromMinutes(5);
+
+    /// <summary>
+    /// Gets or sets the cloud environment. Defaults to <see cref="CloudEnvironment.Public"/>.
+    /// </summary>
+    public CloudEnvironment Cloud { get; set; } = CloudEnvironment.Public;
 }
