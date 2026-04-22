@@ -6,6 +6,7 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
 using Moq;
@@ -255,14 +256,17 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 new HttpClient(),
                 Mock.Of<Microsoft.Extensions.Configuration.IConfiguration>(),
                 NullLogger<UserTokenClient>.Instance);
-            Mock<TeamsApiClient> mockTeamsApiClient = new(
+            ApiClient mockTeamsApiClient = new(
+                new Uri("https://service.url"),
                 new HttpClient(),
-                NullLogger<TeamsApiClient>.Instance);
+                mockConversationClient.Object,
+                mockUserTokenClient.Object,
+                NullLogger<ApiClient>.Instance);
 
             Mock<TeamsBotApplication> mock = new(
                 mockConversationClient.Object,
                 mockUserTokenClient.Object,
-                mockTeamsApiClient.Object,
+                mockTeamsApiClient,
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<TeamsBotApplication>.Instance);
 
@@ -275,14 +279,16 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 new HttpClient(),
                 Mock.Of<Microsoft.Extensions.Configuration.IConfiguration>(),
                 NullLogger<UserTokenClient>.Instance);
-            Mock<TeamsApiClient> mockTeamsApiClient = new(
+            ApiClient mockTeamsApiClient = new(
+                new Uri("https://service.url"),
                 new HttpClient(),
-                NullLogger<TeamsApiClient>.Instance);
-
+                conversationClient,
+                mockUserTokenClient.Object,
+                NullLogger<ApiClient>.Instance);
             TeamsBotApplication teamsBotApplication = new(
                 conversationClient,
                 mockUserTokenClient.Object,
-                mockTeamsApiClient.Object,
+                mockTeamsApiClient,
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<TeamsBotApplication>.Instance);
 

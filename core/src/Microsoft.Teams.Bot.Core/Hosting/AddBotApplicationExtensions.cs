@@ -1,14 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
@@ -223,7 +221,7 @@ public static class AddBotApplicationExtensions
         // Otherwise, build a temporary service provider to create the logger
         using ServiceProvider tempProvider = services.BuildServiceProvider();
         ILoggerFactory? tempFactory = tempProvider.GetService<ILoggerFactory>();
-        return (ILogger?)tempFactory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
+        return (tempFactory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions)))
             ?? Extensions.Logging.Abstractions.NullLogger.Instance;
     }
 }

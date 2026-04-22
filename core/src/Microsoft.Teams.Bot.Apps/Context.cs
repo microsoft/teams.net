@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core;
 
@@ -23,6 +24,14 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// Current activity.
     /// </summary>
     public TActivity Activity { get; } = activity;
+
+    private ApiClient? _api;
+
+    /// <summary>
+    /// Gets the <see cref="ApiClient"/> scoped to the current activity's service URL.
+    /// </summary>
+    public ApiClient Api => _api ??= TeamsBotApplication.Api.ForServiceUrl(
+        Activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."));
 
     /// <summary>
     /// Sends a message activity as a reply.
