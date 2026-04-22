@@ -23,6 +23,7 @@ namespace Microsoft.Teams.Bot.Compat;
 public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
 {
     private readonly BotApplication _teamsBotApplication;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// Creates a new instance of the <see cref="CompatAdapter"/> class.

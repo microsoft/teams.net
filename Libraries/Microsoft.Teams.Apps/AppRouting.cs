@@ -202,10 +202,12 @@ public partial class App
     protected async Task<object?> OnSignInFailureActivity(IContext<Api.Activities.Invokes.SignIn.FailureActivity> context, CancellationToken cancellationToken = default)
     {
         var failure = context.Activity.Value;
+        var failureCode = failure?.Code ?? "unknown";
+        var failureMessage = failure?.Message ?? "no message";
 
         Logger.Warn(
             $"sign-in failed for user \"{context.Activity.From.Id}\" in conversation " +
-            $"\"{context.Ref.Conversation.Id}\": {failure.Code} — {failure.Message}. " +
+            $"\"{context.Ref.Conversation.Id}\": {failureCode} — {failureMessage}. " +
             $"If the code is 'resourcematchfailed', verify that your Entra app registration " +
             $"has 'Expose an API' configured with the correct Application ID URI matching " +
             $"your OAuth connection's Token Exchange URL."
@@ -216,7 +218,7 @@ public partial class App
             EventType.Error,
             new ErrorEvent()
             {
-                Exception = new Exception($"Sign-in failure: {failure.Code} — {failure.Message}"),
+                Exception = new Exception($"Sign-in failure: {failureCode} — {failureMessage}"),
                 Context = context.ToActivityType<IActivity>()
             },
             cancellationToken
