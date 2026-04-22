@@ -14,6 +14,7 @@ public class CommandResultAttribute() : ActivityAttribute(ActivityType.CommandRe
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnCommandResult(this App app, Func<IContext<CommandResultActivity>, Task> handler)
     {
         app.Router.Register(new Route()

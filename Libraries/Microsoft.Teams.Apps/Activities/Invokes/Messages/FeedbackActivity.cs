@@ -29,6 +29,7 @@ public static partial class AppInvokeActivityExtensions
     /// <summary>
     /// Registers a handler for message feedback activities
     /// </summary>
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnFeedback(this App app, Func<IContext<Messages.SubmitActionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
