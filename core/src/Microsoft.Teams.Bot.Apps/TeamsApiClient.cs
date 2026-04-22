@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Http;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -44,8 +45,6 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/teams/{Uri.EscapeDataString(teamId)}/conversations";
 
-        logger?.LogTrace("Fetching channel list from {Url}", url);
-
         return (await _botHttpClient.SendAsync<ChannelList>(
             HttpMethod.Get,
             url,
@@ -70,8 +69,6 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/teams/{Uri.EscapeDataString(teamId)}";
-
-        logger?.LogTrace("Fetching team details from {Url}", url);
 
         return (await _botHttpClient.SendAsync<TeamDetails>(
             HttpMethod.Get,
@@ -102,8 +99,6 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}";
 
-        logger?.LogTrace("Fetching meeting info from {Url}", url);
-
         return (await _botHttpClient.SendAsync<MeetingInfo>(
             HttpMethod.Get,
             url,
@@ -133,8 +128,6 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(participantId)}?tenantId={Uri.EscapeDataString(tenantId)}";
 
-        logger?.LogTrace("Fetching meeting participant from {Url}", url);
-
         return (await _botHttpClient.SendAsync<MeetingParticipant>(
             HttpMethod.Get,
             url,
@@ -163,7 +156,7 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}/notification";
         string body = JsonSerializer.Serialize(notification);
 
-        logger?.LogTrace("Sending meeting notification to {Url}: {Notification}", url, body);
+        logger.LogTraceGuarded("Sending meeting notification to {Url}: {Notification}", url, body);
 
         return (await _botHttpClient.SendAsync<MeetingNotificationResponse>(
             HttpMethod.Post,
@@ -209,7 +202,7 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         };
         string body = JsonSerializer.Serialize(request);
 
-        logger?.LogTrace("Sending message to list of users at {Url}: {Request}", url, body);
+        logger.LogTraceGuarded("Sending message to list of users at {Url}: {Request}", url, body);
 
         return (await _botHttpClient.SendAsync<string>(
             HttpMethod.Post,
@@ -244,7 +237,7 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         };
         string body = JsonSerializer.Serialize(request);
 
-        logger?.LogTrace("Sending message to all users in tenant at {Url}: {Request}", url, body);
+        logger.LogTraceGuarded("Sending message to all users in tenant at {Url}: {Request}", url, body);
 
         return (await _botHttpClient.SendAsync<string>(
             HttpMethod.Post,
@@ -282,7 +275,7 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         };
         string body = JsonSerializer.Serialize(request);
 
-        logger?.LogTrace("Sending message to all users in team at {Url}: {Request}", url, body);
+        logger.LogTraceGuarded("Sending message to all users in team at {Url}: {Request}", url, body);
 
         return (await _botHttpClient.SendAsync<string>(
             HttpMethod.Post,
@@ -324,7 +317,7 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         };
         string body = JsonSerializer.Serialize(request);
 
-        logger?.LogTrace("Sending message to list of channels at {Url}: {Request}", url, body);
+        logger.LogTraceGuarded("Sending message to list of channels at {Url}: {Request}", url, body);
 
         return (await _botHttpClient.SendAsync<string>(
             HttpMethod.Post,
@@ -354,8 +347,6 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/{Uri.EscapeDataString(operationId)}";
-
-        logger?.LogTrace("Getting operation state from {Url}", url);
 
         return (await _botHttpClient.SendAsync<BatchOperationState>(
             HttpMethod.Get,
@@ -388,8 +379,6 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
             url += $"?continuationToken={Uri.EscapeDataString(continuationToken)}";
         }
 
-        logger?.LogTrace("Getting paged failed entries from {Url}", url);
-
         return (await _botHttpClient.SendAsync<BatchFailedEntriesResponse>(
             HttpMethod.Get,
             url,
@@ -414,8 +403,6 @@ public class TeamsApiClient(HttpClient httpClient, ILogger<TeamsApiClient> logge
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/{Uri.EscapeDataString(operationId)}";
-
-        logger?.LogTrace("Cancelling operation at {Url}", url);
 
         await _botHttpClient.SendAsync(
             HttpMethod.Delete,

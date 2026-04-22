@@ -113,7 +113,7 @@ public class CompatBotAdapter(
 
             SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken).ConfigureAwait(false);
 
-            logger?.LogInformation("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
+            logger?.LogDebug("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
 
             responses[i] = new Microsoft.Bot.Schema.ResourceResponse() { Id = resp?.Id };
         }

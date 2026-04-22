@@ -40,6 +40,46 @@ internal static class LoggerExtensions
         }
     }
 
+    public static void LogDebugGuarded(this ILogger? logger, string message)
+    {
+        if (logger?.IsEnabled(LogLevel.Debug) == true)
+        {
+            logger.LogDebug(message);
+        }
+    }
+
+    public static void LogDebugGuarded<T0>(this ILogger? logger, string message, T0 arg0)
+    {
+        if (logger?.IsEnabled(LogLevel.Debug) == true)
+        {
+            logger.LogDebug(message, arg0);
+        }
+    }
+
+    public static void LogDebugGuarded<T0, T1>(this ILogger? logger, string message, T0 arg0, T1 arg1)
+    {
+        if (logger?.IsEnabled(LogLevel.Debug) == true)
+        {
+            logger.LogDebug(message, arg0, arg1);
+        }
+    }
+
+    public static void LogDebugGuarded<T0, T1, T2>(this ILogger? logger, string message, T0 arg0, T1 arg1, T2 arg2)
+    {
+        if (logger?.IsEnabled(LogLevel.Debug) == true)
+        {
+            logger.LogDebug(message, arg0, arg1, arg2);
+        }
+    }
+
+    public static void LogDebugGuarded<T0, T1, T2, T3>(this ILogger? logger, string message, T0 arg0, T1 arg1, T2 arg2, T3 arg3)
+    {
+        if (logger?.IsEnabled(LogLevel.Debug) == true)
+        {
+            logger.LogDebug(message, arg0, arg1, arg2, arg3);
+        }
+    }
+
     public static void LogTraceGuarded(this ILogger? logger, string message)
     {
         if (logger?.IsEnabled(LogLevel.Trace) == true)

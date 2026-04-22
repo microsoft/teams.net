@@ -44,6 +44,7 @@ public class BotApplication
         options ??= new();
         _logger = logger;
         MiddleWare = new TurnMiddleware();
+        MiddleWare.SetLogger(logger);
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
         logger.LogInformationGuarded("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", GetType().Name, options.AppId, Version);
@@ -125,6 +126,7 @@ public class BotApplication
     /// <returns>An ITurnMiddleWare instance representing the updated middleware pipeline.</returns>
     public ITurnMiddleware UseMiddleware(ITurnMiddleware middleware)
     {
+        ArgumentNullException.ThrowIfNull(middleware);
         MiddleWare.Use(middleware);
         return MiddleWare;
     }
