@@ -5,15 +5,15 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Builder.TraceExtensions;
-using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Compat;
+using Microsoft.Teams.Bot.Core;
 
 namespace PABot
 {
     public class AdapterWithErrorHandler : CompatAdapter
     {
         public AdapterWithErrorHandler(
-            TeamsBotApplication teamsBotApp,
+            BotApplication teamsBotApp,
             IHttpContextAccessor httpContextAccessor,
             IConfiguration configuration,
             ILogger<IBotFrameworkHttpAdapter> logger,
