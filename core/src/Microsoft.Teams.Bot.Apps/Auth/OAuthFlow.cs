@@ -174,7 +174,7 @@ public class OAuthFlow
 
         TeamsActivity oauthActivity = TeamsActivity.CreateBuilder()
             .WithConversationReference(context.Activity)
-            .WithRecipient(context.Activity.From, true)
+            .WithRecipient(context.Activity.From, false)
             .WithAttachment(attachment)
             .Build();
 
@@ -410,7 +410,7 @@ public class OAuthFlow
     private void CleanupExpiredExchanges()
     {
         DateTimeOffset cutoff = DateTimeOffset.UtcNow.AddMinutes(-5);
-        foreach (var kvp in _processedExchanges)
+        foreach (KeyValuePair<string, DateTimeOffset> kvp in _processedExchanges)
         {
             if (kvp.Value < cutoff)
             {

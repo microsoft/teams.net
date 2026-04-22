@@ -91,7 +91,7 @@ bot.OnMessage("(?i)^status$", async (context, ct) =>
         $"{(s.HasToken == true ? "connected" : "not connected")}");
 
     await context.SendActivityAsync(
-        new MessageActivity("OAuth connections:\n" + string.Join("\n", lines))
+        new MessageActivity($"OAuth connections for {context.Activity.From?.Name} :\n" + string.Join("\n", lines))
         {
             TextFormat = TextFormats.Markdown
         }, ct);
