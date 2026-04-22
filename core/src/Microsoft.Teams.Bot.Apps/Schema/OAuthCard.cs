@@ -34,11 +34,13 @@ public class OAuthCard
     /// When present, the Teams client attempts a silent token exchange before showing the sign-in button.
     /// </summary>
     [JsonPropertyName("tokenExchangeResource")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public TokenExchangeResource? TokenExchangeResource { get; set; }
 
     /// <summary>
     /// The token post resource for posting the token back after sign-in.
     /// </summary>
     [JsonPropertyName("tokenPostResource")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public TokenPostResource? TokenPostResource { get; set; }
 }
