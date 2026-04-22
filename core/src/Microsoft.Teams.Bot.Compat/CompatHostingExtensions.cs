@@ -4,7 +4,7 @@
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Teams.Bot.Apps;
+using Microsoft.Teams.Bot.Core.Hosting;
 
 namespace Microsoft.Teams.Bot.Compat;
 
@@ -42,7 +42,7 @@ public static class CompatHostingExtensions
     /// compatibility adapter and related services registered.</returns>
     public static IServiceCollection AddCompatAdapter(this IServiceCollection services)
     {
-        services.AddTeamsBotApplication();
+        services.AddBotApplication();
         services.AddSingleton<IBotFrameworkHttpAdapter, CompatAdapter>();
         return services;
     }

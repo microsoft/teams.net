@@ -27,6 +27,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
     internal const string ConversationHttpClientName = "BotConversationClient";
 
+    internal BotHttpClient BotHttpClient => _botHttpClient;
+
     /// <summary>
     /// Gets the default custom headers that will be included in all requests.
     /// </summary>

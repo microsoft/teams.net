@@ -33,14 +33,12 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             bool callbackInvoked = false;
             Microsoft.Bot.Connector.Authentication.UserTokenClient? capturedUserTokenClient = null;
             Microsoft.Bot.Connector.IConnectorClient? capturedConnectorClient = null;
-            Microsoft.Teams.Bot.Apps.TeamsApiClient? capturedTeamsApiClient = null;
 
             BotCallbackHandler callback = async (turnContext, cancellationToken) =>
             {
                 callbackInvoked = true;
                 capturedUserTokenClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.Authentication.UserTokenClient>();
                 capturedConnectorClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.IConnectorClient>();
-                capturedTeamsApiClient = turnContext.TurnState.Get<Microsoft.Teams.Bot.Apps.TeamsApiClient>();
                 await Task.CompletedTask;
             };
 
@@ -63,10 +61,6 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.NotNull(capturedConnectorClient);
             Assert.Equal("CompatConnectorClient", capturedConnectorClient.GetType().Name);
             Assert.IsAssignableFrom<Microsoft.Bot.Connector.IConnectorClient>(capturedConnectorClient);
-
-            // Verify TeamsApiClient is the same instance we set up
-            Assert.NotNull(capturedTeamsApiClient);
-            Assert.Same(teamsApiClient, capturedTeamsApiClient);
         }
 
         private static (CompatAdapter, TeamsApiClient) CreateCompatAdapter()
