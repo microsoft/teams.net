@@ -102,6 +102,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
 
     /// <summary>
     /// Get the token or raw signin link to be sent to the user for signin for a connection.
+    /// Builds the state parameter internally from the userId and connectionName.
     /// </summary>
     /// <param name="userId">The user ID.</param>
     /// <param name="connectionName">The connection name.</param>
@@ -109,7 +110,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="finalRedirect">The optional final redirect URL.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns></returns>
-    public virtual async Task<GetSignInResourceResult> GetSignInResource(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
+    public virtual Task<GetSignInResourceResult> GetSignInResource(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
     {
         var tokenExchangeState = new
         {
@@ -122,15 +123,59 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         string tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState, _defaultOptions);
         string state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
 
-        Dictionary<string, string?> queryParams = new()
-        {
-            { "state", state }
-        };
+        Uri? finalRedirectUri = finalRedirect is not null ? new Uri(finalRedirect) : null;
+        return GetSignInResourceAsync(state, finalRedirect: finalRedirectUri, cancellationToken: cancellationToken);
+    }
 
-        if (!string.IsNullOrEmpty(finalRedirect))
-        {
-            queryParams.Add("finalRedirect", finalRedirect);
-        }
+    /// <summary>
+    /// Gets the sign-in URL for the given state.
+    /// </summary>
+    /// <param name="state">The encoded state parameter.</param>
+    /// <param name="codeChallenge">The optional code challenge for PKCE.</param>
+    /// <param name="emulatorUrl">The optional emulator URL.</param>
+    /// <param name="finalRedirect">The optional final redirect URL.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The sign-in URL, or null if not available.</returns>
+    public virtual async Task<string?> GetSignInUrlAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
+    {
+        Dictionary<string, string?> queryParams = new() { { "state", state } };
+
+        if (!string.IsNullOrEmpty(codeChallenge))
+            queryParams.Add("code_challenge", codeChallenge);
+        if (emulatorUrl is not null)
+            queryParams.Add("emulatorUrl", emulatorUrl.ToString());
+        if (finalRedirect is not null)
+            queryParams.Add("finalRedirect", finalRedirect.ToString());
+
+        return await _botHttpClient.SendAsync<string>(
+            HttpMethod.Get,
+            _apiEndpoint,
+            "api/botsignin/GetSignInUrl",
+            queryParams,
+            body: null,
+            CreateRequestOptions("getting sign-in URL"),
+            cancellationToken).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Gets the sign-in resource for the given state.
+    /// </summary>
+    /// <param name="state">The encoded state parameter.</param>
+    /// <param name="codeChallenge">The optional code challenge for PKCE.</param>
+    /// <param name="emulatorUrl">The optional emulator URL.</param>
+    /// <param name="finalRedirect">The optional final redirect URL.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>The sign-in resource result.</returns>
+    public virtual async Task<GetSignInResourceResult> GetSignInResourceAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
+    {
+        Dictionary<string, string?> queryParams = new() { { "state", state } };
+
+        if (!string.IsNullOrEmpty(codeChallenge))
+            queryParams.Add("code_challenge", codeChallenge);
+        if (emulatorUrl is not null)
+            queryParams.Add("emulatorUrl", emulatorUrl.ToString());
+        if (finalRedirect is not null)
+            queryParams.Add("finalRedirect", finalRedirect.ToString());
 
         return (await _botHttpClient.SendAsync<GetSignInResourceResult>(
             HttpMethod.Get,

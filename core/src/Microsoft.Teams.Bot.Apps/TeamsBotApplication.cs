@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps.Api;
+using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
@@ -17,7 +17,7 @@ namespace Microsoft.Teams.Bot.Apps;
 /// </summary>
 public class TeamsBotApplication : BotApplication
 {
-    private readonly TeamsApiClient _teamsApiClient;
+    private readonly Api.Clients.ApiClient _teamsApiClient;
 
     /// <summary>
     /// Gets the router for dispatching Teams activities to registered routes.
@@ -27,7 +27,7 @@ public class TeamsBotApplication : BotApplication
     /// <summary>
     /// Gets the client used to interact with the Teams API service.
     /// </summary>
-    public TeamsApiClient TeamsApiClient => _teamsApiClient;
+    public ApiClient TeamsApiClient => _teamsApiClient;
     /// <summary>
     /// Gets the hierarchical API facade for Teams operations.
     /// </summary>
@@ -42,7 +42,7 @@ public class TeamsBotApplication : BotApplication
     /// <item><c>Api.Batch</c> - Batch messaging operations</item>
     /// </list>
     /// </remarks>
-    public TeamsApi Api { get; }
+    public ApiClient Api { get; }
 
     /// <param name="conversationClient"></param>
     /// <param name="userTokenClient"></param>
@@ -53,14 +53,14 @@ public class TeamsBotApplication : BotApplication
     public TeamsBotApplication(
         ConversationClient conversationClient,
         UserTokenClient userTokenClient,
-        TeamsApiClient teamsApiClient,
+        ApiClient teamsApiClient,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
         BotApplicationOptions? options = null)
         : base(conversationClient, userTokenClient, logger, options)
     {
         _teamsApiClient = teamsApiClient;
-        Api = new TeamsApi(conversationClient, userTokenClient, teamsApiClient);
+        Api = teamsApiClient;
         Router = new Router(logger);
         OnActivity = async (activity, cancellationToken) =>
         {

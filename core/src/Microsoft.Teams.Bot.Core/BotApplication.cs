@@ -18,6 +18,7 @@ public class BotApplication
     private readonly ILogger<BotApplication> _logger;
     private readonly ConversationClient? _conversationClient;
     private readonly UserTokenClient? _userTokenClient;
+    private readonly TimeSpan _processActivityTimeout = TimeSpan.FromMinutes(5);
     internal TurnMiddleware MiddleWare { get; }
 
     /// <summary>
@@ -47,6 +48,7 @@ public class BotApplication
         MiddleWare.SetLogger(logger);
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
+        _processActivityTimeout = options.ProcessActivityTimeout;
         logger.LogInformationGuarded("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", GetType().Name, options.AppId, Version);
     }
 
@@ -102,10 +104,18 @@ public class BotApplication
         using (_logger.BeginScope("ActivityType={ActivityType} ActivityId={ActivityId} ServiceUrl={ServiceUrl} MSCV={MSCV}",
             activity.Type, activity.Id, activity.ServiceUrl, httpContext.Request.GetCorrelationVector()))
         {
+            // Use a dedicated timeout instead of the HTTP request's cancellation token.
+            // The HTTP token fires when the client disconnects, which is expected for
+            // streaming handlers that outlive the original request.
+            using var cts = new CancellationTokenSource(_processActivityTimeout);
             try
             {
-                CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cancellationToken;
+                CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cts.Token;
                 await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token).ConfigureAwait(false);
+            }
+            catch (OperationCanceledException) when (cts.IsCancellationRequested)
+            {
+                _logger.LogWarning("Activity processing timed out after {Timeout}: Id={Id}", _processActivityTimeout, activity.Id);
             }
             catch (Exception ex)
             {
