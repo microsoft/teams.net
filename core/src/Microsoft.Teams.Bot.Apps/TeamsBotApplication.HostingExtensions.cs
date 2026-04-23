@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Teams.Bot.Apps.Api.Clients;
 using Microsoft.Teams.Bot.Core.Hosting;
 
@@ -13,6 +14,20 @@ namespace Microsoft.Teams.Bot.Apps;
 /// </summary>
 public static class TeamsBotApplicationHostingExtensions
 {
+
+    /// <summary>
+    /// Registers Teams bot application services with the specified host application builder.
+    /// </summary>
+    /// <param name="builder"></param>
+    /// <param name="sectionName"></param>
+    /// <returns></returns>
+    public static IHostApplicationBuilder AddTeams(this IHostApplicationBuilder builder, string sectionName = "AzureAd")
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        AddTeamsBotApplication(builder.Services, sectionName);
+        return builder;
+    }
+
     /// <summary>
     /// Registers Teams bot application services with the specified service collection.
     /// </summary>

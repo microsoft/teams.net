@@ -34,6 +34,15 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         Activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."));
 
     /// <summary>
+    /// Sends a message activity.
+    /// </summary>
+    /// <param name="text"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    public Task<SendActivityResponse?> Send(string text, CancellationToken cancellationToken = default)
+        => SendActivityAsync(text, cancellationToken);
+
+    /// <summary>
     /// Sends a message activity as a reply.
     /// </summary>
     /// <param name="text"></param>
