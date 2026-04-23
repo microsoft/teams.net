@@ -181,6 +181,7 @@ public class McpClientPlugin : BaseChatPlugin
 
     internal async Task<List<McpToolDetails>> FetchToolsFromServer(Uri url, McpClientPluginParams pluginParams)
     {
+        await UrlValidation.ValidateMcpServerUrlAsync(url, pluginParams.AllowPrivateNetwork, pluginParams.ValidateUrl);
         IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.HeadersFactory());
         var client = await McpClientFactory.CreateAsync(transport);
         var tools = await client.ListToolsAsync();
@@ -241,6 +242,7 @@ public class McpClientPlugin : BaseChatPlugin
 
     internal async Task<string> CallMcpTool(Uri url, McpToolDetails tool, IReadOnlyDictionary<string, object?> args, McpClientPluginParams pluginParams)
     {
+        await UrlValidation.ValidateMcpServerUrlAsync(url, pluginParams.AllowPrivateNetwork, pluginParams.ValidateUrl);
         IClientTransport transport = CreateTransport(url, pluginParams.Transport, pluginParams.HeadersFactory());
         var client = await McpClientFactory.CreateAsync(transport);
         var response = await client.CallToolAsync(tool.Name, args);

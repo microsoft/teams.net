@@ -16,6 +16,14 @@ public static class HostApplicationBuilderExtensions
         return builder.AddTeamsPlugin<McpPlugin>();
     }
 
+    public static IHostApplicationBuilder AddTeamsMcp(this IHostApplicationBuilder builder, Action<McpPluginOptions> configure)
+    {
+        var pluginOptions = new McpPluginOptions();
+        configure(pluginOptions);
+        builder.Services.AddTeamsPlugin(new McpPlugin(pluginOptions));
+        return builder;
+    }
+
     public static IMcpServerBuilder AddTeamsMcp(this IHostApplicationBuilder builder, McpServerOptions options)
     {
         builder.AddTeamsPlugin<McpPlugin>();

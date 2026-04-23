@@ -4,6 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Events;
 using Microsoft.Teams.Apps.Plugins;
@@ -19,16 +20,60 @@ namespace Microsoft.Teams.Plugins.External.Mcp;
 )]
 public class McpPlugin : IAspNetCorePlugin
 {
+    internal const string McpPath = "/mcp";
+
     [AllowNull]
     [Dependency]
     public ILogger Logger { get; set; }
 
     public event EventFunction Events;
 
+    private readonly McpPluginOptions _options;
+
+    public McpPlugin() : this(new McpPluginOptions()) { }
+
+    public McpPlugin(McpPluginOptions options)
+    {
+        _options = options;
+    }
+
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {
         builder.UseRouting();
-        return builder.UseEndpoints(endpoints => endpoints.MapMcp("mcp"));
+
+        if (_options.RequireAuth is not null)
+        {
+            Func<HttpContext, Task<bool>> requireAuth = _options.RequireAuth;
+            builder.Use(async (ctx, next) =>
+            {
+                if (!ctx.Request.Path.StartsWithSegments(McpPath))
+                {
+                    await next();
+                    return;
+                }
+
+                bool ok = false;
+                try
+                {
+                    ok = await requireAuth(ctx);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Debug($"RequireAuth threw: {ex}");
+                }
+
+                if (!ok)
+                {
+                    ctx.Response.StatusCode = 401;
+                    await ctx.Response.WriteAsync("unauthorized");
+                    return;
+                }
+
+                await next();
+            });
+        }
+
+        return builder.UseEndpoints(endpoints => endpoints.MapMcp(McpPath.TrimStart('/')));
     }
 
     public Task OnInit(App app, CancellationToken cancellationToken = default)
@@ -38,6 +83,13 @@ public class McpPlugin : IAspNetCorePlugin
 
     public Task OnStart(App app, CancellationToken cancellationToken = default)
     {
+        if (_options.RequireAuth is null)
+        {
+            Logger.Warn(
+                $"McpPlugin started without RequireAuth. All MCP requests at {McpPath} will be accepted. " +
+                "Pass RequireAuth via AddTeamsMcp(options => options.RequireAuth = ...) to enforce authentication."
+            );
+        }
         Logger.Debug("OnStart");
         return Task.CompletedTask;
     }

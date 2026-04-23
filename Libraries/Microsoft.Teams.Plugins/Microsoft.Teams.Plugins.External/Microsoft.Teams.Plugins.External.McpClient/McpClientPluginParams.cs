@@ -26,6 +26,20 @@ public class McpClientPluginParams
     /// Override default cache timeout of 1 day
     /// </summary>
     public int? RefetchTimeoutMs { get; set; }
+
+    /// <summary>
+    /// When true, skip the default private-network filter and allow MCP server
+    /// URLs that resolve to loopback, RFC1918, or link-local addresses. Use for
+    /// local development or intentional on-prem MCP servers.
+    /// </summary>
+    public bool AllowPrivateNetwork { get; set; } = false;
+
+    /// <summary>
+    /// Fully replace the default URL validation. When set, the callback decides
+    /// whether the URL is allowed; the default scheme and private-network checks
+    /// are skipped.
+    /// </summary>
+    public Func<Uri, Task<bool>>? ValidateUrl { get; set; }
 }
 
 public enum McpClientTransport
