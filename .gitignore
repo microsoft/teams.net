@@ -9,9 +9,7 @@
 # local app settings files
 appsettings.Local.json
 appsettings.Development.json
-launchSettings.json
-
-.claude/
+launchsettings.json
 
 # User-specific files
 *.rsuser

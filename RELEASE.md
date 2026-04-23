@@ -6,9 +6,8 @@ This document describes how to release packages for the Teams SDK for .NET. It a
 
 | Pipeline | File | Trigger | Signing | Destination | Approval |
 |----------|------|---------|---------|-------------|----------|
-| **teams.net-pr** | ci.yaml | PR to `main`/`release/*` | No | Pipeline artifacts only | None |
-| **teams.net-preview** | publish-preview.yaml | Manual (`Internal`/`Public`) | Public only | Internal feed or nuget.org | Public only |
-| **teams.net** | publish.yml | Manual | Yes | nuget.org | Required |
+| **Teams.NET-PR** | ci.yaml | PR to `main`/`release/*` | No | Pipeline artifacts only | None |
+| **Teams.NET-ESRP** | publish.yaml | Manual (`Internal`/`Public`) | Public only | Internal feed or nuget.org | Public only |
 | **BotCore-CD** | cd-core.yaml | PR/push to `next/*` (`core/**`) | No | Internal feed (`next/core` branch) | Auto |
 
 Note: Public packages are available on nuget.org. Internal feed packages are for Microsoft internal use.
@@ -38,23 +37,32 @@ Versions are managed by **Nerdbank.GitVersioning** via [version.json](version.js
 
 ### Producing a Stable Release Version
 
-To produce a non-preview release (e.g., `0.0.0`, without suffix), you must **edit version.json before running publish.yml**:
+To produce a non-preview release (e.g., `2.0.7`), you must work from the `releases/v2` branch:
 
-1. Create a PR to change version.json:
+1. Merge `main` into `releases/v2`:
+   ```bash
+   git checkout releases/v2
+   git merge main
+   ```
+2. Edit `version.json` to remove the preview suffix:
    ```json
    {
-     "version": "0.0.0"
+     "version": "2.0.7"
    }
    ```
-2. Merge the PR
-3. Run the **teams.net** (`publish.yml`) pipeline manually
-4. Approve the push to nuget.org
-5. Create another PR to bump the version for the next preview cycle:
+3. Commit and push the version change to `releases/v2`
+4. Run the **Teams.NET-ESRP** (`publish.yaml`) pipeline manually from the `releases/v2` branch with **Public** publish type
+5. Approve the push to nuget.org
+6. After the release, bump the version for the next cycle:
    ```json
    {
-     "version": "0.0.0+1-preview.{height}"
+     "version": "2.0.8-preview.{height}"
    }
    ```
+
+### Producing Preview Releases
+
+Preview releases can be published directly from the `main` branch since `version.json` on `main` includes the preview suffix.
 
 ### Note on publicReleaseRefSpec
 
@@ -69,64 +77,67 @@ The `teams-net-publish` environment in Azure DevOps controls who can approve rel
 3. Click **Approvals and checks**
 4. Add/remove approvers as needed
 
-## Publishing Preview Packages (publish-preview pipeline)
+## Publishing Packages (Teams.NET-ESRP pipeline)
 
-The `publish-preview` pipeline is triggered manually and requires selecting a **Publish Type**: `Internal` or `Public`.
+The `Teams.NET-ESRP` pipeline is triggered manually and requires selecting a **Publish Type**: `Internal` or `Public`. The version of the packages is determined by Nerdbank.GitVersioning from `version.json`, so the same pipeline can publish both preview and stable releases.
 
-### Internal Previews
+**Branch Strategy:**
+- **Preview releases**: Publish from `main` branch (version.json contains preview suffix)
+- **Stable releases**: Publish from `releases/v2` branch (version.json has no suffix)
 
-Pushes unsigned packages to the internal ADO `TeamsSDKPreviews` feed.
+### Internal Packages
 
-1. Go to **Pipelines** > **publish-preview**
+Pushes unsigned packages to the internal ADO `TeamsSDKPreviews` feed (useful for testing before public release).
+
+1. Go to **Pipelines** > **Teams.NET-ESRP**
 2. Click **Run pipeline**
-3. Select the branch to build from
+3. Select the branch to build from (`main` for previews, `releases/v2` for stable)
 4. Choose **Internal** as the Publish Type
 5. Pipeline runs: Build > Test > Pack > Push to internal feed
 
 No approval is required. Packages are available immediately in the internal feed.
 
-### Public Previews
+### Public Packages
 
-Signs packages (Authenticode + NuGet) and pushes to nuget.org.
+Signs packages (Authenticode + NuGet) and pushes to nuget.org. The package version (preview or stable) is determined by `version.json` on the selected branch.
 
-1. Go to **Pipelines** > **publish-preview**
+1. Go to **Pipelines** > **Teams.NET-ESRP**
 2. Click **Run pipeline**
-3. Select the branch to build from
+3. Select the branch to build from:
+   - `main` for preview releases
+   - `releases/v2` for stable releases
 4. Choose **Public** as the Publish Type
 5. Pipeline runs: Build > Test > Sign > Pack
 6. **PushToNuGet stage** waits for approval
 7. Approver reviews in ADO and clicks **Approve**
 8. Packages are pushed to nuget.org
 
-#### Installing Published Preview Packages
+#### Installing Published Packages
 
-Preview packages, once published, work identically to stable releases and are available on the same profile:
+Once published, packages are available on the [teams-sdk nuget.org profile](https://www.nuget.org/profiles/teams-sdk).
 
+For stable releases:
+```bash
+dotnet add package Microsoft.Teams.Apps --version 0.0.0
+```
+
+For preview releases:
 ```bash
 dotnet add package Microsoft.Teams.Apps --version 0.0.0-preview.N
 ```
 
-Available preview versions can be found on the [teams-sdk nuget.org profile](https://www.nuget.org/profiles/teams-sdk) or by using:
-
+You can search for available versions using:
 ```bash
+# Stable only
+dotnet package search Microsoft.Teams.Apps
+
+# Include prereleases
 dotnet package search Microsoft.Teams.Apps --prerelease
 ```
 
-## Production Releases (teams.net pipeline)
+## CI Validation (Teams.NET-PR pipeline)
 
-Production releases are triggered manually via `publish.yml`.
-
-1. Go to **Pipelines** > **teams.net**
-2. Click **Run pipeline**
-3. Select the branch/tag to release
-4. Pipeline runs: Build > Test > Sign > Pack
-5. **PushToNuGet stage** waits for approval
-6. Approver reviews in ADO and clicks **Approve**
-7. Packages are pushed to nuget.org
-
-## CI Validation (teams.net-pr pipeline)
-
-The `teams.net-pr` pipeline runs automatically on PRs targeting `main` or `release/*` branches (excluding `core/**` paths). It does not publish packages.
+The `Teams.NET-PR` pipeline runs automatically on PRs targeting `main` or `release/*` branches (excluding `core/**` paths). It does not publish packages.
 
 1. Open or update a PR targeting `main` or `release/*`
 2. Pipeline runs: Build > Test > Pack

@@ -8,8 +8,8 @@ using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Bot.Core.Schema;
 using TeamsBot;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
@@ -36,13 +36,13 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
         .WithType(TeamsActivityType.Message)
         .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
         .WithSuggestedActions(new SuggestedActions()
-         {
-             To = [context.Activity.From?.Id!],
-             Actions = [
+        {
+            To = [context.Activity.From?.Id!],
+            Actions = [
                     new SuggestedAction(ActionType.IMBack, "hello") { Value = "hello" },
                     new SuggestedAction(ActionType.IMBack, "feedback") { Value = "feedback" },
                  ]
-         })
+        })
         .Build();
 
     await context.SendActivityAsync(helpActivity, cancellationToken);
@@ -161,7 +161,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
         .WithServiceUrl(context.Activity.ServiceUrl)
         .Build();
 
-    await context.TeamsBotApplication.Api.Conversations.Activities.UpdateTargetedAsync(
+    await context.Api.Conversations.Activities.UpdateTargetedAsync(
         context.Activity.Conversation.Id!,
         sendResponse!.Id!,
         updated,
@@ -170,10 +170,9 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
 
     // Delete the targeted message
-    await context.TeamsBotApplication.Api.Conversations.Activities.DeleteTargetedAsync(
+    await context.Api.Conversations.Activities.DeleteTargetedAsync(
         context.Activity.Conversation.Id!,
         sendResponse.Id!,
-        context.Activity.ServiceUrl,
         cancellationToken: cancellationToken);
 });
 
@@ -195,8 +194,8 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
 
     // Add a waving hand reaction
-    await context.TeamsBotApplication.Api.Conversations.Reactions.AddAsync(
-        context.Activity,
+    await context.Api.Conversations.Reactions.AddAsync(
+        context.Activity.Conversation.Id,
         response!.Id!,
         "1f44b_wavinghand-tone4",
         cancellationToken: cancellationToken);
@@ -204,8 +203,8 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
 
     // Add a beaming face reaction
-    await context.TeamsBotApplication.Api.Conversations.Reactions.AddAsync(
-        context.Activity,
+    await context.Api.Conversations.Reactions.AddAsync(
+        context.Activity.Conversation.Id,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
         cancellationToken: cancellationToken);
@@ -213,8 +212,8 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     await Task.Delay(2000, cancellationToken);
 
     // Remove the beaming face reaction
-    await context.TeamsBotApplication.Api.Conversations.Reactions.DeleteAsync(
-        context.Activity,
+    await context.Api.Conversations.Reactions.DeleteAsync(
+        context.Activity.Conversation.Id,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
         cancellationToken: cancellationToken);

@@ -246,11 +246,11 @@ namespace Microsoft.Teams.Bot.Compat
                 coreActivity.Conversation.Id = conversationId;
             }
 
-            SendActivityResponse response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
-                Id = response.Id
+                Id = response?.Id ?? string.Empty
             };
 
             return new HttpOperationResponse<ResourceResponse>
@@ -317,11 +317,11 @@ namespace Microsoft.Teams.Bot.Compat
             // Ensure conversation ID is set
             coreActivity.Conversation ??= new Microsoft.Teams.Bot.Core.Schema.Conversation { Id = conversationId };
 
-            SendActivityResponse response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
-                Id = response.Id
+                Id = response?.Id ?? string.Empty
             };
 
             return new HttpOperationResponse<ResourceResponse>
@@ -424,7 +424,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount>(
+            Microsoft.Teams.Bot.Core.Schema.ConversationAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>(
                 conversationId, userId, new Uri(ServiceUrl), null!, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             return new HttpOperationResponse<ChannelAccount>
@@ -432,7 +432,6 @@ namespace Microsoft.Teams.Bot.Compat
                 Body = response.ToCompatChannelAccount(),
                 Response = new System.Net.Http.HttpResponseMessage(System.Net.HttpStatusCode.OK)
             };
-
         }
     }
 }

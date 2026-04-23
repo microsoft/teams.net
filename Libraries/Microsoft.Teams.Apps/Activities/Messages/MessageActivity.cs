@@ -36,6 +36,7 @@ public class MessageAttribute : ActivityAttribute
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMessage(this App app, Func<IContext<MessageActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -70,6 +71,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMessage(this App app, string pattern, Func<IContext<MessageActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -121,6 +123,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMessage(this App app, Regex regex, Func<IContext<MessageActivity>, Task> handler)
     {
         app.Router.Register(new Route()

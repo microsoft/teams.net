@@ -45,6 +45,7 @@ public static partial class Message
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMessageReaction(this App app, Func<IContext<MessageReactionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -79,6 +80,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMessageReactionAdded(this App app, Func<IContext<MessageReactionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -129,6 +131,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMessageReactionRemoved(this App app, Func<IContext<MessageReactionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
