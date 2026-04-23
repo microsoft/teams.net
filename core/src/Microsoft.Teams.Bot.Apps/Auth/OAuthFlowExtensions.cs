@@ -22,14 +22,28 @@ public static class OAuthFlowExtensions
     /// <param name="connectionName">The OAuth connection name configured on the bot.</param>
     /// <returns>The <see cref="OAuthFlow"/> instance for configuring callbacks.</returns>
     public static OAuthFlow AddOAuthFlow(this TeamsBotApplication app, string connectionName)
+        => AddOAuthFlow(app, new OAuthOptions { ConnectionName = connectionName });
+
+    /// <summary>
+    /// Register an <see cref="OAuthFlow"/> with <see cref="OAuthOptions"/> that configure both the
+    /// connection name and the default OAuthCard text shown during sign-in.
+    /// Per-call options passed to <see cref="OAuthFlow.SignInAsync{TActivity}(Context{TActivity}, OAuthOptions?, CancellationToken)"/>
+    /// override these defaults.
+    /// </summary>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="options">OAuth options. <see cref="OAuthOptions.ConnectionName"/> is required.</param>
+    /// <returns>The <see cref="OAuthFlow"/> instance for configuring callbacks.</returns>
+    public static OAuthFlow AddOAuthFlow(this TeamsBotApplication app, OAuthOptions options)
     {
         ArgumentNullException.ThrowIfNull(app);
-        ArgumentException.ThrowIfNullOrWhiteSpace(connectionName);
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentException.ThrowIfNullOrWhiteSpace(options.ConnectionName, nameof(options.ConnectionName));
 
+        string connectionName = options.ConnectionName;
         OAuthFlowRegistry registry = GetOrCreateRegistry(app);
         ILogger logger = GetLogger(app);
 
-        OAuthFlow flow = new(app, connectionName, logger);
+        OAuthFlow flow = new(app, connectionName, options, logger);
         registry.Register(connectionName, flow);
 
         return flow;

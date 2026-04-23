@@ -15,29 +15,42 @@ using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Auth;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
-webAppBuilder.Services.AddTeamsBotApplication();
+
+// Configure OAuth flows at the DI level -- card text is set once here
+webAppBuilder.Services.AddTeamsBotApplication(options =>
+{
+    options.AddOAuthFlow("teamsgraph", o =>
+    {
+        o.OAuthCardText = "Sign in to your Microsoft account";
+        o.SignInButtonText = "Sign In to Graph";
+    });
+    options.AddOAuthFlow("gh", o =>
+    {
+        o.OAuthCardText = "Sign in to your GitHub account";
+        o.SignInButtonText = "Sign In to GitHub";
+    });
+});
+
 WebApplication webApp = webAppBuilder.Build();
 
 TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 
 // ==================== OAUTH FLOW SETUP ====================
 
-// Register two OAuthFlow instances, one per connections
-OAuthFlow graphAuth = bot.AddOAuthFlow("teamsgraph");
-OAuthFlow githubAuth = bot.AddOAuthFlow("gh");
+// Get the pre-registered flows and attach callbacks
+OAuthFlow graphAuth = bot.GetOAuthFlow("teamsgraph");
+OAuthFlow githubAuth = bot.GetOAuthFlow("gh");
 
-// Sign-in complete callbacks
 graphAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
 {
-    await context.SendActivityAsync($"Connected to Microsoft Graph ({tokenResponse.ConnectionName})!", ct);
+    await context.SendActivityAsync($"User {context.Activity.From?.Name} connected to Microsoft Graph ({tokenResponse.ConnectionName})!", ct);
 });
 
 githubAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
 {
-    await context.SendActivityAsync($"Connected to GitHub ({tokenResponse.ConnectionName})!", ct);
+    await context.SendActivityAsync($"User {context.Activity.From?.Name} connected to GitHub ({tokenResponse.ConnectionName})!", ct);
 });
 
 // ==================== MESSAGE HANDLERS ====================
@@ -88,7 +101,7 @@ bot.OnMessage("(?i)^status$", async (context, ct) =>
     var statuses = await graphAuth.GetConnectionStatusAsync(context, ct);
     var lines = statuses.Select(s =>
         $"- **{s.ConnectionName}** ({s.ServiceProviderDisplayName}): " +
-        $"{(s.HasToken == true ? "connected" : "not connected")}");
+        $"{(s.HasToken == true ? "✅ connected" : "❌ not connected")}");
 
     await context.SendActivityAsync(
         new MessageActivity($"OAuth connections for {context.Activity.From?.Name} :\n" + string.Join("\n", lines))

@@ -10,20 +10,27 @@
 // |-------------------|-------------|--------------------------|
 // | GraphConnection   | Azure AD v2 | User.Read Calendars.Read |
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Apps.Auth;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
-webAppBuilder.Services.AddTeamsBotApplication();
+
+// Configure the single OAuth flow at the DI level
+webAppBuilder.Services.AddTeamsBotApplication(options =>
+{
+    options.AddOAuthFlow("sso");
+});
+
 WebApplication webApp = webAppBuilder.Build();
 
 TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 
-// Register a single OAuthFlow -- this becomes the default for all context.SignIn/SignOut calls
-OAuthFlow auth = bot.AddOAuthFlow("sso");
+// Get the pre-registered flow and attach callbacks
+OAuthFlow auth = bot.GetOAuthFlow("sso");
 
 auth.OnSignInComplete(async (context, tokenResponse, ct) =>
 {
@@ -63,7 +70,8 @@ bot.OnMessage("(?i)^profile$", async (context, ct) =>
     try
     {
         string json = await http.GetStringAsync("https://graph.microsoft.com/v1.0/me", ct);
-        await context.SendActivityAsync($"```json\n{json}\n```", ct);
+        string indentedJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonObject>(json), new JsonSerializerOptions { WriteIndented = true });
+        await context.SendActivityAsync(new MessageActivity($" ## Graph Me \n ```json\n{indentedJson}\n```") { TextFormat = TextFormats.Markdown }, ct);
     }
     catch (HttpRequestException ex)
     {
@@ -83,7 +91,8 @@ bot.OnMessage("(?i)^calendar$", async (context, ct) =>
     {
         string json = await http.GetStringAsync(
             "https://graph.microsoft.com/v1.0/me/events?$top=3&$select=subject,start,end&$orderby=start/dateTime", ct);
-        await context.SendActivityAsync($"```json\n{json}\n```", ct);
+        string indentedJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonObject>(json), new JsonSerializerOptions { WriteIndented = true });
+        await context.SendActivityAsync(new MessageActivity($" ## Graph Calendar \n ```json\n{indentedJson}\n```") { TextFormat = TextFormats.Markdown }, ct);
     }
     catch (HttpRequestException ex)
     {

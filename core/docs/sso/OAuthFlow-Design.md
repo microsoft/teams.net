@@ -45,7 +45,7 @@ Developers can use **either** the context-level API (simple, matches Teams SDK v
 
 | Scenario | Context API (simple) | OAuthFlow API (advanced) |
 |---|---|---|
-| Sign in | `context.SignIn(new OAuthOptions { ConnectionName = "gh" })` | `githubAuth.SignInAsync(context)` |
+| Sign in | `context.SignIn(new OAuthOptions { ConnectionName = "gh" })` | `githubAuth.SignInAsync(context)` (uses options from `AddOAuthFlow`) |
 | Sign out | `context.SignOut("gh")` | `githubAuth.SignOutAsync(context)` |
 | Check status | `context.IsSignedInAsync("gh")` | `githubAuth.IsSignedInAsync(context)` |
 | All connections | `context.GetConnectionStatusAsync()` | `graphAuth.GetConnectionStatusAsync(context)` |
@@ -83,10 +83,14 @@ await context.SignIn(); // uses context.ConnectionName ("graph")
 bot.AddOAuthFlow("graph"); // single flow → becomes the default
 await context.SignIn();    // works (single flow auto-resolves)
 
-// New -- multiple flows, must specify connection
-bot.AddOAuthFlow("graph");
-bot.AddOAuthFlow("gh");
-await context.SignIn(new OAuthOptions { ConnectionName = "gh" });
+// New -- multiple flows with options configured at registration
+var ghAuth = bot.AddOAuthFlow(new OAuthOptions
+{
+    ConnectionName = "gh",
+    OAuthCardText = "Sign in to GitHub",
+    SignInButtonText = "Sign In"
+});
+await ghAuth.SignInAsync(context); // uses options from registration
 ```
 
 **Migration**: Replace reads of `context.ConnectionName` with the explicit connection name in `OAuthOptions` or `SignOut(connectionName)`.
@@ -337,17 +341,41 @@ Each failure is logged with the user ID, conversation ID, failure code, and mess
 
 ## API Surface
 
-### Registration
+### Registration (DI pattern — recommended)
+
+```csharp
+// Configure OAuth flows during service registration
+services.AddTeamsBotApplication(options =>
+{
+    options.AddOAuthFlow("GraphConnection", o =>
+    {
+        o.OAuthCardText = "Sign in to your Microsoft account";
+        o.SignInButtonText = "Sign In to Graph";
+    });
+    options.AddOAuthFlow("GitHubConnection"); // uses defaults
+});
+
+// Flows are auto-registered when the bot is constructed.
+// Access them for callbacks:
+TeamsBotApplication bot = app.UseTeamsBotApplication();
+bot.GetOAuthFlow("GraphConnection").OnSignInComplete(async (ctx, token, ct) => { ... });
+```
+
+### Registration (imperative — on the bot instance)
 
 ```csharp
 public static class OAuthFlowExtensions
 {
-    /// Register an OAuthFlow with an explicit connection name.
+    /// Register an OAuthFlow with an explicit connection name (uses default OAuthCard text).
     public static OAuthFlow AddOAuthFlow(this TeamsBotApplication app, string connectionName);
+
+    /// Register an OAuthFlow with OAuthOptions that configure the connection name
+    /// and default OAuthCard text. Per-call options override these defaults.
+    public static OAuthFlow AddOAuthFlow(this TeamsBotApplication app, OAuthOptions options);
 }
 ```
 
-`AddOAuthFlow` registers three routes on the app's `Router`:
+Both approaches register three routes on the app's `Router`:
 
 | Route name | Activity type | Purpose |
 |---|---|---|
@@ -550,19 +578,33 @@ Azure Bot resource has two OAuth connection settings:
 | `GraphConnection` | Azure AD v2 | `User.Read Calendars.Read` |
 | `GitHubConnection` | GitHub | `repo read:user` |
 
-### Registration (using context API)
+### Registration (DI pattern — recommended)
 
 ```csharp
 var builder = WebApplication.CreateSlimBuilder(args);
-builder.Services.AddTeamsBotApplication();
+
+// Configure OAuth flows at the DI level
+builder.Services.AddTeamsBotApplication(options =>
+{
+    options.AddOAuthFlow("GraphConnection", o =>
+    {
+        o.OAuthCardText = "Sign in to your Microsoft account";
+        o.SignInButtonText = "Sign In to Graph";
+    });
+    options.AddOAuthFlow("GitHubConnection", o =>
+    {
+        o.OAuthCardText = "Sign in to your GitHub account";
+        o.SignInButtonText = "Sign In to GitHub";
+    });
+});
+
 var app = builder.Build();
 TeamsBotApplication bot = app.UseTeamsBotApplication();
 
-// Register two OAuthFlow instances
-OAuthFlow graphAuth = bot.AddOAuthFlow("GraphConnection");
-OAuthFlow githubAuth = bot.AddOAuthFlow("GitHubConnection");
+// Get pre-registered flows and attach callbacks
+OAuthFlow graphAuth = bot.GetOAuthFlow("GraphConnection");
+OAuthFlow githubAuth = bot.GetOAuthFlow("GitHubConnection");
 
-// Sign-in complete callbacks
 graphAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
 {
     await context.SendActivityAsync($"Connected to Graph ({tokenResponse.ConnectionName})!", ct);
@@ -573,15 +615,10 @@ githubAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
     await context.SendActivityAsync($"Connected to GitHub ({tokenResponse.ConnectionName})!", ct);
 });
 
-// Context-based API -- connection specified per-call
+// SignInAsync uses the OAuthCardText/SignInButtonText configured at registration
 bot.OnMessage(@"(?i)^login graph$", async (context, ct) =>
 {
-    string? token = await context.SignIn(new OAuthOptions
-    {
-        ConnectionName = "GraphConnection",
-        OAuthCardText = "Sign in to your Microsoft account",
-        SignInButtonText = "Sign In to Graph"
-    }, ct);
+    string? token = await graphAuth.SignInAsync(context, ct);
 
     if (token is not null)
         await context.SendActivityAsync("Already signed in to Graph.", ct);
@@ -589,12 +626,7 @@ bot.OnMessage(@"(?i)^login graph$", async (context, ct) =>
 
 bot.OnMessage(@"(?i)^login github$", async (context, ct) =>
 {
-    string? token = await context.SignIn(new OAuthOptions
-    {
-        ConnectionName = "GitHubConnection",
-        OAuthCardText = "Sign in to your GitHub account",
-        SignInButtonText = "Sign In to GitHub"
-    }, ct);
+    string? token = await githubAuth.SignInAsync(context, ct);
 
     if (token is not null)
         await context.SendActivityAsync("Already signed in to GitHub.", ct);
@@ -632,6 +664,7 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 
 | File | Location |
 |---|---|
+| `TeamsBotApplicationOptions.cs` | `Microsoft.Teams.Bot.Apps/TeamsBotApplicationOptions.cs` |
 | `OAuthFlow.cs` | `Microsoft.Teams.Bot.Apps/Auth/OAuthFlow.cs` |
 | `OAuthFlowExtensions.cs` | `Microsoft.Teams.Bot.Apps/Auth/OAuthFlowExtensions.cs` |
 | `OAuthOptions.cs` | `Microsoft.Teams.Bot.Apps/Auth/OAuthOptions.cs` |

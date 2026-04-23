@@ -37,6 +37,18 @@ public static class TeamsBotApplicationHostingExtensions
     }
 
     /// <summary>
+    /// Adds the default TeamsBotApplication with configuration options.
+    /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">A delegate to configure <see cref="TeamsBotApplicationOptions"/>.</param>
+    /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddTeamsBotApplication(this IServiceCollection services, Action<TeamsBotApplicationOptions> configure, string sectionName = "AzureAd")
+    {
+        return AddTeamsBotApplication<TeamsBotApplication>(services, configure, sectionName);
+    }
+
+    /// <summary>
     /// Adds a custom TeamsBotApplication
     /// </summary>
     /// <param name="services">The WebApplicationBuilder instance.</param>
@@ -44,9 +56,27 @@ public static class TeamsBotApplicationHostingExtensions
     /// <returns>The updated WebApplicationBuilder instance.</returns>
     public static IServiceCollection AddTeamsBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : TeamsBotApplication
     {
+        return AddTeamsBotApplication<TApp>(services, configure: null, sectionName);
+    }
+
+    /// <summary>
+    /// Adds a custom TeamsBotApplication with configuration options.
+    /// </summary>
+    /// <typeparam name="TApp">The custom TeamsBotApplication type.</typeparam>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configure">A delegate to configure <see cref="TeamsBotApplicationOptions"/>. Can be null.</param>
+    /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddTeamsBotApplication<TApp>(this IServiceCollection services, Action<TeamsBotApplicationOptions>? configure, string sectionName = "AzureAd") where TApp : TeamsBotApplication
+    {
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
 
         services.AddBotClient<ApiClient>(nameof(ApiClient), botConfig);
+
+        // Register TeamsBotApplicationOptions
+        TeamsBotApplicationOptions teamsOptions = new();
+        configure?.Invoke(teamsOptions);
+        services.AddSingleton(teamsOptions);
 
         services.AddBotApplication<TApp>(botConfig);
         return services;

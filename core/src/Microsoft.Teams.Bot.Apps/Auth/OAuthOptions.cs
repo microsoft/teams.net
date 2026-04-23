@@ -10,6 +10,8 @@ public class OAuthOptions
 {
     /// <summary>
     /// The OAuth connection name to use. If null, uses the default registered connection.
+    /// When passed to <see cref="OAuthFlowExtensions.AddOAuthFlow(TeamsBotApplication, OAuthOptions)"/>,
+    /// this is required and identifies the connection.
     /// </summary>
     public string? ConnectionName { get; set; }
 

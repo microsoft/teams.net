@@ -37,6 +37,7 @@ public class OAuthFlow
     private readonly TeamsBotApplication _app;
     private readonly ILogger _logger;
     private readonly string _connectionName;
+    private readonly OAuthOptions _defaultOptions;
     private SignInCompleteHandler? _onSignInComplete;
     private SignInFailureHandler? _onSignInFailure;
 
@@ -44,10 +45,11 @@ public class OAuthFlow
     // Teams may send duplicates from multiple endpoints (mobile, desktop, web).
     private readonly ConcurrentDictionary<string, DateTimeOffset> _processedExchanges = new();
 
-    internal OAuthFlow(TeamsBotApplication app, string connectionName, ILogger logger)
+    internal OAuthFlow(TeamsBotApplication app, string connectionName, OAuthOptions options, ILogger logger)
     {
         _app = app;
         _connectionName = connectionName;
+        _defaultOptions = options;
         _logger = logger;
     }
 
@@ -116,7 +118,7 @@ public class OAuthFlow
     public async Task<string?> SignInAsync<TActivity>(Context<TActivity> context, OAuthOptions? options, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(context);
-        options ??= new OAuthOptions();
+        options ??= _defaultOptions;
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
