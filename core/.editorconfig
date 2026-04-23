@@ -33,7 +33,7 @@ csharp_new_line_before_else = true
 file_header_template = Copyright (c) Microsoft Corporation.\nLicensed under the MIT License.
 
 [samples/**/*.cs]
-dotnet_diagnostic.CA1848.severity = none # Suppress Logger perfomance in samples
+dotnet_diagnostic.CA1848.severity = none # Suppress Logger performance in samples
 
 # Test projects can be more lenient
 [tests/**/*.cs]

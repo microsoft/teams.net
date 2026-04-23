@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core;
@@ -39,6 +41,7 @@ public sealed class TeamsStreamingWriter
 
     private readonly ConversationClient _client;
     private readonly TeamsActivity _reference;
+    private readonly ILogger _logger;
     // Assigned from the server's 201 response after the first send; null until then.
     private string? _streamId;
     private int _sequence;
@@ -47,10 +50,11 @@ public sealed class TeamsStreamingWriter
     private string _accumulated = string.Empty;
     private DateTime _lastChunkSent = DateTime.MinValue;
 
-    internal TeamsStreamingWriter(ConversationClient client, TeamsActivity reference)
+    internal TeamsStreamingWriter(ConversationClient client, TeamsActivity reference, ILogger? logger = null)
     {
         _client = client;
         _reference = reference;
+        _logger = logger ?? NullLogger.Instance;
     }
 
     /// <summary>
@@ -72,8 +76,10 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException("Cannot send an informative update after streaming has started.");
 
         _sequence++;
+        _logger.LogDebug("Sending informative streaming update (sequence {Sequence}).", _sequence);
         SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
         _streamId ??= response?.Id;
+        _logger.LogDebug("Stream started with streamId '{StreamId}'.", _streamId);
     }
 
     /// <summary>
@@ -92,17 +98,22 @@ public sealed class TeamsStreamingWriter
         _accumulated += chunk;
 
         if (DateTime.UtcNow - _lastChunkSent < _minChunkInterval)
+        {
+            _logger.LogTrace("Rate-limited: skipping intermediate send (interval {Interval}ms).", _minChunkInterval.TotalMilliseconds);
             return;
+        }
 
         _sequence++;
         try
         {
+            _logger.LogDebug("Sending streaming chunk (sequence {Sequence}, accumulated {Length} chars).", _sequence, _accumulated.Length);
             SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
             _streamId ??= response?.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
         catch (HttpRequestException ex) when (ex.Message.Contains("Content stream was cancelled by user", StringComparison.OrdinalIgnoreCase))
         {
+            _logger.LogWarning("Stream cancelled by user (streamId '{StreamId}').", _streamId);
             _cancelled = true;
         }
     }
@@ -126,9 +137,11 @@ public sealed class TeamsStreamingWriter
         if (string.IsNullOrEmpty(_accumulated) && (attachments == null || attachments.Count == 0))
             throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
 
+        _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).", _streamId, _accumulated.Length, _sequence);
         await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities, feedbackEnabled), cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _finalized = true;
+        _logger.LogDebug("Stream finalized (streamId '{StreamId}').", _streamId);
     }
 
     private TeamsActivity BuildActivity(string text, string streamType, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false)

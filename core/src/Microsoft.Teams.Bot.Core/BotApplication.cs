@@ -45,6 +45,7 @@ public class BotApplication
         options ??= new();
         _logger = logger;
         MiddleWare = new TurnMiddleware();
+        MiddleWare.SetLogger(logger);
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
         _processActivityTimeout = options.ProcessActivityTimeout;
@@ -135,6 +136,7 @@ public class BotApplication
     /// <returns>An ITurnMiddleWare instance representing the updated middleware pipeline.</returns>
     public ITurnMiddleware UseMiddleware(ITurnMiddleware middleware)
     {
+        ArgumentNullException.ThrowIfNull(middleware);
         MiddleWare.Use(middleware);
         return MiddleWare;
     }
