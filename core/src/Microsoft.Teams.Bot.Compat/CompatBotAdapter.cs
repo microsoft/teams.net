@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps;
 using Microsoft.Teams.Bot.Core;
 using Microsoft.Teams.Bot.Core.Schema;
 using Newtonsoft.Json;
@@ -25,12 +24,12 @@ namespace Microsoft.Teams.Bot.Compat;
 /// <param name="httpContextAccessor">The HTTP context accessor.</param>
 /// <param name="logger">The logger instance.</param>
 public class CompatBotAdapter(
-    TeamsBotApplication botApplication,
+    BotApplication botApplication,
     IHttpContextAccessor? httpContextAccessor = null,
     ILogger? logger = null) : BotAdapter
 {
     private readonly JsonSerializerOptions _writeIndentedJsonOptions = new() { WriteIndented = true };
-    private readonly TeamsBotApplication botApplication = botApplication;
+    private readonly BotApplication botApplication = botApplication;
     private readonly IHttpContextAccessor? httpContextAccessor = httpContextAccessor;
     private readonly ILogger? logger = logger;
 

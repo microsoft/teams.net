@@ -20,10 +20,12 @@ public partial class Name : StringEnum
 public abstract class MessageActivity(Name.Messages name) : InvokeActivity(new(name.Value))
 {
     public Messages.SubmitActionActivity ToSubmitAction() => (Messages.SubmitActionActivity)this;
+    public Messages.FetchTaskActivity ToFetchTask() => (Messages.FetchTaskActivity)this;
 
     public override object ToType(Type type, IFormatProvider? provider)
     {
         if (type == typeof(Messages.SubmitActionActivity)) return ToSubmitAction();
+        if (type == typeof(Messages.FetchTaskActivity)) return ToFetchTask();
         return this;
     }
 
@@ -53,6 +55,7 @@ public abstract class MessageActivity(Name.Messages name) : InvokeActivity(new(n
             return name switch
             {
                 "message/submitAction" => JsonSerializer.Deserialize<Messages.SubmitActionActivity>(element.ToString(), options),
+                "message/fetchTask" => JsonSerializer.Deserialize<Messages.FetchTaskActivity>(element.ToString(), options),
                 _ => throw new JsonException($"failed to deserialize message activity '{name}' doesn't match any known types.")
             };
         }
@@ -62,6 +65,12 @@ public abstract class MessageActivity(Name.Messages name) : InvokeActivity(new(n
             if (value is Messages.SubmitActionActivity submitAction)
             {
                 JsonSerializer.Serialize(writer, submitAction, options);
+                return;
+            }
+
+            if (value is Messages.FetchTaskActivity fetchTask)
+            {
+                JsonSerializer.Serialize(writer, fetchTask, options);
                 return;
             }
 

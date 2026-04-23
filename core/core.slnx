@@ -44,6 +44,6 @@
     <Project Path="test/msal-config-api/msal-config-api.csproj" Id="54f814fa-348e-4fd3-8bc9-70cd2aedc9ae" />
   </Folder>
   <Project Path="src/Microsoft.Teams.Bot.Apps/Microsoft.Teams.Bot.Apps.csproj" Id="0e993a63-8a1a-4cdf-8a29-cc8c59bd6c30" />
-  <Project Path="src/Microsoft.Teams.Bot.Compat/Microsoft.Teams.Bot.Compat.csproj" Id="42d14898-dcc0-43a4-bb61-60e289f63c44" />
+  <Project Path="src/Microsoft.Teams.Bot.Compat/Microsoft.Teams.Bot.Compat.csproj" />
   <Project Path="src/Microsoft.Teams.Bot.Core/Microsoft.Teams.Bot.Core.csproj" />
 </Solution>
