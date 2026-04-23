@@ -31,6 +31,9 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         _output = output;
     }
 
+    private void SkipIfAgentic() =>
+        Skip.If(_f.AgenticIdentity is not null, "Compat layer does not support agentic identity");
+
     /// <summary>
     /// Creates an ITurnContext wired to real clients, simulating what CompatAdapter does.
     /// </summary>
@@ -93,9 +96,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
 
     #region Member Methods (non-team scope)
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetMemberAsync_ReturnsTeamsChannelAccount()
     {
+        SkipIfAgentic();
         // First get a valid MRI-format member ID
         ApiClient api = _f.ScopedApiClient;
         IList<CoreConversationAccount> members = await api.Conversations.Members.GetAsync(_f.ConversationId);
@@ -111,9 +115,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     }
 
 #pragma warning disable CS0618 // Obsolete warning for GetMembersAsync
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetMembersAsync_ReturnsTeamsChannelAccounts()
     {
+        SkipIfAgentic();
         using TurnContext ctx = CreateTurnContext();
         IEnumerable<TeamsChannelAccount> result = await CompatTeamsInfo.GetMembersAsync(ctx);
 
@@ -128,9 +133,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     }
 #pragma warning restore CS0618
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetPagedMembersAsync_ReturnsPaged()
     {
+        SkipIfAgentic();
         using TurnContext ctx = CreateTurnContext();
         TeamsPagedMembersResult result = await CompatTeamsInfo.GetPagedMembersAsync(ctx, pageSize: 2);
 
@@ -150,9 +156,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
 
     #region Team-scoped Member Methods
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetTeamMemberAsync_ReturnsTeamsChannelAccount()
     {
+        SkipIfAgentic();
         // Get a valid MRI-format member ID from the team
         ApiClient api = _f.ScopedApiClient;
         IList<CoreConversationAccount> members = await api.Conversations.Members.GetAsync(_f.TeamId);
@@ -167,9 +174,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"GetTeamMember: {result.Id} — {result.Name}, Email: {result.Email}");
     }
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetMemberAsync_WithTeamScope_DelegatesToGetTeamMember()
     {
+        SkipIfAgentic();
         // When activity has TeamInfo, GetMemberAsync should delegate to GetTeamMemberAsync
         ApiClient api = _f.ScopedApiClient;
         IList<CoreConversationAccount> members = await api.Conversations.Members.GetAsync(_f.TeamId);
@@ -185,9 +193,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     }
 
 #pragma warning disable CS0618
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetTeamMembersAsync_ReturnsMembers()
     {
+        SkipIfAgentic();
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
         IEnumerable<TeamsChannelAccount> result = await CompatTeamsInfo.GetTeamMembersAsync(ctx, _f.TeamId);
 
@@ -202,9 +211,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     }
 #pragma warning restore CS0618
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetPagedTeamMembersAsync_ReturnsPaged()
     {
+        SkipIfAgentic();
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
         TeamsPagedMembersResult result = await CompatTeamsInfo.GetPagedTeamMembersAsync(ctx, _f.TeamId, pageSize: 2);
 
@@ -224,9 +234,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
 
     #region Team & Channel Methods
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetTeamDetailsAsync_ReturnsDetails()
     {
+        SkipIfAgentic();
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
         TeamDetails result = await CompatTeamsInfo.GetTeamDetailsAsync(ctx, _f.TeamId);
 
@@ -236,9 +247,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"TeamDetails: {result.Id} — {result.Name}, AadGroupId: {result.AadGroupId}");
     }
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetTeamDetailsAsync_InfersTeamIdFromActivity()
     {
+        SkipIfAgentic();
         // When teamId is null, it should be inferred from the activity's TeamsChannelData
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
         TeamDetails result = await CompatTeamsInfo.GetTeamDetailsAsync(ctx);
@@ -248,9 +260,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"TeamDetails (inferred): {result.Id} — {result.Name}");
     }
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetTeamChannelsAsync_ReturnsChannels()
     {
+        SkipIfAgentic();
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
         ConversationList result = await CompatTeamsInfo.GetTeamChannelsAsync(ctx, _f.TeamId);
 
@@ -264,9 +277,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetTeamChannelsAsync_InfersTeamIdFromActivity()
     {
+        SkipIfAgentic();
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
         ConversationList result = await CompatTeamsInfo.GetTeamChannelsAsync(ctx);
 
@@ -280,9 +294,10 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
 
     #region Meeting Methods
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task GetMeetingParticipantAsync_ReturnsParticipant()
     {
+        SkipIfAgentic();
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
         // Get the AAD object ID from a human member (bots don't have one).
         ApiClient api = _f.ScopedApiClient;
@@ -320,7 +335,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
 
     #region Error Cases
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GetTeamDetailsAsync_ThrowsWithoutTeamScope()
     {
         // No teamId in activity and no explicit teamId parameter
@@ -329,7 +344,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
             () => CompatTeamsInfo.GetTeamDetailsAsync(ctx));
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GetTeamChannelsAsync_ThrowsWithoutTeamScope()
     {
         using TurnContext ctx = CreateTurnContext();
@@ -337,7 +352,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
             () => CompatTeamsInfo.GetTeamChannelsAsync(ctx));
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GetMemberAsync_ThrowsWithNullUserId()
     {
         using TurnContext ctx = CreateTurnContext();

@@ -24,20 +24,23 @@ public class MeetingClient
     /// <summary>
     /// Get a meeting by its ID.
     /// </summary>
-    public async Task<Meeting?> GetByIdAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<Meeting?> GetByIdAsync(string id, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(id)}";
-        return await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: null, cancellationToken).ConfigureAwait(false);
+        return await _http.SendAsync<Meeting>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
     /// Get a participant in a meeting.
     /// </summary>
-    public async Task<MeetingParticipant?> GetParticipantAsync(string meetingId, string id, string tenantId, CancellationToken cancellationToken = default)
+    public async Task<MeetingParticipant?> GetParticipantAsync(string meetingId, string id, string tenantId, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         string url = $"{_serviceUrl}/v1/meetings/{Uri.EscapeDataString(meetingId)}/participants/{Uri.EscapeDataString(id)}?tenantId={Uri.EscapeDataString(tenantId)}";
-        return await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: null, cancellationToken).ConfigureAwait(false);
+        return await _http.SendAsync<MeetingParticipant>(HttpMethod.Get, url, body: null, options: CreateRequestOptions(agenticIdentity), cancellationToken).ConfigureAwait(false);
     }
+
+    private static BotRequestOptions? CreateRequestOptions(AgenticIdentity? agenticIdentity) =>
+        agenticIdentity is null ? null : new() { AgenticIdentity = agenticIdentity };
 }
 
 /// <summary>

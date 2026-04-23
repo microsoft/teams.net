@@ -33,13 +33,14 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Activities
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Activities_CreateAsync()
     {
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Create] at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.Create] at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? res = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
@@ -49,13 +50,14 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Created activity: {res.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Activities_UpdateAsync()
     {
         CoreActivity original = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Update] Original at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.Update] Original at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, original);
@@ -64,7 +66,8 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity updated = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Update] Updated at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.Update] Updated at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         UpdateActivityResponse? res = await _api.Conversations.Activities.UpdateAsync(
@@ -74,13 +77,14 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Updated activity: {res.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Activities_ReplyAsync()
     {
         CoreActivity original = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Reply] Parent at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.Reply] Parent at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, original);
@@ -89,7 +93,8 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity reply = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Reply] Reply at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.Reply] Reply at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? res = await _api.Conversations.Activities.ReplyAsync(
@@ -99,13 +104,14 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Reply activity: {res?.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Activities_DeleteAsync()
     {
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Delete] at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.Delete] at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
@@ -113,7 +119,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
         await Task.Delay(2000);
 
-        await _api.Conversations.Activities.DeleteAsync(_f.ConversationId, sent.Id);
+        await _api.Conversations.Activities.DeleteAsync(_f.ConversationId, sent.Id, _f.AgenticIdentity);
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
 
@@ -125,14 +131,15 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     public async Task Activities_CreateTargetedAsync()
     {
         // Targeted activities require a valid Recipient — get a real member ID
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
             Recipient = new ConversationAccount { Id = members[0].Id },
-            Properties = { { "text", $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? res = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);
@@ -145,14 +152,15 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Fact(Skip = "Targeted activities are not supported in team channel conversations")]
     public async Task Activities_UpdateTargetedAsync()
     {
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         CoreActivity original = new()
         {
             Type = ActivityType.Message,
             Recipient = new ConversationAccount { Id = members[0].Id },
-            Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, original);
@@ -161,7 +169,8 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity updated = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Updated at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Updated at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         UpdateActivityResponse? res = await _api.Conversations.Activities.UpdateTargetedAsync(
@@ -174,14 +183,15 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Fact(Skip = "Targeted activities are not supported in team channel conversations")]
     public async Task Activities_DeleteTargetedAsync()
     {
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
             Recipient = new ConversationAccount { Id = members[0].Id },
-            Properties = { { "text", $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);
@@ -189,7 +199,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
         await Task.Delay(2000);
 
-        await _api.Conversations.Activities.DeleteTargetedAsync(_f.ConversationId, sent.Id);
+        await _api.Conversations.Activities.DeleteTargetedAsync(_f.ConversationId, sent.Id, _f.AgenticIdentity);
         _output.WriteLine($"Deleted targeted activity: {sent.Id}");
     }
 
@@ -197,10 +207,10 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Members
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Members_GetAsync()
     {
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
@@ -211,32 +221,32 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Members_GetByIdAsync()
     {
         // Get MRI-format member ID from the members list first
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
         string memberId = members[0].Id!;
 
         ConversationAccount member = await _api.Conversations.Members.GetByIdAsync(
-            _f.ConversationId, memberId);
+            _f.ConversationId, memberId, _f.AgenticIdentity);
 
         Assert.NotNull(member);
         Assert.Equal(memberId, member.Id);
         _output.WriteLine($"Member: {member.Id} — {member.Name}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Members_GetByIdAsync_AsTeamsConversationAccount()
     {
         // Get MRI-format member ID from the members list first
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
         string memberId = members[0].Id!;
 
         TeamsConversationAccount member = await _api.Conversations.Members.GetByIdAsync<TeamsConversationAccount>(
-            _f.ConversationId, memberId);
+            _f.ConversationId, memberId, _f.AgenticIdentity);
 
         Assert.NotNull(member);
         Assert.Equal(memberId, member.Id);
@@ -253,18 +263,19 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Reactions] Test at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "text", $"[ApiClient.Reactions] Test at `{DateTime.UtcNow:s}`" } },
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);
 
-        await _api.Conversations.Reactions.AddAsync(_f.ConversationId, sent.Id, "like");
+        await _api.Conversations.Reactions.AddAsync(_f.ConversationId, sent.Id, "like", _f.AgenticIdentity);
         _output.WriteLine("Added 'like' reaction");
 
         await Task.Delay(1000);
 
-        await _api.Conversations.Reactions.DeleteAsync(_f.ConversationId, sent.Id, "like");
+        await _api.Conversations.Reactions.DeleteAsync(_f.ConversationId, sent.Id, "like", _f.AgenticIdentity);
         _output.WriteLine("Removed 'like' reaction");
     }
 
@@ -272,19 +283,19 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Teams
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Teams_GetByIdAsync()
     {
-        Team? team = await _api.Teams.GetByIdAsync(_f.TeamId);
+        Team? team = await _api.Teams.GetByIdAsync(_f.TeamId, _f.AgenticIdentity);
 
         Assert.NotNull(team);
         _output.WriteLine($"Team: {team.Id} — {team.Name}, Members: {team.MemberCount}, Channels: {team.ChannelCount}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Teams_GetConversationsAsync()
     {
-        List<TeamsChannel>? channels = await _api.Teams.GetConversationsAsync(_f.TeamId);
+        List<TeamsChannel>? channels = await _api.Teams.GetConversationsAsync(_f.TeamId, _f.AgenticIdentity);
 
         Assert.NotNull(channels);
         Assert.NotEmpty(channels);
@@ -299,10 +310,10 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Meetings
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Meetings_GetByIdAsync()
     {
-        Meeting? meeting = await _api.Meetings.GetByIdAsync(_f.MeetingId);
+        Meeting? meeting = await _api.Meetings.GetByIdAsync(_f.MeetingId, _f.AgenticIdentity);
 
         Assert.NotNull(meeting);
         _output.WriteLine($"Meeting: {meeting.Id}");
@@ -312,19 +323,19 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Meetings_GetParticipantAsync()
     {
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
         // Get the AAD object ID from a human member (bots don't have one).
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         string? aadObjectId = null;
         foreach (ConversationAccount m in members)
         {
             TeamsConversationAccount tm = await _api.Conversations.Members
-                .GetByIdAsync<TeamsConversationAccount>(_f.ConversationId, m.Id!);
+                .GetByIdAsync<TeamsConversationAccount>(_f.ConversationId, m.Id!, _f.AgenticIdentity);
             _output.WriteLine($"Member: {tm.Name} — AadObjectId: {tm.AadObjectId ?? "(null)"}, Properties: [{string.Join(", ", tm.Properties.Keys)}]");
             if (tm.AadObjectId is not null)
             {
@@ -340,7 +351,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         }
 
         MeetingParticipant? participant = await _api.Meetings.GetParticipantAsync(
-            _f.MeetingId, aadObjectId, _f.TenantId);
+            _f.MeetingId, aadObjectId, _f.TenantId, _f.AgenticIdentity);
 
         Assert.NotNull(participant);
         _output.WriteLine($"Participant: {participant.User?.Id} — Role: {participant.Meeting?.Role}, InMeeting: {participant.Meeting?.InMeeting}");
@@ -350,9 +361,11 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Bots — SignIn
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task Bots_SignIn_GetUrlAsync()
     {
+        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
@@ -374,9 +387,11 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"SignIn URL: {url}");
     }
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task Bots_SignIn_GetResourceAsync()
     {
+        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
@@ -402,11 +417,13 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Users — Token
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task Users_Token_GetStatusAsync()
     {
+        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+
         // Get a valid member ID from the conversation
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
         string userId = members[0].Id!;
 
@@ -423,26 +440,30 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task Users_Token_GetAsync()
     {
+        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         var result = await _api.Users.Token.GetAsync(members[0].Id!, connectionName, "msteams");
         _output.WriteLine($"Token: {(result is not null ? "acquired" : "not available")}");
     }
 
-    [Fact]
+    [SkippableFact(Timeout = 60000)]
     public async Task Users_Token_SignOutAsync()
     {
+        Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
+
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         await _api.Users.Token.SignOutAsync(members[0].Id!, connectionName, "msteams");
@@ -453,7 +474,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region ForServiceUrl
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task ForServiceUrl_CreatesScopedClient()
     {
         ApiClient scoped = _f.ApiClient.ForServiceUrl(_f.ServiceUrl);
@@ -464,7 +485,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         Assert.Equal(_f.ServiceUrl, scoped.ServiceUrl);
 
         // Verify the scoped client can make a real call
-        IList<ConversationAccount> members = await scoped.Conversations.Members.GetAsync(_f.ConversationId);
+        IList<ConversationAccount> members = await scoped.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotNull(members);
         Assert.NotEmpty(members);
         _output.WriteLine($"ForServiceUrl scoped client retrieved {members.Count} members");
