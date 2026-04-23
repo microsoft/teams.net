@@ -89,7 +89,9 @@ public class ContextExtensionsTests
         var graphClient = context.Object.GetUserGraphClient();
 
         Assert.NotNull(graphClient);
-        Assert.StartsWith(expectedBaseUrl, graphClient.RequestAdapter.BaseUrl, StringComparison.OrdinalIgnoreCase);
+        // Full equality rather than StartsWith: avoids the incomplete-URL-substring-sanitization
+        // smell (a prefix check could match "<expected>.evil.com").
+        Assert.Equal(expectedBaseUrl, graphClient.RequestAdapter.BaseUrl, ignoreCase: true);
     }
 
     [Fact]
@@ -115,7 +117,10 @@ public class ContextExtensionsTests
 
         Assert.NotNull(graphClient);
         // Fallback: public base URL used (because scope didn't parse as URL)
-        Assert.StartsWith("https://graph.microsoft.com", graphClient.RequestAdapter.BaseUrl, StringComparison.OrdinalIgnoreCase);
+        // Fallback path uses the parameterless GraphServiceClient ctor, which the Microsoft.Graph
+        // SDK initializes with "https://graph.microsoft.com/v1.0" (adds /v1.0, unlike the
+        // explicit-baseUrl overload which stores the value verbatim).
+        Assert.Equal("https://graph.microsoft.com/v1.0", graphClient.RequestAdapter.BaseUrl, ignoreCase: true);
         logger.Verify(l => l.Warn(It.IsAny<object?[]>()), Times.Once);
     }
 }
