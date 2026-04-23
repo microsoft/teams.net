@@ -64,7 +64,7 @@ public class TeamsBotApplication : BotApplication
         Router = new Router(logger);
         OnActivity = async (activity, cancellationToken) =>
         {
-            logger.LogInformation("OnActivity invoked for activity: Id={Id}", activity.Id);
+            logger.LogDebug("OnActivity invoked for activity: Id={Id}", activity.Id);
             TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
@@ -79,6 +79,7 @@ public class TeamsBotApplication : BotApplication
                 if (httpContext is not null && invokeResponse is not null)
                 {
                     httpContext.Response.StatusCode = invokeResponse.Status;
+                    logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
                     logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
                     if (invokeResponse.Body is not null)
                         await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);

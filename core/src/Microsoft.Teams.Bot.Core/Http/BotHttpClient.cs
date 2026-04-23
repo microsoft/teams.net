@@ -45,9 +45,11 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
 
         using HttpRequestMessage request = CreateRequest(method, url, body, options);
 
-        logger.LogTraceGuarded("Sending HTTP {Method} request to {Url} with body: {Body}", method, url, body);
+        logger.LogTraceGuarded("HTTP {Method} {Url} body: {Body}", method, url, body);
 
         using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
+
+        logger.LogDebugGuarded("HTTP {Method} {Url} Response Status {StatusCode}", method, url, (int)response.StatusCode);
 
         return await HandleResponseAsync<T>(response, method, url, options, cancellationToken).ConfigureAwait(false);
     }
