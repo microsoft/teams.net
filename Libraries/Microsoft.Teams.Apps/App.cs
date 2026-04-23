@@ -422,6 +422,7 @@ public partial class App
         {
             AppId = @event.Token.AppId ?? Id ?? string.Empty,
             TenantId = @event.Token.TenantId ?? string.Empty,
+            Cloud = _cloud,
             Log = Logger.Child(path),
             Storage = Storage,
             Api = api,

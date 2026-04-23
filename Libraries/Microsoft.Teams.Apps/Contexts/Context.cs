@@ -39,6 +39,11 @@ public partial interface IContext<TActivity> where TActivity : IActivity
     public string TenantId { get; set; }
 
     /// <summary>
+    /// the cloud environment configured on the app; drives per-cloud endpoint routing
+    /// </summary>
+    public CloudEnvironment Cloud { get; set; }
+
+    /// <summary>
     /// the app logger instance
     /// </summary>
     public ILogger Log { get; set; }
@@ -130,6 +135,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
 
     public required string AppId { get; set; }
     public required string TenantId { get; set; }
+    public required CloudEnvironment Cloud { get; set; }
     public required ILogger Log { get; set; }
     public required IStorage<string, object> Storage { get; set; }
     public required ApiClient Api { get; set; }
@@ -176,6 +182,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
             Sender = Sender,
             AppId = AppId,
             TenantId = TenantId,
+            Cloud = Cloud,
             Log = Log,
             Storage = Storage,
             Api = Api,

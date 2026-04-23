@@ -16,12 +16,17 @@ namespace PABot
     public class SimpleGraphClient
     {
         private readonly string _token;
+        private readonly string? _baseUrl;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SimpleGraphClient"/> class.
         /// </summary>
         /// <param name="token">The token issued to the user.</param>
-        public SimpleGraphClient(string token)
+        /// <param name="baseUrl">
+        /// Optional Graph API base URL override for sovereign clouds
+        /// (e.g. "https://graph.microsoft.us" for GCCH). When null, the public Graph endpoint is used.
+        /// </param>
+        public SimpleGraphClient(string token, string? baseUrl = null)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
@@ -29,6 +34,7 @@ namespace PABot
             }
 
             _token = token;
+            _baseUrl = baseUrl;
         }
 
         /// <summary>
@@ -139,7 +145,9 @@ namespace PABot
 
             BaseBearerTokenAuthenticationProvider authProvider = new(tokenProvider);
 
-            return new GraphServiceClient(authProvider);
+            return _baseUrl is null
+                ? new GraphServiceClient(authProvider)
+                : new GraphServiceClient(authProvider, _baseUrl);
         }
 
         public class SimpleAccessTokenProvider : IAccessTokenProvider
