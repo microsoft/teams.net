@@ -21,7 +21,7 @@ WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 // Configure OAuth flows at the DI level -- card text is set once here
 webAppBuilder.Services.AddTeamsBotApplication(options =>
 {
-    options.AddOAuthFlow("teamsgraph", o =>
+    options.AddOAuthFlow("sso-bad", o =>
     {
         o.OAuthCardText = "Sign in to your Microsoft account";
         o.SignInButtonText = "Sign In to Graph";
@@ -40,7 +40,7 @@ TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 // ==================== OAUTH FLOW SETUP ====================
 
 // Get the pre-registered flows and attach callbacks
-OAuthFlow graphAuth = bot.GetOAuthFlow("teamsgraph");
+OAuthFlow graphAuth = bot.GetOAuthFlow("sso-bad");
 OAuthFlow githubAuth = bot.GetOAuthFlow("gh");
 
 graphAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
@@ -48,9 +48,19 @@ graphAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
     await context.SendActivityAsync($"User {context.Activity.From?.Name} connected to Microsoft Graph ({tokenResponse.ConnectionName})!", ct);
 });
 
+graphAuth.OnSignInFailure(async (context, failure, ct) =>
+{
+    await context.SendActivityAsync($"User {context.Activity.From?.Name} failed to connect to Microsoft Graph. {failure?.Message}", ct);
+});
+
 githubAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
 {
     await context.SendActivityAsync($"User {context.Activity.From?.Name} connected to GitHub ({tokenResponse.ConnectionName})!", ct);
+});
+
+githubAuth.OnSignInFailure(async (context, failure, ct) =>
+{
+    await context.SendActivityAsync($"User {context.Activity.From?.Name} failed to connect to GitHub. {failure?.Message}", ct);
 });
 
 // ==================== MESSAGE HANDLERS ====================

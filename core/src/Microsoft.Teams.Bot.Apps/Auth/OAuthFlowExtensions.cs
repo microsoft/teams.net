@@ -100,9 +100,19 @@ public static class OAuthFlowExtensions
             {
                 InvokeActivity<SignInFailureValue> typedActivity = new(ctx.Activity);
                 SignInFailureValue failureValue = typedActivity.Value ?? new SignInFailureValue();
+                string? userId = ctx.Activity.From?.Id;
 
-                // signin/failure doesn't carry a connection name, so notify all registered flows
-                foreach (OAuthFlow flow in registry.GetAllFlows())
+                // signin/failure doesn't carry a connection name.
+                // Scope to flows that have an active sign-in for this user;
+                // fall back to all flows if none report a pending sign-in
+                // (e.g., multi-instance deployment where the OAuthCard was sent by another node).
+                IEnumerable<OAuthFlow> allFlows = registry.GetAllFlows();
+                List<OAuthFlow> activeFlows = userId is not null
+                    ? allFlows.Where(f => f.HasPendingSignIn(userId)).ToList()
+                    : [];
+                IEnumerable<OAuthFlow> targetFlows = activeFlows.Count > 0 ? activeFlows : allFlows;
+
+                foreach (OAuthFlow flow in targetFlows)
                 {
                     await flow.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
                 }

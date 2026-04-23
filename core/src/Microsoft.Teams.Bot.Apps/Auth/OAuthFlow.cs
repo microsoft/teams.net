@@ -45,6 +45,10 @@ public class OAuthFlow
     // Teams may send duplicates from multiple endpoints (mobile, desktop, web).
     private readonly ConcurrentDictionary<string, DateTimeOffset> _processedExchanges = new();
 
+    // Tracks users with a pending sign-in (OAuthCard sent, waiting for tokenExchange/verifyState/failure).
+    // Used to scope signin/failure notifications to flows that actually initiated a sign-in.
+    private readonly ConcurrentDictionary<string, DateTimeOffset> _pendingSignIns = new();
+
     internal OAuthFlow(TeamsBotApplication app, string connectionName, OAuthOptions options, ILogger logger)
     {
         _app = app;
@@ -181,6 +185,10 @@ public class OAuthFlow
             .Build();
 
         await context.SendActivityAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
+
+        // Track that this user has a pending sign-in for this flow
+        _pendingSignIns[userId] = DateTimeOffset.UtcNow;
+
         return null;
     }
 
@@ -245,7 +253,7 @@ public class OAuthFlow
             return new InvokeResponse(200);
         }
 
-        CleanupExpiredExchanges();
+        CleanupExpiredEntries();
 
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
@@ -259,6 +267,7 @@ public class OAuthFlow
 
             if (tokenResult?.Token is not null)
             {
+                _pendingSignIns.TryRemove(userId, out _);
                 _logger.LogDebug("Token exchange succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
                 if (_onSignInComplete is not null)
                 {
@@ -270,16 +279,19 @@ public class OAuthFlow
         }
         catch (HttpRequestException ex)
         {
+            _pendingSignIns.TryRemove(userId, out _);
             _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
             return await HandleTokenExchangeFailureAsync(context, exchangeValue, ex.StatusCode, ex.Message, cancellationToken).ConfigureAwait(false);
         }
         catch (InvalidOperationException ex)
         {
+            _pendingSignIns.TryRemove(userId, out _);
             _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
             return await HandleTokenExchangeFailureAsync(context, exchangeValue, null, ex.Message, cancellationToken).ConfigureAwait(false);
         }
 
         // Token was null without exception — treat as expected failure
+        _pendingSignIns.TryRemove(userId, out _);
         return await HandleTokenExchangeFailureAsync(context, exchangeValue, null, "Token exchange returned null token.", cancellationToken).ConfigureAwait(false);
     }
 
@@ -342,6 +354,7 @@ public class OAuthFlow
 
             if (tokenResult?.Token is not null)
             {
+                _pendingSignIns.TryRemove(userId, out _);
                 _logger.LogDebug("Verify state succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
                 if (_onSignInComplete is not null)
                 {
@@ -353,6 +366,7 @@ public class OAuthFlow
         }
         catch (HttpRequestException ex)
         {
+            _pendingSignIns.TryRemove(userId, out _);
             _logger.LogWarning(ex, "Verify state failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
 
             if (_onSignInFailure is not null)
@@ -374,6 +388,7 @@ public class OAuthFlow
             return new InvokeResponse(412);
         }
 
+        _pendingSignIns.TryRemove(userId, out _);
         _logger.LogWarning("Verify state failed for connection '{ConnectionName}', user '{UserId}'. No token returned.", connectionName, userId);
         if (_onSignInFailure is not null)
         {
@@ -386,13 +401,33 @@ public class OAuthFlow
     }
 
     /// <summary>
+    /// Whether this flow has a pending sign-in for the given user.
+    /// Used to scope <c>signin/failure</c> notifications to flows that initiated a sign-in.
+    /// </summary>
+    /// <remarks>
+    /// Best-effort: in multi-instance deployments the OAuthCard may have been sent by a different instance,
+    /// so this check may return false even when a sign-in is active. Callers should fall back
+    /// to notifying all flows when no flow reports a pending sign-in.
+    /// </remarks>
+    internal bool HasPendingSignIn(string userId)
+    {
+        return _pendingSignIns.ContainsKey(userId);
+    }
+
+    /// <summary>
     /// Handles the signin/failure invoke activity sent by the Teams client when SSO fails client-side.
     /// </summary>
     internal async Task<InvokeResponse> HandleSignInFailureAsync(Context<InvokeActivity> context, SignInFailureValue failureValue, CancellationToken cancellationToken)
     {
+        string? userId = context.Activity.From?.Id;
+        if (userId is not null)
+        {
+            _pendingSignIns.TryRemove(userId, out _);
+        }
+
         _logger.LogWarning(
             "Sign-in failed for user '{UserId}' in conversation '{ConversationId}': {FailureCode} — {FailureMessage}.{Guidance}",
-            context.Activity.From?.Id,
+            userId,
             context.Activity.Conversation?.Id,
             failureValue.Code,
             failureValue.Message,
@@ -409,7 +444,7 @@ public class OAuthFlow
         return new InvokeResponse(200);
     }
 
-    private void CleanupExpiredExchanges()
+    private void CleanupExpiredEntries()
     {
         DateTimeOffset cutoff = DateTimeOffset.UtcNow.AddMinutes(-5);
         foreach (KeyValuePair<string, DateTimeOffset> kvp in _processedExchanges)
@@ -417,6 +452,13 @@ public class OAuthFlow
             if (kvp.Value < cutoff)
             {
                 _processedExchanges.TryRemove(kvp.Key, out _);
+            }
+        }
+        foreach (KeyValuePair<string, DateTimeOffset> kvp in _pendingSignIns)
+        {
+            if (kvp.Value < cutoff)
+            {
+                _pendingSignIns.TryRemove(kvp.Key, out _);
             }
         }
     }
