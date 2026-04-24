@@ -21,7 +21,7 @@ WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 // Configure OAuth flows at the DI level -- card text is set once here
 webAppBuilder.Services.AddTeamsBotApplication(options =>
 {
-    options.AddOAuthFlow("sso-bad", o =>
+    options.AddOAuthFlow("sso", o =>
     {
         o.OAuthCardText = "Sign in to your Microsoft account";
         o.SignInButtonText = "Sign In to Graph";
@@ -40,7 +40,7 @@ TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 // ==================== OAUTH FLOW SETUP ====================
 
 // Get the pre-registered flows and attach callbacks
-OAuthFlow graphAuth = bot.GetOAuthFlow("sso-bad");
+OAuthFlow graphAuth = bot.GetOAuthFlow("sso");
 OAuthFlow githubAuth = bot.GetOAuthFlow("gh");
 
 graphAuth.OnSignInComplete(async (context, tokenResponse, ct) =>
@@ -71,6 +71,7 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         **OAuthFlow Bot** - Multi-connection OAuth sample
 
         Commands:
+        - `login` - Sign in to all connections
         - `login graph` - Sign in to Microsoft Graph
         - `login github` - Sign in to GitHub
         - `status` - Show OAuth connection status
@@ -86,10 +87,26 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         new MessageActivity(helpText) { TextFormat = TextFormats.Markdown }, ct);
 });
 
+bot.OnMessage("(?i)^login$", async (context, ct) =>
+{
+    string? tokenGitHub = await githubAuth.SignInAsync(context, ct);
+    string? tokenGraph = await graphAuth.SignInAsync(context, ct);
+    if (tokenGraph is not null)
+    {
+        await context.SendActivityAsync("Already signed in to Graph.", ct);
+    }
+
+    if (tokenGitHub is not null)
+    {
+        await context.SendActivityAsync("Already signed in to GitHub.", ct);
+    }
+    
+});
+
 bot.OnMessage("(?i)^login graph$", async (context, ct) =>
 {
-    string? token = await graphAuth.SignInAsync(context, ct);
-    if (token is not null)
+    string? tokenGraph = await graphAuth.SignInAsync(context, ct);
+    if (tokenGraph is not null)
     {
         await context.SendActivityAsync("Already signed in to Graph.", ct);
     }
@@ -98,8 +115,8 @@ bot.OnMessage("(?i)^login graph$", async (context, ct) =>
 
 bot.OnMessage("(?i)^login github$", async (context, ct) =>
 {
-    string? token = await githubAuth.SignInAsync(context, ct);
-    if (token is not null)
+    string? tokenGitHub = await githubAuth.SignInAsync(context, ct);
+    if (tokenGitHub is not null)
     {
         await context.SendActivityAsync("Already signed in to GitHub.", ct);
     }

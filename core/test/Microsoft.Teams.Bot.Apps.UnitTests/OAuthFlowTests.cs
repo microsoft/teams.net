@@ -270,9 +270,11 @@ public class OAuthFlowTests
     }
 
     [Fact]
-    public async Task VerifyState_NoToken_Returns412()
+    public async Task VerifyState_NoToken_Returns412_WithoutFiringFailureCallback()
     {
         TestHarness harness = CreateHarness(GraphConnection);
+        bool failureFired = false;
+        harness.GraphFlow!.OnSignInFailure((_, _, _) => { failureFired = true; return Task.CompletedTask; });
 
         harness.MockUserTokenClient
             .Setup(c => c.GetTokenAsync(TestUserId, GraphConnection, TestChannelId, "badcode", It.IsAny<CancellationToken>()))
@@ -281,9 +283,11 @@ public class OAuthFlowTests
         SignInVerifyStateValue verifyValue = new() { State = "badcode" };
         Context<InvokeActivity> invokeCtx = CreateInvokeContext(harness, TestUserId);
 
-        InvokeResponse response = await harness.GraphFlow!.HandleVerifyStateAsync(invokeCtx, verifyValue, CancellationToken.None);
+        InvokeResponse response = await harness.GraphFlow.HandleVerifyStateAsync(invokeCtx, verifyValue, CancellationToken.None);
 
         Assert.Equal(412, response.Status);
+        // No token means the code belongs to another connection — NOT a failure
+        Assert.False(failureFired);
     }
 
     [Fact]

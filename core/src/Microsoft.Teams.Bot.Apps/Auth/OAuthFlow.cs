@@ -388,15 +388,10 @@ public class OAuthFlow
             return new InvokeResponse(412);
         }
 
-        _pendingSignIns.TryRemove(userId, out _);
-        _logger.LogWarning("Verify state failed for connection '{ConnectionName}', user '{UserId}'. No token returned.", connectionName, userId);
-        if (_onSignInFailure is not null)
-        {
-            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
-            await _onSignInFailure(baseContext, null, cancellationToken).ConfigureAwait(false);
-        }
-
-        // 412 tells Teams to fall back to the sign-in card
+        // No token returned — the code likely belongs to a different connection.
+        // Do NOT fire OnSignInFailure or clear pending state; the verifyState loop
+        // in OAuthFlowExtensions will try the next registered flow.
+        _logger.LogDebug("Verify state: no token for connection '{ConnectionName}', user '{UserId}'. Code may belong to another connection.", connectionName, userId);
         return new InvokeResponse(412);
     }
 
