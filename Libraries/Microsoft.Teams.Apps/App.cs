@@ -41,7 +41,7 @@ public partial class App
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
 
-    internal readonly IReadOnlyList<string>? _additionalAllowedDomains;
+    private readonly IReadOnlyList<string>? _additionalAllowedDomains;
     private readonly CloudEnvironment _cloud;
     internal string UserAgent
     {

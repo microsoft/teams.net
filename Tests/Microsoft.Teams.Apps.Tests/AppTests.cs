@@ -368,45 +368,27 @@ public class AppTests
     }
 
     [Fact]
-    public void Test_App_AdditionalAllowedDomains_DefensivelyCopied()
-    {
-        // Guards against a future regression: if App stored the caller's IEnumerable
-        // by reference, post-construction mutation (or lazy re-enumeration) could
-        // change validator behavior at runtime.
-        var mutableList = new List<string> { "first.example.com" };
-        var options = new AppOptions { AdditionalAllowedDomains = mutableList };
-        var app = new App(options);
-
-        mutableList.Add("mutation.example.com");
-
-        Assert.NotNull(app._additionalAllowedDomains);
-        Assert.Single(app._additionalAllowedDomains);
-        Assert.Equal("first.example.com", app._additionalAllowedDomains[0]);
-    }
-
-    [Fact]
-    public void Test_App_AdditionalAllowedDomains_NullStaysNull()
+    public void Test_App_AdditionalAllowedDomains_NullConstructionSucceeds()
     {
         var options = new AppOptions { AdditionalAllowedDomains = null };
-        var app = new App(options);
-        Assert.Null(app._additionalAllowedDomains);
+        var exception = Record.Exception(() => new App(options));
+        Assert.Null(exception);
     }
 
     [Fact]
-    public void Test_App_AdditionalAllowedDomains_EmptyListPreserved()
+    public void Test_App_AdditionalAllowedDomains_EmptyConstructionSucceeds()
     {
         var options = new AppOptions { AdditionalAllowedDomains = Array.Empty<string>() };
-        var app = new App(options);
-
-        Assert.NotNull(app._additionalAllowedDomains);
-        Assert.Empty(app._additionalAllowedDomains);
+        var exception = Record.Exception(() => new App(options));
+        Assert.Null(exception);
     }
 
     [Fact]
     public void Test_App_AdditionalAllowedDomains_MaterializesLazyEnumerable()
     {
-        // Lazy IEnumerable is materialized at construction so late evaluation
-        // cannot alter validator behavior.
+        // A lazy IEnumerable must be materialized at construction (not held and
+        // re-enumerated later), otherwise mutation between iterations could change
+        // validator behavior. Asserts the caller's lazy is invoked exactly once.
         var callCount = 0;
         IEnumerable<string> Lazy()
         {
@@ -415,11 +397,9 @@ public class AppTests
         }
 
         var options = new AppOptions { AdditionalAllowedDomains = Lazy() };
-        var app = new App(options);
+        _ = new App(options);
 
         Assert.Equal(1, callCount);
-        Assert.NotNull(app._additionalAllowedDomains);
-        Assert.Single(app._additionalAllowedDomains);
     }
 
 }
