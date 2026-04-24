@@ -367,4 +367,59 @@ public class AppTests
             app.Reply("19:abc@thread.skype", "not-a-number", new MessageActivity("Hello")));
     }
 
+    [Fact]
+    public void Test_App_AdditionalAllowedDomains_DefensivelyCopied()
+    {
+        // Guards against a future regression: if App stored the caller's IEnumerable
+        // by reference, post-construction mutation (or lazy re-enumeration) could
+        // change validator behavior at runtime.
+        var mutableList = new List<string> { "first.example.com" };
+        var options = new AppOptions { AdditionalAllowedDomains = mutableList };
+        var app = new App(options);
+
+        mutableList.Add("mutation.example.com");
+
+        Assert.NotNull(app._additionalAllowedDomains);
+        Assert.Single(app._additionalAllowedDomains);
+        Assert.Equal("first.example.com", app._additionalAllowedDomains[0]);
+    }
+
+    [Fact]
+    public void Test_App_AdditionalAllowedDomains_NullStaysNull()
+    {
+        var options = new AppOptions { AdditionalAllowedDomains = null };
+        var app = new App(options);
+        Assert.Null(app._additionalAllowedDomains);
+    }
+
+    [Fact]
+    public void Test_App_AdditionalAllowedDomains_EmptyListPreserved()
+    {
+        var options = new AppOptions { AdditionalAllowedDomains = Array.Empty<string>() };
+        var app = new App(options);
+
+        Assert.NotNull(app._additionalAllowedDomains);
+        Assert.Empty(app._additionalAllowedDomains);
+    }
+
+    [Fact]
+    public void Test_App_AdditionalAllowedDomains_MaterializesLazyEnumerable()
+    {
+        // Lazy IEnumerable is materialized at construction so late evaluation
+        // cannot alter validator behavior.
+        var callCount = 0;
+        IEnumerable<string> Lazy()
+        {
+            callCount++;
+            yield return "api.custom-channel.com";
+        }
+
+        var options = new AppOptions { AdditionalAllowedDomains = Lazy() };
+        var app = new App(options);
+
+        Assert.Equal(1, callCount);
+        Assert.NotNull(app._additionalAllowedDomains);
+        Assert.Single(app._additionalAllowedDomains);
+    }
+
 }

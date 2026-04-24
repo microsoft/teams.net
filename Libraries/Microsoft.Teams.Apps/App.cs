@@ -41,7 +41,7 @@ public partial class App
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
 
-    private readonly IEnumerable<string>? _additionalAllowedDomains;
+    internal readonly IReadOnlyList<string>? _additionalAllowedDomains;
     private readonly CloudEnvironment _cloud;
     internal string UserAgent
     {
@@ -63,7 +63,9 @@ public partial class App
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
-        _additionalAllowedDomains = options?.AdditionalAllowedDomains;
+        // Defensive copy so a caller-provided list can't mutate validator behavior
+        // after construction (IEnumerable may be lazy or mutable).
+        _additionalAllowedDomains = options?.AdditionalAllowedDomains?.ToList();
 
         if (_additionalAllowedDomains?.Contains("*") == true)
         {

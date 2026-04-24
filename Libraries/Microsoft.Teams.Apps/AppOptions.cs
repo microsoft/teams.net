@@ -19,9 +19,12 @@ public class AppOptions
     public CloudEnvironment? Cloud { get; set; }
 
     /// <summary>
-    /// Additional allowed service URL hostnames beyond the built-in defaults.
-    /// Use this if your bot receives activities from non-standard channels.
+    /// Additional service URL hostnames accepted beyond the cloud preset.
+    /// Entries must be bare hostnames matched exactly (case-insensitive)
+    /// wildcard patterns like <c>"*.example.com"</c>, URL suffixes, or full URLs are NOT supported.
+    /// Pass <c>["*"]</c> as the sole wildcard to accept any hostname (disables service-URL validation).
     /// </summary>
+    /// <example>new[] { "api.my-custom-channel.com" }</example>
     public IEnumerable<string>? AdditionalAllowedDomains { get; set; }
 
     public AppOptions()
