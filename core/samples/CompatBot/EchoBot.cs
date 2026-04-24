@@ -34,15 +34,21 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         IStatePropertyAccessor<ConversationData> conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
         ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
 
+        // --- CompatTeamsInfo: Retrieve member details for the sender ---
         var mm = await CompatTeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id);
         string replyText = $"Echo {mm.Name} from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
 
+        // --- Targeted Messaging via BF compat layer ---
+        // Setting isTargeted on the Recipient makes the message visible only to that user.
+        // Note: This sets the property on the BF ChannelAccount; the compat layer converts it
+        // to CoreActivity.Recipient.IsTargeted which appends ?isTargetedActivity=true to the URL.
         var act = MessageFactory.Text(replyText, replyText);
         act.Recipient = new ChannelAccount();
         act.Recipient.Properties.Add("isTargeted", true);
         await turnContext.SendActivityAsync(act, cancellationToken);
 
 
+        // --- CompatTeamsInfo: Team details and paged member listing (group context only) ---
         if (turnContext.Activity.Conversation.IsGroup == true)
         {
             var teamDetails = await CompatTeamsInfo.GetTeamDetailsAsync(turnContext, null, cancellationToken);
@@ -60,7 +66,6 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
                     cancellationToken
                 );
 
-
                 continuationToken = pagedMembersResult.ContinuationToken;
                 members.AddRange(pagedMembersResult.Members);
             } while (continuationToken != null);
@@ -68,11 +73,10 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             await turnContext.SendActivityAsync(JsonConvert.SerializeObject(members.Select(m => m.Name).ToList(), Formatting.Indented));
         }
 
-
-
-
-        // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
-
+        // --- Targeted Messaging via Core SDK (preferred approach) ---
+        // Uses CoreActivity builder with WithRecipient(from, isTargeted: true) and sends
+        // directly through ConversationClient, bypassing the BF compat layer's
+        // ApplyConversationReference which would overwrite the Recipient.
         var incomingCoreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
         CoreActivity tm = CoreActivity.CreateBuilder()
             .WithConversation(new Conversation { Id = incomingCoreActivity.Conversation?.Id! })
@@ -85,11 +89,13 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
 
         await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
 
+        // --- Reactions: Add and remove emoji reactions on a message ---
         var res = await turnContext.SendActivityAsync(
             MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
 
         await Task.Delay(500, cancellationToken);
 
+        // Add "laugh" reaction
         await teamsBotApp.ConversationClient.AddReactionAsync(
             turnContext.Activity.Conversation.Id,
             res.Id,
@@ -101,6 +107,8 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             cancellationToken);
 
         await Task.Delay(500, cancellationToken);
+
+        // Add "sad" reaction
         await teamsBotApp.ConversationClient.AddReactionAsync(
             turnContext.Activity.Conversation.Id,
             res.Id,
@@ -112,16 +120,19 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
 
         await Task.Delay(500, cancellationToken);
 
+        // Remove "laugh" reaction (leaves only "sad")
         await teamsBotApp.ConversationClient.DeleteReactionAsync(
             turnContext.Activity.Conversation.Id,
             res.Id,
             "laugh",
-            //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"), 
+            //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             incomingCoreActivity.ServiceUrl!,
             AgenticIdentity.FromProperties(incomingCoreActivity.Recipient?.Properties),
             null,
             cancellationToken);
 
+        // --- Feedback Form: Send an Adaptive Card for user feedback ---
+        // The card submission triggers OnInvokeActivityAsync below.
         Attachment attachment = new()
         {
             ContentType = "application/vnd.microsoft.card.adaptive",
@@ -138,6 +149,8 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         await turnContext.SendActivityAsync(MessageFactory.Text("Message reaction received."), cancellationToken);
     }
 
+    // --- Proactive Messaging: On install, share the notify endpoint for proactive messages ---
+    // POST /api/notify/{conversationId} triggers a proactive message via ContinueConversationAsync.
     protected override async Task OnInstallationUpdateActivityAsync(ITurnContext<IInstallationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
         await turnContext.SendActivityAsync(MessageFactory.Text("Installation update received."), cancellationToken);
@@ -150,6 +163,8 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive messages to  `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
     }
 
+    // --- Feedback Form Handler: Process Adaptive Card action submissions ---
+    // Extracts the feedback value from the invoke payload and responds with a confirmation card.
     protected override async Task<Microsoft.Bot.Builder.InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
     {
         logger.LogInformation("Invoke Activity received: {Name}", turnContext.Activity.Name);
@@ -179,6 +194,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         };
     }
 
+    // --- Proactive Messaging: Share the notify endpoint when bot is added to a conversation ---
     protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
         await turnContext.SendActivityAsync(MessageFactory.Text("Welcome."), cancellationToken);
@@ -196,6 +212,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         await turnContext.SendActivityAsync(MessageFactory.Text($"{meeting.Title} {meeting.MeetingType}"), cancellationToken);
     }
 
+    // --- Activity Lifecycle: Send, update, then delete an activity ---
     private static async Task SendUpdateDeleteActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
     {
         ConversationReference cr = turnContext.Activity.GetConversationReference();
