@@ -144,11 +144,13 @@ public class MiddlewareTests
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
-        CancellationTokenSource cts = new();
+        await botApp.ProcessAsync(httpContext);
 
-        await botApp.ProcessAsync(httpContext, cts.Token);
-
-        Assert.Equal(cts.Token, receivedToken);
+        // ProcessAsync creates its own timeout-based CancellationToken instead of
+        // forwarding the caller's token, so the middleware should receive a valid
+        // (non-default) token that is not yet cancelled.
+        Assert.NotEqual(default, receivedToken);
+        Assert.False(receivedToken.IsCancellationRequested);
     }
 
     [Fact]

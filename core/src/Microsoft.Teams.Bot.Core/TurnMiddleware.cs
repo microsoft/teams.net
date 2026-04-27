@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Collections;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Core;
@@ -18,6 +20,9 @@ namespace Microsoft.Teams.Bot.Core;
 internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddleware>
 {
     private readonly IList<ITurnMiddleware> _middlewares = [];
+    private ILogger _logger = NullLogger.Instance;
+
+    internal void SetLogger(ILogger logger) => _logger = logger;
 
     /// <summary>
     /// Adds a middleware component to the end of the pipeline.
@@ -27,6 +32,7 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
     internal TurnMiddleware Use(ITurnMiddleware middleware)
     {
         _middlewares.Add(middleware);
+        _logger.LogDebugGuarded("Registered middleware '{Middleware}' (position {Position}).", middleware.GetType().Name, _middlewares.Count);
         return this;
     }
 
@@ -57,9 +63,14 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
     {
         if (nextMiddlewareIndex == _middlewares.Count)
         {
+            if (nextMiddlewareIndex > 0)
+            {
+                _logger.LogDebugGuarded("Middleware pipeline completed ({Count} middleware(s)).", nextMiddlewareIndex);
+            }
             return callback is not null ? callback!(activity, cancellationToken) ?? Task.CompletedTask : Task.CompletedTask;
         }
         ITurnMiddleware nextMiddleware = _middlewares[nextMiddlewareIndex];
+        _logger.LogDebugGuarded("Executing middleware '{Middleware}' ({Index}/{Count}).", nextMiddleware.GetType().Name, nextMiddlewareIndex + 1, _middlewares.Count);
         return nextMiddleware.OnTurnAsync(
             botApplication,
             activity,

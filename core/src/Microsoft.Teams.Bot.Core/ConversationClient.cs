@@ -71,8 +71,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += url.Contains('?', StringComparison.Ordinal) ? "&isTargetedActivity=true" : "?isTargetedActivity=true";
         }
 
-        logger.LogInformationGuarded("Sending activity to {Url}", url);
-
         string body = activity.ToJson();
 
         return await _botHttpClient.SendAsync<SendActivityResponse>(
@@ -208,8 +206,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += "?isTargetedActivity=true";
         }
 
-        logger.LogTraceGuarded("Deleting activity at {Url}", url);
-
         await _botHttpClient.SendAsync(
             HttpMethod.Delete,
             url,
@@ -263,8 +259,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members";
 
-        logger.LogTraceGuarded("Getting conversation members from {Url}", url);
-
         return (await _botHttpClient.SendAsync<IList<ConversationAccount>>(
             HttpMethod.Get,
             url,
@@ -297,8 +291,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members/{Uri.EscapeDataString(userId)}";
 
-        logger.LogTraceGuarded("Getting conversation member from {Url}", url);
-
         return (await _botHttpClient.SendAsync<T>(
             HttpMethod.Get,
             url,
@@ -327,8 +319,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += $"?continuationToken={Uri.EscapeDataString(continuationToken)}";
         }
 
-        logger.LogTraceGuarded("Getting conversations from {Url}", url);
-
         return (await _botHttpClient.SendAsync<GetConversationsResponse>(
             HttpMethod.Get,
             url,
@@ -355,8 +345,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/members";
-
-        logger.LogTraceGuarded("Getting activity members from {Url}", url);
 
         return (await _botHttpClient.SendAsync<IList<ConversationAccount>>(
             HttpMethod.Get,
@@ -428,8 +416,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += $"?{string.Join("&", queryParams)}";
         }
 
-        logger.LogTraceGuarded("Getting paged conversation members from {Url}", url);
-
         return (await _botHttpClient.SendAsync<PagedMembersResult>(
             HttpMethod.Get,
             url,
@@ -457,8 +443,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members/{Uri.EscapeDataString(memberId)}";
-
-        logger.LogTraceGuarded("Deleting conversation member at {Url}", url);
 
         await _botHttpClient.SendAsync(
             HttpMethod.Delete,
@@ -551,8 +535,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/reactions/{Uri.EscapeDataString(reactionType)}";
 
-        logger.LogTraceGuarded("Adding reaction at {Url}", url);
-
         await _botHttpClient.SendAsync(
             HttpMethod.Put,
             url,
@@ -581,8 +563,6 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/reactions/{Uri.EscapeDataString(reactionType)}";
-
-        logger.LogTraceGuarded("Deleting reaction at {Url}", url);
 
         await _botHttpClient.SendAsync(
             HttpMethod.Delete,

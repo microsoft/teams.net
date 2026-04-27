@@ -33,9 +33,9 @@ internal sealed class BotAuthenticationHandler(
     private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
     private readonly IOptions<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
     private static readonly Action<ILogger, string, Exception?> _logAgenticToken =
-        LoggerMessage.Define<string>(LogLevel.Information, new(2), "Acquiring agentic token for AgenticAppId {AgenticAppId}");
+        LoggerMessage.Define<string>(LogLevel.Debug, new(2), "Acquiring agentic token for AgenticAppId {AgenticAppId}");
     private static readonly Action<ILogger, string, Exception?> _logAppOnlyToken =
-        LoggerMessage.Define<string>(LogLevel.Information, new(3), "Acquiring app-only token for scope: {Scope}");
+        LoggerMessage.Define<string>(LogLevel.Debug, new(3), "Acquiring app-only token for scope: {Scope}");
     private static readonly Action<ILogger, string, Exception?> _logTokenClaims =
         LoggerMessage.Define<string>(LogLevel.Trace, new(4), "Acquired token claims:{Claims}");
 
@@ -86,6 +86,10 @@ internal sealed class BotAuthenticationHandler(
 
             if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
             {
+                if (_logger.IsEnabled(LogLevel.Debug))
+                {
+                    _logger.LogDebug("Applying User-Assigned Managed Identity for token acquisition (ClientId '{ClientId}').", miOptions.UserAssignedClientId);
+                }
                 options.AcquireTokenOptions.ManagedIdentity = miOptions;
             }
         }

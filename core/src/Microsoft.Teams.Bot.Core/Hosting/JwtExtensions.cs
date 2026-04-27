@@ -213,6 +213,8 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                             ? BotOIDC
                             : $"{EntraOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
 
+                        logger.LogTraceGuarded("Resolving signing keys from OIDC authority '{Authority}' for issuer '{Issuer}'.", authority, iss);
+
                         ConfigurationManager<OpenIdConnectConfiguration> manager = configManagerCache.GetOrAdd(authority, a =>
                             new ConfigurationManager<OpenIdConnectConfiguration>(
                                 a,
@@ -229,7 +231,13 @@ namespace Microsoft.Teams.Bot.Core.Hosting
                 {
                     OnTokenValidated = context =>
                     {
-                        GetLogger(context.HttpContext, logger).LogTraceGuarded("Token validated for scheme: {Scheme}", schemeName);
+                        ILogger log = GetLogger(context.HttpContext, logger);
+                        log.LogTraceGuarded("Token validated for scheme: {Scheme}", schemeName);
+                        if (log.IsEnabled(LogLevel.Trace) && context.SecurityToken is JsonWebToken jwt)
+                        {
+                            string claims = Environment.NewLine + string.Join(Environment.NewLine, jwt.Claims.Select(c => $"  {c.Type}: {c.Value}"));
+                            log.LogTrace("Incoming token claims:{Claims}", claims);
+                        }
                         return Task.CompletedTask;
                     },
                     OnForbidden = context =>
