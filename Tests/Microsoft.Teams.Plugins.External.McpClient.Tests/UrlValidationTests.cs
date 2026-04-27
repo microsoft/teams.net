@@ -41,6 +41,8 @@ public class UrlValidationTests : IDisposable
     [InlineData("fc00::1", true)]
     [InlineData("fd00::1", true)]
     [InlineData("fe80::1", true)]
+    [InlineData("fec0::1", true)]
+    [InlineData("::", true)]
     [InlineData("2001:4860:4860::8888", false)]
     public void IsPrivateAddress_ReturnsExpectedClassification(string address, bool expected)
     {
@@ -157,5 +159,39 @@ public class UrlValidationTests : IDisposable
             )
         );
         Assert.Contains("rejected by ValidateUrl", ex.Message);
+    }
+
+    [Fact]
+    public async Task RejectsWhenDnsLookupFails()
+    {
+        UrlValidation.HostResolver = (_, _) =>
+            throw new System.Net.Sockets.SocketException(11001);  // host not found
+
+        var ex = await Assert.ThrowsAsync<UrlValidationException>(
+            () => UrlValidation.ValidateMcpServerUrlAsync(new Uri("https://nonexistent.invalid/mcp"))
+        );
+        Assert.Contains("Could not resolve host", ex.Message);
+    }
+
+    [Fact]
+    public async Task RejectsWhenDnsReturnsEmptyList()
+    {
+        StubResolver();  // empty array
+
+        var ex = await Assert.ThrowsAsync<UrlValidationException>(
+            () => UrlValidation.ValidateMcpServerUrlAsync(new Uri("https://example.com/mcp"))
+        );
+        Assert.Contains("did not resolve", ex.Message);
+    }
+
+    [Fact]
+    public async Task PropagatesExceptionsFromValidateUrl()
+    {
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => UrlValidation.ValidateMcpServerUrlAsync(
+                new Uri("https://example.com/mcp"),
+                validateUrl: _ => throw new InvalidOperationException("custom failure")
+            )
+        );
     }
 }

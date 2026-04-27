@@ -75,6 +75,11 @@ public static class UrlValidation
             }
         }
 
+        if (addresses.Length == 0)
+        {
+            throw new UrlValidationException($"URL {url} did not resolve to any address");
+        }
+
         foreach (var address in addresses)
         {
             if (IsPrivateAddress(address))
@@ -96,6 +101,7 @@ public static class UrlValidation
     public static bool IsPrivateAddress(IPAddress address)
     {
         if (IPAddress.IsLoopback(address)) return true;
+        if (IsUnspecified(address)) return true;
 
         if (address.AddressFamily == AddressFamily.InterNetworkV6)
         {
@@ -139,5 +145,15 @@ public static class UrlValidation
         // fc00::/7 -> first byte is 0xfc or 0xfd
         var bytes = address.GetAddressBytes();
         return bytes.Length == 16 && (bytes[0] == 0xfc || bytes[0] == 0xfd);
+    }
+
+    private static bool IsUnspecified(IPAddress address)
+    {
+        // 0.0.0.0 (IPv4) or :: (IPv6) — no realistic MCP server binds here.
+        foreach (var b in address.GetAddressBytes())
+        {
+            if (b != 0) return false;
+        }
+        return true;
     }
 }
