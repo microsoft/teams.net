@@ -131,8 +131,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "recipient", new ConversationAccount { Id = members[0].Id } } },
-            Properties = { { "text", $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "recipient", new ConversationAccount { Id = members[0].Id } }, { "text", $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`" } }
         };
 
         SendActivityResponse? res = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);
@@ -151,8 +150,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity original = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "recipient", new ConversationAccount { Id = members[0].Id } } },
-            Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "recipient", new ConversationAccount { Id = members[0].Id } }, { "text", $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`" } }
         };
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, original);
@@ -180,8 +178,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "recipient", new ConversationAccount { Id = members[0].Id } } },
-            Properties = { { "text", $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`" } }
+            Properties = { { "recipient", new ConversationAccount { Id = members[0].Id } }, { "text", $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`" } }
         };
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);

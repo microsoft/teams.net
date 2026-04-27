@@ -87,9 +87,8 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "conversation", new Conversation(response.Id) } }
+            Properties = { { "text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(response.Id) } }
         };
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, response.Id);
@@ -189,9 +188,8 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[Core] Group message at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "conversation", new Conversation(response.Id) } }
+            Properties = { { "text", $"[Core] Group message at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(response.Id) } }
         };
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, response.Id);

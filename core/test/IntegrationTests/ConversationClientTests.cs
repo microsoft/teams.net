@@ -28,9 +28,8 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "conversation", new Conversation(_f.ConversationId) } }
+            Properties = { { "text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
         };
 
         SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(activity, _f.ConversationId);
@@ -46,9 +45,8 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "conversation", new Conversation(_f.ConversationId) } }
+            Properties = { { "text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
         };
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, _f.ConversationId);
@@ -57,9 +55,8 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity updated = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "conversation", new Conversation(_f.ConversationId) } }
+            Properties = { { "text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
         };
 
         UpdateActivityResponse res = await _f.ConversationClient.UpdateActivityAsync(
@@ -75,9 +72,8 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "conversation", new Conversation(_f.ConversationId) } }
+            Properties = { { "text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
         };
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, _f.ConversationId);
@@ -144,9 +140,8 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties = { { "text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "conversation", new Conversation(_f.ConversationId) } }
+            Properties = { { "text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
         };
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, _f.ConversationId);
