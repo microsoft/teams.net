@@ -205,7 +205,7 @@ public class TeamsActivityTests
         TeamsActivity teamsActivity = TeamsActivity.FromActivity(coreActivity);
         Assert.Equal("rec1", teamsActivity.Recipient?.Id);
         Assert.Equal("recname", teamsActivity.Recipient?.Name);
-        AgenticIdentity? agenticIdentity = AgenticIdentity.FromProperties(teamsActivity.Recipient?.Properties);
+        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(teamsActivity.Recipient);
         Assert.NotNull(agenticIdentity);
         Assert.Equal("0d5eb8a3-1642-4e63-9ccc-a89aa461716c", agenticIdentity.AgenticUserId);
         Assert.Equal("3fc62d4f-b04e-4c71-878b-02a2fa395fe2", agenticIdentity.AgenticAppId);
@@ -295,6 +295,39 @@ public class TeamsActivityTests
         Assert.Equal("tenant-1", ta.Conversation.TenantId);
     }
 
+
+    [Fact]
+    public void TeamsActivityBuilder_WithFrom_DoesNotProduceDuplicateFromInJson()
+    {
+        // Build a TeamsActivity with WithConversationReference which calls WithFrom
+        TeamsActivity incoming = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithText("hello")
+            .Build();
+
+        string serialized = reply.ToJson();
+
+        // Count occurrences of "from" key in the JSON — should appear exactly once
+        int fromCount = System.Text.RegularExpressions.Regex.Matches(serialized, "\"from\"\\s*:").Count;
+        Assert.Equal(1, fromCount);
+    }
+
+    [Fact]
+    public void TeamsActivityBuilder_WithRecipient_DoesNotProduceDuplicateRecipientInJson()
+    {
+        TeamsActivity incoming = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithRecipient(incoming.From)
+            .WithText("hello")
+            .Build();
+
+        string serialized = reply.ToJson();
+
+        int recipientCount = System.Text.RegularExpressions.Regex.Matches(serialized, "\"recipient\"\\s*:").Count;
+        Assert.Equal(1, recipientCount);
+    }
 
     private const string jsonInvoke = """
           {

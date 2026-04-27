@@ -113,12 +113,10 @@ public class CoreCoreActivityTests
         CoreActivity act = CoreActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);
-        Assert.True(act.Properties.ContainsKey("from"));
-        Assert.IsType<JsonElement>(act.Properties["from"]);
-        var fromElement = (JsonElement)act.Properties["from"]!;
-        Assert.Equal("1", fromElement.GetProperty("id").GetString());
-        Assert.Equal("tester", fromElement.GetProperty("name").GetString());
-        Assert.Equal("123", fromElement.GetProperty("aadObjectId").GetString());
+        Assert.NotNull(act.From);
+        Assert.Equal("1", act.From.Id);
+        Assert.Equal("tester", act.From.Name);
+        Assert.Equal("123", act.From.Properties["aadObjectId"]?.ToString());
     }
 
     [Fact]
@@ -211,13 +209,13 @@ public class CoreCoreActivityTests
         CoreActivity act = new()
         {
             Type = ActivityType.Message,
+            From = new ConversationAccount { Id = "user1", Properties = { { "fromCustomField", "fromCustomValue" } } },
+            Recipient = new ConversationAccount { Id = "bot1", Properties = { { "recipientCustomField", "recipientCustomValue" } } },
             Properties =
             {
                 { "customField", "customValue" },
                 { "channelData", new ChannelData { Properties = { { "channelCustomField", "channelCustomValue" } } } },
                 { "conversation", new Conversation { Properties = { { "conversationCustomField", "conversationCustomValue" } } } },
-                { "from", new ConversationAccount { Id = "user1", Properties = { { "fromCustomField", "fromCustomValue" } } } },
-                { "recipient", new ConversationAccount { Id = "bot1", Properties = { { "recipientCustomField", "recipientCustomValue" } } } }
             }
         };
         string json = act.ToJson();
@@ -249,12 +247,10 @@ public class CoreCoreActivityTests
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);
         Assert.Equal("hello", act.Properties["text"]?.ToString());
-        Assert.True(act.Properties.ContainsKey("from"));
-        Assert.IsType<JsonElement>(act.Properties["from"]);
-        var fromElement = (JsonElement)act.Properties["from"]!;
-        Assert.Equal("1", fromElement.GetProperty("id").GetString());
-        Assert.Equal("tester", fromElement.GetProperty("name").GetString());
-        Assert.Equal("123", fromElement.GetProperty("aadObjectId").GetString());
+        Assert.NotNull(act.From);
+        Assert.Equal("1", act.From.Id);
+        Assert.Equal("tester", act.From.Name);
+        Assert.Equal("123", act.From.Properties["aadObjectId"]?.ToString());
     }
 
 
@@ -305,10 +301,7 @@ public class CoreCoreActivityTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Properties =
-            {
-                { "recipient", new ConversationAccount { Id = "user-123", IsTargeted = true } }
-            }
+            Recipient = new ConversationAccount { Id = "user-123", IsTargeted = true }
         };
 
         string json = activity.ToJson();
@@ -332,10 +325,8 @@ public class CoreCoreActivityTests
 
         CoreActivity activity = CoreActivity.FromJsonString(json);
 
-        Assert.True(activity.Properties.ContainsKey("recipient"));
-        Assert.IsType<JsonElement>(activity.Properties["recipient"]);
-        var recipientElement = (JsonElement)activity.Properties["recipient"]!;
-        Assert.Equal("user-123", recipientElement.GetProperty("id").GetString());
-        Assert.True(recipientElement.GetProperty("isTargeted").GetBoolean());
+        Assert.NotNull(activity.Recipient);
+        Assert.Equal("user-123", activity.Recipient.Id);
+        Assert.True(activity.Recipient.IsTargeted);
     }
 }

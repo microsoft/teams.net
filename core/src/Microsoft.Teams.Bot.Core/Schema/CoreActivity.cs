@@ -54,7 +54,7 @@ public class CoreActivity
     /// <summary>
     /// Gets or sets the unique identifier for the channel on which this activity is occurring.
     /// </summary>
-    [JsonPropertyName("channelId")] public string? ChannelId { get; set; }
+    [JsonPropertyName("channelId")] public string ChannelId { get; set; }
     /// <summary>
     /// Gets or sets the unique identifier for the activity.
     /// </summary>
@@ -65,7 +65,7 @@ public class CoreActivity
     /// <remarks>
     /// This URL is used to send responses back to the channel.
     /// </remarks>
-    [JsonPropertyName("serviceUrl")] public Uri? ServiceUrl { get; set; }
+    [JsonPropertyName("serviceUrl")] public Uri ServiceUrl { get; set; }
     // TODO: Can value need be a JSONObject?
     /// <summary>
     /// Gets or sets the value payload of the activity.
@@ -80,7 +80,17 @@ public class CoreActivity
     /// <summary>
     /// Gets or sets the conversation information for this activity.
     /// </summary>
-    [JsonPropertyName("conversation")] public Conversation? Conversation { get; set; }
+    [JsonPropertyName("conversation")] public Conversation Conversation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sender account for this activity.
+    /// </summary>
+    [JsonPropertyName("from")] public ConversationAccount? From { get; set; }
+
+    /// <summary>
+    /// Gets or sets the recipient account for this activity.
+    /// </summary>
+    [JsonPropertyName("recipient")] public ConversationAccount? Recipient { get; set; }
 
     /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
@@ -116,6 +126,9 @@ public class CoreActivity
     public CoreActivity(string type = ActivityType.Message)
     {
         Type = type;
+        ChannelId = string.Empty;
+        Conversation = new Conversation();
+        ServiceUrl = new Uri("https://placeholder");
     }
 
 
@@ -125,6 +138,9 @@ public class CoreActivity
     public CoreActivity()
     {
         Type = ActivityType.Message;
+        ChannelId = string.Empty;
+        Conversation = new Conversation();
+        ServiceUrl = new Uri("https://placeholder");
     }
 
     /// <summary>
@@ -140,8 +156,8 @@ public class CoreActivity
         ChannelId = activity.ChannelId;
         Type = activity.Type;
         Conversation = activity.Conversation;
-        // TODO: Figure out why this is needed...
-        // ReplyToId = activity.ReplyToId;
+        From = activity.From;
+        Recipient = activity.Recipient;
         Properties = activity.Properties;
         Value = activity.Value;
 

@@ -35,11 +35,9 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.Equal(activity.ServiceUrl, coreActivity.ServiceUrl?.ToString());
             Assert.Equal(activity.ChannelId, coreActivity.ChannelId);
             Assert.Equal(activity.Id, coreActivity.Id);
-            Microsoft.Teams.Bot.Core.Schema.ConversationAccount? coreFrom = coreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("from");
-            Assert.Equal(activity.From?.Id, coreFrom?.Id);
-            Assert.Equal(activity.From?.Name, coreFrom?.Name);
-            Microsoft.Teams.Bot.Core.Schema.ConversationAccount? coreRecipient = coreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("recipient");
-            Assert.Equal(activity.Recipient?.Id, coreRecipient?.Id);
+            Assert.Equal(activity.From?.Id, coreActivity.From?.Id);
+            Assert.Equal(activity.From?.Name, coreActivity.From?.Name);
+            Assert.Equal(activity.Recipient?.Id, coreActivity.Recipient?.Id);
             Assert.Equal(activity.Conversation?.Id, coreActivity.Conversation?.Id);
         }
 

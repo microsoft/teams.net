@@ -76,9 +76,9 @@ public class ActivityClient
         activity.ServiceUrl ??= _serviceUrl;
         activity.Conversation ??= new Conversation(conversationId);
         // Ensure recipient is marked as targeted
-        if (activity.Properties.TryGetValue("recipient", out object? recipientObj) && recipientObj is ConversationAccount recipient)
+        if (activity.Recipient != null)
         {
-            recipient.IsTargeted = true;
+            activity.Recipient.IsTargeted = true;
         }
         return _client.SendActivityAsync(activity, cancellationToken: cancellationToken);
     }

@@ -43,7 +43,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         .WithServiceUrl(activity.ServiceUrl!)
         .WithChannelId(activity.ChannelId!)
         .WithConversation(activity.Conversation!)
-        .WithProperty("from", activity.Properties["recipient"])
+        .WithFrom(activity.Recipient)
         .Build();
     await botApp.SendActivityAsync(typing, cancellationToken: cancellationToken);
 
@@ -56,7 +56,7 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         .WithServiceUrl(activity.ServiceUrl!)
         .WithChannelId(activity.ChannelId!)
         .WithConversation(activity.Conversation!)
-        .WithProperty("from", activity.Properties["recipient"])
+        .WithFrom(activity.Recipient)
         .WithProperty("text", m1!.Text)
         .Build();
 

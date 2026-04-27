@@ -106,6 +106,28 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     }
 
     /// <summary>
+    /// Sets the sender account information.
+    /// </summary>
+    /// <param name="from">The sender account.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TBuilder WithFrom(ConversationAccount? from)
+    {
+        _activity.From = from;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
+    /// Sets the recipient account information.
+    /// </summary>
+    /// <param name="recipient">The recipient account.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TBuilder WithRecipient(ConversationAccount? recipient)
+    {
+        _activity.Recipient = recipient;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
     /// Adds or updates a property in the activity's Properties dictionary.
     /// </summary>
     /// <param name="name">Name of the property.</param>

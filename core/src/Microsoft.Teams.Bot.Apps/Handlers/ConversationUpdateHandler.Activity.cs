@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -66,31 +65,8 @@ public class ConversationUpdateActivity : TeamsActivity
         }
         */
 
-        if (activity.Properties.TryGetValue("membersAdded", out object? membersAdded) && membersAdded != null)
-        {
-            if (membersAdded is JsonElement je)
-            {
-                MembersAdded = JsonSerializer.Deserialize<IList<TeamsConversationAccount>>(je.GetRawText());
-            }
-            else
-            {
-                MembersAdded = membersAdded as IList<TeamsConversationAccount>;
-            }
-            activity.Properties.Remove("membersAdded");
-        }
-
-        if (activity.Properties.TryGetValue("membersRemoved", out object? membersRemoved) && membersRemoved != null)
-        {
-            if (membersRemoved is JsonElement je)
-            {
-                MembersRemoved = JsonSerializer.Deserialize<IList<TeamsConversationAccount>>(je.GetRawText());
-            }
-            else
-            {
-                MembersRemoved = membersRemoved as IList<TeamsConversationAccount>;
-            }
-            activity.Properties.Remove("membersRemoved");
-        }
+        MembersAdded = activity.Properties.Extract<IList<TeamsConversationAccount>>("membersAdded");
+        MembersRemoved = activity.Properties.Extract<IList<TeamsConversationAccount>>("membersRemoved");
     }
 
     //TODO : review properties

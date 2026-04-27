@@ -18,9 +18,9 @@ await conversationClient.SendActivityAsync(new CoreActivity
 {
     Conversation = new(ConversationId),
     ServiceUrl = new Uri(ServiceUrl),
+    From = new ConversationAccount { Id = FromId },
     Properties =
     {
-        { "from", new ConversationAccount { Id = FromId } },
         { "text", "Test Message" }
     }
 }, cancellationToken: default);
@@ -30,10 +30,7 @@ await conversationClient.SendActivityAsync(new CoreActivity
     //Text = "Hello from MSAL Config API test!",
     Conversation = new("bad conversation"),
     ServiceUrl = new Uri(ServiceUrl),
-    Properties =
-    {
-        { "from", new ConversationAccount { Id = FromId } }
-    }
+    From = new ConversationAccount { Id = FromId },
 }, cancellationToken: default);
 
 

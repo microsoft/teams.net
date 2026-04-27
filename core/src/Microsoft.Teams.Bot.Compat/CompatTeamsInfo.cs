@@ -48,7 +48,7 @@ public static class CompatTeamsInfo
     private static AgenticIdentity GetIdentity(ITurnContext turnContext)
     {
         CoreActivity coreActivity = turnContext.Activity.FromCompatActivity();
-        return coreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("from")?.GetAgenticIdentity() ?? new AgenticIdentity();
+        return AgenticIdentity.FromAccount(coreActivity.From) ?? new AgenticIdentity();
     }
 
     #endregion

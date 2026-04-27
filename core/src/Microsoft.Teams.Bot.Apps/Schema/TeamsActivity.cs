@@ -65,10 +65,9 @@ public class TeamsActivity : CoreActivity
         // Convert core extension properties to Teams-specific typed properties.
         // CoreActivity stores these as untyped entries in its Properties dictionary
         // (via [JsonExtensionData]), so we extract and promote them here.
-        From = activity.Properties.Extract<TeamsConversationAccount>("from");
-        Recipient = activity.Properties.Extract<TeamsConversationAccount>("recipient");
-        Conversation = activity.Properties.Extract<TeamsConversation>("conversation")
-            ?? TeamsConversation.FromConversation(activity.Conversation);
+        From = TeamsConversationAccount.FromConversationAccount(activity.From) ?? new TeamsConversationAccount();
+        Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient) ?? new TeamsConversationAccount();
+        Conversation = TeamsConversation.FromConversation(activity.Conversation);
         ChannelData = activity.Properties.Extract<TeamsChannelData>("channelData");
         Attachments = activity.Properties.Extract<IList<TeamsAttachment>>("attachments");
         Entities = activity.Properties.Extract<EntityList>("entities");
@@ -78,13 +77,13 @@ public class TeamsActivity : CoreActivity
     /// Gets or sets the account information for the sender of the Teams conversation.
     /// </summary>
     [JsonPropertyName("from")]
-    public TeamsConversationAccount? From { get; set; }
+    public new TeamsConversationAccount? From { get; set; }
 
     /// <summary>
     /// Gets or sets the account information for the recipient of the Teams conversation.
     /// </summary>
     [JsonPropertyName("recipient")]
-    public TeamsConversationAccount? Recipient { get; set; }
+    public new TeamsConversationAccount? Recipient { get; set; }
 
     /// <summary>
     /// Gets or sets the conversation information for the Teams conversation.

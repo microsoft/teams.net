@@ -55,11 +55,7 @@ public class InvokeActivity : TeamsActivity
     protected InvokeActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Properties.TryGetValue("name", out object? name))
-        {
-            Name = name?.ToString();
-            activity.Properties.Remove("name");
-        }
+        Name = activity.Properties.Extract<string>("name");
     }
 }
 

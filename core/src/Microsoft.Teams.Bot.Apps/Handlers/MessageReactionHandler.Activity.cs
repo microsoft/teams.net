@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -39,42 +38,9 @@ public class MessageReactionActivity : TeamsActivity
     protected MessageReactionActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Properties.TryGetValue("reactionsAdded", out object? reactionsAdded) && reactionsAdded != null)
-        {
-            if (reactionsAdded is JsonElement je)
-            {
-                ReactionsAdded = JsonSerializer.Deserialize<List<MessageReaction>>(je.GetRawText());
-            }
-            else
-            {
-                ReactionsAdded = reactionsAdded as IList<MessageReaction>;
-            }
-            activity.Properties.Remove("reactionsAdded");
-        }
-        if (activity.Properties.TryGetValue("reactionsRemoved", out object? reactionsRemoved) && reactionsRemoved != null)
-        {
-            if (reactionsRemoved is JsonElement je)
-            {
-                ReactionsRemoved = JsonSerializer.Deserialize<List<MessageReaction>>(je.GetRawText());
-            }
-            else
-            {
-                ReactionsRemoved = reactionsRemoved as IList<MessageReaction>;
-            }
-            activity.Properties.Remove("reactionsRemoved");
-        }
-        if (activity.Properties.TryGetValue("replyToId", out object? replyToId) && replyToId != null)
-        {
-            if (replyToId is JsonElement jeReplyToId && jeReplyToId.ValueKind == JsonValueKind.String)
-            {
-                ReplyToId = jeReplyToId.GetString();
-            }
-            else
-            {
-                ReplyToId = replyToId.ToString();
-            }
-            activity.Properties.Remove("replyToId");
-        }
+        ReactionsAdded = activity.Properties.Extract<IList<MessageReaction>>("reactionsAdded");
+        ReactionsRemoved = activity.Properties.Extract<IList<MessageReaction>>("reactionsRemoved");
+        ReplyToId = activity.Properties.Extract<string>("replyToId");
     }
 
     /// <summary>

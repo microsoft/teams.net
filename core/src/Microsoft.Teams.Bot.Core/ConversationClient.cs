@@ -51,11 +51,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
-        ConversationAccount? recipient = activity.Properties.TryGetValue("recipient", out object? recipientObj)
-            ? recipientObj is ConversationAccount ca ? ca : null
-            : null;
-        bool isTargeted = recipient?.IsTargeted == true;
-        AgenticIdentity? agenticIdentity = recipient?.GetAgenticIdentity();
+        bool isTargeted = activity.From?.IsTargeted == true;
+        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(activity.From);
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/";
 

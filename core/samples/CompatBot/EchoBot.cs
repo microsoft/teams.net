@@ -73,14 +73,14 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         // Targeted Messaging via Core SDK (preferred): sends directly through ConversationClient
         // to bypass the BF compat layer's ApplyConversationReference which would overwrite the Recipient.
         var incomingCoreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
-        var incomingFrom = incomingCoreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("from");
-        var incomingRecipient = incomingCoreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("recipient");
+        var incomingFrom = incomingCoreActivity.From;
+        var incomingRecipient = incomingCoreActivity.Recipient;
         incomingFrom!.IsTargeted = true;
         CoreActivity tm = CoreActivity.CreateBuilder()
             .WithConversation(incomingCoreActivity.Conversation!)
             .WithProperty("text", "Hello TM !")
-            .WithProperty("recipient", incomingFrom)
-            .WithProperty("from", incomingRecipient)
+            .WithRecipient(incomingFrom)
+            .WithFrom(incomingRecipient)
             //.WithServiceUrl(activity.ServiceUrl!)
             .WithServiceUrl("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/")
             .Build();
@@ -98,7 +98,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             //incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromProperties(incomingRecipient?.Properties),
+            AgenticIdentity.FromAccount(incomingRecipient),
             null,
             cancellationToken);
 
@@ -109,7 +109,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             res.Id,
             "sad",
             incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromProperties(incomingRecipient?.Properties),
+            AgenticIdentity.FromAccount(incomingRecipient),
             null,
             cancellationToken);
 
@@ -121,7 +121,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromProperties(incomingRecipient?.Properties),
+            AgenticIdentity.FromAccount(incomingRecipient),
             null,
             cancellationToken);
 

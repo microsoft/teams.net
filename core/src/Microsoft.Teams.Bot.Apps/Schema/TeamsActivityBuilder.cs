@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Identity.Client;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -43,7 +44,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         WithServiceUrl(activity.ServiceUrl);
         WithChannelId(activity.ChannelId);
         WithConversation(activity.Conversation);
-        _activity.From = activity.Recipient;
+        WithFrom(activity.Recipient);
 
         if (!string.IsNullOrEmpty(activity.Id))
         {
@@ -58,11 +59,11 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// </summary>
     /// <param name="from">The sender account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithFrom(ConversationAccount? from)
+    public new TeamsActivityBuilder WithFrom(ConversationAccount? from)
     {
         _activity.From = from is TeamsConversationAccount teamsAccount
             ? teamsAccount
-            : TeamsConversationAccount.FromConversationAccount(from);
+            : TeamsConversationAccount.FromConversationAccount(from)!;
         return this;
     }
 
@@ -71,11 +72,11 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// </summary>
     /// <param name="recipient">The recipient account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithRecipient(ConversationAccount? recipient)
+    public new TeamsActivityBuilder WithRecipient(ConversationAccount? recipient)
     {
         _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
             ? teamsAccount
-            : TeamsConversationAccount.FromConversationAccount(recipient);
+            : TeamsConversationAccount.FromConversationAccount(recipient)!;
         return this;
     }
 
@@ -87,16 +88,12 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The builder instance for chaining.</returns>
     public TeamsActivityBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
     {
-        if (recipient is null)
-        {
-            _activity.Recipient = null;
-        }
-        else
+        if (recipient is not null)
         {
             recipient.IsTargeted = isTargeted ? true : null;
             _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
                 ? teamsAccount
-                : TeamsConversationAccount.FromConversationAccount(recipient);
+                : TeamsConversationAccount.FromConversationAccount(recipient)!;
         }
         return this;
     }
@@ -111,7 +108,11 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         _activity.Conversation = conversation is TeamsConversation teamsConv
             ? teamsConv
             : TeamsConversation.FromConversation(conversation);
+
+        ArgumentNullException.ThrowIfNull(conversation);
+
         ((CoreActivity)_activity).Conversation = conversation;
+
         return this;
     }
 

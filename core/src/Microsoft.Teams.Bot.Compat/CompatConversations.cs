@@ -55,7 +55,7 @@ namespace Microsoft.Teams.Bot.Compat
             CreateConversationResponse res = await _client.CreateConversationAsync(
                 convoParams,
                 new Uri(ServiceUrl),
-                convoParams.Activity?.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("from")?.GetAgenticIdentity(),
+                AgenticIdentity.FromAccount(convoParams.Activity?.From),
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 

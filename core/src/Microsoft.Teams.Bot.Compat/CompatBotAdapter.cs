@@ -59,7 +59,7 @@ public class CompatBotAdapter(
         Uri serviceUrl = new(serviceUrlString);
 
         // Extract agentic identity from turn context if available
-        AgenticIdentity? agenticIdentity = turnContext.Activity?.FromCompatActivity().Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("from")?.GetAgenticIdentity();
+        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(turnContext.Activity?.FromCompatActivity().From);
 
         await botApplication.ConversationClient.DeleteActivityAsync(
             conversationId,

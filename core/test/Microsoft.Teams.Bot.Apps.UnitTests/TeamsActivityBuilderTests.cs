@@ -137,7 +137,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithConversation_SetsConversationInfo()
     {
-        Conversation baseConversation = new Conversation("conversation-id");
+        Conversation baseConversation = new("conversation-id");
 
         Assert.NotNull(baseConversation);
         baseConversation.Properties.Add("tenantId", "tenant-123");
@@ -585,7 +585,7 @@ public class TeamsActivityBuilderTests
 
         TeamsActivity sourceActivity = new()
         {
-            ChannelId = null,
+            ChannelId = null!,
             ServiceUrl = new Uri("https://test.com"),
             Conversation = TeamsConversation.FromConversation(new Conversation()),
             From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
@@ -601,7 +601,7 @@ public class TeamsActivityBuilderTests
         TeamsActivity sourceActivity = new()
         {
             ChannelId = "msteams",
-            ServiceUrl = null,
+            ServiceUrl = null!,
             Conversation = TeamsConversation.FromConversation(new Conversation()),
             From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
             Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount())

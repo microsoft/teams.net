@@ -31,31 +31,27 @@ public class ConversationAccount()
     public bool? IsTargeted { get; set; }
 
     /// <summary>
+    /// Gets or sets the agentic application ID for user-delegated token acquisition.
+    /// </summary>
+    [JsonPropertyName("agenticAppId")]
+    public string? AgenticAppId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the agentic user ID for user-delegated token acquisition.
+    /// </summary>
+    [JsonPropertyName("agenticUserId")]
+    public string? AgenticUserId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the agentic application blueprint ID.
+    /// </summary>
+    [JsonPropertyName("agenticAppBlueprintId")]
+    public string? AgenticAppBlueprintId { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData]
     public ExtendedPropertiesDictionary Properties { get; set; } = [];
 
-    /// <summary>
-    /// Gets the agentic identity from the account properties.
-    /// </summary>
-    /// <returns>An AgenticIdentity instance if properties contain agentic identity information; otherwise, null.</returns>
-    public AgenticIdentity? GetAgenticIdentity()
-    {
-        Properties.TryGetValue("agenticAppId", out object? appIdObj);
-        Properties.TryGetValue("agenticUserId", out object? userIdObj);
-        Properties.TryGetValue("agenticAppBlueprintId", out object? bluePrintObj);
-
-        if (appIdObj is null && userIdObj is null && bluePrintObj is null)
-        {
-            return null;
-        }
-
-        return new AgenticIdentity
-        {
-            AgenticAppId = appIdObj?.ToString(),
-            AgenticUserId = userIdObj?.ToString(),
-            AgenticAppBlueprintId = bluePrintObj?.ToString()
-        };
-    }
 }
