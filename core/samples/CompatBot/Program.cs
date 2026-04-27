@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Azure.Monitor.OpenTelemetry.AspNetCore;
+
 using CompatBot;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
@@ -12,7 +12,6 @@ using Microsoft.Teams.Bot.Core;
 // using Microsoft.Bot.Connector.Authentication;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-builder.Services.AddOpenTelemetry().UseAzureMonitor();
 builder.AddCompatAdapter();
 
 //builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
