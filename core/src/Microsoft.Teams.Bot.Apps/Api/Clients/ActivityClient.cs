@@ -31,7 +31,8 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
-        return _client.SendActivityAsync(activity, conversationId, cancellationToken: cancellationToken);
+        activity.Conversation ??= new Conversation(conversationId);
+        return _client.SendActivityAsync(activity, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -52,7 +53,8 @@ public class ActivityClient
         ArgumentNullException.ThrowIfNull(activity);
         activity.ReplyToId = id;
         activity.ServiceUrl ??= _serviceUrl;
-        return _client.SendActivityAsync(activity, conversationId, cancellationToken: cancellationToken);
+        activity.Conversation ??= new Conversation(conversationId);
+        return _client.SendActivityAsync(activity, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -72,7 +74,8 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
-        return _client.SendActivityAsync(activity, conversationId, isTargeted: true, cancellationToken: cancellationToken);
+        activity.Conversation ??= new Conversation(conversationId);
+        return _client.SendActivityAsync(activity, isTargeted: true, cancellationToken: cancellationToken);
     }
 
     /// <summary>

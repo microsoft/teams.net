@@ -110,9 +110,10 @@ public class CompatBotAdapter(
                 coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
             }
 
-            string conversationId = turnContext.Activity.Conversation?.Id
-                ?? throw new InvalidOperationException("Conversation ID is required to send activities.");
-            SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, conversationId, cancellationToken: cancellationToken).ConfigureAwait(false);
+            coreActivity.Conversation ??= new Microsoft.Teams.Bot.Core.Schema.Conversation(
+                turnContext.Activity.Conversation?.Id
+                ?? throw new InvalidOperationException("Conversation ID is required to send activities."));
+            SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             logger?.LogDebug("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
 

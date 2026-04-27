@@ -79,7 +79,7 @@ public sealed class TeamsStreamingWriter
 
         _sequence++;
         _logger.LogDebug("Sending informative streaming update (sequence {Sequence}).", _sequence);
-        SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), _conversationId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
         _streamId ??= response?.Id;
         _logger.LogDebug("Stream started with streamId '{StreamId}'.", _streamId);
     }
@@ -109,7 +109,7 @@ public sealed class TeamsStreamingWriter
         try
         {
             _logger.LogDebug("Sending streaming chunk (sequence {Sequence}, accumulated {Length} chars).", _sequence, _accumulated.Length);
-            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), _conversationId, cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
             _streamId ??= response?.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
@@ -140,7 +140,7 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
 
         _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).", _streamId, _accumulated.Length, _sequence);
-        await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities, feedbackEnabled), _conversationId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities, feedbackEnabled), cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _finalized = true;
         _logger.LogDebug("Stream finalized (streamId '{StreamId}').", _streamId);

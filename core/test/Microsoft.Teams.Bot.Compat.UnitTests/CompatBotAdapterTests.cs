@@ -152,7 +152,6 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
             mockConversationClient.Setup(c => c.SendActivityAsync(
                     It.IsAny<CoreActivity>(),
-                    It.IsAny<string>(),
                     It.IsAny<bool>(),
                     It.IsAny<AgenticIdentity?>(),
                     It.IsAny<Dictionary<string, string>?>(),
@@ -181,7 +180,6 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             mockConversationClient.Verify(
                 c => c.SendActivityAsync(
                     It.Is<CoreActivity>(a => a.ServiceUrl != null && a.ServiceUrl.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
-                    It.IsAny<string>(),
                     It.IsAny<bool>(),
                     It.IsAny<AgenticIdentity?>(),
                     It.IsAny<Dictionary<string, string>?>(),
@@ -252,7 +250,6 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             mock.Setup(c => c.SendActivityAsync(
                     It.IsAny<CoreActivity>(),
-                    It.IsAny<string>(),
                     It.IsAny<bool>(),
                     It.IsAny<AgenticIdentity?>(),
                     It.IsAny<Dictionary<string, string>?>(),

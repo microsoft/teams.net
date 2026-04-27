@@ -37,8 +37,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <summary>
     /// Sends the specified activity to the conversation endpoint asynchronously.
     /// </summary>
-    /// <param name="activity">The activity to send. Cannot be null. Must contain a valid ServiceUrl.</param>
-    /// <param name="conversationId">The ID of the conversation to send the activity to.</param>
+    /// <param name="activity">The activity to send. Cannot be null. Must contain a valid ServiceUrl and Conversation with an Id.</param>
     /// <param name="isTargeted">Whether this is a targeted activity visible only to a specific recipient.</param>
     /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
@@ -46,10 +45,10 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the activity could not be sent successfully. The exception message includes the HTTP status code and
     /// response content.</exception>
-    public virtual async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, string? conversationId = null, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        conversationId ??= activity.Conversation?.Id;
+        string? conversationId = activity.Conversation?.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 

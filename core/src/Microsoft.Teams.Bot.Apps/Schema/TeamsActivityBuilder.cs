@@ -42,7 +42,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
 
         WithServiceUrl(activity.ServiceUrl);
         WithChannelId(activity.ChannelId);
-        _activity.Conversation = activity.Conversation;
+        WithConversation(activity.Conversation);
         _activity.From = activity.Recipient;
 
         if (!string.IsNullOrEmpty(activity.Id))
@@ -111,6 +111,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         _activity.Conversation = conversation is TeamsConversation teamsConv
             ? teamsConv
             : TeamsConversation.FromConversation(conversation);
+        ((CoreActivity)_activity).Conversation = conversation;
         return this;
     }
 
