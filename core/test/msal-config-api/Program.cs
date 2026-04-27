@@ -14,24 +14,22 @@ string FromId = "28:56653e9d-2158-46ee-90d7-675c39642038";
 string ServiceUrl = "https://smba.trafficmanager.net/teams/";
 
 ConversationClient conversationClient = CreateConversationClient();
-await conversationClient.SendActivityAsync(new CoreActivity
-{
-    Conversation = new(ConversationId),
-    ServiceUrl = new Uri(ServiceUrl),
-    From = new ConversationAccount { Id = FromId },
-    Properties =
-    {
-        { "text", "Test Message" }
-    }
-}, cancellationToken: default);
 
-await conversationClient.SendActivityAsync(new CoreActivity
-{
-    //Text = "Hello from MSAL Config API test!",
-    Conversation = new("bad conversation"),
-    ServiceUrl = new Uri(ServiceUrl),
-    From = new ConversationAccount { Id = FromId },
-}, cancellationToken: default);
+CoreActivity msgOne = CoreActivity.CreateBuilder()
+    .WithType(ActivityType.Message)
+    .WithServiceUrl(new Uri(ServiceUrl))
+    .WithConversation(new(ConversationId))
+    .WithFrom(new ConversationAccount { Id = FromId })
+    .WithProperty("text", "Test Message")
+    .Build();
+
+await conversationClient.SendActivityAsync(msgOne, cancellationToken: default);
+
+await conversationClient.SendActivityAsync(CoreActivity.CreateBuilder()
+    .WithConversation(new Conversation("bad conversation"))
+    .WithServiceUrl(new Uri(ServiceUrl))
+    .WithFrom(new ConversationAccount {  Id = FromId})
+    .Build(), cancellationToken: default);
 
 
 

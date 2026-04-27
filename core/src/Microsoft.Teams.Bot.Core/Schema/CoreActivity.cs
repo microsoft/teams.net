@@ -54,7 +54,7 @@ public class CoreActivity
     /// <summary>
     /// Gets or sets the unique identifier for the channel on which this activity is occurring.
     /// </summary>
-    [JsonPropertyName("channelId")] public string ChannelId { get; set; }
+    [JsonPropertyName("channelId")] public string? ChannelId { get; set; }
     /// <summary>
     /// Gets or sets the unique identifier for the activity.
     /// </summary>
@@ -65,7 +65,7 @@ public class CoreActivity
     /// <remarks>
     /// This URL is used to send responses back to the channel.
     /// </remarks>
-    [JsonPropertyName("serviceUrl")] public Uri ServiceUrl { get; set; }
+    [JsonPropertyName("serviceUrl")] public Uri? ServiceUrl { get; set; }
     // TODO: Can value need be a JSONObject?
     /// <summary>
     /// Gets or sets the value payload of the activity.
@@ -123,24 +123,21 @@ public class CoreActivity
     /// Creates a new instance of the <see cref="CoreActivity"/> class with the specified activity type.
     /// </summary>
     /// <param name="type"></param>
-    public CoreActivity(string type = ActivityType.Message)
+    internal CoreActivity(string type = ActivityType.Message)
     {
         Type = type;
-        ChannelId = string.Empty;
         Conversation = new Conversation();
-        ServiceUrl = new Uri("https://placeholder");
     }
 
 
     /// <summary>
     ///  Creates a new instance of the <see cref="CoreActivity"/> class. As Message type by default.
     /// </summary>
-    public CoreActivity()
+    [JsonConstructor]
+    internal CoreActivity()
     {
         Type = ActivityType.Message;
-        ChannelId = string.Empty;
         Conversation = new Conversation();
-        ServiceUrl = new Uri("https://placeholder");
     }
 
     /// <summary>

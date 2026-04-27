@@ -237,7 +237,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             // ReplyToActivity is not available in ConversationClient, use SendActivityAsync with replyToId in Properties
             coreActivity.Properties["replyToId"] = activityId;
-            coreActivity.Conversation ??= new Microsoft.Teams.Bot.Core.Schema.Conversation(conversationId);
+            coreActivity.Conversation = new Microsoft.Teams.Bot.Core.Schema.Conversation(conversationId);
 
             SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -307,7 +307,7 @@ namespace Microsoft.Teams.Bot.Compat
                 coreActivity.ServiceUrl = new Uri(ServiceUrl);
             }
 
-            coreActivity.Conversation ??= new Microsoft.Teams.Bot.Core.Schema.Conversation(conversationId);
+            coreActivity.Conversation = new Microsoft.Teams.Bot.Core.Schema.Conversation(conversationId);
 
             SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 

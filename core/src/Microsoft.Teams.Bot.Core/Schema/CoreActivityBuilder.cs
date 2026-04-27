@@ -56,7 +56,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="serviceUrl">The service URL.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithServiceUrl(Uri serviceUrl)
+    public TBuilder WithServiceUrl(Uri? serviceUrl)
     {
         _activity.ServiceUrl = serviceUrl;
         return (TBuilder)this;
@@ -77,7 +77,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="channelId">The channel ID.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithChannelId(string channelId)
+    public TBuilder WithChannelId(string? channelId)
     {
         _activity.ChannelId = channelId;
         return (TBuilder)this;

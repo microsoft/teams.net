@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+		<InternalsVisibleTo Include="Microsoft.Teams.Bot.Apps.UnitTests" />
         <InternalsVisibleTo Include="Microsoft.Teams.Bot.Core.UnitTests" />
         <InternalsVisibleTo Include="Microsoft.Teams.Bot.Apps" />
 		<InternalsVisibleTo Include="Microsoft.Teams.Bot.Compat" />
