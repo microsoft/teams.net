@@ -75,8 +75,8 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
 
         var incomingCoreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
         string conversationId = incomingCoreActivity.Properties.Extract<Conversation>("conversation")?.Id!;
-        var incomingFrom = incomingCoreActivity.Properties.Extract<Core.Schema.ConversationAccount>("from");
-        var incomingRecipient = incomingCoreActivity.Properties.Extract<Core.Schema.ConversationAccount>("recipient");
+        var incomingFrom = incomingCoreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("from");
+        var incomingRecipient = incomingCoreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("recipient");
         incomingFrom!.IsTargeted = true;
         CoreActivity tm = CoreActivity.CreateBuilder()
             .WithProperty("conversation", new Conversation { Id = conversationId })
