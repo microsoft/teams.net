@@ -52,7 +52,7 @@ Outgoing:
     → TeamsActivityBuilder.WithConversationReference(incoming)
        └── WithFrom(incoming.Recipient)          // Swaps from/recipient for reply
     → ConversationClient.SendActivityAsync(activity)
-       ├── Reads activity.From.IsTargeted and activity.From.AgenticIdentity
+       ├── Reads activity.Recipient.IsTargeted and AgenticIdentity.FromAccount(activity.From)
        └── activity.ToJson() serializes for HTTP POST
     → POST {serviceUrl}/v3/conversations/{id}/activities/
 ```
@@ -71,8 +71,8 @@ CoreActivity declares typed `[JsonPropertyName]` properties for fields that are 
 | `ServiceUrl` | `Uri?` | HTTP endpoint |
 | `ReplyToId` | `string?` | Reply threading |
 | `Conversation` | `Conversation` (non-nullable) | URL construction, always initialized |
-| `From` | `ConversationAccount?` | AgenticIdentity extraction, IsTargeted |
-| `Recipient` | `ConversationAccount?` | Targeted messaging |
+| `From` | `ConversationAccount?` | AgenticIdentity extraction |
+| `Recipient` | `ConversationAccount?` | IsTargeted flag for targeted messaging |
 | `Value` | `JsonNode?` | Invoke payloads |
 
 Everything else (`text`, `attachments`, `entities`, `channelData`, `timestamp`, etc.) remains in the `[JsonExtensionData] Properties` dictionary, promoted to typed properties only at the TeamsActivity layer.
@@ -96,7 +96,7 @@ TeamsActivity shadows base properties with more specific types, following C#'s `
 ```csharp
 // CoreActivity
 [JsonPropertyName("from")] public ConversationAccount? From { get; set; }
-[JsonPropertyName("conversation")] public Conversation? Conversation { get; set; }
+[JsonPropertyName("conversation")] public Conversation Conversation { get; set; }
 
 // TeamsActivity
 [JsonPropertyName("from")] public new TeamsConversationAccount? From { get; set; }
@@ -105,7 +105,19 @@ TeamsActivity shadows base properties with more specific types, following C#'s `
 
 When accessed through a `CoreActivity` reference (e.g., in `ConversationClient`), the base `ConversationAccount?` is used. When accessed through a `TeamsActivity` reference, the derived `TeamsConversationAccount?` is used.
 
-The `TeamsActivity(CoreActivity)` constructor converts from base to derived types:
+**Important:** Because `new` creates separate storage, `TeamsActivityBuilder` must keep both slots in sync:
+```csharp
+public new TeamsActivityBuilder WithFrom(ConversationAccount? from)
+{
+    _activity.From = TeamsConversationAccount.FromConversationAccount(from)!;
+    ((CoreActivity)_activity).From = from;   // Sync base slot
+    return this;
+}
+```
+
+The same pattern applies to `WithRecipient` and `WithConversation`. Without the base sync, code accessing the activity through a `CoreActivity` reference (e.g., `ConversationClient.SendActivityAsync`) would see null.
+
+The `TeamsActivity(CoreActivity)` constructor handles this automatically — the base copy constructor sets `CoreActivity.From`, then the TeamsActivity constructor sets the `new` slot:
 ```csharp
 From = TeamsConversationAccount.FromConversationAccount(activity.From) ?? new TeamsConversationAccount();
 Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient) ?? new TeamsConversationAccount();
@@ -318,12 +330,13 @@ CoreActivity constructors are `internal` — external consumers create instances
 | Area | Coverage |
 |------|----------|
 | ConversationClient URL construction | Good |
-| ConversationClient isTargeted from From property | Good |
-| ConversationClient AgenticIdentity extraction | Good |
+| ConversationClient isTargeted from Recipient property | Good |
+| ConversationClient AgenticIdentity from From property | Good |
 | CoreActivity JSON round-trip (from/recipient as typed props) | Good |
 | TeamsActivity.FromActivity() conversion | Good |
 | TeamsActivity.ToJson() single from/recipient in output | Good |
-| ConversationAccount.AgenticIdentity computed property | Good |
+| AgenticIdentity.FromAccount factory | Good |
 | Extract<T> with JsonElement (for channelData, entities, etc.) | Good |
+| TeamsActivityBuilder base/derived property sync (From/Recipient) | Good |
 | TeamsActivityBuilder.WithConversationReference | Partial |
 | Context.SendActivityAsync conversation ref application | Missing |
