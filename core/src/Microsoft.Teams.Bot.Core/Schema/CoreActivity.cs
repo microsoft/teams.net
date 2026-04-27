@@ -78,6 +78,11 @@ public class CoreActivity
     [JsonPropertyName("replyToId")] public string? ReplyToId { get; set; }
 
     /// <summary>
+    /// Gets or sets the conversation information for this activity.
+    /// </summary>
+    [JsonPropertyName("conversation")] public Conversation? Conversation { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
@@ -134,6 +139,7 @@ public class CoreActivity
         ServiceUrl = activity.ServiceUrl;
         ChannelId = activity.ChannelId;
         Type = activity.Type;
+        Conversation = activity.Conversation;
         // TODO: Figure out why this is needed...
         // ReplyToId = activity.ReplyToId;
         Properties = activity.Properties;

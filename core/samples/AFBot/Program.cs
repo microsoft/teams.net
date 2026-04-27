@@ -38,17 +38,14 @@ botApp.OnActivity = async (activity, cancellationToken) =>
     CancellationTokenSource timer = CancellationTokenSource.CreateLinkedTokenSource(
         cancellationToken, new CancellationTokenSource(TimeSpan.FromSeconds(15)).Token);
 
-    string conversationId = activity.Properties.Extract<Conversation>("conversation")?.Id
-        ?? throw new InvalidOperationException("Conversation ID not found");
-
     CoreActivity typing = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Typing)
         .WithServiceUrl(activity.ServiceUrl!)
         .WithChannelId(activity.ChannelId!)
-        .WithProperty("conversation", activity.Properties["conversation"])
+        .WithConversation(activity.Conversation!)
         .WithProperty("from", activity.Properties["recipient"])
         .Build();
-    await botApp.SendActivityAsync(typing, conversationId, cancellationToken: cancellationToken);
+    await botApp.SendActivityAsync(typing, cancellationToken: cancellationToken);
 
     AgentRunResponse agentResponse = await agent.RunAsync(activity.Properties["text"]?.ToString() ?? "OMW", cancellationToken: timer.Token);
 
@@ -58,12 +55,12 @@ botApp.OnActivity = async (activity, cancellationToken) =>
         .WithType(ActivityType.Message)
         .WithServiceUrl(activity.ServiceUrl!)
         .WithChannelId(activity.ChannelId!)
-        .WithProperty("conversation", activity.Properties["conversation"])
+        .WithConversation(activity.Conversation!)
         .WithProperty("from", activity.Properties["recipient"])
         .WithProperty("text", m1!.Text)
         .Build();
 
-    SendActivityResponse? res = await botApp.SendActivityAsync(replyActivity, conversationId, cancellationToken: cancellationToken);
+    SendActivityResponse? res = await botApp.SendActivityAsync(replyActivity, cancellationToken: cancellationToken);
 
     Console.WriteLine("SENT >>> => " + res?.Id);
 };

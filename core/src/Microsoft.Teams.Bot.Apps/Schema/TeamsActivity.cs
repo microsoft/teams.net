@@ -67,7 +67,8 @@ public class TeamsActivity : CoreActivity
         // (via [JsonExtensionData]), so we extract and promote them here.
         From = activity.Properties.Extract<TeamsConversationAccount>("from");
         Recipient = activity.Properties.Extract<TeamsConversationAccount>("recipient");
-        Conversation = activity.Properties.Extract<TeamsConversation>("conversation");
+        Conversation = activity.Properties.Extract<TeamsConversation>("conversation")
+            ?? TeamsConversation.FromConversation(activity.Conversation);
         ChannelData = activity.Properties.Extract<TeamsChannelData>("channelData");
         Attachments = activity.Properties.Extract<IList<TeamsAttachment>>("attachments");
         Entities = activity.Properties.Extract<EntityList>("entities");
@@ -89,7 +90,7 @@ public class TeamsActivity : CoreActivity
     /// Gets or sets the conversation information for the Teams conversation.
     /// </summary>
     [JsonPropertyName("conversation")]
-    public TeamsConversation? Conversation { get; set; }
+    public new TeamsConversation? Conversation { get; set; }
 
     /// <summary>
     /// Gets or sets the Teams-specific channel data associated with this activity.

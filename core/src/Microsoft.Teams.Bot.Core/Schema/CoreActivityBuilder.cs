@@ -95,6 +95,17 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     }
 
     /// <summary>
+    /// Sets the conversation information.
+    /// </summary>
+    /// <param name="conversation">The conversation information.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TBuilder WithConversation(Conversation conversation)
+    {
+        _activity.Conversation = conversation;
+        return (TBuilder)this;
+    }
+
+    /// <summary>
     /// Adds or updates a property in the activity's Properties dictionary.
     /// </summary>
     /// <param name="name">Name of the property.</param>

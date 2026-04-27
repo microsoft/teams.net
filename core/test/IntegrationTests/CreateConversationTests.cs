@@ -88,10 +88,11 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         {
             Type = ActivityType.Message,
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(response.Id) } }
+            Conversation = new(response.Id),
+            Properties = { { "text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`" } }
         };
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, response.Id);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
         Assert.NotNull(sent?.Id);
         _output.WriteLine($"Created 1:1 conversation {response.Id} and sent activity {sent.Id}");
     }
@@ -189,10 +190,11 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         {
             Type = ActivityType.Message,
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "text", $"[Core] Group message at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(response.Id) } }
+            Conversation = new(response.Id),
+            Properties = { { "text", $"[Core] Group message at `{DateTime.UtcNow:s}`" } }
         };
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, response.Id);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
         Assert.NotNull(sent?.Id);
         _output.WriteLine($"Created group {response.Id} and sent activity {sent.Id}");
     }

@@ -45,7 +45,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             .WithConversationReference(Activity)
             .WithText(text)
             .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, reply.Conversation!.Id, cancellationToken: cancellationToken);
+        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -59,7 +59,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         TeamsActivity reply = new TeamsActivityBuilder(activity)
             .WithConversationReference(Activity)
             .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, reply.Conversation!.Id, cancellationToken: cancellationToken);
+        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -73,6 +73,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             .WithType(TeamsActivityType.Typing)
             .WithConversationReference(Activity)
             .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, reply.Conversation!.Id, cancellationToken: cancellationToken);
+        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
     }
 }

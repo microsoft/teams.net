@@ -40,8 +40,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.Equal(activity.From?.Name, coreFrom?.Name);
             Microsoft.Teams.Bot.Core.Schema.ConversationAccount? coreRecipient = coreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("recipient");
             Assert.Equal(activity.Recipient?.Id, coreRecipient?.Id);
-            Conversation? coreConversation = coreActivity.Properties.Extract<Conversation>("conversation");
-            Assert.Equal(activity.Conversation?.Id, coreConversation?.Id);
+            Assert.Equal(activity.Conversation?.Id, coreActivity.Conversation?.Id);
         }
 
         [Fact]

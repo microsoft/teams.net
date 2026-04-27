@@ -29,10 +29,11 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         {
             Type = ActivityType.Message,
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
+            Conversation = new(_f.ConversationId),
+            Properties = { { "text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`" } }
         };
 
-        SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(activity, _f.ConversationId);
+        SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(activity);
 
         Assert.NotNull(res);
         Assert.NotNull(res.Id);
@@ -46,17 +47,19 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         {
             Type = ActivityType.Message,
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
+            Conversation = new(_f.ConversationId),
+            Properties = { { "text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`" } }
         };
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, _f.ConversationId);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
         Assert.NotNull(sent?.Id);
 
         CoreActivity updated = new()
         {
             Type = ActivityType.Message,
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
+            Conversation = new(_f.ConversationId),
+            Properties = { { "text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`" } }
         };
 
         UpdateActivityResponse res = await _f.ConversationClient.UpdateActivityAsync(
@@ -73,10 +76,11 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         {
             Type = ActivityType.Message,
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
+            Conversation = new(_f.ConversationId),
+            Properties = { { "text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`" } }
         };
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, _f.ConversationId);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
         Assert.NotNull(sent?.Id);
 
         await Task.Delay(2000);
@@ -141,10 +145,11 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         {
             Type = ActivityType.Message,
             ServiceUrl = _f.ServiceUrl,
-            Properties = { { "text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`" }, { "conversation", new Conversation(_f.ConversationId) } }
+            Conversation = new(_f.ConversationId),
+            Properties = { { "text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`" } }
         };
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, _f.ConversationId);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
         Assert.NotNull(sent?.Id);
 
         await _f.ConversationClient.AddReactionAsync(

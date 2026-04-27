@@ -74,12 +74,11 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
 
         var incomingCoreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
-        string conversationId = incomingCoreActivity.Properties.Extract<Conversation>("conversation")?.Id!;
         var incomingFrom = incomingCoreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("from");
         var incomingRecipient = incomingCoreActivity.Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("recipient");
         incomingFrom!.IsTargeted = true;
         CoreActivity tm = CoreActivity.CreateBuilder()
-            .WithProperty("conversation", new Conversation { Id = conversationId })
+            .WithConversation(incomingCoreActivity.Conversation!)
             .WithProperty("text", "Hello TM !")
             .WithProperty("recipient", incomingFrom)
             .WithProperty("from", incomingRecipient)
@@ -87,7 +86,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             .WithServiceUrl("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/")
             .Build();
 
-        await teamsBotApp.ConversationClient.SendActivityAsync(tm, conversationId, cancellationToken: cancellationToken);
+        await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
 
         var res = await turnContext.SendActivityAsync(
             MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);

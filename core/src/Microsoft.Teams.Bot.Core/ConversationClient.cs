@@ -46,9 +46,10 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the activity could not be sent successfully. The exception message includes the HTTP status code and
     /// response content.</exception>
-    public virtual async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, string conversationId, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, string? conversationId = null, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        conversationId ??= activity.Conversation?.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 

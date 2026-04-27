@@ -106,7 +106,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// </summary>
     /// <param name="conversation">The conversation information.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder WithConversation(Conversation? conversation)
+    public new TeamsActivityBuilder WithConversation(Conversation? conversation)
     {
         _activity.Conversation = conversation is TeamsConversation teamsConv
             ? teamsConv

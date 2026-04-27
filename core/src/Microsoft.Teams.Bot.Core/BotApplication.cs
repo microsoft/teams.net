@@ -151,7 +151,7 @@ public class BotApplication
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the identifier of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the conversation client has not been initialized.</exception>
-    public async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, string conversationId, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, string? conversationId = null, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(_conversationClient, "ConversationClient not initialized");
