@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Identity.Client;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -64,6 +63,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         _activity.From = from is TeamsConversationAccount teamsAccount
             ? teamsAccount
             : TeamsConversationAccount.FromConversationAccount(from)!;
+        ((CoreActivity)_activity).From = from;
         return this;
     }
 
@@ -77,6 +77,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
             ? teamsAccount
             : TeamsConversationAccount.FromConversationAccount(recipient)!;
+        ((CoreActivity)_activity).Recipient = recipient;
         return this;
     }
 
@@ -94,6 +95,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
             _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
                 ? teamsAccount
                 : TeamsConversationAccount.FromConversationAccount(recipient)!;
+            ((CoreActivity)_activity).Recipient = recipient;
         }
         return this;
     }
@@ -105,11 +107,11 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The builder instance for chaining.</returns>
     public new TeamsActivityBuilder WithConversation(Conversation? conversation)
     {
+        ArgumentNullException.ThrowIfNull(conversation);
+
         _activity.Conversation = conversation is TeamsConversation teamsConv
             ? teamsConv
             : TeamsConversation.FromConversation(conversation);
-
-        ArgumentNullException.ThrowIfNull(conversation);
 
         ((CoreActivity)_activity).Conversation = conversation;
 

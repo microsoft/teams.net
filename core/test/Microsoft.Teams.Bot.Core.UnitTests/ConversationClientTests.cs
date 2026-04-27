@@ -198,7 +198,7 @@ public class ConversationClientTests
             Type = ActivityType.Message,
             ServiceUrl = new Uri("https://test.service.url/"),
             Conversation = new("conv123"),
-            From = new ConversationAccount { IsTargeted = true }
+            Recipient = new ConversationAccount { IsTargeted = true }
         };
 
         await conversationClient.SendActivityAsync(activity);
@@ -486,7 +486,7 @@ public class ConversationClientTests
     }
 
     [Fact]
-    public async Task SendActivityAsync_WithJsonElementFrom_DeserializesAndExtractsIsTargeted()
+    public async Task SendActivityAsync_WithRecipientIsTargeted_DeserializedFromJson()
     {
         HttpRequestMessage? capturedRequest = null;
         Mock<HttpMessageHandler> mockHttpMessageHandler = new();
@@ -506,13 +506,13 @@ public class ConversationClientTests
         HttpClient httpClient = new(mockHttpMessageHandler.Object);
         ConversationClient conversationClient = new(httpClient);
 
-        // Simulate a deserialized activity where "from" is a JsonElement (as it would be from JSON deserialization)
+        // Simulate a deserialized activity where isTargeted is set on recipient
         string activityJson = """
         {
             "type": "message",
             "serviceUrl": "https://test.service.url/",
             "conversation": { "id": "conv123" },
-            "from": { "id": "user1", "isTargeted": true }
+            "recipient": { "id": "user1", "isTargeted": true }
         }
         """;
         CoreActivity activity = CoreActivity.FromJsonString(activityJson);

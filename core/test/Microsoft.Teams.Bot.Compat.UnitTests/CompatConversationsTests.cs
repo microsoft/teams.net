@@ -113,7 +113,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Assert.NotNull(capturedActivity);
             Assert.NotNull(capturedActivity.ServiceUrl);
             Assert.Equal(TestServiceUrl.TrimEnd('/'), capturedActivity.ServiceUrl.ToString().TrimEnd('/'));
-            Assert.Equal(TestActivityId, capturedActivity.Properties["replyToId"]);
+            Assert.Equal(TestActivityId, capturedActivity.ReplyToId);
             mockConversationClient.Verify(
                 c => c.SendActivityAsync(It.IsAny<CoreActivity>(), It.IsAny<Dictionary<string, string>?>(), It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -310,8 +310,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             // Assert
             Assert.NotNull(capturedActivity);
-            Assert.True(capturedActivity.Properties.ContainsKey("replyToId"));
-            Assert.Equal("parent-activity-id", capturedActivity.Properties["replyToId"]);
+            Assert.Equal("parent-activity-id", capturedActivity.ReplyToId);
             Assert.NotNull(capturedActivity.Conversation);
             Assert.Equal(TestConversationId, capturedActivity.Conversation.Id);
         }

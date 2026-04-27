@@ -121,22 +121,13 @@ public class CoreActivity
 
     /// <summary>
     /// Creates a new instance of the <see cref="CoreActivity"/> class with the specified activity type.
+    /// Defaults to <see cref="ActivityType.Message"/>.
     /// </summary>
-    /// <param name="type"></param>
+    /// <param name="type">The activity type. Defaults to "message".</param>
+    [JsonConstructor]
     internal CoreActivity(string type = ActivityType.Message)
     {
         Type = type;
-        Conversation = new Conversation();
-    }
-
-
-    /// <summary>
-    ///  Creates a new instance of the <see cref="CoreActivity"/> class. As Message type by default.
-    /// </summary>
-    [JsonConstructor]
-    internal CoreActivity()
-    {
-        Type = ActivityType.Message;
         Conversation = new Conversation();
     }
 

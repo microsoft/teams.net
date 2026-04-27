@@ -213,6 +213,37 @@ public class TeamsActivityTests
     }
 
     [Fact]
+    public void MessageActivity_FromActivity_PreservesFromAndRecipient()
+    {
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "text": "hello",
+                "from": {
+                    "id": "user1",
+                    "name": "User One",
+                    "agenticAppId": "app-1"
+                },
+                "recipient": {
+                    "id": "bot1",
+                    "name": "Bot One"
+                }
+            }
+            """);
+
+        MessageActivity messageActivity = MessageActivity.FromActivity(coreActivity);
+
+        Assert.Equal("hello", messageActivity.Text);
+        Assert.NotNull(messageActivity.From);
+        Assert.Equal("user1", messageActivity.From.Id);
+        Assert.Equal("User One", messageActivity.From.Name);
+        Assert.Equal("app-1", messageActivity.From.AgenticAppId);
+        Assert.NotNull(messageActivity.Recipient);
+        Assert.Equal("bot1", messageActivity.Recipient.Id);
+        Assert.Equal("Bot One", messageActivity.Recipient.Name);
+    }
+
+    [Fact]
     public void FromActivity_ReturnsDerivedType_WhenRegistered()
     {
         CoreActivity coreActivity = new(ActivityType.Message);
@@ -295,6 +326,34 @@ public class TeamsActivityTests
         Assert.Equal("tenant-1", ta.Conversation.TenantId);
     }
 
+
+    [Fact]
+    public void TeamsActivityBuilder_WithFrom_SyncsBaseProperty()
+    {
+        // Verify that From/Recipient set via builder are accessible through a CoreActivity reference
+        TeamsActivity incoming = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithText("test")
+            .Build();
+
+        // Access through CoreActivity reference (as ConversationClient would)
+        CoreActivity coreRef = reply;
+        Assert.NotNull(coreRef.From);
+        Assert.Equal(incoming.Recipient?.Id, coreRef.From.Id);
+
+        // AgenticIdentity should be accessible through the base From
+        ConversationAccount fromWithAgentic = new() { Id = "bot1", AgenticAppId = "app-1" };
+        TeamsActivity agenticReply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithFrom(fromWithAgentic)
+            .Build();
+
+        CoreActivity agenticCoreRef = agenticReply;
+        Assert.NotNull(agenticCoreRef.From);
+        Assert.Equal("app-1", agenticCoreRef.From.AgenticAppId);
+        Assert.NotNull(AgenticIdentity.FromAccount(agenticCoreRef.From));
+    }
 
     [Fact]
     public void TeamsActivityBuilder_WithFrom_DoesNotProduceDuplicateFromInJson()

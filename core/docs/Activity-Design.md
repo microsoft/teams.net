@@ -8,9 +8,9 @@ The activity model is the central abstraction for all bot communication. It foll
 - **TeamsActivity** (`Microsoft.Teams.Bot.Apps`): Teams-specific extension that shadows base properties with Teams-specific types and promotes additional extension properties into typed fields.
 
 ```
-CoreActivity (Core)
+CoreActivity (Core) — internal constructors, created via CreateBuilder() or deserialization
   ├── Declared properties: type, channelId, id, serviceUrl, value,
-  │    replyToId, conversation, from, recipient
+  │    replyToId, conversation (non-nullable), from, recipient
   ├── [JsonExtensionData] Properties bag for everything else
   ├── AOT serialization via CoreActivityJsonContext
   └── CoreActivityBuilder (fluent builder)
@@ -70,7 +70,7 @@ CoreActivity declares typed `[JsonPropertyName]` properties for fields that are 
 | `Id` | `string?` | Reply targeting |
 | `ServiceUrl` | `Uri?` | HTTP endpoint |
 | `ReplyToId` | `string?` | Reply threading |
-| `Conversation` | `Conversation?` | URL construction |
+| `Conversation` | `Conversation` (non-nullable) | URL construction, always initialized |
 | `From` | `ConversationAccount?` | AgenticIdentity extraction, IsTargeted |
 | `Recipient` | `ConversationAccount?` | Targeted messaging |
 | `Value` | `JsonNode?` | Invoke payloads |
@@ -87,7 +87,7 @@ Everything else (`text`, `attachments`, `entities`, `channelData`, `timestamp`, 
 [JsonPropertyName("agenticAppBlueprintId")] public string? AgenticAppBlueprintId { get; set; }
 ```
 
-The `AgenticIdentity` class is a separate DTO used by `BotRequestOptions` and `BotAuthenticationHandler` for token acquisition. It is constructed from a `ConversationAccount`'s typed fields via `AgenticIdentity.FromAccount(account)` at the point of use — there is no computed property on `ConversationAccount` to avoid field duplication.
+The `AgenticIdentity` class is a separate DTO used by `BotRequestOptions` and `BotAuthenticationHandler` for token acquisition. It is constructed from a `ConversationAccount`'s typed fields via `AgenticIdentity.FromAccount(account)` at the point of use — there is no computed property or duplication on `ConversationAccount` itself.
 
 ### 3. Property Shadowing with `new` Keyword
 
@@ -142,8 +142,8 @@ This pattern is used for: `channelData`, `attachments`, `entities`, `text`, `tex
 
 Both layers provide fluent builders with `With*` (replace) and `Add*` (append) methods:
 
-- `CoreActivityBuilder` — core-level activities with `WithFrom()`, `WithRecipient()`, `WithConversation()`, `WithProperty()`
-- `TeamsActivityBuilder` — Teams-specific, shadows `WithFrom`/`WithRecipient` to convert to `TeamsConversationAccount`
+- `CoreActivityBuilder` — core-level activities with `WithFrom()`, `WithRecipient()`, `WithConversation()`, `WithProperty()`. Builder parameters accept nullable types where appropriate (`Uri?`, `string?`, `ConversationAccount?`).
+- `TeamsActivityBuilder` — Teams-specific, shadows `WithFrom`/`WithRecipient`/`WithConversation` (via `new`) to convert to `TeamsConversationAccount`/`TeamsConversation`
 
 `TeamsActivityBuilder.WithConversationReference(activity)` is the canonical way to build a reply — it copies `ServiceUrl`, `ChannelId`, `Conversation` from the incoming activity and swaps `From`/`Recipient`.
 
@@ -287,11 +287,11 @@ ConversationClient.SendActivityAsync(activity):
      → Uses AgenticIdentity for user-delegated token acquisition
 ```
 
-## Remaining Issues
+## Remaining Considerations
 
-### Issue 1: Shared Mutable Properties Dictionary (Shallow Copy)
+### Shared Mutable Properties Dictionary (Shallow Copy)
 
-**Severity: Medium** | **Files: CoreActivity.cs, TeamsConversationAccount.cs**
+**Files: CoreActivity.cs, TeamsConversationAccount.cs**
 
 The copy constructor shares the Properties reference:
 
@@ -299,23 +299,19 @@ The copy constructor shares the Properties reference:
 Properties = activity.Properties;  // Reference copy, not deep copy
 ```
 
-When `TeamsActivity(CoreActivity)` calls `Extract<>()`, it removes keys from the shared dictionary, mutating the source activity. This is currently safe because the source isn't used after conversion, but it's fragile and violates least-surprise.
+When `TeamsActivity(CoreActivity)` calls `Extract<>()`, it removes keys from the shared dictionary, mutating the source activity. This is currently safe because the source isn't used after conversion, but it's fragile. Consider a shallow clone or document the contract that the source is consumed.
 
-**Recommendation:** Consider a shallow clone (`new ExtendedPropertiesDictionary(activity.Properties)`) or document the contract that the source activity is consumed after conversion.
+### Extract<T> Silently Loses Data for Unknown Types
 
-### Issue 2: Extract<T> Silently Loses Data for Unknown Types
+When `raw` is neither `T` nor `JsonElement`, `Extract<T>` removes the key and returns `default`. This only affects Properties-based fields (channelData, attachments, entities, etc.) since `from`/`recipient`/`conversation` are now typed properties and never go through Extract.
 
-**Severity: Low** | **File: CoreActivity.cs (ExtendedPropertiesDictionary)**
+### Context.SendActivityAsync Overwrites Conversation Reference
 
-When `raw` is neither `T` nor `JsonElement`, `Extract<T>` removes the key and returns `default` — the data is silently lost. This only affects Properties-based fields (channelData, attachments, entities, etc.), since `from`/`recipient` are now typed properties.
+`Context.SendActivityAsync(TeamsActivity)` always applies `WithConversationReference(Activity)`, which overwrites `ServiceUrl`, `ChannelId`, `Conversation`, and `From`. For cross-conversation or proactive messaging, use `TeamsBotApplication.SendActivityAsync` directly.
 
-**Recommendation:** Add a serialize-then-deserialize fallback for compatible but non-identical types.
+### CoreActivity Constructors are Internal
 
-### Issue 3: Context.SendActivityAsync Overwrites User-Set Conversation Reference
-
-**Severity: Low** | **File: Context.cs**
-
-`Context.SendActivityAsync(TeamsActivity)` always applies `WithConversationReference(Activity)`, which overwrites `ServiceUrl`, `ChannelId`, `Conversation`, and `From`. Users doing cross-conversation or proactive messaging should use `TeamsBotApplication.SendActivityAsync` directly.
+CoreActivity constructors are `internal` — external consumers create instances via `CoreActivity.CreateBuilder()` or JSON deserialization (`FromJsonString`, `FromJsonStreamAsync`). The single `[JsonConstructor]` parameterized constructor handles both direct construction and deserialization, defaulting to `ActivityType.Message` and initializing `Conversation` to a non-null empty instance.
 
 ## Test Coverage
 
