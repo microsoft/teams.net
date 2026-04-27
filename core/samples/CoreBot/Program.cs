@@ -16,13 +16,19 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 {
     string replyText = $"CoreBot running on SDK `{BotApplication.Version}`.";
 
+    string conversationId = activity.Properties.Extract<Conversation>("conversation")?.Id
+        ?? throw new InvalidOperationException("Conversation ID not found");
+
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Message)
-        .WithConversationReference(activity)
+        .WithServiceUrl(activity.ServiceUrl!)
+        .WithChannelId(activity.ChannelId!)
+        .WithProperty("conversation", activity.Properties["conversation"])
+        .WithProperty("from", activity.Properties["recipient"])
         .WithProperty("text", replyText)
         .Build();
 
-    await botApp.SendActivityAsync(replyActivity, cancellationToken);
+    await botApp.SendActivityAsync(replyActivity, conversationId, cancellationToken: cancellationToken);
 };
 
 webApp.Run();

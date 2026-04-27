@@ -74,16 +74,20 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
 
         var incomingCoreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
+        string conversationId = incomingCoreActivity.Properties.Extract<Conversation>("conversation")?.Id!;
+        var incomingFrom = incomingCoreActivity.Properties.Extract<ConversationAccount>("from");
+        var incomingRecipient = incomingCoreActivity.Properties.Extract<ConversationAccount>("recipient");
+        incomingFrom!.IsTargeted = true;
         CoreActivity tm = CoreActivity.CreateBuilder()
-            .WithConversation(new Conversation { Id = incomingCoreActivity.Conversation?.Id! })
+            .WithProperty("conversation", new Conversation { Id = conversationId })
             .WithProperty("text", "Hello TM !")
-            .WithRecipient(incomingCoreActivity.From, true)
-            .WithFrom(incomingCoreActivity.Recipient)
+            .WithProperty("recipient", incomingFrom)
+            .WithProperty("from", incomingRecipient)
             //.WithServiceUrl(activity.ServiceUrl!)
             .WithServiceUrl("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/")
             .Build();
 
-        await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
+        await teamsBotApp.ConversationClient.SendActivityAsync(tm, conversationId, cancellationToken: cancellationToken);
 
         var res = await turnContext.SendActivityAsync(
             MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
@@ -96,7 +100,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             "laugh",
             new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             //incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromProperties(incomingCoreActivity.Recipient?.Properties),
+            AgenticIdentity.FromProperties(incomingRecipient?.Properties),
             null,
             cancellationToken);
 
@@ -106,7 +110,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             res.Id,
             "sad",
             incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromProperties(incomingCoreActivity.Recipient?.Properties),
+            AgenticIdentity.FromProperties(incomingRecipient?.Properties),
             null,
             cancellationToken);
 
@@ -116,9 +120,9 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             turnContext.Activity.Conversation.Id,
             res.Id,
             "laugh",
-            //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"), 
+            //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             incomingCoreActivity.ServiceUrl!,
-            AgenticIdentity.FromProperties(incomingCoreActivity.Recipient?.Properties),
+            AgenticIdentity.FromProperties(incomingRecipient?.Properties),
             null,
             cancellationToken);
 
