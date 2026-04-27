@@ -89,10 +89,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             Type = ActivityType.Message,
             Properties = { { "text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Conversation = new(response.Id)
+            Properties = { { "conversation", new Conversation(response.Id) } }
         };
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, response.Id);
         Assert.NotNull(sent?.Id);
         _output.WriteLine($"Created 1:1 conversation {response.Id} and sent activity {sent.Id}");
     }
@@ -191,10 +191,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             Type = ActivityType.Message,
             Properties = { { "text", $"[Core] Group message at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Conversation = new(response.Id)
+            Properties = { { "conversation", new Conversation(response.Id) } }
         };
 
-        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
+        SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity, response.Id);
         Assert.NotNull(sent?.Id);
         _output.WriteLine($"Created group {response.Id} and sent activity {sent.Id}");
     }

@@ -131,7 +131,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Recipient = new ConversationAccount { Id = members[0].Id },
+            Properties = { { "recipient", new ConversationAccount { Id = members[0].Id } } },
             Properties = { { "text", $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`" } }
         };
 
@@ -151,7 +151,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity original = new()
         {
             Type = ActivityType.Message,
-            Recipient = new ConversationAccount { Id = members[0].Id },
+            Properties = { { "recipient", new ConversationAccount { Id = members[0].Id } } },
             Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`" } }
         };
 
@@ -180,7 +180,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Recipient = new ConversationAccount { Id = members[0].Id },
+            Properties = { { "recipient", new ConversationAccount { Id = members[0].Id } } },
             Properties = { { "text", $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`" } }
         };
 
