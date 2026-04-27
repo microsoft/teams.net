@@ -37,20 +37,25 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <summary>
     /// Sends the specified activity to the conversation endpoint asynchronously.
     /// </summary>
-    /// <param name="activity">The activity to send. Cannot be null. Must contain a valid ServiceUrl and Conversation with an Id.</param>
-    /// <param name="isTargeted">Whether this is a targeted activity visible only to a specific recipient.</param>
-    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
+    /// <param name="activity">The activity to send. Cannot be null. Must contain a valid ServiceUrl and Conversation with an Id.
+    /// The recipient's IsTargeted property determines if this is a targeted activity, and AgenticIdentity is extracted from the recipient's properties.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the activity could not be sent successfully. The exception message includes the HTTP status code and
     /// response content.</exception>
-    public virtual async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         string? conversationId = activity.Conversation?.Id;
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+
+        ConversationAccount? recipient = activity.Properties.TryGetValue("recipient", out object? recipientObj)
+            ? recipientObj is ConversationAccount ca ? ca : null
+            : null;
+        bool isTargeted = recipient?.IsTargeted == true;
+        AgenticIdentity? agenticIdentity = recipient?.GetAgenticIdentity();
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/";
 

@@ -152,8 +152,6 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
             mockConversationClient.Setup(c => c.SendActivityAsync(
                     It.IsAny<CoreActivity>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AgenticIdentity?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new SendActivityResponse { Id = "sent-123" });
@@ -180,8 +178,6 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             mockConversationClient.Verify(
                 c => c.SendActivityAsync(
                     It.Is<CoreActivity>(a => a.ServiceUrl != null && a.ServiceUrl.ToString().TrimEnd('/') == "https://turn-context-service-url.com"),
-                    It.IsAny<bool>(),
-                    It.IsAny<AgenticIdentity?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()),
                 Times.Once);
@@ -250,8 +246,6 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             mock.Setup(c => c.SendActivityAsync(
                     It.IsAny<CoreActivity>(),
-                    It.IsAny<bool>(),
-                    It.IsAny<AgenticIdentity?>(),
                     It.IsAny<Dictionary<string, string>?>(),
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new SendActivityResponse { Id = "default-sent-id" });

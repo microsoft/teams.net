@@ -75,7 +75,12 @@ public class ActivityClient
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
         activity.Conversation ??= new Conversation(conversationId);
-        return _client.SendActivityAsync(activity, isTargeted: true, cancellationToken: cancellationToken);
+        // Ensure recipient is marked as targeted
+        if (activity.Properties.TryGetValue("recipient", out object? recipientObj) && recipientObj is ConversationAccount recipient)
+        {
+            recipient.IsTargeted = true;
+        }
+        return _client.SendActivityAsync(activity, cancellationToken: cancellationToken);
     }
 
     /// <summary>

@@ -195,11 +195,12 @@ public class ConversationClientTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://test.service.url/")
+            ServiceUrl = new Uri("https://test.service.url/"),
+            Conversation = new("conv123"),
+            Properties = { { "recipient", new ConversationAccount { IsTargeted = true } } }
         };
 
-        activity.Conversation = new("conv123");
-        await conversationClient.SendActivityAsync(activity, isTargeted: true);
+        await conversationClient.SendActivityAsync(activity);
 
         Assert.NotNull(capturedRequest);
         Assert.Contains("isTargetedActivity=true", capturedRequest.RequestUri?.ToString());

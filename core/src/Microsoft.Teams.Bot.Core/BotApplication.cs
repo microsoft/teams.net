@@ -145,17 +145,15 @@ public class BotApplication
     /// Sends the specified activity to the conversation asynchronously.
     /// </summary>
     /// <param name="activity">The activity to send to the conversation. Cannot be null. Must have Conversation.Id set.</param>
-    /// <param name="isTargeted">Whether this is a targeted activity visible only to a specific recipient.</param>
-    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the identifier of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the conversation client has not been initialized.</exception>
-    public async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    public async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(_conversationClient, "ConversationClient not initialized");
 
-        return await _conversationClient.SendActivityAsync(activity, isTargeted, agenticIdentity, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return await _conversationClient.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
