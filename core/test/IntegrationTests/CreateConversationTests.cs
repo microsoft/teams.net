@@ -84,13 +84,12 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         Assert.NotNull(response?.Id);
 
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            ServiceUrl = _f.ServiceUrl,
-            Conversation = new(response.Id),
-            Properties = { { "text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`" } }
-        };
+        CoreActivity activity = CoreActivity.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithServiceUrl(_f.ServiceUrl)
+            .WithConversation(new(response.Id))
+            .WithProperty("text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`")
+            .Build();
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
         Assert.NotNull(sent?.Id);
@@ -107,11 +106,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             IsGroup = false,
             Members = [new() { Id = memberMri }],
             TenantId = _f.TenantId,
-            Activity = new CoreActivity
-            {
-                Type = ActivityType.Message,
-                Properties = { { "text", $"[Core] Initial message at `{DateTime.UtcNow:s}`" } }
-            }
+            Activity = CoreActivity.CreateBuilder()
+                .WithType(ActivityType.Message)
+                .WithProperty("text", $"[Core] Initial message at `{DateTime.UtcNow:s}`")
+                .Build()
         };
 
         CreateConversationResponse response = await _f.ConversationClient.CreateConversationAsync(
@@ -186,13 +184,12 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         Assert.NotNull(response?.Id);
 
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            ServiceUrl = _f.ServiceUrl,
-            Conversation = new(response.Id),
-            Properties = { { "text", $"[Core] Group message at `{DateTime.UtcNow:s}`" } }
-        };
+        CoreActivity activity = CoreActivity.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithServiceUrl(_f.ServiceUrl)
+            .WithConversation(new(response.Id))
+            .WithProperty("text", $"[Core] Group message at `{DateTime.UtcNow:s}`")
+            .Build();
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
         Assert.NotNull(sent?.Id);
@@ -210,11 +207,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         {
             IsGroup = true,
             ChannelData = new { channel = new { id = _f.ChannelId } },
-            Activity = new CoreActivity
-            {
-                Type = ActivityType.Message,
-                Properties = { { "text", $"[Core] New channel thread at `{DateTime.UtcNow:s}`" } }
-            },
+            Activity = CoreActivity.CreateBuilder()
+                .WithType(ActivityType.Message)
+                .WithProperty("text", $"[Core] New channel thread at `{DateTime.UtcNow:s}`")
+                .Build(),
             TenantId = _f.TenantId
         };
 
@@ -264,11 +260,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
         Assert.NotNull(response?.Id);
 
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient] 1:1 via Activities.Create at `{DateTime.UtcNow:s}`" } }
-        };
+        CoreActivity activity = CoreActivity.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithProperty("text", $"[ApiClient] 1:1 via Activities.Create at `{DateTime.UtcNow:s}`")
+            .Build();
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(response.Id, activity);
         Assert.NotNull(sent?.Id);
@@ -321,11 +316,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         {
             IsGroup = true,
             ChannelData = new { channel = new { id = _f.ChannelId } },
-            Activity = new CoreActivity
-            {
-                Type = ActivityType.Message,
-                Properties = { { "text", $"[ApiClient] New channel thread at `{DateTime.UtcNow:s}`" } }
-            },
+            Activity = CoreActivity.CreateBuilder()
+                .WithType(ActivityType.Message)
+                .WithProperty("text", $"[ApiClient] New channel thread at `{DateTime.UtcNow:s}`")
+                .Build(),
             TenantId = _f.TenantId
         };
 
@@ -343,11 +337,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         {
             IsGroup = true,
             ChannelData = new { channel = new { id = _f.ChannelId } },
-            Activity = new CoreActivity
-            {
-                Type = ActivityType.Message,
-                Properties = { { "text", $"[ApiClient] Thread root at `{DateTime.UtcNow:s}`" } }
-            },
+            Activity = CoreActivity.CreateBuilder()
+                .WithType(ActivityType.Message)
+                .WithProperty("text", $"[ApiClient] Thread root at `{DateTime.UtcNow:s}`")
+                .Build(),
             TenantId = _f.TenantId
         };
 
@@ -356,11 +349,10 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         Assert.NotNull(response.ActivityId);
 
         // Reply to the thread
-        CoreActivity reply = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient] Thread reply at `{DateTime.UtcNow:s}`" } }
-        };
+        CoreActivity reply = CoreActivity.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithProperty("text", $"[ApiClient] Thread reply at `{DateTime.UtcNow:s}`")
+            .Build();
 
         SendActivityResponse? replyResponse = await _api.Conversations.Activities.ReplyAsync(
             response.Id, response.ActivityId, reply);
