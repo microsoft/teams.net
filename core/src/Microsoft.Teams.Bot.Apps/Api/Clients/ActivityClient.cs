@@ -30,8 +30,8 @@ public class ActivityClient
     public Task<SendActivityResponse?> CreateAsync(string conversationId, CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        EnsureActivityContext(activity, conversationId);
-        return _client.SendActivityAsync(activity, cancellationToken: cancellationToken);
+        activity.ServiceUrl ??= _serviceUrl;
+        return _client.SendActivityAsync(activity, conversationId, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -51,8 +51,8 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ReplyToId = id;
-        EnsureActivityContext(activity, conversationId);
-        return _client.SendActivityAsync(activity, cancellationToken: cancellationToken);
+        activity.ServiceUrl ??= _serviceUrl;
+        return _client.SendActivityAsync(activity, conversationId, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -71,9 +71,8 @@ public class ActivityClient
     public Task<SendActivityResponse?> CreateTargetedAsync(string conversationId, CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        EnsureActivityContext(activity, conversationId);
-        EnsureTargeted(activity);
-        return _client.SendActivityAsync(activity, cancellationToken: cancellationToken);
+        activity.ServiceUrl ??= _serviceUrl;
+        return _client.SendActivityAsync(activity, conversationId, isTargeted: true, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -93,17 +92,5 @@ public class ActivityClient
     public Task DeleteTargetedAsync(string conversationId, string id, CancellationToken cancellationToken = default)
     {
         return _client.DeleteTargetedActivityAsync(conversationId, id, _serviceUrl, cancellationToken: cancellationToken);
-    }
-
-    private void EnsureActivityContext(CoreActivity activity, string conversationId)
-    {
-        activity.ServiceUrl ??= _serviceUrl;
-        activity.Conversation ??= new Conversation(conversationId);
-    }
-
-    private static void EnsureTargeted(CoreActivity activity)
-    {
-        activity.Recipient ??= new ConversationAccount();
-        activity.Recipient.IsTargeted = true;
     }
 }

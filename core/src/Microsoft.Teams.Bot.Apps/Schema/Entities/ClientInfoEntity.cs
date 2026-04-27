@@ -27,7 +27,6 @@ public static class ActivityClientInfoExtensions
         ClientInfoEntity clientInfo = new(platform, country, timeZone, locale);
         activity.Entities ??= [];
         activity.Entities.Add(clientInfo);
-        activity.Rebase();
         return clientInfo;
     }
 

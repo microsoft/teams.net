@@ -39,6 +39,7 @@ public sealed class TeamsStreamingWriter
 
     private readonly ConversationClient _client;
     private readonly TeamsActivity _reference;
+    private readonly string _conversationId;
     // Assigned from the server's 201 response after the first send; null until then.
     private string? _streamId;
     private int _sequence;
@@ -51,6 +52,7 @@ public sealed class TeamsStreamingWriter
     {
         _client = client;
         _reference = reference;
+        _conversationId = reference.Conversation?.Id ?? throw new ArgumentException("Activity must have a Conversation with an Id.", nameof(reference));
     }
 
     /// <summary>
@@ -72,7 +74,7 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException("Cannot send an informative update after streaming has started.");
 
         _sequence++;
-        SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
+        SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), _conversationId, cancellationToken: cancellationToken).ConfigureAwait(false);
         _streamId ??= response?.Id;
     }
 
@@ -97,7 +99,7 @@ public sealed class TeamsStreamingWriter
         _sequence++;
         try
         {
-            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), _conversationId, cancellationToken: cancellationToken).ConfigureAwait(false);
             _streamId ??= response?.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
@@ -126,7 +128,7 @@ public sealed class TeamsStreamingWriter
         if (string.IsNullOrEmpty(_accumulated) && (attachments == null || attachments.Count == 0))
             throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
 
-        await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities, feedbackEnabled), cancellationToken: cancellationToken).ConfigureAwait(false);
+        await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities, feedbackEnabled), _conversationId, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _finalized = true;
     }

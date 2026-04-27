@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Teams.Bot.Core.Schema;
 
@@ -28,17 +29,17 @@ public class EntitiesTest
         """;
         CoreActivity activity = CoreActivity.FromJsonString(json);
         Assert.NotNull(activity);
-        Assert.NotNull(activity.Entities);
-        Assert.Single(activity.Entities);
-        JsonNode? e1 = activity.Entities[0];
-        Assert.NotNull(e1);
-        Assert.Equal("mention", e1["type"]?.ToString());
-        Assert.NotNull(e1["mentioned"]);
-        Assert.True(e1["mentioned"]?.AsObject().ContainsKey("id"));
-        Assert.NotNull(e1["mentioned"]?["id"]);
-        Assert.Equal("user1", e1["mentioned"]?["id"]?.ToString());
-        Assert.Equal("User One", e1["mentioned"]?["name"]?.ToString());
-        Assert.Equal("<at>User One</at>", e1["text"]?.ToString());
+        Assert.True(activity.Properties.ContainsKey("entities"));
+        JsonElement entitiesElement = Assert.IsType<JsonElement>(activity.Properties["entities"]);
+        Assert.Equal(JsonValueKind.Array, entitiesElement.ValueKind);
+        Assert.Equal(1, entitiesElement.GetArrayLength());
+        JsonElement e1 = entitiesElement[0];
+        Assert.Equal("mention", e1.GetProperty("type").GetString());
+        Assert.True(e1.TryGetProperty("mentioned", out JsonElement mentioned));
+        Assert.True(mentioned.TryGetProperty("id", out _));
+        Assert.Equal("user1", mentioned.GetProperty("id").GetString());
+        Assert.Equal("User One", mentioned.GetProperty("name").GetString());
+        Assert.Equal("<at>User One</at>", e1.GetProperty("text").GetString());
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public class EntitiesTest
             },
             ["text"] = "<at>User One</at>"
         };
-        activity.Entities = new JsonArray(nops, mentionEntity);
+        activity.Properties["entities"] = new JsonArray(nops, mentionEntity);
         string json = activity.ToJson();
         Assert.NotNull(json);
         Assert.Contains("\"type\": \"mention\"", json);
@@ -112,11 +113,12 @@ public class EntitiesTest
         """;
         CoreActivity activity = CoreActivity.FromJsonString(json);
         Assert.NotNull(activity);
-        Assert.NotNull(activity.Entities);
-        Assert.Single(activity.Entities);
-        JsonNode? e1 = activity.Entities[0];
-        Assert.NotNull(e1);
-        Assert.Equal("unknownEntityType", e1["type"]?.ToString());
-        Assert.Equal("someValue", e1["someProperty"]?.ToString());
+        Assert.True(activity.Properties.ContainsKey("entities"));
+        JsonElement entitiesElement = Assert.IsType<JsonElement>(activity.Properties["entities"]);
+        Assert.Equal(JsonValueKind.Array, entitiesElement.ValueKind);
+        Assert.Equal(1, entitiesElement.GetArrayLength());
+        JsonElement e1 = entitiesElement[0];
+        Assert.Equal("unknownEntityType", e1.GetProperty("type").GetString());
+        Assert.Equal("someValue", e1.GetProperty("someProperty").GetString());
     }
 }

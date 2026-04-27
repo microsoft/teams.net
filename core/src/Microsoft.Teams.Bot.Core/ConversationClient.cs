@@ -37,25 +37,26 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <summary>
     /// Sends the specified activity to the conversation endpoint asynchronously.
     /// </summary>
-    /// <param name="activity">The activity to send. Cannot be null. The activity must contain valid conversation and service URL information.</param>
+    /// <param name="activity">The activity to send. Cannot be null. Must contain a valid ServiceUrl.</param>
+    /// <param name="conversationId">The ID of the conversation to send the activity to.</param>
+    /// <param name="isTargeted">Whether this is a targeted activity visible only to a specific recipient.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the activity could not be sent successfully. The exception message includes the HTTP status code and
     /// response content.</exception>
-    public virtual async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, string conversationId, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
-        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(activity.Conversation.Id)}/activities/";
+        string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/";
 
         if (activity.ChannelId == "agents")
         {
             logger.LogInformation("Truncating conversation ID for 'agents' channel to comply with length restrictions.");
-            string conversationId = activity.Conversation.Id;
             string convId = conversationId.Length > 100 ? conversationId[..100] : conversationId;
             url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(convId)}/activities/";
         }
@@ -65,7 +66,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += activity.ReplyToId;
         }
 
-        if (activity.Recipient?.IsTargeted == true)
+        if (isTargeted)
         {
             url += url.Contains('?', StringComparison.Ordinal) ? "&isTargetedActivity=true" : "?isTargetedActivity=true";
         }
@@ -78,7 +79,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             HttpMethod.Post,
             url,
             body,
-            CreateRequestOptions(activity.From?.GetAgenticIdentity(), "sending activity", customHeaders),
+            CreateRequestOptions(agenticIdentity, "sending activity", customHeaders),
             cancellationToken).ConfigureAwait(false);
     }
 
@@ -88,11 +89,13 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
     /// <param name="activityId">The ID of the activity to update. Cannot be null or whitespace.</param>
     /// <param name="activity">The updated activity data. Cannot be null.</param>
+    /// <param name="isTargeted">Whether this is a targeted activity visible only to a specific recipient.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the update operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the response with the ID of the updated activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be updated successfully.</exception>
-    public virtual async Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string activityId, CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<UpdateActivityResponse> UpdateActivityAsync(string conversationId, string activityId, CoreActivity activity, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
@@ -101,7 +104,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}";
 
-        if (activity.Recipient?.IsTargeted == true)
+        if (isTargeted)
         {
             url += "?isTargetedActivity=true";
         }
@@ -114,7 +117,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             HttpMethod.Put,
             url,
             body,
-            CreateRequestOptions(activity.From?.GetAgenticIdentity(), "updating activity", customHeaders),
+            CreateRequestOptions(agenticIdentity, "updating activity", customHeaders),
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -218,25 +221,27 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <summary>
     /// Deletes an existing activity from a conversation using activity context.
     /// </summary>
-    /// <param name="activity">The activity to delete. Must contain valid Id, Conversation.Id, and ServiceUrl. Cannot be null.</param>
+    /// <param name="conversationId">The ID of the conversation.</param>
+    /// <param name="activity">The activity to delete. Must contain valid Id and ServiceUrl. Cannot be null.</param>
+    /// <param name="isTargeted">Whether this is a targeted activity.</param>
+    /// <param name="agenticIdentity">Optional agentic identity for authentication.</param>
     /// <param name="customHeaders">Optional custom headers to include in the request.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
-    public virtual async Task DeleteActivityAsync(CoreActivity activity, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteActivityAsync(string conversationId, CoreActivity activity, bool isTargeted = false, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(activity.Id);
-        ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentException.ThrowIfNullOrWhiteSpace(activity.Conversation.Id);
+        ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
         await DeleteActivityAsync(
-            activity.Conversation.Id,
+            conversationId,
             activity.Id,
             activity.ServiceUrl,
-            activity.Recipient?.IsTargeted == true,
-            activity.From?.GetAgenticIdentity(),
+            isTargeted,
+            agenticIdentity,
             customHeaders,
             cancellationToken).ConfigureAwait(false);
     }

@@ -12,13 +12,15 @@ public class TeamsActivityTests
     public void DownCastTeamsActivity_To_CoreActivity()
     {
         CoreActivity activity = CoreActivity.FromJsonString(json);
-        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", activity.Conversation!.Id);
+        Assert.True(activity.Properties.ContainsKey("conversation"));
         TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", teamsActivity.Conversation!.Id);
 
         static void AssertCid(CoreActivity a)
         {
-            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
+            // CoreActivity no longer has Conversation; cast to TeamsActivity to access it
+            Assert.IsAssignableFrom<TeamsActivity>(a);
+            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", ((TeamsActivity)a).Conversation!.Id);
         }
         AssertCid(teamsActivity);
 
@@ -35,7 +37,8 @@ public class TeamsActivityTests
 
         static void AssertCid(CoreActivity a)
         {
-            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
+            Assert.IsAssignableFrom<TeamsActivity>(a);
+            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", ((TeamsActivity)a).Conversation!.Id);
         }
         AssertCid(teamsActivity);
     }
@@ -54,7 +57,8 @@ public class TeamsActivityTests
 
         static void AssertCid(CoreActivity a)
         {
-            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
+            Assert.IsAssignableFrom<TeamsActivity>(a);
+            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", ((TeamsActivity)a).Conversation!.Id);
         }
         AssertCid(teamsActivity);
 
@@ -252,10 +256,13 @@ public class TeamsActivityTests
     [Fact]
     public void BaseFieldsAsBaseTypes()
     {
-        CoreActivity ca = new();
-        ca.Conversation = new Conversation() { Id = "conv1" };
-        ca.Conversation.Properties.Add("tenantId", "tenant-1");
-        CoreActivity ta = TeamsActivity.FromActivity(ca);
+        CoreActivity ca = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "conversation": { "id": "conv1", "tenantId": "tenant-1" }
+            }
+            """);
+        TeamsActivity ta = TeamsActivity.FromActivity(ca);
         if (ta.Conversation is not null)
         {
             Assert.NotNull(ta.Conversation);
@@ -282,16 +289,12 @@ public class TeamsActivityTests
             """;
         CoreActivity ca = CoreActivity.FromJsonString(json);
         Assert.NotNull(ca);
-        Assert.NotNull(ca.Conversation);
-        Assert.Equal("conv1", ca.Conversation.Id);
-        if (ca.Conversation.Properties.TryGetValue("tenantId", out object? outTenantId))
-        {
-            Assert.Equal("tenant-1", outTenantId?.ToString());
-        }
-        else
-        {
-            Assert.Fail("conversation tenant not set");
-        }
+        Assert.True(ca.Properties.ContainsKey("conversation"));
+        // Verify conversation is in Properties as JsonElement
+        string caJson = ca.ToJson();
+        Assert.Contains("\"conversation\"", caJson);
+        Assert.Contains("\"conv1\"", caJson);
+        Assert.Contains("\"tenant-1\"", caJson);
         TeamsActivity ta = TeamsActivity.FromActivity(ca);
         Assert.NotNull(ta);
         Assert.NotNull(ta.Conversation);

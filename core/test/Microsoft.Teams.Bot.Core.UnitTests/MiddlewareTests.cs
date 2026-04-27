@@ -60,10 +60,6 @@ public class MiddlewareTests
             Type = ActivityType.Message,
             Id = "act123"
         };
-        if (activity.Recipient is not null)
-        {
-            activity.Recipient.Properties["appId"] = "test-app-id";
-        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -105,10 +101,6 @@ public class MiddlewareTests
             Type = ActivityType.Message,
             Id = "act123"
         };
-        if (activity.Recipient is not null)
-        {
-            activity.Recipient.Properties["appId"] = "test-app-id";
-        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -149,10 +141,6 @@ public class MiddlewareTests
             Id = "act123"
         };
 
-        if (activity.Recipient is not null)
-        {
-            activity.Recipient.Properties["appId"] = "test-app-id";
-        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -188,10 +176,6 @@ public class MiddlewareTests
             Id = "act123"
         };
 
-        if (activity.Recipient is not null)
-        {
-            activity.Recipient.Properties["appId"] = "test-app-id";
-        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 

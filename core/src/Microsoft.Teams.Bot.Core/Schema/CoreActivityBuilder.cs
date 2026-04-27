@@ -30,50 +30,6 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     }
 
     /// <summary>
-    /// Apply Conversation Reference
-    /// </summary>
-    /// <param name="activity">The source activity to copy conversation reference from.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithConversationReference(TActivity activity)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        ArgumentNullException.ThrowIfNull(activity.ChannelId);
-        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
-        ArgumentNullException.ThrowIfNull(activity.Conversation);
-        ArgumentNullException.ThrowIfNull(activity.From);
-        ArgumentNullException.ThrowIfNull(activity.Recipient);
-
-        WithServiceUrl(activity.ServiceUrl);
-        WithChannelId(activity.ChannelId);
-        SetConversation(activity.Conversation);
-        SetFrom(activity.Recipient);
-        //SetRecipient(activity.From);
-        // TODO: Is this correct ? In a reply scenario, the From of the incoming activity becomes the Recipient of the reply, and vice versa.
-
-        if (!string.IsNullOrEmpty(activity.Id))
-        {
-            WithReplyToId(activity.Id);
-        }
-
-        return (TBuilder)this;
-    }
-
-    /// <summary>
-    /// Sets the conversation (to be overridden by derived classes for type-specific behavior).
-    /// </summary>
-    protected abstract void SetConversation(Conversation? conversation);
-
-    /// <summary>
-    /// Sets the From account (to be overridden by derived classes for type-specific behavior).
-    /// </summary>
-    protected abstract void SetFrom(ConversationAccount? from);
-
-    /// <summary>
-    /// Sets the Recipient account (to be overridden by derived classes for type-specific behavior).
-    /// </summary>
-    protected abstract void SetRecipient(ConversationAccount? recipient);
-
-    /// <summary>
     /// Sets the activity ID.
     /// </summary>
     /// <param name="id">The activity ID.</param>
@@ -151,70 +107,6 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     }
 
     /// <summary>
-    /// Sets the sender account information.
-    /// </summary>
-    /// <param name="from">The sender account.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithFrom(ConversationAccount? from)
-    {
-        SetFrom(from);
-        return (TBuilder)this;
-    }
-
-    /// <summary>
-    /// Sets the recipient account information.
-    /// </summary>
-    /// <param name="recipient">The recipient account.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithRecipient(ConversationAccount? recipient)
-    {
-        SetRecipient(recipient);
-        return (TBuilder)this;
-    }
-
-    /// <summary>
-    /// Sets the recipient account information and optionally marks this as a targeted message.
-    /// </summary>
-    /// <param name="recipient">The recipient account.</param>
-    /// <param name="isTargeted">If true, marks this as a targeted message visible only to the specified recipient.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
-    {
-        if (recipient is null)
-        {
-            SetRecipient(null);
-        }
-        else
-        {
-            recipient.IsTargeted = isTargeted ? true : null;
-            SetRecipient(recipient);
-        }
-        return (TBuilder)this;
-    }
-
-    /// <summary>
-    /// Sets the conversation information.
-    /// </summary>
-    /// <param name="conversation">The conversation information.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithConversation(Conversation? conversation)
-    {
-        SetConversation(conversation);
-        return (TBuilder)this;
-    }
-
-    /// <summary>
-    /// Sets the channel-specific data (to be overridden by derived classes for type-specific behavior).
-    /// </summary>
-    /// <param name="channelData">The channel data.</param>
-    /// <returns>The builder instance for chaining.</returns>
-    public virtual TBuilder WithChannelData(ChannelData? channelData)
-    {
-        _activity.ChannelData = channelData;
-        return (TBuilder)this;
-    }
-
-    /// <summary>
     /// Builds and returns the configured activity instance.
     /// </summary>
     /// <returns>The configured activity.</returns>
@@ -239,30 +131,6 @@ public class CoreActivityBuilder : CoreActivityBuilder<CoreActivity, CoreActivit
     /// <param name="activity">The activity to build upon.</param>
     internal CoreActivityBuilder(CoreActivity activity) : base(activity)
     {
-    }
-
-    /// <summary>
-    /// Sets the conversation.
-    /// </summary>
-    protected override void SetConversation(Conversation? conversation)
-    {
-        _activity.Conversation = conversation;
-    }
-
-    /// <summary>
-    /// Sets the From account.
-    /// </summary>
-    protected override void SetFrom(ConversationAccount? from)
-    {
-        _activity.From = from;
-    }
-
-    /// <summary>
-    /// Sets the Recipient account.
-    /// </summary>
-    protected override void SetRecipient(ConversationAccount? recipient)
-    {
-        _activity.Recipient = recipient;
     }
 
     /// <summary>

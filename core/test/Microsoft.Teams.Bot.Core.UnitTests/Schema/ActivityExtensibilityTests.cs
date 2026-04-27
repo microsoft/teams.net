@@ -90,12 +90,6 @@ public class MyCustomActivity : CoreActivity
             ChannelId = activity.ChannelId,
             Id = activity.Id,
             ServiceUrl = activity.ServiceUrl,
-            ChannelData = activity.ChannelData,
-            From = activity.From,
-            Recipient = activity.Recipient,
-            Conversation = activity.Conversation,
-            Entities = activity.Entities,
-            Attachments = activity.Attachments,
             Value = activity.Value,
             Properties = activity.Properties,
             CustomField = activity.Properties.TryGetValue("customField", out object? customFieldObj)
@@ -145,21 +139,19 @@ public class MyChannelData : ChannelData
 public class MyCustomChannelDataActivity : CoreActivity
 {
     [JsonPropertyName("channelData")]
-    public new MyChannelData? ChannelData { get; set; }
+    public MyChannelData? ChannelData { get; set; }
 
     internal static MyCustomChannelDataActivity FromActivity(CoreActivity coreActivity)
     {
+        ChannelData? extractedChannelData = coreActivity.Properties.Extract<ChannelData>("channelData");
+
         return new MyCustomChannelDataActivity
         {
             Type = coreActivity.Type,
             ChannelId = coreActivity.ChannelId,
             Id = coreActivity.Id,
             ServiceUrl = coreActivity.ServiceUrl,
-            ChannelData = new MyChannelData(coreActivity.ChannelData ?? new Core.Schema.ChannelData()),
-            Recipient = coreActivity.Recipient,
-            Conversation = coreActivity.Conversation,
-            Entities = coreActivity.Entities,
-            Attachments = coreActivity.Attachments,
+            ChannelData = new MyChannelData(extractedChannelData ?? new Core.Schema.ChannelData()),
             Value = coreActivity.Value,
             Properties = coreActivity.Properties
         };

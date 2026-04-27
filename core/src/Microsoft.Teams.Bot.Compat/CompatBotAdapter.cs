@@ -59,7 +59,7 @@ public class CompatBotAdapter(
         Uri serviceUrl = new(serviceUrlString);
 
         // Extract agentic identity from turn context if available
-        AgenticIdentity? agenticIdentity = turnContext.Activity?.FromCompatActivity().From?.GetAgenticIdentity();
+        AgenticIdentity? agenticIdentity = turnContext.Activity?.FromCompatActivity().Properties.Extract<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>("from")?.GetAgenticIdentity();
 
         await botApplication.ConversationClient.DeleteActivityAsync(
             conversationId,
@@ -110,7 +110,9 @@ public class CompatBotAdapter(
                 coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
             }
 
-            SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken).ConfigureAwait(false);
+            string conversationId = turnContext.Activity.Conversation?.Id
+                ?? throw new InvalidOperationException("Conversation ID is required to send activities.");
+            SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, conversationId, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             logger?.LogInformation("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
 

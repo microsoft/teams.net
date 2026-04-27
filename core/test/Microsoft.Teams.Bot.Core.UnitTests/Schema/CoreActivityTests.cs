@@ -113,12 +113,12 @@ public class CoreCoreActivityTests
         CoreActivity act = CoreActivity.FromJsonString(json);
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);
-        Assert.NotNull(act.From);
-        Assert.IsType<ConversationAccount>(act.From);
-        Assert.Equal("1", act.From!.Id);
-        Assert.Equal("tester", act.From.Name);
-        Assert.True(act.From.Properties.ContainsKey("aadObjectId"));
-        Assert.Equal("123", act.From.Properties["aadObjectId"]?.ToString());
+        Assert.True(act.Properties.ContainsKey("from"));
+        Assert.IsType<JsonElement>(act.Properties["from"]);
+        var fromElement = (JsonElement)act.Properties["from"]!;
+        Assert.Equal("1", fromElement.GetProperty("id").GetString());
+        Assert.Equal("tester", fromElement.GetProperty("name").GetString());
+        Assert.Equal("123", fromElement.GetProperty("aadObjectId").GetString());
     }
 
     [Fact]
@@ -139,7 +139,7 @@ public class CoreCoreActivityTests
         string json2 = act.ToJson();
         Assert.Contains("\"type\": \"message\"", json2);
         Assert.Contains("\"text\": \"hello\"", json2);
-        Assert.Contains("\"from\": {", json2);
+        Assert.Contains("\"from\":", json2);
         Assert.Contains("\"id\": \"1\"", json2);
         Assert.Contains("\"name\": \"tester\"", json2);
         Assert.Contains("\"aadObjectId\": \"123\"", json2);
@@ -174,8 +174,11 @@ public class CoreCoreActivityTests
         CoreActivity act = CoreActivity.FromJsonString(json);
         string json2 = act.ToJson();
         Assert.Contains("\"type\": \"message\"", json2);
-        Assert.NotNull(act.Entities);
-        Assert.Equal(2, act.Entities!.Count);
+        Assert.True(act.Properties.ContainsKey("entities"));
+        Assert.IsType<JsonElement>(act.Properties["entities"]);
+        var entitiesElement = (JsonElement)act.Properties["entities"]!;
+        Assert.Equal(JsonValueKind.Array, entitiesElement.ValueKind);
+        Assert.Equal(2, entitiesElement.GetArrayLength());
 
     }
 
@@ -210,38 +213,11 @@ public class CoreCoreActivityTests
             Type = ActivityType.Message,
             Properties =
             {
-                { "customField", "customValue" }
-            },
-            ChannelData = new()
-            {
-                Properties =
-                {
-                    { "channelCustomField", "channelCustomValue" }
-                }
-            },
-            Conversation = new()
-            {
-                Properties =
-                {
-                    { "conversationCustomField", "conversationCustomValue" }
-                }
-            },
-            From = new()
-            {
-                Id = "user1",
-                Properties =
-                {
-                    { "fromCustomField", "fromCustomValue" }
-                }
-            },
-            Recipient = new()
-            {
-                Id = "bot1",
-                Properties =
-                {
-                    { "recipientCustomField", "recipientCustomValue" }
-                }
-
+                { "customField", "customValue" },
+                { "channelData", new ChannelData { Properties = { { "channelCustomField", "channelCustomValue" } } } },
+                { "conversation", new Conversation { Properties = { { "conversationCustomField", "conversationCustomValue" } } } },
+                { "from", new ConversationAccount { Id = "user1", Properties = { { "fromCustomField", "fromCustomValue" } } } },
+                { "recipient", new ConversationAccount { Id = "bot1", Properties = { { "recipientCustomField", "recipientCustomValue" } } } }
             }
         };
         string json = act.ToJson();
@@ -253,50 +229,6 @@ public class CoreCoreActivityTests
         Assert.Contains("\"recipientCustomField\": \"recipientCustomValue\"", json);
     }
 
-
-    [Fact]
-    public void CreateReply()
-    {
-        CoreActivity act = new()
-        {
-            Type = "myActivityType",
-            Id = "CoreActivity1",
-            ChannelId = "channel1",
-            ServiceUrl = new Uri("http://service.url"),
-            From = new ConversationAccount()
-            {
-                Id = "user1",
-                Name = "User One"
-            },
-            Recipient = new ConversationAccount()
-            {
-                Id = "bot1",
-                Name = "Bot One"
-            },
-            Conversation = new Conversation()
-            {
-                Id = "conversation1"
-            }
-        };
-        CoreActivity reply = CoreActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithConversationReference(act)
-            .WithProperty("text", "reply")
-            .Build();
-
-        Assert.NotNull(reply);
-        Assert.Equal(ActivityType.Message, reply.Type);
-        Assert.Equal("reply", reply.Properties["text"]);
-        Assert.Equal("channel1", reply.ChannelId);
-        Assert.NotNull(reply.ServiceUrl);
-        Assert.Equal("http://service.url/", reply.ServiceUrl.ToString());
-        Assert.Equal("conversation1", reply.Conversation?.Id);
-        Assert.Equal("bot1", reply.From?.Id);
-        Assert.Equal("Bot One", reply.From?.Name);
-        //Assert.Equal("user1", reply.Recipient?.Id);
-        //Assert.Equal("User One", reply.Recipient?.Name);
-        // TODO: review if recipient is required
-    }
 
     [Fact]
     public async Task DeserializeAsync()
@@ -317,12 +249,12 @@ public class CoreCoreActivityTests
         Assert.NotNull(act);
         Assert.Equal("message", act.Type);
         Assert.Equal("hello", act.Properties["text"]?.ToString());
-        Assert.NotNull(act.From);
-        Assert.IsType<ConversationAccount>(act.From);
-        Assert.Equal("1", act.From.Id);
-        Assert.Equal("tester", act.From.Name);
-        Assert.True(act.From.Properties.ContainsKey("aadObjectId"));
-        Assert.Equal("123", act.From.Properties["aadObjectId"]?.ToString());
+        Assert.True(act.Properties.ContainsKey("from"));
+        Assert.IsType<JsonElement>(act.Properties["from"]);
+        var fromElement = (JsonElement)act.Properties["from"]!;
+        Assert.Equal("1", fromElement.GetProperty("id").GetString());
+        Assert.Equal("tester", fromElement.GetProperty("name").GetString());
+        Assert.Equal("123", fromElement.GetProperty("aadObjectId").GetString());
     }
 
 
@@ -373,14 +305,16 @@ public class CoreCoreActivityTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Recipient = new ConversationAccount { Id = "user-123", IsTargeted = true }
+            Properties =
+            {
+                { "recipient", new ConversationAccount { Id = "user-123", IsTargeted = true } }
+            }
         };
 
         string json = activity.ToJson();
 
         // IsTargeted is serialized in the recipient object
         Assert.Contains("isTargeted", json, StringComparison.OrdinalIgnoreCase);
-        Assert.True(activity.Recipient.IsTargeted);
     }
 
     [Fact]
@@ -398,7 +332,10 @@ public class CoreCoreActivityTests
 
         CoreActivity activity = CoreActivity.FromJsonString(json);
 
-        Assert.NotNull(activity.Recipient);
-        Assert.True(activity.Recipient.IsTargeted);
+        Assert.True(activity.Properties.ContainsKey("recipient"));
+        Assert.IsType<JsonElement>(activity.Properties["recipient"]);
+        var recipientElement = (JsonElement)activity.Properties["recipient"]!;
+        Assert.Equal("user-123", recipientElement.GetProperty("id").GetString());
+        Assert.True(recipientElement.GetProperty("isTargeted").GetBoolean());
     }
 }

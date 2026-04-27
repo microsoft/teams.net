@@ -512,9 +512,9 @@ public class TeamsActivityBuilderTests
             .AddMention(account)
             .Build();
 
-        CoreActivity baseActivity = activity;
-        Assert.NotNull(baseActivity.Entities);
-        Assert.NotEmpty(baseActivity.Entities);
+        // Entities are on TeamsActivity, not CoreActivity; verify via TeamsActivity
+        Assert.NotNull(activity.Entities);
+        Assert.NotEmpty(activity.Entities);
     }
 
     [Fact]
@@ -761,15 +761,13 @@ public class TeamsActivityBuilderTests
             .AddEntity(new ClientInfoEntity { Locale = "en-US" });
 
         TeamsActivity activity1 = builder.Build();
-        CoreActivity baseActivity1 = activity1;
-        Assert.NotNull(baseActivity1.Entities);
+        Assert.NotNull(activity1.Entities);
 
         builder.AddEntity(new ProductInfoEntity { Id = "prod-1" });
         TeamsActivity activity2 = builder.Build();
-        CoreActivity baseActivity2 = activity2;
 
         Assert.Same(activity1, activity2);
-        Assert.NotNull(baseActivity2.Entities);
+        Assert.NotNull(activity2.Entities);
         Assert.Equal(2, activity2.Entities!.Count);
     }
 

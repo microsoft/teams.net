@@ -62,94 +62,52 @@ public class TeamsActivity : CoreActivity
     protected TeamsActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        // Convert base types to Teams-specific types
-        if (activity.ChannelData is not null)
-        {
-            ChannelData = new TeamsChannelData(activity.ChannelData);
-        }
-
-        if (activity.From is not null)
-        {
-            From = TeamsConversationAccount.FromConversationAccount(activity.From);
-        }
-
-        if (activity.Recipient is not null)
-        {
-            Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient);
-        }
-
-        if (activity.Conversation is not null)
-        {
-            Conversation = TeamsConversation.FromConversation(activity.Conversation);
-        }
-        Attachments = TeamsAttachment.FromJArray(activity.Attachments);
-        Entities = EntityList.FromJsonArray(activity.Entities);
-
-        Rebase();
+        // Convert core extension properties to Teams-specific typed properties.
+        // CoreActivity stores these as untyped entries in its Properties dictionary
+        // (via [JsonExtensionData]), so we extract and promote them here.
+        From = activity.Properties.Extract<TeamsConversationAccount>("from");
+        Recipient = activity.Properties.Extract<TeamsConversationAccount>("recipient");
+        Conversation = activity.Properties.Extract<TeamsConversation>("conversation");
+        ChannelData = activity.Properties.Extract<TeamsChannelData>("channelData");
+        Attachments = activity.Properties.Extract<IList<TeamsAttachment>>("attachments");
+        Entities = activity.Properties.Extract<EntityList>("entities");
     }
-
-    /// <summary>
-    /// Resets shadow properties in base class
-    /// </summary>
-    /// <returns></returns>
-    internal TeamsActivity Rebase()
-    {
-        base.Attachments = Attachments?.ToJsonArray();
-        base.Entities = Entities?.ToJsonArray();
-
-        return this;
-    }
-
 
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.
     /// </summary>
     [JsonPropertyName("from")]
-    public new TeamsConversationAccount? From
-    {
-        get => base.From as TeamsConversationAccount;
-        set => base.From = value;
-    }
+    public TeamsConversationAccount? From { get; set; }
 
     /// <summary>
     /// Gets or sets the account information for the recipient of the Teams conversation.
     /// </summary>
     [JsonPropertyName("recipient")]
-    public new TeamsConversationAccount? Recipient
-    {
-        get => base.Recipient as TeamsConversationAccount;
-        set => base.Recipient = value;
-    }
+    public TeamsConversationAccount? Recipient { get; set; }
 
     /// <summary>
     /// Gets or sets the conversation information for the Teams conversation.
     /// </summary>
     [JsonPropertyName("conversation")]
-    public new TeamsConversation? Conversation
-    {
-        get => base.Conversation as TeamsConversation;
-        set => base.Conversation = value;
-    }
+    public TeamsConversation? Conversation { get; set; }
 
     /// <summary>
     /// Gets or sets the Teams-specific channel data associated with this activity.
     /// </summary>
     [JsonPropertyName("channelData")]
-    public new TeamsChannelData? ChannelData
-    {
-        get => base.ChannelData as TeamsChannelData;
-        set => base.ChannelData = value;
-    }
+    public TeamsChannelData? ChannelData { get; set; }
 
     /// <summary>
     /// Gets or sets the entities specific to Teams.
     /// </summary>
-    [JsonPropertyName("entities")] public new EntityList? Entities { get; set; }
+    [JsonPropertyName("entities")]
+    public EntityList? Entities { get; set; }
 
     /// <summary>
     /// Attachments specific to Teams.
     /// </summary>
-    [JsonPropertyName("attachments")] public new IList<TeamsAttachment>? Attachments { get; set; }
+    [JsonPropertyName("attachments")]
+    public IList<TeamsAttachment>? Attachments { get; set; }
 
     /// <summary>
     /// UTC timestamp of when the activity was sent.
