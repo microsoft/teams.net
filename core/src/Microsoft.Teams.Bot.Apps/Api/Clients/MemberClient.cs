@@ -25,24 +25,24 @@ public class MemberClient
     /// <summary>
     /// Get all members of a conversation.
     /// </summary>
-    public Task<IList<ConversationAccount>> GetAsync(string conversationId, CancellationToken cancellationToken = default)
+    public Task<IList<ConversationAccount>> GetAsync(string conversationId, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        return _client.GetConversationMembersAsync(conversationId, _serviceUrl, cancellationToken: cancellationToken);
+        return _client.GetConversationMembersAsync(conversationId, _serviceUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// Get a specific member of a conversation by ID.
     /// </summary>
-    public Task<T> GetByIdAsync<T>(string conversationId, string memberId, CancellationToken cancellationToken = default) where T : ConversationAccount
+    public Task<T> GetByIdAsync<T>(string conversationId, string memberId, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default) where T : ConversationAccount
     {
-        return _client.GetConversationMemberAsync<T>(conversationId, memberId, _serviceUrl, cancellationToken: cancellationToken);
+        return _client.GetConversationMemberAsync<T>(conversationId, memberId, _serviceUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// Get a specific member of a conversation by ID.
     /// </summary>
-    public Task<ConversationAccount> GetByIdAsync(string conversationId, string memberId, CancellationToken cancellationToken = default)
+    public Task<ConversationAccount> GetByIdAsync(string conversationId, string memberId, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        return GetByIdAsync<ConversationAccount>(conversationId, memberId, cancellationToken);
+        return GetByIdAsync<ConversationAccount>(conversationId, memberId, agenticIdentity, cancellationToken);
     }
 }

@@ -97,4 +97,49 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
         Environment.GetEnvironmentVariable(name)
         ?? fallback
         ?? throw new InvalidOperationException($"{name} environment variable not set");
+
+    internal static ConversationAccount GetConversationAccountWithAgenticProperties()
+    {
+        var agenticUserId = Env("TEST_AGENTIC_USERID");
+        var agenticAppId = Env("TEST_AGENTIC_APPID");
+        var agenticAppBlueprintId = Env("AzureAd__ClientId");
+
+        if (string.IsNullOrEmpty(agenticUserId))
+        {
+            return new ConversationAccount();
+        }
+
+        ConversationAccount account = new()
+        {
+            Id = agenticUserId,
+            Name = "Agentic User",
+            Properties =
+            {
+                { "agenticUserId", agenticUserId },
+                { "agenticAppId", agenticAppId },
+                { "agenticAppBlueprintId", agenticAppBlueprintId }
+            }
+        };
+        return account;
+    }
+
+    internal static AgenticIdentity GetAgenticIdentity()
+    {
+        var agenticUserId = Env("TEST_AGENTIC_USERID");
+        var agenticAppId = Env("TEST_AGENTIC_APPID");
+        var agenticAppBlueprintId = Env("AzureAd__ClientId");
+
+        if (string.IsNullOrEmpty(agenticUserId))
+        {
+            return null!;
+        }
+
+        AgenticIdentity identity = new()
+        {
+            AgenticUserId = agenticUserId,
+            AgenticAppId = agenticAppId,
+            AgenticAppBlueprintId = agenticAppBlueprintId
+        };
+        return identity;
+    }
 }

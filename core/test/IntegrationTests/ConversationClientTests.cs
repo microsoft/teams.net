@@ -22,7 +22,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output = output;
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task SendActivity()
     {
         CoreActivity activity = new()
@@ -30,7 +30,8 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             Type = ActivityType.Message,
             Properties = { { "text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Conversation = new(_f.ConversationId)
+            Conversation = new(_f.ConversationId),
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? res = await _f.ConversationClient.SendActivityAsync(activity);
@@ -40,7 +41,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Sent activity: {res.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task UpdateActivity()
     {
         CoreActivity activity = new()
@@ -48,7 +49,8 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             Type = ActivityType.Message,
             Properties = { { "text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Conversation = new(_f.ConversationId)
+            Conversation = new(_f.ConversationId),
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
@@ -59,7 +61,8 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             Type = ActivityType.Message,
             Properties = { { "text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Conversation = new(_f.ConversationId)
+            Conversation = new(_f.ConversationId),
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         UpdateActivityResponse res = await _f.ConversationClient.UpdateActivityAsync(
@@ -69,7 +72,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Updated activity: {res.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task DeleteActivity()
     {
         CoreActivity activity = new()
@@ -77,7 +80,8 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             Type = ActivityType.Message,
             Properties = { { "text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`" } },
             ServiceUrl = _f.ServiceUrl,
-            Conversation = new(_f.ConversationId)
+            Conversation = new(_f.ConversationId),
+            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
         };
 
         SendActivityResponse? sent = await _f.ConversationClient.SendActivityAsync(activity);
@@ -86,12 +90,12 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         await Task.Delay(2000);
 
         await _f.ConversationClient.DeleteActivityAsync(
-            _f.ConversationId, sent.Id, _f.ServiceUrl);
+            _f.ConversationId, sent.Id, _f.ServiceUrl, _f.AgenticIdentity);
 
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GetConversationMembers()
     {
         IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
@@ -106,7 +110,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GetConversationMember()
     {
         // Get MRI-format member ID from the members list first
@@ -123,7 +127,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Member: {member.Id} — {member.Name}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GetPagedMembers()
     {
         PagedMembersResult result = await _f.ConversationClient.GetConversationPagedMembersAsync(
@@ -138,7 +142,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Skip = "Reactions endpoint does not exist in Teams Bot Framework API (experimental/assumed route)")]
+    [Fact]
     public async Task AddAndDeleteReaction()
     {
         CoreActivity activity = new()

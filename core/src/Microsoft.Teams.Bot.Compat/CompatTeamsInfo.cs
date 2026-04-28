@@ -397,7 +397,7 @@ public static class CompatTeamsInfo
             HttpMethod.Get,
             url,
             body: null,
-            null,
+            new BotRequestOptions { AgenticIdentity = identity },
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -429,7 +429,7 @@ public static class CompatTeamsInfo
             HttpMethod.Get,
             url,
             body: null,
-            null,
+            new BotRequestOptions { AgenticIdentity = identity },
             cancellationToken).ConfigureAwait(false))!;
     }
 

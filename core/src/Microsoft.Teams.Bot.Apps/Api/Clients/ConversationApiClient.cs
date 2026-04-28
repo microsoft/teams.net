@@ -3,6 +3,7 @@
 
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Bot.Core.Schema;
 
 using CoreConversationClient = Microsoft.Teams.Bot.Core.ConversationClient;
 
@@ -47,8 +48,8 @@ public class ConversationApiClient
     /// <summary>
     /// Create a new conversation.
     /// </summary>
-    public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, CancellationToken cancellationToken = default)
+    public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        return _client.CreateConversationAsync(request, _serviceUrl, cancellationToken: cancellationToken);
+        return _client.CreateConversationAsync(request, _serviceUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
     }
 }
