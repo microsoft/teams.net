@@ -23,6 +23,7 @@ namespace Microsoft.Teams.Bot.Compat;
 public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
 {
     private readonly BotApplication _teamsBotApplication;
+    private readonly ILogger? _logger;
 
     /// <summary>
     /// Creates a new instance of the <see cref="CompatAdapter"/> class.
@@ -37,6 +38,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
         : base(teamsBotApplication, httpContextAccessor, logger)
     {
         _teamsBotApplication = teamsBotApplication;
+        _logger = logger;
     }
 
     /// <summary>
@@ -75,6 +77,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
             {
                 if (ex is BotHandlerException aex)
                 {
+                    _logger?.LogError(ex, "Error processing activity: Id={Id}. Delegating to OnTurnError.", aex.Activity?.Id);
                     coreActivity = aex.Activity;
                     using TurnContext turnContext = new(this, coreActivity!.ToCompatActivity());
                     await OnTurnError(turnContext, ex).ConfigureAwait(false);

@@ -24,7 +24,6 @@ namespace Microsoft.Teams.Bot.Core;
 public class UserTokenClient(HttpClient httpClient, IConfiguration configuration, ILogger<UserTokenClient> logger)
 {
     internal const string UserTokenHttpClientName = "BotUserTokenClient";
-    private readonly ILogger<UserTokenClient> _logger = logger;
     private readonly BotHttpClient _botHttpClient = new(httpClient, logger);
     private readonly string _apiEndpoint = configuration["UserTokenApiEndpoint"] ?? "https://token.botframework.com";
     private readonly JsonSerializerOptions _defaultOptions = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
@@ -51,8 +50,6 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         {
             queryParams.Add("include", include);
         }
-        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/GetTokenStatus");
-
         IList<GetTokenStatusResult>? result = await _botHttpClient.SendAsync<IList<GetTokenStatusResult>>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -92,8 +89,6 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         {
             queryParams.Add("code", code);
         }
-
-        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/GetToken");
 
         return await _botHttpClient.SendAsync<GetTokenResult>(
             HttpMethod.Get,
@@ -152,8 +147,6 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         if (finalRedirect is not null)
             queryParams.Add("finalRedirect", finalRedirect.ToString());
 
-        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/botsignin/GetSignInUrl");
-
         return await _botHttpClient.SendAsync<string>(
             HttpMethod.Get,
             _apiEndpoint,
@@ -183,8 +176,6 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("emulatorUrl", emulatorUrl.ToString());
         if (finalRedirect is not null)
             queryParams.Add("finalRedirect", finalRedirect.ToString());
-
-        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/botsignin/GetSignInResource");
 
         return (await _botHttpClient.SendAsync<GetSignInResourceResult>(
             HttpMethod.Get,
@@ -217,8 +208,6 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
         {
             token = exchangeToken
         };
-
-        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/exchange");
 
         return (await _botHttpClient.SendAsync<GetTokenResult>(
             HttpMethod.Post,
@@ -255,9 +244,6 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             queryParams.Add("channelId", channelId);
         }
 
-        _logger.LogInformationGuarded("Calling API endpoint: {Endpoint}", "api/usertoken/SignOut");
-
-
         await _botHttpClient.SendAsync(
             HttpMethod.Delete,
             _apiEndpoint,
@@ -286,8 +272,6 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
             userId,
             resourceUrls = resourceUrls ?? []
         };
-
-        _logger.LogInformationGuarded("Calling API endpoint with POST: {Endpoint}", "api/usertoken/GetAadTokens");
 
         return (await _botHttpClient.SendAsync<Dictionary<string, GetTokenResult>>(
             HttpMethod.Post,

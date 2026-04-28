@@ -37,6 +37,9 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         var mm = await CompatTeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id);
         string replyText = $"Echo {mm.Name} from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
 
+        // Targeted Messaging via BF compat layer: setting isTargeted on the BF ChannelAccount
+        // causes the compat layer to set CoreActivity.Recipient.IsTargeted, which appends
+        // ?isTargetedActivity=true to the URL making the message visible only to that user.
         var act = MessageFactory.Text(replyText, replyText);
         act.Recipient = new ChannelAccount();
         act.Recipient.Properties.Add("isTargeted", true);
@@ -60,7 +63,6 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
                     cancellationToken
                 );
 
-
                 continuationToken = pagedMembersResult.ContinuationToken;
                 members.AddRange(pagedMembersResult.Members);
             } while (continuationToken != null);
@@ -68,11 +70,8 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             await turnContext.SendActivityAsync(JsonConvert.SerializeObject(members.Select(m => m.Name).ToList(), Formatting.Indented));
         }
 
-
-
-
-        // await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive message `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
-
+        // Targeted Messaging via Core SDK (preferred): sends directly through ConversationClient
+        // to bypass the BF compat layer's ApplyConversationReference which would overwrite the Recipient.
         var incomingCoreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
         CoreActivity tm = CoreActivity.CreateBuilder()
             .WithConversation(new Conversation { Id = incomingCoreActivity.Conversation?.Id! })
@@ -101,6 +100,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             cancellationToken);
 
         await Task.Delay(500, cancellationToken);
+
         await teamsBotApp.ConversationClient.AddReactionAsync(
             turnContext.Activity.Conversation.Id,
             res.Id,
@@ -116,12 +116,13 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             turnContext.Activity.Conversation.Id,
             res.Id,
             "laugh",
-            //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"), 
+            //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
             incomingCoreActivity.ServiceUrl!,
             AgenticIdentity.FromProperties(incomingCoreActivity.Recipient?.Properties),
             null,
             cancellationToken);
 
+        // Card submission triggers OnInvokeActivityAsync below.
         Attachment attachment = new()
         {
             ContentType = "application/vnd.microsoft.card.adaptive",
