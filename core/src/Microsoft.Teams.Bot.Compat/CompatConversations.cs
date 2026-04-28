@@ -13,7 +13,7 @@ namespace Microsoft.Teams.Bot.Compat
 {
     /// <summary>
     /// Provides a compatibility adapter that bridges the Teams Bot Core <see cref="ConversationClient"/> to the
-    /// Bot Framework's <see cref="IConversations"/> interface.
+    /// Bot Framework's <see cref="Conversations"/> class.
     /// </summary>
     /// <remarks>
     /// This adapter enables legacy Bot Framework bots to use the new Teams Bot Core conversation management
