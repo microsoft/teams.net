@@ -54,4 +54,23 @@ public class ConversationAccount()
     [JsonExtensionData]
     public ExtendedPropertiesDictionary Properties { get; set; } = [];
 
+    /// <summary>
+    /// Gets the agentic identity from the account's typed properties.
+    /// </summary>
+    /// <returns>An AgenticIdentity instance if agentic identity information is present; otherwise, null.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate")]
+    public AgenticIdentity? GetAgenticIdentity()
+    {
+        if (AgenticAppId is null && AgenticUserId is null && AgenticAppBlueprintId is null)
+        {
+            return null;
+        }
+
+        return new AgenticIdentity
+        {
+            AgenticAppId = AgenticAppId,
+            AgenticUserId = AgenticUserId,
+            AgenticAppBlueprintId = AgenticAppBlueprintId
+        };
+    }
 }

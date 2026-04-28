@@ -64,7 +64,7 @@ public static class MessageExtensions
         app.Router.Register(new Route<MessageActivity>
         {
             Name = string.Join("/", [TeamsActivityType.Message, pattern]),
-            Selector = msg => regex.IsMatch(msg.Text ?? ""),
+            Selector = msg => regex.IsMatch(msg.TextWithoutMentions ?? ""),
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);
@@ -91,7 +91,7 @@ public static class MessageExtensions
         app.Router.Register(new Route<MessageActivity>
         {
             Name = string.Join("/", [TeamsActivityType.Message, regex.ToString()]),
-            Selector = msg => regex.IsMatch(msg.Text ?? ""),
+            Selector = msg => regex.IsMatch(msg.TextWithoutMentions ?? ""),
             Handler = async (ctx, cancellationToken) =>
             {
                 await handler(ctx, cancellationToken).ConfigureAwait(false);

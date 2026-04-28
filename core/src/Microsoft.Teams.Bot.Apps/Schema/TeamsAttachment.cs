@@ -43,6 +43,11 @@ public static class AttachmentContentType
     /// </summary>
     public const string FileInfoCard = "application/vnd.microsoft.teams.card.file.info";
 
+    /// <summary>
+    /// OAuth Card content type, used for initiating OAuth sign-in flows.
+    /// </summary>
+    public const string OAuthCard = "application/vnd.microsoft.card.oauth";
+
     //TODO : verify these
     /*
     /// <summary>

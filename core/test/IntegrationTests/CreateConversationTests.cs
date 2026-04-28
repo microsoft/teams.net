@@ -47,7 +47,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Personal Chat (1:1) — Core ConversationClient
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Core_CreatePersonalChat()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -67,7 +67,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Created 1:1 conversation: {response.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Core_CreatePersonalChat_AndSendMessage()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -86,6 +86,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(response.Id))
             .WithProperty("text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`")
@@ -96,7 +97,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Created 1:1 conversation {response.Id} and sent activity {sent.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Core_CreatePersonalChat_WithInitialActivity()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -124,7 +125,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Group Chat — Core ConversationClient
 
-    [Fact(Skip = "Teams Bot Framework API does not support group chat creation")]
+    [Fact]
     public async Task Core_CreateGroupChat()
     {
         (string first, string? second) = await GetMemberMrisAsync();
@@ -156,7 +157,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Created group conversation: {response.Id}");
     }
 
-    [Fact(Skip = "Teams Bot Framework API does not support group chat creation")]
+    [Fact]
     public async Task Core_CreateGroupChat_AndSendMessage()
     {
         (string first, string? second) = await GetMemberMrisAsync();
@@ -186,6 +187,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(response.Id))
             .WithProperty("text", $"[Core] Group message at `{DateTime.UtcNow:s}`")
@@ -200,7 +202,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Channel Thread — Core ConversationClient
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task Core_CreateChannelThread()
     {
         ConversationParameters parameters = new()
@@ -226,7 +228,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Personal Chat — ApiClient
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task ApiClient_CreatePersonalChat()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -238,14 +240,14 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             TenantId = _f.TenantId
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
         _output.WriteLine($"[ApiClient] Created 1:1 conversation: {response.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task ApiClient_CreatePersonalChat_AndSendViaActivities()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -257,11 +259,12 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             TenantId = _f.TenantId
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
         Assert.NotNull(response?.Id);
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
             .WithProperty("text", $"[ApiClient] 1:1 via Activities.Create at `{DateTime.UtcNow:s}`")
             .Build();
 
@@ -274,7 +277,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Group Chat — ApiClient
 
-    [Fact(Skip = "Teams Bot Framework API does not support group chat creation")]
+    [Fact]
     public async Task ApiClient_CreateGroupChat()
     {
         (string first, string? second) = await GetMemberMrisAsync();
@@ -298,7 +301,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             ChannelData = new { tenant = new { id = _f.TenantId } }
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
@@ -309,7 +312,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Channel Thread — ApiClient
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task ApiClient_CreateChannelThread()
     {
         ConversationParameters parameters = new()
@@ -323,14 +326,14 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             TenantId = _f.TenantId
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
 
         Assert.NotNull(response);
         Assert.NotNull(response.Id);
         _output.WriteLine($"[ApiClient] Created channel thread: {response.Id}, activityId: {response.ActivityId}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task ApiClient_CreateChannelThread_AndReply()
     {
         ConversationParameters parameters = new()
@@ -344,13 +347,14 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             TenantId = _f.TenantId
         };
 
-        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters);
+        CreateConversationResponse response = await _api.Conversations.CreateAsync(parameters, _f.AgenticIdentity);
         Assert.NotNull(response?.Id);
         Assert.NotNull(response.ActivityId);
 
         // Reply to the thread
         CoreActivity reply = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
             .WithProperty("text", $"[ApiClient] Thread reply at `{DateTime.UtcNow:s}`")
             .Build();
 

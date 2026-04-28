@@ -150,6 +150,12 @@ public static class InvokeNames
     public const string SignInVerifyState = "signin/verifyState";
 
     /// <summary>
+    /// Sign-in failure invoke name. Sent by the Teams client when SSO token exchange
+    /// fails client-side (e.g., misconfigured Entra app registration).
+    /// </summary>
+    public const string SignInFailure = "signin/failure";
+
+    /// <summary>
     /// Message extension anonymous query link invoke name.
     /// </summary>
     public const string MessageExtensionAnonQueryLink = "composeExtension/anonymousQueryLink";

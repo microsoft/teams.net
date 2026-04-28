@@ -59,6 +59,11 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         using HttpRequestMessage request = new(HttpMethod.Post, url);
         request.Content = new StringContent(requestBody, System.Text.Encoding.UTF8, "application/json");
 
+        if (_f.AgenticIdentity is not null)
+        {
+            request.Options.Set(new HttpRequestOptionsKey<AgenticIdentity?>("AgenticIdentity"), _f.AgenticIdentity);
+        }
+
         _output.WriteLine($"=== {label} ===");
         _output.WriteLine($"POST {url}");
         _output.WriteLine($"Request body:\n{requestBody}");
@@ -117,7 +122,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     // 1:1 personal chat — baseline (known working)
     // =========================================================================
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task PersonalChat_MinimalParams()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -130,7 +135,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.True(result.StatusCode is 200 or 201, $"Expected 2xx, got {result.StatusCode}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task PersonalChat_WithBot()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -144,7 +149,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.True(result.StatusCode is 200 or 201, $"Expected 2xx, got {result.StatusCode}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task PersonalChat_WithInitialActivity()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -165,7 +170,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     // Group chat variations
     // =========================================================================
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GroupChat_TwoMembers_NoBotNoChannelData()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -179,7 +184,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.Equal(400, result.StatusCode);
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GroupChat_TwoMembers_WithBot()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -194,7 +199,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.Equal(400, result.StatusCode);
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GroupChat_TwoMembers_WithBotAndChannelData()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -210,7 +215,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.Equal(400, result.StatusCode);
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GroupChat_TwoMembers_WithTopicAndActivity()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -231,7 +236,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.Equal(400, result.StatusCode);
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GroupChat_OneMember_IsGroupTrue()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -244,7 +249,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.Equal(400, result.StatusCode);
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GroupChat_OneMember_WithBot()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -259,7 +264,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.Equal(400, result.StatusCode);
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GroupChat_ThreeMembers()
     {
         (string first, string? second, string? third) = await GetMemberMrisAsync();
@@ -280,7 +285,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     // Channel thread variations
     // =========================================================================
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task ChannelThread_WithActivity()
     {
         DiagnosticResult result = await SendDiagnosticRequestAsync("Channel Thread: with activity", new()
@@ -296,7 +301,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.True(result.StatusCode is 200 or 201, $"Expected 2xx, got {result.StatusCode}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task ChannelThread_NoActivity()
     {
         DiagnosticResult result = await SendDiagnosticRequestAsync("Channel Thread: without activity", new()
@@ -308,7 +313,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         Assert.Equal(400, result.StatusCode);
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task ChannelThread_WithMembersAndActivity()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();

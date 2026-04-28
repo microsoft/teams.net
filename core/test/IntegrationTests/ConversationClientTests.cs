@@ -22,11 +22,12 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output = output;
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task SendActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`")
@@ -39,11 +40,12 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Sent activity: {res.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task UpdateActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`")
@@ -54,6 +56,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity updated = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`")
@@ -66,11 +69,12 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Updated activity: {res.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task DeleteActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`")
@@ -82,12 +86,12 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         await Task.Delay(2000);
 
         await _f.ConversationClient.DeleteActivityAsync(
-            _f.ConversationId, sent.Id, _f.ServiceUrl);
+            _f.ConversationId, sent.Id, _f.ServiceUrl, _f.AgenticIdentity);
 
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GetConversationMembers()
     {
         IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
@@ -102,7 +106,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GetConversationMember()
     {
         // Get MRI-format member ID from the members list first
@@ -119,7 +123,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Member: {member.Id} — {member.Name}");
     }
 
-    [Fact]
+    [Fact(Timeout = 60000)]
     public async Task GetPagedMembers()
     {
         PagedMembersResult result = await _f.ConversationClient.GetConversationPagedMembersAsync(
@@ -134,7 +138,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Skip = "Reactions endpoint does not exist in Teams Bot Framework API (experimental/assumed route)")]
+    [Fact]
     public async Task AddAndDeleteReaction()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()

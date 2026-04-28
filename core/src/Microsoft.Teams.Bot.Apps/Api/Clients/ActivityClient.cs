@@ -60,9 +60,9 @@ public class ActivityClient
     /// <summary>
     /// Delete an activity from a conversation.
     /// </summary>
-    public Task DeleteAsync(string conversationId, string id, CancellationToken cancellationToken = default)
+    public Task DeleteAsync(string conversationId, string id, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, cancellationToken: cancellationToken);
+        return _client.DeleteActivityAsync(conversationId, id, _serviceUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -91,14 +91,14 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
-        return _client.UpdateTargetedActivityAsync(conversationId, id, activity, cancellationToken: cancellationToken);
+        return _client.UpdateTargetedActivityAsync(conversationId, id, activity, agenticIdentity: activity.From?.GetAgenticIdentity(), cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// Delete a targeted activity from a conversation.
     /// </summary>
-    public Task DeleteTargetedAsync(string conversationId, string id, CancellationToken cancellationToken = default)
+    public Task DeleteTargetedAsync(string conversationId, string id, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteTargetedActivityAsync(conversationId, id, _serviceUrl, cancellationToken: cancellationToken);
+        return _client.DeleteTargetedActivityAsync(conversationId, id, _serviceUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
     }
 }

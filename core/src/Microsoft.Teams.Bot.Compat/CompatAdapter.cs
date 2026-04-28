@@ -61,7 +61,11 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
             coreActivity = activity;
             TurnContext turnContext = new(this, activity.ToCompatActivity());
             turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
-            CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = activity.ServiceUrl?.ToString() });
+            CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient)
+            {
+                ServiceUrl = activity.ServiceUrl?.ToString(),
+                AgenticIdentity = activity.From?.GetAgenticIdentity()
+            });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             //turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient); // TODO: review TeamsInfo needs
             await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
