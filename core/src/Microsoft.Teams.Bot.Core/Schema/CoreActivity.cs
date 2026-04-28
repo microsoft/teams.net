@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.Teams.Bot.Core.Schema;
@@ -10,7 +9,28 @@ namespace Microsoft.Teams.Bot.Core.Schema;
 /// <summary>
 /// Represents a dictionary for storing extended properties as key-value pairs.
 /// </summary>
-public class ExtendedPropertiesDictionary : Dictionary<string, object?> { }
+public class ExtendedPropertiesDictionary : Dictionary<string, object?>
+{
+    /// <summary>
+    /// Extracts and deserializes a value from the dictionary, removing the entry if found.
+    /// Returns the deserialized value, or default if the key is not present.
+    /// </summary>
+    public T? Extract<T>(string key)
+    {
+        if (!TryGetValue(key, out object? raw))
+            return default;
+
+        Remove(key);
+
+        if (raw is T typed)
+            return typed;
+
+        if (raw is System.Text.Json.JsonElement element)
+            return System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText());
+
+        return default;
+    }
+}
 
 /// <summary>
 /// Represents a core activity object that encapsulates the data and metadata for a bot interaction.
@@ -45,46 +65,26 @@ public class CoreActivity
     /// This URL is used to send responses back to the channel.
     /// </remarks>
     [JsonPropertyName("serviceUrl")] public Uri? ServiceUrl { get; set; }
-    /// <summary>
-    /// Gets or sets channel-specific data associated with this activity.
-    /// </summary>
-    [JsonPropertyName("channelData")] public ChannelData? ChannelData { get; set; }
-    /// <summary>
-    /// Gets or sets the account that sent this activity.
-    /// </summary>
-    [JsonPropertyName("from")] public ConversationAccount? From { get; set; }
-    /// <summary>
-    /// Gets or sets the account that should receive this activity.
-    /// </summary>
-    [JsonPropertyName("recipient")] public ConversationAccount? Recipient { get; set; }
-    /// <summary>
-    /// Gets or sets the conversation in which this activity is taking place.
-    /// </summary>
-    [JsonPropertyName("conversation")] public Conversation? Conversation { get; set; }
-
-    /// <summary>
-    /// Gets the collection of entities contained in this activity.
-    /// </summary>
-    /// <remarks>
-    /// Entities are structured objects that represent mentions, places, or other data.
-    /// </remarks>
-    [JsonPropertyName("entities")] public JsonArray? Entities { get; set; }
-
-    /// <summary>
-    /// Gets the collection of attachments associated with this activity.
-    /// </summary>
-    [JsonPropertyName("attachments")] public JsonArray? Attachments { get; set; }
-
-    // TODO: Can value need be a JSONObject?
-    /// <summary>
-    /// Gets or sets the value payload of the activity.
-    /// </summary>
-    [JsonPropertyName("value")] public JsonNode? Value { get; set; }
 
     /// <summary>
     /// Reply to Id
     /// </summary>
     [JsonPropertyName("replyToId")] public string? ReplyToId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the conversation information for this activity.
+    /// </summary>
+    [JsonPropertyName("conversation")] public Conversation Conversation { get; set; }
+
+    /// <summary>
+    /// Gets or sets the sender account for this activity.
+    /// </summary>
+    [JsonPropertyName("from")] public ConversationAccount? From { get; set; }
+
+    /// <summary>
+    /// Gets or sets the recipient account for this activity.
+    /// </summary>
+    [JsonPropertyName("recipient")] public ConversationAccount? Recipient { get; set; }
 
     /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
@@ -115,20 +115,14 @@ public class CoreActivity
 
     /// <summary>
     /// Creates a new instance of the <see cref="CoreActivity"/> class with the specified activity type.
+    /// Defaults to <see cref="ActivityType.Message"/>.
     /// </summary>
-    /// <param name="type"></param>
-    public CoreActivity(string type = ActivityType.Message)
+    /// <param name="type">The activity type. Defaults to "message".</param>
+    [JsonConstructor]
+    internal CoreActivity(string type = ActivityType.Message)
     {
         Type = type;
-    }
-
-
-    /// <summary>
-    ///  Creates a new instance of the <see cref="CoreActivity"/> class. As Message type by default.
-    /// </summary>
-    public CoreActivity()
-    {
-        Type = ActivityType.Message;
+        Conversation = new Conversation();
     }
 
     /// <summary>
@@ -143,16 +137,10 @@ public class CoreActivity
         ServiceUrl = activity.ServiceUrl;
         ChannelId = activity.ChannelId;
         Type = activity.Type;
-        // TODO: Figure out why this is needed...
-        // ReplyToId = activity.ReplyToId;
-        ChannelData = activity.ChannelData;
+        Conversation = activity.Conversation;
         From = activity.From;
         Recipient = activity.Recipient;
-        Conversation = activity.Conversation;
-        Entities = activity.Entities;
-        Attachments = activity.Attachments;
         Properties = activity.Properties;
-        Value = activity.Value;
 
     }
 

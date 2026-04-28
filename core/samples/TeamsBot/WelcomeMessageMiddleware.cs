@@ -45,7 +45,7 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
                 .WithConversationReference(TeamsActivity.FromActivity(activity))
                 .Build();
 
-            await botApplication.SendActivityAsync(welcomeActivity, cancellationToken);
+            await botApplication.SendActivityAsync(welcomeActivity, cancellationToken: cancellationToken);
 
             _hasSentWelcomeMessage = true;
         }

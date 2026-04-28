@@ -64,7 +64,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient)
             {
                 ServiceUrl = activity.ServiceUrl?.ToString(),
-                AgenticIdentity = AgenticIdentity.FromProperties(activity.From?.Properties)
+                AgenticIdentity = activity.From?.GetAgenticIdentity()
             });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
             //turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient); // TODO: review TeamsInfo needs

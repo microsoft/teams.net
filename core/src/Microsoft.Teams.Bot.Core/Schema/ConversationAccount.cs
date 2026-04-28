@@ -31,31 +31,46 @@ public class ConversationAccount()
     public bool? IsTargeted { get; set; }
 
     /// <summary>
+    /// Gets or sets the agentic application ID for user-delegated token acquisition.
+    /// </summary>
+    [JsonPropertyName("agenticAppId")]
+    public string? AgenticAppId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the agentic user ID for user-delegated token acquisition.
+    /// </summary>
+    [JsonPropertyName("agenticUserId")]
+    public string? AgenticUserId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the agentic application blueprint ID.
+    /// </summary>
+    [JsonPropertyName("agenticAppBlueprintId")]
+    public string? AgenticAppBlueprintId { get; set; }
+
+    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData]
     public ExtendedPropertiesDictionary Properties { get; set; } = [];
 
     /// <summary>
-    /// Gets the agentic identity from the account properties.
+    /// Gets the agentic identity from the account's typed properties.
     /// </summary>
-    /// <returns>An AgenticIdentity instance if properties contain agentic identity information; otherwise, null.</returns>
+    /// <returns>An AgenticIdentity instance if agentic identity information is present; otherwise, null.</returns>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Design", "CA1024:Use properties where appropriate")]
     public AgenticIdentity? GetAgenticIdentity()
     {
-        Properties.TryGetValue("agenticAppId", out object? appIdObj);
-        Properties.TryGetValue("agenticUserId", out object? userIdObj);
-        Properties.TryGetValue("agenticAppBlueprintId", out object? bluePrintObj);
-
-        if (appIdObj is null && userIdObj is null && bluePrintObj is null)
+        if (AgenticAppId is null && AgenticUserId is null && AgenticAppBlueprintId is null)
         {
             return null;
         }
 
         return new AgenticIdentity
         {
-            AgenticAppId = appIdObj?.ToString(),
-            AgenticUserId = userIdObj?.ToString(),
-            AgenticAppBlueprintId = bluePrintObj?.ToString()
+            AgenticAppId = AgenticAppId,
+            AgenticUserId = AgenticUserId,
+            AgenticAppBlueprintId = AgenticAppBlueprintId
         };
     }
 }

@@ -77,11 +77,13 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
         if (!string.IsNullOrEmpty(agenticAppId) && !string.IsNullOrEmpty(agenticUserId))
         {
             string appBlueprintId = Env("AzureAd__ClientId");
-            ConversationAccount recipient = new();
-            recipient.Properties.Add("agenticAppBlueprintId", appBlueprintId);
-            recipient.Properties.Add("agenticAppId", agenticAppId);
-            recipient.Properties.Add("agenticUserId", agenticUserId);
-            AgenticIdentity = AgenticIdentity.FromProperties(recipient.Properties);
+            ConversationAccount recipient = new()
+            {
+                AgenticAppBlueprintId = appBlueprintId,
+                AgenticAppId = agenticAppId,
+                AgenticUserId = agenticUserId
+            };
+            AgenticIdentity = AgenticIdentity.FromAccount(recipient);
         }
     }
 

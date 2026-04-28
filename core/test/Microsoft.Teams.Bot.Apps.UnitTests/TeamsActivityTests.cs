@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -12,15 +13,10 @@ public class TeamsActivityTests
     public void DownCastTeamsActivity_To_CoreActivity()
     {
         CoreActivity activity = CoreActivity.FromJsonString(json);
-        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", activity.Conversation!.Id);
+        Assert.NotNull(activity.Conversation);
+        Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", activity.Conversation.Id);
         TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
         Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", teamsActivity.Conversation!.Id);
-
-        static void AssertCid(CoreActivity a)
-        {
-            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
-        }
-        AssertCid(teamsActivity);
 
     }
 
@@ -35,7 +31,8 @@ public class TeamsActivityTests
 
         static void AssertCid(CoreActivity a)
         {
-            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
+            Assert.IsAssignableFrom<TeamsActivity>(a);
+            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", ((TeamsActivity)a).Conversation!.Id);
         }
         AssertCid(teamsActivity);
     }
@@ -54,7 +51,8 @@ public class TeamsActivityTests
 
         static void AssertCid(CoreActivity a)
         {
-            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", a.Conversation!.Id);
+            Assert.IsAssignableFrom<TeamsActivity>(a);
+            Assert.Equal("19:6848757105754c8981c67612732d9aa7@thread.tacv2;messageid=1759881511856", ((TeamsActivity)a).Conversation!.Id);
         }
         AssertCid(teamsActivity);
 
@@ -166,8 +164,9 @@ public class TeamsActivityTests
     {
         //TeamsActivity activity = CoreActivity.FromJsonString<TeamsActivity>(jsonInvoke);
         TeamsActivity activity = TeamsActivity.FromActivity(CoreActivity.FromJsonString(jsonInvoke));
-        Assert.NotNull(activity.Value);
-        string feedback = activity.Value?["action"]?["data"]?["feedback"]?.ToString()!;
+        InvokeActivity invokeActivity = Assert.IsType<InvokeActivity>(activity);
+        Assert.NotNull(invokeActivity.Value);
+        string feedback = invokeActivity.Value?["action"]?["data"]?["feedback"]?.ToString()!;
         Assert.Equal("test invokes", feedback);
     }
 
@@ -208,11 +207,42 @@ public class TeamsActivityTests
         TeamsActivity teamsActivity = TeamsActivity.FromActivity(coreActivity);
         Assert.Equal("rec1", teamsActivity.Recipient?.Id);
         Assert.Equal("recname", teamsActivity.Recipient?.Name);
-        AgenticIdentity? agenticIdentity = AgenticIdentity.FromProperties(teamsActivity.Recipient?.Properties);
+        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(teamsActivity.Recipient);
         Assert.NotNull(agenticIdentity);
         Assert.Equal("0d5eb8a3-1642-4e63-9ccc-a89aa461716c", agenticIdentity.AgenticUserId);
         Assert.Equal("3fc62d4f-b04e-4c71-878b-02a2fa395fe2", agenticIdentity.AgenticAppId);
         Assert.Equal("24fff850-d7fb-4d32-a6e7-a1178874430e", agenticIdentity.AgenticAppBlueprintId);
+    }
+
+    [Fact]
+    public void MessageActivity_FromActivity_PreservesFromAndRecipient()
+    {
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "text": "hello",
+                "from": {
+                    "id": "user1",
+                    "name": "User One",
+                    "agenticAppId": "app-1"
+                },
+                "recipient": {
+                    "id": "bot1",
+                    "name": "Bot One"
+                }
+            }
+            """);
+
+        MessageActivity messageActivity = MessageActivity.FromActivity(coreActivity);
+
+        Assert.Equal("hello", messageActivity.Text);
+        Assert.NotNull(messageActivity.From);
+        Assert.Equal("user1", messageActivity.From.Id);
+        Assert.Equal("User One", messageActivity.From.Name);
+        Assert.Equal("app-1", messageActivity.From.AgenticAppId);
+        Assert.NotNull(messageActivity.Recipient);
+        Assert.Equal("bot1", messageActivity.Recipient.Id);
+        Assert.Equal("Bot One", messageActivity.Recipient.Name);
     }
 
     [Fact]
@@ -252,10 +282,13 @@ public class TeamsActivityTests
     [Fact]
     public void BaseFieldsAsBaseTypes()
     {
-        CoreActivity ca = new();
-        ca.Conversation = new Conversation() { Id = "conv1" };
-        ca.Conversation.Properties.Add("tenantId", "tenant-1");
-        CoreActivity ta = TeamsActivity.FromActivity(ca);
+        CoreActivity ca = CoreActivity.FromJsonString("""
+            {
+                "type": "message",
+                "conversation": { "id": "conv1", "tenantId": "tenant-1" }
+            }
+            """);
+        TeamsActivity ta = TeamsActivity.FromActivity(ca);
         if (ta.Conversation is not null)
         {
             Assert.NotNull(ta.Conversation);
@@ -284,14 +317,10 @@ public class TeamsActivityTests
         Assert.NotNull(ca);
         Assert.NotNull(ca.Conversation);
         Assert.Equal("conv1", ca.Conversation.Id);
-        if (ca.Conversation.Properties.TryGetValue("tenantId", out object? outTenantId))
-        {
-            Assert.Equal("tenant-1", outTenantId?.ToString());
-        }
-        else
-        {
-            Assert.Fail("conversation tenant not set");
-        }
+        string caJson = ca.ToJson();
+        Assert.Contains("\"conversation\"", caJson);
+        Assert.Contains("\"conv1\"", caJson);
+        Assert.Contains("\"tenant-1\"", caJson);
         TeamsActivity ta = TeamsActivity.FromActivity(ca);
         Assert.NotNull(ta);
         Assert.NotNull(ta.Conversation);
@@ -299,6 +328,67 @@ public class TeamsActivityTests
         Assert.Equal("tenant-1", ta.Conversation.TenantId);
     }
 
+
+    [Fact]
+    public void TeamsActivityBuilder_WithFrom_SyncsBaseProperty()
+    {
+        // Verify that From/Recipient set via builder are accessible through a CoreActivity reference
+        TeamsActivity incoming = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithText("test")
+            .Build();
+
+        // Access through CoreActivity reference (as ConversationClient would)
+        CoreActivity coreRef = reply;
+        Assert.NotNull(coreRef.From);
+        Assert.Equal(incoming.Recipient?.Id, coreRef.From.Id);
+
+        // AgenticIdentity should be accessible through the base From
+        ConversationAccount fromWithAgentic = new() { Id = "bot1", AgenticAppId = "app-1" };
+        TeamsActivity agenticReply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithFrom(fromWithAgentic)
+            .Build();
+
+        CoreActivity agenticCoreRef = agenticReply;
+        Assert.NotNull(agenticCoreRef.From);
+        Assert.Equal("app-1", agenticCoreRef.From.AgenticAppId);
+        Assert.NotNull(AgenticIdentity.FromAccount(agenticCoreRef.From));
+    }
+
+    [Fact]
+    public void TeamsActivityBuilder_WithFrom_DoesNotProduceDuplicateFromInJson()
+    {
+        // Build a TeamsActivity with WithConversationReference which calls WithFrom
+        TeamsActivity incoming = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithText("hello")
+            .Build();
+
+        string serialized = reply.ToJson();
+
+        // Count occurrences of "from" key in the JSON — should appear exactly once
+        int fromCount = System.Text.RegularExpressions.Regex.Matches(serialized, "\"from\"\\s*:").Count;
+        Assert.Equal(1, fromCount);
+    }
+
+    [Fact]
+    public void TeamsActivityBuilder_WithRecipient_DoesNotProduceDuplicateRecipientInJson()
+    {
+        TeamsActivity incoming = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithRecipient(incoming.From)
+            .WithText("hello")
+            .Build();
+
+        string serialized = reply.ToJson();
+
+        int recipientCount = System.Text.RegularExpressions.Regex.Matches(serialized, "\"recipient\"\\s*:").Count;
+        Assert.Equal(1, recipientCount);
+    }
 
     private const string jsonInvoke = """
           {

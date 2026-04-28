@@ -151,7 +151,7 @@ public class BotApplication
     /// <summary>
     /// Sends the specified activity to the conversation asynchronously.
     /// </summary>
-    /// <param name="activity">The activity to send to the conversation. Cannot be null.</param>
+    /// <param name="activity">The activity to send to the conversation. Cannot be null. Must have Conversation.Id set.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains the identifier of the sent activity.</returns>
     /// <exception cref="Exception">Thrown if the conversation client has not been initialized.</exception>

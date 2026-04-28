@@ -38,6 +38,9 @@ public class TeamsConversationAccount : ConversationAccount
         result.Id = conversationAccount.Id;
         result.Name = conversationAccount.Name;
         result.IsTargeted = conversationAccount.IsTargeted;
+        result.AgenticAppId = conversationAccount.AgenticAppId;
+        result.AgenticUserId = conversationAccount.AgenticUserId;
+        result.AgenticAppBlueprintId = conversationAccount.AgenticAppBlueprintId;
         result.Properties = conversationAccount.Properties;
         return result;
     }

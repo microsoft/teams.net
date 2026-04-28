@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -58,33 +57,12 @@ public class MessageActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageActivity(CoreActivity activity) : base(activity)
     {
-        if (activity.Properties.TryGetValue("text", out object? text))
-        {
-            Text = text?.ToString();
-            activity.Properties.Remove("text");
-        }
-        if (activity.Properties.TryGetValue("textFormat", out object? textFormat))
-        {
-            TextFormat = textFormat?.ToString();
-            activity.Properties.Remove("textFormat");
-        }
-        if (activity.Properties.TryGetValue("attachmentLayout", out object? attachmentLayout))
-        {
-            AttachmentLayout = attachmentLayout?.ToString();
-            activity.Properties.Remove("attachmentLayout");
-        }
-        if (activity.Properties.TryGetValue("suggestedActions", out object? suggestedActions) && suggestedActions != null)
-        {
-            if (suggestedActions is JsonElement je)
-            {
-                SuggestedActions = JsonSerializer.Deserialize<SuggestedActions>(je.GetRawText());
-            }
-            else
-            {
-                SuggestedActions = suggestedActions as SuggestedActions;
-            }
-            activity.Properties.Remove("suggestedActions");
-        }
+        Attachments = activity.Properties.Extract<IList<TeamsAttachment>>("attachments");
+        Text = activity.Properties.Extract<string>("text");
+        TextFormat = activity.Properties.Extract<string>("textFormat");
+        AttachmentLayout = activity.Properties.Extract<string>("attachmentLayout");
+        SuggestedActions = activity.Properties.Extract<SuggestedActions>("suggestedActions");
+
         /*
         if (activity.Properties.TryGetValue("speak", out var speak))
         {
@@ -118,6 +96,12 @@ public class MessageActivity : TeamsActivity
         }
         */
     }
+
+    /// <summary>
+    /// Gets or sets the attachments for the message.
+    /// </summary>
+    [JsonPropertyName("attachments")]
+    public IList<TeamsAttachment>? Attachments { get; set; }
 
     /// <summary>
     /// Gets or sets the text content of the message.

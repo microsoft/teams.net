@@ -87,10 +87,10 @@ bot.OnFetchTask(async (context, cancellationToken) =>
 // Helper: Extract title and description from preview card
 static (string?, string?) GetDataFromPreview(TeamsActivity? preview)
 {
-    if (preview?.Attachments == null) return (null, null);
+    if (preview is not MessageActivity msg || msg.Attachments == null) return (null, null);
 
     JsonElement cardData = JsonSerializer.Deserialize<JsonElement>(
-        JsonSerializer.Serialize(preview.Attachments[0].Content));
+        JsonSerializer.Serialize(msg.Attachments[0].Content));
 
     if (!cardData.TryGetProperty("body", out JsonElement body) || body.ValueKind != JsonValueKind.Array)
         return (null, null);

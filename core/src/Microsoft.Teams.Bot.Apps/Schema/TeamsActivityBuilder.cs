@@ -27,33 +27,90 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     }
 
     /// <summary>
-    /// Sets the conversation (override for Teams-specific type).
+    /// Apply Conversation Reference from the specified activity.
     /// </summary>
-    protected override void SetConversation(Conversation? conversation)
+    /// <param name="activity">The source activity to copy conversation reference from.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder WithConversationReference(TeamsActivity activity)
     {
-        _activity.Conversation = conversation is TeamsConversation teamsConv
-            ? teamsConv
-            : TeamsConversation.FromConversation(conversation);
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentNullException.ThrowIfNull(activity.ChannelId);
+        ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
+        ArgumentNullException.ThrowIfNull(activity.Conversation);
+        ArgumentNullException.ThrowIfNull(activity.From);
+        ArgumentNullException.ThrowIfNull(activity.Recipient);
+
+        WithServiceUrl(activity.ServiceUrl);
+        WithChannelId(activity.ChannelId);
+        WithConversation(activity.Conversation);
+        WithFrom(activity.Recipient);
+
+        if (!string.IsNullOrEmpty(activity.Id))
+        {
+            WithReplyToId(activity.Id);
+        }
+
+        return this;
     }
 
     /// <summary>
-    /// Sets the From account (override for Teams-specific type).
+    /// Sets the sender account information.
     /// </summary>
-    protected override void SetFrom(ConversationAccount? from)
+    /// <param name="from">The sender account.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public new TeamsActivityBuilder WithFrom(ConversationAccount? from)
     {
         _activity.From = from is TeamsConversationAccount teamsAccount
             ? teamsAccount
-            : TeamsConversationAccount.FromConversationAccount(from);
+            : TeamsConversationAccount.FromConversationAccount(from)!;
+        return this;
     }
 
     /// <summary>
-    /// Sets the Recipient account (override for Teams-specific type).
+    /// Sets the recipient account information.
     /// </summary>
-    protected override void SetRecipient(ConversationAccount? recipient)
+    /// <param name="recipient">The recipient account.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public new TeamsActivityBuilder WithRecipient(ConversationAccount? recipient)
     {
         _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
             ? teamsAccount
-            : TeamsConversationAccount.FromConversationAccount(recipient);
+            : TeamsConversationAccount.FromConversationAccount(recipient)!;
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the recipient account information and optionally marks this as a targeted message.
+    /// </summary>
+    /// <param name="recipient">The recipient account.</param>
+    /// <param name="isTargeted">If true, marks this as a targeted message visible only to the specified recipient.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
+    {
+        if (recipient is not null)
+        {
+            recipient.IsTargeted = isTargeted ? true : null;
+            _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
+                ? teamsAccount
+                : TeamsConversationAccount.FromConversationAccount(recipient)!;
+        }
+        return this;
+    }
+
+    /// <summary>
+    /// Sets the conversation information.
+    /// </summary>
+    /// <param name="conversation">The conversation information.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public new TeamsActivityBuilder WithConversation(Conversation? conversation)
+    {
+        ArgumentNullException.ThrowIfNull(conversation);
+
+        _activity.Conversation = conversation is TeamsConversation teamsConv
+            ? teamsConv
+            : TeamsConversation.FromConversation(conversation);
+
+        return this;
     }
 
     /// <summary>
@@ -85,7 +142,10 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The builder instance for chaining.</returns>
     public TeamsActivityBuilder WithAttachments(IList<TeamsAttachment> attachments)
     {
-        _activity.Attachments = attachments;
+        if (_activity is MessageActivity msg)
+            msg.Attachments = attachments;
+        else
+            _activity.Properties["attachments"] = attachments;
         return this;
     }
 
@@ -97,10 +157,11 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The builder instance for chaining.</returns>
     public TeamsActivityBuilder WithAttachment(TeamsAttachment? attachment)
     {
-        _activity.Attachments = attachment is null
-            ? null
-            : [attachment];
-
+        IList<TeamsAttachment>? attachments = attachment is null ? null : [attachment];
+        if (_activity is MessageActivity msg)
+            msg.Attachments = attachments;
+        else
+            _activity.Properties["attachments"] = attachments;
         return this;
     }
 
@@ -123,8 +184,20 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The builder instance for chaining.</returns>
     public TeamsActivityBuilder AddAttachment(TeamsAttachment attachment)
     {
-        _activity.Attachments ??= [];
-        _activity.Attachments.Add(attachment);
+        if (_activity is MessageActivity msg)
+        {
+            msg.Attachments ??= [];
+            msg.Attachments.Add(attachment);
+        }
+        else
+        {
+            if (!_activity.Properties.TryGetValue("attachments", out object? existing) || existing is not List<TeamsAttachment> list)
+            {
+                list = [];
+                _activity.Properties["attachments"] = list;
+            }
+            list.Add(attachment);
+        }
         return this;
     }
 
@@ -198,9 +271,6 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         _activity.Entities ??= [];
         _activity.Entities.Add(new MentionEntity(account, $"<at>{mentionText}</at>"));
 
-        CoreActivity baseActivity = _activity;
-        baseActivity.Entities = _activity.Entities.ToJsonArray();
-
         return this;
     }
 
@@ -210,8 +280,6 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The configured TeamsActivity.</returns>
     public override TeamsActivity Build()
     {
-        _activity.Rebase();
-
         return _activity;
     }
 

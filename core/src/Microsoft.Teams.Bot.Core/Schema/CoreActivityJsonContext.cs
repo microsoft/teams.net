@@ -17,6 +17,7 @@ namespace Microsoft.Teams.Bot.Core.Schema;
 [JsonSerializable(typeof(ConversationAccount))]
 [JsonSerializable(typeof(ExtendedPropertiesDictionary))]
 [JsonSerializable(typeof(System.Text.Json.JsonElement))]
+[JsonSerializable(typeof(System.Text.Json.Nodes.JsonNode))]
 [JsonSerializable(typeof(System.Int32))]
 [JsonSerializable(typeof(System.Boolean))]
 [JsonSerializable(typeof(System.Int64))]

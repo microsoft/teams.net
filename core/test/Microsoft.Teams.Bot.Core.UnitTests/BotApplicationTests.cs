@@ -52,10 +52,6 @@ public class BotApplicationTests
         };
         activity.Properties["text"] = "Test message";
 
-        if (activity.Recipient is not null)
-        {
-            activity.Recipient.Properties["appId"] = "test-app-id";
-        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -81,10 +77,6 @@ public class BotApplicationTests
             Type = ActivityType.Message,
             Id = "act123"
         };
-        if (activity.Recipient is not null)
-        {
-            activity.Recipient.Properties["appId"] = "test-app-id";
-        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -125,10 +117,6 @@ public class BotApplicationTests
             Id = "act123"
         };
 
-        if (activity.Recipient is not null)
-        {
-            activity.Recipient.Properties["appId"] = "test-app-id";
-        }
 
         DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
 
@@ -178,10 +166,10 @@ public class BotApplicationTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Conversation = new Conversation { Id = "conv123" },
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
+        activity.Conversation = new("conv123");
         SendActivityResponse? result = await botApp.SendActivityAsync(activity);
 
         Assert.NotNull(result);

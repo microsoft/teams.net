@@ -192,18 +192,17 @@ public class CitationEntityTests
             Icon = CitationIcon.MicrosoftExcel
         });
 
-        // Verify base CoreActivity.Entities (JsonArray) contains the citation data
-        CoreActivity coreActivity = activity;
-        Assert.NotNull(coreActivity.Entities);
-        Assert.Single(coreActivity.Entities);
+        // Verify entities are serialized correctly via the TeamsActivity JSON output
+        // CoreActivity no longer has Entities; they are in Properties dict and extracted by TeamsActivity
+        Assert.NotNull(activity.Entities);
+        Assert.Single(activity.Entities);
 
-        string? entityJson = coreActivity.Entities[0]?.ToJsonString();
-        Assert.NotNull(entityJson);
-        Assert.Contains("citation", entityJson);
-        Assert.Contains("Rebase Test Doc", entityJson);
-        Assert.Contains("Rebase test abstract", entityJson);
-        Assert.Contains("AIGeneratedContent", entityJson);
-        Assert.Contains("Microsoft Excel", entityJson);
+        string activityJson = activity.ToJson();
+        Assert.Contains("citation", activityJson);
+        Assert.Contains("Rebase Test Doc", activityJson);
+        Assert.Contains("Rebase test abstract", activityJson);
+        Assert.Contains("AIGeneratedContent", activityJson);
+        Assert.Contains("Microsoft Excel", activityJson);
     }
 
     [Fact]

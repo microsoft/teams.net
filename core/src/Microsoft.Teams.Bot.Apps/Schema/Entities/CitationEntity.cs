@@ -36,7 +36,6 @@ public static class ActivityCitationExtensions
 
         activity.Entities.Remove(messageEntity);
         activity.Entities.Add(citationEntity);
-        activity.Rebase();
         return citationEntity;
     }
 
@@ -58,7 +57,6 @@ public static class ActivityCitationExtensions
             messageEntity.AdditionalType.Add("AIGeneratedContent");
         }
 
-        activity.Rebase();
         return messageEntity;
     }
 

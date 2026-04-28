@@ -41,11 +41,13 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public Task<SendActivityResponse?> SendActivityAsync(string text, CancellationToken cancellationToken = default)
-        => TeamsBotApplication.SendActivityAsync(
-            new TeamsActivityBuilder()
-                .WithConversationReference(Activity)
-                .WithText(text)
-                .Build(), cancellationToken);
+    {
+        TeamsActivity reply = new TeamsActivityBuilder()
+            .WithConversationReference(Activity)
+            .WithText(text)
+            .Build();
+        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
+    }
 
     /// <summary>
     /// Sends Activity
@@ -54,11 +56,12 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public Task<SendActivityResponse?> SendActivityAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
-        => TeamsBotApplication.SendActivityAsync(
-            new TeamsActivityBuilder(activity)
-                .WithConversationReference(Activity)
-                .Build(), cancellationToken);
-
+    {
+        TeamsActivity reply = new TeamsActivityBuilder(activity)
+            .WithConversationReference(Activity)
+            .Build();
+        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
+    }
 
     /// <summary>
     /// Sends a typing activity to the conversation asynchronously.
@@ -66,11 +69,13 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public Task<SendActivityResponse?> SendTypingActivityAsync(CancellationToken cancellationToken = default)
-        => TeamsBotApplication.SendActivityAsync(
-            new TeamsActivityBuilder()
-                .WithType(TeamsActivityType.Typing)
-                .WithConversationReference(Activity)
-                .Build(), cancellationToken);
+    {
+        TeamsActivity reply = new TeamsActivityBuilder()
+            .WithType(TeamsActivityType.Typing)
+            .WithConversationReference(Activity)
+            .Build();
+        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
+    }
 
     // ==================== OAuth Sign-In ====================
 

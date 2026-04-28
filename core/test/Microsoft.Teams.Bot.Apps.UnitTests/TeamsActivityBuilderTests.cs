@@ -10,9 +10,11 @@ namespace Microsoft.Teams.Bot.Apps.UnitTests;
 public class TeamsActivityBuilderTests
 {
     private readonly TeamsActivityBuilder builder;
+    private readonly TeamsActivityBuilder messageBuilder;
     public TeamsActivityBuilderTests()
     {
         builder = TeamsActivity.CreateBuilder();
+        messageBuilder = TeamsActivity.CreateBuilder(new MessageActivity());
     }
 
     [Fact]
@@ -137,7 +139,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithConversation_SetsConversationInfo()
     {
-        Conversation baseConversation = new Conversation("conversation-id");
+        Conversation baseConversation = new("conversation-id");
 
         Assert.NotNull(baseConversation);
         baseConversation.Properties.Add("tenantId", "tenant-123");
@@ -203,7 +205,7 @@ public class TeamsActivityBuilderTests
             }
         ];
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithAttachments(attachments)
             .Build();
 
@@ -222,7 +224,7 @@ public class TeamsActivityBuilderTests
             Name = "single"
         };
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithAttachment(attachment)
             .Build();
 
@@ -270,7 +272,7 @@ public class TeamsActivityBuilderTests
             Name = "test.html"
         };
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .AddAttachment(attachment)
             .Build();
 
@@ -282,7 +284,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddAttachment_MultipleAttachments_AddsAllToCollection()
     {
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .AddAttachment(new TeamsAttachment { ContentType = "text/html" })
             .AddAttachment(new TeamsAttachment { ContentType = "application/json" })
             .Build();
@@ -296,7 +298,7 @@ public class TeamsActivityBuilderTests
     {
         var adaptiveCard = new { type = "AdaptiveCard", version = "1.2" };
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .AddAdaptiveCardAttachment(adaptiveCard)
             .Build();
 
@@ -311,7 +313,7 @@ public class TeamsActivityBuilderTests
     {
         var adaptiveCard = new { type = "AdaptiveCard" };
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithAdaptiveCardAttachment(adaptiveCard, b => b.WithName("feedback"))
             .Build();
 
@@ -417,7 +419,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void FluentAPI_CompleteActivity_BuildsCorrectly()
     {
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithType(TeamsActivityType.Message)
             .WithId("activity-123")
             .WithChannelId("msteams")
@@ -512,9 +514,9 @@ public class TeamsActivityBuilderTests
             .AddMention(account)
             .Build();
 
-        CoreActivity baseActivity = activity;
-        Assert.NotNull(baseActivity.Entities);
-        Assert.NotEmpty(baseActivity.Entities);
+        // Entities are on TeamsActivity, not CoreActivity; verify via TeamsActivity
+        Assert.NotNull(activity.Entities);
+        Assert.NotEmpty(activity.Entities);
     }
 
     [Fact]
@@ -545,14 +547,14 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddAttachment_NullAttachmentsCollection_InitializesCollection()
     {
-        TeamsActivity activity = builder.Build();
+        MessageActivity activity = (MessageActivity)messageBuilder.Build();
 
         Assert.Null(activity.Attachments);
 
         TeamsAttachment attachment = new() { ContentType = "text/html" };
-        builder.AddAttachment(attachment);
+        messageBuilder.AddAttachment(attachment);
 
-        TeamsActivity result = builder.Build();
+        MessageActivity result = (MessageActivity)messageBuilder.Build();
         Assert.NotNull(result.Attachments);
         Assert.Single(result.Attachments);
     }
@@ -585,7 +587,7 @@ public class TeamsActivityBuilderTests
 
         TeamsActivity sourceActivity = new()
         {
-            ChannelId = null,
+            ChannelId = null!,
             ServiceUrl = new Uri("https://test.com"),
             Conversation = TeamsConversation.FromConversation(new Conversation()),
             From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
@@ -601,7 +603,7 @@ public class TeamsActivityBuilderTests
         TeamsActivity sourceActivity = new()
         {
             ChannelId = "msteams",
-            ServiceUrl = null,
+            ServiceUrl = null!,
             Conversation = TeamsConversation.FromConversation(new Conversation()),
             From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
             Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount())
@@ -727,7 +729,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithAttachments_WithNullValue_SetsToNull()
     {
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithAttachments([new()])
             .WithAttachments(null!)
             .Build();
@@ -761,15 +763,13 @@ public class TeamsActivityBuilderTests
             .AddEntity(new ClientInfoEntity { Locale = "en-US" });
 
         TeamsActivity activity1 = builder.Build();
-        CoreActivity baseActivity1 = activity1;
-        Assert.NotNull(baseActivity1.Entities);
+        Assert.NotNull(activity1.Entities);
 
         builder.AddEntity(new ProductInfoEntity { Id = "prod-1" });
         TeamsActivity activity2 = builder.Build();
-        CoreActivity baseActivity2 = activity2;
 
         Assert.Same(activity1, activity2);
-        Assert.NotNull(baseActivity2.Entities);
+        Assert.NotNull(activity2.Entities);
         Assert.Equal(2, activity2.Entities!.Count);
     }
 
@@ -796,7 +796,7 @@ public class TeamsActivityBuilderTests
         TeamsConversation? tc = TeamsConversation.FromConversation(conv);
         Assert.NotNull(tc);
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithType(TeamsActivityType.Message)
             .WithId("msg-001")
             .WithServiceUrl(serviceUrl)

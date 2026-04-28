@@ -59,7 +59,7 @@ namespace Microsoft.Teams.Bot.Compat
             CreateConversationResponse res = await _client.CreateConversationAsync(
                 convoParams,
                 new Uri(ServiceUrl),
-                AgenticIdentity.FromProperties(convoParams.Activity?.From?.Properties),
+                AgenticIdentity.FromAccount(convoParams.Activity?.From),
                 convertedHeaders,
                 cancellationToken).ConfigureAwait(false);
 
@@ -239,18 +239,10 @@ namespace Microsoft.Teams.Bot.Compat
                 coreActivity.ServiceUrl = new Uri(ServiceUrl);
             }
 
-            // ReplyToActivity is not available in ConversationClient, use SendActivityAsync with replyToId in Properties
-            coreActivity.Properties["replyToId"] = activityId;
-            if (coreActivity.Conversation == null)
-            {
-                coreActivity.Conversation = new Microsoft.Teams.Bot.Core.Schema.Conversation { Id = conversationId };
-            }
-            else
-            {
-                coreActivity.Conversation.Id = conversationId;
-            }
+            coreActivity.ReplyToId = activityId;
+            coreActivity.Conversation = new Microsoft.Teams.Bot.Core.Schema.Conversation(conversationId);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -318,10 +310,9 @@ namespace Microsoft.Teams.Bot.Compat
                 coreActivity.ServiceUrl = new Uri(ServiceUrl);
             }
 
-            // Ensure conversation ID is set
-            coreActivity.Conversation ??= new Microsoft.Teams.Bot.Core.Schema.Conversation { Id = conversationId };
+            coreActivity.Conversation = new Microsoft.Teams.Bot.Core.Schema.Conversation(conversationId);
 
-            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {
@@ -359,7 +350,7 @@ namespace Microsoft.Teams.Bot.Compat
                 coreActivity.ServiceUrl = new Uri(ServiceUrl);
             }
 
-            UpdateActivityResponse response = await _client.UpdateActivityAsync(conversationId, activityId, coreActivity, convertedHeaders, cancellationToken).ConfigureAwait(false);
+            UpdateActivityResponse response = await _client.UpdateActivityAsync(conversationId, activityId, coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
             ResourceResponse resourceResponse = new()
             {

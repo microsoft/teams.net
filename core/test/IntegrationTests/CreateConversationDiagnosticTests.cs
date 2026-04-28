@@ -158,11 +158,10 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
             IsGroup = false,
             Members = [new() { Id = memberMri }],
             TenantId = _f.TenantId,
-            Activity = new CoreActivity
-            {
-                Type = ActivityType.Message,
-                Properties = { { "text", "[Diagnostic] 1:1 with initial activity" } }
-            }
+            Activity = CoreActivity.CreateBuilder()
+                .WithType(ActivityType.Message)
+                .WithProperty("text", "[Diagnostic] 1:1 with initial activity")
+                .Build()
         });
         Assert.True(result.StatusCode is 200 or 201, $"Expected 2xx, got {result.StatusCode}");
     }
@@ -229,11 +228,10 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
             TenantId = _f.TenantId,
             TopicName = "Diagnostic group test",
             ChannelData = new { tenant = new { id = _f.TenantId } },
-            Activity = new CoreActivity
-            {
-                Type = ActivityType.Message,
-                Properties = { { "text", "group chat init" } }
-            }
+            Activity = CoreActivity.CreateBuilder()
+                .WithType(ActivityType.Message)
+                .WithProperty("text", "group chat init")
+                .Build()
         });
         Assert.Equal(400, result.StatusCode);
     }
@@ -294,11 +292,10 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         {
             IsGroup = true,
             ChannelData = new { channel = new { id = _f.ChannelId } },
-            Activity = new CoreActivity
-            {
-                Type = ActivityType.Message,
-                Properties = { { "text", "[Diagnostic] channel thread" } }
-            },
+            Activity = CoreActivity.CreateBuilder()
+                .WithType(ActivityType.Message)
+                .WithProperty("text", "[Diagnostic] channel thread")
+                .Build(),
             TenantId = _f.TenantId
         });
         Assert.True(result.StatusCode is 200 or 201, $"Expected 2xx, got {result.StatusCode}");
@@ -325,11 +322,10 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
             IsGroup = true,
             Members = [new() { Id = memberMri }],
             ChannelData = new { channel = new { id = _f.ChannelId } },
-            Activity = new CoreActivity
-            {
-                Type = ActivityType.Message,
-                Properties = { { "text", "[Diagnostic] channel thread with members" } }
-            },
+            Activity = CoreActivity.CreateBuilder()
+                .WithType(ActivityType.Message)
+                .WithProperty("text", "[Diagnostic] channel thread with members")
+                .Build(),
             TenantId = _f.TenantId
         });
         Assert.True(result.StatusCode is 200 or 201, $"Expected 2xx, got {result.StatusCode}");

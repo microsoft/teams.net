@@ -78,10 +78,11 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
             CoreActivity coreActivity = botActivity.FromCompatActivity();
 
             Assert.NotNull(coreActivity);
-            Assert.NotNull(coreActivity.Attachments);
-            Assert.Single(coreActivity.Attachments);
+            JsonArray? attachments = coreActivity.Properties.Extract<JsonArray>("attachments");
+            Assert.NotNull(attachments);
+            Assert.Single(attachments);
 
-            JsonNode? attachmentNode = coreActivity.Attachments[0];
+            JsonNode? attachmentNode = attachments[0];
             Assert.NotNull(attachmentNode);
             JsonObject attachmentObj = attachmentNode.AsObject();
 
@@ -112,10 +113,11 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             CoreActivity coreActivity = activity.FromCompatActivity();
 
-            Assert.NotNull(coreActivity.Attachments);
-            Assert.Equal(2, coreActivity.Attachments?.Count);
-            Assert.Equal("text/plain", coreActivity.Attachments?[0]?["contentType"]?.GetValue<string>());
-            Assert.Equal("image/png", coreActivity.Attachments?[1]?["contentType"]?.GetValue<string>());
+            JsonArray? attachments = coreActivity.Properties.Extract<JsonArray>("attachments");
+            Assert.NotNull(attachments);
+            Assert.Equal(2, attachments?.Count);
+            Assert.Equal("text/plain", attachments?[0]?["contentType"]?.GetValue<string>());
+            Assert.Equal("image/png", attachments?[1]?["contentType"]?.GetValue<string>());
         }
 
         #endregion
@@ -130,10 +132,11 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             CoreActivity coreActivity = botActivity.FromCompatActivity();
 
-            Assert.NotNull(coreActivity.Entities);
-            Assert.Single(coreActivity.Entities);
+            JsonArray? entities = coreActivity.Properties.Extract<JsonArray>("entities");
+            Assert.NotNull(entities);
+            Assert.Single(entities);
 
-            JsonObject? entity = coreActivity.Entities[0]?.AsObject();
+            JsonObject? entity = entities[0]?.AsObject();
             Assert.NotNull(entity);
             Assert.Equal("https://schema.org/Message", entity["type"]?.GetValue<string>());
         }
@@ -146,13 +149,14 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             CoreActivity coreActivity = botActivity.FromCompatActivity();
 
-            Assert.NotNull(coreActivity.Entities);
-            Assert.Equal(2, coreActivity.Entities?.Count);
+            JsonArray? entities = coreActivity.Properties.Extract<JsonArray>("entities");
+            Assert.NotNull(entities);
+            Assert.Equal(2, entities?.Count);
 
-            JsonObject? firstEntity = coreActivity.Entities?[0]?.AsObject();
+            JsonObject? firstEntity = entities?[0]?.AsObject();
             Assert.Equal("https://schema.org/Message", firstEntity?["type"]?.GetValue<string>());
 
-            JsonObject? secondEntity = coreActivity.Entities?[1]?.AsObject();
+            JsonObject? secondEntity = entities?[1]?.AsObject();
             Assert.Equal("BotMessageMetadata", secondEntity?["type"]?.GetValue<string>());
         }
 
@@ -225,9 +229,10 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             CoreActivity coreActivity = activity.FromCompatActivity();
 
-            Assert.NotNull(coreActivity.ChannelData);
-            Assert.True(coreActivity.ChannelData.Properties.ContainsKey("customProperty"));
-            Assert.Equal("customValue", coreActivity.ChannelData.Properties["customProperty"]?.ToString());
+            ChannelData? channelData = coreActivity.Properties.Extract<ChannelData>("channelData");
+            Assert.NotNull(channelData);
+            Assert.True(channelData.Properties.ContainsKey("customProperty"));
+            Assert.Equal("customValue", channelData.Properties["customProperty"]?.ToString());
         }
 
         [Fact]
@@ -238,10 +243,11 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
 
             CoreActivity coreActivity = botActivity.FromCompatActivity();
 
-            Assert.NotNull(coreActivity.ChannelData);
-            Assert.True(coreActivity.ChannelData.Properties.ContainsKey("feedbackLoopEnabled"));
+            ChannelData? channelData = coreActivity.Properties.Extract<ChannelData>("channelData");
+            Assert.NotNull(channelData);
+            Assert.True(channelData.Properties.ContainsKey("feedbackLoopEnabled"));
 
-            JsonElement feedbackLoopValue = (JsonElement)coreActivity.ChannelData.Properties["feedbackLoopEnabled"]!;
+            JsonElement feedbackLoopValue = (JsonElement)channelData.Properties["feedbackLoopEnabled"]!;
             Assert.True(feedbackLoopValue.GetBoolean());
         }
 

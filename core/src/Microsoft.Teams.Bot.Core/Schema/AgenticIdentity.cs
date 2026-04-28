@@ -23,25 +23,21 @@ public sealed class AgenticIdentity
     public string? AgenticAppBlueprintId { get; set; }
 
     /// <summary>
-    /// Creates an <see cref="AgenticIdentity"/> instance from the provided properties dictionary.
+    /// Creates an <see cref="AgenticIdentity"/> from a <see cref="ConversationAccount"/>'s typed agentic fields.
+    /// Returns null if the account is null or has no agentic fields set.
     /// </summary>
-    /// <param name="properties"></param>
-    /// <returns></returns>
-    public static AgenticIdentity? FromProperties(ExtendedPropertiesDictionary? properties)
+    public static AgenticIdentity? FromAccount(ConversationAccount? account)
     {
-        if (properties is null)
+        if (account is null || (account.AgenticAppId is null && account.AgenticUserId is null && account.AgenticAppBlueprintId is null))
         {
             return null;
         }
 
-        properties.TryGetValue("agenticAppId", out object? appIdObj);
-        properties.TryGetValue("agenticUserId", out object? userIdObj);
-        properties.TryGetValue("agenticAppBlueprintId", out object? bluePrintObj);
         return new AgenticIdentity
         {
-            AgenticAppId = appIdObj?.ToString(),
-            AgenticUserId = userIdObj?.ToString(),
-            AgenticAppBlueprintId = bluePrintObj?.ToString()
+            AgenticAppId = account.AgenticAppId,
+            AgenticUserId = account.AgenticUserId,
+            AgenticAppBlueprintId = account.AgenticAppBlueprintId
         };
     }
 }

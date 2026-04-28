@@ -31,17 +31,27 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _api = _f.ScopedApiClient;
     }
 
+    private static CoreActivity CreateMessageActivity(string text) =>
+        CoreActivity.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithProperty("text", text)
+            .Build();
+
+    private static CoreActivity CreateMessageActivity(string text, ConversationAccount recipient) =>
+        CoreActivity.CreateBuilder()
+            .WithType(ActivityType.Message)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithRecipient(recipient)
+            .WithProperty("text", text)
+            .Build();
+
     #region Activities
 
     [Fact(Timeout = 60000)]
     public async Task Activities_CreateAsync()
     {
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Create] at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity activity = CreateMessageActivity($"[ApiClient.Activities.Create] at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? res = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
 
@@ -53,22 +63,12 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Fact(Timeout = 60000)]
     public async Task Activities_UpdateAsync()
     {
-        CoreActivity original = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Update] Original at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity original = CreateMessageActivity($"[ApiClient.Activities.Update] Original at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, original);
         Assert.NotNull(sent?.Id);
 
-        CoreActivity updated = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Update] Updated at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity updated = CreateMessageActivity($"[ApiClient.Activities.Update] Updated at `{DateTime.UtcNow:s}`");
 
         UpdateActivityResponse? res = await _api.Conversations.Activities.UpdateAsync(
             _f.ConversationId, sent.Id, updated);
@@ -80,22 +80,12 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Fact(Timeout = 60000)]
     public async Task Activities_ReplyAsync()
     {
-        CoreActivity original = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Reply] Parent at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity original = CreateMessageActivity($"[ApiClient.Activities.Reply] Parent at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, original);
         Assert.NotNull(sent?.Id);
 
-        CoreActivity reply = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Reply] Reply at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity reply = CreateMessageActivity($"[ApiClient.Activities.Reply] Reply at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? res = await _api.Conversations.Activities.ReplyAsync(
             _f.ConversationId, sent.Id, reply);
@@ -107,12 +97,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Fact(Timeout = 60000)]
     public async Task Activities_DeleteAsync()
     {
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.Delete] at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity activity = CreateMessageActivity($"[ApiClient.Activities.Delete] at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);
@@ -134,13 +119,9 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            Recipient = new ConversationAccount { Id = members[0].Id },
-            Properties = { { "text", $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity activity = CreateMessageActivity(
+            $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`",
+            new ConversationAccount { Id = members[0].Id });
 
         SendActivityResponse? res = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);
 
@@ -155,23 +136,14 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
-        CoreActivity original = new()
-        {
-            Type = ActivityType.Message,
-            Recipient = new ConversationAccount { Id = members[0].Id },
-            Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity original = CreateMessageActivity(
+            $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`",
+            new ConversationAccount { Id = members[0].Id });
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, original);
         Assert.NotNull(sent?.Id);
 
-        CoreActivity updated = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Activities.UpdateTargeted] Updated at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity updated = CreateMessageActivity($"[ApiClient.Activities.UpdateTargeted] Updated at `{DateTime.UtcNow:s}`");
 
         UpdateActivityResponse? res = await _api.Conversations.Activities.UpdateTargetedAsync(
             _f.ConversationId, sent.Id, updated);
@@ -186,13 +158,9 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            Recipient = new ConversationAccount { Id = members[0].Id },
-            Properties = { { "text", $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity activity = CreateMessageActivity(
+            $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`",
+            new ConversationAccount { Id = members[0].Id });
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);
@@ -260,12 +228,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Fact]
     public async Task Reactions_AddAndDelete()
     {
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            Properties = { { "text", $"[ApiClient.Reactions] Test at `{DateTime.UtcNow:s}`" } },
-            From = IntegrationTestFixture.GetConversationAccountWithAgenticProperties()
-        };
+        CoreActivity activity = CreateMessageActivity($"[ApiClient.Reactions] Test at `{DateTime.UtcNow:s}`");
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);

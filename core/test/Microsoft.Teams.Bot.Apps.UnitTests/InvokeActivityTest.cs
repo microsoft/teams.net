@@ -24,16 +24,15 @@ public class InvokeActivityTest
     [Fact]
     public void FromCoreActivityWithValue()
     {
-        CoreActivity coreActivity = new()
-        {
-            Type = TeamsActivityType.Invoke,
-            Value = JsonNode.Parse("{ \"key\": \"value\" }"),
-            Conversation = new Conversation { Id = "convId" },
-            Properties = new ExtendedPropertiesDictionary
+        // Build from JSON so that conversation lands in Properties as a JsonElement
+        CoreActivity coreActivity = CoreActivity.FromJsonString("""
             {
-                { "name", "testName" }
+                "type": "invoke",
+                "value": { "key": "value" },
+                "conversation": { "id": "convId" },
+                "name": "testName"
             }
-        };
+            """);
         InvokeActivity ia = InvokeActivity.FromActivity(coreActivity);
         Assert.NotNull(ia);
         Assert.Equal(TeamsActivityType.Invoke, ia.Type);
