@@ -59,7 +59,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         if (activity.ChannelId == "agents")
         {
             logger.LogInformation("Truncating conversation ID for 'agents' channel to comply with length restrictions.");
-            string convId = conversationId.Length > 100 ? conversationId[..100] : conversationId;
+            string convId = "acf"; //conversationId.Length > 100 ? conversationId[..100] : conversationId;
             url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(convId)}/activities/";
         }
 

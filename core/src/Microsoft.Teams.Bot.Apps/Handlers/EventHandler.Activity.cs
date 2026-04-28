@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -29,6 +30,12 @@ public class EventActivity : TeamsActivity
     public string? Name { get; set; }
 
     /// <summary>
+    /// Gets or sets the value payload of the event activity.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public JsonNode? Value { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity"/> class.
     /// </summary>
     [JsonConstructor]
@@ -50,6 +57,9 @@ public class EventActivity : TeamsActivity
     protected EventActivity(CoreActivity activity) : base(activity)
     {
         Name = activity.Properties.Extract<string>("name");
+        Value = activity is EventActivity evt
+            ? evt.Value
+            : activity.Properties.Extract<JsonNode>("value");
     }
 }
 

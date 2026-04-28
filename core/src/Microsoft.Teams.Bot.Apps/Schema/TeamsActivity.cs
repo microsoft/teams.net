@@ -65,31 +65,45 @@ public class TeamsActivity : CoreActivity
         // Convert core extension properties to Teams-specific typed properties.
         // CoreActivity stores these as untyped entries in its Properties dictionary
         // (via [JsonExtensionData]), so we extract and promote them here.
-        From = TeamsConversationAccount.FromConversationAccount(activity.From) ?? new TeamsConversationAccount();
-        Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient) ?? new TeamsConversationAccount();
-        Conversation = TeamsConversation.FromConversation(activity.Conversation);
+        base.From = TeamsConversationAccount.FromConversationAccount(activity.From) ?? new TeamsConversationAccount();
+        base.Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient) ?? new TeamsConversationAccount();
+        base.Conversation = TeamsConversation.FromConversation(activity.Conversation) ?? new TeamsConversation();
         ChannelData = activity.Properties.Extract<TeamsChannelData>("channelData");
-        Attachments = activity.Properties.Extract<IList<TeamsAttachment>>("attachments");
         Entities = activity.Properties.Extract<EntityList>("entities");
     }
 
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.
+    /// Delegates to the base CoreActivity.From slot, casting to TeamsConversationAccount.
     /// </summary>
     [JsonPropertyName("from")]
-    public new TeamsConversationAccount? From { get; set; }
+    public new TeamsConversationAccount? From
+    {
+        get => base.From as TeamsConversationAccount;
+        set => base.From = value;
+    }
 
     /// <summary>
     /// Gets or sets the account information for the recipient of the Teams conversation.
+    /// Delegates to the base CoreActivity.Recipient slot, casting to TeamsConversationAccount.
     /// </summary>
     [JsonPropertyName("recipient")]
-    public new TeamsConversationAccount? Recipient { get; set; }
+    public new TeamsConversationAccount? Recipient
+    {
+        get => base.Recipient as TeamsConversationAccount;
+        set => base.Recipient = value;
+    }
 
     /// <summary>
     /// Gets or sets the conversation information for the Teams conversation.
+    /// Delegates to the base CoreActivity.Conversation slot, casting to TeamsConversation.
     /// </summary>
     [JsonPropertyName("conversation")]
-    public new TeamsConversation? Conversation { get; set; }
+    public new TeamsConversation? Conversation
+    {
+        get => base.Conversation as TeamsConversation;
+        set => base.Conversation = value!;
+    }
 
     /// <summary>
     /// Gets or sets the Teams-specific channel data associated with this activity.
@@ -102,12 +116,6 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     [JsonPropertyName("entities")]
     public EntityList? Entities { get; set; }
-
-    /// <summary>
-    /// Attachments specific to Teams.
-    /// </summary>
-    [JsonPropertyName("attachments")]
-    public IList<TeamsAttachment>? Attachments { get; set; }
 
     /// <summary>
     /// UTC timestamp of when the activity was sent.

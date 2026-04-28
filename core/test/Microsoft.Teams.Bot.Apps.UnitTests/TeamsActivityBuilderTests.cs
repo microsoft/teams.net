@@ -10,9 +10,11 @@ namespace Microsoft.Teams.Bot.Apps.UnitTests;
 public class TeamsActivityBuilderTests
 {
     private readonly TeamsActivityBuilder builder;
+    private readonly TeamsActivityBuilder messageBuilder;
     public TeamsActivityBuilderTests()
     {
         builder = TeamsActivity.CreateBuilder();
+        messageBuilder = TeamsActivity.CreateBuilder(new MessageActivity());
     }
 
     [Fact]
@@ -203,7 +205,7 @@ public class TeamsActivityBuilderTests
             }
         ];
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithAttachments(attachments)
             .Build();
 
@@ -222,7 +224,7 @@ public class TeamsActivityBuilderTests
             Name = "single"
         };
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithAttachment(attachment)
             .Build();
 
@@ -270,7 +272,7 @@ public class TeamsActivityBuilderTests
             Name = "test.html"
         };
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .AddAttachment(attachment)
             .Build();
 
@@ -282,7 +284,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddAttachment_MultipleAttachments_AddsAllToCollection()
     {
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .AddAttachment(new TeamsAttachment { ContentType = "text/html" })
             .AddAttachment(new TeamsAttachment { ContentType = "application/json" })
             .Build();
@@ -296,7 +298,7 @@ public class TeamsActivityBuilderTests
     {
         var adaptiveCard = new { type = "AdaptiveCard", version = "1.2" };
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .AddAdaptiveCardAttachment(adaptiveCard)
             .Build();
 
@@ -311,7 +313,7 @@ public class TeamsActivityBuilderTests
     {
         var adaptiveCard = new { type = "AdaptiveCard" };
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithAdaptiveCardAttachment(adaptiveCard, b => b.WithName("feedback"))
             .Build();
 
@@ -417,7 +419,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void FluentAPI_CompleteActivity_BuildsCorrectly()
     {
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithType(TeamsActivityType.Message)
             .WithId("activity-123")
             .WithChannelId("msteams")
@@ -545,14 +547,14 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddAttachment_NullAttachmentsCollection_InitializesCollection()
     {
-        TeamsActivity activity = builder.Build();
+        MessageActivity activity = (MessageActivity)messageBuilder.Build();
 
         Assert.Null(activity.Attachments);
 
         TeamsAttachment attachment = new() { ContentType = "text/html" };
-        builder.AddAttachment(attachment);
+        messageBuilder.AddAttachment(attachment);
 
-        TeamsActivity result = builder.Build();
+        MessageActivity result = (MessageActivity)messageBuilder.Build();
         Assert.NotNull(result.Attachments);
         Assert.Single(result.Attachments);
     }
@@ -727,7 +729,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithAttachments_WithNullValue_SetsToNull()
     {
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithAttachments([new()])
             .WithAttachments(null!)
             .Build();
@@ -794,7 +796,7 @@ public class TeamsActivityBuilderTests
         TeamsConversation? tc = TeamsConversation.FromConversation(conv);
         Assert.NotNull(tc);
 
-        TeamsActivity activity = builder
+        MessageActivity activity = (MessageActivity)messageBuilder
             .WithType(TeamsActivityType.Message)
             .WithId("msg-001")
             .WithServiceUrl(serviceUrl)

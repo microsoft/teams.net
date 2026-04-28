@@ -57,6 +57,7 @@ public class MessageActivity : TeamsActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageActivity(CoreActivity activity) : base(activity)
     {
+        Attachments = activity.Properties.Extract<IList<TeamsAttachment>>("attachments");
         Text = activity.Properties.Extract<string>("text");
         TextFormat = activity.Properties.Extract<string>("textFormat");
         AttachmentLayout = activity.Properties.Extract<string>("attachmentLayout");
@@ -95,6 +96,12 @@ public class MessageActivity : TeamsActivity
         }
         */
     }
+
+    /// <summary>
+    /// Gets or sets the attachments for the message.
+    /// </summary>
+    [JsonPropertyName("attachments")]
+    public IList<TeamsAttachment>? Attachments { get; set; }
 
     /// <summary>
     /// Gets or sets the text content of the message.

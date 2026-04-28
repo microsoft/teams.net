@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.Teams.Bot.Core.Schema;
 
 namespace Microsoft.Teams.Bot.Core.UnitTests.Schema;
@@ -270,10 +271,11 @@ public class CoreCoreActivityTests
         CoreActivity? act = await CoreActivity.FromJsonStreamAsync(ms);
         Assert.NotNull(act);
         Assert.Equal("invoke", act.Type);
-        Assert.NotNull(act.Value);
-        Assert.NotNull(act.Value["key1"]);
-        Assert.Equal("value1", act.Value["key1"]?.GetValue<string>());
-        Assert.Equal(2, act.Value["key2"]?.GetValue<int>());
+        // Value is no longer on CoreActivity — it lands in Properties via [JsonExtensionData]
+        Assert.True(act.Properties.ContainsKey("value"));
+        var valueElement = Assert.IsType<JsonElement>(act.Properties["value"]);
+        Assert.Equal("value1", valueElement.GetProperty("key1").GetString());
+        Assert.Equal(2, valueElement.GetProperty("key2").GetInt32());
     }
 
     [Fact]

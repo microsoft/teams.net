@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -31,6 +32,12 @@ public class InvokeActivity : TeamsActivity
     public string? Name { get; set; }
 
     /// <summary>
+    /// Gets or sets the value payload of the invoke activity.
+    /// </summary>
+    [JsonPropertyName("value")]
+    public JsonNode? Value { get; set; }
+
+    /// <summary>
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class.
     /// </summary>
     [JsonConstructor]
@@ -56,6 +63,9 @@ public class InvokeActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(activity);
         Name = activity.Properties.Extract<string>("name");
+        Value = activity is InvokeActivity invoke
+            ? invoke.Value
+            : activity.Properties.Extract<JsonNode>("value");
     }
 }
 

@@ -18,8 +18,8 @@ botApp.OnActivity = async (activity, cancellationToken) =>
 
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Message)
-        .WithServiceUrl(activity.ServiceUrl)
         .WithChannelId(activity.ChannelId)
+        .WithServiceUrl(activity.ServiceUrl)
         .WithConversation(activity.Conversation)
         .WithFrom(activity.Recipient)
         .WithProperty("text", replyText)

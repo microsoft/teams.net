@@ -63,7 +63,6 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         _activity.From = from is TeamsConversationAccount teamsAccount
             ? teamsAccount
             : TeamsConversationAccount.FromConversationAccount(from)!;
-        ((CoreActivity)_activity).From = from;
         return this;
     }
 
@@ -77,7 +76,6 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
             ? teamsAccount
             : TeamsConversationAccount.FromConversationAccount(recipient)!;
-        ((CoreActivity)_activity).Recipient = recipient;
         return this;
     }
 
@@ -95,7 +93,6 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
             _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
                 ? teamsAccount
                 : TeamsConversationAccount.FromConversationAccount(recipient)!;
-            ((CoreActivity)_activity).Recipient = recipient;
         }
         return this;
     }
@@ -112,8 +109,6 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         _activity.Conversation = conversation is TeamsConversation teamsConv
             ? teamsConv
             : TeamsConversation.FromConversation(conversation);
-
-        ((CoreActivity)_activity).Conversation = conversation;
 
         return this;
     }
@@ -147,7 +142,10 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The builder instance for chaining.</returns>
     public TeamsActivityBuilder WithAttachments(IList<TeamsAttachment> attachments)
     {
-        _activity.Attachments = attachments;
+        if (_activity is MessageActivity msg)
+            msg.Attachments = attachments;
+        else
+            _activity.Properties["attachments"] = attachments;
         return this;
     }
 
@@ -159,10 +157,11 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The builder instance for chaining.</returns>
     public TeamsActivityBuilder WithAttachment(TeamsAttachment? attachment)
     {
-        _activity.Attachments = attachment is null
-            ? null
-            : [attachment];
-
+        IList<TeamsAttachment>? attachments = attachment is null ? null : [attachment];
+        if (_activity is MessageActivity msg)
+            msg.Attachments = attachments;
+        else
+            _activity.Properties["attachments"] = attachments;
         return this;
     }
 
@@ -185,8 +184,20 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns>The builder instance for chaining.</returns>
     public TeamsActivityBuilder AddAttachment(TeamsAttachment attachment)
     {
-        _activity.Attachments ??= [];
-        _activity.Attachments.Add(attachment);
+        if (_activity is MessageActivity msg)
+        {
+            msg.Attachments ??= [];
+            msg.Attachments.Add(attachment);
+        }
+        else
+        {
+            if (!_activity.Properties.TryGetValue("attachments", out object? existing) || existing is not List<TeamsAttachment> list)
+            {
+                list = [];
+                _activity.Properties["attachments"] = list;
+            }
+            list.Add(attachment);
+        }
         return this;
     }
 

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Schema;
 using Microsoft.Teams.Bot.Apps.Schema.Entities;
 using Microsoft.Teams.Bot.Core.Schema;
@@ -163,8 +164,9 @@ public class TeamsActivityTests
     {
         //TeamsActivity activity = CoreActivity.FromJsonString<TeamsActivity>(jsonInvoke);
         TeamsActivity activity = TeamsActivity.FromActivity(CoreActivity.FromJsonString(jsonInvoke));
-        Assert.NotNull(activity.Value);
-        string feedback = activity.Value?["action"]?["data"]?["feedback"]?.ToString()!;
+        InvokeActivity invokeActivity = Assert.IsType<InvokeActivity>(activity);
+        Assert.NotNull(invokeActivity.Value);
+        string feedback = invokeActivity.Value?["action"]?["data"]?["feedback"]?.ToString()!;
         Assert.Equal("test invokes", feedback);
     }
 

@@ -9,9 +9,9 @@ The activity model is the central abstraction for all bot communication. It foll
 
 ```
 CoreActivity (Core) — internal constructors, created via CreateBuilder() or deserialization
-  ├── Declared properties: type, channelId, id, serviceUrl, value,
+  ├── Declared properties: type, channelId, id, serviceUrl,
   │    replyToId, conversation (non-nullable), from, recipient
-  ├── [JsonExtensionData] Properties bag for everything else
+  ├── [JsonExtensionData] Properties bag for everything else (incl. value)
   ├── AOT serialization via CoreActivityJsonContext
   └── CoreActivityBuilder (fluent builder)
 
@@ -27,12 +27,25 @@ AgenticIdentity (Core)
 TeamsActivity (Apps) : CoreActivity
   ├── Shadows: From, Recipient (as TeamsConversationAccount)
   │            Conversation (as TeamsConversation)
-  ├── Additional typed properties: ChannelData, Entities, Attachments,
+  │            — via getter/setter delegates to base slot (single storage)
+  ├── Additional typed properties: ChannelData, Entities,
   │    Timestamp, LocalTimestamp, Locale, LocalTimezone, SuggestedActions
   ├── Polymorphic deserialization via ActivityDeserializerMap
   ├── Type-specific serialization via ActivitySerializerMap
   ├── TeamsActivityBuilder (fluent builder)
   └── Derived types: MessageActivity, InvokeActivity, ConversationUpdateActivity, ...
+
+MessageActivity (Apps) : TeamsActivity
+  ├── Attachments, Text, TextFormat, AttachmentLayout
+  └── SuggestedActions extracted from Properties
+
+InvokeActivity (Apps) : TeamsActivity
+  ├── Name, Value (JsonNode?)
+  └── InvokeActivity<TValue> shadows Value with strongly-typed access
+
+EventActivity (Apps) : TeamsActivity
+  ├── Name, Value (JsonNode?)
+  └── EventActivity<TValue> shadows Value with strongly-typed access
 ```
 
 ## Activity Lifecycle
@@ -73,9 +86,8 @@ CoreActivity declares typed `[JsonPropertyName]` properties for fields that are 
 | `Conversation` | `Conversation` (non-nullable) | URL construction, always initialized |
 | `From` | `ConversationAccount?` | AgenticIdentity extraction |
 | `Recipient` | `ConversationAccount?` | IsTargeted flag for targeted messaging |
-| `Value` | `JsonNode?` | Invoke payloads |
 
-Everything else (`text`, `attachments`, `entities`, `channelData`, `timestamp`, etc.) remains in the `[JsonExtensionData] Properties` dictionary, promoted to typed properties only at the TeamsActivity layer.
+Everything else (`text`, `attachments`, `entities`, `channelData`, `value`, `timestamp`, etc.) remains in the `[JsonExtensionData] Properties` dictionary, promoted to typed properties at the TeamsActivity layer or its derived types (e.g., `value` is promoted by `InvokeActivity` and `EventActivity`).
 
 ### 2. ConversationAccount with Typed Agentic Identity Fields
 
@@ -89,40 +101,41 @@ Everything else (`text`, `attachments`, `entities`, `channelData`, `timestamp`, 
 
 The `AgenticIdentity` class is a separate DTO used by `BotRequestOptions` and `BotAuthenticationHandler` for token acquisition. It is constructed from a `ConversationAccount`'s typed fields via `AgenticIdentity.FromAccount(account)` at the point of use — there is no computed property or duplication on `ConversationAccount` itself.
 
-### 3. Property Shadowing with `new` Keyword
+### 3. Property Shadowing with Getter/Setter Delegates
 
-TeamsActivity shadows base properties with more specific types, following C#'s `new` keyword pattern:
+TeamsActivity shadows base properties with more specific types using the `new` keyword, but delegates storage to the base slot via getter/setter properties:
 
 ```csharp
 // CoreActivity
 [JsonPropertyName("from")] public ConversationAccount? From { get; set; }
 [JsonPropertyName("conversation")] public Conversation Conversation { get; set; }
 
-// TeamsActivity
-[JsonPropertyName("from")] public new TeamsConversationAccount? From { get; set; }
-[JsonPropertyName("conversation")] public new TeamsConversation? Conversation { get; set; }
-```
-
-When accessed through a `CoreActivity` reference (e.g., in `ConversationClient`), the base `ConversationAccount?` is used. When accessed through a `TeamsActivity` reference, the derived `TeamsConversationAccount?` is used.
-
-**Important:** Because `new` creates separate storage, `TeamsActivityBuilder` must keep both slots in sync:
-```csharp
-public new TeamsActivityBuilder WithFrom(ConversationAccount? from)
+// TeamsActivity — single storage, delegates to base
+[JsonPropertyName("from")]
+public new TeamsConversationAccount? From
 {
-    _activity.From = TeamsConversationAccount.FromConversationAccount(from)!;
-    ((CoreActivity)_activity).From = from;   // Sync base slot
-    return this;
+    get => base.From as TeamsConversationAccount;
+    set => base.From = value;
+}
+
+[JsonPropertyName("conversation")]
+public new TeamsConversation? Conversation
+{
+    get => base.Conversation as TeamsConversation;
+    set => base.Conversation = value!;
 }
 ```
 
-The same pattern applies to `WithRecipient` and `WithConversation`. Without the base sync, code accessing the activity through a `CoreActivity` reference (e.g., `ConversationClient.SendActivityAsync`) would see null.
+Since `TeamsConversationAccount` extends `ConversationAccount` and `TeamsConversation` extends `Conversation`, the derived type is stored directly in the base slot. The getter casts back. This eliminates dual storage and the need for manual sync — code accessing through either a `CoreActivity` or `TeamsActivity` reference sees the same value.
 
-The `TeamsActivity(CoreActivity)` constructor handles this automatically — the base copy constructor sets `CoreActivity.From`, then the TeamsActivity constructor sets the `new` slot:
+The `TeamsActivity(CoreActivity)` constructor stores converted types in the base slots:
 ```csharp
-From = TeamsConversationAccount.FromConversationAccount(activity.From) ?? new TeamsConversationAccount();
-Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient) ?? new TeamsConversationAccount();
-Conversation = TeamsConversation.FromConversation(activity.Conversation);
+base.From = TeamsConversationAccount.FromConversationAccount(activity.From) ?? new TeamsConversationAccount();
+base.Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient) ?? new TeamsConversationAccount();
+base.Conversation = TeamsConversation.FromConversation(activity.Conversation) ?? new TeamsConversation();
 ```
+
+**Serialization:** The `[JsonPropertyName]` attribute on the `new` property (not `[JsonIgnore]`) ensures the source-generated serializer for TeamsActivity uses the correctly-typed property (e.g., `TeamsConversation?` instead of `Conversation`), preserving fields like `TenantId` and `ConversationType`.
 
 ### 4. Extension Data for Remaining Properties
 
@@ -140,7 +153,7 @@ public T? Extract<T>(string key)
 }
 ```
 
-This pattern is used for: `channelData`, `attachments`, `entities`, `text`, `textFormat`, `attachmentLayout`, `suggestedActions`, `name`, `action`, `membersAdded`, `membersRemoved`, `reactionsAdded`, `reactionsRemoved`.
+This pattern is used for: `channelData`, `entities`, `value`, `attachments`, `text`, `textFormat`, `attachmentLayout`, `suggestedActions`, `name`, `action`, `membersAdded`, `membersRemoved`, `reactionsAdded`, `reactionsRemoved`.
 
 ### 5. Dual Serialization Strategy
 
@@ -155,7 +168,7 @@ This pattern is used for: `channelData`, `attachments`, `entities`, `text`, `tex
 Both layers provide fluent builders with `With*` (replace) and `Add*` (append) methods:
 
 - `CoreActivityBuilder` — core-level activities with `WithFrom()`, `WithRecipient()`, `WithConversation()`, `WithProperty()`. Builder parameters accept nullable types where appropriate (`Uri?`, `string?`, `ConversationAccount?`).
-- `TeamsActivityBuilder` — Teams-specific, shadows `WithFrom`/`WithRecipient`/`WithConversation` (via `new`) to convert to `TeamsConversationAccount`/`TeamsConversation`
+- `TeamsActivityBuilder` — Teams-specific, shadows `WithFrom`/`WithRecipient`/`WithConversation` (via `new`) to convert to `TeamsConversationAccount`/`TeamsConversation`. Attachment methods (`WithAttachments`, `AddAttachment`, etc.) set the typed property when the underlying activity is a `MessageActivity`, otherwise store in Properties as fallback.
 
 `TeamsActivityBuilder.WithConversationReference(activity)` is the canonical way to build a reply — it copies `ServiceUrl`, `ChannelId`, `Conversation` from the incoming activity and swaps `From`/`Recipient`.
 
@@ -165,10 +178,10 @@ Both layers provide fluent builders with `With*` (replace) and `Add*` (append) m
 
 ```
 Declared properties (deserialized into typed fields):
-  type, channelId, id, serviceUrl, value, replyToId, conversation, from, recipient
+  type, channelId, id, serviceUrl, replyToId, conversation, from, recipient
 
 Extension properties (deserialized into [JsonExtensionData] Properties):
-  text, textFormat, attachments, entities, channelData, timestamp,
+  value, text, textFormat, attachments, entities, channelData, timestamp,
   locale, ... (anything not declared above)
 ```
 
@@ -191,14 +204,19 @@ Inherited declared (shadowed with Teams types):
   conversation (TeamsConversation)
 
 Inherited declared (used as-is):
-  type, channelId, id, serviceUrl, value, replyToId
+  type, channelId, id, serviceUrl, replyToId
 
 Promoted from Properties during construction:
-  channelData, entities, attachments, timestamp, localTimestamp,
+  channelData, entities, timestamp, localTimestamp,
   locale, localTimezone, suggestedActions
 
-Promoted by derived types (MessageActivity, InvokeActivity, etc.):
-  text, textFormat, attachmentLayout, name, action, membersAdded, ...
+Promoted by derived types:
+  MessageActivity: text, textFormat, attachmentLayout, attachments
+  InvokeActivity: name, value
+  EventActivity: name, value
+  ConversationUpdateActivity: membersAdded, membersRemoved
+  InstallUpdateActivity: action
+  MessageReactionActivity: reactionsAdded, reactionsRemoved, replyToId
 
 Remaining extension properties (via [JsonExtensionData]):
   Any fields not declared or promoted above
@@ -245,29 +263,31 @@ CoreActivityBuilder<TActivity, TBuilder>
 JSON → CoreActivity deserialization
   │
   │  Typed properties populated directly by JSON deserializer:
-  │    type, channelId, id, serviceUrl, value, replyToId, conversation, from, recipient
+  │    type, channelId, id, serviceUrl, replyToId, conversation, from, recipient
   │
   │  Remaining fields go to [JsonExtensionData] Properties:
-  │    channelData, entities, attachments, text, textFormat, timestamp, ...
+  │    value, channelData, entities, attachments, text, textFormat, timestamp, ...
   │
   ├── TeamsActivity(CoreActivity) constructor:
-  │     From base typed properties (converted):
-  │       From       ← TeamsConversationAccount.FromConversationAccount(activity.From)
-  │       Recipient  ← TeamsConversationAccount.FromConversationAccount(activity.Recipient)
-  │       Conversation ← TeamsConversation.FromConversation(activity.Conversation)
+  │     From base typed properties (converted, stored in base slot):
+  │       base.From       ← TeamsConversationAccount.FromConversationAccount(activity.From)
+  │       base.Recipient  ← TeamsConversationAccount.FromConversationAccount(activity.Recipient)
+  │       base.Conversation ← TeamsConversation.FromConversation(activity.Conversation)
   │     From Properties via Extract<T>:
   │       ChannelData  ← Extract<TeamsChannelData>("channelData")
-  │       Attachments  ← Extract<IList<TeamsAttachment>>("attachments")
   │       Entities     ← Extract<EntityList>("entities")
   │
   ├── MessageActivity(CoreActivity) constructor:
+  │     Attachments     ← Extract<IList<TeamsAttachment>>("attachments")
   │     Text            ← Extract<string>("text")
   │     TextFormat      ← Extract<string>("textFormat")
   │     AttachmentLayout ← Extract<string>("attachmentLayout")
   │     SuggestedActions ← Extract<SuggestedActions>("suggestedActions")
   │
-  ├── InvokeActivity:     Name   ← Extract<string>("name")
-  ├── EventActivity:      Name   ← Extract<string>("name")
+  ├── InvokeActivity:     Name  ← Extract<string>("name")
+  │                       Value ← Extract<JsonNode>("value")
+  ├── EventActivity:      Name  ← Extract<string>("name")
+  │                       Value ← Extract<JsonNode>("value")
   ├── InstallUpdateActivity: Action ← Extract<string>("action")
   ├── ConversationUpdateActivity:
   │     MembersAdded   ← Extract<IList<TeamsConversationAccount>>("membersAdded")
@@ -337,6 +357,6 @@ CoreActivity constructors are `internal` — external consumers create instances
 | TeamsActivity.ToJson() single from/recipient in output | Good |
 | AgenticIdentity.FromAccount factory | Good |
 | Extract<T> with JsonElement (for channelData, entities, etc.) | Good |
-| TeamsActivityBuilder base/derived property sync (From/Recipient) | Good |
+| TeamsActivityBuilder getter/setter property access (From/Recipient) | Good |
 | TeamsActivityBuilder.WithConversationReference | Partial |
 | Context.SendActivityAsync conversation ref application | Missing |

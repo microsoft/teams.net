@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization.Metadata;
 
 namespace Microsoft.Teams.Bot.Core.Schema;
@@ -66,11 +65,6 @@ public class CoreActivity
     /// This URL is used to send responses back to the channel.
     /// </remarks>
     [JsonPropertyName("serviceUrl")] public Uri? ServiceUrl { get; set; }
-    // TODO: Can value need be a JSONObject?
-    /// <summary>
-    /// Gets or sets the value payload of the activity.
-    /// </summary>
-    [JsonPropertyName("value")] public JsonNode? Value { get; set; }
 
     /// <summary>
     /// Reply to Id
@@ -147,7 +141,6 @@ public class CoreActivity
         From = activity.From;
         Recipient = activity.Recipient;
         Properties = activity.Properties;
-        Value = activity.Value;
 
     }
 

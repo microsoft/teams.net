@@ -90,7 +90,6 @@ public class MyCustomActivity : CoreActivity
             ChannelId = activity.ChannelId,
             Id = activity.Id,
             ServiceUrl = activity.ServiceUrl,
-            Value = activity.Value,
             Properties = activity.Properties,
             CustomField = activity.Properties.TryGetValue("customField", out object? customFieldObj)
                 && customFieldObj is JsonElement jeCustomField
@@ -152,7 +151,6 @@ public class MyCustomChannelDataActivity : CoreActivity
             Id = coreActivity.Id,
             ServiceUrl = coreActivity.ServiceUrl,
             ChannelData = new MyChannelData(extractedChannelData ?? new Core.Schema.ChannelData()),
-            Value = coreActivity.Value,
             Properties = coreActivity.Properties
         };
     }

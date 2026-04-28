@@ -179,6 +179,8 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
 // Reactions handler: matches "react" (case-insensitive) - adds and removes bot reactions on a message
 teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
 {
+    ArgumentNullException.ThrowIfNull(context);
+    ArgumentNullException.ThrowIfNull(context.Activity);
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
@@ -198,24 +200,27 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
         context.Activity.Conversation.Id,
         response!.Id!,
         "1f44b_wavinghand-tone4",
+        context.Activity?.Recipient?.GetAgenticIdentity(),
         cancellationToken: cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
 
     // Add a beaming face reaction
     await context.Api.Conversations.Reactions.AddAsync(
-        context.Activity.Conversation.Id,
+        context?.Activity?.Conversation?.Id!,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
+        context?.Activity?.Recipient?.GetAgenticIdentity(),
         cancellationToken: cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
-
+    ArgumentNullException.ThrowIfNull(context);
     // Remove the beaming face reaction
     await context.Api.Conversations.Reactions.DeleteAsync(
-        context.Activity.Conversation.Id,
+        context?.Activity?.Conversation?.Id!,
         response.Id!,
         "1f601_beamingfacewithsmilingeyes",
+        context?.Activity?.Recipient?.GetAgenticIdentity(),
         cancellationToken: cancellationToken);
 });
 
