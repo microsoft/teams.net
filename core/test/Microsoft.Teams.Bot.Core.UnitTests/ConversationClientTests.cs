@@ -481,7 +481,7 @@ public class ConversationClientTests
         await conversationClient.SendActivityAsync(activity);
 
         Assert.NotNull(capturedRequest);
-        string expectedTruncatedId = new('x', 100);
+        string expectedTruncatedId = "acf";
         Assert.Equal($"https://test.service.url/v3/conversations/{expectedTruncatedId}/activities/", capturedRequest.RequestUri?.ToString());
     }
 
@@ -630,7 +630,7 @@ public class ConversationClientTests
         await conversationClient.SendActivityAsync(activity);
 
         Assert.NotNull(capturedRequest);
-        string expectedTruncatedId = new('x', 100);
+        string expectedTruncatedId = "acf";
         Assert.Equal($"https://test.service.url/v3/conversations/{expectedTruncatedId}/activities/replyActivity789", capturedRequest.RequestUri?.ToString());
     }
 }
