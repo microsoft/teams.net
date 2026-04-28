@@ -142,7 +142,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Skip = "Reactions endpoint does not exist in Teams Bot Framework API (experimental/assumed route)")]
+    [Fact]
     public async Task AddAndDeleteReaction()
     {
         CoreActivity activity = new()

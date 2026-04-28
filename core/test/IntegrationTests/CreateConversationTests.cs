@@ -127,7 +127,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Group Chat — Core ConversationClient
 
-    [Fact(Skip = "Teams Bot Framework API does not support group chat creation")]
+    [Fact]
     public async Task Core_CreateGroupChat()
     {
         (string first, string? second) = await GetMemberMrisAsync();
@@ -159,7 +159,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Created group conversation: {response.Id}");
     }
 
-    [Fact(Skip = "Teams Bot Framework API does not support group chat creation")]
+    [Fact]
     public async Task Core_CreateGroupChat_AndSendMessage()
     {
         (string first, string? second) = await GetMemberMrisAsync();
@@ -282,7 +282,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Group Chat — ApiClient
 
-    [Fact(Skip = "Teams Bot Framework API does not support group chat creation")]
+    [Fact]
     public async Task ApiClient_CreateGroupChat()
     {
         (string first, string? second) = await GetMemberMrisAsync();
