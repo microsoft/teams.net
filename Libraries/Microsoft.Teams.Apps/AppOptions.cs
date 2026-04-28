@@ -18,12 +18,6 @@ public class AppOptions
     public OAuthSettings OAuth { get; set; } = new OAuthSettings();
     public CloudEnvironment? Cloud { get; set; }
 
-    /// <summary>
-    /// Additional allowed service URL hostnames beyond the built-in defaults.
-    /// Use this if your bot receives activities from non-standard channels.
-    /// </summary>
-    public IEnumerable<string>? AdditionalAllowedDomains { get; set; }
-
     public AppOptions()
     {
 
