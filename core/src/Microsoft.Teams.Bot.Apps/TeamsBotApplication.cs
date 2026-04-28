@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Bot.Apps.Api.Clients;
+using Microsoft.Teams.Bot.Apps.Auth;
 using Microsoft.Teams.Bot.Apps.Handlers;
 using Microsoft.Teams.Bot.Apps.Routing;
 using Microsoft.Teams.Bot.Apps.Schema;
@@ -23,6 +24,35 @@ public class TeamsBotApplication : BotApplication
     /// Gets the router for dispatching Teams activities to registered routes.
     /// </summary>
     internal Router Router { get; }
+
+    /// <summary>
+    /// Gets the registry of OAuthFlow instances. Set by AddOAuthFlow.
+    /// </summary>
+    internal OAuthFlowRegistry? OAuthRegistry { get; set; }
+
+    /// <summary>
+    /// Gets a registered <see cref="OAuthFlow"/> by connection name.
+    /// Use this to attach callbacks (<see cref="OAuthFlow.OnSignInComplete"/>, <see cref="OAuthFlow.OnSignInFailure"/>)
+    /// to flows that were configured via <see cref="TeamsBotApplicationOptions.AddOAuthFlow"/>.
+    /// </summary>
+    /// <param name="connectionName">The OAuth connection name.</param>
+    /// <returns>The <see cref="OAuthFlow"/> instance.</returns>
+    /// <exception cref="InvalidOperationException">No flow is registered for the given connection name.</exception>
+    public OAuthFlow GetOAuthFlow(string connectionName)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(connectionName);
+
+        OAuthFlow? flow = OAuthRegistry?.Resolve(connectionName);
+        if (flow is null)
+        {
+            IEnumerable<string> registered = OAuthRegistry?.GetRegisteredConnectionNames() ?? [];
+            throw new InvalidOperationException(
+                $"No OAuthFlow registered for connection '{connectionName}'. " +
+                $"Registered connections: [{string.Join(", ", registered)}].");
+        }
+
+        return flow;
+    }
 
     /// <summary>
     /// Gets the client used to interact with the Teams API service.
@@ -50,18 +80,29 @@ public class TeamsBotApplication : BotApplication
     /// <param name="httpContextAccessor"></param>
     /// <param name="logger"></param>
     /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics. Defaults to an empty instance if not provided.</param>
+    /// <param name="teamsOptions">Teams-specific options including OAuth flow configuration. Defaults to an empty instance if not provided.</param>
     public TeamsBotApplication(
         ConversationClient conversationClient,
         UserTokenClient userTokenClient,
         ApiClient teamsApiClient,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
-        BotApplicationOptions? options = null)
+        BotApplicationOptions? options = null,
+        TeamsBotApplicationOptions? teamsOptions = null)
         : base(conversationClient, userTokenClient, logger, options)
     {
         _teamsApiClient = teamsApiClient;
         Api = teamsApiClient;
         Router = new Router(logger);
+
+        // Auto-register OAuth flows from DI options
+        if (teamsOptions is not null)
+        {
+            foreach (var descriptor in teamsOptions.OAuthFlows)
+            {
+                this.AddOAuthFlow(descriptor.Options);
+            }
+        }
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogDebug("OnActivity invoked for activity: Id={Id}", activity.Id);
