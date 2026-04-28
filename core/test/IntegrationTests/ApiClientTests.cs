@@ -127,7 +127,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Targeted Activities
 
-    [Fact(Skip = "Targeted activities are not supported in team channel conversations")]
+    [Fact]
     public async Task Activities_CreateTargetedAsync()
     {
         // Targeted activities require a valid Recipient — get a real member ID
@@ -149,7 +149,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Created targeted activity: {res.Id}");
     }
 
-    [Fact(Skip = "Targeted activities are not supported in team channel conversations")]
+    [Fact]
     public async Task Activities_UpdateTargetedAsync()
     {
         IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
@@ -180,7 +180,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Updated targeted activity: {res.Id}");
     }
 
-    [Fact(Skip = "Targeted activities are not supported in team channel conversations")]
+    [Fact]
     public async Task Activities_DeleteTargetedAsync()
     {
         IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
