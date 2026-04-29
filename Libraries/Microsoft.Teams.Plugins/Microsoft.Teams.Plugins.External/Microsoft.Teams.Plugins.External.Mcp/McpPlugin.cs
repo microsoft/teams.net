@@ -64,6 +64,7 @@ public class McpPlugin : IAspNetCorePlugin
 
                 if (!ok)
                 {
+                    ctx.Response.Headers["WWW-Authenticate"] = "Bearer";
                     ctx.Response.StatusCode = 401;
                     await ctx.Response.WriteAsync("unauthorized");
                     return;

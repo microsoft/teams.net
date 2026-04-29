@@ -14,6 +14,12 @@ public class UrlValidationException : Exception
 
 public static class UrlValidation
 {
+    private static readonly System.Text.RegularExpressions.Regex CredsPattern = new(
+        @"(\b[a-z][a-z0-9+.-]*://)[^@/?#]*@",
+        System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.Compiled);
+
+    private static string RedactCreds(Uri url) => CredsPattern.Replace(url.ToString(), "$1[REDACTED]@");
+
     /// <summary>
     /// Test seam: override to mock DNS lookups. Defaults to <see cref="Dns.GetHostAddressesAsync(string, CancellationToken)"/>.
     /// </summary>
@@ -39,7 +45,7 @@ public static class UrlValidation
             bool allowed = await validateUrl(url);
             if (!allowed)
             {
-                throw new UrlValidationException($"URL rejected by ValidateUrl: {url}");
+                throw new UrlValidationException($"URL rejected by ValidateUrl: {RedactCreds(url)}");
             }
             return url;
         }
@@ -77,7 +83,7 @@ public static class UrlValidation
 
         if (addresses.Length == 0)
         {
-            throw new UrlValidationException($"URL {url} did not resolve to any address");
+            throw new UrlValidationException($"URL {RedactCreds(url)} did not resolve to any address");
         }
 
         foreach (var address in addresses)
@@ -85,7 +91,7 @@ public static class UrlValidation
             if (IsPrivateAddress(address))
             {
                 throw new UrlValidationException(
-                    $"URL {url} resolves to private or loopback address {address}; " +
+                    $"URL {RedactCreds(url)} resolves to private or loopback address {address}; " +
                     "set AllowPrivateNetwork to true to bypass"
                 );
             }
@@ -129,6 +135,8 @@ public static class UrlValidation
         var bytes = address.GetAddressBytes();
         if (bytes.Length != 4) return false;
 
+        // 0.0.0.0/8 ("this network"; routes to localhost on Linux)
+        if (bytes[0] == 0) return true;
         // 10.0.0.0/8
         if (bytes[0] == 10) return true;
         // 172.16.0.0/12
@@ -137,6 +145,10 @@ public static class UrlValidation
         if (bytes[0] == 192 && bytes[1] == 168) return true;
         // 169.254.0.0/16 link-local
         if (bytes[0] == 169 && bytes[1] == 254) return true;
+        // 100.64.0.0/10 CGNAT (RFC 6598)
+        if (bytes[0] == 100 && bytes[1] >= 64 && bytes[1] <= 127) return true;
+        // 224.0.0.0/4 multicast + 240.0.0.0/4 reserved + 255.255.255.255 broadcast
+        if (bytes[0] >= 224) return true;
         return false;
     }
 
