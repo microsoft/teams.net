@@ -50,7 +50,7 @@ namespace PABot.Bots
 
                     await turnContext.SendActivityAsync(MessageFactory.Text(welcomeMessage), cancellationToken);
 
-                    // Use CompatTeamsInfo.GetMemberAsync to get detailed member information
+                    // Use TeamsApiClient.GetMemberAsync to get detailed member information
                     try
                     {
                         TeamsChannelAccount memberDetails = await TeamsApiClient.GetMemberAsync(turnContext, member.Id, cancellationToken);
@@ -102,7 +102,7 @@ namespace PABot.Bots
                                    "4. View your profile information automatically\n" +
                                    "5. Use commands to explore Teams integration features\n\n" +
                                    "**Technical Features:**\n" +
-                                   "- Uses CompatTeamsInfo for Teams member and team information\n" +
+                                   "- Uses TeamsApiClient for Teams member and team information\n" +
                                    "- Demonstrates Microsoft Graph integration\n" +
                                    "- Shows OAuth connection management\n" +
                                    "- Logs detailed member information when users join";
@@ -148,7 +148,7 @@ namespace PABot.Bots
 
             if (text.Equals("/member-info", StringComparison.OrdinalIgnoreCase))
             {
-                // Get member details using CompatTeamsInfo.GetMemberAsync
+                // Get member details using TeamsApiClient.GetMemberAsync
                 string userId = turnContext.Activity.From.Id;
                 TeamsChannelAccount member = await TeamsApiClient.GetMemberAsync(turnContext, userId, cancellationToken);
 
@@ -165,7 +165,7 @@ namespace PABot.Bots
 
             if (text.Equals("/team-info", StringComparison.OrdinalIgnoreCase))
             {
-                // Get team details using CompatTeamsInfo.GetTeamDetailsAsync
+                // Get team details using TeamsApiClient.GetTeamDetailsAsync
                 TeamInfo? teamInfo = turnContext.Activity.TeamsGetTeamInfo();
                 if (teamInfo?.Id == null)
                 {

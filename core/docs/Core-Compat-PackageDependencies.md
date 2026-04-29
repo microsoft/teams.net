@@ -113,7 +113,7 @@ graph TB
 
 ### 3. Compat source code — rewritten to use Core types directly
 
-Types in `Bot.Compat` (e.g., `CompatActivity`, `CompatTeamsInfo`, `CompatHostingExtensions`) were updated to import from `Microsoft.Teams.Core` namespaces instead of going through `Microsoft.Teams.Apps`.
+Types in `Bot.Compat` (e.g., `ActivitySchemaMapper`, `TeamsApiClient`, `CompatHostingExtensions`) were updated to import from `Microsoft.Teams.Core` namespaces instead of going through `Microsoft.Teams.Apps`.
 
 ---
 

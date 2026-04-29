@@ -297,7 +297,7 @@ namespace PABot.Bots
             {
                 await turnContext.SendActivityAsync(MessageFactory.Text("Testing OAuth SSO card send scenario..."), cancellationToken);
 
-                // Get connector client - this uses CompatBotAdapter under the hood
+                // Get connector client - this uses TeamsBotAdapter under the hood
                 IConnectorClient connectorClient = turnContext.TurnState.Get<IConnectorClient>();
 
                 if (connectorClient == null)

@@ -13,7 +13,7 @@ using Moq;
 
 namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
-    public class CompatBotAdapterTests
+    public class TeamsBotAdapterTests
     {
         [Fact]
         public async Task DeleteActivityAsync_UsesConversationReferenceValues()

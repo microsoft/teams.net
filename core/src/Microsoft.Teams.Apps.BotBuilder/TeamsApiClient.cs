@@ -9,7 +9,7 @@ using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
-using static Microsoft.Teams.Apps.BotBuilder.CompatTeamsInfoModels;
+using static Microsoft.Teams.Apps.BotBuilder.TeamsApiClientModels;
 using BotFrameworkTeams = Microsoft.Bot.Schema.Teams;
 using CustomHeaders = System.Collections.Generic.Dictionary<string, string>;
 

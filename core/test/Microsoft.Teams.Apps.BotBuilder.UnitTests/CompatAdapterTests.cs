@@ -11,7 +11,7 @@ using Moq;
 
 namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
-    public class CompatAdapterTests
+    public class TeamsBotFrameworkHttpAdapterTests
     {
         [Fact]
         public async Task ContinueConversationAsync_WhenCastToBotAdapter_BuildsTurnContextWithUnderlyingClients()

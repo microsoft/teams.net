@@ -10,12 +10,12 @@ using Newtonsoft.Json;
 
 namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
-    public class CompatActivityTests
+    public class ActivitySchemaMapperTests
     {
         #region Core Properties Tests
 
         [Fact]
-        public void FromCompatActivity_PreservesCoreProperties()
+        public void FromBotFrameworkActivity_PreservesCoreProperties()
         {
             Activity activity = new()
             {
@@ -42,7 +42,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
-        public void FromCompatActivity_PreservesTextAndMetadata()
+        public void FromBotFrameworkActivity_PreservesTextAndMetadata()
         {
             Activity activity = new()
             {
@@ -68,7 +68,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         #region Attachments Tests
 
         [Fact]
-        public void FromCompatActivity_PreservesAdaptiveCardAttachment()
+        public void FromBotFrameworkActivity_PreservesAdaptiveCardAttachment()
         {
             string json = LoadTestData("AdaptiveCardActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
@@ -99,7 +99,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
-        public void FromCompatActivity_PreservesMultipleAttachments()
+        public void FromBotFrameworkActivity_PreservesMultipleAttachments()
         {
             Activity activity = new()
             {
@@ -125,7 +125,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         #region Entities Tests
 
         [Fact]
-        public void FromCompatActivity_PreservesEntities()
+        public void FromBotFrameworkActivity_PreservesEntities()
         {
             string json = LoadTestData("AdaptiveCardActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
@@ -142,7 +142,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
-        public void FromCompatActivity_PreservesMultipleEntities()
+        public void FromBotFrameworkActivity_PreservesMultipleEntities()
         {
             string json = LoadTestData("SuggestedActionsActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
@@ -165,7 +165,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         #region SuggestedActions Tests
 
         [Fact]
-        public void FromCompatActivity_PreservesSuggestedActions()
+        public void FromBotFrameworkActivity_PreservesSuggestedActions()
         {
             string json = LoadTestData("SuggestedActionsActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
@@ -188,7 +188,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
-        public void FromCompatActivity_PreservesSuggestedActionDetails()
+        public void FromBotFrameworkActivity_PreservesSuggestedActionDetails()
         {
             string json = LoadTestData("SuggestedActionsActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
@@ -219,7 +219,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         #region ChannelData Tests
 
         [Fact]
-        public void FromCompatActivity_PreservesChannelData()
+        public void FromBotFrameworkActivity_PreservesChannelData()
         {
             Activity activity = new()
             {
@@ -236,7 +236,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
-        public void FromCompatActivity_PreservesComplexChannelData()
+        public void FromBotFrameworkActivity_PreservesComplexChannelData()
         {
             string json = LoadTestData("SuggestedActionsActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
@@ -256,7 +256,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         #region Integration Tests
 
         [Fact]
-        public void FromCompatActivity_CompleteRoundTrip_AdaptiveCard()
+        public void FromBotFrameworkActivity_CompleteRoundTrip_AdaptiveCard()
         {
             // Verify the complete adaptive card payload round-trips successfully
             string originalJson = LoadTestData("AdaptiveCardActivity.json");
@@ -273,7 +273,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         }
 
         [Fact]
-        public void FromCompatActivity_CompleteRoundTrip_SuggestedActions()
+        public void FromBotFrameworkActivity_CompleteRoundTrip_SuggestedActions()
         {
             // Verify the complete suggested actions payload round-trips successfully
             string originalJson = LoadTestData("SuggestedActionsActivity.json");
