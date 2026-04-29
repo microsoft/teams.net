@@ -115,7 +115,7 @@ public class TeamsBotAdapter(
                 ?? throw new InvalidOperationException("Conversation ID is required to send activities."));
             SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            logger?.LogDebug("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
+            logger?.SendActivitiesResponse(resp?.Id);
 
             responses[i] = new Microsoft.Bot.Schema.ResourceResponse() { Id = resp?.Id };
         }
@@ -162,7 +162,10 @@ public class TeamsBotAdapter(
             response.StatusCode = invokeResponse.Status;
             using StreamWriter httpResponseStreamWriter = new(response.BodyWriter.AsStream());
             using JsonTextWriter httpResponseJsonWriter = new(httpResponseStreamWriter);
-            logger?.LogTrace("Sending Invoke Response: \n {InvokeResponse} with status: {Status} \n", System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions), invokeResponse.Status);
+            if (logger?.IsEnabled(LogLevel.Trace) == true)
+            {
+                logger.SendingInvokeResponse(System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions), invokeResponse.Status);
+            }
             if (invokeResponse.Body is not null)
             {
                 Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
@@ -170,7 +173,7 @@ public class TeamsBotAdapter(
         }
         else
         {
-            logger?.LogWarning("HTTP response is null or has started. Cannot write invoke response. ResponseStarted: {ResponseStarted}", response?.HasStarted);
+            logger?.CannotWriteInvokeResponse(response?.HasStarted);
         }
     }
 }
