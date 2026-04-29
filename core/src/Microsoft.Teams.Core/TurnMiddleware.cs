@@ -32,7 +32,7 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
     internal TurnMiddleware Use(ITurnMiddleware middleware)
     {
         _middlewares.Add(middleware);
-        _logger.LogDebugGuarded("Registered middleware '{Middleware}' (position {Position}).", middleware.GetType().Name, _middlewares.Count);
+        _logger.MiddlewareRegistered(middleware.GetType().Name, _middlewares.Count);
         return this;
     }
 
@@ -65,12 +65,12 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
         {
             if (nextMiddlewareIndex > 0)
             {
-                _logger.LogDebugGuarded("Middleware pipeline completed ({Count} middleware(s)).", nextMiddlewareIndex);
+                _logger.MiddlewarePipelineCompleted(nextMiddlewareIndex);
             }
             return callback is not null ? callback!(activity, cancellationToken) ?? Task.CompletedTask : Task.CompletedTask;
         }
         ITurnMiddleware nextMiddleware = _middlewares[nextMiddlewareIndex];
-        _logger.LogDebugGuarded("Executing middleware '{Middleware}' ({Index}/{Count}).", nextMiddleware.GetType().Name, nextMiddlewareIndex + 1, _middlewares.Count);
+        _logger.MiddlewareExecuting(nextMiddleware.GetType().Name, nextMiddlewareIndex + 1, _middlewares.Count);
         return nextMiddleware.OnTurnAsync(
             botApplication,
             activity,

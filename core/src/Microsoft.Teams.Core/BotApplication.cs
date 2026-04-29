@@ -51,7 +51,7 @@ public class BotApplication
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
         _processActivityTimeout = options.ProcessActivityTimeout;
-        logger.LogInformationGuarded("Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}", GetType().Name, options.AppId, Version);
+        logger.BotStarted(GetType().Name, options.AppId, Version);
     }
 
 
@@ -95,21 +95,20 @@ public class BotApplication
         ArgumentNullException.ThrowIfNull(httpContext);
         ArgumentNullException.ThrowIfNull(_conversationClient);
 
-        _logger.LogDebug("Start processing HTTP request for activity");
+        _logger.StartProcessingActivity();
 
         CoreActivity activity = await CoreActivity.FromJsonStreamAsync(httpContext.Request.Body, cancellationToken).ConfigureAwait(false) ?? throw new InvalidOperationException("Invalid Activity");
 
-        _logger.LogInformationGuarded("Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} MSCV={MSCV}",
-            activity.Type,
-            activity.Id,
-            activity.ServiceUrl,
-            httpContext.Request.GetCorrelationVector());
+        string? correlationVector = httpContext.Request.GetCorrelationVector();
+        _logger.ActivityReceived(activity.Type, activity.Id, activity.ServiceUrl, correlationVector);
 
-        _logger.LogTraceGuarded("Received activity: {Activity}", activity.ToJson());
+        if (_logger.IsEnabled(LogLevel.Trace))
+        {
+            _logger.ReceivedActivityJson(activity.ToJson());
+        }
 
         // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
-        using (_logger.BeginScope("ActivityType={ActivityType} ActivityId={ActivityId} ServiceUrl={ServiceUrl} MSCV={MSCV}",
-            activity.Type, activity.Id, activity.ServiceUrl, httpContext.Request.GetCorrelationVector()))
+        using (_logger.BeginActivityScope(activity.Type, activity.Id, activity.ServiceUrl, correlationVector))
         {
             // Use a dedicated timeout instead of the HTTP request's cancellation token.
             // The HTTP token fires when the client disconnects, which is expected for
@@ -122,16 +121,16 @@ public class BotApplication
             }
             catch (OperationCanceledException) when (cts.IsCancellationRequested)
             {
-                _logger.LogWarning("Activity processing timed out after {Timeout}: Id={Id}", _processActivityTimeout, activity.Id);
+                _logger.ActivityTimedOut(_processActivityTimeout, activity.Id);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error processing activity: Id={Id}", activity.Id);
+                _logger.ActivityProcessingError(ex, activity.Id);
                 throw new BotHandlerException("Error processing activity", ex, activity);
             }
             finally
             {
-                _logger.LogInformationGuarded("Finished processing activity: Id={Id}", activity.Id);
+                _logger.ActivityProcessingFinished(activity.Id);
             }
         }
     }

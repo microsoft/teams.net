@@ -213,7 +213,7 @@ namespace Microsoft.Teams.Core.Hosting
                             ? BotOIDC
                             : $"{EntraOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
 
-                        logger.LogTraceGuarded("Resolving signing keys from OIDC authority '{Authority}' for issuer '{Issuer}'.", authority, iss);
+                        logger?.ResolvingSigningKeys(authority, iss);
 
                         ConfigurationManager<OpenIdConnectConfiguration> manager = configManagerCache.GetOrAdd(authority, a =>
                             new ConfigurationManager<OpenIdConnectConfiguration>(
@@ -232,17 +232,17 @@ namespace Microsoft.Teams.Core.Hosting
                     OnTokenValidated = context =>
                     {
                         ILogger log = GetLogger(context.HttpContext, logger);
-                        log.LogTraceGuarded("Token validated for scheme: {Scheme}", schemeName);
+                        log.TokenValidated(schemeName);
                         if (log.IsEnabled(LogLevel.Trace) && context.SecurityToken is JsonWebToken jwt)
                         {
                             string claims = Environment.NewLine + string.Join(Environment.NewLine, jwt.Claims.Select(c => $"  {c.Type}: {c.Value}"));
-                            log.LogTrace("Incoming token claims:{Claims}", claims);
+                            log.IncomingTokenClaims(claims);
                         }
                         return Task.CompletedTask;
                     },
                     OnForbidden = context =>
                     {
-                        GetLogger(context.HttpContext, logger).LogWarning("Forbidden for scheme: {Scheme}", schemeName);
+                        GetLogger(context.HttpContext, logger).ForbiddenForScheme(schemeName);
                         return Task.CompletedTask;
                     },
                     OnAuthenticationFailed = context =>
@@ -271,10 +271,8 @@ namespace Microsoft.Teams.Core.Hosting
                         string expectedAudiences = validationParams?.ValidAudiences is not null
                             ? string.Join(", ", validationParams.ValidAudiences)
                             : validationParams?.ValidAudience ?? "n/a";
-                        log.LogError(context.Exception,
-                            "JWT authentication failed for scheme {Scheme}: {ExceptionMessage} | " +
-                            "token iss={TokenIssuer} aud={TokenAudience} exp={TokenExpiration} sub={TokenSubject} | " +
-                            "expected aud={ConfiguredAudience}",
+                        log.JwtAuthenticationFailed(
+                            context.Exception,
                             schemeName,
                             context.Exception.Message,
                             tokenIssuer ?? "n/a",
@@ -293,7 +291,7 @@ namespace Microsoft.Teams.Core.Hosting
 
         private static AuthenticationBuilder AddBypassAuthentication(this AuthenticationBuilder builder, string schemeName, ILogger? logger = null)
         {
-            (logger ?? NullLogger.Instance).LogWarning("ClientId not provided for scheme '{SchemeName}'. Configuring bypass authentication (no token validation). This is INSECURE and should only be used for development.", schemeName);
+            (logger ?? NullLogger.Instance).BypassAuthenticationConfigured(schemeName);
 
             builder.AddJwtBearer(schemeName, jwtOptions =>
             {
@@ -313,7 +311,7 @@ namespace Microsoft.Teams.Core.Hosting
                     OnMessageReceived = context =>
                     {
                         // Always succeed authentication even without a token
-                        GetLogger(context.HttpContext, logger).LogWarning("Using bypass authentication scheme succeeded for scheme: {Scheme}. This is INSECURE and should only be used for development.", schemeName);
+                        GetLogger(context.HttpContext, logger).BypassAuthenticationSucceeded(schemeName);
                         context.NoResult();
                         context.Principal = new System.Security.Claims.ClaimsPrincipal(
                             new System.Security.Claims.ClaimsIdentity("BypassAuth"));

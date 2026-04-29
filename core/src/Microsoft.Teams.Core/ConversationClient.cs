@@ -58,7 +58,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         if (activity.ChannelId == "agents")
         {
-            logger.LogInformation("Truncating conversation ID for 'agents' channel to comply with length restrictions.");
+            logger.TruncatingConversationId();
             string convId = "acf"; //conversationId.Length > 100 ? conversationId[..100] : conversationId;
             url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(convId)}/activities/";
         }
@@ -111,7 +111,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string body = activity.ToJson();
 
-        logger.LogTraceGuarded("Updating activity at {Url}: {Activity}", url, body);
+        logger.UpdatingActivity(url, body);
 
         return (await _botHttpClient.SendAsync<UpdateActivityResponse>(
             HttpMethod.Put,
@@ -145,7 +145,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string body = activity.ToJson();
 
-        logger.LogTraceGuarded("Updating targeted activity at {Url}: {Activity}", url, body);
+        logger.UpdatingTargetedActivity(url, body);
 
         return (await _botHttpClient.SendAsync<UpdateActivityResponse>(
             HttpMethod.Put,
@@ -375,7 +375,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string paramsJson = JsonSerializer.Serialize(parameters, _jsonSerializerOptions);
 
-        logger.LogTraceGuarded("Creating conversation at {Url} with parameters: {Parameters}", url, paramsJson);
+        logger.CreatingConversation(url, paramsJson);
 
         return (await _botHttpClient.SendAsync<CreateConversationResponse>(
             HttpMethod.Post,
@@ -475,7 +475,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/history";
 
         string transcriptJson = JsonSerializer.Serialize(transcript, _jsonSerializerOptions);
-        logger.LogTraceGuarded("Sending conversation history to {Url}: {Transcript}", url, transcriptJson);
+        logger.SendingConversationHistory(url, transcriptJson);
 
         return (await _botHttpClient.SendAsync<SendConversationHistoryResponse>(
             HttpMethod.Post,
@@ -506,7 +506,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/attachments";
 
         string attachmentDataJson = JsonSerializer.Serialize(attachmentData, _jsonSerializerOptions);
-        logger.LogTraceGuarded("Uploading attachment to {Url}: {AttachmentData}", url, attachmentDataJson);
+        logger.UploadingAttachment(url, attachmentDataJson);
 
         return (await _botHttpClient.SendAsync<UploadAttachmentResponse>(
             HttpMethod.Post,

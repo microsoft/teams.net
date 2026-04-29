@@ -45,11 +45,11 @@ internal class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
 
         using HttpRequestMessage request = CreateRequest(method, url, body, options);
 
-        logger.LogTraceGuarded("HTTP {Method} {Url} body: {Body}", method, url, body);
+        logger?.HttpRequestSending(method, url, body);
 
         using HttpResponseMessage response = await httpClient.SendAsync(request, cancellationToken).ConfigureAwait(false);
 
-        logger.LogDebugGuarded("HTTP {Method} {Url} Response Status {StatusCode}", method, url, (int)response.StatusCode);
+        logger?.HttpResponseReceived(method, url, (int)response.StatusCode);
 
         return await HandleResponseAsync<T>(response, method, url, options, cancellationToken).ConfigureAwait(false);
     }
@@ -179,16 +179,14 @@ internal class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
 
         if (response.StatusCode == HttpStatusCode.NotFound && options.ReturnNullOnNotFound)
         {
-            logger?.LogWarning("Resource not found: {Url}", url);
+            logger?.ResourceNotFound(url);
             return default;
         }
 
         string errorContent = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
         string responseHeaders = FormatResponseHeaders(response);
 
-        logger?.LogWarning(
-            "HTTP request error {Method} {Url}\nStatus Code: {StatusCode}\nResponse Headers: {ResponseHeaders}\nResponse Body: {ResponseBody}",
-            method, url, response.StatusCode, responseHeaders, errorContent);
+        logger?.HttpRequestError(method, url, response.StatusCode, responseHeaders, errorContent);
 
         string operationDescription = options.OperationDescription ?? "request";
         throw new HttpRequestException(

@@ -86,10 +86,7 @@ internal sealed class BotAuthenticationHandler(
 
             if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
             {
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug("Applying User-Assigned Managed Identity for token acquisition (ClientId '{ClientId}').", miOptions.UserAssignedClientId);
-                }
+                _logger.ApplyingManagedIdentity(miOptions.UserAssignedClientId);
                 options.AcquireTokenOptions.ManagedIdentity = miOptions;
             }
         }
