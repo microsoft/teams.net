@@ -7,7 +7,8 @@
 pr:
   branches:
     include:
-      - next/*
+      - core/*
+      - main
   paths:
     include:
       - core/**
@@ -15,10 +16,8 @@ pr:
 trigger:
   branches:
     include:
-    - next/*
-  paths:
-    include:
-    - core/**
+    - core/*
+    - main
 
 pool:
   vmImage: 'ubuntu-22.04'

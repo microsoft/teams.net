@@ -4,10 +4,8 @@ permissions:
   pull-requests: write
 
 on:
-  push:
-    branches: [ next/core ]
   pull_request:
-    branches: [ next/core ]
+    branches: [ main, core/** ]
 
 jobs:
   build-and-test:
