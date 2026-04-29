@@ -22,6 +22,7 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 /// requests.</remarks>
 public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
 {
+    private static readonly AsyncLocal<Func<CoreActivity, CancellationToken, Task>?> _activityCallback = new();
     private readonly BotApplication _teamsBotApplication;
     private readonly ILogger? _logger;
 
@@ -39,6 +40,11 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
     {
         _teamsBotApplication = teamsBotApplication;
         _logger = logger;
+
+        // Set the OnActivity handler once to a dispatcher that delegates to the
+        // AsyncLocal callback, isolating each concurrent request's handler.
+        _teamsBotApplication.OnActivity = (activity, ct) =>
+            _activityCallback.Value?.Invoke(activity, ct) ?? Task.CompletedTask;
     }
 
     /// <summary>
@@ -56,7 +62,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
         ArgumentNullException.ThrowIfNull(bot);
 
         CoreActivity? coreActivity = null;
-        _teamsBotApplication.OnActivity = async (activity, ct) =>
+        _activityCallback.Value = async (activity, ct) =>
         {
             coreActivity = activity;
             TurnContext turnContext = new(this, activity.ToCompatActivity());
@@ -95,6 +101,10 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
             {
                 throw;
             }
+        }
+        finally
+        {
+            _activityCallback.Value = null;
         }
     }
 
