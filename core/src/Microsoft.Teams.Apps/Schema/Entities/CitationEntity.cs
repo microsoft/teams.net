@@ -116,6 +116,7 @@ public class CitationEntity : OMessageEntity
         OType = entity.OType;
         OContext = entity.OContext;
         Type = entity.Type;
+        Properties = new Core.Schema.ExtendedPropertiesDictionary(entity.Properties);
         AdditionalType = entity.AdditionalType != null
             ? new List<string>(entity.AdditionalType)
             : null;
