@@ -19,7 +19,7 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 /// Provides utility methods for the events and interactions that occur within Microsoft Teams.
 /// This class adapts the Teams Bot Core SDK to the Bot Framework v4 SDK TeamsInfo API.
 /// </summary>
-public static class CompatTeamsInfo
+public static class TeamsApiClient
 {
     internal static CustomHeaders DefaultCustomHeaders { get; } = [];
 
@@ -47,7 +47,7 @@ public static class CompatTeamsInfo
 
     private static AgenticIdentity GetIdentity(ITurnContext turnContext)
     {
-        CoreActivity coreActivity = turnContext.Activity.FromCompatActivity();
+        CoreActivity coreActivity = turnContext.Activity.FromBotFrameworkActivity();
         return AgenticIdentity.FromAccount(coreActivity.From) ?? new AgenticIdentity();
     }
 
@@ -548,7 +548,7 @@ public static class CompatTeamsInfo
         AgenticIdentity agenticIdentity = GetIdentity(turnContext);
         if (activity is not Activity teamActivity)
             throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity));
-        CoreActivity coreActivity = teamActivity.FromCompatActivity();
+        CoreActivity coreActivity = teamActivity.FromBotFrameworkActivity();
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/team/";
         SendMessageToTeamRequest request = new()
@@ -591,7 +591,7 @@ public static class CompatTeamsInfo
         AgenticIdentity agenticIdentity = GetIdentity(turnContext);
         if (activity is not Activity tenantActivity)
             throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity));
-        CoreActivity coreActivity = tenantActivity.FromCompatActivity();
+        CoreActivity coreActivity = tenantActivity.FromBotFrameworkActivity();
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/tenant/";
         SendMessageToTenantRequest request = new()

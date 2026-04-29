@@ -17,7 +17,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         public async Task ContinueConversationAsync_WhenCastToBotAdapter_BuildsTurnContextWithUnderlyingClients()
         {
             // Arrange
-            CompatAdapter compatAdapter = CreateCompatAdapter();
+            TeamsBotFrameworkHttpAdapter compatAdapter = CreateCompatAdapter();
 
             // Cast to BotAdapter to ensure we're using the base class method
             BotAdapter botAdapter = compatAdapter;
@@ -62,7 +62,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.IsAssignableFrom<Microsoft.Bot.Connector.IConnectorClient>(capturedConnectorClient);
         }
 
-        private static CompatAdapter CreateCompatAdapter()
+        private static TeamsBotFrameworkHttpAdapter CreateCompatAdapter()
         {
             HttpClient httpClient = new();
             ConversationClient conversationClient = new(httpClient, NullLogger<ConversationClient>.Instance);
@@ -77,10 +77,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 userTokenClient,
                 NullLogger<BotApplication>.Instance);
 
-            CompatAdapter compatAdapter = new(
+            TeamsBotFrameworkHttpAdapter compatAdapter = new(
                 botApplication,
                 Mock.Of<IHttpContextAccessor>(),
-                NullLogger<CompatAdapter>.Instance);
+                NullLogger<TeamsBotFrameworkHttpAdapter>.Instance);
 
             return compatAdapter;
         }

@@ -24,10 +24,10 @@ public static class CompatHostingExtensions
     /// multiple times without adverse effects.</remarks>
     /// <param name="builder">The host application builder to which the compatibility adapter services will be added. Cannot be null.</param>
     /// <returns>The same <paramref name="builder"/> instance, enabling method chaining.</returns>
-    public static IHostApplicationBuilder AddCompatAdapter(this IHostApplicationBuilder builder)
+    public static IHostApplicationBuilder AddTeamsBotFrameworkHttpAdapter(this IHostApplicationBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        builder.Services.AddCompatAdapter();
+        builder.Services.AddTeamsBotFrameworkHttpAdapter();
         return builder;
     }
 
@@ -40,10 +40,10 @@ public static class CompatHostingExtensions
     /// <param name="services">The service collection to which the compatibility adapter and related services will be added. Must not be null.</param>
     /// <returns>The same <see cref="IServiceCollection"/> instance provided in <paramref name="services"/>, with the
     /// compatibility adapter and related services registered.</returns>
-    public static IServiceCollection AddCompatAdapter(this IServiceCollection services)
+    public static IServiceCollection AddTeamsBotFrameworkHttpAdapter(this IServiceCollection services)
     {
         services.AddBotApplication();
-        services.AddSingleton<IBotFrameworkHttpAdapter, CompatAdapter>();
+        services.AddSingleton<IBotFrameworkHttpAdapter, TeamsBotFrameworkHttpAdapter>();
         return services;
     }
 }

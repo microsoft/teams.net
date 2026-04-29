@@ -20,7 +20,7 @@ internal class ProactiveWorker(IBotFrameworkHttpAdapter compatAdapter, ILogger<P
             Conversation = new() { Id = "19:ad37a1f8af5549e3b81edf249fe5cb1b@thread.tacv2" },
         };
 
-        await ((CompatAdapter)compatAdapter).ContinueConversationAsync("", conversationReference, callback, stoppingToken);
+        await ((TeamsBotFrameworkHttpAdapter)compatAdapter).ContinueConversationAsync("", conversationReference, callback, stoppingToken);
         logger.LogInformation("Proactive message sent");
     }
 

@@ -232,7 +232,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
             if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
@@ -265,7 +265,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             Microsoft.Teams.Core.Transcript coreTranscript = new()
             {
-                Activities = transcript.Activities?.Select(a => a.FromCompatActivity()).ToList()
+                Activities = transcript.Activities?.Select(a => a.FromBotFrameworkActivity()).ToList()
             };
 
             SendConversationHistoryResponse response = await _client.SendConversationHistoryAsync(
@@ -303,7 +303,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
             if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
@@ -343,7 +343,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for updating activities
             if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)

@@ -14,7 +14,7 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 /// <summary>
 /// Extension methods for converting between Bot Framework Activity and CoreActivity/TeamsActivity.
 /// </summary>
-public static class CompatActivity
+public static class ActivitySchemaMapper
 {
     private static string? GetStringValue(object? value) => value switch
     {
@@ -29,7 +29,7 @@ public static class CompatActivity
     /// </summary>
     /// <param name="activity"></param>
     /// <returns></returns>
-    public static Activity ToCompatActivity(this CoreActivity activity)
+    public static Activity ToBotFrameworkActivity(this CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         using JsonTextReader reader = new(new StringReader(activity.ToJson()));
@@ -41,7 +41,7 @@ public static class CompatActivity
     /// </summary>
     /// <param name="activity"></param>
     /// <returns></returns>
-    public static CoreActivity FromCompatActivity(this Activity activity)
+    public static CoreActivity FromBotFrameworkActivity(this Activity activity)
     {
         StringBuilder sb = new();
         using StringWriter stringWriter = new(sb);
@@ -232,7 +232,7 @@ public static class CompatActivity
             Bot = parameters.Bot?.FromCompatChannelAccount(),
             Members = parameters.Members?.Select(m => m.FromCompatChannelAccount()).ToList(),
             TopicName = parameters.TopicName,
-            Activity = parameters.Activity?.FromCompatActivity(),
+            Activity = parameters.Activity?.FromBotFrameworkActivity(),
             ChannelData = parameters.ChannelData,
             TenantId = parameters.TenantId,
         };

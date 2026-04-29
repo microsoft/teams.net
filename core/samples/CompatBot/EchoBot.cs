@@ -34,7 +34,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         IStatePropertyAccessor<ConversationData> conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
         ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
 
-        var mm = await CompatTeamsInfo.GetMemberAsync(turnContext, turnContext.Activity.From.Id);
+        var mm = await TeamsApiClient.GetMemberAsync(turnContext, turnContext.Activity.From.Id);
         string replyText = $"Echo {mm.Name} from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
 
         // Targeted Messaging via BF compat layer: setting isTargeted on the BF ChannelAccount
@@ -48,7 +48,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
 
         if (turnContext.Activity.Conversation.IsGroup == true)
         {
-            var teamDetails = await CompatTeamsInfo.GetTeamDetailsAsync(turnContext, null, cancellationToken);
+            var teamDetails = await TeamsApiClient.GetTeamDetailsAsync(turnContext, null, cancellationToken);
             await turnContext.SendActivityAsync(JsonConvert.SerializeObject(teamDetails, Formatting.Indented));
 
             TeamsPagedMembersResult pagedMembersResult;
@@ -56,7 +56,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
             string continuationToken = null!;
             do
             {
-                pagedMembersResult = await CompatTeamsInfo.GetPagedMembersAsync(
+                pagedMembersResult = await TeamsApiClient.GetPagedMembersAsync(
                     turnContext,
                     5,
                     continuationToken,
@@ -72,7 +72,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
 
         // Targeted Messaging via Core SDK (preferred): sends directly through ConversationClient
         // to bypass the BF compat layer's ApplyConversationReference which would overwrite the Recipient.
-        var incomingCoreActivity = ((Activity)turnContext.Activity).FromCompatActivity();
+        var incomingCoreActivity = ((Activity)turnContext.Activity).FromBotFrameworkActivity();
         var incomingFrom = incomingCoreActivity.From;
         var incomingRecipient = incomingCoreActivity.Recipient;
         incomingFrom!.IsTargeted = true;

@@ -23,7 +23,7 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 /// <param name="botApplication">The Teams bot application instance.</param>
 /// <param name="httpContextAccessor">The HTTP context accessor.</param>
 /// <param name="logger">The logger instance.</param>
-public class CompatBotAdapter(
+public class TeamsBotAdapter(
     BotApplication botApplication,
     IHttpContextAccessor? httpContextAccessor = null,
     ILogger? logger = null) : BotAdapter
@@ -59,7 +59,7 @@ public class CompatBotAdapter(
         Uri serviceUrl = new(serviceUrlString);
 
         // Extract agentic identity from turn context if available
-        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(turnContext.Activity?.FromCompatActivity().From);
+        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(turnContext.Activity?.FromBotFrameworkActivity().From);
 
         await botApplication.ConversationClient.DeleteActivityAsync(
             conversationId,
@@ -102,7 +102,7 @@ public class CompatBotAdapter(
                 return [new ResourceResponse() { Id = null }];
             }
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Ensure ServiceUrl is set from turn context if not already present
             if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
@@ -137,7 +137,7 @@ public class CompatBotAdapter(
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(turnContext);
 
-        CoreActivity coreActivity = activity.FromCompatActivity();
+        CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
         // Ensure ServiceUrl is set from turn context if not already present
         if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))

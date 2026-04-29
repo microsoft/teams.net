@@ -53,7 +53,7 @@ namespace PABot.Bots
                     // Use CompatTeamsInfo.GetMemberAsync to get detailed member information
                     try
                     {
-                        TeamsChannelAccount memberDetails = await CompatTeamsInfo.GetMemberAsync(turnContext, member.Id, cancellationToken);
+                        TeamsChannelAccount memberDetails = await TeamsApiClient.GetMemberAsync(turnContext, member.Id, cancellationToken);
                         _logger.LogInformation("Member added: {Name} ({Email}), AAD Object ID: {AadObjectId}",
                             memberDetails.Name, memberDetails.Email, memberDetails.AadObjectId);
                     }
@@ -150,7 +150,7 @@ namespace PABot.Bots
             {
                 // Get member details using CompatTeamsInfo.GetMemberAsync
                 string userId = turnContext.Activity.From.Id;
-                TeamsChannelAccount member = await CompatTeamsInfo.GetMemberAsync(turnContext, userId, cancellationToken);
+                TeamsChannelAccount member = await TeamsApiClient.GetMemberAsync(turnContext, userId, cancellationToken);
 
                 string memberInfo = $"Member Details:\n" +
                                   $"- Name: {member.Name}\n" +
@@ -173,7 +173,7 @@ namespace PABot.Bots
                     return;
                 }
 
-                TeamDetails teamDetails = await CompatTeamsInfo.GetTeamDetailsAsync(turnContext, teamInfo.Id, cancellationToken);
+                TeamDetails teamDetails = await TeamsApiClient.GetTeamDetailsAsync(turnContext, teamInfo.Id, cancellationToken);
 
                 string teamDetailsInfo = $"Team Details:\n" +
                                        $"- Name: {teamDetails.Name}\n" +

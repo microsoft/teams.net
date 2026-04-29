@@ -28,7 +28,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-789", Name = "Test Conversation" }
             };
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             Assert.NotNull(coreActivity);
             Assert.Equal(activity.Type, coreActivity.Type);
@@ -54,7 +54,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 ReplyToId = "reply-to-123"
             };
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             Assert.NotNull(coreActivity);
             Assert.Equal(activity.Text, coreActivity.Properties["text"]?.ToString());
@@ -75,7 +75,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.NotNull(botActivity);
             Assert.Single(botActivity.Attachments);
 
-            CoreActivity coreActivity = botActivity.FromCompatActivity();
+            CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
 
             Assert.NotNull(coreActivity);
             JsonArray? attachments = coreActivity.Properties.Extract<JsonArray>("attachments");
@@ -111,7 +111,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 }
             };
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             JsonArray? attachments = coreActivity.Properties.Extract<JsonArray>("attachments");
             Assert.NotNull(attachments);
@@ -130,7 +130,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             string json = LoadTestData("AdaptiveCardActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
 
-            CoreActivity coreActivity = botActivity.FromCompatActivity();
+            CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
 
             JsonArray? entities = coreActivity.Properties.Extract<JsonArray>("entities");
             Assert.NotNull(entities);
@@ -147,7 +147,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             string json = LoadTestData("SuggestedActionsActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
 
-            CoreActivity coreActivity = botActivity.FromCompatActivity();
+            CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
 
             JsonArray? entities = coreActivity.Properties.Extract<JsonArray>("entities");
             Assert.NotNull(entities);
@@ -172,7 +172,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.NotNull(botActivity.SuggestedActions);
             Assert.Equal(3, botActivity.SuggestedActions.Actions.Count);
 
-            CoreActivity coreActivity = botActivity.FromCompatActivity();
+            CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
 
             Assert.True(coreActivity.Properties.ContainsKey("suggestedActions"));
 
@@ -193,7 +193,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             string json = LoadTestData("SuggestedActionsActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
 
-            CoreActivity coreActivity = botActivity.FromCompatActivity();
+            CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
             string coreActivityJson = coreActivity.ToJson();
             JsonNode coreActivityNode = JsonNode.Parse(coreActivityJson)!;
 
@@ -227,7 +227,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 ChannelData = new { customProperty = "customValue", nestedObject = new { key = "value" } }
             };
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             ChannelData? channelData = coreActivity.Properties.Extract<ChannelData>("channelData");
             Assert.NotNull(channelData);
@@ -241,7 +241,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             string json = LoadTestData("SuggestedActionsActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(json)!;
 
-            CoreActivity coreActivity = botActivity.FromCompatActivity();
+            CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
 
             ChannelData? channelData = coreActivity.Properties.Extract<ChannelData>("channelData");
             Assert.NotNull(channelData);
@@ -262,7 +262,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             string originalJson = LoadTestData("AdaptiveCardActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(originalJson)!;
 
-            CoreActivity coreActivity = botActivity.FromCompatActivity();
+            CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
             string coreActivityJson = coreActivity.ToJson();
 
             // Use JsonNode.DeepEquals to verify structural equality
@@ -279,7 +279,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             string originalJson = LoadTestData("SuggestedActionsActivity.json");
             Activity botActivity = JsonConvert.DeserializeObject<Activity>(originalJson)!;
 
-            CoreActivity coreActivity = botActivity.FromCompatActivity();
+            CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
             string coreActivityJson = coreActivity.ToJson();
 
             // Use JsonNode.DeepEquals to verify structural equality
