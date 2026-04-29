@@ -57,15 +57,24 @@ public static class UrlValidation
             );
         }
 
+        // Always reject unspecified addresses (0.0.0.0 / ::) — even with allowPrivateNetwork.
+        // These aren't valid destinations and route to the local host on some platforms.
+        if (IPAddress.TryParse(url.Host, out var hostLiteral) && IsUnspecified(hostLiteral))
+        {
+            throw new UrlValidationException(
+                $"URL {RedactCreds(url)} resolves to unspecified address {hostLiteral}"
+            );
+        }
+
         if (allowPrivateNetwork)
         {
             return url;
         }
 
         IPAddress[] addresses;
-        if (IPAddress.TryParse(url.Host, out var literal))
+        if (hostLiteral is not null)
         {
-            addresses = new[] { literal };
+            addresses = new[] { hostLiteral };
         }
         else
         {
@@ -73,7 +82,7 @@ public static class UrlValidation
             {
                 addresses = await HostResolver(url.Host, cancellationToken);
             }
-            catch (SocketException ex)
+            catch (Exception ex) when (ex is not OperationCanceledException)
             {
                 throw new UrlValidationException(
                     $"Could not resolve host {url.Host}: {ex.Message}", ex
@@ -101,8 +110,10 @@ public static class UrlValidation
     }
 
     /// <summary>
-    /// True if the address is loopback, RFC1918 private, link-local, or an
-    /// IPv6 unique-local / link-local address.
+    /// True if the address is one we treat as non-routable for SSRF defense:
+    /// loopback, unspecified, RFC1918 private, link-local, CGNAT (RFC 6598),
+    /// multicast, reserved (240.0.0.0/4), broadcast, IPv6 unique-local,
+    /// IPv6 link-local, or IPv6 site-local (deprecated, fec0::/10).
     /// </summary>
     public static bool IsPrivateAddress(IPAddress address)
     {

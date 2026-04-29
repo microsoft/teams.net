@@ -125,6 +125,30 @@ public class UrlValidationTests : IDisposable
     }
 
     [Fact]
+    public async Task RejectsUnspecifiedIpv4EvenWhenAllowPrivateNetwork()
+    {
+        var ex = await Assert.ThrowsAsync<UrlValidationException>(
+            () => UrlValidation.ValidateMcpServerUrlAsync(
+                new Uri("http://0.0.0.0:3000"),
+                allowPrivateNetwork: true
+            )
+        );
+        Assert.Contains("unspecified", ex.Message);
+    }
+
+    [Fact]
+    public async Task RejectsUnspecifiedIpv6EvenWhenAllowPrivateNetwork()
+    {
+        var ex = await Assert.ThrowsAsync<UrlValidationException>(
+            () => UrlValidation.ValidateMcpServerUrlAsync(
+                new Uri("http://[::]:3000"),
+                allowPrivateNetwork: true
+            )
+        );
+        Assert.Contains("unspecified", ex.Message);
+    }
+
+    [Fact]
     public async Task AcceptsPrivateHostnameWhenAllowPrivateNetworkSkipsDns()
     {
         bool resolverCalled = false;
