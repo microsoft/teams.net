@@ -59,7 +59,8 @@ public class McpPlugin : IAspNetCorePlugin
                 }
                 catch (Exception ex)
                 {
-                    Logger.Debug($"RequireAuth threw: {ex}");
+                    // `?.` guards a startup race: Kestrel can serve before App.Start() injects Logger.
+                    Logger?.Debug($"RequireAuth threw: {ex}");
                 }
 
                 if (!ok)

@@ -39,7 +39,7 @@ public class McpClientPluginParams
     /// whether the URL is allowed; the default scheme and private-network checks
     /// are skipped.
     /// </summary>
-    public Func<Uri, Task<bool>>? ValidateUrl { get; set; }
+    public Func<Uri, CancellationToken, Task<bool>>? ValidateUrl { get; set; }
 }
 
 public enum McpClientTransport

@@ -172,7 +172,7 @@ public class UrlValidationTests : IDisposable
         var seen = new List<Uri>();
         var result = await UrlValidation.ValidateMcpServerUrlAsync(
             new Uri("file:///etc/passwd"),
-            validateUrl: url =>
+            validateUrl: (url, _) =>
             {
                 seen.Add(url);
                 return Task.FromResult(true);
@@ -189,10 +189,28 @@ public class UrlValidationTests : IDisposable
         var ex = await Assert.ThrowsAsync<UrlValidationException>(
             () => UrlValidation.ValidateMcpServerUrlAsync(
                 new Uri("https://example.com/mcp"),
-                validateUrl: _ => Task.FromResult(false)
+                validateUrl: (_, _) => Task.FromResult(false)
             )
         );
         Assert.Contains("rejected by ValidateUrl", ex.Message);
+    }
+
+    [Fact]
+    public async Task ValidateUrlReceivesCancellationToken()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        CancellationToken received = default;
+        await UrlValidation.ValidateMcpServerUrlAsync(
+            new Uri("https://example.com/mcp"),
+            validateUrl: (_, ct) =>
+            {
+                received = ct;
+                return Task.FromResult(true);
+            },
+            cancellationToken: cts.Token
+        );
+        Assert.True(received.IsCancellationRequested);
     }
 
     [Fact]
@@ -224,7 +242,7 @@ public class UrlValidationTests : IDisposable
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => UrlValidation.ValidateMcpServerUrlAsync(
                 new Uri("https://example.com/mcp"),
-                validateUrl: _ => throw new InvalidOperationException("custom failure")
+                validateUrl: (_, _) => throw new InvalidOperationException("custom failure")
             )
         );
     }

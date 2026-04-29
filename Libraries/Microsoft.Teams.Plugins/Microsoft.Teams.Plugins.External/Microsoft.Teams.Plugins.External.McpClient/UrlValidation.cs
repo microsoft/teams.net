@@ -37,12 +37,12 @@ public static class UrlValidation
     public static async Task<Uri> ValidateMcpServerUrlAsync(
         Uri url,
         bool allowPrivateNetwork = false,
-        Func<Uri, Task<bool>>? validateUrl = null,
+        Func<Uri, CancellationToken, Task<bool>>? validateUrl = null,
         CancellationToken cancellationToken = default)
     {
         if (validateUrl is not null)
         {
-            bool allowed = await validateUrl(url);
+            bool allowed = await validateUrl(url, cancellationToken);
             if (!allowed)
             {
                 throw new UrlValidationException($"URL rejected by ValidateUrl: {RedactCreds(url)}");
@@ -124,6 +124,7 @@ public static class UrlValidation
         {
             if (address.IsIPv6LinkLocal) return true;
             if (address.IsIPv6SiteLocal) return true;
+            if (address.IsIPv6Multicast) return true; // ff00::/8
             if (IsIPv6UniqueLocal(address)) return true;
             if (address.IsIPv4MappedToIPv6)
             {
