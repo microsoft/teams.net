@@ -67,7 +67,7 @@ OAuthFlow (Apps layer - developer-facing)
 
 ## Breaking Changes from Teams SDK v2 (Spark)
 
-This section documents every API and behavioral difference between the old `Context<TActivity>` (in `Microsoft.Teams.Apps`) and the new `Context<TActivity>` (in `Microsoft.Teams.Bot.Apps`) related to SSO/Auth.
+This section documents every API and behavioral difference between the old `Context<TActivity>` (in `Microsoft.Teams.Apps`) and the new `Context<TActivity>` (in `Microsoft.Teams.Apps`) related to SSO/Auth.
 
 ### 1. `context.ConnectionName` removed
 
@@ -230,7 +230,7 @@ This affects all code inside `OnSignInComplete` and `OnSignInFailure` callbacks.
 
 | | Old (v2) | New |
 |---|---|---|
-| Namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Bot.Apps.Auth` |
+| Namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Auth` |
 | Base class | `SignInOptions` (abstract) | None (standalone class) |
 | `OAuthCardText` default | `"Please Sign In..."` | `"Please Sign In"` |
 | `SignInButtonText` default | `"Sign In"` | `"Sign In"` |
@@ -315,7 +315,7 @@ Each failure is logged with the user ID, conversation ID, failure code, and mess
 
 ### Summary Table
 
-| Feature | Old (v2) `Microsoft.Teams.Apps` | New `Microsoft.Teams.Bot.Apps` | Breaking? |
+| Feature | Old (v2) `Microsoft.Teams.Apps` | New `Microsoft.Teams.Apps` | Breaking? |
 |---|---|---|---|
 | `context.ConnectionName` | `required string` property | Removed (resolved from registry) | Yes |
 | `context.IsSignedIn` | `bool { get; set; }` (per-turn flag) | `bool { get; }` (queries token store) | Yes (semantic) |
@@ -325,7 +325,7 @@ Each failure is logged with the user ID, conversation ID, failure code, and mess
 | `context.SignOut(string?)` | Returns `Task` | Returns `Task` | No |
 | `OnSignIn` event | App-level, `SignInEvent` | Per-connection `OnSignInComplete` | Yes |
 | `OnSignInFailure` event | App-level, `SignIn.Failure` | Per-connection `OnSignInFailure` | Yes |
-| `OAuthOptions` namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Bot.Apps.Auth` | Yes |
+| `OAuthOptions` namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Auth` | Yes |
 | `SSOOptions` | Available | Removed | Yes |
 | Group chat 1:1 fallback | Automatic | Manual | Yes (behavioral) |
 | `context.Send()` | Available | `context.SendActivityAsync()` | Yes (rename) |
@@ -664,15 +664,15 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 
 | File | Location |
 |---|---|
-| `TeamsBotApplicationOptions.cs` | `Microsoft.Teams.Bot.Apps/TeamsBotApplicationOptions.cs` |
-| `OAuthFlow.cs` | `Microsoft.Teams.Bot.Apps/Auth/OAuthFlow.cs` |
-| `OAuthFlowExtensions.cs` | `Microsoft.Teams.Bot.Apps/Auth/OAuthFlowExtensions.cs` |
-| `OAuthOptions.cs` | `Microsoft.Teams.Bot.Apps/Auth/OAuthOptions.cs` |
-| `SignInTokenExchangeValue.cs` | `Microsoft.Teams.Bot.Apps/Auth/SignInTokenExchangeValue.cs` |
-| `SignInVerifyStateValue.cs` | `Microsoft.Teams.Bot.Apps/Auth/SignInVerifyStateValue.cs` |
-| `SignInFailureValue.cs` | `Microsoft.Teams.Bot.Apps/Auth/SignInFailureValue.cs` |
-| `TokenExchangeInvokeResponse.cs` | `Microsoft.Teams.Bot.Apps/Auth/TokenExchangeInvokeResponse.cs` |
-| `OAuthCard.cs` | `Microsoft.Teams.Bot.Apps/Schema/OAuthCard.cs` |
+| `TeamsBotApplicationOptions.cs` | `Microsoft.Teams.Apps/TeamsBotApplicationOptions.cs` |
+| `OAuthFlow.cs` | `Microsoft.Teams.Apps/Auth/OAuthFlow.cs` |
+| `OAuthFlowExtensions.cs` | `Microsoft.Teams.Apps/Auth/OAuthFlowExtensions.cs` |
+| `OAuthOptions.cs` | `Microsoft.Teams.Apps/Auth/OAuthOptions.cs` |
+| `SignInTokenExchangeValue.cs` | `Microsoft.Teams.Apps/Auth/SignInTokenExchangeValue.cs` |
+| `SignInVerifyStateValue.cs` | `Microsoft.Teams.Apps/Auth/SignInVerifyStateValue.cs` |
+| `SignInFailureValue.cs` | `Microsoft.Teams.Apps/Auth/SignInFailureValue.cs` |
+| `TokenExchangeInvokeResponse.cs` | `Microsoft.Teams.Apps/Auth/TokenExchangeInvokeResponse.cs` |
+| `OAuthCard.cs` | `Microsoft.Teams.Apps/Schema/OAuthCard.cs` |
 
 ## Changes to Core
 

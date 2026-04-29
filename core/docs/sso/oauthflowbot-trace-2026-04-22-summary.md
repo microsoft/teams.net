@@ -352,4 +352,4 @@
 
 **Fix**: Added `[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]` to `TokenExchangeResource` and `TokenPostResource` properties in `OAuthCard.cs`. When null, these properties are now omitted from the JSON instead of being sent as explicit nulls.
 
-**File**: `src/Microsoft.Teams.Bot.Apps/Schema/OAuthCard.cs`
+**File**: `src/Microsoft.Teams.Apps/Schema/OAuthCard.cs`

@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `ApiClient` class (`Microsoft.Teams.Bot.Apps.Api.Clients`) provides a hierarchical, Libraries-compatible API surface for Teams Bot operations. It organizes Bot Framework v3 REST API calls into sub-clients that delegate to the core SDK infrastructure rather than making raw HTTP calls.
+The `ApiClient` class (`Microsoft.Teams.Apps.Api.Clients`) provides a hierarchical, Libraries-compatible API surface for Teams Bot operations. It organizes Bot Framework v3 REST API calls into sub-clients that delegate to the core SDK infrastructure rather than making raw HTTP calls.
 
 ## Architecture
 
@@ -192,7 +192,7 @@ ReactionClient.AddAsync(conversationId, activityId, reactionType)
 ## File Layout
 
 ```
-core/src/Microsoft.Teams.Bot.Apps/Api/Clients/
+core/src/Microsoft.Teams.Apps/Api/Clients/
 ├── ApiClient.cs              Top-level facade, DI entry point, ForServiceUrl factory
 ├── ConversationApiClient.cs  Conversation facade → delegates to core ConversationClient
 ├── ActivityClient.cs         Activity CRUD + targeted → delegates to core ConversationClient

@@ -11,9 +11,9 @@ graph TB
     end
 
     subgraph "SDK Layers"
-        Compat[Microsoft.Teams.Bot.Compat<br/>Bot Framework v4 Compatibility]
-        Apps[Microsoft.Teams.Bot.Apps<br/>Teams-Specific Features]
-        Core[Microsoft.Teams.Bot.Core<br/>Core Bot Infrastructure]
+        Compat[Microsoft.Teams.Apps.BotBuilder<br/>Bot Framework v4 Compatibility]
+        Apps[Microsoft.Teams.Apps<br/>Teams-Specific Features]
+        Core[Microsoft.Teams.Core<br/>Core Bot Infrastructure]
     end
 
     subgraph "External Dependencies"
@@ -35,7 +35,7 @@ graph TB
 
 ---
 
-## 1. Microsoft.Teams.Bot.Core
+## 1. Microsoft.Teams.Core
 
 **Purpose**: Provides the foundational infrastructure for building Teams bots with a clean, modern API focused on performance and System.Text.Json serialization.
 
@@ -197,7 +197,7 @@ services.AddBotApplication(configuration);
 
 ---
 
-## 2. Microsoft.Teams.Bot.Apps
+## 2. Microsoft.Teams.Apps
 
 **Purpose**: Extends Core with Teams-specific features, handlers, and the TeamsApiClient for advanced Teams operations.
 
@@ -444,7 +444,7 @@ services.AddTeamsBotApplication(configuration);
 
 ---
 
-## 3. Microsoft.Teams.Bot.Compat
+## 3. Microsoft.Teams.Apps.BotBuilder
 
 **Purpose**: Provides backward compatibility with Bot Framework v4 SDK, allowing existing bots to migrate incrementally to the new Teams SDK.
 
@@ -882,10 +882,10 @@ graph TB
     end
 
     subgraph "Test Projects"
-        CoreTests[Microsoft.Teams.Bot.Core.UnitTests]
-        AppsTests[Microsoft.Teams.Bot.Apps.UnitTests]
-        CompatTests[Microsoft.Teams.Bot.Compat.UnitTests]
-        IntTests[Microsoft.Teams.Bot.Core.Tests]
+        CoreTests[Microsoft.Teams.Core.UnitTests]
+        AppsTests[Microsoft.Teams.Apps.UnitTests]
+        CompatTests[Microsoft.Teams.Apps.BotBuilder.UnitTests]
+        IntTests[Microsoft.Teams.Core.Tests]
     end
 
     Unit --> CoreTests

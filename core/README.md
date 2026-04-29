@@ -1,4 +1,4 @@
-# Microsoft.Teams.Bot.Core
+# Microsoft.Teams.Core
 
 Bot Core implements the Activity Protocol, including schema, conversation client, user token client, and support for Bot and Agentic Identities.
 
@@ -57,8 +57,8 @@ public void Deserialize_CustomChannelDataActivity()
 ### Basic Bot Application Usage
 
 ```cs
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Schema;
 
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();

@@ -4,8 +4,8 @@
 
 The activity model is the central abstraction for all bot communication. It follows a two-layer architecture:
 
-- **CoreActivity** (`Microsoft.Teams.Bot.Core`): Channel-agnostic activity model with typed core properties and dynamic extension properties via `[JsonExtensionData]`. AOT-compatible via source-generated JSON.
-- **TeamsActivity** (`Microsoft.Teams.Bot.Apps`): Teams-specific extension that shadows base properties with Teams-specific types and promotes additional extension properties into typed fields.
+- **CoreActivity** (`Microsoft.Teams.Core`): Channel-agnostic activity model with typed core properties and dynamic extension properties via `[JsonExtensionData]`. AOT-compatible via source-generated JSON.
+- **TeamsActivity** (`Microsoft.Teams.Apps`): Teams-specific extension that shadows base properties with Teams-specific types and promotes additional extension properties into typed fields.
 
 ```
 CoreActivity (Core) — internal constructors, created via CreateBuilder() or deserialization

@@ -10,9 +10,9 @@ Prior to this PR, `Bot.Compat` depended on `Bot.Apps`, which in turn depended on
 
 ```mermaid
 graph BT
-    Core["Microsoft.Teams.Bot.Core<br/><i>net8.0 · net10.0</i><br/>Foundation Layer"]
-    Apps["Microsoft.Teams.Bot.Apps<br/><i>net8.0 · net10.0</i><br/>Teams Features Layer"]
-    Compat["Microsoft.Teams.Bot.Compat<br/><i>net8.0 · net10.0</i><br/>Compatibility Layer"]
+    Core["Microsoft.Teams.Core<br/><i>net8.0 · net10.0</i><br/>Foundation Layer"]
+    Apps["Microsoft.Teams.Apps<br/><i>net8.0 · net10.0</i><br/>Teams Features Layer"]
+    Compat["Microsoft.Teams.Apps.BotBuilder<br/><i>net8.0 · net10.0</i><br/>Compatibility Layer"]
 
     Apps -->|"ProjectReference"| Core
     Compat -->|"ProjectReference"| Apps
@@ -37,9 +37,9 @@ This PR changes `Bot.Compat` to reference `Bot.Core` directly instead of `Bot.Ap
 
 ```mermaid
 graph BT
-    Core["Microsoft.Teams.Bot.Core<br/><i>net8.0 · net10.0</i><br/>Foundation Layer"]
-    Apps["Microsoft.Teams.Bot.Apps<br/><i>net8.0 · net10.0</i><br/>Teams Features Layer"]
-    Compat["Microsoft.Teams.Bot.Compat<br/><i>net8.0 · net10.0</i><br/>Compatibility Layer"]
+    Core["Microsoft.Teams.Core<br/><i>net8.0 · net10.0</i><br/>Foundation Layer"]
+    Apps["Microsoft.Teams.Apps<br/><i>net8.0 · net10.0</i><br/>Teams Features Layer"]
+    Compat["Microsoft.Teams.Apps.BotBuilder<br/><i>net8.0 · net10.0</i><br/>Compatibility Layer"]
 
     Apps -->|"ProjectReference"| Core
     Compat -->|"ProjectReference"| Core
@@ -96,8 +96,8 @@ graph TB
 
 ```diff
   <ItemGroup>
--   <ProjectReference Include="..\Microsoft.Teams.Bot.Apps\Microsoft.Teams.Bot.Apps.csproj" />
-+   <ProjectReference Include="..\Microsoft.Teams.Bot.Core\Microsoft.Teams.Bot.Core.csproj" />
+-   <ProjectReference Include="..\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
++   <ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
   </ItemGroup>
 ```
 
@@ -105,15 +105,15 @@ graph TB
 
 ```diff
   <ItemGroup>
-      <InternalsVisibleTo Include="Microsoft.Teams.Bot.Core.UnitTests" />
-      <InternalsVisibleTo Include="Microsoft.Teams.Bot.Apps" />
-+     <InternalsVisibleTo Include="Microsoft.Teams.Bot.Compat" />
+      <InternalsVisibleTo Include="Microsoft.Teams.Core.UnitTests" />
+      <InternalsVisibleTo Include="Microsoft.Teams.Apps" />
++     <InternalsVisibleTo Include="Microsoft.Teams.Apps.BotBuilder" />
   </ItemGroup>
 ```
 
 ### 3. Compat source code — rewritten to use Core types directly
 
-Types in `Bot.Compat` (e.g., `CompatActivity`, `CompatTeamsInfo`, `CompatHostingExtensions`) were updated to import from `Microsoft.Teams.Bot.Core` namespaces instead of going through `Microsoft.Teams.Bot.Apps`.
+Types in `Bot.Compat` (e.g., `CompatActivity`, `CompatTeamsInfo`, `CompatHostingExtensions`) were updated to import from `Microsoft.Teams.Core` namespaces instead of going through `Microsoft.Teams.Apps`.
 
 ---
 
