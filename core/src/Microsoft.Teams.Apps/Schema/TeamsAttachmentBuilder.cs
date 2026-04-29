@@ -109,5 +109,12 @@ public class TeamsAttachmentBuilder
     /// <summary>
     /// Builds the attachment.
     /// </summary>
-    public TeamsAttachment Build() => _attachment;
+    public TeamsAttachment Build() => new()
+    {
+        ContentType = _attachment.ContentType,
+        Content = _attachment.Content,
+        ContentUrl = _attachment.ContentUrl,
+        Name = _attachment.Name,
+        ThumbnailUrl = _attachment.ThumbnailUrl,
+    };
 }
