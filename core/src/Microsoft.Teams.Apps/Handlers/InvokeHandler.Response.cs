@@ -30,6 +30,29 @@ public class InvokeResponse(int status, object? body = null)
     [JsonPropertyName("value")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public object? Body { get; set; } = body;
+
+    /// <summary>
+    /// Creates a successful (200) invoke response with the specified body.
+    /// </summary>
+    /// <param name="body">The response payload.</param>
+    /// <returns>An <see cref="InvokeResponse"/> with status 200.</returns>
+    public static InvokeResponse Ok(object? body = null) => new(200, body);
+
+    /// <summary>
+    /// Creates a successful (200) strongly-typed invoke response with the specified body.
+    /// </summary>
+    /// <typeparam name="TBody">The type of the response body.</typeparam>
+    /// <param name="body">The response payload.</param>
+    /// <returns>An <see cref="InvokeResponse{TBody}"/> with status 200.</returns>
+    public static InvokeResponse<TBody> Ok<TBody>(TBody body) where TBody : notnull => new(200, body);
+
+    /// <summary>
+    /// Creates an error invoke response with the specified status code and optional body.
+    /// </summary>
+    /// <param name="status">The HTTP error status code.</param>
+    /// <param name="body">Optional error details.</param>
+    /// <returns>An <see cref="InvokeResponse"/> with the specified error status.</returns>
+    public static InvokeResponse Error(int status, object? body = null) => new(status, body);
 }
 
 /// <summary>

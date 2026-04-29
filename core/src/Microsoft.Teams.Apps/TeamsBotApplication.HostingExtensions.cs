@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Api.Clients;
@@ -13,6 +14,40 @@ namespace Microsoft.Teams.Apps;
 /// </summary>
 public static class TeamsBotApplicationHostingExtensions
 {
+    /// <summary>
+    /// Registers Teams bot application services using the <see cref="WebApplicationBuilder"/>.
+    /// This is a convenience method that delegates to <c>builder.Services.AddTeams()</c>.
+    /// </summary>
+    /// <param name="builder">The web application builder.</param>
+    /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddTeams(this WebApplicationBuilder builder, string sectionName = "AzureAd")
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        return builder.Services.AddTeams(sectionName);
+    }
+
+    /// <summary>
+    /// Registers Teams bot application services using the <see cref="WebApplicationBuilder"/> with an <see cref="AppBuilder"/>.
+    /// This supports the <c>App.Builder().AddOAuth("graph")</c> pattern from the old library.
+    /// </summary>
+    /// <param name="builder">The web application builder.</param>
+    /// <param name="appBuilder">The app builder containing configuration.</param>
+    /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddTeams(this WebApplicationBuilder builder, AppBuilder appBuilder, string sectionName = "AzureAd")
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(appBuilder);
+        return builder.Services.AddTeamsBotApplication(options =>
+        {
+            foreach (var flow in appBuilder.Options.OAuthFlows)
+            {
+                options.AddOAuthFlow(flow.ConnectionName);
+            }
+        }, sectionName);
+    }
+
     /// <summary>
     /// Registers Teams bot application services with the specified service collection.
     /// </summary>

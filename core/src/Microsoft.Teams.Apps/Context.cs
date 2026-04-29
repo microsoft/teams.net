@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.Auth;
 using Microsoft.Teams.Apps.Schema;
@@ -26,6 +27,19 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     public TActivity Activity { get; } = activity;
 
+    /// <summary>
+    /// Gets the application (client) ID configured for this bot.
+    /// </summary>
+    public string AppId => TeamsBotApplication.AppId;
+
+    private ContextLogger? _log;
+
+    /// <summary>
+    /// Gets the logger for this context, providing <c>.Info()</c>, <c>.Error()</c>, <c>.Debug()</c>,
+    /// and <c>.Warn()</c> convenience methods that delegate to the underlying <see cref="ILogger"/>.
+    /// </summary>
+    public ContextLogger Log => _log ??= new ContextLogger(TeamsBotApplication.Logger);
+
     private ApiClient? _api;
 
     /// <summary>
@@ -33,6 +47,66 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     public ApiClient Api => _api ??= TeamsBotApplication.Api.ForServiceUrl(
         Activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."));
+
+    // ==================== Convenience Send/Reply/Typing ====================
+
+    /// <summary>
+    /// Sends a text message to the conversation.
+    /// </summary>
+    /// <param name="text">The text to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
+    public Task<SendActivityResponse?> Send(string text, CancellationToken cancellationToken = default)
+        => SendActivityAsync(text, cancellationToken);
+
+    /// <summary>
+    /// Sends an activity to the conversation.
+    /// </summary>
+    /// <param name="activity">The activity to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
+    public Task<SendActivityResponse?> Send(TeamsActivity activity, CancellationToken cancellationToken = default)
+        => SendActivityAsync(activity, cancellationToken);
+
+    /// <summary>
+    /// Sends a text message as a threaded reply to the current activity.
+    /// </summary>
+    /// <param name="text">The text to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
+    public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
+    {
+        TeamsActivity reply = new TeamsActivityBuilder()
+            .WithConversationReference(Activity)
+            .WithText(text)
+            .Build();
+        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends an activity as a threaded reply to the current activity.
+    /// </summary>
+    /// <param name="activity">The activity to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
+    public Task<SendActivityResponse?> Reply(TeamsActivity activity, CancellationToken cancellationToken = default)
+    {
+        TeamsActivity reply = new TeamsActivityBuilder(activity)
+            .WithConversationReference(Activity)
+            .Build();
+        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
+    }
+
+    /// <summary>
+    /// Sends a typing indicator to the conversation.
+    /// </summary>
+    /// <param name="text">Optional text to include with the typing indicator.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
+    public Task<SendActivityResponse?> Typing(string? text = null, CancellationToken cancellationToken = default)
+        => SendTypingActivityAsync(cancellationToken);
+
+    // ==================== Core Send Methods ====================
 
     /// <summary>
     /// Sends a message activity as a reply.

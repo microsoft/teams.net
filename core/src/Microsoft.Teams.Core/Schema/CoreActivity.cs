@@ -106,7 +106,7 @@ public class CoreActivity
     /// <summary>
     /// Gets or sets the conversation information for this activity.
     /// </summary>
-    [JsonPropertyName("conversation")] public Conversation Conversation { get; set; }
+    [JsonPropertyName("conversation")] public Conversation? Conversation { get; set; }
 
     /// <summary>
     /// Gets or sets the sender account for this activity.
@@ -154,7 +154,6 @@ public class CoreActivity
     internal CoreActivity(string type = ActivityType.Message)
     {
         Type = type;
-        Conversation = new Conversation();
     }
 
     /// <summary>
@@ -169,7 +168,7 @@ public class CoreActivity
         ServiceUrl = activity.ServiceUrl;
         ChannelId = activity.ChannelId;
         Type = activity.Type;
-        Conversation = new Conversation(activity.Conversation.Id) { Properties = new ExtendedPropertiesDictionary(activity.Conversation.Properties) };
+        Conversation = activity.Conversation is not null ? new Conversation(activity.Conversation.Id) { Properties = new ExtendedPropertiesDictionary(activity.Conversation.Properties) } : null;
         From = activity.From is not null ? CloneConversationAccount(activity.From) : null;
         Recipient = activity.Recipient is not null ? CloneConversationAccount(activity.Recipient) : null;
         Properties = new ExtendedPropertiesDictionary(activity.Properties);

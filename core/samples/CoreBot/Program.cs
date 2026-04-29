@@ -15,7 +15,7 @@ BotApplication botApp = webApp.UseBotApplication();
 botApp.OnActivity = async (activity, cancellationToken) =>
 {
     string replyText = $"CoreBot running on SDK `{BotApplication.Version}`.";
-
+    ArgumentNullException.ThrowIfNull(activity.Conversation);
     CoreActivity replyActivity = CoreActivity.CreateBuilder()
         .WithType(ActivityType.Message)
         .WithChannelId(activity.ChannelId)

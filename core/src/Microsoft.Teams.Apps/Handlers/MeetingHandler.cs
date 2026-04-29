@@ -150,4 +150,24 @@ public static class MeetingExtensions
 
         return app;
     }
+
+    /// <summary>
+    /// Registers a handler for meeting participant join event activities.
+    /// Alias for <see cref="OnMeetingParticipantJoin"/>.
+    /// </summary>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnMeetingJoin(this TeamsBotApplication app, MeetingParticipantJoinHandler handler)
+        => app.OnMeetingParticipantJoin(handler);
+
+    /// <summary>
+    /// Registers a handler for meeting participant leave event activities.
+    /// Alias for <see cref="OnMeetingParticipantLeave"/>.
+    /// </summary>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
+    public static TeamsBotApplication OnMeetingLeave(this TeamsBotApplication app, MeetingParticipantLeaveHandler handler)
+        => app.OnMeetingParticipantLeave(handler);
 }
