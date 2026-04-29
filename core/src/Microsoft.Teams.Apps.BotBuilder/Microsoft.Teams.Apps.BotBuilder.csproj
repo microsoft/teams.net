@@ -9,6 +9,6 @@
         <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.3" />
     </ItemGroup>
     <ItemGroup>
-      <ProjectReference Include="..\Microsoft.Teams.Bot.Core\Microsoft.Teams.Bot.Core.csproj" />
+      <ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
     </ItemGroup>
 </Project>

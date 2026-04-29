@@ -7,11 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Teams.Bot.Core\Microsoft.Teams.Bot.Core.csproj" />
+    <ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-	  <InternalsVisibleTo Include="Microsoft.Teams.Bot.Apps.UnitTests" />
+	  <InternalsVisibleTo Include="Microsoft.Teams.Apps.UnitTests" />
   </ItemGroup>
 
 </Project>

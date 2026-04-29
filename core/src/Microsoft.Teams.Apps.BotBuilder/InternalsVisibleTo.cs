@@ -3,6 +3,6 @@
 
 using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Microsoft.Teams.Bot.Core.Tests")]
-[assembly: InternalsVisibleTo("Microsoft.Teams.Bot.Compat.UnitTests")]
+[assembly: InternalsVisibleTo("Microsoft.Teams.Core.Tests")]
+[assembly: InternalsVisibleTo("Microsoft.Teams.Apps.BotBuilder.UnitTests")]
 [assembly: InternalsVisibleTo("IntegrationTests")]

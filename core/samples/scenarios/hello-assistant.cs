@@ -2,8 +2,8 @@
 
 #:sdk Microsoft.NET.Sdk.Web
 
-#:project ../../src/Microsoft.Teams.Bot.Core/Microsoft.Teams.Bot.Core.csproj
-#:project ../../src/Microsoft.Teams.Bot.Apps/Microsoft.Teams.Bot.Apps.csproj
+#:project ../../src/Microsoft.Teams.Core/Microsoft.Teams.Core.csproj
+#:project ../../src/Microsoft.Teams.Apps/Microsoft.Teams.Apps.csproj
 
 
 using Microsoft.Teams.Bot.Apps;

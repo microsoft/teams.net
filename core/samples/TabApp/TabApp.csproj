@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Apps\Microsoft.Teams.Bot.Apps.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
   </ItemGroup>
 
   <!-- Copy the built React/Vite output so it is available at runtime -->

@@ -12,6 +12,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Core\Microsoft.Teams.Bot.Core.csproj" />
+		<ProjectReference Include="..\..\src\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
 	</ItemGroup>
 </Project>

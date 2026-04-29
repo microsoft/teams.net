@@ -22,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.Teams.Bot.Apps\Microsoft.Teams.Bot.Apps.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
   </ItemGroup>
 
   <ItemGroup>
