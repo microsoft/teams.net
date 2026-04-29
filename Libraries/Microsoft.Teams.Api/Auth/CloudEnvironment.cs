@@ -45,11 +45,6 @@ public class CloudEnvironment
     /// </summary>
     public string GraphScope { get; }
 
-    /// <summary>
-    /// Allowed service URL hostnames for this cloud environment.
-    /// </summary>
-    public IReadOnlyList<string> AllowedServiceUrls { get; }
-
     public CloudEnvironment(
         string loginEndpoint,
         string loginTenant,
@@ -57,8 +52,7 @@ public class CloudEnvironment
         string tokenServiceUrl,
         string openIdMetadataUrl,
         string tokenIssuer,
-        string graphScope,
-        string[]? allowedServiceUrls = null)
+        string graphScope)
     {
         LoginEndpoint = loginEndpoint.TrimEnd('/');
         LoginTenant = loginTenant;
@@ -67,7 +61,6 @@ public class CloudEnvironment
         OpenIdMetadataUrl = openIdMetadataUrl;
         TokenIssuer = tokenIssuer;
         GraphScope = graphScope;
-        AllowedServiceUrls = allowedServiceUrls is not null ? Array.AsReadOnly(allowedServiceUrls) : [];
     }
 
     /// <summary>
@@ -80,8 +73,7 @@ public class CloudEnvironment
         tokenServiceUrl: "https://token.botframework.com",
         openIdMetadataUrl: "https://login.botframework.com/v1/.well-known/openidconfiguration",
         tokenIssuer: "https://api.botframework.com",
-        graphScope: "https://graph.microsoft.com/.default",
-        allowedServiceUrls: ["smba.trafficmanager.net", "smba.onyx.prod.teams.trafficmanager.net", "smba.infra.gcc.teams.microsoft.com"]
+        graphScope: "https://graph.microsoft.com/.default"
     );
 
     /// <summary>
@@ -94,8 +86,7 @@ public class CloudEnvironment
         tokenServiceUrl: "https://tokengcch.botframework.azure.us",
         openIdMetadataUrl: "https://login.botframework.azure.us/v1/.well-known/openidconfiguration",
         tokenIssuer: "https://api.botframework.us",
-        graphScope: "https://graph.microsoft.us/.default",
-        allowedServiceUrls: ["smba.infra.gov.teams.microsoft.us"]
+        graphScope: "https://graph.microsoft.us/.default"
     );
 
     /// <summary>
@@ -108,8 +99,7 @@ public class CloudEnvironment
         tokenServiceUrl: "https://apiDoD.botframework.azure.us",
         openIdMetadataUrl: "https://login.botframework.azure.us/v1/.well-known/openidconfiguration",
         tokenIssuer: "https://api.botframework.us",
-        graphScope: "https://dod-graph.microsoft.us/.default",
-        allowedServiceUrls: ["smba.infra.dod.teams.microsoft.us"]
+        graphScope: "https://dod-graph.microsoft.us/.default"
     );
 
     /// <summary>
@@ -122,8 +112,7 @@ public class CloudEnvironment
         tokenServiceUrl: "https://token.botframework.azure.cn",
         openIdMetadataUrl: "https://login.botframework.azure.cn/v1/.well-known/openidconfiguration",
         tokenIssuer: "https://api.botframework.azure.cn",
-        graphScope: "https://microsoftgraph.chinacloudapi.cn/.default",
-        allowedServiceUrls: ["frontend.botapi.msg.infra.teams.microsoftonline.cn"]
+        graphScope: "https://microsoftgraph.chinacloudapi.cn/.default"
     );
 
     /// <summary>
@@ -137,12 +126,11 @@ public class CloudEnvironment
         string? tokenServiceUrl = null,
         string? openIdMetadataUrl = null,
         string? tokenIssuer = null,
-        string? graphScope = null,
-        string[]? allowedServiceUrls = null)
+        string? graphScope = null)
     {
         if (loginEndpoint is null && loginTenant is null && botScope is null &&
             tokenServiceUrl is null && openIdMetadataUrl is null && tokenIssuer is null &&
-            graphScope is null && allowedServiceUrls is null)
+            graphScope is null)
         {
             return this;
         }
@@ -154,8 +142,7 @@ public class CloudEnvironment
             tokenServiceUrl ?? TokenServiceUrl,
             openIdMetadataUrl ?? OpenIdMetadataUrl,
             tokenIssuer ?? TokenIssuer,
-            graphScope ?? GraphScope,
-            allowedServiceUrls ?? [.. AllowedServiceUrls]
+            graphScope ?? GraphScope
         );
     }
 
