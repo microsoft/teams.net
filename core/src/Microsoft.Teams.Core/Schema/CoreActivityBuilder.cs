@@ -41,10 +41,10 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     }
 
     /// <summary>
-    /// Sets the Reply to id
+    /// Sets the identifier of the activity this activity is a reply to.
     /// </summary>
-    /// <param name="replyToId"></param>
-    /// <returns></returns>
+    /// <param name="replyToId">The ID of the activity to reply to.</param>
+    /// <returns>The builder instance for chaining.</returns>
     public TBuilder WithReplyToId(string replyToId)
     {
         _activity.ReplyToId = replyToId;
@@ -64,8 +64,8 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// <summary>
     /// Sets the service URL from a string.
     /// </summary>
-    /// <param name="serviceUrlString"></param>
-    /// <returns></returns>
+    /// <param name="serviceUrlString">The service URL as a string.</param>
+    /// <returns>The builder instance for chaining.</returns>
     public TBuilder WithServiceUrl(string serviceUrlString)
     {
         _activity.ServiceUrl = new Uri(serviceUrlString);

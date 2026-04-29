@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Core.Schema;
 public static class ActivityType
 {
     /// <summary>
-    /// Represents the default message string used for communication or display purposes.
+    /// Represents a message activity type, used for sending and receiving text and rich content.
     /// </summary>
     public const string Message = "message";
     /// <summary>

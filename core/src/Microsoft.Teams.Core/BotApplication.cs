@@ -32,10 +32,8 @@ public class BotApplication
     }
 
     /// <summary>
-    /// Initializes a new instance of the BotApplication class with the specified conversation client, app ID,
-    /// and logger.
-    /// Initializes a new instance of the BotApplication class with the specified conversation client, app ID,
-    /// and logger.
+    /// Initializes a new instance of the <see cref="BotApplication"/> class with the specified conversation client, user token client,
+    /// logger, and optional application options.
     /// </summary>
     /// <param name="conversationClient">The client used to manage and interact with conversations for the bot.</param>
     /// <param name="userTokenClient">The client used to manage user tokens for authentication.</param>
@@ -85,11 +83,11 @@ public class BotApplication
     /// <summary>
     /// Processes an incoming HTTP request containing a bot activity.
     /// </summary>
-    /// <param name="httpContext"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    /// <exception cref="InvalidOperationException"></exception>
-    /// <exception cref="BotHandlerException"></exception>
+    /// <param name="httpContext">The HTTP context containing the incoming bot activity request.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation. Note: a dedicated timeout is used internally instead of the HTTP request token.</param>
+    /// <returns>A task that represents the asynchronous activity processing operation.</returns>
+    /// <exception cref="InvalidOperationException">Thrown if the request body cannot be deserialized into a valid activity.</exception>
+    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity.</exception>
     public virtual async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -113,7 +111,7 @@ public class BotApplication
             // Use a dedicated timeout instead of the HTTP request's cancellation token.
             // The HTTP token fires when the client disconnects, which is expected for
             // streaming handlers that outlive the original request.
-            using var cts = new CancellationTokenSource(_processActivityTimeout);
+            using CancellationTokenSource cts = new(_processActivityTimeout);
             try
             {
                 CancellationToken token = Debugger.IsAttached ? CancellationToken.None : cts.Token;

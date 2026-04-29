@@ -25,11 +25,11 @@ namespace Microsoft.Teams.Core.Hosting;
 public static class AddBotApplicationExtensions
 {
     /// <summary>
-    /// Initializes the default route
+    /// Configures the default <see cref="BotApplication"/> to handle bot messages at the specified route.
     /// </summary>
-    /// <param name="endpoints"></param>
-    /// <param name="routePath"></param>
-    /// <returns></returns>
+    /// <param name="endpoints">The endpoint route builder used to configure endpoints.</param>
+    /// <param name="routePath">The route path at which to listen for incoming bot messages. Defaults to "api/messages".</param>
+    /// <returns>The registered <see cref="BotApplication"/> instance.</returns>
     public static BotApplication UseBotApplication(
         this IEndpointRouteBuilder endpoints,
        string routePath = "api/messages")
@@ -122,11 +122,11 @@ public static class AddBotApplicationExtensions
     }
 
     /// <summary>
-    /// Adds conversation client to the service collection.
+    /// Registers the <see cref="ConversationClient"/> and its dependencies in the service collection.
     /// </summary>
-    /// <param name="services">service collection</param>
-    /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
-    /// <returns></returns>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="sectionName">The configuration section name containing Azure AD settings. Defaults to "AzureAd".</param>
+    /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
@@ -134,11 +134,11 @@ public static class AddBotApplicationExtensions
     }
 
     /// <summary>
-    /// Adds user token client to the service collection.
+    /// Registers the <see cref="UserTokenClient"/> and its dependencies in the service collection.
     /// </summary>
-    /// <param name="services">service collection</param>
-    /// <param name="sectionName">Configuration Section name, defaults to AzureAD</param>
-    /// <returns></returns>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="sectionName">The configuration section name containing Azure AD settings. Defaults to "AzureAd".</param>
+    /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddUserTokenClient(this IServiceCollection services, string sectionName = "AzureAd")
     {
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);

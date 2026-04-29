@@ -67,7 +67,7 @@ public class CoreActivity
     [JsonPropertyName("serviceUrl")] public Uri? ServiceUrl { get; set; }
 
     /// <summary>
-    /// Reply to Id
+    /// Gets or sets the identifier of the activity this activity is a reply to.
     /// </summary>
     [JsonPropertyName("replyToId")] public string? ReplyToId { get; set; }
 
@@ -152,11 +152,11 @@ public class CoreActivity
         => JsonSerializer.Serialize(this, CoreActivityJsonContext.Default.CoreActivity);
 
     /// <summary>
-    /// Serializes the current activity to a JSON string using the specified JsonTypeInfo options.
+    /// Serializes the current activity to a JSON string using the specified <see cref="JsonTypeInfo{T}"/> for source-generated serialization.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="ops"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type of the activity to serialize. Must inherit from <see cref="CoreActivity"/>.</typeparam>
+    /// <param name="ops">The JSON type info that provides serialization metadata for type <typeparamref name="T"/>.</param>
+    /// <returns>A JSON string representation of the activity.</returns>
     public string ToJson<T>(JsonTypeInfo<T> ops) where T : CoreActivity
         => JsonSerializer.Serialize(this, ops);
 
@@ -189,13 +189,13 @@ public class CoreActivity
         => JsonSerializer.DeserializeAsync(stream, CoreActivityJsonContext.Default.CoreActivity, cancellationToken);
 
     /// <summary>
-    /// Deserializes a JSON stream into an instance of type T using the specified JsonTypeInfo options.
+    /// Asynchronously deserializes a JSON stream into an instance of type <typeparamref name="T"/> using the specified <see cref="JsonTypeInfo{T}"/> for source-generated serialization.
     /// </summary>
-    /// <typeparam name="T"></typeparam>
-    /// <param name="stream"></param>
-    /// <param name="ops"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <typeparam name="T">The type of the activity to deserialize. Must inherit from <see cref="CoreActivity"/>.</typeparam>
+    /// <param name="stream">The stream containing JSON data to deserialize.</param>
+    /// <param name="ops">The JSON type info that provides deserialization metadata for type <typeparamref name="T"/>.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A <see cref="ValueTask{T}"/> representing the asynchronous operation. The result contains the deserialized activity, or null if deserialization fails.</returns>
     public static ValueTask<T?> FromJsonStreamAsync<T>(Stream stream, JsonTypeInfo<T> ops, CancellationToken cancellationToken = default) where T : CoreActivity
         => JsonSerializer.DeserializeAsync(stream, ops, cancellationToken);
 
@@ -216,7 +216,7 @@ public class CoreActivity
     /// <summary>
     /// Creates a new instance of the <see cref="CoreActivityBuilder"/> to construct activity instances.
     /// </summary>
-    /// <returns></returns>
+    /// <returns>A new <see cref="CoreActivityBuilder"/> instance.</returns>
     public static CoreActivityBuilder CreateBuilder() => new();
 
 }

@@ -37,7 +37,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="channelId">The channel ID.</param>
     /// <param name="include">The optional include parameter.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
+    /// <returns>A task that represents the asynchronous operation. The result contains an array of token status results for each connection.</returns>
     public virtual async Task<GetTokenStatusResult[]> GetTokenStatusAsync(string userId, string channelId, string? include = null, CancellationToken cancellationToken = default)
     {
         Dictionary<string, string?> queryParams = new()
@@ -75,7 +75,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="channelId">The channel ID.</param>
     /// <param name="code">The optional code.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
+    /// <returns>A task that represents the asynchronous operation. The result contains the token, or null if no token is available.</returns>
     public virtual async Task<GetTokenResult?> GetTokenAsync(string userId, string connectionName, string channelId, string? code = null, CancellationToken cancellationToken = default)
     {
         Dictionary<string, string?> queryParams = new()
@@ -109,7 +109,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="channelId">The channel ID.</param>
     /// <param name="finalRedirect">The optional final redirect URL.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
+    /// <returns>A task that represents the asynchronous operation. The result contains the sign-in resource with the sign-in link and token exchange information.</returns>
     public virtual Task<GetSignInResourceResult> GetSignInResource(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
     {
         var tokenExchangeState = new
@@ -262,7 +262,7 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="channelId">The channel ID.</param>
     /// <param name="resourceUrls">The resource URLs.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns></returns>
+    /// <returns>A task that represents the asynchronous operation. The result contains a dictionary mapping resource URLs to their token results.</returns>
     public virtual async Task<IDictionary<string, GetTokenResult>> GetAadTokensAsync(string userId, string connectionName, string channelId, string[]? resourceUrls = null, CancellationToken cancellationToken = default)
     {
         var body = new

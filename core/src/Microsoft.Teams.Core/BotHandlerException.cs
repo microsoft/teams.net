@@ -49,7 +49,7 @@ public class BotHandlerException : Exception
     }
 
     /// <summary>
-    /// Accesses the bot activity associated with the exception.
+    /// Gets the bot activity associated with the exception, or null if no activity was provided.
     /// </summary>
     public CoreActivity? Activity { get; }
 }

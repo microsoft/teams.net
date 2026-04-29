@@ -25,10 +25,10 @@ public interface ITurnMiddleware
     /// <summary>
     /// Triggers the middleware to process an activity during a bot turn.
     /// </summary>
-    /// <param name="botApplication"></param>
-    /// <param name="activity"></param>
-    /// <param name="nextTurn"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="botApplication">The bot application processing the current turn.</param>
+    /// <param name="activity">The incoming activity to process.</param>
+    /// <param name="nextTurn">A delegate that invokes the next middleware in the pipeline. Call this to continue processing.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+    /// <returns>A task that represents the asynchronous middleware execution.</returns>
     Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default);
 }
