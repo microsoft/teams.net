@@ -145,7 +145,9 @@ internal sealed class BotConfig
         // Extract IConfiguration from service collection
         ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
         IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
-            ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
+            ?? throw new InvalidOperationException(
+                "IConfiguration must be registered in the service collection before calling BotConfig.Resolve. " +
+                "Ensure AddConfiguration() or WebApplication.CreateBuilder() has been called.");
 
         // Get logger using the helper method from AddBotApplicationExtensions
         ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));
