@@ -13,11 +13,11 @@ using Xunit.Abstractions;
 namespace Microsoft.Bot.Core.Tests
 {
     /// <summary>
-    /// Integration tests for CompatTeamsInfo static methods.
+    /// Integration tests for TeamsApiClient static methods.
     /// These tests verify that the compatibility layer correctly adapts
     /// Bot Framework TeamsInfo API to Teams Bot Core SDK.
     /// </summary>
-    public class CompatTeamsInfoTests
+    public class TeamsApiClientTests
     {
         private readonly ITestOutputHelper _outputHelper;
         private readonly string _serviceUrl = "https://smba.trafficmanager.net/amer/";
@@ -31,7 +31,7 @@ namespace Microsoft.Bot.Core.Tests
         private readonly string? _agenticAppId;
         private readonly string? _agenticUserId;
 
-        public CompatTeamsInfoTests(ITestOutputHelper outputHelper)
+        public TeamsApiClientTests(ITestOutputHelper outputHelper)
         {
             _outputHelper = outputHelper;
             // These tests require environment variables for live integration testing
@@ -50,7 +50,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetMemberAsync_WithValidUserId_ReturnsMember()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -58,7 +58,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    TeamsChannelAccount member = await CompatTeamsInfo.GetMemberAsync(
+                    TeamsChannelAccount member = await TeamsApiClient.GetMemberAsync(
                         turnContext,
                         _userId,
                         cancellationToken);
@@ -72,7 +72,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetMembersAsync_ReturnsMembers()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -81,7 +81,7 @@ namespace Microsoft.Bot.Core.Tests
                 async (turnContext, cancellationToken) =>
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                    var members = await CompatTeamsInfo.GetMembersAsync(turnContext, cancellationToken);
+                    var members = await TeamsApiClient.GetMembersAsync(turnContext, cancellationToken);
 #pragma warning restore CS0618 // Type or member is obsolete
 
                     Assert.NotNull(members);
@@ -93,7 +93,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetPagedMembersAsync_ReturnsPagedResult()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -101,7 +101,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var result = await CompatTeamsInfo.GetPagedMembersAsync(
+                    var result = await TeamsApiClient.GetPagedMembersAsync(
                         turnContext,
                         pageSize: 10,
                         cancellationToken: cancellationToken);
@@ -119,7 +119,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetTeamMemberAsync_WithValidUserId_ReturnsMember()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -127,7 +127,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var member = await CompatTeamsInfo.GetTeamMemberAsync(
+                    var member = await TeamsApiClient.GetTeamMemberAsync(
                         turnContext,
                         _userId,
                         _teamId,
@@ -142,7 +142,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetTeamMembersAsync_ReturnsTeamMembers()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -151,7 +151,7 @@ namespace Microsoft.Bot.Core.Tests
                 async (turnContext, cancellationToken) =>
                 {
 #pragma warning disable CS0618 // Type or member is obsolete
-                    var members = await CompatTeamsInfo.GetTeamMembersAsync(
+                    var members = await TeamsApiClient.GetTeamMembersAsync(
                         turnContext,
                         _teamId,
                         cancellationToken);
@@ -166,7 +166,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetPagedTeamMembersAsync_ReturnsPagedResult()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -174,7 +174,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var result = await CompatTeamsInfo.GetPagedTeamMembersAsync(
+                    var result = await TeamsApiClient.GetPagedTeamMembersAsync(
                         turnContext,
                         _teamId,
                         pageSize: 5,
@@ -189,7 +189,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip = "permissions needed")]
         public async Task GetMeetingInfoAsync_WithMeetingId_ReturnsMeetingInfo()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -197,7 +197,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var meetingInfo = await CompatTeamsInfo.GetMeetingInfoAsync(
+                    var meetingInfo = await TeamsApiClient.GetMeetingInfoAsync(
                         turnContext,
                         _meetingId,
                         cancellationToken);
@@ -211,7 +211,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetMeetingParticipantAsync_WithParticipantId_ReturnsParticipant()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -219,7 +219,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var participant = await CompatTeamsInfo.GetMeetingParticipantAsync(
+                    var participant = await TeamsApiClient.GetMeetingParticipantAsync(
                         turnContext,
                         _meetingId,
                         _userId,
@@ -235,7 +235,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip = "Permissions")]
         public async Task SendMeetingNotificationAsync_SendsNotification()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -271,7 +271,7 @@ namespace Microsoft.Bot.Core.Tests
                         }
                     };
 
-                    var response = await CompatTeamsInfo.SendMeetingNotificationAsync(
+                    var response = await TeamsApiClient.SendMeetingNotificationAsync(
                         turnContext,
                         notification,
                         _meetingId,
@@ -285,7 +285,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetTeamDetailsAsync_WithTeamId_ReturnsTeamDetails()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -293,7 +293,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var teamDetails = await CompatTeamsInfo.GetTeamDetailsAsync(
+                    var teamDetails = await TeamsApiClient.GetTeamDetailsAsync(
                         turnContext,
                         _teamId,
                         cancellationToken);
@@ -308,7 +308,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact]
         public async Task GetTeamChannelsAsync_WithTeamId_ReturnsChannels()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -316,7 +316,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var channels = await CompatTeamsInfo.GetTeamChannelsAsync(
+                    var channels = await TeamsApiClient.GetTeamChannelsAsync(
                         turnContext,
                         _teamId,
                         cancellationToken);
@@ -334,7 +334,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip = "Investigate with activity to send")]
         public async Task SendMessageToListOfUsersAsync_ReturnsOperationId()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -358,7 +358,7 @@ namespace Microsoft.Bot.Core.Tests
 
                     };
 
-                    var operationId = await CompatTeamsInfo.SendMessageToListOfUsersAsync(
+                    var operationId = await TeamsApiClient.SendMessageToListOfUsersAsync(
                         turnContext,
                         activity,
                         members,
@@ -374,7 +374,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip = "Investigate with activity to send")]
         public async Task SendMessageToListOfChannelsAsync_ReturnsOperationId()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -397,7 +397,7 @@ namespace Microsoft.Bot.Core.Tests
                         new TeamMember("6")
                     };
 
-                    var operationId = await CompatTeamsInfo.SendMessageToListOfChannelsAsync(
+                    var operationId = await TeamsApiClient.SendMessageToListOfChannelsAsync(
                         turnContext,
                         activity,
                         channels,
@@ -413,7 +413,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip ="Investigate with activity to send")]
         public async Task SendMessageToAllUsersInTeamAsync_ReturnsOperationId()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -427,7 +427,7 @@ namespace Microsoft.Bot.Core.Tests
                         Text = "Test message to team"
                     };
 
-                    var operationId = await CompatTeamsInfo.SendMessageToAllUsersInTeamAsync(
+                    var operationId = await TeamsApiClient.SendMessageToAllUsersInTeamAsync(
                         turnContext,
                         activity,
                         _teamId,
@@ -443,7 +443,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip = "Investigate with activity to send")]
         public async Task SendMessageToAllUsersInTenantAsync_ReturnsOperationId()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -457,7 +457,7 @@ namespace Microsoft.Bot.Core.Tests
                         Text = "Test message to tenant"
                     };
 
-                    var operationId = await CompatTeamsInfo.SendMessageToAllUsersInTenantAsync(
+                    var operationId = await TeamsApiClient.SendMessageToAllUsersInTenantAsync(
                         turnContext,
                         activity,
                         _tenantId,
@@ -472,7 +472,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip = "Not implemented")]
         public async Task SendMessageToTeamsChannelAsync_CreatesConversationAndSendsMessage()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
 
             await adapter.ContinueConversationAsync(
@@ -487,7 +487,7 @@ namespace Microsoft.Bot.Core.Tests
                     };
                     var botAppId = Environment.GetEnvironmentVariable("AzureAd__ClientId") ?? string.Empty;
 
-                    var result = await CompatTeamsInfo.SendMessageToTeamsChannelAsync(
+                    var result = await TeamsApiClient.SendMessageToTeamsChannelAsync(
                         turnContext,
                         activity,
                         _channelId,
@@ -504,7 +504,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip = "Internal Server Error")]
         public async Task GetOperationStateAsync_WithOperationId_ReturnsState()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
             var operationId = "amer_9e0e3ba8-c562-440f-ba9d-10603ee31837";
 
@@ -513,7 +513,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var state = await CompatTeamsInfo.GetOperationStateAsync(
+                    var state = await TeamsApiClient.GetOperationStateAsync(
                         turnContext,
                         operationId,
                         cancellationToken);
@@ -527,7 +527,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip = "Internal Server Error")]
         public async Task GetPagedFailedEntriesAsync_WithOperationId_ReturnsFailedEntries()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
             var operationId = "amer_9e0e3ba8-c562-440f-ba9d-10603ee31837";
 
@@ -536,7 +536,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    var response = await CompatTeamsInfo.GetPagedFailedEntriesAsync(
+                    var response = await TeamsApiClient.GetPagedFailedEntriesAsync(
                         turnContext,
                         operationId,
                         cancellationToken: cancellationToken);
@@ -549,7 +549,7 @@ namespace Microsoft.Bot.Core.Tests
         [Fact(Skip = "internal error")]
         public async Task CancelOperationAsync_WithOperationId_CancelsOperation()
         {
-            var adapter = InitializeCompatAdapter();
+            var adapter = InitializeTeamsBotFrameworkHttpAdapter();
             var conversationReference = CreateConversationReference(_conversationId);
             var operationId = "amer_9e0e3ba8-c562-440f-ba9d-10603ee31837";
 
@@ -558,7 +558,7 @@ namespace Microsoft.Bot.Core.Tests
                 conversationReference,
                 async (turnContext, cancellationToken) =>
                 {
-                    await CompatTeamsInfo.CancelOperationAsync(
+                    await TeamsApiClient.CancelOperationAsync(
                         turnContext,
                         operationId,
                         cancellationToken);
@@ -569,7 +569,7 @@ namespace Microsoft.Bot.Core.Tests
                 CancellationToken.None);
         }
 
-        private CompatAdapter InitializeCompatAdapter()
+        private TeamsBotFrameworkHttpAdapter InitializeTeamsBotFrameworkHttpAdapter()
         {
             IConfigurationBuilder builder = new ConfigurationBuilder()
                 .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
@@ -579,7 +579,7 @@ namespace Microsoft.Bot.Core.Tests
 
             ServiceCollection services = new();
             services.AddSingleton(configuration);
-            services.AddCompatAdapter();
+            services.AddTeamsBotFrameworkHttpAdapter();
             services.AddLogging((builder) => {
                 builder.AddXUnit(_outputHelper);
                 builder.AddFilter("System.Net", LogLevel.Warning);
@@ -588,8 +588,8 @@ namespace Microsoft.Bot.Core.Tests
             });
 
             var serviceProvider = services.BuildServiceProvider();
-            CompatAdapter compatAdapter = (CompatAdapter)serviceProvider.GetRequiredService<IBotFrameworkHttpAdapter>();
-            return compatAdapter;
+            TeamsBotFrameworkHttpAdapter adapter = (TeamsBotFrameworkHttpAdapter)serviceProvider.GetRequiredService<IBotFrameworkHttpAdapter>();
+            return adapter;
         }
 
         private ConversationReference CreateConversationReference(string conversationId)

@@ -19,24 +19,24 @@ public abstract class RouteBase
     /// <summary>
     /// Determines if the route matches the given activity
     /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
+    /// <param name="activity">The activity to check.</param>
+    /// <returns>True if the route matches the activity; otherwise, false.</returns>
     public abstract bool Matches(TeamsActivity activity);
 
     /// <summary>
     /// Invokes the route handler if the activity matches the expected type
     /// </summary>
-    /// <param name="ctx"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="ctx">The activity context.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public abstract Task InvokeRoute(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Invokes the route handler if the activity matches the expected type and returns a response
     /// </summary>
-    /// <param name="ctx"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="ctx">The activity context.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public abstract Task<InvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default);
 }
 
@@ -74,8 +74,8 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <summary>
     /// Determines if the route matches the given activity
     /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
+    /// <param name="activity">The activity to check.</param>
+    /// <returns>True if the route matches the activity; otherwise, false.</returns>
     public override bool Matches(TeamsActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -85,9 +85,9 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <summary>
     /// Invokes the route handler if the activity matches the expected type
     /// </summary>
-    /// <param name="ctx"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="ctx">The activity context.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public override async Task InvokeRoute(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
@@ -98,9 +98,9 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     /// <summary>
     /// Invokes the route handler if the activity matches the expected type and returns a response
     /// </summary>
-    /// <param name="ctx"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="ctx">The activity context.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public override async Task<InvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);

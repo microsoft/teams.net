@@ -42,7 +42,7 @@ public class SensitiveUsageEntity : OMessageEntity
     [JsonPropertyName("pattern")]
     public DefinedTerm? Pattern
     {
-        get => base.Properties.TryGetValue("pattern", out object? value) ? value as DefinedTerm : null;
+        get => base.Properties.Get<DefinedTerm>("pattern");
         set => base.Properties["pattern"] = value;
     }
 }

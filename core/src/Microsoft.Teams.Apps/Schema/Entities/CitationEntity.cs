@@ -116,6 +116,7 @@ public class CitationEntity : OMessageEntity
         OType = entity.OType;
         OContext = entity.OContext;
         Type = entity.Type;
+        Properties = new Core.Schema.ExtendedPropertiesDictionary(entity.Properties);
         AdditionalType = entity.AdditionalType != null
             ? new List<string>(entity.AdditionalType)
             : null;
@@ -133,7 +134,7 @@ public class CitationEntity : OMessageEntity
     [JsonPropertyName("citation")]
     public IList<CitationClaim>? Citation
     {
-        get => base.Properties.TryGetValue("citation", out object? value) ? value as IList<CitationClaim> : null;
+        get => base.Properties.Get<IList<CitationClaim>>("citation");
         set => base.Properties["citation"] = value;
     }
 }

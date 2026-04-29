@@ -9,9 +9,9 @@ namespace Microsoft.Teams.Apps.Handlers;
 /// <summary>
 /// Delegate for handling conversation update activities.
 /// </summary>
-/// <param name="context"></param>
-/// <param name="cancellationToken"></param>
-/// <returns></returns>
+/// <param name="context">The context for the conversation update activity.</param>
+/// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+/// <returns>A task representing the asynchronous operation.</returns>
 public delegate Task ConversationUpdateHandler(Context<ConversationUpdateActivity> context, CancellationToken cancellationToken = default);
 
 /// <summary>
@@ -25,9 +25,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnConversationUpdate(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -50,9 +50,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnMembersAdded(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -75,9 +75,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnMembersRemoved(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -102,9 +102,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnChannelCreated(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -127,9 +127,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnChannelDeleted(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -152,9 +152,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnChannelRenamed(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -174,9 +174,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel shared events.
     /// </summary>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnChannelShared(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -196,9 +196,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel unshared events.
     /// </summary>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnChannelUnshared(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -219,9 +219,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel member added events.
     /// </summary>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnChannelMemberAdded(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -241,9 +241,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel member removed events.
     /// </summary>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnChannelMemberRemoved(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -264,9 +264,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for channel restored events.
     /// </summary>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnChannelRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -292,9 +292,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTeamMemberAdded(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -317,9 +317,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTeamMemberRemoved(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -342,9 +342,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTeamArchived(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -367,9 +367,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTeamDeleted(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -392,9 +392,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTeamRenamed(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -417,9 +417,9 @@ public static class ConversationUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTeamUnarchived(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -439,9 +439,9 @@ public static class ConversationUpdateExtensions
     /*
     /// Registers a handler for team restored events.
     /// </summary>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTeamRestored(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -461,9 +461,9 @@ public static class ConversationUpdateExtensions
     /// <summary>
     /// Registers a handler for team hard deleted events.
     /// </summary>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnTeamHardDeleted(this TeamsBotApplication app, ConversationUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));

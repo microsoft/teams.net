@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Schema;
@@ -48,7 +49,7 @@ public sealed class TeamsStreamingWriter
     private int _sequence;
     private bool _finalized;
     private bool _cancelled;
-    private string _accumulated = string.Empty;
+    private readonly System.Text.StringBuilder _accumulated = new();
     private DateTime _lastChunkSent = DateTime.MinValue;
 
     internal TeamsStreamingWriter(ConversationClient client, TeamsActivity reference, ILogger? logger = null)
@@ -97,7 +98,7 @@ public sealed class TeamsStreamingWriter
         if (_cancelled)
             return;
 
-        _accumulated += chunk;
+        _accumulated.Append(chunk);
 
         if (DateTime.UtcNow - _lastChunkSent < _minChunkInterval)
         {
@@ -109,11 +110,13 @@ public sealed class TeamsStreamingWriter
         try
         {
             _logger.LogDebug("Sending streaming chunk (sequence {Sequence}, accumulated {Length} chars).", _sequence, _accumulated.Length);
-            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated.ToString(), StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
             _streamId ??= response?.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
-        catch (HttpRequestException ex) when (ex.Message.Contains("Content stream was cancelled by user", StringComparison.OrdinalIgnoreCase))
+        catch (HttpRequestException ex) when (
+            ex.StatusCode is HttpStatusCode.Gone or HttpStatusCode.NoContent
+            || ex.Message.Contains("Content stream was cancelled", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogWarning("Stream cancelled by user (streamId '{StreamId}').", _streamId);
             _cancelled = true;
@@ -136,11 +139,11 @@ public sealed class TeamsStreamingWriter
         if (_cancelled)
             return;
 
-        if (string.IsNullOrEmpty(_accumulated) && (attachments == null || attachments.Count == 0))
+        if (_accumulated.Length == 0 && (attachments == null || attachments.Count == 0))
             throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
 
         _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).", _streamId, _accumulated.Length, _sequence);
-        await _client.SendActivityAsync(BuildActivity(_accumulated, StreamType.Final, attachments, entities, feedbackEnabled), cancellationToken: cancellationToken).ConfigureAwait(false);
+        await _client.SendActivityAsync(BuildActivity(_accumulated.ToString(), StreamType.Final, attachments, entities, feedbackEnabled), cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _finalized = true;
         _logger.LogDebug("Stream finalized (streamId '{StreamId}').", _streamId);

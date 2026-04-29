@@ -453,8 +453,8 @@ services.AddTeamsBotApplication(configuration);
 ```mermaid
 graph TB
     subgraph "Compatibility Layer"
-        CompatAdapter[CompatAdapter]
-        CompatBotAdapter[CompatBotAdapter]
+        TeamsBotFrameworkHttpAdapter[TeamsBotFrameworkHttpAdapter]
+        TeamsBotAdapter[TeamsBotAdapter]
         CompatMiddleware[CompatAdapterMiddleware]
     end
 
@@ -465,8 +465,8 @@ graph TB
     end
 
     subgraph "Static Helpers"
-        CompatTeamsInfo[CompatTeamsInfo]
-        CompatActivity[CompatActivity Extensions]
+        TeamsApiClient[TeamsApiClient]
+        ActivitySchemaMapper[ActivitySchemaMapper Extensions]
     end
 
     subgraph "Bot Framework v4"
@@ -483,26 +483,26 @@ graph TB
         TeamsAPI[TeamsApiClient]
     end
 
-    CompatAdapter -.implements.-> BFAdapter
+    TeamsBotFrameworkHttpAdapter -.implements.-> BFAdapter
     CompatMiddleware -.implements.-> ITurnMiddleware
 
-    CompatAdapter --> TeamsBotApp
-    CompatAdapter --> CompatBotAdapter
-    CompatAdapter --> CompatMiddleware
+    TeamsBotFrameworkHttpAdapter --> TeamsBotApp
+    TeamsBotFrameworkHttpAdapter --> TeamsBotAdapter
+    TeamsBotFrameworkHttpAdapter --> CompatMiddleware
 
     CompatConnector --> CompatConversations
     CompatConversations --> ConvClient
     CompatUserToken --> TokenClient
 
-    CompatTeamsInfo --> ConvClient
-    CompatTeamsInfo --> TeamsAPI
-    CompatTeamsInfo --> CompatActivity
+    TeamsApiClient --> ConvClient
+    TeamsApiClient --> TeamsAPI
+    TeamsApiClient --> ActivitySchemaMapper
 
     BFBot --> TurnContext
     TurnContext --> CompatConnector
 
-    style CompatAdapter fill:#ff2d55
-    style CompatTeamsInfo fill:#ff2d55
+    style TeamsBotFrameworkHttpAdapter fill:#ff2d55
+    style TeamsApiClient fill:#ff2d55
 ```
 
 ### Core Patterns
@@ -514,7 +514,7 @@ Bridges Bot Framework v4 interfaces to Teams SDK implementations.
 ```mermaid
 sequenceDiagram
     participant BF as Bot Framework Bot (IBot)
-    participant Adapter as CompatAdapter
+    participant Adapter as TeamsBotFrameworkHttpAdapter
     participant Core as TeamsBotApplication
     participant Handler as User Handler
 
@@ -587,8 +587,8 @@ graph LR
     end
 
     subgraph "Compatibility Layer"
-        CompatTeamsInfo[CompatTeamsInfo static class]
-        Conversions[CompatActivity Extensions]
+        TeamsApiClient[TeamsApiClient static class]
+        Conversions[ActivitySchemaMapper Extensions]
     end
 
     subgraph "Core SDK"
@@ -596,16 +596,16 @@ graph LR
         TeamsAPI[TeamsApiClient]
     end
 
-    TeamsInfo -.replicated by.-> CompatTeamsInfo
+    TeamsInfo -.replicated by.-> TeamsApiClient
 
-    CompatTeamsInfo --> ConvClient
-    CompatTeamsInfo --> TeamsAPI
-    CompatTeamsInfo --> Conversions
+    TeamsApiClient --> ConvClient
+    TeamsApiClient --> TeamsAPI
+    TeamsApiClient --> Conversions
 
     Conversions --> JSONRoundTrip["JSON Round-Trip Serialization"]
     Conversions --> DirectMap["Direct Property Mapping"]
 
-    style CompatTeamsInfo fill:#ff9500
+    style TeamsApiClient fill:#ff9500
 ```
 
 **Key Methods** (19 total):
@@ -673,14 +673,14 @@ public static TeamDetails ToCompatTeamDetails(this Apps.TeamDetails teamDetails)
 
 | Component | Purpose | Pattern |
 |-----------|---------|---------|
-| `CompatAdapter` | Main adapter implementing Bot Framework interface | Adapter |
-| `CompatBotAdapter` | Base adapter for turn context creation | Adapter |
+| `TeamsBotFrameworkHttpAdapter` | Main adapter implementing Bot Framework interface | Adapter |
+| `TeamsBotAdapter` | Base adapter for turn context creation | Adapter |
 | `CompatConnectorClient` | Wraps connector client functionality | Wrapper |
 | `CompatConversations` | Wraps conversation operations | Wrapper |
 | `CompatUserTokenClient` | Wraps token client functionality | Wrapper |
 | `CompatAdapterMiddleware` | Bridges middleware systems | Bridge |
-| `CompatTeamsInfo` | Static helper methods for Teams operations | Static Helper |
-| `CompatActivity` | Extension methods for model conversion | Extension Methods |
+| `TeamsApiClient` | Static helper methods for Teams operations | Static Helper |
+| `ActivitySchemaMapper` | Extension methods for model conversion | Extension Methods |
 
 ### Migration Path
 
@@ -688,8 +688,8 @@ public static TeamDetails ToCompatTeamDetails(this Apps.TeamDetails teamDetails)
 graph LR
     subgraph Phase1["Phase 1: Drop-in Replacement"]
         BFBot1[Existing Bot Framework Bot]
-        AddCompat1[services.AddCompatAdapter]
-        BFBot1 --> AddCompat1
+        AddAdapter1[services.AddTeamsBotFrameworkHttpAdapter]
+        BFBot1 --> AddAdapter1
     end
 
     subgraph Phase2["Phase 2: Incremental Migration"]
@@ -708,7 +708,7 @@ graph LR
         CoreBot --> Handlers
     end
 
-    AddCompat1 -.Next Phase.-> BFBot2
+    AddAdapter1 -.Next Phase.-> BFBot2
     KeepBF -.Next Phase.-> CoreBot
 
     style Phase1 fill:#ff3b30
@@ -719,10 +719,10 @@ graph LR
 ### Configuration
 
 ```csharp
-services.AddCompatAdapter(configuration);
+services.AddTeamsBotFrameworkHttpAdapter(configuration);
 // Registers everything from Apps plus:
-// - CompatAdapter as IBotFrameworkHttpAdapter (Singleton)
-// - CompatBotAdapter (Singleton)
+// - TeamsBotFrameworkHttpAdapter as IBotFrameworkHttpAdapter (Singleton)
+// - TeamsBotAdapter (Singleton)
 ```
 
 ---
@@ -753,8 +753,8 @@ graph TB
     end
 
     subgraph "Compat Registrations"
-        Adapter[CompatAdapter]
-        BotAdapter[CompatBotAdapter]
+        Adapter[TeamsBotFrameworkHttpAdapter]
+        BotAdapter[TeamsBotAdapter]
     end
 
     Services --> BotApp

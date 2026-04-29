@@ -9,9 +9,9 @@ namespace Microsoft.Teams.Apps.Handlers;
 /// <summary>
 /// Delegate for handling installation update activities.
 /// </summary>
-/// <param name="context"></param>
-/// <param name="cancellationToken"></param>
-/// <returns></returns>
+/// <param name="context">The context for the installation update activity.</param>
+/// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+/// <returns>A task representing the asynchronous operation.</returns>
 public delegate Task InstallUpdateHandler(Context<InstallUpdateActivity> context, CancellationToken cancellationToken = default);
 
 /// <summary>
@@ -25,9 +25,9 @@ public static class InstallUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnInstallUpdate(this TeamsBotApplication app, InstallUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -50,9 +50,9 @@ public static class InstallUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnInstall(this TeamsBotApplication app, InstallUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -75,9 +75,9 @@ public static class InstallUpdateExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnUnInstall(this TeamsBotApplication app, InstallUpdateHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));

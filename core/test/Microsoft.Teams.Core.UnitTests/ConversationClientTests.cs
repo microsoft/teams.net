@@ -67,7 +67,7 @@ public class ConversationClientTests
             ServiceUrl = new Uri("https://test.service.url/")
         };
 
-        await Assert.ThrowsAsync<ArgumentException>(() =>
+        await Assert.ThrowsAsync<ArgumentNullException>(() =>
             conversationClient.SendActivityAsync(activity));
     }
 

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
@@ -9,7 +8,8 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
-using static Microsoft.Teams.Apps.BotBuilder.CompatTeamsInfoModels;
+using Newtonsoft.Json;
+using static Microsoft.Teams.Apps.BotBuilder.TeamsApiClientModels;
 using BotFrameworkTeams = Microsoft.Bot.Schema.Teams;
 using CustomHeaders = System.Collections.Generic.Dictionary<string, string>;
 
@@ -19,7 +19,7 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 /// Provides utility methods for the events and interactions that occur within Microsoft Teams.
 /// This class adapts the Teams Bot Core SDK to the Bot Framework v4 SDK TeamsInfo API.
 /// </summary>
-public static class CompatTeamsInfo
+public static class TeamsApiClient
 {
     internal static CustomHeaders DefaultCustomHeaders { get; } = [];
 
@@ -47,7 +47,7 @@ public static class CompatTeamsInfo
 
     private static AgenticIdentity GetIdentity(ITurnContext turnContext)
     {
-        CoreActivity coreActivity = turnContext.Activity.FromCompatActivity();
+        CoreActivity coreActivity = turnContext.Activity.FromBotFrameworkActivity();
         return AgenticIdentity.FromAccount(coreActivity.From) ?? new AgenticIdentity();
     }
 
@@ -356,7 +356,7 @@ public static class CompatTeamsInfo
         AgenticIdentity agenticIdentity = GetIdentity(turnContext);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}/notification";
-        string body = JsonSerializer.Serialize(notification);
+        string body = JsonConvert.SerializeObject(notification);
 
         return (await client.BotHttpClient.SendAsync<MeetingNotificationResponse>(
             HttpMethod.Post,
@@ -470,7 +470,7 @@ public static class CompatTeamsInfo
             Activity = activity,
             TenantId = tenantId
         };
-        string body = JsonSerializer.Serialize(request);
+        string body = JsonConvert.SerializeObject(request);
 
         return (await client.BotHttpClient.SendAsync<string>(
             HttpMethod.Post,
@@ -511,7 +511,7 @@ public static class CompatTeamsInfo
             Activity = activity,
             TenantId = tenantId
         };
-        string body = JsonSerializer.Serialize(request);
+        string body = JsonConvert.SerializeObject(request);
 
 
         return (await client.BotHttpClient.SendAsync<string>(
@@ -546,7 +546,9 @@ public static class CompatTeamsInfo
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity agenticIdentity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        if (activity is not Activity teamActivity)
+            throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity));
+        CoreActivity coreActivity = teamActivity.FromBotFrameworkActivity();
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/team/";
         SendMessageToTeamRequest request = new()
@@ -555,7 +557,7 @@ public static class CompatTeamsInfo
             TeamId = teamId,
             TenantId = tenantId
         };
-        string body = JsonSerializer.Serialize(request);
+        string body = JsonConvert.SerializeObject(request);
 
 
         return (await client.BotHttpClient.SendAsync<string>(
@@ -587,7 +589,9 @@ public static class CompatTeamsInfo
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity agenticIdentity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        if (activity is not Activity tenantActivity)
+            throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity));
+        CoreActivity coreActivity = tenantActivity.FromBotFrameworkActivity();
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/tenant/";
         SendMessageToTenantRequest request = new()
@@ -595,7 +599,7 @@ public static class CompatTeamsInfo
             Activity = activity,
             TenantId = tenantId
         };
-        string body = JsonSerializer.Serialize(request);
+        string body = JsonConvert.SerializeObject(request);
 
 
         return (await client.BotHttpClient.SendAsync<string>(
@@ -639,7 +643,7 @@ public static class CompatTeamsInfo
         {
             IsGroup = true,
             ChannelData = new BotFrameworkTeams.TeamsChannelData { Channel = new BotFrameworkTeams.ChannelInfo { Id = teamsChannelId } },
-            Activity = (Activity)activity,
+            Activity = activity as Activity ?? throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity)),
         };
 
         await turnContext.Adapter.CreateConversationAsync(

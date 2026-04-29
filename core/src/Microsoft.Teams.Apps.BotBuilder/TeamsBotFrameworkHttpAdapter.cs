@@ -20,18 +20,19 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 /// The adapter allows registration of middleware and error handling delegates, and supports processing HTTP requests
 /// and continuing conversations. Thread safety is not guaranteed; instances should not be shared across concurrent
 /// requests.</remarks>
-public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
+public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAdapter
 {
+    private static readonly AsyncLocal<Func<CoreActivity, CancellationToken, Task>?> _activityCallback = new();
     private readonly BotApplication _teamsBotApplication;
     private readonly ILogger? _logger;
 
     /// <summary>
-    /// Creates a new instance of the <see cref="CompatAdapter"/> class.
+    /// Creates a new instance of the <see cref="TeamsBotFrameworkHttpAdapter"/> class.
     /// </summary>
     /// <param name="teamsBotApplication">The Teams bot application instance.</param>
     /// <param name="httpContextAccessor">The HTTP context accessor.</param>
     /// <param name="logger">The logger instance.</param>
-    public CompatAdapter(
+    public TeamsBotFrameworkHttpAdapter(
         BotApplication teamsBotApplication,
         IHttpContextAccessor? httpContextAccessor = null,
         ILogger? logger = null)
@@ -39,6 +40,11 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
     {
         _teamsBotApplication = teamsBotApplication;
         _logger = logger;
+
+        // Set the OnActivity handler once to a dispatcher that delegates to the
+        // AsyncLocal callback, isolating each concurrent request's handler.
+        _teamsBotApplication.OnActivity = (activity, ct) =>
+            _activityCallback.Value?.Invoke(activity, ct) ?? Task.CompletedTask;
     }
 
     /// <summary>
@@ -56,10 +62,10 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
         ArgumentNullException.ThrowIfNull(bot);
 
         CoreActivity? coreActivity = null;
-        _teamsBotApplication.OnActivity = async (activity, ct) =>
+        _activityCallback.Value = async (activity, ct) =>
         {
             coreActivity = activity;
-            TurnContext turnContext = new(this, activity.ToCompatActivity());
+            TurnContext turnContext = new(this, activity.ToBotFrameworkActivity());
             turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient)
             {
@@ -81,9 +87,9 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
             {
                 if (ex is BotHandlerException aex)
                 {
-                    _logger?.LogError(ex, "Error processing activity: Id={Id}. Delegating to OnTurnError.", aex.Activity?.Id);
+                    _logger?.ActivityProcessingErrorDelegating(ex, aex.Activity?.Id);
                     coreActivity = aex.Activity;
-                    using TurnContext turnContext = new(this, coreActivity!.ToCompatActivity());
+                    using TurnContext turnContext = new(this, coreActivity!.ToBotFrameworkActivity());
                     await OnTurnError(turnContext, ex).ConfigureAwait(false);
                 }
                 else
@@ -95,6 +101,10 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
             {
                 throw;
             }
+        }
+        finally
+        {
+            _activityCallback.Value = null;
         }
     }
 

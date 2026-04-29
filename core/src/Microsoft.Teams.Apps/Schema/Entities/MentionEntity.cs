@@ -79,7 +79,7 @@ public class MentionEntity : Entity
     [JsonPropertyName("mentioned")]
     public ConversationAccount? Mentioned
     {
-        get => base.Properties.TryGetValue("mentioned", out object? value) ? value as ConversationAccount : null;
+        get => base.Properties.Get<ConversationAccount>("mentioned");
         set => base.Properties["mentioned"] = value;
     }
 

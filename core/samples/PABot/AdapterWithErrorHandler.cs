@@ -10,7 +10,7 @@ using Microsoft.Teams.Core;
 
 namespace PABot
 {
-    public class AdapterWithErrorHandler : CompatAdapter
+    public class AdapterWithErrorHandler : TeamsBotFrameworkHttpAdapter
     {
         public AdapterWithErrorHandler(
             BotApplication teamsBotApp,

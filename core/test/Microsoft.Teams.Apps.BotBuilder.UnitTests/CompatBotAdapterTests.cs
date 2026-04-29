@@ -13,14 +13,14 @@ using Moq;
 
 namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
-    public class CompatBotAdapterTests
+    public class TeamsBotAdapterTests
     {
         [Fact]
         public async Task DeleteActivityAsync_UsesConversationReferenceValues()
         {
             // Arrange
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
-            CompatBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
+            TeamsBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
 
             ConversationReference reference = new()
             {
@@ -52,7 +52,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             // Arrange
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
-            CompatBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
+            TeamsBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
 
             ConversationReference reference = new()
             {
@@ -84,7 +84,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             // Arrange
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
-            CompatBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
+            TeamsBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
 
             ConversationReference reference = new()
             {
@@ -106,7 +106,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             // Arrange
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
-            CompatBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
+            TeamsBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
 
             ConversationReference reference = new()
             {
@@ -128,7 +128,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             // Arrange
             Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
-            CompatBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
+            TeamsBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
 
             ConversationReference reference = new()
             {
@@ -156,7 +156,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new SendActivityResponse { Id = "sent-123" });
 
-            CompatBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
+            TeamsBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
 
             Activity activity = new()
             {
@@ -198,7 +198,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                     It.IsAny<CancellationToken>()))
                 .ReturnsAsync(new UpdateActivityResponse { Id = "updated-123" });
 
-            CompatBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
+            TeamsBotAdapter adapter = CreateCompatBotAdapter(mockConversationClient.Object);
 
             Activity activity = new()
             {
@@ -277,7 +277,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             return mock;
         }
 
-        private static CompatBotAdapter CreateCompatBotAdapter(ConversationClient conversationClient)
+        private static TeamsBotAdapter CreateCompatBotAdapter(ConversationClient conversationClient)
         {
             Mock<UserTokenClient> mockUserTokenClient = new(
                 new HttpClient(),
@@ -296,18 +296,18 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<TeamsBotApplication>.Instance);
 
-            return new CompatBotAdapter(
+            return new TeamsBotAdapter(
                 teamsBotApplication,
                 Mock.Of<IHttpContextAccessor>(),
-                NullLogger<CompatBotAdapter>.Instance);
+                NullLogger<TeamsBotAdapter>.Instance);
         }
 
-        private static CompatBotAdapter CreateCompatBotAdapter(TeamsBotApplication teamsBotApplication)
+        private static TeamsBotAdapter CreateCompatBotAdapter(TeamsBotApplication teamsBotApplication)
         {
-            return new CompatBotAdapter(
+            return new TeamsBotAdapter(
                 teamsBotApplication,
                 Mock.Of<IHttpContextAccessor>(),
-                NullLogger<CompatBotAdapter>.Instance);
+                NullLogger<TeamsBotAdapter>.Instance);
         }
 
         private static ITurnContext CreateMockTurnContext(string? serviceUrl)

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text;
+using System.Text.Json;
 using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
@@ -13,14 +14,22 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 /// <summary>
 /// Extension methods for converting between Bot Framework Activity and CoreActivity/TeamsActivity.
 /// </summary>
-public static class CompatActivity
+public static class ActivitySchemaMapper
 {
+    private static string? GetStringValue(object? value) => value switch
+    {
+        null => null,
+        string s => s,
+        JsonElement { ValueKind: JsonValueKind.String } el => el.GetString(),
+        JsonElement el => el.GetRawText(),
+        _ => value.ToString()
+    };
     /// <summary>
-    /// Converts a CoreActivity to a Bot Framework Activity.
+    /// Converts a <see cref="CoreActivity"/> to a Bot Framework <see cref="Activity"/>.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
-    public static Activity ToCompatActivity(this CoreActivity activity)
+    /// <param name="activity">The core activity to convert.</param>
+    /// <returns>The equivalent Bot Framework activity.</returns>
+    public static Activity ToBotFrameworkActivity(this CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         using JsonTextReader reader = new(new StringReader(activity.ToJson()));
@@ -28,11 +37,11 @@ public static class CompatActivity
     }
 
     /// <summary>
-    /// Converts a Bot Framework Activity to a TeamsActivity.
+    /// Converts a Bot Framework <see cref="Activity"/> to a <see cref="CoreActivity"/>.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
-    public static CoreActivity FromCompatActivity(this Activity activity)
+    /// <param name="activity">The Bot Framework activity to convert.</param>
+    /// <returns>The equivalent core activity.</returns>
+    public static CoreActivity FromBotFrameworkActivity(this Activity activity)
     {
         StringBuilder sb = new();
         using StringWriter stringWriter = new(sb);
@@ -44,10 +53,10 @@ public static class CompatActivity
 
 
     /// <summary>
-    /// Converts a ConversationAccount to a ChannelAccount.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a Bot Framework <see cref="Microsoft.Bot.Schema.ChannelAccount"/>.
     /// </summary>
-    /// <param name="account"></param>
-    /// <returns></returns>
+    /// <param name="account">The conversation account to convert.</param>
+    /// <returns>The equivalent channel account.</returns>
     public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
@@ -63,47 +72,47 @@ public static class CompatActivity
 
         if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
         {
-            channelAccount.AadObjectId = aadObjectId?.ToString();
+            channelAccount.AadObjectId = GetStringValue(aadObjectId);
         }
 
         if (account.Properties.TryGetValue("userRole", out object? userRole))
         {
-            channelAccount.Role = userRole?.ToString();
+            channelAccount.Role = GetStringValue(userRole);
         }
 
         if (account.Properties.TryGetValue("userPrincipalName", out object? userPrincipalName))
         {
-            channelAccount.Properties.Add("userPrincipalName", userPrincipalName?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("userPrincipalName", GetStringValue(userPrincipalName) ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("givenName", out object? givenName))
         {
-            channelAccount.Properties.Add("givenName", givenName?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("givenName", GetStringValue(givenName) ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("surname", out object? surname))
         {
-            channelAccount.Properties.Add("surname", surname?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("surname", GetStringValue(surname) ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("email", out object? email))
         {
-            channelAccount.Properties.Add("email", email?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("email", GetStringValue(email) ?? string.Empty);
         }
 
         if (account.Properties.TryGetValue("tenantId", out object? tenantId))
         {
-            channelAccount.Properties.Add("tenantId", tenantId?.ToString() ?? string.Empty);
+            channelAccount.Properties.Add("tenantId", GetStringValue(tenantId) ?? string.Empty);
         }
 
         return channelAccount;
     }
 
     /// <summary>
-    /// Converts a TeamsConversationAccount to a TeamsChannelAccount.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/> with all known properties.
     /// </summary>
-    /// <param name="account"></param>
-    /// <returns></returns>
+    /// <param name="account">The conversation account to convert.</param>
+    /// <returns>The equivalent Teams channel account.</returns>
     public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount2(this Microsoft.Teams.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
@@ -112,13 +121,13 @@ public static class CompatActivity
         {
             Id = account.Id,
             Name = account.Name,
-            AadObjectId = account.Properties["aadObjectId"]?.ToString() ?? string.Empty,
-            Email = account.Properties["email"]?.ToString() ?? string.Empty,
-            GivenName = account.Properties["givenName"]?.ToString() ?? string.Empty,
-            Surname = account.Properties["surname"]?.ToString() ?? string.Empty,
-            UserPrincipalName = account.Properties["userPrincipalName"]?.ToString() ?? string.Empty,
-            UserRole = account.Properties["userRole"]?.ToString() ?? string.Empty,
-            TenantId = account.Properties["tenantId"]?.ToString() ?? string.Empty
+            AadObjectId = GetStringValue(account.Properties["aadObjectId"]) ?? string.Empty,
+            Email = GetStringValue(account.Properties["email"]) ?? string.Empty,
+            GivenName = GetStringValue(account.Properties["givenName"]) ?? string.Empty,
+            Surname = GetStringValue(account.Properties["surname"]) ?? string.Empty,
+            UserPrincipalName = GetStringValue(account.Properties["userPrincipalName"]) ?? string.Empty,
+            UserRole = GetStringValue(account.Properties["userRole"]) ?? string.Empty,
+            TenantId = GetStringValue(account.Properties["tenantId"]) ?? string.Empty
         };
     }
 
@@ -126,8 +135,8 @@ public static class CompatActivity
     /// <summary>
     /// Converts a Core PagedMembersResult to a Bot Framework TeamsPagedMembersResult.
     /// </summary>
-    /// <param name="pagedMembers"></param>
-    /// <returns></returns>
+    /// <param name="pagedMembers">The paged members result to convert.</param>
+    /// <returns>The equivalent Bot Framework paged members result.</returns>
     public static Microsoft.Bot.Schema.Teams.TeamsPagedMembersResult ToCompatTeamsPagedMembersResult(this Microsoft.Teams.Core.PagedMembersResult pagedMembers)
     {
         ArgumentNullException.ThrowIfNull(pagedMembers);
@@ -140,10 +149,10 @@ public static class CompatActivity
     }
 
     /// <summary>
-    /// Converts a ConversationAccount to a TeamsChannelAccount.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/>.
     /// </summary>
-    /// <param name="account"></param>
-    /// <returns></returns>
+    /// <param name="account">The conversation account to convert.</param>
+    /// <returns>The equivalent Teams channel account.</returns>
     public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
@@ -157,32 +166,32 @@ public static class CompatActivity
         // Extract properties from Properties dictionary
         if (account.Properties.TryGetValue("aadObjectId", out object? aadObjectId))
         {
-            teamsChannelAccount.AadObjectId = aadObjectId?.ToString();
+            teamsChannelAccount.AadObjectId = GetStringValue(aadObjectId);
         }
 
         if (account.Properties.TryGetValue("userPrincipalName", out object? userPrincipalName))
         {
-            teamsChannelAccount.UserPrincipalName = userPrincipalName?.ToString();
+            teamsChannelAccount.UserPrincipalName = GetStringValue(userPrincipalName);
         }
 
         if (account.Properties.TryGetValue("givenName", out object? givenName))
         {
-            teamsChannelAccount.GivenName = givenName?.ToString();
+            teamsChannelAccount.GivenName = GetStringValue(givenName);
         }
 
         if (account.Properties.TryGetValue("surname", out object? surname))
         {
-            teamsChannelAccount.Surname = surname?.ToString();
+            teamsChannelAccount.Surname = GetStringValue(surname);
         }
 
         if (account.Properties.TryGetValue("email", out object? email))
         {
-            teamsChannelAccount.Email = email?.ToString();
+            teamsChannelAccount.Email = GetStringValue(email);
         }
 
         if (account.Properties.TryGetValue("tenantId", out object? tenantId))
         {
-            teamsChannelAccount.Properties.Add("tenantId", tenantId?.ToString() ?? string.Empty);
+            teamsChannelAccount.Properties.Add("tenantId", GetStringValue(tenantId) ?? string.Empty);
         }
 
         return teamsChannelAccount;
@@ -223,7 +232,7 @@ public static class CompatActivity
             Bot = parameters.Bot?.FromCompatChannelAccount(),
             Members = parameters.Members?.Select(m => m.FromCompatChannelAccount()).ToList(),
             TopicName = parameters.TopicName,
-            Activity = parameters.Activity?.FromCompatActivity(),
+            Activity = parameters.Activity?.FromBotFrameworkActivity(),
             ChannelData = parameters.ChannelData,
             TenantId = parameters.TenantId,
         };

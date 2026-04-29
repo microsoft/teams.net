@@ -7,7 +7,7 @@ using Microsoft.Bot.Schema.Teams;
 
 namespace Microsoft.Teams.Apps.BotBuilder;
 
-internal static class CompatTeamsInfoModels
+internal static class TeamsApiClientModels
 {
     /// <summary>
     /// Gets the TeamsMeetingInfo object from the current activity.

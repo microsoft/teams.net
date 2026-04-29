@@ -12,7 +12,7 @@ using Microsoft.Teams.Core.Hosting;
 
 namespace PABot
 {
-    internal static class InitCompatAdapter
+    internal static class InitTeamsBotAdapter
     {
         private const string DefaultScope = "https://api.botframework.com/.default";
         private const string AdapterKeyName = "BotAdapter";

@@ -218,10 +218,8 @@ public static class AddBotApplicationExtensions
             return loggerFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions));
         }
 
-        // Otherwise, build a temporary service provider to create the logger
-        using ServiceProvider tempProvider = services.BuildServiceProvider();
-        ILoggerFactory? tempFactory = tempProvider.GetService<ILoggerFactory>();
-        return (tempFactory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions)))
-            ?? Extensions.Logging.Abstractions.NullLogger.Instance;
+        // Logger factory not available as a direct instance; return NullLogger
+        // to avoid building a throwaway ServiceProvider during DI configuration.
+        return Extensions.Logging.Abstractions.NullLogger.Instance;
     }
 }

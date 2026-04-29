@@ -12,7 +12,7 @@ using Microsoft.Teams.Core;
 // using Microsoft.Bot.Connector.Authentication;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-builder.AddCompatAdapter();
+builder.AddTeamsBotFrameworkHttpAdapter();
 
 //builder.Services.AddSingleton<BotFrameworkAuthentication, ConfigurationBotFrameworkAuthentication>();
 //builder.Services.AddSingleton<IBotFrameworkHttpAdapter>(provider => 
@@ -28,7 +28,7 @@ builder.Services.AddTransient<IBot, EchoBot>();
 
 WebApplication app = builder.Build();
 
-CompatAdapter compatAdapter = (CompatAdapter)app.Services.GetRequiredService<IBotFrameworkHttpAdapter>();
+TeamsBotFrameworkHttpAdapter compatAdapter = (TeamsBotFrameworkHttpAdapter)app.Services.GetRequiredService<IBotFrameworkHttpAdapter>();
 compatAdapter.Use(new MyCompatMiddleware());
 compatAdapter.Use(new MyCompatMiddleware());
 

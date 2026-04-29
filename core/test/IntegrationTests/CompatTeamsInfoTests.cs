@@ -15,16 +15,16 @@ using CoreConversationAccount = Microsoft.Teams.Core.Schema.ConversationAccount;
 namespace IntegrationTests;
 
 /// <summary>
-/// Integration tests for <see cref="CompatTeamsInfo"/> static methods making real API calls.
-/// These tests verify that CompatTeamsInfo correctly bridges Bot Framework ITurnContext
+/// Integration tests for <see cref="TeamsApiClient"/> static methods making real API calls.
+/// These tests verify that TeamsApiClient correctly bridges Bot Framework ITurnContext
 /// to the underlying ConversationClient and ApiClient, producing valid compat types.
 /// </summary>
-public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
+public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 {
     private readonly IntegrationTestFixture _f;
     private readonly ITestOutputHelper _output;
 
-    public CompatTeamsInfoTests(IntegrationTestFixture fixture, ITestOutputHelper output)
+    public TeamsApiClientTests(IntegrationTestFixture fixture, ITestOutputHelper output)
     {
         _f = fixture;
         _f.OutputHelper = output;
@@ -45,7 +45,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     }
 
     /// <summary>
-    /// Creates an ITurnContext wired to real clients, simulating what CompatAdapter does.
+    /// Creates an ITurnContext wired to real clients, simulating what TeamsBotFrameworkHttpAdapter does.
     /// </summary>
     private TurnContext CreateTurnContext(
         string? conversationId = null,
@@ -89,7 +89,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         SimpleAdapter adapter = new();
         TurnContext turnContext = new(adapter, activity);
 
-        // Wire up CompatConnectorClient with real ConversationClient (same as CompatAdapter does)
+        // Wire up CompatConnectorClient with real ConversationClient (same as TeamsBotFrameworkHttpAdapter does)
         CompatConversations compatConversations = new(_f.ConversationClient)
         {
             ServiceUrl = _f.ServiceUrl.ToString(),
@@ -98,7 +98,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         CompatConnectorClient connectorClient = new(compatConversations);
         turnContext.TurnState.Add<IConnectorClient>(connectorClient);
 
-        // Wire up scoped ApiClient (same as CompatAdapter does)
+        // Wire up scoped ApiClient (same as TeamsBotFrameworkHttpAdapter does)
         ApiClient scopedApi = _f.ScopedApiClient;
         turnContext.TurnState.Add(scopedApi);
 
@@ -118,7 +118,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         string memberId = members[0].Id!;
 
         using TurnContext ctx = CreateTurnContext();
-        TeamsChannelAccount result = await CompatTeamsInfo.GetMemberAsync(ctx, memberId);
+        TeamsChannelAccount result = await TeamsApiClient.GetMemberAsync(ctx, memberId);
 
         Assert.NotNull(result);
         Assert.Equal(memberId, result.Id);
@@ -131,7 +131,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     {
 
         using TurnContext ctx = CreateTurnContext();
-        IEnumerable<TeamsChannelAccount> result = await CompatTeamsInfo.GetMembersAsync(ctx);
+        IEnumerable<TeamsChannelAccount> result = await TeamsApiClient.GetMembersAsync(ctx);
 
         Assert.NotNull(result);
         List<TeamsChannelAccount> members = [.. result];
@@ -149,7 +149,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     {
 
         using TurnContext ctx = CreateTurnContext();
-        TeamsPagedMembersResult result = await CompatTeamsInfo.GetPagedMembersAsync(ctx, pageSize: 2);
+        TeamsPagedMembersResult result = await TeamsApiClient.GetPagedMembersAsync(ctx, pageSize: 2);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Members);
@@ -178,7 +178,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         string memberId = members[0].Id!;
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        TeamsChannelAccount result = await CompatTeamsInfo.GetTeamMemberAsync(ctx, memberId, _f.TeamId);
+        TeamsChannelAccount result = await TeamsApiClient.GetTeamMemberAsync(ctx, memberId, _f.TeamId);
 
         Assert.NotNull(result);
         Assert.Equal(memberId, result.Id);
@@ -196,7 +196,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         string memberId = members[0].Id!;
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        TeamsChannelAccount result = await CompatTeamsInfo.GetMemberAsync(ctx, memberId);
+        TeamsChannelAccount result = await TeamsApiClient.GetMemberAsync(ctx, memberId);
 
         Assert.NotNull(result);
         Assert.Equal(memberId, result.Id);
@@ -209,7 +209,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     {
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        IEnumerable<TeamsChannelAccount> result = await CompatTeamsInfo.GetTeamMembersAsync(ctx, _f.TeamId);
+        IEnumerable<TeamsChannelAccount> result = await TeamsApiClient.GetTeamMembersAsync(ctx, _f.TeamId);
 
         Assert.NotNull(result);
         List<TeamsChannelAccount> members = [.. result];
@@ -227,7 +227,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     {
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        TeamsPagedMembersResult result = await CompatTeamsInfo.GetPagedTeamMembersAsync(ctx, _f.TeamId, pageSize: 2);
+        TeamsPagedMembersResult result = await TeamsApiClient.GetPagedTeamMembersAsync(ctx, _f.TeamId, pageSize: 2);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Members);
@@ -250,7 +250,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     {
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        TeamDetails result = await CompatTeamsInfo.GetTeamDetailsAsync(ctx, _f.TeamId);
+        TeamDetails result = await TeamsApiClient.GetTeamDetailsAsync(ctx, _f.TeamId);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Id);
@@ -264,7 +264,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
 
         // When teamId is null, it should be inferred from the activity's TeamsChannelData
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        TeamDetails result = await CompatTeamsInfo.GetTeamDetailsAsync(ctx);
+        TeamDetails result = await TeamsApiClient.GetTeamDetailsAsync(ctx);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Id);
@@ -276,7 +276,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     {
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        ConversationList result = await CompatTeamsInfo.GetTeamChannelsAsync(ctx, _f.TeamId);
+        ConversationList result = await TeamsApiClient.GetTeamChannelsAsync(ctx, _f.TeamId);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Conversations);
@@ -293,7 +293,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     {
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        ConversationList result = await CompatTeamsInfo.GetTeamChannelsAsync(ctx);
+        ConversationList result = await TeamsApiClient.GetTeamChannelsAsync(ctx);
 
         Assert.NotNull(result);
         Assert.NotNull(result.Conversations);
@@ -335,7 +335,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         }
 
         using TurnContext ctx = CreateTurnContext(meetingId: _f.MeetingId, tenantId: _f.TenantId);
-        TeamsMeetingParticipant result = await CompatTeamsInfo.GetMeetingParticipantAsync(
+        TeamsMeetingParticipant result = await TeamsApiClient.GetMeetingParticipantAsync(
             ctx, _f.MeetingId, aadObjectId, _f.TenantId);
 
         Assert.NotNull(result);
@@ -352,7 +352,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         // No teamId in activity and no explicit teamId parameter
         using TurnContext ctx = CreateTurnContext();
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CompatTeamsInfo.GetTeamDetailsAsync(ctx));
+            () => TeamsApiClient.GetTeamDetailsAsync(ctx));
     }
 
     [Fact(Timeout = 60000)]
@@ -360,7 +360,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     {
         using TurnContext ctx = CreateTurnContext();
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CompatTeamsInfo.GetTeamChannelsAsync(ctx));
+            () => TeamsApiClient.GetTeamChannelsAsync(ctx));
     }
 
     [Fact(Timeout = 60000)]
@@ -368,7 +368,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
     {
         using TurnContext ctx = CreateTurnContext();
         await Assert.ThrowsAsync<InvalidOperationException>(
-            () => CompatTeamsInfo.GetMemberAsync(ctx, null!));
+            () => TeamsApiClient.GetMemberAsync(ctx, null!));
     }
 
     #endregion

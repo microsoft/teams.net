@@ -12,6 +12,16 @@ namespace Microsoft.Teams.Core.Schema;
 public class ExtendedPropertiesDictionary : Dictionary<string, object?>
 {
     /// <summary>
+    /// Initializes a new empty instance of the <see cref="ExtendedPropertiesDictionary"/> class.
+    /// </summary>
+    public ExtendedPropertiesDictionary() { }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExtendedPropertiesDictionary"/> class by shallow-copying entries from another dictionary.
+    /// </summary>
+    public ExtendedPropertiesDictionary(IDictionary<string, object?> source) : base(source) { }
+
+    /// <summary>
     /// Extracts and deserializes a value from the dictionary, removing the entry if found.
     /// Returns the deserialized value, or default if the key is not present.
     /// </summary>
@@ -27,6 +37,28 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
 
         if (raw is System.Text.Json.JsonElement element)
             return System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText());
+
+        return default;
+    }
+
+    /// <summary>
+    /// Gets and deserializes a value from the dictionary without removing it.
+    /// Handles <see cref="System.Text.Json.JsonElement"/> values that result from deserialization.
+    /// </summary>
+    public T? Get<T>(string key)
+    {
+        if (!TryGetValue(key, out object? raw))
+            return default;
+
+        if (raw is T typed)
+            return typed;
+
+        if (raw is System.Text.Json.JsonElement element)
+        {
+            T? deserialized = System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText());
+            this[key] = deserialized;
+            return deserialized;
+        }
 
         return default;
     }
@@ -74,7 +106,7 @@ public class CoreActivity
     /// <summary>
     /// Gets or sets the conversation information for this activity.
     /// </summary>
-    [JsonPropertyName("conversation")] public Conversation Conversation { get; set; }
+    [JsonPropertyName("conversation")] public Conversation? Conversation { get; set; }
 
     /// <summary>
     /// Gets or sets the sender account for this activity.
@@ -122,7 +154,6 @@ public class CoreActivity
     internal CoreActivity(string type = ActivityType.Message)
     {
         Type = type;
-        Conversation = new Conversation();
     }
 
     /// <summary>
@@ -137,12 +168,22 @@ public class CoreActivity
         ServiceUrl = activity.ServiceUrl;
         ChannelId = activity.ChannelId;
         Type = activity.Type;
-        Conversation = activity.Conversation;
-        From = activity.From;
-        Recipient = activity.Recipient;
-        Properties = activity.Properties;
-
+        Conversation = activity.Conversation is not null ? new Conversation(activity.Conversation.Id) { Properties = new ExtendedPropertiesDictionary(activity.Conversation.Properties) } : null;
+        From = activity.From is not null ? CloneConversationAccount(activity.From) : null;
+        Recipient = activity.Recipient is not null ? CloneConversationAccount(activity.Recipient) : null;
+        Properties = new ExtendedPropertiesDictionary(activity.Properties);
     }
+
+    private static ConversationAccount CloneConversationAccount(ConversationAccount source) => new()
+    {
+        Id = source.Id,
+        Name = source.Name,
+        IsTargeted = source.IsTargeted,
+        AgenticAppId = source.AgenticAppId,
+        AgenticUserId = source.AgenticUserId,
+        AgenticAppBlueprintId = source.AgenticAppBlueprintId,
+        Properties = new ExtendedPropertiesDictionary(source.Properties)
+    };
 
     /// <summary>
     /// Serializes the current activity to a JSON string.

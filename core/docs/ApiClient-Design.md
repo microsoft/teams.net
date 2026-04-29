@@ -217,9 +217,9 @@ public ApiClient Api => _api ??= TeamsBotApplication.Api.ForServiceUrl(Activity.
 
 This is the primary way handlers should access the API clients. It ensures the scoped `ApiClient` is created once per request and reused across multiple calls within the same handler.
 
-## Integration with CompatTeamsInfo
+## Integration with TeamsApiClient
 
-`CompatTeamsInfo` retrieves clients from `TurnState`:
+`TeamsApiClient` retrieves clients from `TurnState`:
 
 - **`ApiClient`** (from `TurnState.Get<ApiClient>()`) for Teams/Meetings operations:
   - `client.Teams.GetByIdAsync(teamId)` — team details
@@ -231,7 +231,7 @@ This is the primary way handlers should access the API clients. It ensures the s
   - `GetConversationMembersAsync(...)` — all members
   - `GetConversationPagedMembersAsync(...)` — paged members
 
-**Note on CompatAdapter scoping:** The `CompatAdapter` currently stores the unscoped `TeamsApiClient` in `TurnState` (line 59). This works because `CompatTeamsInfo` uses the `ApiClient` sub-clients which are scoped. However, `CompatAdapter` should ideally scope the `ApiClient` before storing:
+**Note on TeamsBotFrameworkHttpAdapter scoping:** The `TeamsBotFrameworkHttpAdapter` currently stores the unscoped `TeamsApiClient` in `TurnState` (line 59). This works because `TeamsApiClient` uses the `ApiClient` sub-clients which are scoped. However, `TeamsBotFrameworkHttpAdapter` should ideally scope the `ApiClient` before storing:
 
 ```csharp
 // Current (unscoped — Teams/Meetings sub-clients are null):
@@ -246,4 +246,4 @@ turnContext.TurnState.Add<ApiClient>(scopedClient);
 
 - **BatchClient**: Batch messaging operations (`SendMessageToListOfUsersAsync`, etc.) need a new sub-client on `ApiClient` using `BotHttpClient` for the `v3/batch/conversation/` endpoints.
 - **MeetingClient.SendMeetingNotificationAsync**: Meeting notification support needs to be added along with notification model types.
-- **CompatAdapter scoping**: Fix `CompatAdapter` to call `ForServiceUrl` before storing `ApiClient` in `TurnState`.
+- **TeamsBotFrameworkHttpAdapter scoping**: Fix `TeamsBotFrameworkHttpAdapter` to call `ForServiceUrl` before storing `ApiClient` in `TurnState`.

@@ -23,7 +23,7 @@ namespace Microsoft.Teams.Apps.BotBuilder;
 /// <param name="botApplication">The Teams bot application instance.</param>
 /// <param name="httpContextAccessor">The HTTP context accessor.</param>
 /// <param name="logger">The logger instance.</param>
-public class CompatBotAdapter(
+public class TeamsBotAdapter(
     BotApplication botApplication,
     IHttpContextAccessor? httpContextAccessor = null,
     ILogger? logger = null) : BotAdapter
@@ -59,7 +59,7 @@ public class CompatBotAdapter(
         Uri serviceUrl = new(serviceUrlString);
 
         // Extract agentic identity from turn context if available
-        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(turnContext.Activity?.FromCompatActivity().From);
+        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(turnContext.Activity?.FromBotFrameworkActivity().From);
 
         await botApplication.ConversationClient.DeleteActivityAsync(
             conversationId,
@@ -102,7 +102,7 @@ public class CompatBotAdapter(
                 return [new ResourceResponse() { Id = null }];
             }
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Ensure ServiceUrl is set from turn context if not already present
             if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
@@ -115,7 +115,7 @@ public class CompatBotAdapter(
                 ?? throw new InvalidOperationException("Conversation ID is required to send activities."));
             SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken: cancellationToken).ConfigureAwait(false);
 
-            logger?.LogDebug("Resp from SendActivitiesAsync: {RespId}", resp?.Id);
+            logger?.SendActivitiesResponse(resp?.Id);
 
             responses[i] = new Microsoft.Bot.Schema.ResourceResponse() { Id = resp?.Id };
         }
@@ -137,7 +137,7 @@ public class CompatBotAdapter(
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(turnContext);
 
-        CoreActivity coreActivity = activity.FromCompatActivity();
+        CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
         // Ensure ServiceUrl is set from turn context if not already present
         if (coreActivity.ServiceUrl == null && !string.IsNullOrWhiteSpace(turnContext.Activity.ServiceUrl))
@@ -162,7 +162,10 @@ public class CompatBotAdapter(
             response.StatusCode = invokeResponse.Status;
             using StreamWriter httpResponseStreamWriter = new(response.BodyWriter.AsStream());
             using JsonTextWriter httpResponseJsonWriter = new(httpResponseStreamWriter);
-            logger?.LogTrace("Sending Invoke Response: \n {InvokeResponse} with status: {Status} \n", System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions), invokeResponse.Status);
+            if (logger?.IsEnabled(LogLevel.Trace) == true)
+            {
+                logger.SendingInvokeResponse(System.Text.Json.JsonSerializer.Serialize(invokeResponse.Body, _writeIndentedJsonOptions), invokeResponse.Status);
+            }
             if (invokeResponse.Body is not null)
             {
                 Microsoft.Bot.Builder.Integration.AspNet.Core.HttpHelper.BotMessageSerializer.Serialize(httpResponseJsonWriter, invokeResponse.Body);
@@ -170,7 +173,7 @@ public class CompatBotAdapter(
         }
         else
         {
-            logger?.LogWarning("HTTP response is null or has started. Cannot write invoke response. ResponseStarted: {ResponseStarted}", response?.HasStarted);
+            logger?.CannotWriteInvokeResponse(response?.HasStarted);
         }
     }
 }

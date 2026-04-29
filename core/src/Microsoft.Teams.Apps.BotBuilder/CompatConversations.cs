@@ -201,10 +201,11 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
         public async Task<HttpOperationResponse<ConversationsResult>> GetConversationsWithHttpMessagesAsync(string? continuationToken = null, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             GetConversationsResponse conversations = await _client.GetConversationsAsync(
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 continuationToken,
                 AgenticIdentity,
                 convertedHeaders,
@@ -231,7 +232,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
             if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
@@ -264,7 +265,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             Microsoft.Teams.Core.Transcript coreTranscript = new()
             {
-                Activities = transcript.Activities?.Select(a => a.FromCompatActivity()).ToList()
+                Activities = transcript.Activities?.Select(a => a.FromBotFrameworkActivity()).ToList()
             };
 
             SendConversationHistoryResponse response = await _client.SendConversationHistoryAsync(
@@ -302,7 +303,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for sending activities
             if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)
@@ -342,7 +343,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            CoreActivity coreActivity = activity.FromCompatActivity();
+            CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
             // Default to the ServiceUrl from the adapter if it's not set on the activity, as ConversationClient requires it for updating activities
             if (!string.IsNullOrWhiteSpace(ServiceUrl) && coreActivity.ServiceUrl == null)

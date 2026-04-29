@@ -22,7 +22,6 @@ public static class AdaptiveCardResponseType
 }
 
 /// <summary>
-/// 
 /// Response for adaptive card action activities.
 /// </summary>
 public class AdaptiveCardResponse
@@ -56,7 +55,7 @@ public class AdaptiveCardResponse
     }
 
     /// <summary>
-    /// Creates a InvokeResponse with a message response.
+    /// Creates an <see cref="InvokeResponse{TBody}"/> with a message response.
     /// </summary>
     /// <param name="message">The message to display to the user.</param>
     /// <param name="statusCode">The HTTP status code (default: 200).</param>
@@ -71,7 +70,7 @@ public class AdaptiveCardResponse
     }
 
     /// <summary>
-    /// Creates a InvokeResponse with a card response.
+    /// Creates an <see cref="InvokeResponse{TBody}"/> with a card response.
     /// </summary>
     /// <param name="card">The card content to display.</param>
     /// <param name="statusCode">The HTTP status code (default: 200).</param>
@@ -95,8 +94,9 @@ public class AdaptiveCardResponseBuilder
     private string? _type;
     private object? _value;
 
-    ///<summary>
-    ///</summary>
+    /// <summary>
+    /// Sets the HTTP status code for the response.
+    /// </summary>
     public AdaptiveCardResponseBuilder WithStatusCode(int statusCode)
     {
         _statusCode = statusCode;
@@ -122,7 +122,7 @@ public class AdaptiveCardResponseBuilder
     }
 
     /// <summary>
-    /// Builds the AdaptiveCardResponse and wraps it in a InvokeResponse.
+    /// Builds the <see cref="AdaptiveCardResponse"/> and wraps it in an <see cref="InvokeResponse{TBody}"/>.
     /// </summary>
     public InvokeResponse<AdaptiveCardResponse> Build()
     {

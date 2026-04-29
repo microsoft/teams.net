@@ -8,7 +8,7 @@ using Microsoft.Teams.Apps.BotBuilder;
 
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);
-builder.Services.AddCompatAdapter();
+builder.Services.AddTeamsBotFrameworkHttpAdapter();
 builder.Services.AddHostedService<ProactiveWorker>();
 IHost host = builder.Build();
 host.Run();

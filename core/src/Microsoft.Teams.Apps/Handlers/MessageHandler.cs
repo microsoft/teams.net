@@ -10,9 +10,9 @@ namespace Microsoft.Teams.Apps.Handlers;
 /// <summary>
 /// Delegate for handling message activities.
 /// </summary>
-/// <param name="context"></param>
-/// <param name="cancellationToken"></param>
-/// <returns></returns>
+/// <param name="context">The context for the message activity.</param>
+/// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
+/// <returns>A task representing the asynchronous operation.</returns>
 public delegate Task MessageHandler(Context<MessageActivity> context, CancellationToken cancellationToken = default);
 
 /// <summary>
@@ -26,9 +26,9 @@ public static class MessageExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnMessage(this TeamsBotApplication app, MessageHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -52,10 +52,10 @@ public static class MessageExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="pattern"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="pattern">The regex pattern to match against the message text.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnMessage(this TeamsBotApplication app, string pattern, MessageHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
@@ -80,10 +80,10 @@ public static class MessageExtensions
     /// <remarks>
     /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
     /// </remarks>
-    /// <param name="app"></param>
-    /// <param name="regex"></param>
-    /// <param name="handler"></param>
-    /// <returns></returns>
+    /// <param name="app">The Teams bot application.</param>
+    /// <param name="regex">The regex to match against the message text.</param>
+    /// <param name="handler">The handler to register.</param>
+    /// <returns>The updated Teams bot application.</returns>
     public static TeamsBotApplication OnMessage(this TeamsBotApplication app, Regex regex, MessageHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));

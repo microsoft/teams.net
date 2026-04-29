@@ -79,7 +79,7 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("from")]
     public new TeamsConversationAccount? From
     {
-        get => base.From as TeamsConversationAccount;
+        get => base.From as TeamsConversationAccount ?? TeamsConversationAccount.FromConversationAccount(base.From);
         set => base.From = value;
     }
 
@@ -90,7 +90,7 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("recipient")]
     public new TeamsConversationAccount? Recipient
     {
-        get => base.Recipient as TeamsConversationAccount;
+        get => base.Recipient as TeamsConversationAccount ?? TeamsConversationAccount.FromConversationAccount(base.Recipient);
         set => base.Recipient = value;
     }
 
@@ -101,7 +101,7 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("conversation")]
     public new TeamsConversation? Conversation
     {
-        get => base.Conversation as TeamsConversation;
+        get => base.Conversation as TeamsConversation ?? TeamsConversation.FromConversation(base.Conversation);
         set => base.Conversation = value!;
     }
 

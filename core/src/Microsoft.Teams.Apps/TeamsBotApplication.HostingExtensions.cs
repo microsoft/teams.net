@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Api.Clients;
@@ -14,6 +15,40 @@ namespace Microsoft.Teams.Apps;
 public static class TeamsBotApplicationHostingExtensions
 {
     /// <summary>
+    /// Registers Teams bot application services using the <see cref="WebApplicationBuilder"/>.
+    /// This is a convenience method that delegates to <c>builder.Services.AddTeams()</c>.
+    /// </summary>
+    /// <param name="builder">The web application builder.</param>
+    /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddTeams(this WebApplicationBuilder builder, string sectionName = "AzureAd")
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        return builder.Services.AddTeams(sectionName);
+    }
+
+    /// <summary>
+    /// Registers Teams bot application services using the <see cref="WebApplicationBuilder"/> with an <see cref="AppBuilder"/>.
+    /// This supports the <c>App.Builder().AddOAuth("graph")</c> pattern from the old library.
+    /// </summary>
+    /// <param name="builder">The web application builder.</param>
+    /// <param name="appBuilder">The app builder containing configuration.</param>
+    /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
+    /// <returns>The service collection for chaining.</returns>
+    public static IServiceCollection AddTeams(this WebApplicationBuilder builder, AppBuilder appBuilder, string sectionName = "AzureAd")
+    {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(appBuilder);
+        return builder.Services.AddTeamsBotApplication(options =>
+        {
+            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor flow in appBuilder.Options.OAuthFlows)
+            {
+                options.AddOAuthFlow(flow.ConnectionName);
+            }
+        }, sectionName);
+    }
+
+    /// <summary>
     /// Registers Teams bot application services with the specified service collection.
     /// </summary>
     /// <remarks>This method provides a simplified way to configure Teams bot support by encapsulating the
@@ -26,11 +61,11 @@ public static class TeamsBotApplicationHostingExtensions
         => AddTeamsBotApplication(services, sectionName);
 
     /// <summary>
-    /// Adds the Default TeamsBotApplication
+    /// Adds the default <see cref="TeamsBotApplication"/> to the service collection.
     /// </summary>
-    /// <param name="services"></param>
-    /// <param name="sectionName"></param>
-    /// <returns></returns>
+    /// <param name="services">The service collection.</param>
+    /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddTeamsBotApplication(this IServiceCollection services, string sectionName = "AzureAd")
     {
         return AddTeamsBotApplication<TeamsBotApplication>(services, sectionName);
@@ -49,11 +84,11 @@ public static class TeamsBotApplicationHostingExtensions
     }
 
     /// <summary>
-    /// Adds a custom TeamsBotApplication
+    /// Adds a custom <see cref="TeamsBotApplication"/> to the service collection.
     /// </summary>
-    /// <param name="services">The WebApplicationBuilder instance.</param>
+    /// <param name="services">The service collection.</param>
     /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
-    /// <returns>The updated WebApplicationBuilder instance.</returns>
+    /// <returns>The service collection for chaining.</returns>
     public static IServiceCollection AddTeamsBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : TeamsBotApplication
     {
         return AddTeamsBotApplication<TApp>(services, configure: null, sectionName);
@@ -83,33 +118,33 @@ public static class TeamsBotApplicationHostingExtensions
     }
 
     /// <summary>
-    /// Configures the TeamsBotApp 
+    /// Configures a custom <typeparamref name="TApp"/> on the endpoint route builder.
     /// </summary>
-    /// <typeparam name="TApp"></typeparam>
-    /// <param name="endpoints"></param>
-    /// <param name="routePath"></param>
-    /// <returns></returns>
+    /// <typeparam name="TApp">The custom <see cref="TeamsBotApplication"/> type.</typeparam>
+    /// <param name="endpoints">The endpoint route builder.</param>
+    /// <param name="routePath">The route path to listen on. Default is "api/messages".</param>
+    /// <returns>The configured <typeparamref name="TApp"/> instance.</returns>
     public static TApp UseTeamsBotApplication<TApp>(this IEndpointRouteBuilder endpoints,
        string routePath = "api/messages")
            where TApp : TeamsBotApplication
         => endpoints.UseBotApplication<TApp>(routePath);
 
     /// <summary>
-    /// Configures the default TeamsBotApplication
+    /// Configures the default <see cref="TeamsBotApplication"/> on the endpoint route builder.
     /// </summary>
-    /// <param name="endpoints"></param>
-    /// <param name="routePath"></param>
-    /// <returns></returns>
+    /// <param name="endpoints">The endpoint route builder.</param>
+    /// <param name="routePath">The route path to listen on. Default is "api/messages".</param>
+    /// <returns>The configured <see cref="TeamsBotApplication"/> instance.</returns>
     public static TeamsBotApplication UseTeamsBotApplication(this IEndpointRouteBuilder endpoints,
        string routePath = "api/messages")
         => endpoints.UseBotApplication<TeamsBotApplication>(routePath);
 
     /// <summary>
-    /// Alias for backward compat
+    /// Configures the default <see cref="TeamsBotApplication"/>. Alias for <see cref="UseTeamsBotApplication(IEndpointRouteBuilder, string)"/>.
     /// </summary>
-    /// <param name="endpoints"></param>
-    /// <param name="routePath"></param>
-    /// <returns></returns>
+    /// <param name="endpoints">The endpoint route builder.</param>
+    /// <param name="routePath">The route path to listen on. Default is "api/messages".</param>
+    /// <returns>The configured <see cref="TeamsBotApplication"/> instance.</returns>
     public static TeamsBotApplication UseTeams(this IEndpointRouteBuilder endpoints, string routePath = "api/messages")
         => endpoints.UseBotApplication<TeamsBotApplication>(routePath);
 }

@@ -232,7 +232,7 @@ public class TaskModuleResponseBuilder
     }
 
     /// <summary>
-    /// Builds the TaskModuleResponse and wraps it in a InvokeResponse.
+    /// Builds the TaskModuleResponse and wraps it in an <see cref="InvokeResponse{TBody}"/>.
     /// </summary>
     /// <param name="statusCode">The HTTP status code (default: 200).</param>
     public InvokeResponse<TaskModuleResponse> Build(int statusCode = 200)
@@ -253,7 +253,7 @@ public class Response
     public required string Type { get; set; }
 
     /// <summary>
-    /// Value 
+    /// The result value.
     /// </summary>
     [JsonPropertyName("value")]
     public object? Value { get; set; }
