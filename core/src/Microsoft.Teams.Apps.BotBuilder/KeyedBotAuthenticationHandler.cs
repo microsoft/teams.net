@@ -115,11 +115,18 @@ internal sealed class KeyedBotAuthenticationHandler : DelegatingHandler
                 agenticIdentity.AgenticAppId,
                 agenticIdentity.AgenticUserId);
 
-            options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, Guid.Parse(agenticIdentity.AgenticUserId));
-            string token = await _authorizationHeaderProvider
-                .CreateAuthorizationHeaderAsync([_scope], options, null, cancellationToken)
-                .ConfigureAwait(false);
-            return token;
+            if (!Guid.TryParse(agenticIdentity.AgenticUserId, out Guid agenticUserGuid))
+            {
+                _logger.LogWarning("Invalid AgenticUserId '{AgenticUserId}'; falling back to app-only token.", agenticIdentity.AgenticUserId);
+            }
+            else
+            {
+                options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserGuid);
+                string token = await _authorizationHeaderProvider
+                    .CreateAuthorizationHeaderAsync([_scope], options, null, cancellationToken)
+                    .ConfigureAwait(false);
+                return token;
+            }
         }
 
         _logger.LogDebug("Acquiring app-only token for scope: {Scope}", _scope);
