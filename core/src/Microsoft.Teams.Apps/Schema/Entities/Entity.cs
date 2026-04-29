@@ -59,10 +59,6 @@ public class EntityList : List<Entity>
                 && typeValue.GetValue<string>() is string typeString)
             {
 
-                // TODO: Should be able to support unknown types (PA uses BotMessageMetadata).
-                // TODO: Investigate if there is any way for Parent to avoid
-                // Knowing the children.
-                // Maybe a registry pattern, or Converters?
                 Entity? entity = typeString switch
                 {
                     "clientInfo" => item.Deserialize<ClientInfoEntity>(options),
@@ -70,7 +66,7 @@ public class EntityList : List<Entity>
                     "message" or "https://schema.org/Message" => DeserializeMessageEntity(item, options),
                     "ProductInfo" => item.Deserialize<ProductInfoEntity>(options),
                     "streaminfo" => item.Deserialize<StreamInfoEntity>(options),
-                    _ => null
+                    _ => item.Deserialize<Entity>(options)
                 };
                 if (entity != null)
                     entities.Add(entity);
