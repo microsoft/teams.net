@@ -37,8 +37,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
         public void Dispose()
         {
-            // Do not change this code. Put cleanup code in 'Dispose(bool disposing)' method
-            GC.SuppressFinalize(this);
+            // No resources to dispose; method required by IConnectorClient.
         }
     }
 }
