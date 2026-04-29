@@ -142,12 +142,22 @@ internal sealed class BotConfig
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Extract IConfiguration from service collection
+        // Extract IConfiguration from service collection — prefer the instance if available,
+        // otherwise resolve via the factory registered in the descriptor.
         ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-        IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
-            ?? throw new InvalidOperationException(
+        IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
+        if (configuration is null && configDescriptor?.ImplementationFactory is not null)
+        {
+            using ServiceProvider tempProvider = services.BuildServiceProvider();
+            configuration = tempProvider.GetService<IConfiguration>();
+        }
+
+        if (configuration is null)
+        {
+            throw new InvalidOperationException(
                 "IConfiguration must be registered in the service collection before calling BotConfig.Resolve. " +
                 "Ensure AddConfiguration() or WebApplication.CreateBuilder() has been called.");
+        }
 
         // Get logger using the helper method from AddBotApplicationExtensions
         ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));
