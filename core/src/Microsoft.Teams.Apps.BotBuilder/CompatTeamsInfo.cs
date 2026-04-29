@@ -546,7 +546,9 @@ public static class CompatTeamsInfo
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity agenticIdentity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        if (activity is not Activity teamActivity)
+            throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity));
+        CoreActivity coreActivity = teamActivity.FromCompatActivity();
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/team/";
         SendMessageToTeamRequest request = new()
@@ -587,7 +589,9 @@ public static class CompatTeamsInfo
         ConversationClient client = GetConversationClient(turnContext);
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity agenticIdentity = GetIdentity(turnContext);
-        CoreActivity coreActivity = ((Activity)activity).FromCompatActivity();
+        if (activity is not Activity tenantActivity)
+            throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity));
+        CoreActivity coreActivity = tenantActivity.FromCompatActivity();
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/batch/conversation/tenant/";
         SendMessageToTenantRequest request = new()
@@ -639,7 +643,7 @@ public static class CompatTeamsInfo
         {
             IsGroup = true,
             ChannelData = new BotFrameworkTeams.TeamsChannelData { Channel = new BotFrameworkTeams.ChannelInfo { Id = teamsChannelId } },
-            Activity = (Activity)activity,
+            Activity = activity as Activity ?? throw new ArgumentException("Expected a Bot Framework Activity instance.", nameof(activity)),
         };
 
         await turnContext.Adapter.CreateConversationAsync(
