@@ -60,12 +60,6 @@ public partial class App
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
         Provider = options?.Provider;
-        _additionalAllowedDomains = options?.AdditionalAllowedDomains;
-
-        if (_additionalAllowedDomains?.Contains("*") == true)
-        {
-            Logger.Warn("Service URL validation is disabled via wildcard in AdditionalAllowedDomains");
-        }
 
         TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
