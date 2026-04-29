@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Mime;
@@ -209,6 +210,10 @@ internal class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
 
         if (typeof(T) == typeof(string))
         {
+            // When T is string, try to deserialize as a JSON string first (unwraps quotes).
+            // Fall back to the raw response if it's not valid JSON.
+            // The (T)(object) cast is safe because we've verified T == string above.
+            Debug.Assert(typeof(T) == typeof(string), "Cast below assumes T is string.");
             try
             {
                 T? result = JsonSerializer.Deserialize<T>(responseString, DefaultJsonOptions);
