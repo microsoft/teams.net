@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Net;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Schema;
@@ -113,7 +114,9 @@ public sealed class TeamsStreamingWriter
             _streamId ??= response?.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
-        catch (HttpRequestException ex) when (ex.Message.Contains("Content stream was cancelled by user", StringComparison.OrdinalIgnoreCase))
+        catch (HttpRequestException ex) when (
+            ex.StatusCode is HttpStatusCode.Gone or HttpStatusCode.NoContent
+            || ex.Message.Contains("Content stream was cancelled", StringComparison.OrdinalIgnoreCase))
         {
             _logger.LogWarning("Stream cancelled by user (streamId '{StreamId}').", _streamId);
             _cancelled = true;
