@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core.Schema;
 
@@ -19,6 +20,13 @@ namespace Microsoft.Teams.Apps.Schema;
 [JsonSerializable(typeof(TeamsActivity))]
 [JsonSerializable(typeof(MessageActivity))]
 [JsonSerializable(typeof(StreamingActivity))]
+[JsonSerializable(typeof(MessageReactionActivity))]
+[JsonSerializable(typeof(MessageUpdateActivity))]
+[JsonSerializable(typeof(MessageDeleteActivity))]
+[JsonSerializable(typeof(ConversationUpdateActivity))]
+[JsonSerializable(typeof(InstallUpdateActivity))]
+[JsonSerializable(typeof(EventActivity))]
+[JsonSerializable(typeof(MessageReaction))]
 [JsonSerializable(typeof(Entity))]
 [JsonSerializable(typeof(EntityList))]
 [JsonSerializable(typeof(MentionEntity))]
