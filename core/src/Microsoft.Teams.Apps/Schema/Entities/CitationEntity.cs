@@ -133,7 +133,7 @@ public class CitationEntity : OMessageEntity
     [JsonPropertyName("citation")]
     public IList<CitationClaim>? Citation
     {
-        get => base.Properties.TryGetValue("citation", out object? value) ? value as IList<CitationClaim> : null;
+        get => base.Properties.Get<IList<CitationClaim>>("citation");
         set => base.Properties["citation"] = value;
     }
 }

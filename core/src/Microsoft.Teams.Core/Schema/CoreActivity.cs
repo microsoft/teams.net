@@ -30,6 +30,28 @@ public class ExtendedPropertiesDictionary : Dictionary<string, object?>
 
         return default;
     }
+
+    /// <summary>
+    /// Gets and deserializes a value from the dictionary without removing it.
+    /// Handles <see cref="System.Text.Json.JsonElement"/> values that result from deserialization.
+    /// </summary>
+    public T? Get<T>(string key)
+    {
+        if (!TryGetValue(key, out object? raw))
+            return default;
+
+        if (raw is T typed)
+            return typed;
+
+        if (raw is System.Text.Json.JsonElement element)
+        {
+            T? deserialized = System.Text.Json.JsonSerializer.Deserialize<T>(element.GetRawText());
+            this[key] = deserialized;
+            return deserialized;
+        }
+
+        return default;
+    }
 }
 
 /// <summary>
