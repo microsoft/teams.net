@@ -41,8 +41,6 @@ public partial class App
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
 
-    private readonly IEnumerable<string>? _additionalAllowedDomains;
-    private readonly CloudEnvironment _cloud;
     internal string UserAgent
     {
         get
@@ -55,7 +53,6 @@ public partial class App
     public App(AppOptions? options = null)
     {
         var cloud = options?.Cloud ?? CloudEnvironment.Public;
-        _cloud = cloud;
 
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
@@ -386,11 +383,6 @@ public partial class App
         Logger.Debug(path);
 
         var serviceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl;
-        if (!ServiceUrlValidator.IsAllowed(serviceUrl, _cloud, _additionalAllowedDomains))
-        {
-            Logger.Warn($"Rejected service URL: {serviceUrl}");
-            throw new InvalidOperationException("Service URL is not from an allowed domain");
-        }
 
         var reference = new ConversationReference()
         {
