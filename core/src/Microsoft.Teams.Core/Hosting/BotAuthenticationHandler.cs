@@ -22,11 +22,13 @@ namespace Microsoft.Teams.Core.Hosting;
 /// <param name="logger">The logger instance.</param>
 /// <param name="scope">The scope for the token request.</param>
 /// <param name="managedIdentityOptions">Optional managed identity options for user-assigned managed identity authentication.</param>
+/// <param name="authenticationOptionsName">The name of the MSAL configuration options to use for token acquisition. Defaults to <see cref="MsalConfigurationExtensions.MsalConfigKey"/>.</param>
 internal sealed class BotAuthenticationHandler(
     IAuthorizationHeaderProvider authorizationHeaderProvider,
     ILogger<BotAuthenticationHandler> logger,
     string scope,
-    IOptions<ManagedIdentityOptions>? managedIdentityOptions = null) : DelegatingHandler
+    IOptions<ManagedIdentityOptions>? managedIdentityOptions = null,
+    string? authenticationOptionsName = null) : DelegatingHandler
 {
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -79,7 +81,7 @@ internal sealed class BotAuthenticationHandler(
         {
             AcquireTokenOptions = new AcquireTokenOptions()
             {
-                AuthenticationOptionsName = MsalConfigurationExtensions.MsalConfigKey,
+                AuthenticationOptionsName = authenticationOptionsName ?? MsalConfigurationExtensions.MsalConfigKey,
             }
         };
 
