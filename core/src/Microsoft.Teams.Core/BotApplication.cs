@@ -11,8 +11,68 @@ using Microsoft.Teams.Core.Schema;
 namespace Microsoft.Teams.Core;
 
 /// <summary>
-/// Represents a bot application.
+/// Represents a bot application that receives and processes activities from a messaging channel.
 /// </summary>
+/// <remarks>
+/// <para>
+/// <see cref="BotApplication"/> is the central entry point for handling incoming bot activities.
+/// Register it with the host using <see cref="AddBotApplicationExtensions.AddBotApplication"/> and
+/// map it to an endpoint with <see cref="AddBotApplicationExtensions.UseBotApplication"/>.
+/// </para>
+/// <example>
+/// <strong>Minimal setup in Program.cs:</strong>
+/// <code>
+/// var builder = WebApplication.CreateBuilder(args);
+/// builder.Services.AddBotApplication();
+///
+/// var app = builder.Build();
+/// var bot = app.UseBotApplication();
+///
+/// bot.OnActivity = async (activity, ct) =>
+/// {
+///     await bot.SendActivityAsync(
+///         CoreActivity.CreateBuilder()
+///             .WithType(ActivityType.Message)
+///             .WithConversation(activity.Conversation)
+///             .WithServiceUrl(activity.ServiceUrl)
+///             .WithProperty("text", "Hello!")
+///             .Build(),
+///         ct);
+/// };
+///
+/// app.Run();
+/// </code>
+/// </example>
+/// <example>
+/// <strong>Subclassing for more complex scenarios:</strong>
+/// <code>
+/// public class MyBot : BotApplication
+/// {
+///     public MyBot(ConversationClient conversationClient, UserTokenClient userTokenClient, ILogger&lt;MyBot&gt; logger)
+///         : base(conversationClient, userTokenClient, logger)
+///     {
+///         OnActivity = HandleActivityAsync;
+///     }
+///
+///     private async Task HandleActivityAsync(CoreActivity activity, CancellationToken ct)
+///     {
+///         if (activity.Type == ActivityType.Message)
+///         {
+///             // Echo the user's message back
+///             await SendActivityAsync(
+///                 CoreActivity.CreateBuilder()
+///                     .WithType(ActivityType.Message)
+///                     .WithConversation(activity.Conversation)
+///                     .WithServiceUrl(activity.ServiceUrl)
+///                     .WithProperty("text", $"You said: {activity.Properties["text"]}")
+///                     .Build(),
+///                 ct);
+///         }
+///     }
+/// }
+/// </code>
+/// </example>
+/// </remarks>
 public class BotApplication
 {
     private readonly ILogger<BotApplication> _logger;
@@ -22,7 +82,9 @@ public class BotApplication
     internal TurnMiddleware MiddleWare { get; }
 
     /// <summary>
-    /// Creates a default instance, primarily for testing purposes. The ConversationClient and UserTokenClient properties will not be initialized
+    /// Creates a default instance, primarily for testing purposes.
+    /// The <see cref="ConversationClient"/> and <see cref="UserTokenClient"/> properties will not be initialized;
+    /// accessing them will throw <see cref="InvalidOperationException"/>.
     /// </summary>
     protected BotApplication()
     {
@@ -54,40 +116,72 @@ public class BotApplication
 
 
     /// <summary>
-    /// Gets the application (client) ID configured for this bot.
+    /// Gets the application (client) ID configured for this bot (for example, the Azure AD app registration client ID).
     /// </summary>
     public string AppId { get; }
 
     /// <summary>
-    /// Gets the client used to manage and interact with conversations.
+    /// Gets the <see cref="Core.ConversationClient"/> used to send, update, and delete activities in conversations.
     /// </summary>
-    /// <remarks>Accessing this property before the client is initialized will result in an exception. Ensure
-    /// that the client is properly configured before use.</remarks>
+    /// <remarks>This property is only available when the bot is constructed via dependency injection or
+    /// with an explicit <see cref="Core.ConversationClient"/>. It throws <see cref="InvalidOperationException"/>
+    /// if accessed on a test instance created with the parameterless constructor.</remarks>
     public ConversationClient ConversationClient => _conversationClient ?? throw new InvalidOperationException("ConversationClient not initialized");
 
     /// <summary>
-    /// Gets the client used to manage user tokens for authentication.
+    /// Gets the <see cref="Core.UserTokenClient"/> used to manage OAuth user tokens (sign-in, sign-out, token exchange).
     /// </summary>
-    /// <remarks>Accessing this property before the client is initialized will result in an exception. Ensure
-    /// that the client is properly configured before use.</remarks>
+    /// <remarks>This property is only available when the bot is constructed via dependency injection or
+    /// with an explicit <see cref="Core.UserTokenClient"/>. It throws <see cref="InvalidOperationException"/>
+    /// if accessed on a test instance created with the parameterless constructor.</remarks>
     public UserTokenClient UserTokenClient => _userTokenClient ?? throw new InvalidOperationException("UserTokenClient not registered");
 
     /// <summary>
-    /// Gets or sets the delegate that is invoked to handle an incoming activity asynchronously.
+    /// Gets or sets the delegate that is invoked to handle each incoming activity.
     /// </summary>
-    /// <remarks>Assign a delegate to process activities as they are received. The delegate should accept an
-    /// <see cref="CoreActivity"/> and a <see cref="CancellationToken"/>, and return a <see cref="Task"/> representing the
-    /// asynchronous operation. If <see langword="null"/>, incoming activities will not be handled.</remarks>
+    /// <remarks>
+    /// Assign a handler to process activities as they arrive. If <see langword="null"/>, incoming activities
+    /// pass through the middleware pipeline but are otherwise ignored.
+    /// <example>
+    /// <code>
+    /// bot.OnActivity = async (activity, ct) =>
+    /// {
+    ///     if (activity.Type == ActivityType.Message)
+    ///     {
+    ///         await bot.SendActivityAsync(
+    ///             CoreActivity.CreateBuilder()
+    ///                 .WithType(ActivityType.Message)
+    ///                 .WithConversation(activity.Conversation)
+    ///                 .WithServiceUrl(activity.ServiceUrl)
+    ///                 .WithProperty("text", "Received your message!")
+    ///                 .Build(),
+    ///             ct);
+    ///     }
+    /// };
+    /// </code>
+    /// </example>
+    /// </remarks>
     public virtual Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
 
     /// <summary>
     /// Processes an incoming HTTP request containing a bot activity.
     /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The request body is deserialized into a <see cref="CoreActivity"/>, run through the registered
+    /// middleware pipeline (see <see cref="UseMiddleware"/>), and finally dispatched to <see cref="OnActivity"/>.
+    /// </para>
+    /// <para>
+    /// A dedicated internal timeout (configurable via <see cref="BotApplicationOptions.ProcessActivityTimeout"/>,
+    /// default 5 minutes) is used instead of the HTTP request's cancellation token, because streaming handlers
+    /// may outlive the original HTTP connection. When a debugger is attached the timeout is disabled.
+    /// </para>
+    /// </remarks>
     /// <param name="httpContext">The HTTP context containing the incoming bot activity request.</param>
-    /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation. Note: a dedicated timeout is used internally instead of the HTTP request token.</param>
+    /// <param name="cancellationToken">A cancellation token that can be used to cancel the initial deserialization. Note: a dedicated timeout governs activity processing.</param>
     /// <returns>A task that represents the asynchronous activity processing operation.</returns>
     /// <exception cref="InvalidOperationException">Thrown if the request body cannot be deserialized into a valid activity.</exception>
-    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity.</exception>
+    /// <exception cref="BotHandlerException">Thrown if an error occurs while processing the activity, wrapping the original exception and the offending <see cref="CoreActivity"/>.</exception>
     public virtual async Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
@@ -136,8 +230,20 @@ public class BotApplication
     /// <summary>
     /// Adds the specified turn middleware to the middleware pipeline.
     /// </summary>
+    /// <remarks>
+    /// Middleware components execute in the order they are registered. Each middleware can inspect or modify
+    /// the activity, perform side effects (such as logging), or short-circuit the pipeline by not calling
+    /// <see cref="NextTurn"/>.
+    /// <example>
+    /// <code>
+    /// bot.UseMiddleware(new MyLoggingMiddleware());
+    /// bot.UseMiddleware(new MyAuthMiddleware());
+    /// // Pipeline order: MyLoggingMiddleware → MyAuthMiddleware → OnActivity
+    /// </code>
+    /// </example>
+    /// </remarks>
     /// <param name="middleware">The middleware component to add to the pipeline. Cannot be null.</param>
-    /// <returns>An ITurnMiddleWare instance representing the updated middleware pipeline.</returns>
+    /// <returns>The <see cref="ITurnMiddleware"/> instance representing the middleware pipeline.</returns>
     public ITurnMiddleware UseMiddleware(ITurnMiddleware middleware)
     {
         ArgumentNullException.ThrowIfNull(middleware);
@@ -148,10 +254,27 @@ public class BotApplication
     /// <summary>
     /// Sends the specified activity to the conversation asynchronously.
     /// </summary>
-    /// <param name="activity">The activity to send to the conversation. Cannot be null. Must have Conversation.Id set.</param>
+    /// <remarks>
+    /// This is a convenience wrapper around <see cref="ConversationClient.SendActivityAsync"/>. The activity
+    /// must have its <see cref="CoreActivity.Conversation"/> and <see cref="CoreActivity.ServiceUrl"/> properties set.
+    /// <example>
+    /// <code>
+    /// var reply = CoreActivity.CreateBuilder()
+    ///     .WithType(ActivityType.Message)
+    ///     .WithConversation(incomingActivity.Conversation)
+    ///     .WithServiceUrl(incomingActivity.ServiceUrl)
+    ///     .WithProperty("text", "Hello from the bot!")
+    ///     .Build();
+    ///
+    /// SendActivityResponse? response = await bot.SendActivityAsync(reply, cancellationToken);
+    /// string? sentId = response?.Id;
+    /// </code>
+    /// </example>
+    /// </remarks>
+    /// <param name="activity">The activity to send. Cannot be null. Must have <see cref="CoreActivity.Conversation"/> and <see cref="CoreActivity.ServiceUrl"/> set.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the send operation.</param>
-    /// <returns>A task that represents the asynchronous operation. The task result contains the identifier of the sent activity.</returns>
-    /// <exception cref="Exception">Thrown if the conversation client has not been initialized.</exception>
+    /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="SendActivityResponse"/> with the ID of the sent activity, or null.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="activity"/> is null or the conversation client has not been initialized.</exception>
     public async Task<SendActivityResponse?> SendActivityAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -161,7 +284,7 @@ public class BotApplication
     }
 
     /// <summary>
-    /// Gets the version of the SDK.
+    /// Gets the version of the Microsoft.Teams.Core SDK (for example, <c>"1.0.0"</c>).
     /// </summary>
     public static string Version => ThisAssembly.NuGetPackageVersion;
 }
