@@ -87,7 +87,7 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
             {
                 if (ex is BotHandlerException aex)
                 {
-                    _logger?.LogError(ex, "Error processing activity: Id={Id}. Delegating to OnTurnError.", aex.Activity?.Id);
+                    _logger?.ActivityProcessingErrorDelegating(ex, aex.Activity?.Id);
                     coreActivity = aex.Activity;
                     using TurnContext turnContext = new(this, coreActivity!.ToBotFrameworkActivity());
                     await OnTurnError(turnContext, ex).ConfigureAwait(false);
