@@ -201,10 +201,11 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
         public async Task<HttpOperationResponse<ConversationsResult>> GetConversationsWithHttpMessagesAsync(string? continuationToken = null, Dictionary<string, List<string>>? customHeaders = null, CancellationToken cancellationToken = default)
         {
+            ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             GetConversationsResponse conversations = await _client.GetConversationsAsync(
-                new Uri(ServiceUrl!),
+                new Uri(ServiceUrl),
                 continuationToken,
                 AgenticIdentity,
                 convertedHeaders,
