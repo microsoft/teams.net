@@ -10,7 +10,7 @@ using CustomHeaders = Dictionary<string, string>;
 /// <summary>
 /// Options for configuring a bot HTTP request.
 /// </summary>
-public record BotRequestOptions
+internal record BotRequestOptions
 {
     /// <summary>
     /// Gets the agentic identity for authentication.
