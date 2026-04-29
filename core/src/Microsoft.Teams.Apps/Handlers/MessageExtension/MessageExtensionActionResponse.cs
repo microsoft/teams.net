@@ -85,7 +85,7 @@ public class MessageExtensionActionResponseBuilder
     }
 
     /// <summary>
-    /// Builds the MessageExtensionActionResponse and wraps it in a InvokeResponse.
+    /// Builds the MessageExtensionActionResponse and wraps it in an <see cref="InvokeResponse{TBody}"/>.
     /// </summary>
     /// <param name="statusCode">The HTTP status code (default: 200).</param>
     public InvokeResponse<MessageExtensionActionResponse> Build(int statusCode = 200)

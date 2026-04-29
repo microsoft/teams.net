@@ -53,7 +53,7 @@ public class MessageExtensionResponse
     public ComposeExtension? ComposeExtension { get; set; }
 
     /// <summary>
-    /// Creates a new builder for MessagingExtensionResponse.
+    /// Creates a new builder for MessageExtensionResponse.
     /// </summary>
     public static MessageExtensionResponseBuilder CreateBuilder()
     {
@@ -124,7 +124,7 @@ public class MessageExtensionSuggestedAction
 
 
 /// <summary>
-/// Builder for MessagingExtensionResponse.
+/// Builder for MessageExtensionResponse.
 /// </summary>
 public class MessageExtensionResponseBuilder
 {
@@ -190,7 +190,7 @@ public class MessageExtensionResponseBuilder
     }
 
     /// <summary>
-    /// Validates and builds the MessagingExtensionResponse.
+    /// Validates and builds the MessageExtensionResponse.
     /// </summary>
     internal MessageExtensionResponse Validate()
     {
@@ -350,7 +350,7 @@ public class MessageExtensionResponseBuilder
     }
 
     /// <summary>
-    /// Builds the MessagingExtensionResponse and wraps it in a InvokeResponse.
+    /// Builds the MessageExtensionResponse and wraps it in an <see cref="InvokeResponse{TBody}"/>.
     /// </summary>
     /// <param name="statusCode">The HTTP status code (default: 200).</param>
     public InvokeResponse<MessageExtensionResponse> Build(int statusCode = 200)

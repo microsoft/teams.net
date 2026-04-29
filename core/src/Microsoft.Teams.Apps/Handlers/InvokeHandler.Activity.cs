@@ -17,8 +17,8 @@ public class InvokeActivity : TeamsActivity
     /// <summary>
     /// Creates an InvokeActivity from a CoreActivity.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
+    /// <param name="activity">The core activity to convert.</param>
+    /// <returns>An <see cref="InvokeActivity"/> instance.</returns>
     public static new InvokeActivity FromActivity(CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);

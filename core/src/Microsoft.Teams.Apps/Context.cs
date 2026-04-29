@@ -13,8 +13,8 @@ namespace Microsoft.Teams.Apps;
 /// <summary>
 /// Context for a bot turn.
 /// </summary>
-/// <param name="botApplication"></param>
-/// <param name="activity"></param>
+/// <param name="botApplication">The bot application instance that owns this context.</param>
+/// <param name="activity">The incoming activity for this turn.</param>
 public class Context<TActivity>(TeamsBotApplication botApplication, TActivity activity) where TActivity : TeamsActivity
 {
     /// <summary>
@@ -100,7 +100,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Sends a typing indicator to the conversation.
     /// </summary>
-    /// <param name="text">Optional text to include with the typing indicator.</param>
+    /// <param name="text">Reserved for future use; currently ignored.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> Typing(string? text = null, CancellationToken cancellationToken = default)
@@ -111,9 +111,9 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Sends a message activity as a reply.
     /// </summary>
-    /// <param name="text"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="text">The text to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendActivityAsync(string text, CancellationToken cancellationToken = default)
     {
         TeamsActivity reply = new TeamsActivityBuilder()
@@ -124,11 +124,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     }
 
     /// <summary>
-    /// Sends Activity
+    /// Sends an activity to the conversation.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="activity">The activity to send.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendActivityAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         TeamsActivity reply = new TeamsActivityBuilder(activity)
@@ -140,8 +140,8 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Sends a typing activity to the conversation asynchronously.
     /// </summary>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendTypingActivityAsync(CancellationToken cancellationToken = default)
     {
         TeamsActivity reply = new TeamsActivityBuilder()

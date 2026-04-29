@@ -14,7 +14,7 @@ using Microsoft.Teams.Core.Hosting;
 namespace Microsoft.Teams.Apps;
 
 /// <summary>
-/// Teams specific Bot Application
+/// Teams-specific bot application.
 /// </summary>
 public class TeamsBotApplication : BotApplication
 {
@@ -80,11 +80,11 @@ public class TeamsBotApplication : BotApplication
     /// </remarks>
     public ApiClient Api { get; }
 
-    /// <param name="conversationClient"></param>
-    /// <param name="userTokenClient"></param>
-    /// <param name="teamsApiClient"></param>
-    /// <param name="httpContextAccessor"></param>
-    /// <param name="logger"></param>
+    /// <param name="conversationClient">The conversation client for sending and managing activities.</param>
+    /// <param name="userTokenClient">The user token client for OAuth operations.</param>
+    /// <param name="teamsApiClient">The Teams API client for Teams-specific operations.</param>
+    /// <param name="httpContextAccessor">The HTTP context accessor for reading invoke responses.</param>
+    /// <param name="logger">The logger instance.</param>
     /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics. Defaults to an empty instance if not provided.</param>
     /// <param name="teamsOptions">Teams-specific options including OAuth flow configuration. Defaults to an empty instance if not provided.</param>
     public TeamsBotApplication(
