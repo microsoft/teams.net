@@ -41,7 +41,7 @@ public static class TeamsBotApplicationHostingExtensions
         ArgumentNullException.ThrowIfNull(appBuilder);
         return builder.Services.AddTeamsBotApplication(options =>
         {
-            foreach (var flow in appBuilder.Options.OAuthFlows)
+            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor flow in appBuilder.Options.OAuthFlows)
             {
                 options.AddOAuthFlow(flow.ConnectionName);
             }

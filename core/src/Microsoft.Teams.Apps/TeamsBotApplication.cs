@@ -105,7 +105,7 @@ public class TeamsBotApplication : BotApplication
         // Auto-register OAuth flows from DI options
         if (teamsOptions is not null)
         {
-            foreach (var descriptor in teamsOptions.OAuthFlows)
+            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor descriptor in teamsOptions.OAuthFlows)
             {
                 this.AddOAuthFlow(descriptor.Options);
             }
