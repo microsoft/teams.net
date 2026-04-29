@@ -192,6 +192,11 @@ namespace Microsoft.Teams.Core.Hosting
             // One ConfigurationManager per OIDC authority, shared safely across all requests.
             ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
 
+            // Cache resolved configurations to avoid blocking async calls on every token validation.
+            // ConfigurationManager handles background refresh internally; we cache the Task so that
+            // only the first call per authority actually blocks.
+            ConcurrentDictionary<string, Task<OpenIdConnectConfiguration>> configCache = new(StringComparer.OrdinalIgnoreCase);
+
             builder.AddJwtBearer(schemeName, jwtOptions =>
             {
                 jwtOptions.SaveToken = true;
@@ -221,7 +226,13 @@ namespace Microsoft.Teams.Core.Hosting
                                 new OpenIdConnectConfigurationRetriever(),
                                 new HttpDocumentRetriever { RequireHttps = jwtOptions.RequireHttpsMetadata }));
 
-                        OpenIdConnectConfiguration config = manager.GetConfigurationAsync(CancellationToken.None).GetAwaiter().GetResult();
+                        // Cache the Task so only the first call per authority blocks;
+                        // subsequent calls return the already-completed task synchronously.
+                        // ConfigurationManager handles background refresh of stale configs internally.
+                        Task<OpenIdConnectConfiguration> configTask = configCache.GetOrAdd(authority,
+                            _ => manager.GetConfigurationAsync(CancellationToken.None));
+
+                        OpenIdConnectConfiguration config = configTask.ConfigureAwait(false).GetAwaiter().GetResult();
                         return config.SigningKeys;
                     }
                 };
