@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
@@ -9,6 +8,7 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
+using Newtonsoft.Json;
 using static Microsoft.Teams.Apps.BotBuilder.CompatTeamsInfoModels;
 using BotFrameworkTeams = Microsoft.Bot.Schema.Teams;
 using CustomHeaders = System.Collections.Generic.Dictionary<string, string>;
@@ -356,7 +356,7 @@ public static class CompatTeamsInfo
         AgenticIdentity agenticIdentity = GetIdentity(turnContext);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v1/meetings/{Uri.EscapeDataString(meetingId)}/notification";
-        string body = JsonSerializer.Serialize(notification);
+        string body = JsonConvert.SerializeObject(notification);
 
         return (await client.BotHttpClient.SendAsync<MeetingNotificationResponse>(
             HttpMethod.Post,
@@ -470,7 +470,7 @@ public static class CompatTeamsInfo
             Activity = activity,
             TenantId = tenantId
         };
-        string body = JsonSerializer.Serialize(request);
+        string body = JsonConvert.SerializeObject(request);
 
         return (await client.BotHttpClient.SendAsync<string>(
             HttpMethod.Post,
@@ -511,7 +511,7 @@ public static class CompatTeamsInfo
             Activity = activity,
             TenantId = tenantId
         };
-        string body = JsonSerializer.Serialize(request);
+        string body = JsonConvert.SerializeObject(request);
 
 
         return (await client.BotHttpClient.SendAsync<string>(
@@ -555,7 +555,7 @@ public static class CompatTeamsInfo
             TeamId = teamId,
             TenantId = tenantId
         };
-        string body = JsonSerializer.Serialize(request);
+        string body = JsonConvert.SerializeObject(request);
 
 
         return (await client.BotHttpClient.SendAsync<string>(
@@ -595,7 +595,7 @@ public static class CompatTeamsInfo
             Activity = activity,
             TenantId = tenantId
         };
-        string body = JsonSerializer.Serialize(request);
+        string body = JsonConvert.SerializeObject(request);
 
 
         return (await client.BotHttpClient.SendAsync<string>(
