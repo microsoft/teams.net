@@ -25,10 +25,10 @@ public static class ActivitySchemaMapper
         _ => value.ToString()
     };
     /// <summary>
-    /// Converts a CoreActivity to a Bot Framework Activity.
+    /// Converts a <see cref="CoreActivity"/> to a Bot Framework <see cref="Activity"/>.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
+    /// <param name="activity">The core activity to convert.</param>
+    /// <returns>The equivalent Bot Framework activity.</returns>
     public static Activity ToBotFrameworkActivity(this CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -37,10 +37,10 @@ public static class ActivitySchemaMapper
     }
 
     /// <summary>
-    /// Converts a Bot Framework Activity to a TeamsActivity.
+    /// Converts a Bot Framework <see cref="Activity"/> to a <see cref="CoreActivity"/>.
     /// </summary>
-    /// <param name="activity"></param>
-    /// <returns></returns>
+    /// <param name="activity">The Bot Framework activity to convert.</param>
+    /// <returns>The equivalent core activity.</returns>
     public static CoreActivity FromBotFrameworkActivity(this Activity activity)
     {
         StringBuilder sb = new();
@@ -53,10 +53,10 @@ public static class ActivitySchemaMapper
 
 
     /// <summary>
-    /// Converts a ConversationAccount to a ChannelAccount.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a Bot Framework <see cref="Microsoft.Bot.Schema.ChannelAccount"/>.
     /// </summary>
-    /// <param name="account"></param>
-    /// <returns></returns>
+    /// <param name="account">The conversation account to convert.</param>
+    /// <returns>The equivalent channel account.</returns>
     public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
@@ -109,10 +109,10 @@ public static class ActivitySchemaMapper
     }
 
     /// <summary>
-    /// Converts a TeamsConversationAccount to a TeamsChannelAccount.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/> with all known properties.
     /// </summary>
-    /// <param name="account"></param>
-    /// <returns></returns>
+    /// <param name="account">The conversation account to convert.</param>
+    /// <returns>The equivalent Teams channel account.</returns>
     public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount2(this Microsoft.Teams.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
@@ -135,8 +135,8 @@ public static class ActivitySchemaMapper
     /// <summary>
     /// Converts a Core PagedMembersResult to a Bot Framework TeamsPagedMembersResult.
     /// </summary>
-    /// <param name="pagedMembers"></param>
-    /// <returns></returns>
+    /// <param name="pagedMembers">The paged members result to convert.</param>
+    /// <returns>The equivalent Bot Framework paged members result.</returns>
     public static Microsoft.Bot.Schema.Teams.TeamsPagedMembersResult ToCompatTeamsPagedMembersResult(this Microsoft.Teams.Core.PagedMembersResult pagedMembers)
     {
         ArgumentNullException.ThrowIfNull(pagedMembers);
@@ -149,10 +149,10 @@ public static class ActivitySchemaMapper
     }
 
     /// <summary>
-    /// Converts a ConversationAccount to a TeamsChannelAccount.
+    /// Converts a <see cref="Microsoft.Teams.Core.Schema.ConversationAccount"/> to a <see cref="Microsoft.Bot.Schema.Teams.TeamsChannelAccount"/>.
     /// </summary>
-    /// <param name="account"></param>
-    /// <returns></returns>
+    /// <param name="account">The conversation account to convert.</param>
+    /// <returns>The equivalent Teams channel account.</returns>
     public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
