@@ -5,10 +5,10 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Bot.Core.Hosting;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Hosting;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Core;
+namespace Microsoft.Teams.Core;
 
 /// <summary>
 /// Represents a bot application.

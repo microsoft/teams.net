@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.Teams.Bot.Core;
+namespace Microsoft.Teams.Core;
 
 /// <summary>
 /// Extension methods for <see cref="HttpRequest"/>.

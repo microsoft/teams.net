@@ -4,12 +4,12 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Handlers.TaskModules;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Core.Schema;
 using TeamsBot;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);

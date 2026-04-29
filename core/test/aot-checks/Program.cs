@@ -1,4 +1,4 @@
-﻿using Microsoft.Teams.Bot.Core.Schema;
+﻿using Microsoft.Teams.Core.Schema;
 
 CoreActivity coreActivity = CoreActivity.FromJsonString(SampleActivities.TeamsMessage);
 

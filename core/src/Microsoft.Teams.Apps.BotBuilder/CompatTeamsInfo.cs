@@ -6,14 +6,14 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Http;
-using Microsoft.Teams.Bot.Core.Schema;
-using static Microsoft.Teams.Bot.Compat.CompatTeamsInfoModels;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Http;
+using Microsoft.Teams.Core.Schema;
+using static Microsoft.Teams.Apps.BotBuilder.CompatTeamsInfoModels;
 using BotFrameworkTeams = Microsoft.Bot.Schema.Teams;
 using CustomHeaders = System.Collections.Generic.Dictionary<string, string>;
 
-namespace Microsoft.Teams.Bot.Compat;
+namespace Microsoft.Teams.Apps.BotBuilder;
 
 /// <summary>
 /// Provides utility methods for the events and interactions that occur within Microsoft Teams.

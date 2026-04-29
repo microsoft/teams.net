@@ -5,8 +5,8 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Builder.TraceExtensions;
-using Microsoft.Teams.Bot.Compat;
-using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Apps.BotBuilder;
+using Microsoft.Teams.Core;
 
 namespace PABot
 {

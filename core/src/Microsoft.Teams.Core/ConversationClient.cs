@@ -3,10 +3,10 @@
 
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Core.Http;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Http;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Core;
+namespace Microsoft.Teams.Core;
 
 using CustomHeaders = Dictionary<string, string>;
 

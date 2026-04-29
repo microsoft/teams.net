@@ -4,7 +4,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 
 namespace PABot
 {

@@ -3,10 +3,10 @@
 
 using System.Text.Json;
 using MessageExtensionBot;
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Handlers.MessageExtension;
-using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Handlers.MessageExtension;
+using Microsoft.Teams.Apps.Handlers.TaskModules;
+using Microsoft.Teams.Apps.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();

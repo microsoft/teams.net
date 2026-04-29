@@ -6,7 +6,7 @@ using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Compat;
+using Microsoft.Teams.Apps.BotBuilder;
 
 namespace CompatProactive;
 

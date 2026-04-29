@@ -5,13 +5,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Api.Clients;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Moq;
 
-namespace Microsoft.Teams.Bot.Compat.UnitTests
+namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
     public class CompatBotAdapterTests
     {

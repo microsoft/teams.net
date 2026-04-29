@@ -4,11 +4,11 @@
 using System.Collections.Concurrent;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
 
-namespace Microsoft.Teams.Bot.Apps.Auth;
+namespace Microsoft.Teams.Apps.Auth;
 
 /// <summary>
 /// Delegate invoked after a successful OAuth token exchange or sign-in verification.

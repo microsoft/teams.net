@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace Microsoft.Teams.Bot.Core.Schema;
+namespace Microsoft.Teams.Core.Schema;
 
 /// <summary>
 /// Provides constant values that represent activity types used in messaging workflows.

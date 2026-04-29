@@ -5,12 +5,12 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Teams.Bot.Apps.Api.Clients;
-using Microsoft.Teams.Bot.Compat;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.BotBuilder;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
-using CoreConversationAccount = Microsoft.Teams.Bot.Core.Schema.ConversationAccount;
+using CoreConversationAccount = Microsoft.Teams.Core.Schema.ConversationAccount;
 
 namespace IntegrationTests;
 
@@ -319,7 +319,7 @@ public class CompatTeamsInfoTests : IClassFixture<IntegrationTestFixture>
         foreach (CoreConversationAccount m in members)
         {
             var tm = await api.Conversations.Members
-                .GetByIdAsync<Microsoft.Teams.Bot.Apps.Schema.TeamsConversationAccount>(_f.ConversationId, m.Id!, _f.AgenticIdentity);
+                .GetByIdAsync<Microsoft.Teams.Apps.Schema.TeamsConversationAccount>(_f.ConversationId, m.Id!, _f.AgenticIdentity);
             _output.WriteLine($"Member: {tm.Name} — AadObjectId: {tm.AadObjectId ?? "(null)"}, Properties: [{string.Join(", ", tm.Properties.Keys)}]");
             if (tm.AadObjectId is not null)
             {

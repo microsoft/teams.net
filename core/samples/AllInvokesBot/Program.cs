@@ -4,11 +4,11 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using AllInvokesBot;
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Handlers.TaskModules;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Hosting;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();

@@ -3,10 +3,10 @@
 
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.AI;
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
 using OpenAI;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);

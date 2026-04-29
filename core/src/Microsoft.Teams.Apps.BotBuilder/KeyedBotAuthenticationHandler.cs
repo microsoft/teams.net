@@ -6,9 +6,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Compat;
+namespace Microsoft.Teams.Apps.BotBuilder;
 
 /// <summary>
 /// A delegating handler that adds authentication headers to outgoing HTTP requests

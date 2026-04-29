@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Handlers;
+namespace Microsoft.Teams.Apps.Handlers;
 
 /// <summary>
 /// Defines the structure that arrives in the Activity.Value for Invoke activity with

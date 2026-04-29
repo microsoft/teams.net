@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Routing;
+namespace Microsoft.Teams.Apps.Routing;
 
 /// <summary>
 /// Router for dispatching Teams activities to registered routes

@@ -3,11 +3,11 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
-using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Core;
 
-namespace Microsoft.Teams.Bot.Apps;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Manages the send loop for Teams streaming messages.

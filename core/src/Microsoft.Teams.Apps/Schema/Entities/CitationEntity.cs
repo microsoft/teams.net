@@ -4,7 +4,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema.Entities;
+namespace Microsoft.Teams.Apps.Schema.Entities;
 
 /// <summary>
 /// Extension methods for Activity to handle citations and AI-generated content.

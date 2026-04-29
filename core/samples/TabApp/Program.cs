@@ -4,9 +4,9 @@
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Identity.Web;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Hosting;
 using TabApp;
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);

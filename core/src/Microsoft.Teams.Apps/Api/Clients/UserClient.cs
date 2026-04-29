@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using CoreUserTokenClient = Microsoft.Teams.Bot.Core.UserTokenClient;
+using CoreUserTokenClient = Microsoft.Teams.Core.UserTokenClient;
 
-namespace Microsoft.Teams.Bot.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Api.Clients;
 
 /// <summary>
 /// Client for user-level operations, including the token sub-client.

@@ -3,11 +3,11 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Routing;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Routing;
+using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Auth;
+namespace Microsoft.Teams.Apps.Auth;
 
 /// <summary>
 /// Extension methods for registering <see cref="OAuthFlow"/> instances on a <see cref="TeamsBotApplication"/>.

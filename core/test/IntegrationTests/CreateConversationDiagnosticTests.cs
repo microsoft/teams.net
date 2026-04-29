@@ -3,8 +3,8 @@
 
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
 
 namespace IntegrationTests;

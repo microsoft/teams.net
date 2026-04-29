@@ -6,11 +6,11 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 
 
-namespace Microsoft.Teams.Bot.Compat;
+namespace Microsoft.Teams.Apps.BotBuilder;
 
 /// <summary>
 /// Provides a compatibility adapter for processing bot activities and HTTP requests using legacy middleware and bot
@@ -67,7 +67,7 @@ public class CompatAdapter : CompatBotAdapter, IBotFrameworkHttpAdapter
                 AgenticIdentity = activity.From?.GetAgenticIdentity()
             });
             turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(connectionClient);
-            //turnContext.TurnState.Add<Microsoft.Teams.Bot.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient); // TODO: review TeamsInfo needs
+            //turnContext.TurnState.Add<Microsoft.Teams.Apps.TeamsApiClient>(_teamsBotApplication.TeamsApiClient); // TODO: review TeamsInfo needs
             await MiddlewareSet.ReceiveActivityWithStatusAsync(turnContext, bot.OnTurnAsync, ct).ConfigureAwait(false);
         };
 

@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Api.Clients;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
 
 namespace IntegrationTests;

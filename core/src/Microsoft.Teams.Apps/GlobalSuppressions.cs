@@ -7,16 +7,16 @@ using System.Diagnostics.CodeAnalysis;
     "CA1873:Avoid potentially expensive logging",
     Justification = "<Pending>",
     Scope = "namespaceanddescendants",
-    Target = "~N:Microsoft.Teams.Bot.Apps")]
+    Target = "~N:Microsoft.Teams.Apps")]
 
 [assembly: SuppressMessage("Performance",
     "CA1848:Use the LoggerMessage delegates",
     Justification = "<Pending>",
     Scope = "namespaceanddescendants",
-    Target = "~N:Microsoft.Teams.Bot.Apps")]
+    Target = "~N:Microsoft.Teams.Apps")]
 
 [assembly: SuppressMessage("Usage",
     "CA2227:Collection properties should be read only",
     Justification = "<Pending>",
     Scope = "namespaceanddescendants",
-    Target = "~N:Microsoft.Teams.Bot.Apps")]
+    Target = "~N:Microsoft.Teams.Apps")]

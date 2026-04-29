@@ -4,9 +4,9 @@
 using System.Collections;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Core;
+namespace Microsoft.Teams.Core;
 
 /// <summary>
 /// Manages and executes a middleware pipeline for processing bot turns.

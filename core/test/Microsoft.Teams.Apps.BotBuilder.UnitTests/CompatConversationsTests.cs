@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Schema;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Moq;
 
-namespace Microsoft.Teams.Bot.Compat.UnitTests
+namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
     public class CompatConversationsTests
     {

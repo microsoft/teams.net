@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Schema;
+namespace Microsoft.Teams.Apps.Schema;
 
 /// <summary>
 /// Represents a Microsoft Teams channel, including its identifier, type, and display name.

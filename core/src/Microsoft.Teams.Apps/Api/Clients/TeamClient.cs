@@ -2,11 +2,11 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core.Http;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Http;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Api.Clients;
 
 /// <summary>
 /// Client for retrieving team information and channels.

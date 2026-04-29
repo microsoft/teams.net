@@ -7,8 +7,8 @@ using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 using Microsoft.IdentityModel.JsonWebTokens;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Hosting;
 
 namespace PABot
 {

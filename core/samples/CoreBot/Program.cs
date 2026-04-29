@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Hosting;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Hosting;
+using Microsoft.Teams.Core.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddBotApplication();

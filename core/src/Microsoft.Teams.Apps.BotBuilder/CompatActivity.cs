@@ -5,10 +5,10 @@ using System.Text;
 using Microsoft.Bot.Builder.Integration.AspNet.Core.Handlers;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
 
-namespace Microsoft.Teams.Bot.Compat;
+namespace Microsoft.Teams.Apps.BotBuilder;
 
 /// <summary>
 /// Extension methods for converting between Bot Framework Activity and CoreActivity/TeamsActivity.
@@ -48,7 +48,7 @@ public static class CompatActivity
     /// </summary>
     /// <param name="account"></param>
     /// <returns></returns>
-    public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Teams.Bot.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.ChannelAccount ToCompatChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -104,7 +104,7 @@ public static class CompatActivity
     /// </summary>
     /// <param name="account"></param>
     /// <returns></returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount2(this Microsoft.Teams.Bot.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount2(this Microsoft.Teams.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -128,7 +128,7 @@ public static class CompatActivity
     /// </summary>
     /// <param name="pagedMembers"></param>
     /// <returns></returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsPagedMembersResult ToCompatTeamsPagedMembersResult(this Microsoft.Teams.Bot.Core.PagedMembersResult pagedMembers)
+    public static Microsoft.Bot.Schema.Teams.TeamsPagedMembersResult ToCompatTeamsPagedMembersResult(this Microsoft.Teams.Core.PagedMembersResult pagedMembers)
     {
         ArgumentNullException.ThrowIfNull(pagedMembers);
 
@@ -144,7 +144,7 @@ public static class CompatActivity
     /// </summary>
     /// <param name="account"></param>
     /// <returns></returns>
-    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Bot.Core.Schema.ConversationAccount account)
+    public static Microsoft.Bot.Schema.Teams.TeamsChannelAccount ToCompatTeamsChannelAccount(this Microsoft.Teams.Core.Schema.ConversationAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
@@ -191,11 +191,11 @@ public static class CompatActivity
     /// <summary>
     /// Converts a Bot Framework ChannelAccount to a Core ConversationAccount.
     /// </summary>
-    public static Microsoft.Teams.Bot.Core.Schema.ConversationAccount FromCompatChannelAccount(this Microsoft.Bot.Schema.ChannelAccount account)
+    public static Microsoft.Teams.Core.Schema.ConversationAccount FromCompatChannelAccount(this Microsoft.Bot.Schema.ChannelAccount account)
     {
         ArgumentNullException.ThrowIfNull(account);
 
-        Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = new() { Id = account.Id, Name = account.Name };
+        Microsoft.Teams.Core.Schema.ConversationAccount result = new() { Id = account.Id, Name = account.Name };
 
         if (!string.IsNullOrEmpty(account.AadObjectId))
         {
@@ -213,11 +213,11 @@ public static class CompatActivity
     /// <summary>
     /// Converts a Bot Framework ConversationParameters to a Core ConversationParameters.
     /// </summary>
-    public static Microsoft.Teams.Bot.Core.ConversationParameters FromCompatConversationParameters(this Microsoft.Bot.Schema.ConversationParameters parameters)
+    public static Microsoft.Teams.Core.ConversationParameters FromCompatConversationParameters(this Microsoft.Bot.Schema.ConversationParameters parameters)
     {
         ArgumentNullException.ThrowIfNull(parameters);
 
-        return new Microsoft.Teams.Bot.Core.ConversationParameters
+        return new Microsoft.Teams.Core.ConversationParameters
         {
             IsGroup = parameters.IsGroup,
             Bot = parameters.Bot?.FromCompatChannelAccount(),

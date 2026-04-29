@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace Microsoft.Teams.Bot.Core.Schema;
+namespace Microsoft.Teams.Core.Schema;
 
 /// <summary>
 /// Represents a conversation account, including its unique identifier, display name, and any additional properties

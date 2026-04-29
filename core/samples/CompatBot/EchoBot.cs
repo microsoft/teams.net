@@ -5,9 +5,9 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
-using Microsoft.Teams.Bot.Compat;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps.BotBuilder;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

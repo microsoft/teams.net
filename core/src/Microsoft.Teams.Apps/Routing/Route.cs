@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Routing;
+namespace Microsoft.Teams.Apps.Routing;
 
 /// <summary>
 /// Base class for routes, providing non-generic access to route functionality

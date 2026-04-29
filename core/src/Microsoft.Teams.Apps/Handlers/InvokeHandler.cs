@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Routing;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Apps.Routing;
+using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Handlers;
+namespace Microsoft.Teams.Apps.Handlers;
 
 /// <summary>
 /// Represents a method that handles an invocation request and returns a response asynchronously.

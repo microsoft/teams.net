@@ -4,7 +4,7 @@
 using CompatProactive;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Teams.Bot.Compat;
+using Microsoft.Teams.Apps.BotBuilder;
 
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder(args);

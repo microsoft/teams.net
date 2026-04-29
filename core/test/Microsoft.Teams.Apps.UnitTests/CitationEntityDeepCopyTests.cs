@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
 
-namespace Microsoft.Teams.Bot.Apps.UnitTests;
+namespace Microsoft.Teams.Apps.UnitTests;
 
 /// <summary>
 /// Verifies that the CitationEntity copy constructor deep-copies CitationClaim instances

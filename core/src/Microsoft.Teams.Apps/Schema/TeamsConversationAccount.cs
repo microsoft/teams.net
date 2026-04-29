@@ -3,9 +3,9 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema;
+namespace Microsoft.Teams.Apps.Schema;
 
 /// <summary>
 /// Represents a Microsoft Teams-specific conversation account, including Azure Active Directory (AAD) object

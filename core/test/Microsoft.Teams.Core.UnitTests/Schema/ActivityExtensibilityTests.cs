@@ -4,9 +4,9 @@
 using System.Text;
 using System.Text.Json.Serialization;
 
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Core.UnitTests.Schema;
+namespace Microsoft.Teams.Core.UnitTests.Schema;
 
 public class ActivityExtensibilityTests
 {

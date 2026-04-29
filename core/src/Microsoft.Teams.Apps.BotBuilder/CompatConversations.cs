@@ -4,10 +4,10 @@
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Schema;
 using Microsoft.Rest;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Compat
+namespace Microsoft.Teams.Apps.BotBuilder
 {
     /// <summary>
     /// Provides a compatibility adapter that bridges the Teams Bot Core <see cref="ConversationClient"/> to the
@@ -53,7 +53,7 @@ namespace Microsoft.Teams.Bot.Compat
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
 
-            Microsoft.Teams.Bot.Core.ConversationParameters convoParams = parameters.FromCompatConversationParameters();
+            Microsoft.Teams.Core.ConversationParameters convoParams = parameters.FromCompatConversationParameters();
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
             CreateConversationResponse res = await _client.CreateConversationAsync(
@@ -121,7 +121,7 @@ namespace Microsoft.Teams.Bot.Compat
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            IList<Microsoft.Teams.Bot.Core.Schema.ConversationAccount> members = await _client.GetActivityMembersAsync(
+            IList<Microsoft.Teams.Core.Schema.ConversationAccount> members = await _client.GetActivityMembersAsync(
                 conversationId,
                 activityId,
                 new Uri(ServiceUrl!),
@@ -155,7 +155,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            IList<Microsoft.Teams.Bot.Core.Schema.ConversationAccount> members = await _client.GetConversationMembersAsync(
+            IList<Microsoft.Teams.Core.Schema.ConversationAccount> members = await _client.GetConversationMembersAsync(
                 conversationId,
                 new Uri(ServiceUrl),
                 AgenticIdentity,
@@ -177,7 +177,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Microsoft.Teams.Bot.Core.PagedMembersResult pagedMembers = await _client.GetConversationPagedMembersAsync(
+            Microsoft.Teams.Core.PagedMembersResult pagedMembers = await _client.GetConversationPagedMembersAsync(
                 conversationId,
                 new Uri(ServiceUrl),
                 pageSize,
@@ -240,7 +240,7 @@ namespace Microsoft.Teams.Bot.Compat
             }
 
             coreActivity.ReplyToId = activityId;
-            coreActivity.Conversation = new Microsoft.Teams.Bot.Core.Schema.Conversation(conversationId);
+            coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
 
             SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -262,7 +262,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Microsoft.Teams.Bot.Core.Transcript coreTranscript = new()
+            Microsoft.Teams.Core.Transcript coreTranscript = new()
             {
                 Activities = transcript.Activities?.Select(a => a.FromCompatActivity()).ToList()
             };
@@ -310,7 +310,7 @@ namespace Microsoft.Teams.Bot.Compat
                 coreActivity.ServiceUrl = new Uri(ServiceUrl);
             }
 
-            coreActivity.Conversation = new Microsoft.Teams.Bot.Core.Schema.Conversation(conversationId);
+            coreActivity.Conversation = new Microsoft.Teams.Core.Schema.Conversation(conversationId);
 
             SendActivityResponse? response = await _client.SendActivityAsync(coreActivity, customHeaders: convertedHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
 
@@ -369,7 +369,7 @@ namespace Microsoft.Teams.Bot.Compat
             ArgumentException.ThrowIfNullOrWhiteSpace(ServiceUrl);
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Microsoft.Teams.Bot.Core.AttachmentData coreAttachmentData = new()
+            Microsoft.Teams.Core.AttachmentData coreAttachmentData = new()
             {
                 Type = attachmentUpload.Type,
                 Name = attachmentUpload.Name,
@@ -419,7 +419,7 @@ namespace Microsoft.Teams.Bot.Compat
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Microsoft.Teams.Bot.Core.Schema.ConversationAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Bot.Core.Schema.ConversationAccount>(
+            Microsoft.Teams.Core.Schema.ConversationAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Core.Schema.ConversationAccount>(
                 conversationId, userId, new Uri(ServiceUrl), AgenticIdentity, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             return new HttpOperationResponse<ChannelAccount>

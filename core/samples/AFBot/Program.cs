@@ -7,9 +7,9 @@ using Azure.AI.OpenAI;
 using Azure.Monitor.OpenTelemetry.AspNetCore;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Hosting;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Hosting;
+using Microsoft.Teams.Core.Schema;
 using OpenAI;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);

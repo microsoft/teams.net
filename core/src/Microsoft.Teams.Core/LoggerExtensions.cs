@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.Teams.Bot.Core;
+namespace Microsoft.Teams.Core;
 
 #pragma warning disable CA2254 // Template should be a static expression - by design, these are guarded wrappers
 internal static class LoggerExtensions

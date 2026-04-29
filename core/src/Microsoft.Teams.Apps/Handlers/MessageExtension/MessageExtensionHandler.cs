@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using Microsoft.Teams.Bot.Apps.Routing;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Apps.Routing;
+using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Handlers.MessageExtension;
+namespace Microsoft.Teams.Apps.Handlers.MessageExtension;
 
 /// <summary>
 /// Delegate for handling message extension query invoke activities.

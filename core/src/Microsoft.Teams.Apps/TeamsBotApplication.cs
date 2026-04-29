@@ -3,15 +3,15 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Apps.Api.Clients;
-using Microsoft.Teams.Bot.Apps.Auth;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Routing;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Auth;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Routing;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Hosting;
 
-namespace Microsoft.Teams.Bot.Apps;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Teams specific Bot Application

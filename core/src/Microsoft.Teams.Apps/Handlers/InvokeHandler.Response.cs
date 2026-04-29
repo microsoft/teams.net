@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Handlers;
+namespace Microsoft.Teams.Apps.Handlers;
 
 
 /// <summary>

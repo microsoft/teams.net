@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace Microsoft.Teams.Bot.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Api.Clients;
 
 /// <summary>
 /// Client for bot token operations.

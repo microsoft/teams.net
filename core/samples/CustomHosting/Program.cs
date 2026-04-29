@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using CustomHosting;
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Core.Hosting;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 

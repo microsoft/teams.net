@@ -7,10 +7,10 @@ using System.Diagnostics.CodeAnalysis;
     "CA1873:Avoid potentially expensive logging",
     Justification = "<Pending>",
     Scope = "namespaceanddescendants",
-    Target = "~N:Microsoft.Teams.Bot.Compat")]
+    Target = "~N:Microsoft.Teams.Apps.BotBuilder")]
 
 [assembly: SuppressMessage("Performance",
     "CA1848:Use the LoggerMessage delegates",
     Justification = "<Pending>",
     Scope = "namespaceanddescendants",
-    Target = "~N:Microsoft.Teams.Bot.Compat")]
+    Target = "~N:Microsoft.Teams.Apps.BotBuilder")]

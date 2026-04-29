@@ -3,12 +3,12 @@
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Core.Http;
+using Microsoft.Teams.Core.Http;
 
-using CoreConversationClient = Microsoft.Teams.Bot.Core.ConversationClient;
-using CoreUserTokenClient = Microsoft.Teams.Bot.Core.UserTokenClient;
+using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
+using CoreUserTokenClient = Microsoft.Teams.Core.UserTokenClient;
 
-namespace Microsoft.Teams.Bot.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Api.Clients;
 
 /// <summary>
 /// Top-level API client that provides access to all Teams Bot API sub-clients.

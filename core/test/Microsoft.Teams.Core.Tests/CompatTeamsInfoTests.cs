@@ -7,7 +7,7 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Compat;
+using Microsoft.Teams.Apps.BotBuilder;
 using Xunit.Abstractions;
 
 namespace Microsoft.Bot.Core.Tests

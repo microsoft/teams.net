@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Text.Json;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Core.UnitTests.Schema;
+namespace Microsoft.Teams.Core.UnitTests.Schema;
 
 public class CoreCoreActivityTests
 {

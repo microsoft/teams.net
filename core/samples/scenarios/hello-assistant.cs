@@ -6,9 +6,9 @@
 #:project ../../src/Microsoft.Teams.Apps/Microsoft.Teams.Apps.csproj
 
 
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Apps.Schema.Entities;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
 
 var builder = TeamsBotApplication.CreateBuilder();
 var teamsApp = builder.Build();

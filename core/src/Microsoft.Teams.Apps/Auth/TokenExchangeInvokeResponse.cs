@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Auth;
+namespace Microsoft.Teams.Apps.Auth;
 
 /// <summary>
 /// Response body returned in the invoke response for a failed signin/tokenExchange.

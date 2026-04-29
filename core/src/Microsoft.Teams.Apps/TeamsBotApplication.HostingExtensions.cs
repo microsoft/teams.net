@@ -3,10 +3,10 @@
 
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Teams.Bot.Apps.Api.Clients;
-using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Core.Hosting;
 
-namespace Microsoft.Teams.Bot.Apps;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Extension methods for <see cref="TeamsBotApplication"/>.

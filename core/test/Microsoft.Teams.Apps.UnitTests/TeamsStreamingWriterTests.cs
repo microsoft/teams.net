@@ -3,11 +3,11 @@
 
 using System.Net;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.UnitTests;
+namespace Microsoft.Teams.Apps.UnitTests;
 
 public class TeamsStreamingWriterTests
 {

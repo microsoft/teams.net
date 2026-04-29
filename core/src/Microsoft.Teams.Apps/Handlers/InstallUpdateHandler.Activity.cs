@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Handlers;
+namespace Microsoft.Teams.Apps.Handlers;
 
 /// <summary>
 /// Represents an installation update activity.

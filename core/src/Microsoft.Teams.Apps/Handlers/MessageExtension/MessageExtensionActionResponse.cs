@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
-using Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
+using Microsoft.Teams.Apps.Handlers.TaskModules;
 
-namespace Microsoft.Teams.Bot.Apps.Handlers.MessageExtension;
+namespace Microsoft.Teams.Apps.Handlers.MessageExtension;
 
 /// <summary>
 /// Represents a response from a message extension action that can contain either a task module or compose extension response.

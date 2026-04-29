@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Apps.Schema;
+namespace Microsoft.Teams.Apps.Schema;
 
 /// <summary>
 /// Provides constant values for activity types used in Microsoft Teams bot interactions.

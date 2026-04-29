@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using Microsoft.Identity.Client;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 
 internal class WelcomeMessageMiddleware : ITurnMiddleware
 {

@@ -17,7 +17,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Validators;
 
-namespace Microsoft.Teams.Bot.Core.Hosting
+namespace Microsoft.Teams.Core.Hosting
 {
     /// <summary>
     /// Provides extension methods for configuring JWT authentication and authorization for bots and agents.

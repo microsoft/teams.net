@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Schema;
-using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Core;
 
-namespace Microsoft.Teams.Bot.Compat;
+namespace Microsoft.Teams.Apps.BotBuilder;
 
 /// <summary>
 /// Provides a compatibility layer that adapts the Teams Bot Core <see cref="UserTokenClient"/> to the Bot Framework's

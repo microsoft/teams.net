@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 
-namespace Microsoft.Teams.Bot.Compat;
+namespace Microsoft.Teams.Apps.BotBuilder;
 
 internal static class CompatTeamsInfoModels
 {

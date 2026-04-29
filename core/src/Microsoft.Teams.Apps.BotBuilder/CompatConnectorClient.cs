@@ -5,7 +5,7 @@ using Microsoft.Bot.Connector;
 using Microsoft.Rest;
 using Newtonsoft.Json;
 
-namespace Microsoft.Teams.Bot.Compat
+namespace Microsoft.Teams.Apps.BotBuilder
 {
     /// <summary>
     /// Provides a stub implementation of <see cref="IConnectorClient"/> for compatibility with Bot Framework SDK.

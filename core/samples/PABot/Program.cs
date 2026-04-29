@@ -3,7 +3,7 @@
 
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Integration.AspNet.Core;
-using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Core;
 using PABot;
 using PABot.Bots;
 using PABot.Dialogs;

@@ -12,7 +12,7 @@ using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
 
-namespace Microsoft.Teams.Bot.Core.Hosting;
+namespace Microsoft.Teams.Core.Hosting;
 
 /// <summary>
 /// Provides extension methods for registering bot application clients and related authentication services with the

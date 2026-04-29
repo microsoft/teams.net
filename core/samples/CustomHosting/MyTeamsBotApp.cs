@@ -1,11 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Api.Clients;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Hosting;
 
 namespace CustomHosting;
 

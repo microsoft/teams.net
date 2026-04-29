@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace Microsoft.Teams.Bot.Core.Schema;
+namespace Microsoft.Teams.Core.Schema;
 
 /// <summary>
 /// Provides a fluent API for building CoreActivity instances.

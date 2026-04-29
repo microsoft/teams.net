@@ -8,9 +8,9 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Core.Hosting;
+using Microsoft.Teams.Core.Hosting;
 
-namespace Microsoft.Teams.Bot.Core.Http;
+namespace Microsoft.Teams.Core.Http;
 /// <summary>
 /// Provides shared HTTP request functionality for bot clients.
 /// </summary>

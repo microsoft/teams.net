@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Handlers.TaskModules;
+namespace Microsoft.Teams.Apps.Handlers.TaskModules;
 
 /// <summary>
 /// Task module response types.

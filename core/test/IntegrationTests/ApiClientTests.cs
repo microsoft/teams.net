@@ -3,11 +3,11 @@
 
 using System.Text;
 using System.Text.Json;
-using Microsoft.Teams.Bot.Apps.Api.Clients;
-using Microsoft.Teams.Bot.Apps.Handlers.MessageExtension;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Handlers.MessageExtension;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
 
 namespace IntegrationTests;

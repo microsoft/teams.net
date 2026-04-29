@@ -4,7 +4,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
-namespace Microsoft.Teams.Bot.Core.Schema;
+namespace Microsoft.Teams.Core.Schema;
 
 /// <summary>
 /// Represents a dictionary for storing extended properties as key-value pairs.

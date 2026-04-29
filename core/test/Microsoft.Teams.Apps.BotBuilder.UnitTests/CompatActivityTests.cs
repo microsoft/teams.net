@@ -5,10 +5,10 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AdaptiveCards;
 using Microsoft.Bot.Schema;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
 
-namespace Microsoft.Teams.Bot.Compat.UnitTests
+namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
     public class CompatActivityTests
     {
@@ -305,7 +305,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Name = "Alice" };
 
-            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
 
             Assert.Equal("user-1", result.Id);
             Assert.Equal("Alice", result.Name);
@@ -316,7 +316,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", AadObjectId = "aad-123" };
 
-            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
 
             Assert.True(result.Properties.TryGetValue("aadObjectId", out object? val));
             Assert.Equal("aad-123", val?.ToString());
@@ -327,7 +327,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Role = "owner" };
 
-            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
 
             Assert.True(result.Properties.TryGetValue("userRole", out object? val));
             Assert.Equal("owner", val?.ToString());
@@ -338,7 +338,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1" };
 
-            Microsoft.Teams.Bot.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
 
             Assert.False(result.Properties.ContainsKey("aadObjectId"));
             Assert.False(result.Properties.ContainsKey("userRole"));
@@ -365,7 +365,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 ChannelData = new { custom = "data" },
             };
 
-            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+            Microsoft.Teams.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
 
             Assert.True(result.IsGroup);
             Assert.Equal("Test Topic", result.TopicName);
@@ -381,7 +381,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 Bot = new Microsoft.Bot.Schema.ChannelAccount { Id = "bot-1", Name = "MyBot" }
             };
 
-            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+            Microsoft.Teams.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
 
             Assert.NotNull(result.Bot);
             Assert.Equal("bot-1", result.Bot.Id);
@@ -400,7 +400,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
                 ]
             };
 
-            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+            Microsoft.Teams.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
 
             Assert.NotNull(result.Members);
             Assert.Equal(2, result.Members.Count);
@@ -413,7 +413,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         {
             Microsoft.Bot.Schema.ConversationParameters parameters = new() { Activity = null };
 
-            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+            Microsoft.Teams.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
 
             Assert.Null(result.Activity);
         }
@@ -423,7 +423,7 @@ namespace Microsoft.Teams.Bot.Compat.UnitTests
         {
             Microsoft.Bot.Schema.ConversationParameters parameters = new() { Bot = null };
 
-            Microsoft.Teams.Bot.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
+            Microsoft.Teams.Core.ConversationParameters result = parameters.FromCompatConversationParameters();
 
             Assert.Null(result.Bot);
         }

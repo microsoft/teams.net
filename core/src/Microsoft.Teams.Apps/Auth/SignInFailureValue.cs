@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Bot.Apps.Auth;
+namespace Microsoft.Teams.Apps.Auth;
 
 /// <summary>
 /// Value payload of the signin/failure invoke activity.

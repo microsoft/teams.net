@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace Microsoft.Teams.Bot.Core.Hosting;
+namespace Microsoft.Teams.Core.Hosting;
 
 /// <summary>
 /// Options for configuring a bot application instance.

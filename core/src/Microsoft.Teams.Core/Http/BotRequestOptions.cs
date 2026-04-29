@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Core.Http;
+namespace Microsoft.Teams.Core.Http;
 
 using CustomHeaders = Dictionary<string, string>;
 

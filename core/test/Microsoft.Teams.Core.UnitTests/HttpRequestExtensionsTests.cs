@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.Teams.Bot.Core.UnitTests;
+namespace Microsoft.Teams.Core.UnitTests;
 
 public class HttpRequestExtensionsTests
 {

@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Abstractions;
 
-namespace Microsoft.Teams.Bot.Core.Hosting;
+namespace Microsoft.Teams.Core.Hosting;
 
 /// <summary>
 /// Provides extension methods for configuring MSAL (Microsoft Authentication Library) with different credential types.

@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Api.Clients;
-using Microsoft.Teams.Bot.Apps.Auth;
-using Microsoft.Teams.Bot.Apps.Schema;
-using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Auth;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
 
-namespace Microsoft.Teams.Bot.Apps;
+namespace Microsoft.Teams.Apps;
 
 
 /// <summary>

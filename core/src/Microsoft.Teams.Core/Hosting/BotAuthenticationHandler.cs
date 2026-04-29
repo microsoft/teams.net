@@ -7,9 +7,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Schema;
 
-namespace Microsoft.Teams.Bot.Core.Hosting;
+namespace Microsoft.Teams.Core.Hosting;
 
 /// <summary>
 /// HTTP message handler that automatically acquires and attaches authentication tokens

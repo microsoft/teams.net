@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Bot.Apps.Auth;
+using Microsoft.Teams.Apps.Auth;
 
-namespace Microsoft.Teams.Bot.Apps;
+namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Options for configuring a <see cref="TeamsBotApplication"/>.

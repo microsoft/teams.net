@@ -2,10 +2,10 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
-using Microsoft.Teams.Bot.Core.Schema;
-using CoreConversationClient = Microsoft.Teams.Bot.Core.ConversationClient;
+using Microsoft.Teams.Core.Schema;
+using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
 
-namespace Microsoft.Teams.Bot.Apps.Api.Clients;
+namespace Microsoft.Teams.Apps.Api.Clients;
 
 /// <summary>
 /// Client for managing reactions on activities in a conversation.

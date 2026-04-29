@@ -6,12 +6,12 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Logging;
-using Microsoft.Teams.Bot.Core;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Newtonsoft.Json;
 
 
-namespace Microsoft.Teams.Bot.Compat;
+namespace Microsoft.Teams.Apps.BotBuilder;
 
 /// <summary>
 /// Provides a Bot Framework adapter that enables compatibility between the Bot Framework SDK and a custom bot
@@ -110,7 +110,7 @@ public class CompatBotAdapter(
                 coreActivity.ServiceUrl = new Uri(turnContext.Activity.ServiceUrl);
             }
 
-            coreActivity.Conversation ??= new Microsoft.Teams.Bot.Core.Schema.Conversation(
+            coreActivity.Conversation ??= new Microsoft.Teams.Core.Schema.Conversation(
                 turnContext.Activity.Conversation?.Id
                 ?? throw new InvalidOperationException("Conversation ID is required to send activities."));
             SendActivityResponse? resp = await botApplication.SendActivityAsync(coreActivity, cancellationToken: cancellationToken).ConfigureAwait(false);

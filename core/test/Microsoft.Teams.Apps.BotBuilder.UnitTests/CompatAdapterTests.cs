@@ -6,10 +6,10 @@ using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Bot.Core;
+using Microsoft.Teams.Core;
 using Moq;
 
-namespace Microsoft.Teams.Bot.Compat.UnitTests
+namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 {
     public class CompatAdapterTests
     {

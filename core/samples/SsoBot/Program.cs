@@ -12,10 +12,10 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Microsoft.Teams.Bot.Apps;
-using Microsoft.Teams.Bot.Apps.Auth;
-using Microsoft.Teams.Bot.Apps.Handlers;
-using Microsoft.Teams.Bot.Apps.Schema;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Auth;
+using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 

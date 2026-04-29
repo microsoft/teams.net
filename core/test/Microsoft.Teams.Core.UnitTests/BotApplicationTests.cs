@@ -6,12 +6,12 @@ using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Bot.Core.Hosting;
-using Microsoft.Teams.Bot.Core.Schema;
+using Microsoft.Teams.Core.Hosting;
+using Microsoft.Teams.Core.Schema;
 using Moq;
 using Moq.Protected;
 
-namespace Microsoft.Teams.Bot.Core.UnitTests;
+namespace Microsoft.Teams.Core.UnitTests;
 
 public class BotApplicationTests
 {

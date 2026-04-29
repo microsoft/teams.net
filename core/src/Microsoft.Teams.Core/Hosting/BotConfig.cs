@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Microsoft.Teams.Bot.Core.Hosting;
+namespace Microsoft.Teams.Core.Hosting;
 
 /// <summary>
 /// Configuration model for bot authentication credentials.
