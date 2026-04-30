@@ -387,12 +387,134 @@ app.AddTab("dialog-form", "Web/dialog-form");
 
 ---
 
+## API Surface Gaps (from systematic comparison)
+
+These were identified by comparing the full public API surface between old and new libraries, beyond what the sample-driven analysis caught.
+
+### BC-15: MessageActivity fluent methods removed
+
+**Decision: IMPLEMENTED** — Extension methods added in `MessageActivityExtensions.cs`
+
+Methods added: `WithText()`, `WithSuggestedActions()`, `WithTextFormat()`, `WithAttachmentLayout()`, `AddAttachment()`, `AddStreamFinal()`.
+
+Not migrated (low priority, underlying properties commented out): `WithSpeak()`, `WithInputHint()`, `WithSummary()`, `WithImportance()`, `WithDeliveryMode()`, `WithExpiration()`, `AddText()`, `Merge()`.
+
+---
+
+### BC-16: `AddSensitivityLabel()` missing on TeamsActivity
+
+**Decision: IMPLEMENTED** — Extension method added in `ActivityCitationExtensions`.
+
+---
+
+### BC-17: Base Activity fluent `With*()` methods removed
+
+**Decision: NOT MIGRATED** — The old `Activity` base class had 13+ `With*()` methods (`WithId`, `WithFrom`, `WithRecipient`, `WithConversation`, `WithServiceUrl`, `WithTimestamp`, etc.). These are all available on `TeamsActivityBuilder`. Use the builder pattern instead:
+
+```csharp
+// Old:
+var activity = new Activity().WithFrom(account).WithConversation(conv);
+
+// New:
+var activity = new TeamsActivityBuilder()
+    .WithFrom(account)
+    .WithConversation(conv)
+    .Build();
+```
+
+---
+
+### BC-18: Activity conversion methods removed (`ToMessage()`, `ToInvoke()`, etc.)
+
+**Decision: NOT MIGRATED** — The old library had `ToMessage()`, `ToInvoke()`, `ToEvent()`, etc. The new library uses `FromActivity()` static factory methods instead:
+
+```csharp
+// Old: activity.ToMessage()
+// New: MessageActivity.FromActivity(coreActivity)
+```
+
+---
+
+### BC-19: Missing activity types
+
+**Decision: REVIEW LATER**
+
+| Missing Type | Notes |
+|---|---|
+| `TypingActivity` | No class in new lib; typing handled via `TeamsActivityType.Typing` |
+| `EndOfConversationActivity` | Commented out / TODO |
+| `CommandActivity` / `CommandResultActivity` | Commented out / TODO |
+| `ConversationReference` | Entire class missing; no direct replacement |
+
+---
+
+### BC-20: Missing handler registration methods
+
+**Decision: REVIEW LATER** — 18 handler methods exist in the old library but not in the new.
+
+**Tab handlers (completely removed):**
+- `OnTabFetch`, `OnTabSubmit`, `OnConfigFetch`, `OnConfigSubmit`
+
+**Command handlers (removed):**
+- `OnCommand`, `OnCommandResult`
+
+**Infrastructure events (architectural change):**
+- `OnActivity`, `OnError`, `OnStart`, `OnActivityResponse`, `OnActivitySent`
+
+**Auth events (restructured to per-flow):**
+- `OnSignIn`, `OnSignInFailure`, `OnTokenExchange`, `OnVerifyState`
+
+**Other removed handlers:**
+- `OnTyping`, `OnHandoff`, `OnFeedback`, `OnExecuteAction`
+
+**Commented out in new library:**
+- `OnSetting`, `OnCardButtonClicked`, `OnTypeaheadSearch`, `OnAnswerSearch`, `OnReadReceipt`
+
+---
+
+### BC-21: Type incompatibilities
+
+**Decision: NOT MIGRATED** — Intentional architectural changes.
+
+| Property | Old Type | New Type |
+|---|---|---|
+| `Timestamp`, `LocalTimestamp` | `DateTime?` | `string?` |
+| `ServiceUrl` | `string?` | `Uri?` |
+| `ContentUrl`, `ThumbnailUrl` (Attachment) | `string?` | `Uri?` |
+| Enums (`TextFormat`, `InputHint`, etc.) | Enum types | String constants |
+| `Account` | Custom `Account` class | `ConversationAccount` |
+
+---
+
+### BC-22: `Conversation.ToThreadedConversationId()` missing
+
+**Decision: REVIEW LATER** — Static utility method for constructing threaded conversation IDs. Used by Threading sample. The new `TeamsBotApplication.Reply()` handles this internally, but direct usage in sample code would break.
+
+---
+
+### BC-23: MessageActivity commented-out properties
+
+**Decision: REVIEW LATER** — These properties exist in the old library but are commented out in the new:
+`Speak`, `InputHint`, `Summary`, `Importance`, `DeliveryMode`, `Expiration`, `Value`
+
+---
+
+### BC-24: SuggestedActions fluent methods removed
+
+**Decision: NOT MIGRATED** — Old `SuggestedActions` had `AddRecipients()`, `AddAction()`, `AddActions()` fluent methods. Use direct property assignment instead.
+
+---
+
 ## Items to Review Later
 
 - **BC-1 (partial):** `Send(AdaptiveCard)` / `Reply(AdaptiveCard)` — blocked on Teams.Cards dependency decision
 - **BC-3:** Middleware / `OnActivity` / `Use()` / `Next()` — need to investigate sample usage patterns
 - **BC-11:** `OnSetting()` handler — need to clarify activity type/invoke name
 - **BC-14:** `AddTab()` — need to determine if it's static files only or also tab config endpoints
+- **BC-19:** Missing activity types (`TypingActivity`, `EndOfConversationActivity`, `CommandActivity`)
+- **BC-20:** Missing handler registration methods (Tab, Command, Infrastructure, commented-out)
+- **BC-22:** `Conversation.ToThreadedConversationId()` static utility
+- **BC-23:** MessageActivity commented-out properties
 
 ---
 

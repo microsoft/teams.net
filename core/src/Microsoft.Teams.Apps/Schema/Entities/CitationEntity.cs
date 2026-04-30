@@ -75,6 +75,26 @@ public static class ActivityCitationExtensions
         return activity;
     }
 
+    /// <summary>
+    /// Adds a content sensitivity label to the activity.
+    /// </summary>
+    /// <param name="activity">The activity to label. Cannot be null.</param>
+    /// <param name="name">The sensitivity label name.</param>
+    /// <param name="description">Optional description of the sensitivity.</param>
+    /// <param name="pattern">Optional defined term pattern.</param>
+    /// <returns>The activity for chaining.</returns>
+    public static TeamsActivity AddSensitivityLabel(this TeamsActivity activity, string name, string? description = null, DefinedTerm? pattern = null)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        activity.AddEntity(new SensitiveUsageEntity()
+        {
+            Name = name,
+            Description = description,
+            Pattern = pattern
+        });
+        return activity;
+    }
+
     // Gets or creates the single root-level OMessageEntity on the activity.
     private static OMessageEntity GetOrCreateRootMessageEntity(TeamsActivity activity)
     {
