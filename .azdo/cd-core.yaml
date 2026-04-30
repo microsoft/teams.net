@@ -1,7 +1,7 @@
 # =============================================================================
 # This pipeline (BotCore-CD) builds, tests, and packs the core/ project.
-# PR trigger: next/* branches (all paths). CI trigger: next/* branches (core/** paths only).
-# Pushes packages to internal preview feed on next/core branch.
+# PR trigger: core/* and main branches (all paths). CI trigger: core/* and main branches (core/** paths only).
+# Pushes packages to internal preview feed on core/* and main branches.
 # =============================================================================
 
 pr:
@@ -9,15 +9,19 @@ pr:
     include:
       - core/*
       - main
-  paths:
-    include:
-      - core/**
+  # Uncomment and edit the following lines to add path filters for PRs in the future
+  # paths:
+  #   include:
+  #     - core/**
 
 trigger:
   branches:
     include:
     - core/*
     - main
+  paths:
+    include:
+    - core/**
 
 pool:
   vmImage: 'ubuntu-22.04'
@@ -59,7 +63,7 @@ stages:
 
       - task: NuGetCommand@2
         displayName: 'Push NuGet Packages'
-        condition: eq(variables['PushToADOFeed'], true)
+        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/next/core'))
         inputs:
           command: push
           packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
