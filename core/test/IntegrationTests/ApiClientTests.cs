@@ -175,7 +175,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Members
 
-    [Fact(Timeout = 5000)]
+    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task Members_GetAsync()
     {
         IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
@@ -189,7 +189,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Timeout = 5000)]
+    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task Members_GetByIdAsync()
     {
         // Get MRI-format member ID from the members list first
@@ -205,7 +205,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Member: {member.Id} — {member.Name}");
     }
 
-    [Fact(Timeout = 5000)]
+    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task Members_GetByIdAsync_AsTeamsConversationAccount()
     {
         // Get MRI-format member ID from the members list first
