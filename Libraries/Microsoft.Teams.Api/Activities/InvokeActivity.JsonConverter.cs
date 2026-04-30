@@ -132,12 +132,6 @@ public partial class InvokeActivity
                 return;
             }
 
-            if (value is Invokes.SuggestedActionSubmitActivity suggestedActionSubmit)
-            {
-                JsonSerializer.Serialize(writer, suggestedActionSubmit, options);
-                return;
-            }
-
             JsonSerializer.Serialize(writer, value, options);
         }
     }
