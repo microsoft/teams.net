@@ -28,7 +28,7 @@ internal static partial class Log
     [LoggerMessage(EventId = 3, Level = LogLevel.Information, Message = "Activity received: Type={Type} Id={Id} ServiceUrl={ServiceUrl} MSCV={MSCV}")]
     public static partial void ActivityReceived(this ILogger logger, string? type, string? id, Uri? serviceUrl, string? mscv);
 
-    [LoggerMessage(EventId = 4, Level = LogLevel.Trace, Message = "Received activity: {Activity}")]
+    [LoggerMessage(EventId = 4, Level = LogLevel.Trace, Message = "Received activity: \n {Activity}")]
     public static partial void ReceivedActivityJson(this ILogger logger, string activity);
 
     [LoggerMessage(EventId = 5, Level = LogLevel.Warning, Message = "Activity processing timed out after {Timeout}: Id={Id}")]
@@ -62,7 +62,7 @@ internal static partial class Log
 
     // ── BotHttpClient ───────────────────────────────────────────────────
 
-    [LoggerMessage(EventId = 20, Level = LogLevel.Trace, Message = "HTTP {Method} {Url} body: {Body}")]
+    [LoggerMessage(EventId = 20, Level = LogLevel.Trace, Message = "HTTP {Method} {Url} body: \n {Body}")]
     public static partial void HttpRequestSending(this ILogger logger, HttpMethod method, string url, string? body);
 
     [LoggerMessage(EventId = 21, Level = LogLevel.Debug, Message = "HTTP {Method} {Url} Response Status {StatusCode}")]
