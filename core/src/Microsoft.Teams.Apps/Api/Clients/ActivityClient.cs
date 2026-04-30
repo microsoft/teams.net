@@ -42,7 +42,8 @@ public class ActivityClient
     {
         ArgumentNullException.ThrowIfNull(activity);
         activity.ServiceUrl ??= _serviceUrl;
-        return _client.UpdateActivityAsync(conversationId, id, activity, cancellationToken: cancellationToken);
+        AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(activity.From);
+        return _client.UpdateActivityAsync(conversationId, id, activity, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
     }
 
     /// <summary>

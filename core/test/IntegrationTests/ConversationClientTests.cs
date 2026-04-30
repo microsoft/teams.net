@@ -22,7 +22,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output = output;
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task SendActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
@@ -40,7 +40,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Sent activity: {res.Id}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task UpdateActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
@@ -63,13 +63,13 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
             .Build();
 
         UpdateActivityResponse res = await _f.ConversationClient.UpdateActivityAsync(
-            _f.ConversationId, sent.Id, updated);
+            _f.ConversationId, sent.Id, updated, false, _f.AgenticIdentity);
 
         Assert.NotNull(res?.Id);
         _output.WriteLine($"Updated activity: {res.Id}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task DeleteActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
@@ -91,7 +91,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetConversationMembers()
     {
         IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
@@ -106,7 +106,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetConversationMember()
     {
         // Get MRI-format member ID from the members list first
@@ -123,7 +123,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Member: {member.Id} — {member.Name}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetPagedMembers()
     {
         PagedMembersResult result = await _f.ConversationClient.GetConversationPagedMembersAsync(
@@ -144,6 +144,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
             .WithServiceUrl(_f.ServiceUrl)
+            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`")
             .Build();

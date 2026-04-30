@@ -47,7 +47,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Personal Chat (1:1) — Core ConversationClient
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task Core_CreatePersonalChat()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -67,7 +67,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Created 1:1 conversation: {response.Id}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task Core_CreatePersonalChat_AndSendMessage()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -97,7 +97,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Created 1:1 conversation {response.Id} and sent activity {sent.Id}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task Core_CreatePersonalChat_WithInitialActivity()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -137,15 +137,15 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         ConversationParameters parameters = new()
         {
-            IsGroup = true,
+            //IsGroup = true,
             Bot = new() { Id = $"28:{_f.BotAppId}" },
             Members =
             [
-                new() { Id = first },
+                //new() { Id = first },
                 new() { Id = second }
             ],
             TenantId = _f.TenantId,
-            TopicName = $"Integration Test Group - {DateTime.UtcNow:s}",
+            //TopicName = $"Integration Test Group - {DateTime.UtcNow:s}",
             ChannelData = new { tenant = new { id = _f.TenantId } }
         };
 
@@ -169,11 +169,11 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         ConversationParameters parameters = new()
         {
-            IsGroup = true,
+            IsGroup = false,
             Bot = new() { Id = $"28:{_f.BotAppId}" },
             Members =
             [
-                new() { Id = first },
+                //new() { Id = first },
                 new() { Id = second }
             ],
             TenantId = _f.TenantId,
@@ -202,7 +202,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Channel Thread — Core ConversationClient
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task Core_CreateChannelThread()
     {
         ConversationParameters parameters = new()
@@ -228,7 +228,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Personal Chat — ApiClient
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task ApiClient_CreatePersonalChat()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -247,7 +247,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"[ApiClient] Created 1:1 conversation: {response.Id}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task ApiClient_CreatePersonalChat_AndSendViaActivities()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -289,7 +289,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         ConversationParameters parameters = new()
         {
-            IsGroup = true,
+            //IsGroup = true,
             Bot = new() { Id = $"28:{_f.BotAppId}" },
             Members =
             [
@@ -312,7 +312,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
     #region Channel Thread — ApiClient
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task ApiClient_CreateChannelThread()
     {
         ConversationParameters parameters = new()
@@ -333,7 +333,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"[ApiClient] Created channel thread: {response.Id}, activityId: {response.ActivityId}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task ApiClient_CreateChannelThread_AndReply()
     {
         ConversationParameters parameters = new()

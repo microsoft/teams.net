@@ -115,12 +115,9 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
         {
             Id = agenticUserId,
             Name = "Agentic User",
-            Properties =
-            {
-                { "agenticUserId", agenticUserId },
-                { "agenticAppId", agenticAppId },
-                { "agenticAppBlueprintId", agenticAppBlueprintId }
-            }
+            AgenticAppBlueprintId = agenticAppBlueprintId,
+            AgenticAppId = agenticAppId,
+            AgenticUserId = agenticUserId
         };
         return account;
     }

@@ -107,7 +107,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Member Methods (non-team scope)
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetMemberAsync_ReturnsTeamsChannelAccount()
     {
 
@@ -126,7 +126,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
 #pragma warning disable CS0618 // Obsolete warning for GetMembersAsync
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetMembersAsync_ReturnsTeamsChannelAccounts()
     {
 
@@ -144,7 +144,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 #pragma warning restore CS0618
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetPagedMembersAsync_ReturnsPaged()
     {
 
@@ -167,7 +167,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Team-scoped Member Methods
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamMemberAsync_ReturnsTeamsChannelAccount()
     {
 
@@ -185,7 +185,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"GetTeamMember: {result.Id} — {result.Name}, Email: {result.Email}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetMemberAsync_WithTeamScope_DelegatesToGetTeamMember()
     {
 
@@ -204,7 +204,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
 #pragma warning disable CS0618
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamMembersAsync_ReturnsMembers()
     {
 
@@ -222,7 +222,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 #pragma warning restore CS0618
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetPagedTeamMembersAsync_ReturnsPaged()
     {
 
@@ -245,7 +245,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Team & Channel Methods
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamDetailsAsync_ReturnsDetails()
     {
 
@@ -258,7 +258,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"TeamDetails: {result.Id} — {result.Name}, AadGroupId: {result.AadGroupId}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamDetailsAsync_InfersTeamIdFromActivity()
     {
 
@@ -271,7 +271,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"TeamDetails (inferred): {result.Id} — {result.Name}");
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamChannelsAsync_ReturnsChannels()
     {
 
@@ -288,7 +288,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamChannelsAsync_InfersTeamIdFromActivity()
     {
 
@@ -305,7 +305,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Meeting Methods
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetMeetingParticipantAsync_ReturnsParticipant()
     {
 
@@ -346,7 +346,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Error Cases
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamDetailsAsync_ThrowsWithoutTeamScope()
     {
         // No teamId in activity and no explicit teamId parameter
@@ -355,7 +355,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
             () => TeamsApiClient.GetTeamDetailsAsync(ctx));
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamChannelsAsync_ThrowsWithoutTeamScope()
     {
         using TurnContext ctx = CreateTurnContext();
@@ -363,7 +363,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
             () => TeamsApiClient.GetTeamChannelsAsync(ctx));
     }
 
-    [Fact(Timeout = 60000)]
+    [Fact(Timeout = 5000)]
     public async Task GetMemberAsync_ThrowsWithNullUserId()
     {
         using TurnContext ctx = CreateTurnContext();
