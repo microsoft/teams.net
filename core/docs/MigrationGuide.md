@@ -4,6 +4,48 @@ This guide covers migrating from the old `Microsoft.Teams.Apps` library (`Librar
 
 ---
 
+## Assembly Mapping
+
+The old library is split across 16 assemblies. The new library consolidates into 3.
+
+### New library assemblies
+
+| New Assembly | Purpose |
+|---|---|
+| `Microsoft.Teams.Core` | Foundation: activity protocol, auth, middleware, HTTP clients |
+| `Microsoft.Teams.Apps` | High-level: handlers, routing, OAuth flows, API clients |
+| `Microsoft.Teams.Apps.BotBuilder` | Backward compat layer for Bot Framework SDK |
+
+### Old assemblies not available in the new library
+
+These assemblies have no equivalent in the new library and must be sourced separately or replaced:
+
+| Old Assembly | Status |
+|---|---|
+| `Microsoft.Teams.AI` | Not available |
+| `Microsoft.Teams.AI.Models.OpenAI` | Not available |
+| `Microsoft.Teams.Cards` | Not available |
+| `Microsoft.Teams.Extensions.Graph` | Not available |
+| `Microsoft.Teams.Plugins.AspNetCore.DevTools` | Not available |
+| `Microsoft.Teams.Plugins.External.Mcp` | Not available — plugin architecture removed |
+| `Microsoft.Teams.Plugins.External.McpClient` | Not available — plugin architecture removed |
+| `Microsoft.Teams.Apps.Testing` | Not available — use standard DI mocking instead of `TestPlugin` |
+
+### Old assemblies replaced by standard .NET
+
+| Old Assembly | Replaced By |
+|---|---|
+| `Microsoft.Teams.Common` (logging) | `Microsoft.Extensions.Logging` |
+| `Microsoft.Teams.Common` (HTTP) | `System.Net.Http.HttpClient` + DI |
+| `Microsoft.Teams.Common` (storage) | No direct replacement — `IStorage<K,V>` removed |
+| `Microsoft.Teams.Extensions.Configuration` | `Microsoft.Extensions.Configuration` via `BotConfig` |
+| `Microsoft.Teams.Extensions.Logging` | `Microsoft.Extensions.Logging` (no bridge needed) |
+| `Microsoft.Teams.Extensions.Hosting` | `TeamsBotApplicationHostingExtensions` |
+| `Microsoft.Teams.Plugins.AspNetCore` | Standard ASP.NET Core middleware + `BotApplication.ProcessAsync()` |
+| `Microsoft.Teams.Plugins.AspNetCore.BotBuilder` | `Microsoft.Teams.Apps.BotBuilder` (compat layer) |
+
+---
+
 ## Quick Reference
 
 | Old API | New API | Notes |
@@ -120,6 +162,31 @@ return InvokeResponse.Ok<TaskModuleResponse>(response);
 return InvokeResponse.Error(400, errorDetails);
 ```
 
+### MessageActivity Fluent Methods (BC-15)
+
+Extension methods on `MessageActivity`:
+
+```csharp
+var msg = new MessageActivity("hello")
+    .WithSuggestedActions(actions)
+    .WithAttachmentLayout("carousel")
+    .AddAttachment(attachment1, attachment2);
+```
+
+Available: `WithText()`, `WithSuggestedActions()`, `WithTextFormat()`, `WithAttachmentLayout()`, `AddAttachment()`, `AddStreamFinal()`.
+
+### Activity Entity Methods
+
+These work on any `TeamsActivity` (including `MessageActivity`):
+
+```csharp
+activity.AddEntity(entity);           // inherited method
+activity.AddAIGenerated();            // extension method
+activity.AddCitation(position, appearance); // extension method
+activity.AddFeedback();               // extension method
+activity.AddSensitivityLabel("name"); // extension method
+```
+
 ---
 
 ### App.Builder() Pattern (BC-6)
@@ -196,6 +263,97 @@ Member access (`.Text`, `.From`, `.Conversation`, `.Value`, etc.) remains the sa
 
 ---
 
+### BC-17: Activity fluent `With*()` methods moved to builder
+
+**Old:**
+```csharp
+var activity = new Activity().WithFrom(account).WithConversation(conv);
+```
+
+**New:**
+```csharp
+var activity = new TeamsActivityBuilder()
+    .WithFrom(account)
+    .WithConversation(conv)
+    .Build();
+```
+
+The base `TeamsActivity` no longer has `With*()` methods. Use `TeamsActivityBuilder` instead.
+
+---
+
+### BC-18: Activity conversion methods replaced by factories
+
+**Old:**
+```csharp
+var msg = activity.ToMessage();
+```
+
+**New:**
+```csharp
+var msg = MessageActivity.FromActivity(coreActivity);
+```
+
+---
+
+### BC-21: Type incompatibilities
+
+| Property | Old Type | New Type |
+|---|---|---|
+| `Timestamp`, `LocalTimestamp` | `DateTime?` | `string?` |
+| `ServiceUrl` | `string?` | `Uri?` |
+| `ContentUrl`, `ThumbnailUrl` (Attachment) | `string?` | `Uri?` |
+| Enums (`TextFormat`, `InputHint`, etc.) | Enum types | String constants |
+| `Account` | Custom `Account` class | `ConversationAccount` / `TeamsConversationAccount` |
+
+---
+
+### Hosting and Plugin Architecture
+
+The old plugin-based architecture is entirely removed. This affects:
+
+| Old Pattern | New Equivalent |
+|---|---|
+| `ISenderPlugin` / `IAspNetCorePlugin` | Not available — use `TeamsBotApplication` directly |
+| `AddTeamsPlugin<T>()` | Not available — register services via standard DI |
+| `TeamsService` (IHostedService) | Not needed — lifecycle managed by `BotApplication.ProcessAsync()` |
+| `AddTeamsTokenAuthentication()` | Built into `AddTeamsBotApplication()` via `BotConfig` |
+| `TeamsValidationSettings` | Replaced by `JwtExtensions` + `BotConfig` |
+| `AspNetCorePlugin.Configure()` | Use standard `app.UseAuthentication()` / `app.UseAuthorization()` |
+
+---
+
+### Common library replacements
+
+| Old Type | New Equivalent |
+|---|---|
+| `Microsoft.Teams.Common.Logging.ILogger` | `Microsoft.Extensions.Logging.ILogger` |
+| `Microsoft.Teams.Common.Logging.ConsoleLogger` | `builder.Logging.AddConsole()` |
+| `Microsoft.Teams.Common.Logging.LogLevel` | `Microsoft.Extensions.Logging.LogLevel` |
+| `Microsoft.Teams.Common.Http.IHttpClient` | `System.Net.Http.HttpClient` via DI |
+| `Microsoft.Teams.Common.Http.IHttpClientFactory` | `Microsoft.Extensions.Http.IHttpClientFactory` |
+| `Microsoft.Teams.Common.Http.HttpException` | `System.Net.Http.HttpRequestException` |
+| `Microsoft.Teams.Common.Storage.IStorage<K,V>` | No direct replacement — removed from SDK |
+| `Microsoft.Teams.Common.Storage.LocalStorage<V>` | No direct replacement — use `IMemoryCache` or custom |
+
+---
+
+### Testing
+
+The old `TestPlugin` from `Microsoft.Teams.Apps.Testing` is not available. Use standard .NET testing patterns:
+
+```csharp
+// Old: TestPlugin-based
+var plugin = new TestPlugin();
+var app = App.Builder().AddPlugin(plugin).Build();
+
+// New: Direct instantiation with mocks
+var mockBot = new Mock<TeamsBotApplication>(...);
+var context = new Context<MessageActivity>(mockBot.Object, activity);
+```
+
+---
+
 ## Items Under Review
 
 The following items are being evaluated and may change:
@@ -204,3 +362,7 @@ The following items are being evaluated and may change:
 - **BC-3:** Middleware / `OnActivity` / `Use()` / `Next()` — architecture review needed
 - **BC-11:** `OnSetting()` message extension handler — activity type clarification needed
 - **BC-14:** `AddTab()` — scope of feature TBD
+- **BC-19:** Missing activity types (`TypingActivity`, `EndOfConversationActivity`, `CommandActivity`)
+- **BC-20:** Missing handler registration methods (Tab, Command, Infrastructure, commented-out handlers)
+- **BC-22:** `Conversation.ToThreadedConversationId()` static utility
+- **BC-23:** MessageActivity commented-out properties (`Speak`, `InputHint`, `Summary`, `Importance`, `DeliveryMode`, `Expiration`)
