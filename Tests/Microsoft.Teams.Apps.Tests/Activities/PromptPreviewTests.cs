@@ -65,9 +65,13 @@ public class PromptPreviewTests
         Assert.NotNull(sentActivity);
         Assert.NotNull(sentActivity!.Entities);
 
+        // Reply calls Send, which auto-populates the entity
         var targetedEntity = sentActivity.Entities!.OfType<TargetedMessageInfoEntity>().SingleOrDefault();
         Assert.NotNull(targetedEntity);
         Assert.Equal("1772129782775", targetedEntity!.MessageId);
+
+        // quotedReply entities should be stripped by AddTargetedMessageInfo
+        Assert.DoesNotContain(sentActivity.Entities!, e => e.Type == "quotedReply");
     }
 
     [Fact]

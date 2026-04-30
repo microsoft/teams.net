@@ -27,7 +27,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
     context.Log.Info($"[MESSAGE] Received: {text}");
 
-    if (text.Contains("update"))
+    if (text.Contains("test update"))
     {
         // UPDATE: Send a targeted message, then update it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
@@ -61,7 +61,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
         context.Log.Info($"[UPDATE] Scheduled update in 3 seconds");
     }
-    else if (text.Contains("delete"))
+    else if (text.Contains("test delete"))
     {
         // DELETE: Send a targeted message, then delete it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
@@ -93,7 +93,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
         context.Log.Info($"[DELETE] Scheduled delete in 3 seconds");
     }
-    else if (text.Contains("public"))
+    else if (text.Contains("test public"))
     {
         // PUBLIC: Send a public message visible to everyone in the chat.
         await context.Send(
@@ -102,7 +102,7 @@ teams.OnMessage(async (context, cancellationToken) =>
         
         context.Log.Info("[PUBLIC] Sent public message");
     }
-    else if (text.Contains("send"))
+    else if (text.Contains("test send"))
     {
         // SEND: Send a targeted message visible only to the sender.
         await context.Send(
@@ -117,10 +117,10 @@ teams.OnMessage(async (context, cancellationToken) =>
         await context.Send(
             "**🎯 Targeted Messages Demo**\n\n" +
             "**Commands:**\n" +
-            "- `send` - Send a targeted message (only visible to you)\n" +
-            "- `update` - Send a targeted message, then update it after 3 seconds\n" +
-            "- `delete` - Send a targeted message, then delete it after 3 seconds\n" +
-            "- `public` - Send a public reply (visible to all)\n\n" +
+            "- `test send` - Send a targeted message (only visible to you)\n" +
+            "- `test update` - Send a targeted message, then update it after 3 seconds\n" +
+            "- `test delete` - Send a targeted message, then delete it after 3 seconds\n" +
+            "- `test public` - Send a public reply (visible to all)\n\n" +
             "_Targeted messages are only visible to you, even in group chats!_", cancellationToken);
     }
     else

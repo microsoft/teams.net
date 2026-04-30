@@ -393,6 +393,21 @@ public partial class Activity : IActivity
         var hasEntity = Entities?.Any(e => e.Type == "targetedMessageInfo") ?? false;
         if (!hasEntity)
         {
+            // Remove any quotedReply entities and matching <quoted .../> placeholder
+            // to avoid collision with prompt preview
+            if (Entities is not null)
+            {
+                for (var i = Entities.Count - 1; i >= 0; i--)
+                {
+                    if (Entities[i].Type == "quotedReply") Entities.RemoveAt(i);
+                }
+            }
+
+            if (this is MessageActivity message && message.Text is not null)
+            {
+                message.Text = message.Text.Replace($"<quoted messageId=\"{messageId}\"/>", string.Empty).Trim();
+            }
+
             AddEntity(new TargetedMessageInfoEntity { MessageId = messageId });
         }
 

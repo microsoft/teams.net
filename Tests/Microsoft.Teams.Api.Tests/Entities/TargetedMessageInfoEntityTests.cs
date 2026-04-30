@@ -108,4 +108,27 @@ public class TargetedMessageInfoEntityTests
         var entities = activity.Entities!.Where(e => e.Type == "targetedMessageInfo").ToList();
         Assert.Single(entities);
     }
+
+    [Fact]
+    public void AddTargetedMessageInfo_StripsQuotedReplyEntities()
+    {
+        var activity = new MessageActivity("test")
+            .AddEntity(new Entity("quotedReply"));
+
+        activity.AddTargetedMessageInfo("12345");
+
+        Assert.DoesNotContain(activity.Entities!, e => e.Type == "quotedReply");
+        Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
+    }
+
+    [Fact]
+    public void AddTargetedMessageInfo_StripsQuotedPlaceholderFromText()
+    {
+        var activity = new MessageActivity("<quoted messageId=\"12345\"/> Here is my reply");
+
+        activity.AddTargetedMessageInfo("12345");
+
+        Assert.Equal("Here is my reply", activity.Text);
+        Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
+    }
 }

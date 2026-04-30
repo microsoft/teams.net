@@ -98,19 +98,10 @@ public partial class Context<TActivity> : IContext<TActivity>
 
         if (activity is MessageActivity message)
         {
-            // Skip quoted reply when incoming activity is targeted —
-            // prompt preview owns the preview surface for targeted messages.
-            #pragma warning disable ExperimentalTeamsTargeted
-            var isTargeted = Activity.Recipient?.IsTargeted == true && Activity.Id is not null;
-            #pragma warning restore ExperimentalTeamsTargeted
-
-            if (!isTargeted)
-            {
-                message.Text = string.Join("\n", [
-                    Activity.ToQuoteReply(),
-                    message.Text != string.Empty ? $"<p>{message.Text}</p>" : string.Empty
-                ]);
-            }
+            message.Text = string.Join("\n", [
+                Activity.ToQuoteReply(),
+                message.Text != string.Empty ? $"<p>{message.Text}</p>" : string.Empty
+            ]);
         }
 
         return Send(activity, cancellationToken);
