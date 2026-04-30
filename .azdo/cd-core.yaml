@@ -1,13 +1,14 @@
 # =============================================================================
 # This pipeline (BotCore-CD) builds, tests, and packs the core/ project.
-# PR trigger: next/* branches (all paths). CI trigger: next/* branches (core/** paths only).
-# Pushes packages to internal preview feed on next/core branch.
+# PR trigger: core/* and main branches (all paths). CI trigger: core/* and main branches (core/** paths only).
+# Pushes packages to internal preview feed on core/* and main branches.
 # =============================================================================
 
 pr:
   branches:
     include:
-      - next/*
+      - core/*
+      - main
   # Uncomment and edit the following lines to add path filters for PRs in the future
   # paths:
   #   include:
@@ -16,7 +17,8 @@ pr:
 trigger:
   branches:
     include:
-    - next/*
+    - core/*
+    - main
   paths:
     include:
     - core/**
