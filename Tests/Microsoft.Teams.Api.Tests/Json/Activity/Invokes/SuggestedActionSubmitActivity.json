@@ -1,0 +1,9 @@
+{
+  "id": "suggestedActionSubmitId",
+  "type": "invoke",
+  "channelId": "channelId",
+  "name": "suggestedAction/submit",
+  "value": {
+    "vote": "approve"
+  }
+}

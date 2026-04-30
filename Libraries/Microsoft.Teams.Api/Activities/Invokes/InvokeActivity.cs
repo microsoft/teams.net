@@ -23,6 +23,7 @@ public partial class Name(string value) : StringEnum(value)
         if (IsTab) return typeof(TabActivity);
         if (IsTask) return typeof(TaskActivity);
         if (IsSearch) return typeof(SearchActivity);
+        if (IsSuggestedActionSubmit) return typeof(SuggestedActionSubmitActivity);
         return typeof(InvokeActivity);
     }
 

@@ -1,59 +1,72 @@
-# Support custom invoke activity types in .NET
+# Support `suggestedAction/submit` invoke activity in .NET
+
+ADO: [5323021](https://dev.azure.com/domoreexp/MSTeams/_workitems/edit/5323021)
+Reference: [SuggestedActionInvoke design spec](https://domoreexp.visualstudio.com/Teamspace/_git/teams-conv-platform-specs?path=/features/suggested-action-invoke/SuggestedActionInvoke-DesignSpec.md)
 
 ## Context
 
-The Declarative Agents team is implementing a new invoke activity called `suggestedActions/submit` (HITL approve/reject from suggested-action chips). The Teams .NET SDK's `InvokeActivity.JsonConverter` throws a `JsonException` when it encounters an invoke `name` it doesn't recognize, so this activity cannot reach a handler today. Their workaround is to send the activity as `task/submit` so it slips through.
+The Teams platform is introducing a new suggested action type (`Action.Submit`) that, when clicked, dispatches a structured invoke activity to the bot — without sending a chat-visible message on behalf of the user. The invoke arrives at the bot with `name: "suggestedAction/submit"` and a structured `value` payload authored by the bot.
 
-Acceptance criteria from the work item: the .NET SDK should handle `suggestedActions/submit` (and, by extension, any future custom invoke name) without errors.
+The Declarative Agents team (the first partner) is currently blocked: the Teams .NET SDK's `InvokeActivity.JsonConverter` throws when it sees `name: "suggestedAction/submit"` because no typed activity matches that name. Their workaround is to forge the activity as `task/submit` so it slips through.
+
+Acceptance criteria from the work item: the .NET SDK should handle `suggestedAction/submit` cleanly so partners (DA team and beyond) can route and process it as a first-class activity.
 
 ## Approach
 
-Relax the `InvokeActivity.JsonConverter` deserializer. When the invoke `name` does not match any known prefix or exact-match case, fall back to constructing a base `InvokeActivity` populated from the JSON instead of throwing. Partners route the activity using the existing `app.OnInvoke((ctx, ct) => ...)` extension and dispatch on `ctx.Activity.Name` themselves.
+Add a typed activity subclass `SuggestedActionSubmitActivity` and a dedicated `OnSuggestedActionSubmit` route extension, mirroring the existing `HandoffActivity` / `OnHandoff` pattern. Wire the typed activity into the JSON converter's exact-name dispatch (Read and Write) and into `Name.ToType()` and `InvokeActivity.ToType()`.
 
-No new public API is introduced — no name-filtered overload, no typed subclass for `suggestedActions/submit`. This is the minimal change that resolves the class of problem.
+The behavior for **other** unknown invoke names is unchanged — the converter still throws. Generic-fallback support for unknown names is explicitly NOT in scope for this change; if future custom invoke names are introduced, each gets its own typed subclass following the same pattern.
 
 ## Change set
 
-**Single source change** — `Libraries/Microsoft.Teams.Api/Activities/InvokeActivity.JsonConverter.cs`:
+### `Libraries/Microsoft.Teams.Api`
 
-- In `Read`, replace the terminal `_ => throw new JsonException(...)` arm with a fallback that returns a base `InvokeActivity` populated from the full `JsonElement` — `Name`, `Value`, and every inherited `Activity` field (id, timestamp, channelId, from, conversation, recipient, serviceUrl, etc.).
+- **New file** `Activities/Invokes/SuggestedActionSubmitActivity.cs`:
+  - Extends the partial `Name` enum with `Name.SuggestedActionSubmit = new("suggestedAction/submit")` and a corresponding `IsSuggestedActionSubmit` predicate.
+  - Defines `class SuggestedActionSubmitActivity() : InvokeActivity(Name.SuggestedActionSubmit)`.
+  - The activity's `Value` is intentionally not strongly typed; partners read the structured payload from the inherited `object?` `Value` (typically a `JsonElement`). The payload schema is bot-authored and varies by use case (vote, approval, etc.), so a fixed value type would over-constrain partners.
 
-**Requirements the fallback must satisfy:**
+- **Modified** `Activities/Invokes/InvokeActivity.cs`: add `if (IsSuggestedActionSubmit) return typeof(SuggestedActionSubmitActivity);` to `Name.ToType()`.
 
-- Must populate every inherited `Activity` field, not just `Name` and `Value`. Future fields added to `Activity` should not require touching this code.
-- Must not recurse into itself — the `JsonConverter` is registered on `InvokeActivity`, so a naive `JsonSerializer.Deserialize<InvokeActivity>(...)` call would loop.
+- **Modified** `Activities/InvokeActivity.cs`: add `ToSuggestedActionSubmit()` helper and a corresponding line in the `ToType` dispatcher.
 
-**Mechanism is deliberately left open.** Several approaches can satisfy the requirements (deserializing against a cloned `JsonSerializerOptions` with this converter removed; manual field population from the `JsonElement`; restructuring how the converter is registered; etc.). The right tradeoff between simplicity, performance, and maintainability will be evaluated and chosen during the implementation phase.
-- All existing prefix and exact-match cases are unchanged. Known names continue to deserialize into their typed subclasses.
-- The `Write` path is unchanged: its existing fallback at the bottom of the method already serializes a base-class instance correctly.
+- **Modified** `Activities/InvokeActivity.JsonConverter.cs`:
+  - In `Read`, add `"suggestedAction/submit" => JsonSerializer.Deserialize<Invokes.SuggestedActionSubmitActivity>(...)` to the exact-name `switch` expression.
+  - In `Write`, add a `value is Invokes.SuggestedActionSubmitActivity` branch that delegates to the typed serializer.
+  - The `_ => throw new JsonException(...)` fallback for unknown names is preserved unchanged.
 
-**Tests** — `tests/Microsoft.Teams.Api.Tests`:
+### `Libraries/Microsoft.Teams.Apps`
 
-- New test: deserialize a JSON payload with `name: "suggestedActions/submit"` and assert the result is an `InvokeActivity` with `Name == "suggestedActions/submit"`, `Value` populated, **and** a sampling of inherited `Activity` fields populated (e.g., `Id`, `ChannelId`, `From`, `Conversation`) to confirm the fallback doesn't drop base-class fields.
-- New regression test: deserialize a known invoke (e.g., `task/submit`) and assert it still produces the typed `TaskActivity`.
+- **New file** `Activities/Invokes/SuggestedActionSubmitActivity.cs`:
+  - `[AttributeUsage(...)] public class SuggestedActionSubmitAttribute()` — for declarative handler registration on bot classes.
+  - Four `OnSuggestedActionSubmit` extension methods on `App` matching the overload set used by `OnHandoff` (with/without cancellation token, void/object/Response return shapes).
 
-**Sample** — `samples/Samples.Dialogs`:
+### Tests — `Tests/Microsoft.Teams.Api.Tests`
 
-- Add an `OnInvoke` handler that recognizes `suggestedActions/submit`, reads the value payload, and responds (e.g., echoes back which suggested action was chosen).
-- Sample already deals with invoke activities, so the addition reinforces the existing pattern. No new sample project.
+- **New fixture** `Json/Activity/Invokes/SuggestedActionSubmitActivity.json` — minimal `suggestedAction/submit` payload with id/channelId/name/value.
+- **New tests** `Activities/Invokes/SuggestedActionSubmitActivityTests.cs`:
+  - Deserialize as `SuggestedActionSubmitActivity` directly.
+  - Deserialize as `InvokeActivity` and verify polymorphic dispatch into `SuggestedActionSubmitActivity`.
+  - Deserialize as `Activity` and verify polymorphic dispatch.
+  - Verify `GetPath()` returns `"Activity.Invoke.SuggestedAction/submit"`.
+
+### Sample — `Samples/Samples.Dialogs/Program.cs`
+
+- Replace any prior generic `OnInvoke` exploration with `teams.OnSuggestedActionSubmit(...)`. The handler logs the activity, extracts a `vote` field from `activity.Value` (matching the design spec example payload), and echoes the result back to chat.
 
 ## Out of scope
 
-- New typed activity subclass for `suggestedActions/submit`.
-- New `OnInvoke(name, handler)` filtered overload.
+- Generic fallback for unknown invoke names. The converter continues to throw for names other than `suggestedAction/submit` (and the existing typed dispatches).
+- A name-filtered `OnInvoke(name, handler)` overload.
 - Documentation changes beyond the sample.
-- Any change to the `Write` path.
+- Strongly typed `Value` schema. Partner-authored payloads are arbitrary JSON; partners cast `activity.Value` to `JsonElement`.
 
 ## Implementation decision (2026-04-30)
 
-**Mechanism: manual field mapping from `JsonElement`.**
+**Approach: typed activity subclass + dedicated route extension** (the same pattern used by `HandoffActivity` / `OnHandoff`).
 
-During implementation planning we evaluated three candidate mechanisms (cloned `JsonSerializerOptions` with the converter removed; manual mapping; restructured converter registration). Findings:
+We initially explored a generic-fallback approach — relax the deserializer so any unknown invoke name produces a base `InvokeActivity`, then partners dispatch on `Name` themselves. After review with the team, this was rejected:
 
-- **Cloned options doesn't work.** The `JsonConverter` is registered on `InvokeActivity` via the `[JsonConverter(typeof(JsonConverter))]` attribute. Type-level attributes take precedence over `options.Converters`, so removing the converter from a cloned options bundle does not disable it — the fallback would still recurse.
-- **Restructured registration would be a breaking change.** Moving the converter off the type-level attribute and onto options-level registration means any consumer calling `JsonSerializer.Deserialize<InvokeActivity>(json)` with default options would silently lose typed-subclass dispatch (e.g. would receive a base `InvokeActivity` instead of `HandoffActivity`). External consumers of `Microsoft.Teams.Api` and existing test sites in this repo rely on this default-options behavior, so the change would have a real semver-breaking surface.
-- **Manual mapping is non-breaking and localized.** A single-file change inside `InvokeActivity.JsonConverter.Read`'s fallback arm. No public surface change. The known cost is maintenance: when `Activity` gains a new field, the fallback must be updated or the field is silently dropped for unknown invoke names.
-
-**Mitigation for the maintenance risk:** add a unit test that uses reflection over `Activity`'s public properties to assert each one was populated on a round-tripped unknown invoke. When a future contributor adds a new `Activity` field, this test fails and points them directly at the fallback.
-
-This expands the test plan above. The "sampling of inherited fields" check is replaced with the reflection-based "no field dropped" check, which is strictly stronger.
+- A custom JSON-mapper fallback inside the converter required either manual field mapping (silent rot when `Activity` adds fields) or restructuring the converter registration (semver-breaking for consumers using default `JsonSerializerOptions`). Neither tradeoff was acceptable.
+- The platform spec for `Action.Submit` defines a specific, named activity type. Modeling it as a first-class subclass matches the precedent set by every other named invoke (`HandoffActivity`, `TaskActivity`, etc.) and gives partners a typed handler with all the routing benefits (attribute-based registration, `IContext<SuggestedActionSubmitActivity>`).
+- Future custom invoke names — when they arrive — should follow this same pattern (typed subclass + route extension) rather than relying on a permissive deserializer.

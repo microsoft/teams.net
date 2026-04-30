@@ -58,12 +58,14 @@ public partial class InvokeActivity(Invokes.Name name) : Activity(ActivityType.I
     public Invokes.SignInActivity ToSignIn() => (Invokes.SignInActivity)this;
     public Invokes.TabActivity ToTab() => (Invokes.TabActivity)this;
     public Invokes.TaskActivity ToTask() => (Invokes.TaskActivity)this;
+    public Invokes.SuggestedActionSubmitActivity ToSuggestedActionSubmit() => (Invokes.SuggestedActionSubmitActivity)this;
 
     public override object ToType(Type type, IFormatProvider? provider)
     {
         if (type == Invokes.Name.ExecuteAction.ToType()) return ToExecuteAction();
         if (type == Invokes.Name.FileConsent.ToType()) return ToFileConsent();
         if (type == Invokes.Name.Handoff.ToType()) return ToHandoff();
+        if (type == Invokes.Name.SuggestedActionSubmit.ToType()) return ToSuggestedActionSubmit();
         if (type == typeof(Invokes.AdaptiveCardActivity)) return ToAdaptiveCard();
         if (type == typeof(Invokes.ConfigActivity)) return ToConfig();
         if (type == typeof(Invokes.MessageExtensionActivity)) return ToMessageExtension();
