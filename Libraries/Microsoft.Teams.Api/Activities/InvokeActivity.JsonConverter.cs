@@ -4,6 +4,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Microsoft.Teams.Api.Entities;
+
 namespace Microsoft.Teams.Api.Activities;
 
 public partial class InvokeActivity
@@ -77,8 +79,85 @@ public partial class InvokeActivity
                 "fileConsent/invoke" => JsonSerializer.Deserialize<Invokes.FileConsentActivity>(element.ToString(), options),
                 "handoff/action" => JsonSerializer.Deserialize<Invokes.HandoffActivity>(element.ToString(), options),
                 "application/search" => JsonSerializer.Deserialize<Invokes.SearchActivity>(element.ToString(), options),
-                _ => throw new JsonException($"failed to deserialize invoke activity '{name}' doesn't match any known types.")
+                _ => DeserializeBase(name, element, options)
             };
+        }
+
+        private static InvokeActivity DeserializeBase(string name, JsonElement element, JsonSerializerOptions options)
+        {
+            var activity = new InvokeActivity(new Invokes.Name(name));
+
+            if (element.TryGetProperty("id", out var idEl) && idEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.Id = idEl.Deserialize<string>(options)!;
+            }
+
+            if (element.TryGetProperty("replyToId", out var replyToIdEl) && replyToIdEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.ReplyToId = replyToIdEl.Deserialize<string>(options);
+            }
+
+            if (element.TryGetProperty("channelId", out var channelIdEl) && channelIdEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.ChannelId = channelIdEl.Deserialize<ChannelId>(options)!;
+            }
+
+            if (element.TryGetProperty("from", out var fromEl) && fromEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.From = fromEl.Deserialize<Account>(options)!;
+            }
+
+            if (element.TryGetProperty("recipient", out var recipientEl) && recipientEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.Recipient = recipientEl.Deserialize<Account>(options)!;
+            }
+
+            if (element.TryGetProperty("conversation", out var conversationEl) && conversationEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.Conversation = conversationEl.Deserialize<Conversation>(options)!;
+            }
+
+            if (element.TryGetProperty("relatesTo", out var relatesToEl) && relatesToEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.RelatesTo = relatesToEl.Deserialize<ConversationReference>(options);
+            }
+
+            if (element.TryGetProperty("serviceUrl", out var serviceUrlEl) && serviceUrlEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.ServiceUrl = serviceUrlEl.Deserialize<string>(options);
+            }
+
+            if (element.TryGetProperty("locale", out var localeEl) && localeEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.Locale = localeEl.Deserialize<string>(options);
+            }
+
+            if (element.TryGetProperty("timestamp", out var timestampEl) && timestampEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.Timestamp = timestampEl.Deserialize<DateTime?>(options);
+            }
+
+            if (element.TryGetProperty("localTimestamp", out var localTimestampEl) && localTimestampEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.LocalTimestamp = localTimestampEl.Deserialize<DateTime?>(options);
+            }
+
+            if (element.TryGetProperty("entities", out var entitiesEl) && entitiesEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.Entities = entitiesEl.Deserialize<IList<IEntity>>(options);
+            }
+
+            if (element.TryGetProperty("channelData", out var channelDataEl) && channelDataEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.ChannelData = channelDataEl.Deserialize<ChannelData>(options);
+            }
+
+            if (element.TryGetProperty("value", out var valueEl) && valueEl.ValueKind != JsonValueKind.Null)
+            {
+                activity.Value = valueEl.Deserialize<object>(options);
+            }
+
+            return activity;
         }
 
         public override void Write(Utf8JsonWriter writer, InvokeActivity value, JsonSerializerOptions options)

@@ -143,6 +143,29 @@ teams.OnTaskSubmit(async (context, cancellationToken) =>
     }
 });
 
+teams.OnInvoke(async (context, cancellationToken) =>
+{
+    var activity = context.Activity;
+
+    if (activity.Name.Value != "suggestedActions/submit")
+    {
+        return;
+    }
+
+    context.Log.Info("[CUSTOM_INVOKE] suggestedActions/submit activity received");
+
+    var actionId = "<none>";
+    if (activity.Value is JsonElement value && value.ValueKind == JsonValueKind.Object
+        && value.TryGetProperty("actionId", out var actionIdElement)
+        && actionIdElement.ValueKind == JsonValueKind.String)
+    {
+        actionId = actionIdElement.GetString() ?? "<none>";
+    }
+
+    context.Log.Info($"[CUSTOM_INVOKE] actionId={actionId}");
+    await context.Send($"Got suggestedActions/submit (actionId={actionId})", cancellationToken);
+});
+
 app.Run();
 
 static string SanitizeForLog(string? input)
