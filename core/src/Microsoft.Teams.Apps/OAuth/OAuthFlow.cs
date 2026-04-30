@@ -8,7 +8,7 @@ using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 
-namespace Microsoft.Teams.Apps.Auth;
+namespace Microsoft.Teams.Apps.OAuth;
 
 /// <summary>
 /// Delegate invoked after a successful OAuth token exchange or sign-in verification.

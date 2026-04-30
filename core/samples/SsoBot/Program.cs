@@ -13,17 +13,21 @@
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Auth;
 using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 
+var appBuilder = App.Builder().AddOAuth("sso");
+
+webAppBuilder.AddTeams(appBuilder);
+
 // Configure the single OAuth flow at the DI level
-webAppBuilder.Services.AddTeamsBotApplication(options =>
-{
-    options.AddOAuthFlow("sso");
-});
+//webAppBuilder.Services.AddTeamsBotApplication(options =>
+//{
+//    options.AddOAuthFlow("sso");
+//});
 
 WebApplication webApp = webAppBuilder.Build();
 

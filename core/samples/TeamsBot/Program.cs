@@ -20,6 +20,7 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
 teamsApp.UseMiddleware(new WelcomeMessageMiddleware());
 
+
 // ==================== MESSAGE HANDLERS ====================
 
 // Help handler: matches "help" (case-insensitive)

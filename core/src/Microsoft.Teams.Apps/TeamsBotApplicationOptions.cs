@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Apps.Auth;
+using Microsoft.Teams.Apps.OAuth;
 
 namespace Microsoft.Teams.Apps;
 

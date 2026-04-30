@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace Microsoft.Teams.Apps.Auth;
+namespace Microsoft.Teams.Apps.OAuth;
 
 /// <summary>
 /// Options for the OAuth sign-in flow.

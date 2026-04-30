@@ -2,9 +2,10 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 
-namespace Microsoft.Teams.Apps.Schema;
+namespace Microsoft.Teams.Apps.OAuth;
 
 /// <summary>
 /// Represents an OAuthCard used to initiate an OAuth sign-in flow.

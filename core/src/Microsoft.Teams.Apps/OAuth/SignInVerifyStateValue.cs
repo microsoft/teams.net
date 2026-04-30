@@ -3,7 +3,7 @@
 
 using System.Text.Json.Serialization;
 
-namespace Microsoft.Teams.Apps.Auth;
+namespace Microsoft.Teams.Apps.OAuth;
 
 /// <summary>
 /// Value payload of the signin/verifyState invoke activity.

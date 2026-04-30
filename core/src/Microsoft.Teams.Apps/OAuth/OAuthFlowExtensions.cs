@@ -7,7 +7,7 @@ using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 
-namespace Microsoft.Teams.Apps.Auth;
+namespace Microsoft.Teams.Apps.OAuth;
 
 /// <summary>
 /// Extension methods for registering <see cref="OAuthFlow"/> instances on a <see cref="TeamsBotApplication"/>.
