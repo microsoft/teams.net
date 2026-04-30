@@ -91,7 +91,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
 
-    [Fact(Timeout = 5000)]
+    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task GetConversationMembers()
     {
         IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
@@ -106,7 +106,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Timeout = 5000)]
+    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task GetConversationMember()
     {
         // Get MRI-format member ID from the members list first
@@ -123,7 +123,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Member: {member.Id} — {member.Name}");
     }
 
-    [Fact(Timeout = 5000)]
+    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task GetPagedMembers()
     {
         PagedMembersResult result = await _f.ConversationClient.GetConversationPagedMembersAsync(
