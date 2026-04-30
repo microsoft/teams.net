@@ -19,6 +19,8 @@ namespace Microsoft.Teams.Core.Http;
 /// <param name="logger">The logger instance used for logging. Optional.</param>
 internal class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
 {
+    private const string UserAgent = "teams.net/" + ThisAssembly.NuGetPackageVersion;
+
     private static readonly JsonSerializerOptions DefaultJsonOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
@@ -135,6 +137,7 @@ internal class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
     private static HttpRequestMessage CreateRequest(HttpMethod method, string url, string? body, BotRequestOptions options)
     {
         HttpRequestMessage request = new(method, url);
+        request.Headers.UserAgent.ParseAdd(UserAgent);
 
         if (body is not null)
         {
