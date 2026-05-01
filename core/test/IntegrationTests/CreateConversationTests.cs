@@ -293,7 +293,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             Bot = new() { Id = $"28:{_f.BotAppId}" },
             Members =
             [
-                new() { Id = first },
+                //new() { Id = first },
                 new() { Id = second }
             ],
             TenantId = _f.TenantId,

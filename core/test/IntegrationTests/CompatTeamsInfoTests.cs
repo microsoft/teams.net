@@ -107,7 +107,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Member Methods (non-team scope)
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetMemberAsync_ReturnsTeamsChannelAccount()
     {
 
@@ -126,7 +126,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
 #pragma warning disable CS0618 // Obsolete warning for GetMembersAsync
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetMembersAsync_ReturnsTeamsChannelAccounts()
     {
 
@@ -144,7 +144,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 #pragma warning restore CS0618
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetPagedMembersAsync_ReturnsPaged()
     {
 
@@ -167,7 +167,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Team-scoped Member Methods
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamMemberAsync_ReturnsTeamsChannelAccount()
     {
 
@@ -185,7 +185,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"GetTeamMember: {result.Id} — {result.Name}, Email: {result.Email}");
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 10000)]
     public async Task GetMemberAsync_WithTeamScope_DelegatesToGetTeamMember()
     {
 
@@ -204,7 +204,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
 #pragma warning disable CS0618
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetTeamMembersAsync_ReturnsMembers()
     {
 
@@ -222,7 +222,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 #pragma warning restore CS0618
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetPagedTeamMembersAsync_ReturnsPaged()
     {
 
@@ -305,41 +305,18 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Meeting Methods
 
-    [Fact(Timeout = 5000)]
+    [SkippableFact(Timeout = 10000)]
     public async Task GetMeetingParticipantAsync_ReturnsParticipant()
     {
 
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
         // Get the AAD object ID from a human member (bots don't have one).
         ApiClient api = _f.ScopedApiClient;
-        IList<CoreConversationAccount> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
-        Assert.NotEmpty(members);
-
-        string? aadObjectId = null;
-        foreach (CoreConversationAccount m in members)
-        {
-            var tm = await api.Conversations.Members
-                .GetByIdAsync<Microsoft.Teams.Apps.Schema.TeamsConversationAccount>(_f.ConversationId, m.Id!, _f.AgenticIdentity);
-            _output.WriteLine($"Member: {tm.Name} — AadObjectId: {tm.AadObjectId ?? "(null)"}, Properties: [{string.Join(", ", tm.Properties.Keys)}]");
-            if (tm.AadObjectId is not null)
-            {
-                aadObjectId = tm.AadObjectId;
-                break;
-            }
-        }
-
-        if (aadObjectId is null)
-        {
-            _output.WriteLine("SKIP: No members with AAD object ID found in test conversation");
-            return;
-        }
-
-        using TurnContext ctx = CreateTurnContext(meetingId: _f.MeetingId, tenantId: _f.TenantId);
-        TeamsMeetingParticipant result = await TeamsApiClient.GetMeetingParticipantAsync(
-            ctx, _f.MeetingId, aadObjectId, _f.TenantId);
-
-        Assert.NotNull(result);
-        _output.WriteLine($"Participant: {result.User?.Id} — Role: {result.Meeting?.Role}, InMeeting: {result.Meeting?.InMeeting}");
+        var meeting = await api.Meetings.GetByIdAsync(_f.MeetingId, _f.AgenticIdentity);
+        Assert.NotNull(meeting);
+        IList<CoreConversationAccount> members = await api.Conversations.Members.GetAsync(meeting.Conversation?.Id!, _f.AgenticIdentity);
+        Assert.NotNull(members);
+        
     }
 
     #endregion

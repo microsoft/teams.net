@@ -91,48 +91,54 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetConversationMembers()
     {
-        IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
+        IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(_f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
 
-        foreach (ConversationAccount m in members)
+        foreach (ConversationAccount m in members.Take(5))
         {
             _output.WriteLine($"Member: {m.Id} — {m.Name}");
         }
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetConversationMember()
     {
         // Get MRI-format member ID from the members list first
-        IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
+        IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(_f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
         Assert.NotEmpty(members);
         string memberId = members[0].Id!;
 
-        ConversationAccount member = await _f.ConversationClient.GetConversationMemberAsync<ConversationAccount>(
-            _f.ConversationId, memberId, _f.ServiceUrl, _f.AgenticIdentity);
+        ConversationAccount member = await _f.ConversationClient.GetConversationMemberAsync<ConversationAccount>(_f.ConversationId, memberId, _f.ServiceUrl, _f.AgenticIdentity);
 
         Assert.NotNull(member);
         Assert.Equal(memberId, member.Id);
         _output.WriteLine($"Member: {member.Id} — {member.Name}");
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetPagedMembers()
     {
-        PagedMembersResult result = await _f.ConversationClient.GetConversationPagedMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, pageSize: 5, agenticIdentity: _f.AgenticIdentity);
+        PagedMembersResult result = await _f.ConversationClient.GetConversationPagedMembersAsync(_f.ConversationId, _f.ServiceUrl, pageSize: 5, agenticIdentity: _f.AgenticIdentity);
 
         Assert.NotNull(result?.Members);
         Assert.NotEmpty(result.Members);
 
-        foreach (ConversationAccount m in result.Members)
+        List<ConversationAccount> members = result.Members.ToList();
+
+        do
+        {
+            result = await _f.ConversationClient.GetConversationPagedMembersAsync(_f.ConversationId, _f.ServiceUrl, 5, result.ContinuationToken, _f.AgenticIdentity, null, CancellationToken.None);
+            members.AddRange(result.Members!);
+
+        } while (result.ContinuationToken is not null);
+
+
+        foreach (ConversationAccount m in members.TakeLast(5))
         {
             _output.WriteLine($"Member: {m.Id} — {m.Name}");
         }
