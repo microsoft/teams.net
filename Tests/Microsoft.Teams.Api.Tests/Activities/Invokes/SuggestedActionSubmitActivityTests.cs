@@ -5,6 +5,8 @@ using System.Text.Json;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
 
+using MessageActivity = Microsoft.Teams.Api.Activities.MessageActivity;
+
 namespace Microsoft.Teams.Api.Tests.Activities;
 
 public class SuggestedActionSubmitActivityTests
@@ -49,5 +51,33 @@ public class SuggestedActionSubmitActivityTests
         var activity = new SuggestedActionSubmitActivity();
 
         Assert.Equal("Activity.Invoke.SuggestedAction/submit", activity.GetPath());
+    }
+
+    [Fact]
+    public void OutgoingMessage_WithActionSubmitSuggestedAction_SerializesToSpecShape()
+    {
+        // Verifies the wire format the bot produces when sending an Action.Submit
+        // suggested action. Per the design spec the platform expects:
+        //   suggestedActions.actions[i].type  == "Action.Submit"
+        //   suggestedActions.actions[i].title == button label
+        //   suggestedActions.actions[i].value == structured payload (object)
+        var message = new MessageActivity("Approve or reject:")
+        {
+            SuggestedActions = new SuggestedActions
+            {
+                Actions =
+                {
+                    new Cards.Action(Cards.ActionType.Submit) { Title = "Approve", Value = new { vote = "approve" } }
+                }
+            }
+        };
+
+        var json = JsonSerializer.Serialize(message);
+        using var doc = JsonDocument.Parse(json);
+
+        var action = doc.RootElement.GetProperty("suggestedActions").GetProperty("actions")[0];
+        Assert.Equal("Action.Submit", action.GetProperty("type").GetString());
+        Assert.Equal("Approve", action.GetProperty("title").GetString());
+        Assert.Equal("approve", action.GetProperty("value").GetProperty("vote").GetString());
     }
 }
