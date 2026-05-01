@@ -1,7 +1,9 @@
 # =============================================================================
 # This pipeline (BotCore-CD) builds, tests, and packs the core/ project.
-# PR trigger: core/* and main branches (all paths). CI trigger: core/* and main branches (core/** paths only).
-# Pushes packages to internal preview feed on core/* and main branches.
+# PR trigger: core/* and main branches (all paths).
+# CI trigger: core/* and main branches (core/** paths only).
+# Pushes packages to the TeamsSDKPreviews internal feed when the
+# PushToADOFeed pipeline variable is set to true.
 # =============================================================================
 
 pr:
@@ -45,7 +47,7 @@ stages:
           packageType: 'sdk'
           version: '10.0.x'
 
-      - script: dotnet restore 
+      - script: dotnet restore
         displayName: 'Restore'
         workingDirectory: '$(Build.SourcesDirectory)/core'
 
@@ -63,7 +65,7 @@ stages:
 
       - task: NuGetCommand@2
         displayName: 'Push NuGet Packages'
-        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/next/core'))
+        condition: and(succeeded(), eq(variables['PushToADOFeed'], 'true'))
         inputs:
           command: push
           packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
