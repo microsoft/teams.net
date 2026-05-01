@@ -278,6 +278,16 @@ teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
     await context.SendActivityAsync(reply, cancellationToken);
 });
 
+teamsApp.OnMessage("(?i)^members$", async (ctx, ct) => {
+    var members = await ctx.Api.Conversations.Members.GetAsync(ctx.Activity?.Conversation?.Id!,ctx.Activity?.Recipient?.GetAgenticIdentity(), ct);
+    string memberList = string.Join("\n", members.Select(m => $"- {m.Name} (ID: {m.Id})"));
+    var reply = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText($"Current conversation members:\n{memberList}")
+        .Build();
+    await ctx.SendActivityAsync(reply, ct);
+});
+
 // Regex-based handler: matches commands starting with "/"
 Regex commandRegex = Regexes.CommandRegex();
 teamsApp.OnMessage(commandRegex, async (context, cancellationToken) =>

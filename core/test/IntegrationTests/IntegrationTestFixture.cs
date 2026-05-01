@@ -91,6 +91,7 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
 
     public void Dispose()
     {
+        Task.Delay(10000).Wait();
         ServiceProvider.Dispose();
         GC.SuppressFinalize(this);
     }
