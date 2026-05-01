@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common;
@@ -59,7 +60,7 @@ public partial class InvokeActivity(Invokes.Name name) : Activity(ActivityType.I
     public Invokes.TabActivity ToTab() => (Invokes.TabActivity)this;
     public Invokes.TaskActivity ToTask() => (Invokes.TaskActivity)this;
 
-    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
+    [Experimental("ExperimentalTeamsSuggestedAction")]
     public Invokes.SuggestedActionSubmitActivity ToSuggestedActionSubmit() => (Invokes.SuggestedActionSubmitActivity)this;
 
     public override object ToType(Type type, IFormatProvider? provider)
