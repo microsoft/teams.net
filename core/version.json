@@ -3,7 +3,6 @@
   "version": "1.0.0-beta.{height}",
   "pathFilters": ["."],
   "publicReleaseRefSpec": [
-    "^refs/heads/main$",
     "^refs/heads/v\\d+(?:\\.\\d+)?$"
   ],
   "cloudBuild": {
