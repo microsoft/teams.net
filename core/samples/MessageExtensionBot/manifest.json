@@ -1,0 +1,123 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.24/MicrosoftTeams.schema.json",
+  "version": "1.0.0",
+  "manifestVersion": "1.24",
+  "id": "YOUR_BOT_ID",
+  "name": {
+    "short": "YOUR_BOT_NAME",
+    "full": "YOUR_BOT_NAME"
+  },
+  "developer": {
+    "name": "Microsoft",
+    "mpnId": "",
+    "websiteUrl": "https://microsoft.com",
+    "privacyUrl": "https://privacy.microsoft.com/privacystatement",
+    "termsOfUseUrl": "https://www.microsoft.com/legal/terms-of-use"
+  },
+  "description": {
+    "short": "YOUR_BOT_NAME",
+    "full": "YOUR_BOT_NAME"
+  },
+  "icons": {
+    "outline": "outline.png",
+    "color": "color.png"
+  },
+  "accentColor": "#FFFFFF",
+  "staticTabs": [
+    {
+      "entityId": "conversations",
+      "scopes": [
+        "personal"
+      ]
+    },
+    {
+      "entityId": "about",
+      "scopes": [
+        "personal"
+      ]
+    }
+  ],
+  "bots": [
+    {
+      "botId": "YOUR_BOT_ID",
+      "scopes": [
+        "personal",
+        "team",
+        "groupChat"
+      ],
+      "isNotificationOnly": false,
+      "supportsCalling": false,
+      "supportsVideo": false,
+      "supportsFiles": false
+    }
+  ],
+  "composeExtensions": [
+    {
+      "botId": "YOUR_BOT_ID",
+      "commands": [
+        {
+          "id": "searchQuery",
+          "type": "query",
+          "title": "searchQuery",
+          "description": "Enter search text",
+          "initialRun": true,
+          "fetchTask": false,
+          "context": [
+            "commandBox",
+            "compose",
+            "message"
+          ],
+          "parameters": [
+            {
+              "name": "searchText",
+              "title": "searchText",
+              "description": "Enter search text",
+              "inputType": "text"
+            }
+          ]
+        },
+        {
+          "id": "createAction",
+          "type": "action",
+          "title": "createAction",
+          "description": "Create a new item",
+          "initialRun": true,
+          "fetchTask": true,
+          "context": [
+            "commandBox",
+            "compose",
+            "message"
+          ],
+          "parameters": [
+            {
+              "name": "createAction",
+              "title": "createAction",
+              "description": "Create a new item",
+              "inputType": "text"
+            }
+          ]
+        }
+      ],
+      "canUpdateConfiguration": true,
+      "messageHandlers": [
+        {
+          "type": "link",
+          "value": {
+            "domains": [
+              "*.example.com",
+              "*.microsoft.com"
+            ],
+            "supportsAnonymizedPayloads": true
+          }
+        }
+      ]
+    }
+  ],
+  "validDomains": [
+    "*.microsoft.com"
+  ],
+  "webApplicationInfo": {
+    "id": "YOUR_BOT_ID",
+    "resource": "https://graph.microsoft.com"
+  }
+}
