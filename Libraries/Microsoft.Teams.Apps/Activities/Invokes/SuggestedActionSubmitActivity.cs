@@ -1,14 +1,19 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
+
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Activities.Invokes;
 using Microsoft.Teams.Apps.Routing;
 
 namespace Microsoft.Teams.Apps.Activities.Invokes;
 
+#pragma warning disable ExperimentalTeamsSuggestedAction
+
 public static partial class AppInvokeActivityExtensions
 {
+    [Experimental("ExperimentalTeamsSuggestedAction")]
     public static App OnSuggestedActionSubmit(this App app, Func<IContext<SuggestedActionSubmitActivity>, CancellationToken, Task> handler)
     {
         app.Router.Register(new Route()
@@ -26,6 +31,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Experimental("ExperimentalTeamsSuggestedAction")]
     public static App OnSuggestedActionSubmit(this App app, Func<IContext<SuggestedActionSubmitActivity>, CancellationToken, Task<object?>> handler)
     {
         app.Router.Register(new Route()
@@ -39,3 +45,5 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 }
+
+#pragma warning restore ExperimentalTeamsSuggestedAction

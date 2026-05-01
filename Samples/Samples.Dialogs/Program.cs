@@ -143,23 +143,6 @@ teams.OnTaskSubmit(async (context, cancellationToken) =>
     }
 });
 
-teams.OnSuggestedActionSubmit(async (context, cancellationToken) =>
-{
-    var activity = context.Activity;
-    context.Log.Info("[SUGGESTED_ACTION_SUBMIT] activity received");
-
-    var vote = "<none>";
-    if (activity.Value is JsonElement value && value.ValueKind == JsonValueKind.Object
-        && value.TryGetProperty("vote", out var voteElement)
-        && voteElement.ValueKind == JsonValueKind.String)
-    {
-        vote = voteElement.GetString() ?? "<none>";
-    }
-
-    context.Log.Info($"[SUGGESTED_ACTION_SUBMIT] vote={vote}");
-    await context.Send($"Got suggestedAction/submit (vote={vote})", cancellationToken);
-});
-
 app.Run();
 
 static string SanitizeForLog(string? input)

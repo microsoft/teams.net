@@ -23,7 +23,9 @@ public partial class Name(string value) : StringEnum(value)
         if (IsTab) return typeof(TabActivity);
         if (IsTask) return typeof(TaskActivity);
         if (IsSearch) return typeof(SearchActivity);
+#pragma warning disable ExperimentalTeamsSuggestedAction
         if (IsSuggestedActionSubmit) return typeof(SuggestedActionSubmitActivity);
+#pragma warning restore ExperimentalTeamsSuggestedAction
         return typeof(InvokeActivity);
     }
 

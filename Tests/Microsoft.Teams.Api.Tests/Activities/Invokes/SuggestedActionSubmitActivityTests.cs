@@ -1,4 +1,4 @@
-
+#pragma warning disable ExperimentalTeamsSuggestedAction
 
 using System.Text.Json;
 
