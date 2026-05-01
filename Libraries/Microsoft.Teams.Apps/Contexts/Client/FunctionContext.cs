@@ -74,6 +74,7 @@ public class FunctionContext<T>(App app) : ClientContext, IFunctionContext<T>
             var res = await Api.Conversations.CreateAsync(new()
             {
                 TenantId = TenantId,
+                #pragma warning disable CS0618
                 IsGroup = false,
                 Bot = new()
                 {
@@ -81,12 +82,15 @@ public class FunctionContext<T>(App app) : ClientContext, IFunctionContext<T>
                     Name = app.Name,
                     Role = Role.Bot
                 },
+                #pragma warning restore CS0618
                 Members = [
                     new()
                     {
                         Id = UserId,
                         Name = UserName,
+                        #pragma warning disable CS0618
                         Role = Role.User,
+                        #pragma warning restore CS0618
                     }
                 ]
             });

@@ -21,7 +21,16 @@ public class Account
 
     [JsonPropertyName("role")]
     [JsonPropertyOrder(2)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public Role? Role { get; set; }
+
+    /// <summary>
+    /// The type of the account. Possible values: 'person', 'bot', 'channel', 'team', 'tag'.
+    /// Primarily present on mention entities for non-person accounts. Absent for regular person accounts.
+    /// </summary>
+    [JsonPropertyName("type")]
+    [JsonPropertyOrder(7)]
+    public string? Type { get; set; }
 
     [JsonPropertyName("name")]
     [JsonPropertyOrder(3)]

@@ -23,10 +23,12 @@ public class MessageActivity : Activity
 
     [JsonPropertyName("speak")]
     [JsonPropertyOrder(32)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public string? Speak { get; set; }
 
     [JsonPropertyName("inputHint")]
     [JsonPropertyOrder(33)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public InputHint? InputHint { get; set; }
 
     [JsonPropertyName("summary")]
@@ -51,6 +53,7 @@ public class MessageActivity : Activity
 
     [JsonPropertyName("importance")]
     [JsonPropertyOrder(39)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public Importance? Importance { get; set; }
 
     [JsonPropertyName("deliveryMode")]
@@ -59,6 +62,7 @@ public class MessageActivity : Activity
 
     [JsonPropertyName("expiration")]
     [JsonPropertyOrder(42)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public DateTime? Expiration { get; set; }
 
     [JsonPropertyName("value")]
@@ -87,15 +91,21 @@ public class MessageActivity : Activity
         return this;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public MessageActivity WithSpeak(string speak)
     {
+        #pragma warning disable CS0618
         Speak = speak;
+        #pragma warning restore CS0618
         return this;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public MessageActivity WithInputHint(InputHint inputHint)
     {
+        #pragma warning disable CS0618
         InputHint = inputHint;
+        #pragma warning restore CS0618
         return this;
     }
 
@@ -123,9 +133,12 @@ public class MessageActivity : Activity
         return this;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public MessageActivity WithImportance(Importance importance)
     {
+        #pragma warning disable CS0618
         Importance = importance;
+        #pragma warning restore CS0618
         return this;
     }
 
@@ -135,9 +148,12 @@ public class MessageActivity : Activity
         return this;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public MessageActivity WithExpiration(DateTime expiration)
     {
+        #pragma warning disable CS0618
         Expiration = expiration;
+        #pragma warning restore CS0618
         return this;
     }
 
@@ -230,15 +246,21 @@ public class MessageActivity : Activity
         base.Merge(from);
 
         Text ??= from.Text;
+        #pragma warning disable CS0618
         Speak ??= from.Speak;
         InputHint ??= from.InputHint;
+        #pragma warning restore CS0618
         Summary ??= from.Summary;
         TextFormat ??= from.TextFormat;
         AttachmentLayout ??= from.AttachmentLayout;
         SuggestedActions ??= from.SuggestedActions;
+        #pragma warning disable CS0618
         Importance ??= from.Importance;
+        #pragma warning restore CS0618
         DeliveryMode ??= from.DeliveryMode;
+        #pragma warning disable CS0618
         Expiration ??= from.Expiration;
+        #pragma warning restore CS0618
         Value ??= from.Value;
         AddAttachment(from.Attachments?.ToArray() ?? []);
 

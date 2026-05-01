@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+#pragma warning disable CS0618
+
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Routing;
 

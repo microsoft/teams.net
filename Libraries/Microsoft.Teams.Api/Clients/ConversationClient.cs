@@ -69,10 +69,12 @@ public class ConversationClient : Client
     {
         [JsonPropertyName("isGroup")]
         [JsonPropertyOrder(0)]
+        [Obsolete("This will be removed by end of summer 2026.")]
         public bool? IsGroup { get; set; }
 
         [JsonPropertyName("bot")]
         [JsonPropertyOrder(1)]
+        [Obsolete("This will be removed by end of summer 2026.")]
         public Account? Bot { get; set; }
 
         [JsonPropertyName("members")]
@@ -81,6 +83,7 @@ public class ConversationClient : Client
 
         [JsonPropertyName("topicName")]
         [JsonPropertyOrder(3)]
+        [Obsolete("This will be removed by end of summer 2026.")]
         public string? TopicName { get; set; }
 
         [JsonPropertyName("tenantId")]

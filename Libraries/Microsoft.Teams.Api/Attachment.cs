@@ -17,6 +17,7 @@ public class Attachment
     /// </summary>
     [JsonPropertyName("id")]
     [JsonPropertyOrder(0)]
+    [Obsolete("This will be removed by end of summer 2026.")]
     public string? Id { get; set; }
 
     /// <summary>

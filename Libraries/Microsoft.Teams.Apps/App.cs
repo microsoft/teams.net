@@ -195,7 +195,9 @@ public partial class App
             {
                 Id = Id,
                 Name = Name,
+                #pragma warning disable CS0618
                 Role = Role.Bot
+                #pragma warning restore CS0618
             },
             Conversation = new()
             {

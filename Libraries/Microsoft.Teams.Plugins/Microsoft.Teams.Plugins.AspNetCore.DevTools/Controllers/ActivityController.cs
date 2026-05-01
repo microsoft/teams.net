@@ -43,7 +43,9 @@ public class ActivityController : ControllerBase
         {
             Id = "devtools",
             Name = "devtools",
+            #pragma warning disable CS0618
             Role = Role.User
+            #pragma warning restore CS0618
         });
 
         body["conversation"] = JsonSerializer.SerializeToNode(new Conversation()
@@ -57,7 +59,9 @@ public class ActivityController : ControllerBase
         {
             Id = _plugin.AppId ?? string.Empty,
             Name = _plugin.AppName,
+            #pragma warning disable CS0618
             Role = Role.Bot
+            #pragma warning restore CS0618
         });
 
         var activity = JsonSerializer.Deserialize<Activity>(JsonSerializer.Serialize(body));
