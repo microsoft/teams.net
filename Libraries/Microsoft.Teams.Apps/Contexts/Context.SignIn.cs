@@ -74,9 +74,6 @@ public partial class Context<TActivity> : IContext<TActivity>
         {
             ConnectionName = options.ConnectionName ?? ConnectionName,
             Conversation = reference,
-            #pragma warning disable CS0618
-            RelatesTo = Activity.RelatesTo,
-            #pragma warning restore CS0618
             MsAppId = AppId
         };
 
@@ -87,10 +84,6 @@ public partial class Context<TActivity> : IContext<TActivity>
             var (id, _, _) = await api.Conversations.CreateAsync(new()
             {
                 TenantId = Ref.Conversation.TenantId,
-                #pragma warning disable CS0618
-                IsGroup = false,
-                Bot = Ref.Bot,
-                #pragma warning restore CS0618
                 Members = [Activity.From]
             });
 
@@ -105,9 +98,6 @@ public partial class Context<TActivity> : IContext<TActivity>
         var resource = await api.Bots.SignIn.GetResourceAsync(new() { State = state });
         var activity = new MessageActivity();
 
-        #pragma warning disable CS0618
-        activity.InputHint = InputHint.AcceptingInput;
-        #pragma warning restore CS0618
         activity.Recipient = Activity.From;
         activity.Conversation = reference.Conversation;
         activity.AddAttachment(new Api.Cards.OAuthCard()
@@ -143,10 +133,6 @@ public partial class Context<TActivity> : IContext<TActivity>
             var (id, _, _) = await Api.Conversations.CreateAsync(new()
             {
                 TenantId = Ref.Conversation.TenantId,
-                #pragma warning disable CS0618
-                IsGroup = false,
-                Bot = Ref.Bot,
-                #pragma warning restore CS0618
                 Members = [Activity.From]
             });
 
@@ -159,9 +145,6 @@ public partial class Context<TActivity> : IContext<TActivity>
 
         var activity = new MessageActivity();
 
-        #pragma warning disable CS0618
-        activity.InputHint = InputHint.AcceptingInput;
-        #pragma warning restore CS0618
         activity.Recipient = Activity.From;
         activity.Conversation = reference.Conversation;
         activity.AddAttachment(new Api.Cards.OAuthCard()

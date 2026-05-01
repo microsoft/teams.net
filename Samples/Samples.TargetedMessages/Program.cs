@@ -34,11 +34,9 @@ teams.OnMessage(async (context, cancellationToken) =>
             context.Log.Info($"[MEMBER] {member.Name} (ID: {member.Id})");
 
             // SEND: Create a new targeted message
-            #pragma warning disable CS0618
             await context.Send(
                 new MessageActivity($"👋 {member.Name} This is a **targeted message** - only YOU can see this!")
-                    .WithRecipient(new Account() { Id = member.Id, Name = member.Name, Role = Role.User }, true), cancellationToken);
-            #pragma warning restore CS0618
+                    .WithRecipient(new Account() { Id = member.Id, Name = member.Name }, true), cancellationToken);
         }
         
         context.Log.Info($"[SEND] Sent targeted message");
