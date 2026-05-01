@@ -1,22 +1,25 @@
 # =============================================================================
 # This pipeline (BotCore-CD) builds, tests, and packs the core/ project.
-# PR trigger: next/* branches (all paths). CI trigger: next/* branches (core/** paths only).
-# Pushes packages to internal preview feed on next/core branch.
+# PR trigger: main and release/* branches (core/** paths only).
+# CI trigger: main and release/* branches (core/** paths only).
+# Pushes packages to the TeamsSDKPreviews internal feed when the
+# PushToADOFeed pipeline variable is set to true.
 # =============================================================================
 
 pr:
   branches:
     include:
-      - next/*
-  # Uncomment and edit the following lines to add path filters for PRs in the future
-  # paths:
-  #   include:
-  #     - core/**
+      - main
+      - release/*
+  paths:
+    include:
+      - core/**
 
 trigger:
   branches:
     include:
-    - next/*
+    - main
+    - release/*
   paths:
     include:
     - core/**
@@ -61,7 +64,7 @@ stages:
 
       - task: NuGetCommand@2
         displayName: 'Push NuGet Packages'
-        condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/next/core'))
+        condition: and(succeeded(), eq(variables['PushToADOFeed'], 'true'))
         inputs:
           command: push
           packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
