@@ -1,12 +1,24 @@
-# Samples.SuggestedAction
+# Example: Suggested Action Submit
 
-Demonstrates handling the `suggestedAction/submit` invoke activity that is dispatched when a user clicks an `Action.Submit` suggested action button.
+A bot that demonstrates the `Action.Submit` suggested action and the `suggestedAction/submit` invoke it produces when clicked.
+
+## Behavior
+
+| Trigger | Behavior |
+|---------|----------|
+| Any user message | Bot replies with `Approve` / `Reject` suggested-action chips (`type: "Action.Submit"`, each with a structured `value`) |
+| User clicks a chip | Platform dispatches a `suggestedAction/submit` invoke; bot reads `activity.Value` and echoes it back |
+
+## Notes
+
+- `Action.Submit` chips do not post a chat-visible message on the user's behalf — only the bot receives the click as a typed invoke.
+- The chip's `value` is delivered verbatim on `SuggestedActionSubmitActivity.Value` (a `JsonElement` after deserialization).
 
 ## Experimental API
 
-The components used in this sample are marked `[Experimental("ExperimentalTeamsSuggestedAction")]`, because the underlying platform feature is still rolling out and the API shape may change. The C# compiler reports references to experimental APIs as **errors** by default, so consuming code has to opt in.
+`CardActionType.Submit`, `SuggestedActionSubmitActivity`, and `OnSuggestedActionSubmit` are marked `[Experimental("ExperimentalTeamsSuggestedAction")]` because the underlying platform feature is still rolling out. The C# compiler reports references to them as **errors** by default, so consuming code has to opt in.
 
-This sample opts in **per-usage** with a `#pragma` block in `Program.cs`. If you'd rather opt in for the **whole project**, add `ExperimentalTeamsSuggestedAction` to `NoWarn` in your `.csproj`:
+This sample opts in **per-file** with a `#pragma` at the top of `Program.cs`. For a project-wide opt-in, add to your `.csproj`:
 
 ```xml
 <PropertyGroup>
@@ -18,8 +30,19 @@ When the API stabilizes, the `[Experimental]` attribute will be removed and the 
 
 ## Run
 
-```sh
-dotnet run --project Samples/Samples.SuggestedAction/Samples.SuggestedAction.csproj
+```bash
+dotnet run
 ```
 
-The handler logs the incoming activity and echoes the `value` payload back to chat.
+## Configuration
+
+Set credentials in `appsettings.json`:
+
+```json
+{
+  "Teams": {
+    "ClientId": "<your-azure-bot-app-id>",
+    "ClientSecret": "<your-azure-bot-app-secret>"
+  }
+}
+```
