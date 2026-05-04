@@ -17,10 +17,10 @@ internal static class Telemetry
     private const string s_version = ThisAssembly.NuGetPackageVersion;
         
     public static readonly ActivitySource Source =
-        new(TeamsCoreTelemetry.ActivitySourceName, s_version);
+        new(CoreTelemetryNames.ActivitySourceName, s_version);
 
     public static readonly Meter Meter =
-        new(TeamsCoreTelemetry.MeterName, s_version);
+        new(CoreTelemetryNames.MeterName, s_version);
 
     public static readonly Counter<long> ActivitiesReceived =
         Meter.CreateCounter<long>("teams.activities.received", description: "Total activities received by the bot.");

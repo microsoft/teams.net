@@ -20,8 +20,8 @@ public class TelemetryTests
     [Fact]
     public void TeamsCoreTelemetry_ConstantsHaveExpectedValues()
     {
-        Assert.Equal("Microsoft.Teams.Core", TeamsCoreTelemetry.ActivitySourceName);
-        Assert.Equal("Microsoft.Teams.Core", TeamsCoreTelemetry.MeterName);
+        Assert.Equal("Microsoft.Teams.Core", CoreTelemetryNames.ActivitySourceName);
+        Assert.Equal("Microsoft.Teams.Core", CoreTelemetryNames.MeterName);
     }
 
     [Fact]
@@ -188,7 +188,7 @@ public class TelemetryTests
         {
             _listener = new ActivityListener
             {
-                ShouldListenTo = src => src.Name == TeamsCoreTelemetry.ActivitySourceName,
+                ShouldListenTo = src => src.Name == CoreTelemetryNames.ActivitySourceName,
                 Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
                 ActivityStopped = a =>
                 {
@@ -216,7 +216,7 @@ public class TelemetryTests
             {
                 InstrumentPublished = (instrument, listener) =>
                 {
-                    if (instrument.Meter.Name == TeamsCoreTelemetry.MeterName)
+                    if (instrument.Meter.Name == CoreTelemetryNames.MeterName)
                     {
                         listener.EnableMeasurementEvents(instrument);
                     }

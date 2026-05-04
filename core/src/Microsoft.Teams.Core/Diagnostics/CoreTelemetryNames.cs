@@ -17,11 +17,11 @@ namespace Microsoft.Teams.Core.Diagnostics;
 /// the full bot pipeline.
 /// <code>
 /// builder.Services.AddOpenTelemetry()
-///     .WithTracing(t => t.AddSource(TeamsCoreTelemetry.ActivitySourceName))
-///     .WithMetrics(m => m.AddMeter(TeamsCoreTelemetry.MeterName));
+///     .WithTracing(t => t.AddSource(CoreTelemetryNames.ActivitySourceName))
+///     .WithMetrics(m => m.AddMeter(CoreTelemetryNames.MeterName));
 /// </code>
 /// </remarks>
-public static class TeamsCoreTelemetry
+public static class CoreTelemetryNames
 {
     /// <summary>
     /// Name of the <see cref="System.Diagnostics.ActivitySource"/> that emits Core pipeline spans.

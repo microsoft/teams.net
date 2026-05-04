@@ -7,11 +7,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\src\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
+		<PackageReference Include="Microsoft.OpenTelemetry" Version="1.0.1" />
+		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
+		<PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.15.3" />
+		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
+		<PackageReference Include="OpenTelemetry.Instrumentation.Http" Version="1.15.1" />
+		<PackageReference Include="Microsoft.Extensions.AI" Version="10.5.1" />
+		<PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.1" />
+		<PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
+		<PackageReference Include="ModelContextProtocol" Version="1.2.0" />
+		<PackageReference Include="Azure.Monitor.OpenTelemetry.AspNetCore" Version="1.5.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.OpenTelemetry" Version="1.0.1" />
+	  <ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
 	</ItemGroup>
 
 </Project>
