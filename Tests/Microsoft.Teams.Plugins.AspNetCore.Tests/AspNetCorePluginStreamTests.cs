@@ -120,24 +120,21 @@ public class AspNetCorePluginStreamTests
     [Fact]
     public async Task Stream_Close_FinalMessageHasStreamTypeFinal_AfterInformativeUpdate()
     {
-        var sentActivities = new List<IActivity>();
         var sendCallCount = 0;
         var stream = new AspNetCorePlugin.Stream
         {
             Send = activity =>
             {
                 sendCallCount++;
-                sentActivities.Add(activity);
                 activity.Id = $"id-{sendCallCount}";
                 return Task.FromResult(activity);
             }
         };
 
+        // Update + Emit both queue activities; Close() waits for the flush to drain the
+        // queue and complete, so no fixed sleeps are needed.
         stream.Update("Thinking...");
-        await Task.Delay(700);
-
         stream.Emit("Done");
-        await Task.Delay(700);
 
         var result = await stream.Close();
 
@@ -156,6 +153,7 @@ public class AspNetCorePluginStreamTests
     public async Task Stream_Close_WaitsForInFlightFlushToComplete()
     {
         var sendCallCount = 0;
+        var firstSendCompleted = new TaskCompletionSource<bool>();
         var secondSendStarted = new TaskCompletionSource<bool>();
         var secondSendRelease = new TaskCompletionSource<bool>();
         var stream = new AspNetCorePlugin.Stream
@@ -170,19 +168,21 @@ public class AspNetCorePluginStreamTests
                     await secondSendRelease.Task;
                 }
                 activity.Id = $"id-{thisCall}";
+                if (thisCall == 1) firstSendCompleted.TrySetResult(true);
                 return activity;
             }
         };
 
-        // First flush: completes immediately and sets _id (so subsequent races aren't masked
-        // by the existing `_id is null` check).
+        // First flush: emit and wait for the send to actually complete (deterministic
+        // signal from the Send delegate). _id is assigned by the SendActivity helper after
+        // the await — yielding once lets that post-await code run before we proceed.
         stream.Emit("chunk 1");
-        await Task.Delay(700);
+        await firstSendCompleted.Task;
+        await Task.Yield();
         Assert.Equal(1, sendCallCount);
 
-        // Second flush: Send blocks indefinitely → queue drained, _id set, _lock held.
+        // Second flush: Send blocks → queue drained, _id set, _lock held.
         stream.Emit("chunk 2");
-        await Task.Delay(700);
         await secondSendStarted.Task;
 
         var closeTask = stream.Close();
@@ -190,7 +190,10 @@ public class AspNetCorePluginStreamTests
         // With the race-fix, Close() must not progress past its wait loop while the
         // flush is mid-await. Pre-fix, closeTask would race ahead and call Send for the
         // final activity (sendCallCount → 3) before we release the second flush.
-        await Task.Delay(200);
+        // We yield several times rather than sleep — Close() polls every 50ms and we
+        // want to give it ample chance to make progress if the bug is present.
+        for (var i = 0; i < 10; i++) await Task.Yield();
+        await Task.Delay(100);
         Assert.False(closeTask.IsCompleted);
         Assert.Equal(2, sendCallCount);
 

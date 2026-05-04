@@ -208,7 +208,7 @@ public class MessageActivity : Activity
     public MessageActivity AddStreamFinal()
     {
         ChannelData ??= new();
-        ChannelData.StreamId = Id;
+        ChannelData.StreamId ??= Id;
         ChannelData.StreamType = StreamType.Final;
 
         AddEntity(new StreamInfoEntity()
