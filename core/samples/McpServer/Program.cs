@@ -41,7 +41,8 @@ bot.OnMessage(async (context, cancellationToken) =>
 
     // If this user has a pending ask, treat their next message as the answer.
     // Only one outstanding ask per user is supported (see README Limitations).
-    if (state.UserPendingAsk.TryRemove(userId, out string? requestId)
+    if (!string.IsNullOrEmpty(userId)
+        && state.UserPendingAsk.TryRemove(userId, out string? requestId)
         && state.PendingAsks.TryGetValue(requestId, out PendingAsk? entry))
     {
         entry.MarkAnswered(context.Activity.Text ?? string.Empty);
