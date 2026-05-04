@@ -38,13 +38,22 @@ OAuthFlow auth = bot.GetOAuthFlow("sso");
 
 auth.OnSignInComplete(async (context, tokenResponse, ct) =>
 {
-    await context.SendActivityAsync("You're now signed in! Try `profile` or `calendar`.", ct);
+    await context.SendActivityAsync(new MessageActivity("You're now signed in! Try `profile` or `calendar`.")
+        .WithSuggestedActions(
+            new SuggestedActions()
+            {
+                Actions = new List<SuggestedAction>()
+                {
+                  new SuggestedAction() { Title = "Profile", Type = "imBack", Value = "profile" },
+                  new SuggestedAction() { Title = "Calendar", Type = "imBack", Value = "calendar" }
+            }
+            }), ct);
 });
 
 auth.OnSignInFailure(async (context, failure, ct) =>
 {
     string message = failure is not null
-        ? $"Sign-in failed: {failure.Code} — {failure.Message}"
+        ? $"User {context.Activity.From?.Name} Sign-in failed: {failure.Code} — {failure.Message}"
         : "Sign-in failed. Please try again.";
     await context.SendActivityAsync(message, ct);
 });
@@ -57,7 +66,7 @@ bot.OnMessage("(?i)^login$", async (context, ct) =>
     string? token = await context.SignIn(cancellationToken: ct);
     if (token is not null)
     {
-        await context.SendActivityAsync("You're already signed in.", ct);
+        await context.SendActivityAsync($"{context.Activity.From?.Name} You're already signed in.", ct);
     }
     // else: OAuthCard sent, SSO flow in progress -- OnSignInComplete will fire
 });
@@ -75,11 +84,11 @@ bot.OnMessage("(?i)^profile$", async (context, ct) =>
     {
         string json = await http.GetStringAsync("https://graph.microsoft.com/v1.0/me", ct);
         string indentedJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonObject>(json), new JsonSerializerOptions { WriteIndented = true });
-        await context.SendActivityAsync(new MessageActivity($" ## Graph Me \n ```json\n{indentedJson}\n```") { TextFormat = TextFormats.Markdown }, ct);
+        await context.SendActivityAsync(new MessageActivity($" ## Graph Me [{context.Activity.From?.Name}] \n ```json\n{indentedJson}\n```") { TextFormat = TextFormats.Markdown }, ct);
     }
     catch (HttpRequestException ex)
     {
-        await context.SendActivityAsync($"Graph call failed: {ex.Message}", ct);
+        await context.SendActivityAsync($"[{context.Activity.From?.Name}] Graph call failed: {ex.Message}", ct);
     }
 });
 
@@ -96,24 +105,24 @@ bot.OnMessage("(?i)^calendar$", async (context, ct) =>
         string json = await http.GetStringAsync(
             "https://graph.microsoft.com/v1.0/me/events?$top=3&$select=subject,start,end&$orderby=start/dateTime", ct);
         string indentedJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonObject>(json), new JsonSerializerOptions { WriteIndented = true });
-        await context.SendActivityAsync(new MessageActivity($" ## Graph Calendar \n ```json\n{indentedJson}\n```") { TextFormat = TextFormats.Markdown }, ct);
+        await context.SendActivityAsync(new MessageActivity($" ## Graph Calendar [{context.Activity.From?.Name}] \n ```json\n{indentedJson}\n```") { TextFormat = TextFormats.Markdown }, ct);
     }
     catch (HttpRequestException ex)
     {
-        await context.SendActivityAsync($"Graph call failed: {ex.Message}", ct);
+        await context.SendActivityAsync($"[{context.Activity.From?.Name}] Graph call failed: {ex.Message}", ct);
     }
 });
 
 bot.OnMessage("(?i)^logout$", async (context, ct) =>
 {
     await context.SignOut(cancellationToken: ct);
-    await context.SendActivityAsync("Signed out.", ct);
+    await context.SendActivityAsync($"User {context.Activity.From?.Name} signed out.", ct);
 });
 
 bot.OnMessage("(?i)^status$", async (context, ct) =>
 {
     bool signedIn = await context.IsSignedInAsync(cancellationToken: ct);
-    await context.SendActivityAsync(signedIn ? "Signed in." : "Not signed in.", ct);
+    await context.SendActivityAsync(signedIn ? $"User {context.Activity.From?.Name} is signed in." : $"User {context.Activity.From?.Name} is not signed in.", ct);
 });
 
 bot.OnMessage("(?i)^help$", async (context, ct) =>
@@ -131,7 +140,16 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         """;
 
     await context.SendActivityAsync(
-        new MessageActivity(helpText) { TextFormat = TextFormats.Markdown }, ct);
+        new MessageActivity(helpText) { TextFormat = TextFormats.Markdown }
+        .WithSuggestedActions(
+            new SuggestedActions() {
+                Actions = new List<SuggestedAction>()
+                {
+                  new SuggestedAction() { Title = "Login", Type = "imBack", Value = "login" },
+                  new SuggestedAction() { Title = "Logout", Type = "imBack", Value = "logout" },
+                  new SuggestedAction() { Title = "Status", Type = "imBack", Value = "status" },
+            }
+            }), ct);
 });
 
 // ==================== INSTALL HANDLER ====================
