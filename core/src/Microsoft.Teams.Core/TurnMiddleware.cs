@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 
 using System.Collections;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Core;
@@ -59,7 +61,7 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
     /// <param name="nextMiddlewareIndex">The index of the next middleware to execute in the pipeline.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous pipeline execution.</returns>
-    public Task RunPipelineAsync(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
+    public async Task RunPipelineAsync(BotApplication botApplication, CoreActivity activity, Func<CoreActivity, CancellationToken, Task>? callback, int nextMiddlewareIndex, CancellationToken cancellationToken)
     {
         if (nextMiddlewareIndex == _middlewares.Count)
         {
@@ -67,15 +69,43 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
             {
                 _logger.MiddlewarePipelineCompleted(nextMiddlewareIndex);
             }
-            return callback is not null ? callback!(activity, cancellationToken) ?? Task.CompletedTask : Task.CompletedTask;
+            if (callback is not null)
+            {
+                await callback(activity, cancellationToken).ConfigureAwait(false);
+            }
+            return;
         }
+
         ITurnMiddleware nextMiddleware = _middlewares[nextMiddlewareIndex];
-        _logger.MiddlewareExecuting(nextMiddleware.GetType().Name, nextMiddlewareIndex + 1, _middlewares.Count);
-        return nextMiddleware.OnTurnAsync(
-            botApplication,
-            activity,
-            (ct) => RunPipelineAsync(botApplication, activity, callback, nextMiddlewareIndex + 1, ct),
-            cancellationToken);
+        string middlewareName = nextMiddleware.GetType().Name;
+        _logger.MiddlewareExecuting(middlewareName, nextMiddlewareIndex + 1, _middlewares.Count);
+
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.Middleware, ActivityKind.Internal);
+        if (span is not null)
+        {
+            span.SetTag(Telemetry.Tags.MiddlewareName, middlewareName);
+            span.SetTag(Telemetry.Tags.MiddlewareIndex, nextMiddlewareIndex);
+        }
+
+        KeyValuePair<string, object?> mwTag = new(Telemetry.Tags.MiddlewareName, middlewareName);
+        long start = Stopwatch.GetTimestamp();
+        try
+        {
+            await nextMiddleware.OnTurnAsync(
+                botApplication,
+                activity,
+                (ct) => RunPipelineAsync(botApplication, activity, callback, nextMiddlewareIndex + 1, ct),
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            span.RecordException(ex);
+            throw;
+        }
+        finally
+        {
+            Telemetry.MiddlewareDuration.Record(Stopwatch.GetElapsedTime(start).TotalMilliseconds, mwTag);
+        }
     }
 
     public IEnumerator<ITurnMiddleware> GetEnumerator()

@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Diagnostics;
 
 namespace Microsoft.Teams.Apps.Routing;
 
@@ -92,7 +95,24 @@ internal sealed class Router
         {
             _logger.LogInformation("Dispatching '{Type}' activity to route '{Name}'.", ctx.Activity.Type, route.Name);
             _logger.LogTrace("Dispatching activity to route '{Name}': {Activity}", route.Name, ctx.Activity.ToJson());
-            await route.InvokeRoute(ctx, cancellationToken).ConfigureAwait(false);
+
+            (string handlerType, string dispatch) = GetHandlerTags(route.Name);
+            using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Handler, ActivityKind.Internal);
+            if (span is not null)
+            {
+                span.SetTag(AppsTelemetry.Tags.HandlerType, handlerType);
+                span.SetTag(AppsTelemetry.Tags.HandlerDispatch, dispatch);
+            }
+            try
+            {
+                await route.InvokeRoute(ctx, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                span.RecordException(ex);
+                throw;
+            }
+
             _logger.LogDebug("Completed route '{Name}' for '{Type}' activity.", route.Name, ctx.Activity.Type);
         }
     }
@@ -132,11 +152,40 @@ internal sealed class Router
         _logger.LogInformation("Dispatching invoke activity with name '{Name}' to route '{Route}'.", name, matchingRoutes[0].Name);
         _logger.LogTrace("Dispatching invoke activity to route '{Route}': {Activity}", matchingRoutes[0].Name, ctx.Activity.ToJson());
 
-        InvokeResponse response = await matchingRoutes[0].InvokeRouteWithReturn(ctx, cancellationToken).ConfigureAwait(false);
+        (string handlerType, string dispatch) = GetHandlerTags(matchingRoutes[0].Name);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Handler, ActivityKind.Internal);
+        if (span is not null)
+        {
+            span.SetTag(AppsTelemetry.Tags.HandlerType, handlerType);
+            span.SetTag(AppsTelemetry.Tags.HandlerDispatch, dispatch);
+        }
+        InvokeResponse response;
+        try
+        {
+            response = await matchingRoutes[0].InvokeRouteWithReturn(ctx, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            span.RecordException(ex);
+            throw;
+        }
 
         _logger.LogDebug("Completed invoke route '{Route}' for '{Name}' with status {Status}.", matchingRoutes[0].Name, name, response.Status);
 
         return response;
     }
 
+    private static (string handlerType, string dispatch) GetHandlerTags(string routeName)
+    {
+        const string invokePrefix = TeamsActivityType.Invoke + "/";
+        if (string.Equals(routeName, TeamsActivityType.Invoke, StringComparison.Ordinal))
+        {
+            return (routeName, "catchall");
+        }
+        if (routeName.StartsWith(invokePrefix, StringComparison.Ordinal))
+        {
+            return (routeName[invokePrefix.Length..], "invoke");
+        }
+        return (routeName, "type");
+    }
 }

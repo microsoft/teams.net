@@ -105,15 +105,7 @@ public class TeamsConversationAccount : ConversationAccount
         set => Properties["userRole"] = value;
     }
 
-    /// <summary>
-    /// Gets or sets the TenantId.
-    /// </summary>
-    [JsonIgnore]
-    public string? TenantId
-    {
-        get => GetStringProperty("tenantId");
-        set => Properties["tenantId"] = value;
-    }
+    // TenantId is inherited as a typed property from ConversationAccount.
 
     private string? GetStringProperty(string key)
     {

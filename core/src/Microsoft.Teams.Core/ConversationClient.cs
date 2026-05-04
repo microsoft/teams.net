@@ -1,8 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Http;
 using Microsoft.Teams.Core.Schema;
 
@@ -75,12 +77,33 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string body = activity.ToJson();
 
-        return await _botHttpClient.SendAsync<SendActivityResponse>(
-            HttpMethod.Post,
-            url,
-            body,
-            CreateRequestOptions(agenticIdentity, "sending activity", customHeaders),
-            cancellationToken).ConfigureAwait(false);
+        KeyValuePair<string, object?> opTag = new(Telemetry.Tags.Operation, Telemetry.Operations.SendActivity);
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.ConversationClient, ActivityKind.Client);
+        if (span is not null)
+        {
+            span.SetTag(Telemetry.Tags.Operation, Telemetry.Operations.SendActivity);
+            span.SetTag(Telemetry.Tags.ServiceUrl, activity.ServiceUrl.ToString());
+            span.SetTag(Telemetry.Tags.ConversationId, conversationId);
+            span.SetTag(Telemetry.Tags.ActivityType, activity.Type);
+        }
+        try
+        {
+            SendActivityResponse? response = await _botHttpClient.SendAsync<SendActivityResponse>(
+                HttpMethod.Post,
+                url,
+                body,
+                CreateRequestOptions(agenticIdentity, "sending activity", customHeaders),
+                cancellationToken).ConfigureAwait(false);
+            span?.SetTag(Telemetry.Tags.ActivityId, response?.Id);
+            Telemetry.OutboundCalls.Add(1, opTag);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            span.RecordException(ex);
+            Telemetry.OutboundErrors.Add(1, opTag);
+            throw;
+        }
     }
 
     /// <summary>
@@ -113,12 +136,33 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.UpdatingActivity(url, body);
 
-        return (await _botHttpClient.SendAsync<UpdateActivityResponse>(
-            HttpMethod.Put,
-            url,
-            body,
-            CreateRequestOptions(agenticIdentity, "updating activity", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        KeyValuePair<string, object?> opTag = new(Telemetry.Tags.Operation, Telemetry.Operations.UpdateActivity);
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.ConversationClient, ActivityKind.Client);
+        if (span is not null)
+        {
+            span.SetTag(Telemetry.Tags.Operation, Telemetry.Operations.UpdateActivity);
+            span.SetTag(Telemetry.Tags.ServiceUrl, activity.ServiceUrl.ToString());
+            span.SetTag(Telemetry.Tags.ConversationId, conversationId);
+            span.SetTag(Telemetry.Tags.ActivityId, activityId);
+            span.SetTag(Telemetry.Tags.ActivityType, activity.Type);
+        }
+        try
+        {
+            UpdateActivityResponse response = (await _botHttpClient.SendAsync<UpdateActivityResponse>(
+                HttpMethod.Put,
+                url,
+                body,
+                CreateRequestOptions(agenticIdentity, "updating activity", customHeaders),
+                cancellationToken).ConfigureAwait(false))!;
+            Telemetry.OutboundCalls.Add(1, opTag);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            span.RecordException(ex);
+            Telemetry.OutboundErrors.Add(1, opTag);
+            throw;
+        }
     }
 
 
@@ -147,12 +191,33 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         logger.UpdatingTargetedActivity(url, body);
 
-        return (await _botHttpClient.SendAsync<UpdateActivityResponse>(
-            HttpMethod.Put,
-            url,
-            body,
-            CreateRequestOptions(agenticIdentity, "updating targeted activity", customHeaders),
-            cancellationToken).ConfigureAwait(false))!;
+        KeyValuePair<string, object?> opTag = new(Telemetry.Tags.Operation, Telemetry.Operations.UpdateActivity);
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.ConversationClient, ActivityKind.Client);
+        if (span is not null)
+        {
+            span.SetTag(Telemetry.Tags.Operation, Telemetry.Operations.UpdateActivity);
+            span.SetTag(Telemetry.Tags.ServiceUrl, activity.ServiceUrl.ToString());
+            span.SetTag(Telemetry.Tags.ConversationId, conversationId);
+            span.SetTag(Telemetry.Tags.ActivityId, activityId);
+            span.SetTag(Telemetry.Tags.ActivityType, activity.Type);
+        }
+        try
+        {
+            UpdateActivityResponse response = (await _botHttpClient.SendAsync<UpdateActivityResponse>(
+                HttpMethod.Put,
+                url,
+                body,
+                CreateRequestOptions(agenticIdentity, "updating targeted activity", customHeaders),
+                cancellationToken).ConfigureAwait(false))!;
+            Telemetry.OutboundCalls.Add(1, opTag);
+            return response;
+        }
+        catch (Exception ex)
+        {
+            span.RecordException(ex);
+            Telemetry.OutboundErrors.Add(1, opTag);
+            throw;
+        }
     }
 
     /// <summary>
@@ -208,12 +273,31 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             url += "?isTargetedActivity=true";
         }
 
-        await _botHttpClient.SendAsync(
-            HttpMethod.Delete,
-            url,
-            body: null,
-            CreateRequestOptions(agenticIdentity, "deleting activity", customHeaders),
-            cancellationToken).ConfigureAwait(false);
+        KeyValuePair<string, object?> opTag = new(Telemetry.Tags.Operation, Telemetry.Operations.DeleteActivity);
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.ConversationClient, ActivityKind.Client);
+        if (span is not null)
+        {
+            span.SetTag(Telemetry.Tags.Operation, Telemetry.Operations.DeleteActivity);
+            span.SetTag(Telemetry.Tags.ServiceUrl, serviceUrl.ToString());
+            span.SetTag(Telemetry.Tags.ConversationId, conversationId);
+            span.SetTag(Telemetry.Tags.ActivityId, activityId);
+        }
+        try
+        {
+            await _botHttpClient.SendAsync(
+                HttpMethod.Delete,
+                url,
+                body: null,
+                CreateRequestOptions(agenticIdentity, "deleting activity", customHeaders),
+                cancellationToken).ConfigureAwait(false);
+            Telemetry.OutboundCalls.Add(1, opTag);
+        }
+        catch (Exception ex)
+        {
+            span.RecordException(ex);
+            Telemetry.OutboundErrors.Add(1, opTag);
+            throw;
+        }
     }
 
     /// <summary>

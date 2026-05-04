@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Core.Hosting;
@@ -77,49 +79,67 @@ internal sealed class BotAuthenticationHandler(
     /// <returns>The authorization header value.</returns>
     private async Task<string> GetAuthorizationHeaderAsync(AgenticIdentity? agenticIdentity, CancellationToken cancellationToken)
     {
-        AuthorizationHeaderProviderOptions options = new()
-        {
-            AcquireTokenOptions = new AcquireTokenOptions()
-            {
-                AuthenticationOptionsName = authenticationOptionsName ?? MsalConfigurationExtensions.MsalConfigKey,
-            }
-        };
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.AuthOutbound, ActivityKind.Client);
+        span?.SetTag(Telemetry.Tags.AuthScope, _scope);
 
-        // Conditionally apply ManagedIdentity configuration if registered
-        if (_managedIdentityOptions is not null)
+        try
         {
-            ManagedIdentityOptions miOptions = _managedIdentityOptions.Value;
-
-            if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
+            AuthorizationHeaderProviderOptions options = new()
             {
-                _logger.ApplyingManagedIdentity(miOptions.UserAssignedClientId);
-                options.AcquireTokenOptions.ManagedIdentity = miOptions;
+                AcquireTokenOptions = new AcquireTokenOptions()
+                {
+                    AuthenticationOptionsName = authenticationOptionsName ?? MsalConfigurationExtensions.MsalConfigKey,
+                }
+            };
+
+            // Conditionally apply ManagedIdentity configuration if registered
+            if (_managedIdentityOptions is not null)
+            {
+                ManagedIdentityOptions miOptions = _managedIdentityOptions.Value;
+
+                if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
+                {
+                    _logger.ApplyingManagedIdentity(miOptions.UserAssignedClientId);
+                    options.AcquireTokenOptions.ManagedIdentity = miOptions;
+                    span?.SetTag(Telemetry.Tags.AuthFlow, "managed_identity");
+                }
             }
+
+            if (agenticIdentity is not null &&
+                !string.IsNullOrEmpty(agenticIdentity.AgenticAppId) &&
+                !string.IsNullOrEmpty(agenticIdentity.AgenticUserId))
+            {
+                _logAgenticToken(_logger, agenticIdentity.AgenticAppId, null);
+
+                if (!Guid.TryParse(agenticIdentity.AgenticUserId, out Guid agenticUserGuid))
+                {
+                    _logInvalidAgenticUserId(_logger, agenticIdentity.AgenticUserId, null);
+                }
+                else
+                {
+                    span?.SetTag(Telemetry.Tags.AuthFlow, "agentic");
+                    options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserGuid);
+                    string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([_scope], options, null, cancellationToken).ConfigureAwait(false);
+                    return token;
+                }
+            }
+
+            _logAppOnlyToken(_logger, _scope, null);
+            // Don't overwrite a more specific flow (managed_identity) already set above.
+            if (span is not null && !span.TagObjects.Any(t => t.Key == Telemetry.Tags.AuthFlow))
+            {
+                span.SetTag(Telemetry.Tags.AuthFlow, "app_only");
+            }
+            string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(_scope, options, cancellationToken).ConfigureAwait(false);
+
+
+            return appToken;
         }
-
-        if (agenticIdentity is not null &&
-            !string.IsNullOrEmpty(agenticIdentity.AgenticAppId) &&
-            !string.IsNullOrEmpty(agenticIdentity.AgenticUserId))
+        catch (Exception ex)
         {
-            _logAgenticToken(_logger, agenticIdentity.AgenticAppId, null);
-
-            if (!Guid.TryParse(agenticIdentity.AgenticUserId, out Guid agenticUserGuid))
-            {
-                _logInvalidAgenticUserId(_logger, agenticIdentity.AgenticUserId, null);
-            }
-            else
-            {
-                options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserGuid);
-                string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([_scope], options, null, cancellationToken).ConfigureAwait(false);
-                return token;
-            }
+            span.RecordException(ex);
+            throw;
         }
-
-        _logAppOnlyToken(_logger, _scope, null);
-        string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(_scope, options, cancellationToken).ConfigureAwait(false);
-
-
-        return appToken;
     }
 
     private void LogTokenClaims(string token)
