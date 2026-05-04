@@ -67,15 +67,13 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
     string? decision = TryGetString(action.Data, "decision");
 
     if (approvalId is not null
-        && state.Approvals.ContainsKey(approvalId)
-        && (decision == ApprovalStatus.Approved || decision == ApprovalStatus.Rejected))
+        && (decision == ApprovalStatus.Approved || decision == ApprovalStatus.Rejected)
+        && state.Approvals.TryGetValue(approvalId, out string? currentDecision)
+        && state.Approvals.TryUpdate(approvalId, decision, currentDecision))
     {
-        state.Approvals[approvalId] = decision;
-        await Task.CompletedTask;
         return AdaptiveCardResponse.CreateMessageResponse("Response recorded");
     }
 
-    await Task.CompletedTask;
     return AdaptiveCardResponse.CreateMessageResponse(
         "Unable to record response. The approval request may be invalid or expired.");
 });
