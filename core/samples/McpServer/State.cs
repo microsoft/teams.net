@@ -9,6 +9,7 @@ public static class AskStatus
 {
     public const string Pending = "pending";
     public const string Answered = "answered";
+    public const string Superseded = "superseded";
 }
 
 public static class ApprovalStatus
@@ -21,8 +22,26 @@ public static class ApprovalStatus
 public sealed class PendingAsk
 {
     public required string UserId { get; init; }
-    public string Status { get; set; } = AskStatus.Pending;
+    private string _status = AskStatus.Pending;
+    public string Status => _status;
     public string? Reply { get; set; }
+
+    /// <summary>
+    /// Atomically transitions status from <see cref="AskStatus.Pending"/> to
+    /// <see cref="AskStatus.Superseded"/>. Returns true if the transition occurred.
+    /// </summary>
+    public bool TryMarkSuperseded()
+    {
+        string original = Interlocked.CompareExchange(ref _status, AskStatus.Superseded, AskStatus.Pending);
+        return original == AskStatus.Pending;
+    }
+
+    /// <summary>Sets status to <see cref="AskStatus.Answered"/>.</summary>
+    public void MarkAnswered(string reply)
+    {
+        Reply = reply;
+        Volatile.Write(ref _status, AskStatus.Answered);
+    }
 }
 
 /// <summary>
