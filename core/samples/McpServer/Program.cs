@@ -72,10 +72,13 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
         && (decision == ApprovalStatus.Approved || decision == ApprovalStatus.Rejected))
     {
         state.Approvals[approvalId] = decision;
+        await Task.CompletedTask;
+        return AdaptiveCardResponse.CreateMessageResponse("Response recorded");
     }
 
     await Task.CompletedTask;
-    return AdaptiveCardResponse.CreateMessageResponse("Response recorded");
+    return AdaptiveCardResponse.CreateMessageResponse(
+        "Unable to record response. The approval request may be invalid or expired.");
 });
 
 webApp.MapMcp("/mcp");
