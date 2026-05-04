@@ -43,26 +43,6 @@ public class ConversationUpdateActivity : TeamsActivity
             TopicName = topicName?.ToString();
             activity.Properties.Remove("topicName");
         }
-
-        if (activity.Properties.TryGetValue("historyDisclosed", out var historyDisclosed) && historyDisclosed != null)
-        {
-            if (historyDisclosed is JsonElement je)
-            {
-                if (je.ValueKind == JsonValueKind.True)
-                    HistoryDisclosed = true;
-                else if (je.ValueKind == JsonValueKind.False)
-                    HistoryDisclosed = false;
-            }
-            else if (historyDisclosed is bool boolValue)
-            {
-                HistoryDisclosed = boolValue;
-            }
-            else if (bool.TryParse(historyDisclosed.ToString(), out var result))
-            {
-                HistoryDisclosed = result;
-            }
-            activity.Properties.Remove("historyDisclosed");
-        }
         */
 
         MembersAdded = activity.Properties.Extract<IList<TeamsConversationAccount>>("membersAdded");
@@ -76,12 +56,6 @@ public class ConversationUpdateActivity : TeamsActivity
     /// </summary>
     [JsonPropertyName("topicName")]
     public string? TopicName { get; set; }
-
-    /// <summary>
-    /// Gets or sets a value indicating whether the prior history is disclosed.
-    /// </summary>
-    [JsonPropertyName("historyDisclosed")]
-    public bool? HistoryDisclosed { get; set; }
     */
 
     /// <summary>
