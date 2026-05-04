@@ -23,7 +23,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         CancellationToken cancellationToken = default)
     {
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
-        await app.Send(conversationId, message, cancellationToken: cancellationToken);
+        await app.Send(conversationId, message, state.ServiceUrl, cancellationToken);
         return new NotifyResult(Notified: true, UserId: userId);
     }
 
@@ -37,7 +37,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
     {
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
         string requestId = Guid.NewGuid().ToString();
-        await app.Send(conversationId, question, cancellationToken: cancellationToken);
+        await app.Send(conversationId, question, state.ServiceUrl, cancellationToken);
         // The user's next message looks up these entries and flips status to 'answered'.
         state.PendingAsks[requestId] = new PendingAsk { UserId = userId };
         state.UserPendingAsk[userId] = requestId;
@@ -67,13 +67,9 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
         string approvalId = Guid.NewGuid().ToString();
 
-        Uri serviceUrl = state.LastServiceUrl
-            ?? throw new InvalidOperationException(
-                "No service URL cached. The bot must receive at least one activity before proactive sends work.");
-
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithServiceUrl(serviceUrl)
+            .WithServiceUrl(state.ServiceUrl)
             .WithChannelId("msteams")
             .WithConversation(new Conversation(conversationId))
             .WithAdaptiveCardAttachment(Cards.ApprovalCard(approvalId, title, description))
@@ -104,9 +100,6 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
             return existing;
         }
 
-        Uri serviceUrl = state.LastServiceUrl
-            ?? throw new InvalidOperationException(
-                "No service URL cached. The bot must receive at least one activity before proactive sends work.");
         ConversationParameters parameters = new()
         {
             Members = [new ConversationAccount { Id = userId }],
@@ -114,7 +107,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         };
 
         CreateConversationResponse resource = await app.Api
-            .ForServiceUrl(serviceUrl)
+            .ForServiceUrl(state.ServiceUrl)
             .Conversations
             .CreateAsync(parameters, cancellationToken: cancellationToken);
 

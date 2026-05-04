@@ -22,7 +22,7 @@ wait for them to reply or approve.
 | `McpTools.cs` | The five `[McpServerTool]` methods, registered via `WithTools<McpTools>()`.               |
 | `Cards.cs`    | Adaptive Card factory for the Approve/Reject card.                                        |
 | `Models.cs`   | Typed result records (`NotifyResult`, `AskResult`, `ReplyResult`, …) — snake_case wire.   |
-| `State.cs`    | DI-singleton: conversation map, pending asks, approvals, last seen service URL.           |
+| `State.cs`    | DI-singleton: conversation map, pending asks, approvals, current service URL.             |
 
 ## Configure
 
@@ -57,6 +57,12 @@ AzureAd__ClientCredentials__0__ClientSecret=<your-azure-bot-app-secret>
 `TenantId` is required because the MCP tools open 1:1 conversations
 *proactively* via `app.Api.Conversations.CreateAsync` — it can't be inferred
 from the bot's own credentials.
+
+### `Bot:ServiceUrl`
+
+`appsettings.json` also configures `Bot:ServiceUrl`, the Bot Framework
+endpoint proactive sends target. Default is the production Teams URL
+(`https://smba.trafficmanager.net/teams/`).
 
 The `userId` argument passed to `notify`, `ask`, and `request_approval` is the
 Teams user id of someone in the same tenant. For the simplest setup, message

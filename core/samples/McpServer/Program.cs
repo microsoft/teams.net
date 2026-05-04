@@ -10,7 +10,13 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTeamsBotApplication();
 // State is a singleton so the same maps are shared between the bot's
 // activity handlers and the MCP tools. Replace with a persistent store for production.
-builder.Services.AddSingleton<State>();
+// Seeded with the configured service URL so MCP tools work from startup.
+builder.Services.AddSingleton<State>(sp =>
+{
+    string serviceUrl = sp.GetRequiredService<IConfiguration>()["Bot:ServiceUrl"]
+        ?? "https://smba.trafficmanager.net/teams/";
+    return new State(new Uri(serviceUrl));
+});
 builder.Services
     .AddMcpServer()
     .WithHttpTransport()
@@ -25,13 +31,6 @@ bot.OnMessage(async (context, cancellationToken) =>
 {
     string userId = context.Activity.From?.Id ?? string.Empty;
     string conversationId = context.Activity.Conversation?.Id ?? string.Empty;
-
-    // Cache the service URL: proactive sends and conversations.create both
-    // require one, and there's no way to discover it without an inbound activity.
-    if (context.Activity.ServiceUrl is not null)
-    {
-        state.LastServiceUrl = context.Activity.ServiceUrl;
-    }
 
     // cache the personal conversation_id so MCP tools can DM this user later.
     TeamsConversation? conv = TeamsConversation.FromConversation(context.Activity.Conversation);

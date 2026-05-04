@@ -5,9 +5,6 @@ using System.Collections.Concurrent;
 
 namespace McpServer;
 
-// Status values are sent verbatim to MCP clients (and matched against verbatim
-// in card payloads), so storing the wire-format strings avoids a translation
-// layer between the in-memory model and the JSON output.
 public static class AskStatus
 {
     public const string Pending = "pending";
@@ -32,7 +29,7 @@ public sealed class PendingAsk
 /// In-memory state shared between the Teams bot handlers and the MCP tools.
 /// A server restart clears everything — pending asks and approvals in flight will be lost.
 /// </summary>
-public sealed class State
+public sealed class State(Uri serviceUrl)
 {
     /// <summary>userId -> personal conversationId. Populated on first incoming 1:1 message.</summary>
     public ConcurrentDictionary<string, string> Conversations { get; } = new();
@@ -47,8 +44,8 @@ public sealed class State
     public ConcurrentDictionary<string, string> Approvals { get; } = new();
 
     /// <summary>
-    /// Last service URL seen on an inbound activity. Required by proactive sends and
-    /// <c>conversations.create</c> — there is no way to discover it otherwise.
+    /// Service URL used by proactive sends and <c>conversations.create</c>. Seeded from
+    /// <c>Bot:ServiceUrl</c> config at startup.
     /// </summary>
-    public Uri? LastServiceUrl { get; set; }
+    public Uri ServiceUrl { get; set; } = serviceUrl;
 }
