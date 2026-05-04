@@ -1,0 +1,193 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System.Net;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Core;
+
+namespace Microsoft.Teams.Apps;
+
+/// <summary>
+/// Manages the send loop for Teams streaming messages.
+/// Callers append raw deltas; the writer accumulates them and sends the full
+/// text so far on each update. Every chunk — informative, intermediate, and
+/// final — is sent as a new POST with a shared <c>streamId</c>
+/// so Teams renders them as a single progressively-updating bubble.
+/// </summary>
+/// <remarks>
+/// Typical usage:
+/// <code>
+///     var writer = TeamsStreamingWriter.CreateFromContext(context);
+///     await writer.SendInformativeUpdateAsync("Thinking…"); //optional placeholder while the bot thinks
+///     await writer.AppendResponseAsync(" Hello");
+///     await writer.AppendResponseAsync(", world");
+///     await writer.FinalizeResponseAsync();            // sends accumulated " Hello, world"
+/// </code>
+///
+/// Entities and Attachments are only sent with the final message activity.
+/// Pass them directly to <see cref="FinalizeResponseAsync"/>:
+/// <code>
+///     await writer.FinalizeResponseAsync(
+///         entities: [new CitationEntity(...)],
+///         attachments: [new TeamsAttachment(...)]);
+/// </code>
+/// </remarks>
+public sealed class TeamsStreamingWriter
+{
+    // Teams streaming API enforces a rate limit; send intermediate updates at most once per interval.
+    private static readonly TimeSpan _minChunkInterval = TimeSpan.FromMilliseconds(500);
+
+    private readonly ConversationClient _client;
+    private readonly TeamsActivity _reference;
+    private readonly string _conversationId;
+    private readonly ILogger _logger;
+    // Assigned from the server's 201 response after the first send; null until then.
+    private string? _streamId;
+    private int _sequence;
+    private bool _finalized;
+    private bool _cancelled;
+    private readonly System.Text.StringBuilder _accumulated = new();
+    private DateTime _lastChunkSent = DateTime.MinValue;
+
+    internal TeamsStreamingWriter(ConversationClient client, TeamsActivity reference, ILogger? logger = null)
+    {
+        _client = client;
+        _reference = reference;
+        _conversationId = reference.Conversation?.Id ?? throw new ArgumentException("Activity must have a Conversation with an Id.", nameof(reference));
+        _logger = logger ?? NullLogger.Instance;
+    }
+
+    /// <summary>
+    /// Creates a <see cref="TeamsStreamingWriter"/> bound to the given context.
+    /// </summary>
+    public static TeamsStreamingWriter CreateFromContext<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        return new TeamsStreamingWriter(context.TeamsBotApplication.ConversationClient, context.Activity);
+    }
+
+    /// <summary>
+    /// Sends an informative placeholder (streamType = "informative").
+    /// Optional — if omitted the first <see cref="AppendResponseAsync"/> call begins the stream.
+    /// </summary>
+    public async Task SendInformativeUpdateAsync(string text, CancellationToken cancellationToken = default)
+    {
+        if (_lastChunkSent > DateTime.MinValue)
+            throw new InvalidOperationException("Cannot send an informative update after streaming has started.");
+
+        _sequence++;
+        _logger.LogDebug("Sending informative streaming update (sequence {Sequence}).", _sequence);
+        SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
+        _streamId ??= response?.Id;
+        _logger.LogDebug("Stream started with streamId '{StreamId}'.", _streamId);
+    }
+
+    /// <summary>
+    /// Appends <paramref name="chunk"/> to the accumulated text and sends the
+    /// full accumulated text as an intermediate streaming update (streamType = "streaming").
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown if <see cref="FinalizeResponseAsync"/> has already been called.</exception>
+    public async Task AppendResponseAsync(string chunk, CancellationToken cancellationToken = default)
+    {
+        if (_finalized)
+            throw new InvalidOperationException("Cannot append after FinalizeResponseAsync has been called.");
+
+        if (_cancelled)
+            return;
+
+        _accumulated.Append(chunk);
+
+        if (DateTime.UtcNow - _lastChunkSent < _minChunkInterval)
+        {
+            _logger.LogTrace("Rate-limited: skipping intermediate send (interval {Interval}ms).", _minChunkInterval.TotalMilliseconds);
+            return;
+        }
+
+        _sequence++;
+        try
+        {
+            _logger.LogDebug("Sending streaming chunk (sequence {Sequence}, accumulated {Length} chars).", _sequence, _accumulated.Length);
+            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated.ToString(), StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
+            _streamId ??= response?.Id;
+            _lastChunkSent = DateTime.UtcNow;
+        }
+        catch (HttpRequestException ex) when (
+            ex.StatusCode is HttpStatusCode.Gone or HttpStatusCode.NoContent
+            || ex.Message.Contains("Content stream was cancelled", StringComparison.OrdinalIgnoreCase))
+        {
+            _logger.LogWarning("Stream cancelled by user (streamId '{StreamId}').", _streamId);
+            _cancelled = true;
+        }
+    }
+
+    /// <summary>
+    /// Sends the accumulated text as the final update (streamType = "final") and marks the stream complete.
+    /// </summary>
+    /// <param name="attachments">Optional attachments to include in the final message activity.</param>
+    /// <param name="entities">Optional entities (e.g. citations, mentions) to include in the final message activity.</param>
+    /// <param name="feedbackEnabled">Whether to enable the feedback loop (thumbs up/down) on the final message.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
+    /// <exception cref="InvalidOperationException">Thrown if <see cref="FinalizeResponseAsync"/> has already been called, or if no content has been accumulated via <see cref="AppendResponseAsync"/>.</exception>
+    public async Task FinalizeResponseAsync(IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false, CancellationToken cancellationToken = default)
+    {
+        if (_finalized)
+            throw new InvalidOperationException("Cannot finalize after FinalizeResponseAsync has already been called.");
+
+        if (_cancelled)
+            return;
+
+        if (_accumulated.Length == 0 && (attachments == null || attachments.Count == 0))
+            throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
+
+        _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).", _streamId, _accumulated.Length, _sequence);
+        await _client.SendActivityAsync(BuildActivity(_accumulated.ToString(), StreamType.Final, attachments, entities, feedbackEnabled), cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        _finalized = true;
+        _logger.LogDebug("Stream finalized (streamId '{StreamId}').", _streamId);
+    }
+
+    private TeamsActivity BuildActivity(string text, string streamType, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false)
+    {
+        bool isFinal = streamType == StreamType.Final;
+
+        TeamsActivityBuilder builder;
+
+        if (isFinal)
+        {
+            StreamInfoEntity streamInfo = new() { StreamType = streamType };
+            if (_streamId != null)
+                streamInfo.StreamId = _streamId;
+
+            builder = new TeamsActivityBuilder(new MessageActivity(text))
+                .WithConversationReference(_reference)
+                .AddEntity(streamInfo);
+
+            if (entities != null)
+                foreach (Entity entity in entities)
+                    builder.AddEntity(entity);
+
+            if (attachments?.Count > 0)
+                builder.WithAttachments(attachments);
+
+            TeamsActivity activity = builder.Build();
+            if (feedbackEnabled) activity.AddFeedback();
+            return activity;
+        }
+        else
+        {
+            StreamingActivity streaming = new(text);
+            streaming.StreamInfo.StreamType = streamType;
+            streaming.StreamInfo.StreamSequence = _sequence;
+            if (_streamId != null)
+                streaming.StreamInfo.StreamId = _streamId;
+
+            builder = new TeamsActivityBuilder(streaming)
+                .WithConversationReference(_reference);
+        }
+
+        return builder.Build();
+    }
+}

@@ -7,6 +7,8 @@ namespace Microsoft.Teams.Api.Clients;
 
 public class BotSignInClient : Client
 {
+    public string TokenServiceUrl { get; set; } = "https://token.botframework.com";
+
     public BotSignInClient() : base()
     {
 
@@ -32,7 +34,7 @@ public class BotSignInClient : Client
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(
-            $"https://token.botframework.com/api/botsignin/GetSignInUrl?{query}"
+            $"{TokenServiceUrl}/api/botsignin/GetSignInUrl?{query}"
         );
 
         var res = await _http.SendAsync(req, token);
@@ -44,7 +46,7 @@ public class BotSignInClient : Client
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get(
-            $"https://token.botframework.com/api/botsignin/GetSignInResource?{query}"
+            $"{TokenServiceUrl}/api/botsignin/GetSignInResource?{query}"
         );
 
         var res = await _http.SendAsync<SignIn.UrlResponse>(req, token);
