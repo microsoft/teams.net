@@ -75,8 +75,17 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
             .WithAdaptiveCardAttachment(Cards.ApprovalCard(approvalId, title, description))
             .Build();
 
-        await app.SendActivityAsync(activity, cancellationToken);
         state.Approvals[approvalId] = ApprovalStatus.Pending;
+        try
+        {
+            await app.SendActivityAsync(activity, cancellationToken);
+        }
+        catch
+        {
+            state.Approvals.Remove(approvalId);
+            throw;
+        }
+
         return new ApprovalRequestResult(ApprovalId: approvalId);
     }
 
