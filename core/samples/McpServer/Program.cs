@@ -45,7 +45,8 @@ bot.OnMessage(async (context, cancellationToken) =>
         && state.UserPendingAsk.TryRemove(userId, out string? requestId)
         && state.PendingAsks.TryGetValue(requestId, out PendingAsk? entry))
     {
-        entry.MarkAnswered(context.Activity.Text ?? string.Empty);
+        PendingAsk answered = entry with { Status = AskStatus.Answered, Reply = context.Activity.Text ?? string.Empty };
+        state.PendingAsks.TryUpdate(requestId, answered, entry);
         await context.Send("Got it, thank you!", cancellationToken);
         return;
     }

@@ -19,30 +19,10 @@ public static class ApprovalStatus
     public const string Rejected = "rejected";
 }
 
-public sealed class PendingAsk
-{
-    public required string UserId { get; init; }
-    private string _status = AskStatus.Pending;
-    public string Status => _status;
-    public string? Reply { get; set; }
-
-    /// <summary>
-    /// Atomically transitions status from <see cref="AskStatus.Pending"/> to
-    /// <see cref="AskStatus.Superseded"/>. Returns true if the transition occurred.
-    /// </summary>
-    public bool TryMarkSuperseded()
-    {
-        string original = Interlocked.CompareExchange(ref _status, AskStatus.Superseded, AskStatus.Pending);
-        return original == AskStatus.Pending;
-    }
-
-    /// <summary>Sets status to <see cref="AskStatus.Answered"/>.</summary>
-    public void MarkAnswered(string reply)
-    {
-        Reply = reply;
-        Volatile.Write(ref _status, AskStatus.Answered);
-    }
-}
+// Immutable so readers always see a consistent (Status, Reply) snapshot — no locks,
+// no Volatile, no torn state. Transitions go through ConcurrentDictionary.TryUpdate
+// in State.PendingAsks: build a new record, swap atomically against the old one.
+public sealed record PendingAsk(string UserId, string Status = AskStatus.Pending, string? Reply = null);
 
 /// <summary>
 /// In-memory state shared between the Teams bot handlers and the MCP tools.

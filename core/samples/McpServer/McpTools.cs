@@ -38,16 +38,18 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
         string requestId = Guid.NewGuid().ToString();
 
-        // If the user already has a pending ask, mark it as superseded before replacing it,
+        // If the user already has a pending ask, mark it superseded before replacing it,
         // so callers polling get_reply on the old request_id don't wait indefinitely.
         if (state.UserPendingAsk.TryGetValue(userId, out string? previousRequestId)
-            && state.PendingAsks.TryGetValue(previousRequestId, out PendingAsk? previousAsk))
+            && state.PendingAsks.TryGetValue(previousRequestId, out PendingAsk? previousAsk)
+            && previousAsk.Status == AskStatus.Pending)
         {
-            previousAsk.TryMarkSuperseded();
+            PendingAsk superseded = previousAsk with { Status = AskStatus.Superseded };
+            state.PendingAsks.TryUpdate(previousRequestId, superseded, previousAsk);
         }
 
         // Record the pending ask before sending, so a fast reply is never lost.
-        state.PendingAsks[requestId] = new PendingAsk { UserId = userId };
+        state.PendingAsks[requestId] = new PendingAsk(userId);
         state.UserPendingAsk[userId] = requestId;
         try
         {
