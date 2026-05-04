@@ -134,11 +134,10 @@ public partial class AspNetCorePlugin
                     _timeout = null;
                 }
 
-                var i = 0;
-
                 Queue<TypingActivity> informativeUpdates = new();
+                var dequeued = 0;
 
-                while (i <= 10 && _queue.TryDequeue(out var activity))
+                while (_queue.TryDequeue(out var activity))
                 {
                     if (activity is MessageActivity message)
                     {
@@ -159,11 +158,11 @@ public partial class AspNetCorePlugin
                         informativeUpdates.Enqueue(typing);
                     }
 
-                    i++;
+                    dequeued++;
                     _count++;
                 }
 
-                if (i == 0) return;
+                if (dequeued == 0) return;
 
                 // Send informative updates
                 if (informativeUpdates.Count > 0)
