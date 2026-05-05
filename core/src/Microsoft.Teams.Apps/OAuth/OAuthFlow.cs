@@ -180,7 +180,7 @@ public class OAuthFlow
 
         TeamsActivity oauthActivity = TeamsActivity.CreateBuilder()
             .WithConversationReference(context.Activity)
-            .WithRecipient(context.Activity.From, context.Activity?.Conversation?.ConversationType != ConversationType.Personal)
+            .WithRecipient(context.Activity.From, context.Activity?.Conversation?.ConversationType == ConversationType.GroupChat)
             .WithAttachment(attachment)
             .Build();
         

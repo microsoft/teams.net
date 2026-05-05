@@ -55,7 +55,13 @@ auth.OnSignInFailure(async (context, failure, ct) =>
     string message = failure is not null
         ? $"User {context.Activity.From?.Name} Sign-in failed: {failure.Code} — {failure.Message}"
         : "Sign-in failed. Please try again.";
-    await context.SendActivityAsync(message, ct);
+    var signInFailureMessage = new MessageActivity(message)
+    {
+        TextFormat = TextFormats.Markdown
+    };
+    signInFailureMessage.Recipient = context.Activity.From;
+    signInFailureMessage.Recipient?.IsTargeted = context.Activity?.Conversation?.ConversationType == ConversationType.GroupChat; // only set IsTargeted for 1:1 chats to avoid issues in group contexts
+    await context.SendActivityAsync(signInFailureMessage, ct);
 });
 
 // ==================== MESSAGE HANDLERS ====================
@@ -66,7 +72,13 @@ bot.OnMessage("(?i)^login$", async (context, ct) =>
     string? token = await context.SignIn(cancellationToken: ct);
     if (token is not null)
     {
-        await context.SendActivityAsync($"{context.Activity.From?.Name} You're already signed in.", ct);
+        var alreadySignedInMessage = new MessageActivity($"You're already signed in, {context.Activity.From?.Name}!")
+        {
+            TextFormat = TextFormats.Markdown
+        };
+        alreadySignedInMessage.Recipient = context.Activity.From;
+        alreadySignedInMessage.Recipient?.IsTargeted = context.Activity?.Conversation?.ConversationType == ConversationType.GroupChat; // only set IsTargeted for 1:1 chats to avoid issues in group contexts
+        await context.SendActivityAsync(alreadySignedInMessage, ct);
     }
     // else: OAuthCard sent, SSO flow in progress -- OnSignInComplete will fire
 });
@@ -84,7 +96,12 @@ bot.OnMessage("(?i)^profile$", async (context, ct) =>
     {
         string json = await http.GetStringAsync("https://graph.microsoft.com/v1.0/me", ct);
         string indentedJson = JsonSerializer.Serialize(JsonSerializer.Deserialize<JsonObject>(json), new JsonSerializerOptions { WriteIndented = true });
-        await context.SendActivityAsync(new MessageActivity($" ## Graph Me [{context.Activity.From?.Name}] \n ```json\n{indentedJson}\n```") { TextFormat = TextFormats.Markdown }, ct);
+
+        var msgResponse = new MessageActivity($" ## Graph Me [{context.Activity.From?.Name}] \n ```json\n{indentedJson}\n```")
+        { TextFormat = TextFormats.Markdown };
+        msgResponse.Recipient = context.Activity.From;
+        msgResponse.Recipient?.IsTargeted = context.Activity?.Conversation?.ConversationType == ConversationType.GroupChat; // only set IsTargeted for 1:1 chats to avoid issues in group contexts
+        await context.SendActivityAsync(msgResponse, ct);
     }
     catch (HttpRequestException ex)
     {
@@ -116,13 +133,27 @@ bot.OnMessage("(?i)^calendar$", async (context, ct) =>
 bot.OnMessage("(?i)^logout$", async (context, ct) =>
 {
     await context.SignOut(cancellationToken: ct);
-    await context.SendActivityAsync($"User {context.Activity.From?.Name} signed out.", ct);
+    var signOutMessage = new MessageActivity($"You've been signed out, {context.Activity.From?.Name}.")
+    {
+        TextFormat = TextFormats.Markdown
+    };
+    signOutMessage.Recipient = context.Activity.From;
+    signOutMessage.Recipient?.IsTargeted = context.Activity?.Conversation?.ConversationType == ConversationType.GroupChat; // only set IsTargeted for 1:1 chats to avoid issues in group contexts
+    await context.SendActivityAsync(signOutMessage, ct);
 });
 
 bot.OnMessage("(?i)^status$", async (context, ct) =>
 {
     bool signedIn = await context.IsSignedInAsync(cancellationToken: ct);
-    await context.SendActivityAsync(signedIn ? $"User {context.Activity.From?.Name} is signed in." : $"User {context.Activity.From?.Name} is not signed in.", ct);
+    var signInStatusMessage = new MessageActivity(signedIn
+        ? $"User {context.Activity.From?.Name} is signed in."
+        : $"User {context.Activity.From?.Name} is not signed in.")
+    {
+        TextFormat = TextFormats.Markdown
+    };
+    signInStatusMessage.Recipient = context.Activity.From;
+    signInStatusMessage.Recipient?.IsTargeted = context.Activity?.Conversation?.ConversationType == ConversationType.GroupChat; // only set IsTargeted for 1:1 chats to avoid issues in group contexts
+    await context.SendActivityAsync(signInStatusMessage, ct);
 });
 
 bot.OnMessage("(?i)^help$", async (context, ct) =>
