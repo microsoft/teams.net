@@ -63,7 +63,8 @@ public static class ActivityQuotedReplyExtensions
 
     /// <summary>
     /// Prepend a QuotedReply entity and placeholder before existing text.
-    /// Used by ReplyAsync()/QuoteAsync() for quote-above-response.
+    /// Used by <see cref="Context{TActivity}.Reply(TeamsActivity, CancellationToken)"/> and
+    /// <see cref="Context{TActivity}.Quote(string, TeamsActivity, CancellationToken)"/> for quote-above-response.
     /// </summary>
     /// <param name="activity">The message activity to prepend the quoted reply to.</param>
     /// <param name="messageId">The ID of the message to quote.</param>

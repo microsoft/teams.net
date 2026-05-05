@@ -77,26 +77,26 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
-    {
-        TeamsActivity reply = new TeamsActivityBuilder()
-            .WithConversationReference(Activity)
-            .WithText(text)
-            .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
-    }
+        => Reply(new MessageActivity(text), cancellationToken);
 
     /// <summary>
-    /// Sends an activity as a threaded reply to the current activity.
+    /// Sends an activity to the conversation. When the inbound activity has an id, the response
+    /// auto-quotes it (rendered as a quote bubble above the response in Teams). Otherwise sends
+    /// without quoting. To send without quoting unconditionally, use <see cref="Send(TeamsActivity, CancellationToken)"/>.
     /// </summary>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> Reply(TeamsActivity activity, CancellationToken cancellationToken = default)
     {
-        TeamsActivity reply = new TeamsActivityBuilder(activity)
-            .WithConversationReference(Activity)
-            .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
+        ArgumentNullException.ThrowIfNull(activity);
+#pragma warning disable ExperimentalTeamsQuotedReplies
+        if (Activity.Id != null)
+        {
+            return Quote(Activity.Id, activity, cancellationToken);
+        }
+#pragma warning restore ExperimentalTeamsQuotedReplies
+        return SendActivityAsync(activity, cancellationToken);
     }
 
     /// <summary>
@@ -109,35 +109,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => SendTypingActivityAsync(cancellationToken);
 
     /// <summary>
-    /// Sends a message activity as a reply, automatically quoting the inbound message.
-    /// </summary>
-    /// <param name="text">The text to send.</param>
-    /// <param name="cancellationToken">Optional cancellation token.</param>
-    /// <returns>The response from sending the activity.</returns>
-    public Task<SendActivityResponse?> ReplyAsync(string text, CancellationToken cancellationToken = default)
-    {
-        var reply = new MessageActivity(text);
-        return ReplyAsync(reply, cancellationToken);
-    }
-
-    /// <summary>
-    /// Sends an activity as a reply, automatically quoting the inbound message.
-    /// </summary>
-    /// <param name="activity">The activity to send.</param>
-    /// <param name="cancellationToken">Optional cancellation token.</param>
-    /// <returns>The response from sending the activity.</returns>
-    public Task<SendActivityResponse?> ReplyAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        if (Activity.Id != null)
-        {
-            return QuoteAsync(Activity.Id, activity, cancellationToken);
-        }
-
-        return SendActivityAsync(activity, cancellationToken);
-    }
-
-    /// <summary>
     /// Send a message to the conversation with a quoted message reference prepended to the text.
     /// Teams renders the quoted message as a preview bubble above the response text.
     /// </summary>
@@ -146,11 +117,8 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
     [Experimental("ExperimentalTeamsQuotedReplies")]
-    public Task<SendActivityResponse?> QuoteAsync(string messageId, string text, CancellationToken cancellationToken = default)
-    {
-        var reply = new MessageActivity(text);
-        return QuoteAsync(messageId, reply, cancellationToken);
-    }
+    public Task<SendActivityResponse?> Quote(string messageId, string text, CancellationToken cancellationToken = default)
+        => Quote(messageId, new MessageActivity(text), cancellationToken);
 
     /// <summary>
     /// Send a message to the conversation with a quoted message reference prepended to the text.
@@ -161,7 +129,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
     [Experimental("ExperimentalTeamsQuotedReplies")]
-    public Task<SendActivityResponse?> QuoteAsync(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> Quote(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);

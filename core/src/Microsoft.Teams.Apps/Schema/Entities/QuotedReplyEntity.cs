@@ -15,7 +15,6 @@ public class QuotedReplyEntity : Entity
     /// <summary>
     /// Creates a new instance of <see cref="QuotedReplyEntity"/>.
     /// </summary>
-    [JsonConstructor]
     public QuotedReplyEntity() : base("quotedReply") { }
 
     /// <summary>
@@ -33,7 +32,7 @@ public class QuotedReplyEntity : Entity
     [JsonPropertyName("quotedReply")]
     public QuotedReplyData? QuotedReply
     {
-        get => base.Properties.TryGetValue("quotedReply", out object? value) ? value as QuotedReplyData : null;
+        get => base.Properties.Get<QuotedReplyData>("quotedReply");
         set => base.Properties["quotedReply"] = value;
     }
 }

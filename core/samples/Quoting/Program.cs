@@ -29,19 +29,19 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         cancellationToken);
 });
 
-// ReplyAsync() — auto-quotes the inbound message
+// Reply() — auto-quotes the inbound message
 teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
 {
-    await context.ReplyAsync("Thanks for your message! This reply auto-quotes it.", cancellationToken);
+    await context.Reply("Thanks for your message! This reply auto-quotes it.", cancellationToken);
 });
 
-// QuoteAsync() — quote a previously sent message by ID
+// Quote() — quote a previously sent message by ID
 teamsApp.OnMessage("(?i)^test quote$", async (context, cancellationToken) =>
 {
     var sent = await context.SendActivityAsync("The meeting has been moved to 3 PM tomorrow.", cancellationToken);
     if (sent?.Id != null)
     {
-        await context.QuoteAsync(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
+        await context.Quote(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
     }
 });
 
@@ -95,8 +95,8 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
         new MessageActivity(
             "**Quoting Test Bot**\n\n" +
             "**Commands:**\n" +
-            "- `test reply` - ReplyAsync() auto-quotes your message\n" +
-            "- `test quote` - QuoteAsync() quotes a previously sent message\n" +
+            "- `test reply` - Reply() auto-quotes your message\n" +
+            "- `test quote` - Quote() quotes a previously sent message\n" +
             "- `test add` - AddQuote() extension with response\n" +
             "- `test multi` - Multi-quote with mixed responses\n" +
             "- `test builder` - WithQuote() on TeamsActivityBuilder\n\n" +
