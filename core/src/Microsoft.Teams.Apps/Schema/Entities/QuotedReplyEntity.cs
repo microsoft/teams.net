@@ -15,6 +15,7 @@ public class QuotedReplyEntity : Entity
     /// <summary>
     /// Creates a new instance of <see cref="QuotedReplyEntity"/>.
     /// </summary>
+    [JsonConstructor]
     public QuotedReplyEntity() : base("quotedReply") { }
 
     /// <summary>
@@ -47,7 +48,7 @@ public class QuotedReplyData
     /// The ID of the quoted message. Required.
     /// </summary>
     [JsonPropertyName("messageId")]
-    public string MessageId { get; set; } = string.Empty;
+    public required string MessageId { get; set; }
 
     /// <summary>
     /// The sender's bot-framework ID. Absent for deleted quotes.

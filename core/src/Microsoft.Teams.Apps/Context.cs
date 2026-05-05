@@ -164,6 +164,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> QuoteAsync(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
         if (activity is MessageActivity message)
         {
             message.PrependQuote(messageId);

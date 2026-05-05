@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Security;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
 
@@ -11,6 +12,13 @@ namespace Microsoft.Teams.Apps.Schema.Entities;
 [Experimental("ExperimentalTeamsQuotedReplies")]
 public static class ActivityQuotedReplyExtensions
 {
+    /// <summary>
+    /// Builds the inline placeholder element that pairs with a <see cref="QuotedReplyEntity"/>.
+    /// XML-escapes <paramref name="messageId"/> so values containing &quot;, &lt;, &amp; etc. can't break out of the attribute.
+    /// </summary>
+    internal static string QuotedPlaceholder(string messageId)
+        => $"<quoted messageId=\"{SecurityElement.Escape(messageId)}\"/>";
+
     /// <summary>
     /// Gets all quoted reply entities from the activity's entity collection.
     /// </summary>
@@ -44,8 +52,7 @@ public static class ActivityQuotedReplyExtensions
         activity.Entities ??= [];
         activity.Entities.Add(entity);
 
-        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
-        activity.Text = (activity.Text ?? "") + placeholder;
+        activity.Text = (activity.Text ?? "") + QuotedPlaceholder(messageId);
         if (text != null)
         {
             activity.Text += $" {text}";
@@ -66,8 +73,8 @@ public static class ActivityQuotedReplyExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
 
         activity.Entities ??= [];
-        activity.Entities.Add(new QuotedReplyEntity { QuotedReply = new QuotedReplyData { MessageId = messageId } });
-        var placeholder = $"<quoted messageId=\"{messageId}\"/>";
+        activity.Entities.Insert(0, new QuotedReplyEntity { QuotedReply = new QuotedReplyData { MessageId = messageId } });
+        var placeholder = QuotedPlaceholder(messageId);
         var text = activity.Text?.Trim() ?? "";
         activity.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
     }
