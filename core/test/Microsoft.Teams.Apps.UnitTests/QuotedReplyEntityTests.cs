@@ -328,6 +328,75 @@ public class QuotedReplyEntityTests
         Assert.Contains("messageId", json);
     }
 
+    // Extension tests: PrependQuote
+
+    [Fact]
+    public void PrependQuote_EmptyText_SetsPlaceholderOnly()
+    {
+        MessageActivity activity = new();
+        activity.PrependQuote("msg-1");
+
+        Assert.Equal("<quoted messageId=\"msg-1\"/>", activity.Text);
+        Assert.Single(activity.Entities!);
+    }
+
+    [Fact]
+    public void PrependQuote_NonEmptyText_PrependsPlaceholderWithSpace()
+    {
+        MessageActivity activity = new("hello world");
+        activity.PrependQuote("msg-1");
+
+        Assert.Equal("<quoted messageId=\"msg-1\"/> hello world", activity.Text);
+    }
+
+    [Fact]
+    public void PrependQuote_TrimsExistingText()
+    {
+        MessageActivity activity = new("   hello   ");
+        activity.PrependQuote("msg-1");
+
+        Assert.Equal("<quoted messageId=\"msg-1\"/> hello", activity.Text);
+    }
+
+    [Fact]
+    public void PrependQuote_InsertsEntityAtIndexZero()
+    {
+        MessageActivity activity = new("existing");
+        activity.Entities = [new ClientInfoEntity { Locale = "en-us" }];
+
+        activity.PrependQuote("msg-1");
+
+        Assert.Equal(2, activity.Entities.Count);
+        Assert.IsType<QuotedReplyEntity>(activity.Entities[0]);
+        Assert.IsType<ClientInfoEntity>(activity.Entities[1]);
+        Assert.Equal("msg-1", ((QuotedReplyEntity)activity.Entities[0]).QuotedReply?.MessageId);
+    }
+
+    // Escaping tests
+
+    [Fact]
+    public void AddQuote_EscapesSpecialCharsInPlaceholder()
+    {
+        MessageActivity activity = new();
+        activity.AddQuote("msg<\"&>1");
+
+        // Placeholder uses XML-escaped attribute value; entity carries raw id
+        Assert.Equal("<quoted messageId=\"msg&lt;&quot;&amp;&gt;1\"/>", activity.Text);
+        var entity = (QuotedReplyEntity)activity.Entities![0];
+        Assert.Equal("msg<\"&>1", entity.QuotedReply?.MessageId);
+    }
+
+    [Fact]
+    public void Builder_WithQuote_EscapesSpecialCharsInPlaceholder()
+    {
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithQuote("a\"b")
+            .Build();
+
+        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        Assert.Equal("<quoted messageId=\"a&quot;b\"/>", text?.ToString());
+    }
+
     [Fact]
     public void Builder_WithQuote_MultipleQuotes()
     {
