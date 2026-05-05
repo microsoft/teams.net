@@ -26,7 +26,6 @@ WebApplication webApp = builder.Build();
 
 TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 State state = webApp.Services.GetRequiredService<State>();
-ILogger logger = webApp.Services.GetRequiredService<ILoggerFactory>().CreateLogger("McpServer");
 
 bot.OnMessage(async (context, cancellationToken) =>
 {
@@ -52,10 +51,8 @@ bot.OnMessage(async (context, cancellationToken) =>
         return;
     }
 
-    logger.LogInformation(
-        "Received message from user {UserId} in conversation {ConversationId}, but no pending ask found.",
-        userId,
-        conversationId);
+    context.Log.Info(
+        $"Received message from user {userId} in conversation {conversationId}, but no pending ask found.");
     await context.Send("Hi! I'll let you know if I need anything.", cancellationToken);
 });
 
