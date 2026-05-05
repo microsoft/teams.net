@@ -5,6 +5,8 @@ using System.Collections.Concurrent;
 using System.Text.Json;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
+using Microsoft.Identity.Abstractions;
+using Microsoft.Identity.Web;
 using Microsoft.OpenTelemetry;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Diagnostics;
@@ -21,6 +23,8 @@ string[] activitySources = [CoreTelemetryNames.ActivitySourceName, TeamsBotAppli
 string[] meterNames      = [CoreTelemetryNames.MeterName, TeamsBotApplicationTelemetry.MeterName, "Experimental.Microsoft.Agents.AI", "ModelContextProtocol"];
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+IServiceProvider? rootProvider = null;
+builder.Services.AddTeamsBotApplication();
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(r => r
@@ -31,9 +35,18 @@ builder.Services.AddOpenTelemetry()
             ["service.namespace"] = "Microsoft.Teams"
         }))
     .UseMicrosoftOpenTelemetry(o => {
+        o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Exporters = ExportTarget.Otlp | ExportTarget.Agent365 | ExportTarget.AzureMonitor;
         o.Instrumentation.EnableAspNetCoreInstrumentation = true;
-        o.Instrumentation.EnableHttpClientInstrumentation = true;
+        o.Agent365.Exporter.TokenResolver = async (agentId, tenantId) =>
+        {
+            var provider = rootProvider!.GetRequiredService<IAuthorizationHeaderProvider>();
+            var options = new AuthorizationHeaderProviderOptions { AcquireTokenOptions = new() { AuthenticationOptionsName = "AzureAd", Tenant = tenantId } };
+            options.WithAgentIdentity(agentId);
+            var token = await provider.CreateAuthorizationHeaderForAppAsync(
+                "9b975845-388f-4429-889e-eab1ef63949c/.default", options);
+            return token;
+        };
      })
     .WithTracing(t => t.AddSource(activitySources))
     .WithMetrics(m => m.AddMeter(meterNames));
@@ -74,9 +87,9 @@ var chatOptions = new ChatOptions
     Tools = [.. tools]
 };
 
-builder.Services.AddTeamsBotApplication();
-WebApplication app = builder.Build();
 
+WebApplication app = builder.Build();
+rootProvider = app.Services;
 app.MapGet("/", () => "ObservabilityBot is running. Telemetry source: " + CoreTelemetryNames.ActivitySourceName);
 
 var teamsApp = app.UseTeamsBotApplication();
@@ -88,7 +101,10 @@ teamsApp.OnMessage(async (context, ct) =>
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation.Id);
 
-    if (context.Activity.TextWithoutMentions == "--diag") return;
+    using var baggageScope = new Microsoft.Teams.Apps.Diagnostics.BaggageBuilder()
+        .FromTeamsContext(context)
+        .OperationSource("ObservabilityBot")
+        .Build();
 
     await context.Typing(string.Empty, ct);
 
