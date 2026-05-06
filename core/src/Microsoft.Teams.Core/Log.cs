@@ -85,11 +85,6 @@ internal static partial class Log
     [LoggerMessage(EventId = 32, Level = LogLevel.Debug, Message = "Executing middleware '{Middleware}' ({Index}/{Count}).")]
     public static partial void MiddlewareExecuting(this ILogger logger, string middleware, int index, int count);
 
-    // ── BotAuthenticationHandler ────────────────────────────────────────
-
-    [LoggerMessage(EventId = 40, Level = LogLevel.Debug, Message = "Applying User-Assigned Managed Identity for token acquisition (ClientId '{ClientId}').")]
-    public static partial void ApplyingManagedIdentity(this ILogger logger, string clientId);
-
     // ── JwtExtensions ───────────────────────────────────────────────────
 
     [LoggerMessage(EventId = 50, Level = LogLevel.Trace, Message = "Resolving signing keys from OIDC authority '{Authority}' for issuer '{Issuer}'.")]

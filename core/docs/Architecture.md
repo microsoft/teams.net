@@ -778,21 +778,24 @@ Hierarchical configuration with conventions.
 ```csharp
 {
   "AzureAd": {
-    "ClientId": "...",
+    "Instance": "https://login.microsoftonline.com/",
     "TenantId": "...",
-    "ClientSecret": "..."
-  },
-  "MicrosoftAppId": "...",
-  "MicrosoftAppPassword": "...",
-  "MicrosoftAppType": "MultiTenant"
+    "ClientId": "...",
+    "Scope": "https://api.botframework.com/.default",
+    "ClientCredentials": [
+      {
+        "SourceType": "ClientSecret",
+        "ClientSecret": "..."
+      }
+    ]
+  }
 }
 ```
 
-**Configuration Precedence**:
-1. Environment variables
-2. appsettings.json
-3. Configuration section (AzureAd, etc.)
-4. Fallback defaults
+**Configuration Sources** (standard ASP.NET Core resolution):
+1. Environment variables (e.g. `AzureAd__ClientId`)
+2. `appsettings.{Environment}.json`
+3. `appsettings.json`
 
 ### 3. **Authentication Pattern**
 

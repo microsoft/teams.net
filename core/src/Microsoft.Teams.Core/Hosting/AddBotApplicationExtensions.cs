@@ -4,10 +4,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
@@ -77,7 +75,7 @@ public static class AddBotApplicationExtensions
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="sectionName">The configuration section name containing Azure AD settings. Defaults to "AzureAd".</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddBotApplication(this IServiceCollection services, string sectionName = "AzureAd")
+    public static IServiceCollection AddBotApplication(this IServiceCollection services, string sectionName = BotConfig.DefaultSectionName)
         => services.AddBotApplication<BotApplication>(sectionName);
 
     /// <summary>
@@ -87,7 +85,7 @@ public static class AddBotApplicationExtensions
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="sectionName">The configuration section name containing Azure AD settings. Defaults to "AzureAd".</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = "AzureAd") where TApp : BotApplication
+    public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, string sectionName = BotConfig.DefaultSectionName) where TApp : BotApplication
     {
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
 
@@ -105,18 +103,12 @@ public static class AddBotApplicationExtensions
     /// <returns>The service collection for method chaining.</returns>
     internal static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, BotConfig botConfig) where TApp : BotApplication
     {
-        services.AddSingleton<BotApplicationOptions>(sp =>
-        {
-            IConfiguration config = sp.GetRequiredService<IConfiguration>();
-            return new BotApplicationOptions
-            {
-                AppId = botConfig.ClientId
-            };
-        });
+        services.AddSingleton<BotApplicationOptions>(_ => new BotApplicationOptions { AppId = botConfig.ClientId });
         services.AddHttpContextAccessor();
         services.AddBotAuthorization(botConfig);
-        services.AddConversationClient(botConfig);
-        services.AddUserTokenClient(botConfig);
+        services.EnsureMsalServices(botConfig);
+        services.AddBotClient<ConversationClient>(ConversationClient.ConversationHttpClientName, botConfig);
+        services.AddBotClient<UserTokenClient>(UserTokenClient.UserTokenHttpClientName, botConfig);
         services.AddSingleton<TApp>();
         return services;
     }
@@ -127,10 +119,11 @@ public static class AddBotApplicationExtensions
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="sectionName">The configuration section name containing Azure AD settings. Defaults to "AzureAd".</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = "AzureAd")
+    public static IServiceCollection AddConversationClient(this IServiceCollection services, string sectionName = BotConfig.DefaultSectionName)
     {
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
-        return services.AddConversationClient(botConfig);
+        return services.EnsureMsalServices(botConfig)
+            .AddBotClient<ConversationClient>(ConversationClient.ConversationHttpClientName, botConfig);
     }
 
     /// <summary>
@@ -139,64 +132,50 @@ public static class AddBotApplicationExtensions
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="sectionName">The configuration section name containing Azure AD settings. Defaults to "AzureAd".</param>
     /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddUserTokenClient(this IServiceCollection services, string sectionName = "AzureAd")
+    public static IServiceCollection AddUserTokenClient(this IServiceCollection services, string sectionName = BotConfig.DefaultSectionName)
     {
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
-        return services.AddUserTokenClient(botConfig);
+        return services.EnsureMsalServices(botConfig)
+            .AddBotClient<UserTokenClient>(UserTokenClient.UserTokenHttpClientName, botConfig);
     }
 
     /// <summary>
-    /// Adds conversation client to the service collection using an already-resolved BotConfig.
+    /// Registers the shared MSAL token-acquisition pipeline and binds the named MSAL options.
+    /// Microsoft.Identity.Web's registrations are TryAdd-based and safe to call multiple times.
     /// </summary>
-    private static IServiceCollection AddConversationClient(this IServiceCollection services, BotConfig botConfig) =>
-        services.AddBotClient<ConversationClient>(ConversationClient.ConversationHttpClientName, botConfig);
+    private static IServiceCollection EnsureMsalServices(this IServiceCollection services, BotConfig botConfig)
+    {
+        services.AddHttpClient()
+                .AddTokenAcquisition(true)
+                .AddInMemoryTokenCaches()
+                .AddAgentIdentities();
 
-    /// <summary>
-    /// Adds user token client to the service collection using an already-resolved BotConfig.
-    /// </summary>
-    private static IServiceCollection AddUserTokenClient(this IServiceCollection services, BotConfig botConfig) =>
-        services.AddBotClient<UserTokenClient>(UserTokenClient.UserTokenHttpClientName, botConfig);
+        if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
+        {
+            services.Configure<MicrosoftIdentityApplicationOptions>(botConfig.SectionName, botConfig.MsalConfigurationSection!);
+        }
+        return services;
+    }
 
     internal static IServiceCollection AddBotClient<TClient>(
         this IServiceCollection services,
         string httpClientName,
         BotConfig botConfig) where TClient : class
     {
-        // Register options using values from BotConfig
-        services.AddOptions<BotClientOptions>()
-            .Configure(options =>
-            {
-                options.Scope = botConfig.Scope;
-                options.SectionName = botConfig.SectionName;
-            });
-
-        // TODO: This shouldn't be called multiple times. It will being called once for each client we support.
-        services
-            .AddHttpClient()
-            .AddTokenAcquisition(true)
-            .AddInMemoryTokenCaches()
-            .AddAgentIdentities();
-
-        ILogger logger = GetLoggerFromServices(services);
-
-        if (services.ConfigureMSAL(botConfig, logger))
+        if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
         {
+            string scope = botConfig.Scope;
             services.AddHttpClient<TClient>(httpClientName)
-                .AddHttpMessageHandler(sp =>
-                {
-                    BotClientOptions botOptions = sp.GetRequiredService<IOptions<BotClientOptions>>().Value;
-                    return new BotAuthenticationHandler(
-                        sp.GetRequiredService<IAuthorizationHeaderProvider>(),
-                        sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                        botOptions.Scope,
-                        sp.GetService<IOptions<ManagedIdentityOptions>>());
-                });
+                .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
+                    sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                    sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
+                    scope,
+                    botConfig.SectionName));
         }
         else
         {
             services.AddHttpClient<TClient>(httpClientName);
         }
-
         return services;
     }
 

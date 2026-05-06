@@ -4,7 +4,6 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Teams.Core.Schema;
@@ -21,19 +20,16 @@ namespace Microsoft.Teams.Core.Hosting;
 /// <param name="authorizationHeaderProvider">The authorization header provider for acquiring tokens.</param>
 /// <param name="logger">The logger instance.</param>
 /// <param name="scope">The scope for the token request.</param>
-/// <param name="managedIdentityOptions">Optional managed identity options for user-assigned managed identity authentication.</param>
-/// <param name="authenticationOptionsName">The name of the MSAL configuration options to use for token acquisition. Defaults to <see cref="MsalConfigurationExtensions.MsalConfigKey"/>.</param>
+/// <param name="authenticationOptionsName">The name of the MSAL configuration options to use for token acquisition. Defaults to "AzureAd".</param>
 internal sealed class BotAuthenticationHandler(
     IAuthorizationHeaderProvider authorizationHeaderProvider,
     ILogger<BotAuthenticationHandler> logger,
     string scope,
-    IOptions<ManagedIdentityOptions>? managedIdentityOptions = null,
     string? authenticationOptionsName = null) : DelegatingHandler
 {
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
-    private readonly IOptions<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
     private static readonly Action<ILogger, string, Exception?> _logAgenticToken =
         LoggerMessage.Define<string>(LogLevel.Debug, new(2), "Acquiring agentic token for AgenticAppId {AgenticAppId}");
     private static readonly Action<ILogger, string, Exception?> _logAppOnlyToken =
@@ -81,21 +77,9 @@ internal sealed class BotAuthenticationHandler(
         {
             AcquireTokenOptions = new AcquireTokenOptions()
             {
-                AuthenticationOptionsName = authenticationOptionsName ?? MsalConfigurationExtensions.MsalConfigKey,
+                AuthenticationOptionsName = authenticationOptionsName ?? BotConfig.DefaultSectionName,
             }
         };
-
-        // Conditionally apply ManagedIdentity configuration if registered
-        if (_managedIdentityOptions is not null)
-        {
-            ManagedIdentityOptions miOptions = _managedIdentityOptions.Value;
-
-            if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
-            {
-                _logger.ApplyingManagedIdentity(miOptions.UserAssignedClientId);
-                options.AcquireTokenOptions.ManagedIdentity = miOptions;
-            }
-        }
 
         if (agenticIdentity is not null &&
             !string.IsNullOrEmpty(agenticIdentity.AgenticAppId) &&

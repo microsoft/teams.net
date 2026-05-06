@@ -33,148 +33,14 @@ public class AddBotApplicationExtensionsTests
         return services.BuildServiceProvider();
     }
 
-    private static void AssertMsalOptions(ServiceProvider serviceProvider, string expectedClientId, string expectedTenantId, string expectedInstance = "https://login.microsoftonline.com/")
+    private static void AssertMsalOptions(ServiceProvider serviceProvider, string sectionName, string expectedClientId, string expectedTenantId, string expectedInstance = "https://login.microsoftonline.com/")
     {
         MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(MsalConfigurationExtensions.MsalConfigKey);
+            .Get(sectionName);
         Assert.Equal(expectedClientId, msalOptions.ClientId);
         Assert.Equal(expectedTenantId, msalOptions.TenantId);
         Assert.Equal(expectedInstance, msalOptions.Instance);
-    }
-
-    [Fact]
-    public void AddConversationClient_WithBotFrameworkConfig_ConfiguresClientSecret()
-    {
-        // Arrange
-        Dictionary<string, string?> configData = new()
-        {
-            ["MicrosoftAppId"] = "test-app-id",
-            ["MicrosoftAppTenantId"] = "test-tenant-id",
-            ["MicrosoftAppPassword"] = "test-secret"
-        };
-
-        // Act
-        ServiceProvider serviceProvider = BuildServiceProvider(configData);
-
-        // Assert
-        AssertMsalOptions(serviceProvider, "test-app-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
-            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(MsalConfigurationExtensions.MsalConfigKey);
-        Assert.NotNull(msalOptions.ClientCredentials);
-        Assert.Single(msalOptions.ClientCredentials);
-        CredentialDescription credential = msalOptions.ClientCredentials.First();
-        Assert.Equal(CredentialSource.ClientSecret, credential.SourceType);
-        Assert.Equal("test-secret", credential.ClientSecret);
-    }
-
-    [Fact]
-    public void AddConversationClient_WithCoreConfigAndClientSecret_ConfiguresClientSecret()
-    {
-        // Arrange
-        Dictionary<string, string?> configData = new()
-        {
-            ["CLIENT_ID"] = "test-client-id",
-            ["TENANT_ID"] = "test-tenant-id",
-            ["CLIENT_SECRET"] = "test-client-secret"
-        };
-
-        // Act
-        ServiceProvider serviceProvider = BuildServiceProvider(configData);
-
-        // Assert
-        AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
-            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(MsalConfigurationExtensions.MsalConfigKey);
-        Assert.NotNull(msalOptions.ClientCredentials);
-        Assert.Single(msalOptions.ClientCredentials);
-        CredentialDescription credential = msalOptions.ClientCredentials.First();
-        Assert.Equal(CredentialSource.ClientSecret, credential.SourceType);
-        Assert.Equal("test-client-secret", credential.ClientSecret);
-    }
-
-    [Fact]
-    public void AddConversationClient_WithCoreConfigAndSystemAssignedMI_ConfiguresSystemAssignedFIC()
-    {
-        // Arrange
-        Dictionary<string, string?> configData = new()
-        {
-            ["CLIENT_ID"] = "test-client-id",
-            ["TENANT_ID"] = "test-tenant-id",
-            ["MANAGED_IDENTITY_CLIENT_ID"] = "system"
-        };
-
-        // Act
-        ServiceProvider serviceProvider = BuildServiceProvider(configData);
-
-        // Assert
-        AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
-            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(MsalConfigurationExtensions.MsalConfigKey);
-        Assert.NotNull(msalOptions.ClientCredentials);
-        Assert.Single(msalOptions.ClientCredentials);
-        CredentialDescription credential = msalOptions.ClientCredentials.First();
-        Assert.Equal(CredentialSource.SignedAssertionFromManagedIdentity, credential.SourceType);
-        Assert.Null(credential.ManagedIdentityClientId); // System-assigned
-
-        ManagedIdentityOptions managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
-        Assert.Null(managedIdentityOptions.UserAssignedClientId);
-    }
-
-    [Fact]
-    public void AddConversationClient_WithCoreConfigAndUserAssignedMI_ConfiguresUserAssignedFIC()
-    {
-        // Arrange
-        Dictionary<string, string?> configData = new()
-        {
-            ["CLIENT_ID"] = "test-client-id",
-            ["TENANT_ID"] = "test-tenant-id",
-            ["MANAGED_IDENTITY_CLIENT_ID"] = "umi-client-id"  // Different from CLIENT_ID means FIC
-        };
-
-        // Act
-        ServiceProvider serviceProvider = BuildServiceProvider(configData);
-
-        // Assert
-        AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
-            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(MsalConfigurationExtensions.MsalConfigKey);
-        Assert.NotNull(msalOptions.ClientCredentials);
-        Assert.Single(msalOptions.ClientCredentials);
-        CredentialDescription credential = msalOptions.ClientCredentials.First();
-        Assert.Equal(CredentialSource.SignedAssertionFromManagedIdentity, credential.SourceType);
-        Assert.Equal("umi-client-id", credential.ManagedIdentityClientId);
-
-        ManagedIdentityOptions managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
-        Assert.Null(managedIdentityOptions.UserAssignedClientId);
-    }
-
-    [Fact]
-    public void AddConversationClient_WithCoreConfigAndNoManagedIdentity_ConfiguresUMIWithClientId()
-    {
-        // Arrange
-        Dictionary<string, string?> configData = new()
-        {
-            ["CLIENT_ID"] = "test-client-id",
-            ["TENANT_ID"] = "test-tenant-id"
-        };
-
-        // Act
-        ServiceProvider serviceProvider = BuildServiceProvider(configData);
-
-        // Assert
-        AssertMsalOptions(serviceProvider, "test-client-id", "test-tenant-id");
-        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
-            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
-            .Get(MsalConfigurationExtensions.MsalConfigKey);
-        Assert.Null(msalOptions.ClientCredentials);
-
-        ManagedIdentityOptions managedIdentityOptions = serviceProvider.GetRequiredService<IOptions<ManagedIdentityOptions>>().Value;
-        Assert.Equal("test-client-id", managedIdentityOptions.UserAssignedClientId);
     }
 
     [Fact]
@@ -193,7 +59,7 @@ public class AddBotApplicationExtensionsTests
         ServiceProvider serviceProvider = BuildServiceProvider(configData);
 
         // Assert
-        AssertMsalOptions(serviceProvider, "azuread-client-id", "azuread-tenant-id");
+        AssertMsalOptions(serviceProvider, "AzureAd", "azuread-client-id", "azuread-tenant-id");
     }
 
     [Fact]
@@ -211,7 +77,7 @@ public class AddBotApplicationExtensionsTests
         ServiceProvider serviceProvider = BuildServiceProvider(configData, "CustomAuth");
 
         // Assert
-        AssertMsalOptions(serviceProvider, "custom-client-id", "custom-tenant-id");
+        AssertMsalOptions(serviceProvider, "CustomAuth", "custom-client-id", "custom-tenant-id");
     }
 
     // --- BotApplicationOptions (AppId) tests ---
@@ -236,40 +102,6 @@ public class AddBotApplicationExtensionsTests
 
     private static string GetAppId(ServiceProvider serviceProvider) =>
         serviceProvider.GetRequiredService<BotApplicationOptions>().AppId;
-
-    [Fact]
-    public void AddBotApplication_WithMicrosoftAppId_SetsAppIdFromMicrosoftAppId()
-    {
-        // Arrange
-        Dictionary<string, string?> configData = new()
-        {
-            ["MicrosoftAppId"] = "bf-app-id",
-            ["MicrosoftAppTenantId"] = "bf-tenant-id"
-        };
-
-        // Act
-        ServiceProvider serviceProvider = BuildServiceProviderForBotApp(configData);
-
-        // Assert
-        Assert.Equal("bf-app-id", GetAppId(serviceProvider));
-    }
-
-    [Fact]
-    public void AddBotApplication_WithClientId_SetsAppIdFromClientId()
-    {
-        // Arrange
-        Dictionary<string, string?> configData = new()
-        {
-            ["CLIENT_ID"] = "core-client-id",
-            ["TENANT_ID"] = "core-tenant-id"
-        };
-
-        // Act
-        ServiceProvider serviceProvider = BuildServiceProviderForBotApp(configData);
-
-        // Assert
-        Assert.Equal("core-client-id", GetAppId(serviceProvider));
-    }
 
     [Fact]
     public void AddBotApplication_WithAzureAdSection_SetsAppIdFromSection()
@@ -303,24 +135,5 @@ public class AddBotApplicationExtensionsTests
 
         // Assert
         Assert.Equal("custom-client-id", GetAppId(serviceProvider));
-    }
-
-    [Fact]
-    public void AddBotApplication_ClientIdTakesPrecedenceOverMicrosoftAppId()
-    {
-        // Arrange — both keys present; CLIENT_ID is highest priority
-        Dictionary<string, string?> configData = new()
-        {
-            ["MicrosoftAppId"] = "bf-app-id",
-            ["MicrosoftAppTenantId"] = "bf-tenant-id",
-            ["CLIENT_ID"] = "core-client-id",
-            ["TENANT_ID"] = "core-tenant-id"
-        };
-
-        // Act
-        ServiceProvider serviceProvider = BuildServiceProviderForBotApp(configData);
-
-        // Assert
-        Assert.Equal("core-client-id", GetAppId(serviceProvider));
     }
 }
