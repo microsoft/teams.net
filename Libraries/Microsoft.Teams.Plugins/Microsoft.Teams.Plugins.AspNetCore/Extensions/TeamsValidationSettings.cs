@@ -46,7 +46,12 @@ public class TeamsValidationSettings
         var validIssuers = new List<string>();
         if (!string.IsNullOrEmpty(tenantId))
         {
+            // Azure AD v2 issuer (cloud-specific login endpoint)
             validIssuers.Add($"{LoginEndpoint}/{tenantId}/");
+            // Azure AD v1 issuer (sts.windows.net) — some valid Microsoft Entra tokens
+            // are still issued with the v1 issuer format.
+            // See https://learn.microsoft.com/en-us/entra/identity-platform/access-tokens
+            validIssuers.Add($"https://sts.windows.net/{tenantId}/");
         }
         else
         {

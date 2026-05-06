@@ -80,8 +80,22 @@ public class TeamsValidationSettingsTests
 
         var issuers = settings.GetValidIssuersForTenant("my-tenant").ToList();
 
-        Assert.Single(issuers);
+        Assert.Equal(2, issuers.Count);
         Assert.Equal("https://login.microsoftonline.us/my-tenant/", issuers[0]);
+        Assert.Equal("https://sts.windows.net/my-tenant/", issuers[1]);
+    }
+
+    [Fact]
+    public void GetValidIssuersForTenant_IncludesV1StsIssuer()
+    {
+        var settings = new TeamsValidationSettings(CloudEnvironment.Public);
+
+        var issuers = settings.GetValidIssuersForTenant("my-tenant").ToList();
+
+        // Some valid Microsoft Entra tokens are still issued with the AAD v1
+        // issuer (sts.windows.net) instead of the v2 login.microsoftonline.com issuer.
+        Assert.Contains("https://login.microsoftonline.com/my-tenant/", issuers);
+        Assert.Contains("https://sts.windows.net/my-tenant/", issuers);
     }
 
     [Fact]
