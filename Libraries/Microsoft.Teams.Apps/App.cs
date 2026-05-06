@@ -37,6 +37,13 @@ public partial class App
     public IToken? Token { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
+    /// <summary>
+    /// When true, skips the per-activity user OAuth token lookup in <see cref="Process"/>.
+    /// Defaults to true. Set to false to restore the previous behaviour (needed when using
+    /// SSO and relying on <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>).
+    /// </summary>
+    public bool DisableUserTokenLookup { get; internal set; }
+
     internal IHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
@@ -59,6 +66,7 @@ public partial class App
         Credentials = options?.Credentials;
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
+        DisableUserTokenLookup = options?.DisableUserTokenLookup ?? true;
         Provider = options?.Provider;
 
         TokenClient = new Common.Http.HttpClient();
@@ -360,18 +368,21 @@ public partial class App
 
         var api = new ApiClient(Api, cancellationToken);
 
-        try
+        if (!DisableUserTokenLookup)
         {
-            var tokenResponse = await api.Users.Token.GetAsync(new()
+            try
             {
-                UserId = @event.Activity.From.Id,
-                ChannelId = @event.Activity.ChannelId,
-                ConnectionName = OAuth.DefaultConnectionName
-            });
+                var tokenResponse = await api.Users.Token.GetAsync(new()
+                {
+                    UserId = @event.Activity.From.Id,
+                    ChannelId = @event.Activity.ChannelId,
+                    ConnectionName = OAuth.DefaultConnectionName
+                });
 
-            userToken = new JsonWebToken(tokenResponse);
+                userToken = new JsonWebToken(tokenResponse);
+            }
+            catch { }
         }
-        catch { }
 
         var path = @event.Activity.GetPath();
         Logger.Debug(path);

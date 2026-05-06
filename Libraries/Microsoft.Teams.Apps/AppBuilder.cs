@@ -105,6 +105,18 @@ public partial class AppBuilder
         return this;
     }
 
+    /// <summary>
+    /// Controls whether <see cref="App.Process"/> performs the per-activity user OAuth
+    /// token lookup. Defaults to true (lookup disabled). Set to false to restore the
+    /// previous behaviour for SSO-enabled bots that rely on
+    /// <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>.
+    /// </summary>
+    public AppBuilder DisableUserTokenLookup(bool disabled = true)
+    {
+        _options.DisableUserTokenLookup = disabled;
+        return this;
+    }
+
     public App Build()
     {
         return new App(_options);

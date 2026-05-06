@@ -18,6 +18,14 @@ public class AppOptions
     public OAuthSettings OAuth { get; set; } = new OAuthSettings();
     public CloudEnvironment? Cloud { get; set; }
 
+    /// <summary>
+    /// When true, skips the per-activity user OAuth token lookup
+    /// (<see cref="Api.Clients.UserTokenClient.GetAsync"/>) in <c>App.Process</c>.
+    /// The lookup adds ~200ms to every activity and is only useful for bots that have
+    /// configured an SSO connection via <see cref="OAuthSettings"/>. Defaults to true.
+    /// </summary>
+    public bool DisableUserTokenLookup { get; set; } = true;
+
     public AppOptions()
     {
 
