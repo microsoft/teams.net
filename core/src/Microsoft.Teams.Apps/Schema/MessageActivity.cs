@@ -64,35 +64,15 @@ public class MessageActivity : TeamsActivity
         SuggestedActions = activity.Properties.Extract<SuggestedActions>("suggestedActions");
 
         /*
-        if (activity.Properties.TryGetValue("speak", out var speak))
-        {
-            Speak = speak?.ToString();
-            activity.Properties.Remove("speak");
-        }
-        if (activity.Properties.TryGetValue("inputHint", out var inputHint))
-        {
-            InputHint = inputHint?.ToString();
-            activity.Properties.Remove("inputHint");
-        }
         if (activity.Properties.TryGetValue("summary", out var summary))
         {
             Summary = summary?.ToString();
             activity.Properties.Remove("summary");
         }
-        if (activity.Properties.TryGetValue("importance", out var importance))
-        {
-            Importance = importance?.ToString();
-            activity.Properties.Remove("importance");
-        }
         if (activity.Properties.TryGetValue("deliveryMode", out var deliveryMode))
         {
             DeliveryMode = deliveryMode?.ToString();
             activity.Properties.Remove("deliveryMode");
-        }
-        if (activity.Properties.TryGetValue("expiration", out var expiration))
-        {
-            Expiration = expiration?.ToString();
-            activity.Properties.Remove("expiration");
         }
         */
     }
@@ -149,40 +129,16 @@ public class MessageActivity : TeamsActivity
     //TODO : Review properties
     /*
     /// <summary>
-    /// Gets or sets the SSML speak content of the message.
-    /// </summary>
-    [JsonPropertyName("speak")]
-    public string? Speak { get; set; }
-
-    /// <summary>
-    /// Gets or sets the input hint. See <see cref="InputHints"/> for common values.
-    /// </summary>
-    [JsonPropertyName("inputHint")]
-    public string? InputHint { get; set; }
-
-    /// <summary>
     /// Gets or sets the summary of the message.
     /// </summary>
     [JsonPropertyName("summary")]
     public string? Summary { get; set; }
 
     /// <summary>
-    /// Gets or sets the importance. See <see cref="ImportanceLevels"/> for common values.
-    /// </summary>
-    [JsonPropertyName("importance")]
-    public string? Importance { get; set; }
-
-    /// <summary>
     /// Gets or sets the delivery mode. See <see cref="DeliveryModes"/> for common values.
     /// </summary>
     [JsonPropertyName("deliveryMode")]
     public string? DeliveryMode { get; set; }
-
-    /// <summary>
-    /// Gets or sets the expiration time of the message.
-    /// </summary>
-    [JsonPropertyName("expiration")]
-    public string? Expiration { get; set; }
     */
 
 }
@@ -208,55 +164,7 @@ public static class TextFormats
     public const string Xml = "xml";
 }
 
-
 /*
-/// <summary>
-/// String constants for input hints.
-/// </summary>
-public static class InputHints
-{
-    /// <summary>
-    /// Accepting input hint.
-    /// </summary>
-    public const string AcceptingInput = "acceptingInput";
-
-    /// <summary>
-    /// Ignoring input hint.
-    /// </summary>
-    public const string IgnoringInput = "ignoringInput";
-
-    /// <summary>
-    /// Expecting input hint.
-    /// </summary>
-    public const string ExpectingInput = "expectingInput";
-}
-
-/// <summary>
-/// String constants for importance levels.
-/// </summary>
-public static class ImportanceLevels
-{
-    /// <summary>
-    /// Low importance.
-    /// </summary>
-    public const string Low = "low";
-
-    /// <summary>
-    /// Normal importance.
-    /// </summary>
-    public const string Normal = "normal";
-
-    /// <summary>
-    /// High importance.
-    /// </summary>
-    public const string High = "high";
-
-    /// <summary>
-    /// Urgent importance.
-    /// </summary>
-    public const string Urgent = "urgent";
-}
-
 /// <summary>
 /// String constants for delivery modes.
 /// </summary>
@@ -282,6 +190,4 @@ public static class DeliveryModes
     /// </summary>
     public const string ExpectedReplies = "expectReplies";
 }
-
-
 */
