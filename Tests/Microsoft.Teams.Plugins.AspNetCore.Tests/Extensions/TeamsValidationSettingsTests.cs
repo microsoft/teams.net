@@ -81,8 +81,8 @@ public class TeamsValidationSettingsTests
         var issuers = settings.GetValidIssuersForTenant("my-tenant").ToList();
 
         Assert.Equal(2, issuers.Count);
-        Assert.Equal("https://login.microsoftonline.us/my-tenant/", issuers[0]);
-        Assert.Equal("https://sts.windows.net/my-tenant/", issuers[1]);
+        Assert.Contains("https://login.microsoftonline.us/my-tenant/", issuers);
+        Assert.Contains("https://sts.windows.net/my-tenant/", issuers);
     }
 
     [Fact]
