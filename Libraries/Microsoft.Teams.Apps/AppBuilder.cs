@@ -106,9 +106,9 @@ public partial class AppBuilder
     }
 
     /// <summary>
-    /// Controls whether <see cref="App.Process"/> performs a per-activity user OAuth
-    /// token lookup to populate <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>.
-    /// Defaults to true. Set to false to skip the ~200ms call when SSO is not configured.
+    /// When true, performs a per-activity user OAuth token lookup to populate
+    /// <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Set to false to
+    /// skip the call when SSO is not configured. Defaults to true.
     /// </summary>
     public AppBuilder AutoUserTokenLookup(bool enabled)
     {

@@ -38,9 +38,9 @@ public partial class App
     public OAuthSettings OAuth { get; internal set; }
 
     /// <summary>
-    /// When true, <see cref="Process"/> performs a per-activity user OAuth token lookup
-    /// to populate <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Defaults
-    /// to true. Set to false to skip the call when SSO is not configured.
+    /// When true, performs a per-activity user OAuth token lookup to populate
+    /// <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Set to false to
+    /// skip the call when SSO is not configured. Defaults to true.
     /// </summary>
     public bool AutoUserTokenLookup { get; internal set; }
 

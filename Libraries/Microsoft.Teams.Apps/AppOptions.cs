@@ -19,12 +19,9 @@ public class AppOptions
     public CloudEnvironment? Cloud { get; set; }
 
     /// <summary>
-    /// When true, <c>App.Process</c> performs a per-activity user OAuth token lookup
-    /// (<see cref="Api.Clients.UserTokenClient.GetAsync"/>) to populate
-    /// <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Defaults to true to
-    /// preserve existing behaviour. Set to false to skip the call -- it adds ~200ms per
-    /// activity and is only useful for bots with an SSO connection configured via
-    /// <see cref="OAuthSettings"/>.
+    /// When true, performs a per-activity user OAuth token lookup to populate
+    /// <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Set to false to
+    /// skip the call when SSO is not configured. Defaults to true.
     /// </summary>
     public bool AutoUserTokenLookup { get; set; } = true;
 
