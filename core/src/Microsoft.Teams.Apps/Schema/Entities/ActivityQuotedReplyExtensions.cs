@@ -31,7 +31,7 @@ public static class ActivityQuotedReplyExtensions
         {
             return [];
         }
-        return activity.Entities.Where(e => e is QuotedReplyEntity).Cast<QuotedReplyEntity>();
+        return activity.Entities.OfType<QuotedReplyEntity>();
     }
 
     /// <summary>

@@ -23,6 +23,7 @@ public class QuotedReplyEntity : Entity
     /// <param name="messageId">The ID of the message being quoted.</param>
     public QuotedReplyEntity(string messageId) : base("quotedReply")
     {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
         QuotedReply = new QuotedReplyData { MessageId = messageId };
     }
 

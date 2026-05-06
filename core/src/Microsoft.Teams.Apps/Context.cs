@@ -91,7 +91,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     {
         ArgumentNullException.ThrowIfNull(activity);
 #pragma warning disable ExperimentalTeamsQuotedReplies
-        if (Activity.Id != null)
+        if (!string.IsNullOrWhiteSpace(Activity.Id))
         {
             return Quote(Activity.Id, activity, cancellationToken);
         }
@@ -125,7 +125,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// Teams renders the quoted message as a preview bubble above the response text.
     /// </summary>
     /// <param name="messageId">The ID of the message to quote.</param>
-    /// <param name="activity">The activity to send — a quote placeholder for messageId will be prepended to its text.</param>
+    /// <param name="activity">The activity to send. For <see cref="MessageActivity"/>, a quote placeholder for messageId is prepended to its text. Other activity types are sent as-is without quoting.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
     [Experimental("ExperimentalTeamsQuotedReplies")]
