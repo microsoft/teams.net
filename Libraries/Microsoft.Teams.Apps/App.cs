@@ -38,11 +38,11 @@ public partial class App
     public OAuthSettings OAuth { get; internal set; }
 
     /// <summary>
-    /// When true, skips the per-activity user OAuth token lookup in <see cref="Process"/>.
-    /// Defaults to true. Set to false to restore the previous behaviour (needed when using
-    /// SSO and relying on <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>).
+    /// When true, <see cref="Process"/> performs a per-activity user OAuth token lookup
+    /// to populate <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Defaults
+    /// to true. Set to false to skip the call when SSO is not configured.
     /// </summary>
-    public bool DisableUserTokenLookup { get; internal set; }
+    public bool AutoUserTokenLookup { get; internal set; }
 
     internal IHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
@@ -66,7 +66,7 @@ public partial class App
         Credentials = options?.Credentials;
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
-        DisableUserTokenLookup = options?.DisableUserTokenLookup ?? true;
+        AutoUserTokenLookup = options?.AutoUserTokenLookup ?? true;
         Provider = options?.Provider;
 
         TokenClient = new Common.Http.HttpClient();
@@ -368,7 +368,7 @@ public partial class App
 
         var api = new ApiClient(Api, cancellationToken);
 
-        if (!DisableUserTokenLookup)
+        if (AutoUserTokenLookup)
         {
             try
             {
