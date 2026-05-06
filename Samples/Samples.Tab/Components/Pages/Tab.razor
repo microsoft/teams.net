@@ -30,20 +30,13 @@
         initialized = true;
     }
 
-    private async Task PostChatMessage()
+    private Task PostChatMessage()
     {
-        content = "Posting message via bot...";
+        // The 'post-to-chat' function is invoked by the Teams client SDK from the browser.
+        // This button demonstrates that the tab UI is rendered via Blazor Server,
+        // while the actual function execution happens through the Teams bot framework.
+        content = "Use the Teams client to invoke the 'post-to-chat' function.";
         StateHasChanged();
-
-        try
-        {
-            // This demonstrates calling the bot function from the server side.
-            // In a real scenario, the function invocation would happen through the Teams client SDK.
-            content = "Use the Teams client to invoke the 'post-to-chat' function.";
-        }
-        catch (Exception ex)
-        {
-            content = $"Error: {ex.Message}";
-        }
+        return Task.CompletedTask;
     }
 }
