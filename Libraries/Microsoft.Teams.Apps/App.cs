@@ -37,6 +37,13 @@ public partial class App
     public IToken? Token { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
+    /// <summary>
+    /// When true, performs a per-activity user OAuth token lookup to populate
+    /// <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Set to false to
+    /// skip the call when SSO is not configured. Defaults to true.
+    /// </summary>
+    public bool AutoUserTokenLookup { get; internal set; }
+
     internal IHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
@@ -59,6 +66,7 @@ public partial class App
         Credentials = options?.Credentials;
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
+        AutoUserTokenLookup = options?.AutoUserTokenLookup ?? true;
         Provider = options?.Provider;
 
         TokenClient = new Common.Http.HttpClient();
@@ -360,18 +368,21 @@ public partial class App
 
         var api = new ApiClient(Api, cancellationToken);
 
-        try
+        if (AutoUserTokenLookup)
         {
-            var tokenResponse = await api.Users.Token.GetAsync(new()
+            try
             {
-                UserId = @event.Activity.From.Id,
-                ChannelId = @event.Activity.ChannelId,
-                ConnectionName = OAuth.DefaultConnectionName
-            });
+                var tokenResponse = await api.Users.Token.GetAsync(new()
+                {
+                    UserId = @event.Activity.From.Id,
+                    ChannelId = @event.Activity.ChannelId,
+                    ConnectionName = OAuth.DefaultConnectionName
+                });
 
-            userToken = new JsonWebToken(tokenResponse);
+                userToken = new JsonWebToken(tokenResponse);
+            }
+            catch { }
         }
-        catch { }
 
         var path = @event.Activity.GetPath();
         Logger.Debug(path);
