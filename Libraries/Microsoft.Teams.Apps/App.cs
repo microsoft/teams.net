@@ -37,12 +37,17 @@ public partial class App
     public IToken? Token { get; internal set; }
     public OAuthSettings OAuth { get; internal set; }
 
+    /// <summary>
+    /// When true, performs a per-activity user OAuth token lookup to populate
+    /// <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Set to false to
+    /// skip the call when SSO is not configured. Defaults to true.
+    /// </summary>
+    public bool AutoUserTokenLookup { get; internal set; }
+
     internal IHttpClient TokenClient { get; set; }
     internal IServiceProvider? Provider { get; set; }
     internal IContainer Container { get; set; }
 
-    private readonly IEnumerable<string>? _additionalAllowedDomains;
-    private readonly CloudEnvironment _cloud;
     internal string UserAgent
     {
         get
@@ -55,20 +60,14 @@ public partial class App
     public App(AppOptions? options = null)
     {
         var cloud = options?.Cloud ?? CloudEnvironment.Public;
-        _cloud = cloud;
 
         Logger = options?.Logger ?? new ConsoleLogger();
         Storage = options?.Storage ?? new LocalStorage<object>();
         Credentials = options?.Credentials;
         Plugins = options?.Plugins ?? [];
         OAuth = options?.OAuth ?? new OAuthSettings();
+        AutoUserTokenLookup = options?.AutoUserTokenLookup ?? true;
         Provider = options?.Provider;
-        _additionalAllowedDomains = options?.AdditionalAllowedDomains;
-
-        if (_additionalAllowedDomains?.Contains("*") == true)
-        {
-            Logger.Warn("Service URL validation is disabled via wildcard in AdditionalAllowedDomains");
-        }
 
         TokenClient = new Common.Http.HttpClient();
         Client = options?.Client ?? options?.ClientFactory?.CreateClient() ?? new Common.Http.HttpClient();
@@ -251,26 +250,19 @@ public partial class App
     }
 
     /// <summary>
-    /// send an activity proactively to a channel thread.
-    /// In channels, constructs a threaded conversation ID from the conversation ID
-    /// and message ID, then sends to that thread.
-    /// In scopes that do not support threading (group chat, meetings), sends as a normal message -
-    /// the message ID is ignored.
+    /// send an activity proactively to a conversation, optionally as a threaded reply.
+    /// Constructs a threaded conversation ID from the conversation ID
+    /// and message ID via <see cref="Conversation.ToThreadedConversationId"/>,
+    /// then sends to that thread. The service determines whether threading is
+    /// supported for the given conversation type.
     /// </summary>
-    /// <param name="conversationId">the channel or conversation ID</param>
+    /// <param name="conversationId">the conversation ID</param>
     /// <param name="messageId">the thread root message ID</param>
     /// <param name="activity">the activity to send</param>
     /// <param name="cancellationToken">optional cancellation token</param>
     public Task<T> Reply<T>(string conversationId, string messageId, T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
-        var baseId = conversationId.Split(';')[0];
-        // Channels use @thread.tacv2 or @thread.skype, 1:1 chats use @unq.gbl.spaces.
-        // Group chats and meetings use @thread.v2 which does not support threading.
-        var supportsThreading = baseId.EndsWith("@thread.tacv2", StringComparison.Ordinal) || baseId.EndsWith("@thread.skype", StringComparison.Ordinal) || baseId.EndsWith("@unq.gbl.spaces", StringComparison.Ordinal);
-        var targetId = supportsThreading
-            ? Conversation.ToThreadedConversationId(conversationId, messageId)
-            : conversationId;
-        return Send(targetId, activity, cancellationToken: cancellationToken);
+        return Send(Conversation.ToThreadedConversationId(conversationId, messageId), activity, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -376,28 +368,26 @@ public partial class App
 
         var api = new ApiClient(Api, cancellationToken);
 
-        try
+        if (AutoUserTokenLookup)
         {
-            var tokenResponse = await api.Users.Token.GetAsync(new()
+            try
             {
-                UserId = @event.Activity.From.Id,
-                ChannelId = @event.Activity.ChannelId,
-                ConnectionName = OAuth.DefaultConnectionName
-            });
+                var tokenResponse = await api.Users.Token.GetAsync(new()
+                {
+                    UserId = @event.Activity.From.Id,
+                    ChannelId = @event.Activity.ChannelId,
+                    ConnectionName = OAuth.DefaultConnectionName
+                });
 
-            userToken = new JsonWebToken(tokenResponse);
+                userToken = new JsonWebToken(tokenResponse);
+            }
+            catch { }
         }
-        catch { }
 
         var path = @event.Activity.GetPath();
         Logger.Debug(path);
 
         var serviceUrl = @event.Activity.ServiceUrl ?? @event.Token.ServiceUrl;
-        if (!ServiceUrlValidator.IsAllowed(serviceUrl, _cloud, _additionalAllowedDomains))
-        {
-            Logger.Warn($"Rejected service URL: {serviceUrl}");
-            throw new InvalidOperationException("Service URL is not from an allowed domain");
-        }
 
         var reference = new ConversationReference()
         {

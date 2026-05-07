@@ -269,7 +269,29 @@ public partial class Activity : IActivity
     {
         ChannelData ??= new();
         ChannelData.Merge(value);
+        NormalizeFeedback();
         return this;
+    }
+
+    /// <summary>
+    /// The Teams service rejects <c>feedbackLoop</c> and <c>feedbackLoopEnabled</c>
+    /// set at the same time. When <see cref="ChannelData.FeedbackLoop"/> is set it
+    /// wins; otherwise a legacy <c>FeedbackLoopEnabled = true</c> is upgraded to
+    /// <see cref="FeedbackType.Default"/>.
+    /// </summary>
+    private void NormalizeFeedback()
+    {
+        if (ChannelData is null) return;
+
+        if (ChannelData.FeedbackLoop is not null)
+        {
+            ChannelData.FeedbackLoopEnabled = null;
+        }
+        else if (ChannelData.FeedbackLoopEnabled == true)
+        {
+            ChannelData.FeedbackLoop = new FeedbackLoop(FeedbackType.Default);
+            ChannelData.FeedbackLoopEnabled = null;
+        }
     }
 
     public virtual Activity WithData(string key, object? value)
@@ -373,12 +395,39 @@ public partial class Activity : IActivity
     }
 
     /// <summary>
-    /// enable/disable message feedback
+    /// Legacy builder method of enabling default message feedback.
     /// </summary>
+    /// <param name="value">Whether to enable default message feedback.</param>
     public virtual Activity AddFeedback(bool value = true)
     {
         ChannelData ??= new();
-        ChannelData.FeedbackLoopEnabled = value;
+
+        if (value)
+        {
+            ChannelData.FeedbackLoop = new FeedbackLoop(FeedbackType.Default);
+        }
+        else
+        {
+            ChannelData.FeedbackLoop = null;
+        }
+
+        ChannelData.FeedbackLoopEnabled = null;
+        return this;
+    }
+
+    /// <summary>
+    /// Enable message feedback with an explicit mode (default or custom).
+    /// </summary>
+    /// <param name="mode">
+    /// <see cref="FeedbackType.Default"/> shows Teams' built-in thumbs up/down UI.
+    /// <see cref="FeedbackType.Custom"/> triggers a <c>message/fetchTask</c> invoke
+    /// so the bot can return its own task module dialog.
+    /// </param>
+    public virtual Activity AddFeedback(FeedbackType mode)
+    {
+        ChannelData ??= new();
+        ChannelData.FeedbackLoop = new FeedbackLoop(mode);
+        ChannelData.FeedbackLoopEnabled = null;
         return this;
     }
 

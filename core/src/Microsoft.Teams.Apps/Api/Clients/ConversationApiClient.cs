@@ -1,0 +1,55 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System.Diagnostics.CodeAnalysis;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
+
+using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
+
+namespace Microsoft.Teams.Apps.Api.Clients;
+
+/// <summary>
+/// Client for managing conversations, exposing sub-clients for activities, members, and reactions.
+/// Delegates to the core <see cref="CoreConversationClient"/>.
+/// </summary>
+public class ConversationApiClient
+{
+    private readonly CoreConversationClient _client;
+    private readonly Uri _serviceUrl;
+
+    /// <summary>
+    /// Client for activity operations.
+    /// </summary>
+    public ActivityClient Activities { get; }
+
+    /// <summary>
+    /// Client for member operations.
+    /// </summary>
+    public MemberClient Members { get; }
+
+    /// <summary>
+    /// Client for reaction operations.
+    /// </summary>
+    [Experimental("ExperimentalTeamsReactions")]
+    public ReactionClient Reactions { get; }
+
+    internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client)
+    {
+        _serviceUrl = serviceUrl;
+        _client = client;
+        Activities = new ActivityClient(serviceUrl, client);
+        Members = new MemberClient(serviceUrl, client);
+#pragma warning disable ExperimentalTeamsReactions // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+        Reactions = new ReactionClient(serviceUrl, client);
+#pragma warning restore ExperimentalTeamsReactions // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
+    }
+
+    /// <summary>
+    /// Create a new conversation.
+    /// </summary>
+    public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    {
+        return _client.CreateConversationAsync(request, _serviceUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+    }
+}

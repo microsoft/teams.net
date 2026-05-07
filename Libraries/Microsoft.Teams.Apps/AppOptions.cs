@@ -19,10 +19,11 @@ public class AppOptions
     public CloudEnvironment? Cloud { get; set; }
 
     /// <summary>
-    /// Additional allowed service URL hostnames beyond the built-in defaults.
-    /// Use this if your bot receives activities from non-standard channels.
+    /// When true, performs a per-activity user OAuth token lookup to populate
+    /// <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Set to false to
+    /// skip the call when SSO is not configured. Defaults to true.
     /// </summary>
-    public IEnumerable<string>? AdditionalAllowedDomains { get; set; }
+    public bool AutoUserTokenLookup { get; set; } = true;
 
     public AppOptions()
     {
