@@ -38,14 +38,15 @@ builder.Services.AddOpenTelemetry()
         o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Exporters = ExportTarget.Otlp | ExportTarget.Agent365 | ExportTarget.AzureMonitor;
         o.Instrumentation.EnableAspNetCoreInstrumentation = true;
+        o.Agent365.Exporter.UseS2SEndpoint = true;
         o.Agent365.Exporter.TokenResolver = async (agentId, tenantId) =>
         {
             var provider = rootProvider!.GetRequiredService<IAuthorizationHeaderProvider>();
             var options = new AuthorizationHeaderProviderOptions { AcquireTokenOptions = new() { AuthenticationOptionsName = "AzureAd", Tenant = tenantId } };
             options.WithAgentIdentity(agentId);
             var token = await provider.CreateAuthorizationHeaderForAppAsync(
-                "9b975845-388f-4429-889e-eab1ef63949c/.default", options);
-            return token;
+                "api://9b975845-388f-4429-889e-eab1ef63949c/.default", options);
+            return token.Substring("Bearer".Length).Trim();
         };
      })
     .WithTracing(t => t.AddSource(activitySources))
