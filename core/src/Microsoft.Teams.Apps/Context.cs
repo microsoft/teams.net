@@ -71,7 +71,9 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         => SendActivityAsync(activity, cancellationToken);
 
     /// <summary>
-    /// Sends a text message as a threaded reply to the current activity.
+    /// Sends a text message as a threaded reply to the current activity. When the inbound activity
+    /// has an id, the response auto-quotes it (rendered as a quote bubble above the response in Teams);
+    /// otherwise sends without quoting.
     /// </summary>
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>

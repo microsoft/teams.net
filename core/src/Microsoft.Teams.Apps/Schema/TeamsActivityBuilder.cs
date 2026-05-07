@@ -270,14 +270,31 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
             QuotedReply = new QuotedReplyData { MessageId = messageId }
         });
 
-        string? currentText = _activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
+        string? currentText;
+        if (_activity is MessageActivity msgRead)
+        {
+            currentText = msgRead.Text;
+        }
+        else
+        {
+            currentText = _activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
+        }
+
         var placeholder = ActivityQuotedReplyExtensions.QuotedPlaceholder(messageId);
         var newText = (currentText ?? "") + placeholder;
         if (text != null)
         {
             newText += $" {text}";
         }
-        WithProperty("text", newText);
+
+        if (_activity is MessageActivity msg)
+        {
+            msg.Text = newText;
+        }
+        else
+        {
+            WithProperty("text", newText);
+        }
 
         return this;
     }
