@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.IdentityModel.Validators;
 
 namespace Microsoft.Teams.Plugins.AspNetCore.Extensions;
+
 public static class TokenValidator
 {
     private static readonly ConcurrentDictionary<string, IConfigurationManager<OpenIdConnectConfiguration>> _openIdMetadataCache = new();

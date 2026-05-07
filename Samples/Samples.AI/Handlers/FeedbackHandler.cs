@@ -1,10 +1,14 @@
-using Microsoft.Teams.Api.Activities;
-using Microsoft.Teams.Api.Activities.Invokes;
-using Microsoft.Teams.Apps;
+using System.Collections.Concurrent;
+
 using Microsoft.Teams.AI.Models.OpenAI;
 using Microsoft.Teams.AI.Prompts;
 using Microsoft.Teams.AI.Templates;
-using System.Collections.Concurrent;
+using Microsoft.Teams.Api;
+using Microsoft.Teams.Api.Activities.Invokes;
+using Microsoft.Teams.Apps;
+using Microsoft.Teams.Cards;
+
+using TaskModules = Microsoft.Teams.Api.TaskModules;
 
 namespace Samples.AI.Handlers;
 
@@ -22,7 +26,7 @@ public static class FeedbackHandler
     /// <summary>
     /// Handles the feedback loop command - sends an AI response with feedback buttons
     /// </summary>
-    public static async Task HandleFeedbackLoop(OpenAIChatModel model, IContext<Microsoft.Teams.Api.Activities.MessageActivity> context)
+    public static async Task HandleFeedbackLoop(OpenAIChatModel model, IContext<Microsoft.Teams.Api.Activities.MessageActivity> context, CancellationToken cancellationToken = default)
     {
         context.Log.Info($"[HANDLER] Feedback loop handler invoked with query: {context.Activity.Text}");
 
@@ -32,22 +36,24 @@ public static class FeedbackHandler
         });
 
         context.Log.Info("[HANDLER] Sending query to AI model...");
-        var result = await prompt.Send(context.Activity.Text);
+        var result = await prompt.Send(context.Activity.Text, cancellationToken);
 
         if (result.Content != null)
         {
             context.Log.Info($"[HANDLER] AI response received: {result.Content}");
 
-            // Create message with AI generated indicator and feedback buttons
+            // Create message with AI generated indicator and custom feedback buttons.
+            // Clicking a feedback button in 'custom' mode triggers a message/fetchTask
+            // invoke (handled by HandleFeedbackFetchTask) so the bot can show its own dialog.
             var messageActivity = new Microsoft.Teams.Api.Activities.MessageActivity
             {
                 Text = result.Content,
             }
             .AddAIGenerated()
-            .AddFeedback(); // This adds the thumbs up/down buttons
+            .AddFeedback(FeedbackType.Custom);
 
             context.Log.Info("[HANDLER] Sending message with feedback buttons");
-            var sentActivity = await context.Send(messageActivity);
+            var sentActivity = await context.Send(messageActivity, cancellationToken);
 
             // Store the feedback data for later retrieval
             if (sentActivity.Id != null)
@@ -66,8 +72,43 @@ public static class FeedbackHandler
         else
         {
             context.Log.Warn("[HANDLER] AI did not generate a response");
-            await context.Reply("I did not generate a response.");
+            await context.Reply("I did not generate a response.", cancellationToken);
         }
+    }
+
+    /// <summary>
+    /// Builds the task module (dialog) shown when the user clicks a feedback
+    /// button on a message whose feedback loop type is <c>custom</c>.
+    /// </summary>
+    public static TaskModules.Response HandleFeedbackFetchTask(IContext<Messages.FetchTaskActivity> context)
+    {
+        var reaction = context.Activity.Value.Data.ActionValue.Reaction;
+        context.Log.Info($"[HANDLER] Feedback fetch-task invoked, reaction: {reaction}");
+
+        var card = new AdaptiveCard
+        {
+            Schema = "http://adaptivecards.io/schemas/adaptive-card.json",
+            Body = new List<CardElement>
+            {
+                new TextBlock($"You reacted {reaction}. Tell us more (optional):") { Wrap = true },
+                new TextInput
+                {
+                    Id = "feedbackText",
+                    Placeholder = "Your feedback...",
+                    IsMultiline = true,
+                }
+            },
+            Actions = new List<Microsoft.Teams.Cards.Action>
+            {
+                new SubmitAction { Title = "Submit" }
+            }
+        };
+
+        return new TaskModules.Response(new TaskModules.ContinueTask(new TaskModules.TaskInfo
+        {
+            Title = "Feedback",
+            Card = new Attachment(card),
+        }));
     }
 
     /// <summary>

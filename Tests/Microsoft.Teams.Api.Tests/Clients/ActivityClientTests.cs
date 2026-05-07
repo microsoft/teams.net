@@ -201,4 +201,108 @@ public class ActivityClientTests
             It.IsAny<CancellationToken>()),
             Times.Once);
     }
+
+    [Fact]
+    public async Task ActivityClient_CreateTargetedAsync()
+    {
+        Resource responseResource = new Resource() { Id = "activityId" };
+
+        var responseMessage = new HttpResponseMessage();
+        responseMessage.Headers.Add("Custom-Header", "HeaderValue");
+        var mockHandler = new Mock<IHttpClient>();
+        mockHandler
+            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponse<string>()
+            {
+                Body = JsonSerializer.Serialize(responseResource, new JsonSerializerOptions { WriteIndented = true }),
+                Headers = responseMessage.Headers,
+                StatusCode = HttpStatusCode.OK
+            });
+
+        string serviceUrl = "https://serviceurl.com/";
+        var activityClient = new ActivityClient(serviceUrl, mockHandler.Object);
+        string conversationId = "conversationId";
+        var value = new Cards.HeroCard()
+        {
+            Title = "test card",
+            SubTitle = "test targeted activity"
+        };
+        var activity = new FetchActivity(value);
+        var response = await activityClient.CreateTargetedAsync(conversationId, activity);
+
+        Assert.Equal(responseResource.Id, response!.Id);
+        string expectedUrl = "https://serviceurl.com/v3/conversations/conversationId/activities?isTargetedActivity=true";
+        HttpMethod expectedMethod = HttpMethod.Post;
+        mockHandler.Verify(x => x.SendAsync(
+            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ActivityClient_UpdateTargetedAsync()
+    {
+        Resource responseResource = new Resource() { Id = "activityId" };
+
+        var responseMessage = new HttpResponseMessage();
+        responseMessage.Headers.Add("Custom-Header", "HeaderValue");
+        var mockHandler = new Mock<IHttpClient>();
+        mockHandler
+            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponse<string>()
+            {
+                Body = JsonSerializer.Serialize(responseResource, new JsonSerializerOptions { WriteIndented = true }),
+                Headers = responseMessage.Headers,
+                StatusCode = HttpStatusCode.OK
+            });
+
+        string serviceUrl = "https://serviceurl.com/";
+        var activityClient = new ActivityClient(serviceUrl, mockHandler.Object);
+        string conversationId = "conversationId";
+        var value = new Cards.HeroCard()
+        {
+            Title = "test card",
+            SubTitle = "test targeted activity update"
+        };
+        var activity = new FetchActivity(value);
+        var response = await activityClient.UpdateTargetedAsync(conversationId, responseResource.Id, activity);
+
+        Assert.Equal(responseResource.Id, response!.Id);
+        string expectedUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId?isTargetedActivity=true";
+        HttpMethod expectedMethod = HttpMethod.Put;
+        mockHandler.Verify(x => x.SendAsync(
+            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ActivityClient_DeleteTargetedAsync()
+    {
+        Resource responseResource = new Resource() { Id = "activityId" };
+
+        var responseMessage = new HttpResponseMessage();
+        responseMessage.Headers.Add("Custom-Header", "HeaderValue");
+        var mockHandler = new Mock<IHttpClient>();
+        mockHandler
+            .Setup(handler => handler.SendAsync(It.IsAny<IHttpRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponse<string>()
+            {
+                Body = String.Empty,
+                Headers = responseMessage.Headers,
+                StatusCode = HttpStatusCode.OK
+            });
+
+        string serviceUrl = "https://serviceurl.com/";
+        var activityClient = new ActivityClient(serviceUrl, mockHandler.Object);
+        string conversationId = "conversationId";
+        await activityClient.DeleteTargetedAsync(conversationId, responseResource.Id);
+
+        string expectedUrl = "https://serviceurl.com/v3/conversations/conversationId/activities/activityId?isTargetedActivity=true";
+        HttpMethod expectedMethod = HttpMethod.Delete;
+        mockHandler.Verify(x => x.SendAsync(
+            It.Is<IHttpRequest>(arg => arg.Url == expectedUrl && arg.Method == expectedMethod),
+            It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
 }

@@ -15,6 +15,7 @@ public class ExecuteActionAttribute() : InvokeAttribute(Api.Activities.Invokes.N
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnExecuteAction(this App app, Func<IContext<ExecuteActionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -32,6 +33,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnExecuteAction(this App app, Func<IContext<ExecuteActionActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()
@@ -39,6 +41,36 @@ public static partial class AppInvokeActivityExtensions
             Name = string.Join("/", [ActivityType.Invoke, Name.ExecuteAction]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = context => handler(context.ToActivityType<ExecuteActionActivity>()),
+            Selector = activity => activity is ExecuteActionActivity
+        });
+
+        return app;
+    }
+
+    public static App OnExecuteAction(this App app, Func<IContext<ExecuteActionActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.ExecuteAction]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ExecuteActionActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is ExecuteActionActivity
+        });
+
+        return app;
+    }
+
+    public static App OnExecuteAction(this App app, Func<IContext<ExecuteActionActivity>, CancellationToken, Task<object?>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.ExecuteAction]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = context => handler(context.ToActivityType<ExecuteActionActivity>(), context.CancellationToken),
             Selector = activity => activity is ExecuteActionActivity
         });
 

@@ -25,6 +25,7 @@ public static partial class Conversation
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMembersRemoved(this App app, Func<IContext<ConversationUpdateActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -34,6 +35,31 @@ public static partial class AppActivityExtensions
             Handler = async context =>
             {
                 await handler(context.ToActivityType<ConversationUpdateActivity>());
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is ConversationUpdateActivity update)
+                {
+                    return update.MembersRemoved.Length > 0;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnMembersRemoved(this App app, Func<IContext<ConversationUpdateActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.ConversationUpdate, ConversationUpdateActivity.EventType.ChannelMemberRemoved]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ConversationUpdateActivity>(), context.CancellationToken);
                 return null;
             },
             Selector = activity =>

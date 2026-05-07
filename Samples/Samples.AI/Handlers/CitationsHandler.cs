@@ -9,7 +9,7 @@ public static class CitationsHandler
     /// <summary>
     /// Demo citations functionality
     /// </summary>
-    public static async Task HandleCitationsDemo(IContext<MessageActivity> context)
+    public static async Task HandleCitationsDemo(IContext<MessageActivity> context, CancellationToken cancellationToken = default)
     {
         Console.WriteLine($"[HANDLER] Citations demo handler invoked by user: {context.Activity.From.Name}");
 
@@ -34,15 +34,15 @@ public static class CitationsHandler
         for (int i = 0; i < citedDocs.Length; i++)
         {
             Console.WriteLine($"[HANDLER] Adding citation [{i + 1}]: {citedDocs[i].Title}");
-            messageActivity.AddCitation(i+1, new CitationAppearance
-                {
-                    Name = citedDocs[i].Title,
-                    Abstract = citedDocs[i].Content
-                }
+            messageActivity.AddCitation(i + 1, new CitationAppearance
+            {
+                Name = citedDocs[i].Title,
+                Abstract = citedDocs[i].Content
+            }
             );
         }
 
         Console.WriteLine("[HANDLER] Sending message with citations to user");
-        await context.Send(messageActivity);
+        await context.Send(messageActivity, cancellationToken);
     }
 }

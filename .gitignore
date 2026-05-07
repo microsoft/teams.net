@@ -8,6 +8,8 @@
 
 # local app settings files
 appsettings.Local.json
+appsettings.Development.json
+launchsettings.json
 
 # User-specific files
 *.rsuser
@@ -37,6 +39,7 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+.lscache
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
@@ -486,3 +489,6 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Claude local settings
+.claude/settings.local.json

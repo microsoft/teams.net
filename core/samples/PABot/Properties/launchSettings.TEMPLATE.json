@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "local": {
+      "commandName": "Project",
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "Logging__LogLevel__Microsoft": "Warning",
+        "Logging__LogLevel__Microsoft.Teams": "Information",
+        "Logging__LogLevel__Microsoft.Identity.Web": "Error",
+        "ConnectionName": "",
+        "SecondConnectionName": "",
+        "MsalBot__Scope": "https://api.botframework.com/.default",
+        "MsalBot__Instance": "https://login.microsoftonline.com/",
+        "MsalBot__TenantId": "",
+        "MsalBot__ClientId": "",
+        "MsalBot__ClientCredentials__0__SourceType": "",
+        "MsalBot__ClientCredentials__0__ClientSecret": "",
+        "MsalAgent__ClientId": "",
+        "MsalAgent__TenantId": "",
+        "MsalAgent__Scope": "https://botapi.skype.com/.default",
+        "MsalAgent__ClientCredentials__0__SourceType": "",
+        "MsalAgent__ClientCredentials__0__ClientSecret": ""
+      }
+    }
+  }
+ }

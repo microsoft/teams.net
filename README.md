@@ -1,11 +1,17 @@
 # ![Teams SDK Icon](./Assets/icon.png)
+
 # Teams SDK: DotNet
 
 [![Version](https://img.shields.io/github/v/release/microsoft/teams.net?label=version)](#)
 
 a suite of packages used to build on the Teams Platform.
 
-[![📖 Getting Started](https://img.shields.io/badge/📖%20Getting%20Started-blue?style=for-the-badge)](https://microsoft.github.io/teams-ai)
+[![📖 Getting Started](https://img.shields.io/badge/📖%20Getting%20Started-blue?style=for-the-badge)](https://microsoft.github.io/teams-sdk)
+
+## Questions & Issues
+
+- **Questions or Feature Requests**: Please use [GitHub Discussions](https://github.com/microsoft/teams-sdk/discussions)
+- **Bug Reports**: Please [open an issue](https://github.com/microsoft/teams.net/issues/new/choose)
 
 ### Build
 
@@ -30,6 +36,16 @@ $: dotnet format
 ```bash
 $: dotnet test
 ```
+
+## Public Preview Packages
+
+> ⚠️ **Preview Packages**: In addition to stable releases, we publish preview packages (versioned with `-preview` suffix) to [nuget.org](https://www.nuget.org/profiles/teams-sdk) for early access to new features.
+>
+> **About preview packages:**
+> - Preview builds may contain bugs, incomplete features, or breaking changes between versions
+> - APIs in preview packages are subject to change without notice
+> - You are welcome to [file issues](https://github.com/microsoft/teams.net/issues) for bugs or feedback, but they may not be addressed with the same priority as stable releases
+> - **Preview packages are not recommended for production workloads**
 
 ## Packages
 
@@ -57,6 +73,3 @@ $: dotnet test
 - [`Microsoft.Teams.Plugins.External.Mcp`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.Mcp/README.md)
 - [`Microsoft.Teams.Plugins.External.McpClient`](./Libraries/Microsoft.Teams.Plugins/Microsoft.Teams.Plugins.External/Microsoft.Teams.Plugins.External.McpClient/README.md)
 
-## Feedback and Support
-
-For questions, feedback, or support regarding the Teams AI SDK, please contact us at [TeamsAISDKFeedback@microsoft.com](mailto:TeamsAISDKFeedback@microsoft.com).

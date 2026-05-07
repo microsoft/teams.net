@@ -26,7 +26,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -34,7 +34,7 @@ public class AppTests
         await app.Start();
 
         // assert
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Once);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()), Times.Once);
         Assert.True(app.Token!.ToString() == _unexpiredJwt);
     }
 
@@ -53,7 +53,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(exception);
         app.Api = api.Object;
 
@@ -75,7 +75,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -83,7 +83,7 @@ public class AppTests
         await app.Start();
 
         // assert
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Never);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()), Times.Never);
         Assert.Null(app.Token);
     }
 
@@ -100,7 +100,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -109,7 +109,7 @@ public class AppTests
         client.Object.Options.TokenFactory();
 
         // assert
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Once);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()), Times.Once);
         Assert.True(app.Token!.ToString() == _unexpiredJwt);
     }
 
@@ -154,7 +154,7 @@ public class AppTests
         credentials.Setup(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -164,7 +164,7 @@ public class AppTests
 
         // assert
         credentials.Verify(c => c.Resolve(It.IsAny<IHttpClient>(), It.IsAny<string[]>(), It.IsAny<CancellationToken>()), Times.Never);
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Never);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -179,7 +179,7 @@ public class AppTests
         };
         var app = new App(options);
         var api = new Mock<ApiClient>(_serviceUrl, CancellationToken.None) { CallBase = true };
-        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()))
+        api.Setup(a => a.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()))
                     .ReturnsAsync(new TokenResponse() { AccessToken = _unexpiredJwt, TokenType = "bot" });
         app.Api = api.Object;
 
@@ -188,7 +188,7 @@ public class AppTests
         client.Object.Options.TokenFactory();
 
         // assert
-        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>()), Times.Never);
+        api.Verify(api => api.Bots.Token.GetAsync(It.IsAny<IHttpCredentials>(), It.IsAny<IHttpClient>(), It.IsAny<CancellationToken>()), Times.Never);
         Assert.Null(app.Token);
     }
 
@@ -286,4 +286,85 @@ public class AppTests
         Assert.True(secondMiddlewareCalled);
         Assert.True(firstMiddlewareCalled);
     }
+        
+    [Fact]
+    public void Test_App_Send_TargetedMessage_WithRecipient_PassesValidation()
+    {
+        // arrange
+        var targetedMessage = new MessageActivity("Hello")
+            .WithRecipient(new Account() { Id = "user123", Name = "Test User", Role = Role.User }, true);
+
+        // assert
+        Assert.True(targetedMessage.Recipient.IsTargeted);
+        Assert.NotNull(targetedMessage.Recipient);
+        Assert.Equal("user123", targetedMessage.Recipient.Id);
+    }
+
+    [Fact]
+    public async Task Test_App_Reply_ThreeArgs_ConstructsThreadedId()
+    {
+        // arrange
+        var sender = new Mock<ISenderPlugin>();
+        sender.Setup(s => s.Send<MessageActivity>(It.IsAny<MessageActivity>(), It.IsAny<ConversationReference>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MessageActivity a, ConversationReference r, CancellationToken c) => a);
+
+        var token = new Mock<IToken>();
+        token.Setup(t => t.AppId).Returns("test-app-id");
+        token.Setup(t => t.AppDisplayName).Returns("Test App");
+
+        var options = new AppOptions() { Plugins = [sender.Object] };
+        var app = new App(options);
+        app.Token = token.Object;
+
+        // act
+        await app.Reply("19:abc@thread.skype", "1680000000000", new MessageActivity("Hello thread"));
+
+        // assert
+        sender.Verify(s => s.Send<MessageActivity>(
+            It.IsAny<MessageActivity>(),
+            It.Is<ConversationReference>(r => r.Conversation.Id == "19:abc@thread.skype;messageid=1680000000000"),
+            It.IsAny<CancellationToken>()
+        ), Times.Once);
+    }
+
+    [Fact]
+    public async Task Test_App_Reply_TwoArgs_PassesConversationIdAsIs()
+    {
+        // arrange
+        var sender = new Mock<ISenderPlugin>();
+        sender.Setup(s => s.Send<MessageActivity>(It.IsAny<MessageActivity>(), It.IsAny<ConversationReference>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((MessageActivity a, ConversationReference r, CancellationToken c) => a);
+
+        var token = new Mock<IToken>();
+        token.Setup(t => t.AppId).Returns("test-app-id");
+        token.Setup(t => t.AppDisplayName).Returns("Test App");
+
+        var options = new AppOptions() { Plugins = [sender.Object] };
+        var app = new App(options);
+        app.Token = token.Object;
+
+        // act
+        await app.Reply("19:abc@thread.skype", new MessageActivity("Hello flat"));
+
+        // assert
+        sender.Verify(s => s.Send<MessageActivity>(
+            It.IsAny<MessageActivity>(),
+            It.Is<ConversationReference>(r => r.Conversation.Id == "19:abc@thread.skype"),
+            It.IsAny<CancellationToken>()
+        ), Times.Once);
+    }
+
+    [Fact]
+    public async Task Test_App_Reply_ThreeArgs_InvalidMessageId_Throws()
+    {
+        // arrange
+        var credentials = new Mock<IHttpCredentials>();
+        var options = new AppOptions() { Credentials = credentials.Object };
+        var app = new App(options);
+
+        // act & assert
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            app.Reply("19:abc@thread.skype", "not-a-number", new MessageActivity("Hello")));
+    }
+
 }

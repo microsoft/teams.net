@@ -8,67 +8,81 @@ namespace Microsoft.Teams.Apps;
 public partial interface IContext<TActivity>
 {
     /// <summary>
-    /// send an activity to the conversation
+    /// send an activity in the current conversation without quoting.
+    /// In channels, sends to the current thread. In scopes that do not
+    /// support threading (group chat, meetings), sends as a normal message.
+    /// To send with a visual quote of the inbound message, use <see cref="Reply{T}(T, CancellationToken)"/>.
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    public Task<T> Send<T>(T activity) where T : IActivity;
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<T> Send<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity;
 
     /// <summary>
     /// send a message activity to the conversation
     /// </summary>
     /// <param name="text">the text to send</param>
-    public Task<MessageActivity> Send(string text);
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<MessageActivity> Send(string text, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// send a message activity with a card attachment
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public Task<MessageActivity> Send(Cards.AdaptiveCard card);
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// send an activity to the conversation as a reply
+    /// send an activity in the current conversation with a visual quote
+    /// of the inbound message. In channels, sends to the current thread
+    /// with a quoted reply. In other scopes, sends with a quoted reply.
+    /// To send without quoting, use <see cref="Send{T}(T, CancellationToken)"/>.
     /// </summary>
     /// <param name="activity">activity activity to send</param>
-    public Task<T> Reply<T>(T activity) where T : IActivity;
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<T> Reply<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity;
 
     /// <summary>
     /// send a message activity to the conversation as a reply
     /// </summary>
     /// <param name="text">the text to send</param>
-    public Task<MessageActivity> Reply(string text);
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<MessageActivity> Reply(string text, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// send a message activity with a card attachment as a reply
     /// </summary>
     /// <param name="card">the card to send as an attachment</param>
-    public Task<MessageActivity> Reply(Cards.AdaptiveCard card);
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// send a typing activity
     /// </summary>
-    public Task<TypingActivity> Typing(string? text = null);
+    /// <param name="text">optional text to include</param>
+    /// <param name="cancellationToken">optional cancellation token</param>
+    public Task<TypingActivity> Typing(string? text = null, CancellationToken cancellationToken = default);
 }
 
 public partial class Context<TActivity> : IContext<TActivity>
 {
-    public async Task<T> Send<T>(T activity) where T : IActivity
+    public async Task<T> Send<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
         var res = await Sender.Send(activity, Ref, CancellationToken);
         await OnActivitySent(res, ToActivityType<IActivity>());
         return res;
     }
 
-    public Task<MessageActivity> Send(string text)
+    public Task<MessageActivity> Send(string text, CancellationToken cancellationToken = default)
     {
-        return Send(new MessageActivity(text));
+        return Send(new MessageActivity(text), cancellationToken);
     }
 
-    public Task<MessageActivity> Send(Cards.AdaptiveCard card)
+    public Task<MessageActivity> Send(Cards.AdaptiveCard card, CancellationToken cancellationToken = default)
     {
-        return Send(new MessageActivity().AddAttachment(card));
+        return Send(new MessageActivity().AddAttachment(card), cancellationToken);
     }
 
-    public Task<T> Reply<T>(T activity) where T : IActivity
+    public Task<T> Reply<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
         activity.Conversation = Ref.Conversation.Copy();
         activity.Conversation.Id = Ref.Conversation.ThreadId;
@@ -81,20 +95,20 @@ public partial class Context<TActivity> : IContext<TActivity>
             ]);
         }
 
-        return Send(activity);
+        return Send(activity, cancellationToken);
     }
 
-    public Task<MessageActivity> Reply(string text)
+    public Task<MessageActivity> Reply(string text, CancellationToken cancellationToken = default)
     {
-        return Reply(new MessageActivity(text));
+        return Reply(new MessageActivity(text), cancellationToken);
     }
 
-    public Task<MessageActivity> Reply(Cards.AdaptiveCard card)
+    public Task<MessageActivity> Reply(Cards.AdaptiveCard card, CancellationToken cancellationToken = default)
     {
-        return Reply(new MessageActivity().AddAttachment(card));
+        return Reply(new MessageActivity().AddAttachment(card), cancellationToken);
     }
 
-    public Task<TypingActivity> Typing(string? text = null)
+    public Task<TypingActivity> Typing(string? text = null, CancellationToken cancellationToken = default)
     {
         var activity = new TypingActivity();
 
@@ -103,6 +117,6 @@ public partial class Context<TActivity> : IContext<TActivity>
             activity.Text = text;
         }
 
-        return Send(activity);
+        return Send(activity, cancellationToken);
     }
 }

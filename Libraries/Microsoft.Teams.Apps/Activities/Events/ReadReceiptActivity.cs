@@ -27,6 +27,7 @@ public static partial class Event
 
 public static partial class AppEventActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnReadReceipt(this App app, Func<IContext<ReadReceiptActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -36,6 +37,23 @@ public static partial class AppEventActivityExtensions
             Handler = async context =>
             {
                 await handler(context.ToActivityType<ReadReceiptActivity>());
+                return null;
+            },
+            Selector = activity => activity is ReadReceiptActivity
+        });
+
+        return app;
+    }
+
+    public static App OnReadReceipt(this App app, Func<IContext<ReadReceiptActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Event, Name.ReadReceipt]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ReadReceiptActivity>(), context.CancellationToken);
                 return null;
             },
             Selector = activity => activity is ReadReceiptActivity

@@ -17,61 +17,72 @@ public partial interface IContext
         /// send an activity to the conversation
         /// </summary>
         /// <param name="activity">activity activity to send</param>
-        public Task<T> Send<T>(T activity) where T : IActivity => context.Send(activity);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task<T> Send<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity => context.Send(activity, cancellationToken);
 
         /// <summary>
         /// send a message activity to the conversation
         /// </summary>
         /// <param name="text">the text to send</param>
-        public Task<MessageActivity> Send(string text) => context.Send(text);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task<MessageActivity> Send(string text, CancellationToken cancellationToken = default) => context.Send(text, cancellationToken);
 
         /// <summary>
         /// send a message activity with a card attachment
         /// </summary>
         /// <param name="card">the card to send as an attachment</param>
-        public Task<MessageActivity> Send(Cards.AdaptiveCard card) => context.Send(card);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task<MessageActivity> Send(Cards.AdaptiveCard card, CancellationToken cancellationToken = default) => context.Send(card, cancellationToken);
 
         /// <summary>
         /// send an activity to the conversation as a reply
         /// </summary>
         /// <param name="activity">activity activity to send</param>
-        public Task<T> Reply<T>(T activity) where T : IActivity => context.Reply(activity);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task<T> Reply<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity => context.Reply(activity, cancellationToken);
 
         /// <summary>
         /// send a message activity to the conversation as a reply
         /// </summary>
         /// <param name="text">the text to send</param>
-        public Task<MessageActivity> Reply(string text) => context.Reply(text);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task<MessageActivity> Reply(string text, CancellationToken cancellationToken = default) => context.Reply(text, cancellationToken);
 
         /// <summary>
         /// send a message activity with a card attachment as a reply
         /// </summary>
         /// <param name="card">the card to send as an attachment</param>
-        public Task<MessageActivity> Reply(Cards.AdaptiveCard card) => context.Reply(card);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task<MessageActivity> Reply(Cards.AdaptiveCard card, CancellationToken cancellationToken = default) => context.Reply(card, cancellationToken);
 
         /// <summary>
         /// send a typing activity
         /// </summary>
-        public Task<TypingActivity> Typing(string? text = null) => context.Typing(text);
+        /// <param name="text">optional text to include</param>
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task<TypingActivity> Typing(string? text = null, CancellationToken cancellationToken = default) => context.Typing(text, cancellationToken);
 
         /// <summary>
         /// trigger user signin flow for the activity sender
         /// </summary>
         /// <param name="options">option overrides</param>
+        /// <param name="cancellationToken">optional cancellation token</param>
         /// <returns>the existing user token if found</returns>
-        public Task<string?> SignIn(OAuthOptions? options = null) => context.SignIn(options);
+        public Task<string?> SignIn(OAuthOptions? options = null, CancellationToken cancellationToken = default) => context.SignIn(options, cancellationToken);
 
         /// <summary>
         /// trigger user SSO signin flow for the activity sender
         /// </summary>
         /// <param name="options">option overrides</param>
-        public Task SignIn(SSOOptions options) => context.SignIn(options);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task SignIn(SSOOptions options, CancellationToken cancellationToken = default) => context.SignIn(options, cancellationToken);
 
         /// <summary>
         /// trigger user signin flow for the activity sender
         /// </summary>
         /// <param name="connectionName">the connection name</param>
-        public Task SignOut(string? connectionName = null) => context.SignOut(connectionName);
+        /// <param name="cancellationToken">optional cancellation token</param>
+        public Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default) => context.SignOut(connectionName, cancellationToken);
     }
 
     /// <summary>
