@@ -42,7 +42,7 @@ public class Result
     /// </summary>
     [JsonPropertyName("attachmentLayout")]
     [JsonPropertyOrder(0)]
-    public Api.Attachment.Layout? AttachmentLayout { get; set; }
+    public AttachmentLayout? AttachmentLayout { get; set; }
 
     /// <summary>
     /// The type of the result. Possible values include:
