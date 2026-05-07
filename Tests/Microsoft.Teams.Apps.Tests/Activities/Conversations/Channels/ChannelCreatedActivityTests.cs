@@ -6,6 +6,7 @@ using Microsoft.Teams.Apps.Testing.Plugins;
 
 namespace Microsoft.Teams.Apps.Tests.Activities;
 
+[Obsolete]
 public class ChannelCreatedActivityTests
 {
     private readonly App _app = new();

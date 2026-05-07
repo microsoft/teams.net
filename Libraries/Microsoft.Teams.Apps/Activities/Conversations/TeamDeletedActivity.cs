@@ -27,6 +27,7 @@ public static partial class Conversation
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTeamDeleted(this App app, Func<IContext<ConversationUpdateActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -52,6 +53,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTeamHardDeleted(this App app, Func<IContext<ConversationUpdateActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -61,6 +63,56 @@ public static partial class AppActivityExtensions
             Handler = async context =>
             {
                 await handler(context.ToActivityType<ConversationUpdateActivity>());
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is ConversationUpdateActivity update)
+                {
+                    return update.ChannelData?.EventType == ConversationUpdateActivity.EventType.TeamHardDeleted;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnTeamDeleted(this App app, Func<IContext<ConversationUpdateActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.ConversationUpdate, ConversationUpdateActivity.EventType.TeamDeleted]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ConversationUpdateActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is ConversationUpdateActivity update)
+                {
+                    return update.ChannelData?.EventType == ConversationUpdateActivity.EventType.TeamDeleted;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnTeamHardDeleted(this App app, Func<IContext<ConversationUpdateActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.ConversationUpdate, ConversationUpdateActivity.EventType.TeamHardDeleted]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<ConversationUpdateActivity>(), context.CancellationToken);
                 return null;
             },
             Selector = activity =>

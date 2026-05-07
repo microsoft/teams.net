@@ -15,6 +15,7 @@ public class TokenExchangeAttribute() : InvokeAttribute(Api.Activities.Invokes.N
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -32,6 +33,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task<Response<Api.TokenExchange.InvokeResponse>>> handler)
     {
         app.Router.Register(new Route()
@@ -45,6 +47,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task<Api.TokenExchange.InvokeResponse>> handler)
     {
         app.Router.Register(new Route()
@@ -58,6 +61,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, Task<Response>> handler)
     {
         app.Router.Register(new Route()
@@ -65,6 +69,62 @@ public static partial class AppInvokeActivityExtensions
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>()),
+            Selector = activity => activity is SignIn.TokenExchangeActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is SignIn.TokenExchangeActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, CancellationToken, Task<Response<Api.TokenExchange.InvokeResponse>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken),
+            Selector = activity => activity is SignIn.TokenExchangeActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, CancellationToken, Task<Api.TokenExchange.InvokeResponse>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken),
+            Selector = activity => activity is SignIn.TokenExchangeActivity
+        });
+
+        return app;
+    }
+
+    public static App OnTokenExchange(this App app, Func<IContext<SignIn.TokenExchangeActivity>, CancellationToken, Task<Response>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.TokenExchange]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<SignIn.TokenExchangeActivity>(), context.CancellationToken),
             Selector = activity => activity is SignIn.TokenExchangeActivity
         });
 

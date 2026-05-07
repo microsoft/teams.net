@@ -80,42 +80,51 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
 
     public Task<IActivity> Send(IActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default)
     {
-        return Send<IActivity>(activity, reference, isTargeted: false, cancellationToken);
+        return Send<IActivity>(activity, reference, cancellationToken);
     }
 
-    public Task<IActivity> Send(IActivity activity, Api.ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default)
-    {
-        return Send<IActivity>(activity, reference, isTargeted, cancellationToken);
-    }
-
-    public Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
-    {
-        return Send<TActivity>(activity, reference, isTargeted: false, cancellationToken);
-    }
-
-    public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default) where TActivity : IActivity
+    public async Task<TActivity> Send<TActivity>(TActivity activity, Api.ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
         var client = new ApiClient(reference.ServiceUrl, Client, cancellationToken);
 
         activity.Conversation = reference.Conversation;
         activity.From = reference.Bot;
-        activity.Recipient = reference.User;
         activity.ChannelId = reference.ChannelId;
+
+        // For targeted messages with an explicit Recipient (proactive sends), preserve it.
+        // Otherwise, use the reference User from the conversation context.
+        #pragma warning disable ExperimentalTeamsTargeted
+        var isTargeted = activity.Recipient?.IsTargeted == true;
+
+        if (!isTargeted)
+        {
+            activity.Recipient = reference.User;
+        }
 
         if (activity.Id is not null && !activity.IsStreaming)
         {
-            await client
+            if (isTargeted)
+            {
+                await client
                 .Conversations
                 .Activities
-                .UpdateAsync(reference.Conversation.Id, activity.Id, activity, isTargeted);
+                .UpdateTargetedAsync(reference.Conversation.Id, activity.Id, activity);
+            }
+            else
+            {
+                await client
+                .Conversations
+                .Activities
+                .UpdateAsync(reference.Conversation.Id, activity.Id, activity);
+            }
 
             return activity;
         }
 
-        var res = await client
-            .Conversations
-            .Activities
-            .CreateAsync(reference.Conversation.Id, activity, isTargeted);
+        var res = isTargeted
+            ? await client.Conversations.Activities.CreateTargetedAsync(reference.Conversation.Id, activity)
+            : await client.Conversations.Activities.CreateAsync(reference.Conversation.Id, activity);
+        #pragma warning restore ExperimentalTeamsTargeted
 
         activity.Id = res?.Id;
         return activity;
@@ -127,7 +136,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         {
             Send = async activity =>
             {
-                var res = await Send(activity, reference, false, cancellationToken);
+                var res = await Send(activity, reference, cancellationToken);
                 return res;
             }
         };

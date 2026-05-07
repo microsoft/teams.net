@@ -1,6 +1,8 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Net;
+
 using Microsoft.Teams.Api;
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Api.Auth;
@@ -117,20 +119,10 @@ public partial class TestPlugin : ISenderPlugin
 
     public Task<IActivity> Send(IActivity activity, ConversationReference reference, CancellationToken cancellationToken = default)
     {
-        return Send(activity, reference, isTargeted: false, cancellationToken);
-    }
-
-    public Task<IActivity> Send(IActivity activity, ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default)
-    {
         return Task.FromResult(activity);
     }
 
     public Task<TActivity> Send<TActivity>(TActivity activity, ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
-    {
-        return Send(activity, reference, isTargeted: false, cancellationToken);
-    }
-
-    public Task<TActivity> Send<TActivity>(TActivity activity, ConversationReference reference, bool isTargeted, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
         return Task.FromResult(activity);
     }
@@ -152,30 +144,44 @@ public partial class TestPlugin : ISenderPlugin
 
     public async Task<Response> Do(ActivityEvent @event, CancellationToken cancellationToken = default)
     {
-        if (@event.Activity is MessageActivity message)
+        try
+        {
+            if (@event.Activity is MessageActivity message)
+            {
+                await Events(
+                    this,
+                    "message",
+                    new TestMessageEvent() { Message = message.Text },
+                    cancellationToken
+                );
+            }
+
+            var @out = await Events(
+                this,
+                EventType.Activity,
+                @event,
+                cancellationToken
+            );
+
+            var res = (Response?)@out;
+
+            if (res is null)
+            {
+                throw new Exception("expected activity response");
+            }
+
+            return res;
+        }
+        catch (Exception ex)
         {
             await Events(
                 this,
-                "message",
-                new TestMessageEvent() { Message = message.Text },
+                EventType.Error,
+                new ErrorEvent() { Exception = ex },
                 cancellationToken
             );
+
+            return new(HttpStatusCode.InternalServerError, ex.ToString());
         }
-
-        var @out = await Events(
-            this,
-            "activity",
-            @event,
-            cancellationToken
-        );
-
-        var res = (Response?)@out;
-
-        if (res is null)
-        {
-            throw new Exception("expected activity response");
-        }
-
-        return res;
     }
 }

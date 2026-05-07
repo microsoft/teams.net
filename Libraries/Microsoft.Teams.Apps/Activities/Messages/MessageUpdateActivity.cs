@@ -17,6 +17,7 @@ public static partial class Message
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnMessageUpdate(this App app, Func<IContext<MessageUpdateActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -26,6 +27,23 @@ public static partial class AppActivityExtensions
             Handler = async context =>
             {
                 await handler(context.ToActivityType<MessageUpdateActivity>());
+                return null;
+            },
+            Selector = activity => activity is MessageUpdateActivity
+        });
+
+        return app;
+    }
+
+    public static App OnMessageUpdate(this App app, Func<IContext<MessageUpdateActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = ActivityType.MessageUpdate,
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<MessageUpdateActivity>(), context.CancellationToken);
                 return null;
             },
             Selector = activity => activity is MessageUpdateActivity

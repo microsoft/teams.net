@@ -83,13 +83,13 @@ public partial class AspNetCorePlugin
             });
         }
 
-        public async Task<MessageActivity?> Close()
+        public async Task<MessageActivity?> Close(CancellationToken cancellationToken = default)
         {
             if (_index == 1 && _queue.Count == 0 && _lock.CurrentCount > 0) return null;
             if (_result is not null) return _result;
             while (_id is null || _queue.Count > 0)
             {
-                await Task.Delay(50);
+                await Task.Delay(50, cancellationToken);
             }
 
             if (_text == string.Empty && _attachments.Count == 0) // when only informative updates are present
@@ -134,11 +134,10 @@ public partial class AspNetCorePlugin
                     _timeout = null;
                 }
 
-                var i = 0;
-
                 Queue<TypingActivity> informativeUpdates = new();
+                var dequeued = 0;
 
-                while (i <= 10 && _queue.TryDequeue(out var activity))
+                while (_queue.TryDequeue(out var activity))
                 {
                     if (activity is MessageActivity message)
                     {
@@ -159,11 +158,11 @@ public partial class AspNetCorePlugin
                         informativeUpdates.Enqueue(typing);
                     }
 
-                    i++;
+                    dequeued++;
                     _count++;
                 }
 
-                if (i == 0) return;
+                if (dequeued == 0) return;
 
                 // Send informative updates
                 if (informativeUpdates.Count > 0)

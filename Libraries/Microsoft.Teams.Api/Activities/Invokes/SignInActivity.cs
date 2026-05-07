@@ -21,11 +21,13 @@ public abstract class SignInActivity(Name.SignIn name) : InvokeActivity(new(name
 {
     public SignIn.TokenExchangeActivity ToTokenExchange() => (SignIn.TokenExchangeActivity)this;
     public SignIn.VerifyStateActivity ToVerifyState() => (SignIn.VerifyStateActivity)this;
+    public SignIn.FailureActivity ToFailure() => (SignIn.FailureActivity)this;
 
     public override object ToType(Type type, IFormatProvider? provider)
     {
         if (type == typeof(SignIn.TokenExchangeActivity)) return ToTokenExchange();
         if (type == typeof(SignIn.VerifyStateActivity)) return ToVerifyState();
+        if (type == typeof(SignIn.FailureActivity)) return ToFailure();
         return this;
     }
 
@@ -56,6 +58,7 @@ public abstract class SignInActivity(Name.SignIn name) : InvokeActivity(new(name
             {
                 "signin/tokenExchange" => JsonSerializer.Deserialize<SignIn.TokenExchangeActivity>(element.ToString(), options),
                 "signin/verifyState" => JsonSerializer.Deserialize<SignIn.VerifyStateActivity>(element.ToString(), options),
+                "signin/failure" => JsonSerializer.Deserialize<SignIn.FailureActivity>(element.ToString(), options),
                 _ => throw new JsonException($"failed to deserialize signin activity '{name}' doesn't match any known types.")
             };
         }
@@ -71,6 +74,12 @@ public abstract class SignInActivity(Name.SignIn name) : InvokeActivity(new(name
             if (value is SignIn.VerifyStateActivity verifyState)
             {
                 JsonSerializer.Serialize(writer, verifyState, options);
+                return;
+            }
+
+            if (value is SignIn.FailureActivity failure)
+            {
+                JsonSerializer.Serialize(writer, failure, options);
                 return;
             }
 

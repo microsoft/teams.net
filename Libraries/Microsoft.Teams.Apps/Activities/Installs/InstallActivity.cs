@@ -22,6 +22,7 @@ public class InstallAttribute() : InstallUpdateAttribute(InstallUpdateAction.Add
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnInstall(this App app, Func<IContext<InstallUpdateActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -31,6 +32,31 @@ public static partial class AppActivityExtensions
             Handler = async context =>
             {
                 await handler(context.ToActivityType<InstallUpdateActivity>());
+                return null;
+            },
+            Selector = activity =>
+            {
+                if (activity is InstallUpdateActivity installUpdate)
+                {
+                    return installUpdate.Action.IsAdd;
+                }
+
+                return false;
+            }
+        });
+
+        return app;
+    }
+
+    public static App OnInstall(this App app, Func<IContext<InstallUpdateActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.InstallUpdate, InstallUpdateAction.Add]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<InstallUpdateActivity>(), context.CancellationToken);
                 return null;
             },
             Selector = activity =>

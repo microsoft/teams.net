@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 using Microsoft.Teams.Api.Activities;
@@ -32,17 +33,15 @@ public class ActivityClient : Client
         ServiceUrl = serviceUrl;
     }
 
-    public async Task<Resource?> CreateAsync(string conversationId, IActivity activity, bool isTargeted = false)
+    public async Task<Resource?> CreateAsync(string conversationId, IActivity activity, CancellationToken cancellationToken = default)
     {
-        var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities";
-        if (isTargeted)
-        {
-            url += "?isTargetedActivity=true";
-        }
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
+        var req = HttpRequest.Post(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities",
+            body: activity
+        );
 
-        var req = HttpRequest.Post(url, body: activity);
-        
-        var res = await _http.SendAsync(req, _cancellationToken);
+        var res = await _http.SendAsync(req, token);
 
         if (res.Body == string.Empty) return null;
 
@@ -50,17 +49,15 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task<Resource?> UpdateAsync(string conversationId, string id, IActivity activity, bool isTargeted = false)
+    public async Task<Resource?> UpdateAsync(string conversationId, string id, IActivity activity, CancellationToken cancellationToken = default)
     {
-        var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
-        if (isTargeted)
-        {
-            url += "?isTargetedActivity=true";
-        }
-        
-        var req = HttpRequest.Put(url, body: activity);
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
+        var req = HttpRequest.Put(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}",
+            body: activity
+        );
 
-        var res = await _http.SendAsync(req, _cancellationToken);
+        var res = await _http.SendAsync(req, token);
 
         if (res.Body == string.Empty) return null;
 
@@ -68,19 +65,16 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task<Resource?> ReplyAsync(string conversationId, string id, IActivity activity, bool isTargeted = false)
+    public async Task<Resource?> ReplyAsync(string conversationId, string id, IActivity activity, CancellationToken cancellationToken = default)
     {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         activity.ReplyToId = id;
-        
-        var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
-        if (isTargeted)
-        {
-            url += "?isTargetedActivity=true";
-        }
-        
-        var req = HttpRequest.Post(url, body: activity);
+        var req = HttpRequest.Post(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}",
+            body: activity
+        );
 
-        var res = await _http.SendAsync(req, _cancellationToken);
+        var res = await _http.SendAsync(req, token);
 
         if (res.Body == string.Empty) return null;
 
@@ -88,16 +82,80 @@ public class ActivityClient : Client
         return body;
     }
 
-    public async Task DeleteAsync(string conversationId, string id, bool isTargeted = false)
+    public async Task DeleteAsync(string conversationId, string id, CancellationToken cancellationToken = default)
     {
-        var url = $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}";
-        if (isTargeted)
-        {
-            url += "?isTargetedActivity=true";
-        }
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
+        var req = HttpRequest.Delete(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}"
+        );
 
-        var req = HttpRequest.Delete(url);
+        await _http.SendAsync(req, token);
+    }
 
-        await _http.SendAsync(req, _cancellationToken);
+    /// <summary>
+    /// Create a new targeted activity in a conversation.
+    /// Targeted activities are only visible to the specified recipient.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation</param>
+    /// <param name="activity">The activity to create</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+    /// <returns>The created activity resource</returns>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public async Task<Resource?> CreateTargetedAsync(string conversationId, IActivity activity, CancellationToken cancellationToken = default)
+    {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
+        var req = HttpRequest.Post(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities?isTargetedActivity=true",
+            body: activity
+        );
+
+        var res = await _http.SendAsync(req, token);
+
+        if (res.Body == string.Empty) return null;
+
+        var body = JsonSerializer.Deserialize<Resource>(res.Body);
+        return body;
+    }
+
+    /// <summary>
+    /// Update an existing targeted activity in a conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation</param>
+    /// <param name="id">The ID of the activity to update</param>
+    /// <param name="activity">The updated activity data</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+    /// <returns>The updated activity resource</returns>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public async Task<Resource?> UpdateTargetedAsync(string conversationId, string id, IActivity activity, CancellationToken cancellationToken = default)
+    {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
+        var req = HttpRequest.Put(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}?isTargetedActivity=true",
+            body: activity
+        );
+
+        var res = await _http.SendAsync(req, token);
+
+        if (res.Body == string.Empty) return null;
+
+        var body = JsonSerializer.Deserialize<Resource>(res.Body);
+        return body;
+    }
+
+    /// <summary>
+    /// Delete a targeted activity from a conversation.
+    /// </summary>
+    /// <param name="conversationId">The ID of the conversation</param>
+    /// <param name="id">The ID of the activity to delete</param>
+    /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public async Task DeleteTargetedAsync(string conversationId, string id, CancellationToken cancellationToken = default)
+    {
+        var token = cancellationToken != default ? cancellationToken : _cancellationToken;
+        var req = HttpRequest.Delete(
+            $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}?isTargetedActivity=true"
+        );
+
+        await _http.SendAsync(req, token);
     }
 }

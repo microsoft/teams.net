@@ -19,6 +19,7 @@ public static partial class Config
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -36,6 +37,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task<Response<ConfigResponse>>> handler)
     {
         app.Router.Register(new Route()
@@ -49,6 +51,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, Task<ConfigResponse>> handler)
     {
         app.Router.Register(new Route()
@@ -56,6 +59,49 @@ public static partial class AppInvokeActivityExtensions
             Name = string.Join("/", [ActivityType.Invoke, Name.Configs.Fetch]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context => await handler(context.ToActivityType<Configs.FetchActivity>()),
+            Selector = activity => activity is Configs.FetchActivity
+        });
+
+        return app;
+    }
+
+    public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, CancellationToken, Task> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Configs.Fetch]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context =>
+            {
+                await handler(context.ToActivityType<Configs.FetchActivity>(), context.CancellationToken);
+                return null;
+            },
+            Selector = activity => activity is Configs.FetchActivity
+        });
+
+        return app;
+    }
+
+    public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, CancellationToken, Task<Response<ConfigResponse>>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Configs.Fetch]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<Configs.FetchActivity>(), context.CancellationToken),
+            Selector = activity => activity is Configs.FetchActivity
+        });
+
+        return app;
+    }
+
+    public static App OnConfigFetch(this App app, Func<IContext<Configs.FetchActivity>, CancellationToken, Task<ConfigResponse>> handler)
+    {
+        app.Router.Register(new Route()
+        {
+            Name = string.Join("/", [ActivityType.Invoke, Name.Configs.Fetch]),
+            Type = app.Status is null ? RouteType.System : RouteType.User,
+            Handler = async context => await handler(context.ToActivityType<Configs.FetchActivity>(), context.CancellationToken),
             Selector = activity => activity is Configs.FetchActivity
         });
 
