@@ -117,4 +117,92 @@ public class AspNetCorePluginStreamTests
         Assert.Equal(StreamType.Informative, ((TypingActivity)sentActivity).ChannelData?.StreamType);
     }
 
+    [Fact]
+    public async Task Stream_Close_FinalMessageHasStreamTypeFinal_AfterInformativeUpdate()
+    {
+        var sendCallCount = 0;
+        var stream = new AspNetCorePlugin.Stream
+        {
+            Send = activity =>
+            {
+                sendCallCount++;
+                activity.Id = $"id-{sendCallCount}";
+                return Task.FromResult(activity);
+            }
+        };
+
+        // Update + Emit both queue activities; Close() waits for the flush to drain the
+        // queue and complete, so no fixed sleeps are needed.
+        stream.Update("Thinking...");
+        stream.Emit("Done");
+
+        var result = await stream.Close();
+
+        Assert.NotNull(result);
+        // Final message must have StreamType.Final, not the accumulated Informative
+        // from the prior typing update.
+        Assert.Equal(StreamType.Final, result.ChannelData?.StreamType);
+
+        // The streaminfo entity on the final message should also be Final.
+        var streamInfo = result.Entities?.OfType<StreamInfoEntity>().Single();
+        Assert.NotNull(streamInfo);
+        Assert.Equal(StreamType.Final, streamInfo.StreamType);
+    }
+
+    [Fact]
+    public async Task Stream_Close_WaitsForInFlightFlushToComplete()
+    {
+        var sendCallCount = 0;
+        var firstSendCompleted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondSendStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondSendRelease = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var stream = new AspNetCorePlugin.Stream
+        {
+            Send = async activity =>
+            {
+                sendCallCount++;
+                var thisCall = sendCallCount;
+                if (thisCall == 2)
+                {
+                    secondSendStarted.TrySetResult(true);
+                    await secondSendRelease.Task;
+                }
+                activity.Id = $"id-{thisCall}";
+                if (thisCall == 1) firstSendCompleted.TrySetResult(true);
+                return activity;
+            }
+        };
+
+        // First flush: emit and wait for the send to actually complete (deterministic
+        // signal from the Send delegate). _id is assigned by the SendActivity helper after
+        // the await — yielding once lets that post-await code run before we proceed.
+        stream.Emit("chunk 1");
+        await firstSendCompleted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+        await Task.Yield();
+        Assert.Equal(1, sendCallCount);
+
+        // Second flush: Send blocks → queue drained, _id set, _lock held.
+        stream.Emit("chunk 2");
+        await secondSendStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
+
+        var closeTask = stream.Close();
+
+        // With the race-fix, Close() must not progress past its wait loop while the
+        // flush is mid-await. Pre-fix, closeTask would race ahead and call Send for the
+        // final activity (sendCallCount → 3) before we release the second flush.
+        // We yield several times rather than sleep — Close() polls every 50ms and we
+        // want to give it ample chance to make progress if the bug is present.
+        for (var i = 0; i < 10; i++) await Task.Yield();
+        await Task.Delay(100);
+        Assert.False(closeTask.IsCompleted);
+        Assert.Equal(2, sendCallCount);
+
+        // Releasing the second flush lets the lock drop, and Close() then sends the final.
+        secondSendRelease.SetResult(true);
+
+        var result = await closeTask.WaitAsync(TimeSpan.FromSeconds(2));
+
+        Assert.NotNull(result);
+        Assert.Equal(3, sendCallCount);
+    }
 }

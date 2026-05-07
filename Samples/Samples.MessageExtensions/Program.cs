@@ -60,7 +60,7 @@ teams.OnQuery((context, cancellationToken) =>
         ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
         {
             Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-            AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
+            AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
             Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment>()
         }
     });
@@ -173,16 +173,10 @@ static Microsoft.Teams.Api.MessageExtensions.Response CreateSearchResults(string
             }
         };
 
-        // Note: when using Grid layout, the preview thumbnail's Images field is required
-        // for items to be visible in the grid. Without images, items appear invisible (but clickable).
-        var previewCard = new ThumbnailCard
+        var previewCard = new ThumbnailCard()
         {
             Title = $"Result {i}",
-            Text = $"This is a preview of result {i} for query '{query}'.",
-            Images = new List<Microsoft.Teams.Api.Cards.Image>
-            {
-                new() { Url = $"https://loremflickr.com/320/240?lock={i}", Alt = $"Result {i} thumbnail" }
-            }
+            Text = $"This is a preview of result {i} for query '{query}'."
         };
 
         var attachment = new Microsoft.Teams.Api.MessageExtensions.Attachment
@@ -204,9 +198,7 @@ static Microsoft.Teams.Api.MessageExtensions.Response CreateSearchResults(string
         ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
         {
             Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-            // Use Grid layout to display results in a grid. Grid layout requires each preview
-            // attachment to include an Images field in ThumbnailCard, otherwise items are invisible.
-            AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.Grid,
+            AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
             Attachments = attachments
         }
     };
@@ -241,7 +233,7 @@ static Microsoft.Teams.Api.MessageExtensions.Response HandleCreateCard(JsonEleme
         ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
         {
             Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-            AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
+            AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
             Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
         }
     };
@@ -276,7 +268,7 @@ static Microsoft.Teams.Api.MessageExtensions.Response HandleGetMessageDetails(Mi
         ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
         {
             Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-            AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
+            AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
             Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
         }
     };
@@ -311,7 +303,7 @@ static Microsoft.Teams.Api.MessageExtensions.Response CreateLinkUnfurlResponse(s
         ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
         {
             Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-            AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
+            AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
             Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
         }
     };
@@ -343,7 +335,7 @@ static Microsoft.Teams.Api.MessageExtensions.Response CreateItemSelectionRespons
         ComposeExtension = new Microsoft.Teams.Api.MessageExtensions.Result
         {
             Type = Microsoft.Teams.Api.MessageExtensions.ResultType.Result,
-            AttachmentLayout = Microsoft.Teams.Api.MessageExtensions.AttachmentLayout.List,
+            AttachmentLayout = Microsoft.Teams.Api.Attachment.Layout.List,
             Attachments = new List<Microsoft.Teams.Api.MessageExtensions.Attachment> { attachment }
         }
     };
