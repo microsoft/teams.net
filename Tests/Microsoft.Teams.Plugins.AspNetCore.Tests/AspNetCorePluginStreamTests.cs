@@ -153,9 +153,9 @@ public class AspNetCorePluginStreamTests
     public async Task Stream_Close_WaitsForInFlightFlushToComplete()
     {
         var sendCallCount = 0;
-        var firstSendCompleted = new TaskCompletionSource<bool>();
-        var secondSendStarted = new TaskCompletionSource<bool>();
-        var secondSendRelease = new TaskCompletionSource<bool>();
+        var firstSendCompleted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondSendStarted = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondSendRelease = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var stream = new AspNetCorePlugin.Stream
         {
             Send = async activity =>
@@ -177,13 +177,13 @@ public class AspNetCorePluginStreamTests
         // signal from the Send delegate). _id is assigned by the SendActivity helper after
         // the await — yielding once lets that post-await code run before we proceed.
         stream.Emit("chunk 1");
-        await firstSendCompleted.Task;
+        await firstSendCompleted.Task.WaitAsync(TimeSpan.FromSeconds(2));
         await Task.Yield();
         Assert.Equal(1, sendCallCount);
 
         // Second flush: Send blocks → queue drained, _id set, _lock held.
         stream.Emit("chunk 2");
-        await secondSendStarted.Task;
+        await secondSendStarted.Task.WaitAsync(TimeSpan.FromSeconds(2));
 
         var closeTask = stream.Close();
 
@@ -200,7 +200,7 @@ public class AspNetCorePluginStreamTests
         // Releasing the second flush lets the lock drop, and Close() then sends the final.
         secondSendRelease.SetResult(true);
 
-        var result = await closeTask;
+        var result = await closeTask.WaitAsync(TimeSpan.FromSeconds(2));
 
         Assert.NotNull(result);
         Assert.Equal(3, sendCallCount);
