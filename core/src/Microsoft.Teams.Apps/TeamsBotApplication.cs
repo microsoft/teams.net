@@ -180,7 +180,7 @@ public class TeamsBotApplication : BotApplication
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> Reply(string conversationId, string messageId, string text, CancellationToken cancellationToken = default)
     {
-        string threadedConversationId = $"{conversationId};messageid={messageId}";
+        string threadedConversationId = Core.Schema.Conversation.ToThreadedConversationId(conversationId, messageId);
         return Send(threadedConversationId, text, cancellationToken: cancellationToken);
     }
 }
