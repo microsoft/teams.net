@@ -102,11 +102,6 @@ teamsApp.OnMessage(async (context, ct) =>
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation.Id);
 
-    using var baggageScope = new Microsoft.Teams.Apps.Diagnostics.BaggageBuilder()
-        .FromTeamsContext(context)
-        .OperationSource("ObservabilityBot")
-        .Build();
-
     await context.Typing(string.Empty, ct);
 
     var conversationId = context.Activity.Conversation.Id;

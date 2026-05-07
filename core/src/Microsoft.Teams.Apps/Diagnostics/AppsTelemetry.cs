@@ -13,7 +13,7 @@ namespace Microsoft.Teams.Apps.Diagnostics;
 /// </summary>
 internal static class AppsTelemetry
 {
-    private static readonly string s_version =
+    private static readonly string s_version = 
         typeof(AppsTelemetry).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
         ?? typeof(AppsTelemetry).Assembly.GetName().Version?.ToString()
         ?? "0.0.0";

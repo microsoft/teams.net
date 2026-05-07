@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Routing;
@@ -122,6 +123,12 @@ public class TeamsBotApplication : BotApplication
             }
 
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
+
+            // Agent365: set baggage (user.id, user.email, agent details, etc.) for all
+            // child spans. The invoke_agent scope itself is created in Core's ProcessAsync.
+            using var baggageScope = new BaggageBuilder()
+                .FromTeamsContext(defaultContext)
+                .Build();
 
             if (teamsActivity.Type != TeamsActivityType.Invoke)
             {

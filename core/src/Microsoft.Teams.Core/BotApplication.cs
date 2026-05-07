@@ -215,6 +215,12 @@ public class BotApplication
         }
 
         long startTimestamp = Stopwatch.GetTimestamp();
+
+        // Agent365: open an invoke_agent scope so the Agent365 exporter can partition
+        // and export this turn's telemetry. No-op when no listener subscribes to
+        // ActivitySource("Agent365Sdk").
+        using var invokeScope = InvokeAgentScope.Start(activity);
+
         using (_logger.BeginActivityScope(activity.Type, activity.Id, activity.ServiceUrl, correlationVector))
         {
             // Use a dedicated timeout instead of the HTTP request's cancellation token.
@@ -236,6 +242,7 @@ public class BotApplication
             {
                 _logger.ActivityProcessingError(ex, activity.Id);
                 Telemetry.HandlerErrors.Add(1, activityTypeTag);
+                invokeScope.RecordError(ex);
                 span.RecordException(ex);
                 throw new BotHandlerException("Error processing activity", ex, activity);
             }
