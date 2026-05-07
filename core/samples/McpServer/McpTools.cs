@@ -23,7 +23,13 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         CancellationToken cancellationToken = default)
     {
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
-        await app.Send(conversationId, message, state.ServiceUrl, cancellationToken);
+        TeamsActivity notifyActivity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithServiceUrl(state.ServiceUrl)
+            .WithConversation(new Conversation(conversationId))
+            .WithText(message)
+            .Build();
+        await app.SendActivityAsync(notifyActivity, cancellationToken);
         return new NotifyResult(Notified: true, UserId: userId);
     }
 
@@ -51,9 +57,15 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         // Record the pending ask before sending, so a fast reply is never lost.
         state.PendingAsks[requestId] = new PendingAsk(userId);
         state.UserPendingAsk[userId] = requestId;
+        TeamsActivity askActivity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithServiceUrl(state.ServiceUrl)
+            .WithConversation(new Conversation(conversationId))
+            .WithText(question)
+            .Build();
         try
         {
-            await app.Send(conversationId, question, state.ServiceUrl, cancellationToken);
+            await app.SendActivityAsync(askActivity, cancellationToken);
         }
         catch
         {
@@ -90,7 +102,6 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .WithServiceUrl(state.ServiceUrl)
-            .WithChannelId("msteams")
             .WithConversation(new Conversation(conversationId))
             .WithAdaptiveCardAttachment(Cards.ApprovalCard(approvalId, title, description))
             .Build();

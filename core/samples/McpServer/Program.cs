@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using McpServer;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
@@ -10,13 +11,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddTeamsBotApplication();
 // State is a singleton so the same maps are shared between the bot's
 // activity handlers and the MCP tools. Replace with a persistent store for production.
-// Seeded with the configured service URL so MCP tools work from startup.
-builder.Services.AddSingleton<State>(sp =>
-{
-    string serviceUrl = sp.GetRequiredService<IConfiguration>()["Bot:ServiceUrl"]
-        ?? "https://smba.trafficmanager.net/teams/";
-    return new State(new Uri(serviceUrl));
-});
+builder.Services.AddSingleton<State>();
 builder.Services
     .AddMcpServer()
     .WithHttpTransport()
@@ -26,11 +21,16 @@ WebApplication webApp = builder.Build();
 
 TeamsBotApplication bot = webApp.UseTeamsBotApplication();
 State state = webApp.Services.GetRequiredService<State>();
+ILogger<Program> logger = webApp.Services.GetRequiredService<ILogger<Program>>();
+
 
 bot.OnMessage(async (context, cancellationToken) =>
 {
     string userId = context.Activity.From?.Id ?? string.Empty;
     string conversationId = context.Activity.Conversation?.Id ?? string.Empty;
+
+    if (context.Activity.ServiceUrl is not null)
+        state.ServiceUrl = context.Activity.ServiceUrl;
 
     // cache the personal conversation_id so MCP tools can DM this user later.
     TeamsConversation? conv = TeamsConversation.FromConversation(context.Activity.Conversation);
@@ -47,13 +47,14 @@ bot.OnMessage(async (context, cancellationToken) =>
     {
         PendingAsk answered = entry with { Status = AskStatus.Answered, Reply = context.Activity.Text ?? string.Empty };
         state.PendingAsks.TryUpdate(requestId, answered, entry);
-        await context.Send("Got it, thank you!", cancellationToken);
+        await context.SendActivityAsync("Got it, thank you!", cancellationToken);
         return;
     }
 
-    context.Log.Info(
-        $"Received message from user {userId} in conversation {conversationId}, but no pending ask found.");
-    await context.Send("Hi! I'll let you know if I need anything.", cancellationToken);
+    logger.LogInformation(
+        "Received message from user {UserId} in conversation {ConversationId}, but no pending ask found.",
+        userId, conversationId);
+    await context.SendActivityAsync("Hi! I'll let you know if I need anything.", cancellationToken);
 });
 
 
@@ -76,6 +77,7 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
         return AdaptiveCardResponse.CreateMessageResponse("Response recorded");
     }
 
+    await Task.CompletedTask;
     return AdaptiveCardResponse.CreateMessageResponse(
         "Unable to record response. The approval request may be invalid or expired.");
 });

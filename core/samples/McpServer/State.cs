@@ -28,7 +28,7 @@ public sealed record PendingAsk(string UserId, string Status = AskStatus.Pending
 /// In-memory state shared between the Teams bot handlers and the MCP tools.
 /// A server restart clears everything — pending asks and approvals in flight will be lost.
 /// </summary>
-public sealed class State(Uri serviceUrl)
+public sealed class State
 {
     /// <summary>userId -> personal conversationId. Populated on first incoming 1:1 message.</summary>
     public ConcurrentDictionary<string, string> Conversations { get; } = new();
@@ -43,8 +43,8 @@ public sealed class State(Uri serviceUrl)
     public ConcurrentDictionary<string, string> Approvals { get; } = new();
 
     /// <summary>
-    /// Service URL used by proactive sends and <c>conversations.create</c>. Seeded from
-    /// <c>Bot:ServiceUrl</c> config at startup.
+    /// Service URL used by proactive sends and <c>conversations.create</c>. Updated from
+    /// the first incoming activity; falls back to the default Teams endpoint until then.
     /// </summary>
-    public Uri ServiceUrl { get; set; } = serviceUrl;
+    public Uri ServiceUrl { get; set; } = new Uri("https://smba.trafficmanager.net/teams/");
 }
