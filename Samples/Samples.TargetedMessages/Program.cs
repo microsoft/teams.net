@@ -125,7 +125,6 @@ teams.OnMessage(async (context, cancellationToken) =>
     }
     else
     {
-        await context.Typing(null, cancellationToken);
         await context.Send($"You said: '{activity.Text}'\n\nType `help` to see available commands.", cancellationToken);
     }
 });
