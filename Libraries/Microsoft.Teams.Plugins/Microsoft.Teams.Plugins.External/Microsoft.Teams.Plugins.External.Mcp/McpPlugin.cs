@@ -34,6 +34,7 @@ public class McpPlugin : IAspNetCorePlugin
 
     public McpPlugin(McpPluginOptions options)
     {
+        ArgumentNullException.ThrowIfNull(options);
         _options = options;
     }
 
@@ -56,6 +57,11 @@ public class McpPlugin : IAspNetCorePlugin
                 try
                 {
                     ok = await requireAuth(ctx);
+                }
+                catch (OperationCanceledException) when (ctx.RequestAborted.IsCancellationRequested)
+                {
+                    // Client disconnected — propagate the abort instead of writing a spurious 401.
+                    throw;
                 }
                 catch (Exception ex)
                 {

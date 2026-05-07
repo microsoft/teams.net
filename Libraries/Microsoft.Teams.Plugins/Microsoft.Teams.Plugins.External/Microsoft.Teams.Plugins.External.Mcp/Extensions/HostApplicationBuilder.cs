@@ -18,6 +18,7 @@ public static class HostApplicationBuilderExtensions
 
     public static IHostApplicationBuilder AddTeamsMcp(this IHostApplicationBuilder builder, Action<McpPluginOptions> configure)
     {
+        ArgumentNullException.ThrowIfNull(configure);
         var pluginOptions = new McpPluginOptions();
         configure(pluginOptions);
         builder.Services.AddTeamsPlugin(new McpPlugin(pluginOptions));
