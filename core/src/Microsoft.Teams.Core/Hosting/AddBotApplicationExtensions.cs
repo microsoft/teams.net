@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
@@ -178,6 +179,20 @@ public static class AddBotApplicationExtensions
                     options.Authority = string.Empty;
                 }
             });
+
+            // No ClientCredentials in the configured section implies pure User-Assigned Managed Identity:
+            // the bot's ClientId is the UMI's clientId (as in ABS bots with the UserAssignedMSI app type).
+            // Register ManagedIdentityOptions so BotAuthenticationHandler routes token acquisition through
+            // the IMDS endpoint instead of the standard app-credentials flow.
+            if (!section.GetSection("ClientCredentials").GetChildren().Any())
+            {
+                ILogger logger = GetLoggerFromServices(services);
+                logger.InferringUserAssignedManagedIdentity(botConfig.ClientId);
+                services.Configure<ManagedIdentityOptions>(options =>
+                {
+                    options.UserAssignedClientId = botConfig.ClientId;
+                });
+            }
         }
         return services;
     }
@@ -195,7 +210,8 @@ public static class AddBotApplicationExtensions
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
                     scope,
-                    botConfig.SectionName));
+                    botConfig.SectionName,
+                    sp.GetService<IOptions<ManagedIdentityOptions>>()));
         }
         else
         {

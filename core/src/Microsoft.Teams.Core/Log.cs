@@ -107,4 +107,9 @@ internal static partial class Log
 
     [LoggerMessage(EventId = 56, Level = LogLevel.Warning, Message = "Using bypass authentication scheme succeeded for scheme: {Scheme}. This is INSECURE and should only be used for development.")]
     public static partial void BypassAuthenticationSucceeded(this ILogger logger, string scheme);
+
+    // ── Hosting (UMI inference) ─────────────────────────────────────────
+
+    [LoggerMessage(EventId = 60, Level = LogLevel.Information, Message = "No ClientCredentials configured; treating ClientId '{ClientId}' as a User-Assigned Managed Identity. Bot Framework tokens will be acquired via the IMDS endpoint.")]
+    public static partial void InferringUserAssignedManagedIdentity(this ILogger logger, string clientId);
 }

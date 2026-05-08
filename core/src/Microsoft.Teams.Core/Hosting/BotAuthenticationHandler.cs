@@ -4,6 +4,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Teams.Core.Schema;
@@ -21,15 +22,18 @@ namespace Microsoft.Teams.Core.Hosting;
 /// <param name="logger">The logger instance.</param>
 /// <param name="scope">The scope for the token request.</param>
 /// <param name="authenticationOptionsName">The name of the MSAL configuration options to use for token acquisition. Defaults to "AzureAd".</param>
+/// <param name="managedIdentityOptions">Optional managed identity options. When set, tokens are acquired via the IMDS endpoint as the configured managed identity instead of via the app-credentials flow.</param>
 internal sealed class BotAuthenticationHandler(
     IAuthorizationHeaderProvider authorizationHeaderProvider,
     ILogger<BotAuthenticationHandler> logger,
     string scope,
-    string? authenticationOptionsName = null) : DelegatingHandler
+    string? authenticationOptionsName = null,
+    IOptions<ManagedIdentityOptions>? managedIdentityOptions = null) : DelegatingHandler
 {
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
+    private readonly IOptions<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
     private static readonly Action<ILogger, string, Exception?> _logAgenticToken =
         LoggerMessage.Define<string>(LogLevel.Debug, new(2), "Acquiring agentic token for AgenticAppId {AgenticAppId}");
     private static readonly Action<ILogger, string, Exception?> _logAppOnlyToken =
@@ -80,6 +84,11 @@ internal sealed class BotAuthenticationHandler(
                 AuthenticationOptionsName = authenticationOptionsName ?? BotConfig.DefaultSectionName,
             }
         };
+
+        if (_managedIdentityOptions?.Value is { UserAssignedClientId.Length: > 0 } miOptions)
+        {
+            options.AcquireTokenOptions.ManagedIdentity = miOptions;
+        }
 
         if (agenticIdentity is not null &&
             !string.IsNullOrEmpty(agenticIdentity.AgenticAppId) &&
