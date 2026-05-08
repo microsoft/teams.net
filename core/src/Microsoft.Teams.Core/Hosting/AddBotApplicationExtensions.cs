@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -150,9 +151,33 @@ public static class AddBotApplicationExtensions
                 .AddInMemoryTokenCaches()
                 .AddAgentIdentities();
 
+        ArgumentNullException.ThrowIfNull(botConfig.MsalConfigurationSection);
+
         if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
         {
-            services.Configure<MicrosoftIdentityApplicationOptions>(botConfig.SectionName, botConfig.MsalConfigurationSection!);
+            string sectionKey = botConfig.MsalConfigurationSection.Key;
+            IConfigurationSection section = botConfig.MsalConfigurationSection;
+
+            services.Configure<MicrosoftIdentityApplicationOptions>(sectionKey, options =>
+            {
+                section.Bind(options);
+
+                // Default Instance when only TenantId is configured.
+                if (string.IsNullOrEmpty(options.Instance) && !string.IsNullOrEmpty(options.TenantId))
+                {
+                    options.Instance = "https://login.microsoftonline.com/";
+                }
+
+                // MicrosoftEntraApplicationOptions.Authority is a computed property that
+                // returns Instance/TenantId/v2.0 when _authority is null.  MergedOptions
+                // then sees Authority alongside Instance+TenantId and emits a warning
+                // (event 500).  Setting Authority to empty prevents the computed value
+                // from propagating while Instance+TenantId remain available for MSAL.
+                if (!string.IsNullOrEmpty(options.Instance) && !string.IsNullOrEmpty(options.TenantId))
+                {
+                    options.Authority = string.Empty;
+                }
+            });
         }
         return services;
     }
