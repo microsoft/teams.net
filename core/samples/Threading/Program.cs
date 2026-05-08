@@ -3,6 +3,7 @@
 
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
@@ -27,39 +28,39 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     string threadRootId = threadParts.Length > 1 ? threadParts[1] : messageId;
 
     // ============================================
-    // context.Reply() — reactive in-thread reply (sets ReplyToId)
+    // context.ReplyAsync() — reactive in-thread reply (sets ReplyToId)
     // ============================================
     if (text.Contains("test reply"))
     {
-        await context.Reply("This is a reactive reply (in-thread, ReplyToId set).", cancellationToken);
+        await context.ReplyAsync("This is a reactive reply (in-thread, ReplyToId set).", cancellationToken);
         return;
     }
 
     // ============================================
-    // context.Send() — reactive send to same conversation
+    // context.SendActivityAsync() — reactive send to same conversation
     // ============================================
     if (text.Contains("test send"))
     {
-        await context.Send("This is a reactive send (same conversation as the inbound).", cancellationToken);
+        await context.SendActivityAsync("This is a reactive send (same conversation as the inbound).", cancellationToken);
         return;
     }
 
     // ============================================
-    // teamsApp.Reply() — proactive threaded reply
+    // teamsApp.ReplyAsync() — proactive threaded reply
     // ============================================
     if (text.Contains("test proactive"))
     {
-        await teamsApp.Reply(conversationId, threadRootId, "This is a proactive threaded reply using teamsApp.Reply().", agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+        await teamsApp.ReplyAsync(conversationId, threadRootId, "This is a proactive threaded reply using teamsApp.ReplyAsync().", agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
         return;
     }
 
     // ============================================
-    // ToThreadedConversationId() + teamsApp.Send() — advanced manual control
+    // ConversationExtensions.ToThreadedConversationId() + teamsApp.SendAsync() — advanced manual control
     // ============================================
     if (text.Contains("test manual"))
     {
-        string threadId = Conversation.ToThreadedConversationId(conversationId, threadRootId);
-        await teamsApp.Send(threadId, "This was sent using ToThreadedConversationId() + teamsApp.Send() for manual control.", agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+        string threadId = ConversationExtensions.ToThreadedConversationId(conversationId, threadRootId);
+        await teamsApp.SendAsync(threadId, "This was sent using ToThreadedConversationId() + teamsApp.SendAsync() for manual control.", agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
         return;
     }
 
@@ -68,18 +69,21 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     // ============================================
     if (text.Contains("help"))
     {
-        await context.Reply(
+        MessageActivity helpMessage = new(
             "**Threading Test Bot**\n\n" +
             "**Commands:**\n" +
-            "- `test reply` - context.Reply() reactive threaded reply\n" +
-            "- `test send` - context.Send() to same thread without quoting\n" +
-            "- `test proactive` - teamsApp.Reply() proactive threaded reply\n" +
-            "- `test manual` - ToThreadedConversationId() + teamsApp.Send() for advanced control",
-            cancellationToken);
+            "- `test reply` - context.ReplyAsync() reactive in-thread reply\n" +
+            "- `test send` - context.SendActivityAsync() send to the same conversation\n" +
+            "- `test proactive` - teamsApp.ReplyAsync() proactive threaded reply\n" +
+            "- `test manual` - ToThreadedConversationId() + teamsApp.SendAsync() for advanced control")
+        {
+            TextFormat = TextFormats.Markdown
+        };
+        await context.ReplyAsync(helpMessage, cancellationToken);
         return;
     }
 
-    await context.Send("Say \"help\" for available commands.", cancellationToken);
+    await context.SendActivityAsync("Say \"help\" for available commands.", cancellationToken);
 });
 
 webApp.Run();

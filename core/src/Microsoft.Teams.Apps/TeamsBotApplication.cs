@@ -194,7 +194,7 @@ public class TeamsBotApplication : BotApplication
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, string text, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
     {
-        string threadedConversationId = Conversation.ToThreadedConversationId(conversationId, messageId);
+        string threadedConversationId = ConversationExtensions.ToThreadedConversationId(conversationId, messageId);
         return SendAsync(threadedConversationId, text, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
     }
 

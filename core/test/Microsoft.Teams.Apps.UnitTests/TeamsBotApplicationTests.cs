@@ -19,7 +19,7 @@ public class TeamsBotApplicationTests
         TeamsBotApplication app = CreateApp();
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            app.Reply("19:abc@thread.skype", "not-a-number", "hello"));
+            app.ReplyAsync("19:abc@thread.skype", "not-a-number", "hello"));
     }
 
     [Fact]
@@ -28,7 +28,7 @@ public class TeamsBotApplicationTests
         TeamsBotApplication app = CreateApp();
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            app.Reply("19:abc@thread.skype", "0", "hello"));
+            app.ReplyAsync("19:abc@thread.skype", "0", "hello"));
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class TeamsBotApplicationTests
         TeamsBotApplication app = CreateApp();
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
-            app.Reply("", "1680000000000", "hello"));
+            app.ReplyAsync("", "1680000000000", "hello"));
     }
 
     private static TeamsBotApplication CreateApp()
