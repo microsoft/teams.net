@@ -256,6 +256,14 @@ namespace Microsoft.Teams.Core.Hosting
                         GetLogger(context.HttpContext, logger).ForbiddenForScheme(schemeName);
                         return Task.CompletedTask;
                     },
+                    OnChallenge = context =>
+                    {
+                        ILogger log = GetLogger(context.HttpContext, logger);
+                        string failureMessage = context.AuthenticateFailure?.Message
+                            ?? (string.IsNullOrEmpty(context.ErrorDescription) ? "no failure details" : context.ErrorDescription);
+                        log.JwtChallengeIssued(schemeName, failureMessage);
+                        return Task.CompletedTask;
+                    },
                     OnAuthenticationFailed = context =>
                     {
                         ILogger log = GetLogger(context.HttpContext, logger);

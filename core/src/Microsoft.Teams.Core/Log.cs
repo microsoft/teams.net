@@ -112,4 +112,7 @@ internal static partial class Log
 
     [LoggerMessage(EventId = 56, Level = LogLevel.Warning, Message = "Using bypass authentication scheme succeeded for scheme: {Scheme}. This is INSECURE and should only be used for development.")]
     public static partial void BypassAuthenticationSucceeded(this ILogger logger, string scheme);
+
+    [LoggerMessage(EventId = 57, Level = LogLevel.Warning, Message = "JWT challenge issued for scheme {Scheme}: returning 401 (likely missing or malformed Authorization header). FailureMessage={FailureMessage}")]
+    public static partial void JwtChallengeIssued(this ILogger logger, string scheme, string failureMessage);
 }
