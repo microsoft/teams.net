@@ -430,9 +430,10 @@ public partial class Activity : IActivity
     /// <summary>
     /// add a targeted message info entity for prompt preview.
     /// If an entity with type "targetedMessageInfo" already exists, it is not added again.
-    /// Also removes any "quotedReply" entities from <see cref="Entities"/> and strips
-    /// matching &lt;quoted messageId="..."/&gt; placeholders from <see cref="MessageActivity.Text"/>
-    /// to prevent collision between quoted replies and prompt preview.
+    /// When a new entity is added, any existing "quotedReply" entities are removed
+    /// from <see cref="Entities"/> and matching &lt;quoted messageId="..."/&gt; placeholders
+    /// are stripped from <see cref="MessageActivity.Text"/> to prevent collision
+    /// between quoted replies and prompt preview.
     /// </summary>
     /// <param name="messageId">the message ID of the targeted message</param>
     [Experimental("ExperimentalTeamsTargeted")]
