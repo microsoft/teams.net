@@ -66,7 +66,7 @@ public partial class App
         return this;
     }
 
-    protected async Task<Response> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context)
+    protected async Task<Response> OnTokenExchangeActivity(IContext<Api.Activities.Invokes.SignIn.TokenExchangeActivity> context, CancellationToken cancellationToken = default)
     {
         var connectionName = context.Activity.Value.ConnectionName;
 
@@ -83,7 +83,7 @@ public partial class App
                 ConnectionName = context.Activity.Value.ConnectionName,
                 UserId = context.Activity.From.Id,
                 ExchangeRequest = new() { Token = context.Activity.Value.Token },
-            }).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
 
             context.UserGraphToken = new JsonWebToken(res);
 
@@ -94,7 +94,8 @@ public partial class App
                 {
                     Context = context.ToActivityType<Api.Activities.Invokes.SignInActivity>(),
                     Token = res
-                }
+                },
+                cancellationToken
             ).ConfigureAwait(false);
 
             return new Response(HttpStatusCode.OK);
@@ -109,7 +110,7 @@ public partial class App
                     Exception = ex,
                     Context = context.ToActivityType<IActivity>()
                 },
-                context.CancellationToken
+                cancellationToken
             ).ConfigureAwait(false);
 
             if (ex.StatusCode != HttpStatusCode.NotFound && ex.StatusCode != HttpStatusCode.BadRequest && ex.StatusCode != HttpStatusCode.PreconditionFailed)
@@ -126,7 +127,7 @@ public partial class App
         }
     }
 
-    protected async Task<object?> OnVerifyStateActivity(IContext<Api.Activities.Invokes.SignIn.VerifyStateActivity> context)
+    protected async Task<object?> OnVerifyStateActivity(IContext<Api.Activities.Invokes.SignIn.VerifyStateActivity> context, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -142,7 +143,7 @@ public partial class App
                 UserId = context.Activity.From.Id,
                 ConnectionName = OAuth.DefaultConnectionName,
                 Code = context.Activity.Value.State
-            }).ConfigureAwait(false);
+            }, cancellationToken).ConfigureAwait(false);
 
             context.UserGraphToken = new JsonWebToken(res);
 
@@ -153,7 +154,8 @@ public partial class App
                 {
                     Context = context.ToActivityType<Api.Activities.Invokes.SignInActivity>(),
                     Token = res
-                }
+                },
+                cancellationToken
             ).ConfigureAwait(false);
             return new Response(HttpStatusCode.OK);
         }
@@ -198,7 +200,7 @@ public partial class App
     /// <item><term>interactionrequired</term><description>User interaction is required (handled via OAuth card fallback, does not typically reach the bot).</description></item>
     /// </list>
     /// </summary>
-    protected async Task<object?> OnSignInFailureActivity(IContext<Api.Activities.Invokes.SignIn.FailureActivity> context)
+    protected async Task<object?> OnSignInFailureActivity(IContext<Api.Activities.Invokes.SignIn.FailureActivity> context, CancellationToken cancellationToken = default)
     {
         var failure = context.Activity.Value;
 
@@ -218,7 +220,7 @@ public partial class App
                 Exception = new Exception($"Sign-in failure: {failure.Code} — {failure.Message}"),
                 Context = context.ToActivityType<IActivity>()
             },
-            context.CancellationToken
+            cancellationToken
         ).ConfigureAwait(false);
 
         return new Response(HttpStatusCode.OK);

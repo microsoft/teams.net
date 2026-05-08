@@ -19,6 +19,7 @@ public static partial class Config
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConfigSubmit(this App app, Func<IContext<Configs.SubmitActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -36,6 +37,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConfigSubmit(this App app, Func<IContext<Configs.SubmitActivity>, Task<Response<ConfigResponse>>> handler)
     {
         app.Router.Register(new Route()
@@ -49,6 +51,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConfigSubmit(this App app, Func<IContext<Configs.SubmitActivity>, Task<ConfigResponse>> handler)
     {
         app.Router.Register(new Route()

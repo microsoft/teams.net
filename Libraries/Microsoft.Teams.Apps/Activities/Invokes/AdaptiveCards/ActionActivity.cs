@@ -19,6 +19,7 @@ public static partial class AdaptiveCard
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnAdaptiveCardAction(this App app, Func<IContext<AdaptiveCards.ActionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -36,6 +37,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnAdaptiveCardAction(this App app, Func<IContext<AdaptiveCards.ActionActivity>, Task<Response<ActionResponse>>> handler)
     {
         app.Router.Register(new Route()
@@ -49,6 +51,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnAdaptiveCardAction(this App app, Func<IContext<AdaptiveCards.ActionActivity>, Task<ActionResponse>> handler)
     {
         app.Router.Register(new Route()

@@ -27,6 +27,7 @@ public static partial class Conversation
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnConversationUpdate(this App app, Func<IContext<ConversationUpdateActivity>, Task> handler)
     {
         app.Router.Register(new Route()

@@ -18,6 +18,7 @@ public static partial class Tab
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTabFetch(this App app, Func<IContext<Tabs.FetchActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -35,6 +36,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTabFetch(this App app, Func<IContext<Tabs.FetchActivity>, Task<Response<Api.Tabs.Response>>> handler)
     {
         app.Router.Register(new Route()
@@ -48,6 +50,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTabFetch(this App app, Func<IContext<Tabs.FetchActivity>, Task<Api.Tabs.Response>> handler)
     {
         app.Router.Register(new Route()

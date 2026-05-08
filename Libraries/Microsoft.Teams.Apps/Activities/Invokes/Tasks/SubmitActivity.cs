@@ -15,6 +15,7 @@ public class TaskSubmitAttribute() : InvokeAttribute(Api.Activities.Invokes.Name
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTaskSubmit(this App app, Func<IContext<Tasks.SubmitActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -32,6 +33,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTaskSubmit(this App app, Func<IContext<Tasks.SubmitActivity>, Task<Response<Api.TaskModules.Response>>> handler)
     {
         app.Router.Register(new Route()
@@ -45,6 +47,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTaskSubmit(this App app, Func<IContext<Tasks.SubmitActivity>, Task<Api.TaskModules.Response>> handler)
     {
         app.Router.Register(new Route()

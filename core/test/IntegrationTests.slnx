@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/libs/">
+    <Project Path="../src/Microsoft.Teams.Apps/Microsoft.Teams.Apps.csproj" />
+    <Project Path="../src/Microsoft.Teams.Apps.BotBuilder/Microsoft.Teams.Apps.BotBuilder.csproj" />
+    <Project Path="../src/Microsoft.Teams.Core/Microsoft.Teams.Core.csproj" />
+  </Folder>
+  <Folder Name="/Solution Items/">
+    <File Path="../.runsettings" />
+  </Folder>
+  <Project Path="ABSTokenServiceClient/ABSTokenServiceClient.csproj" />
+  <Project Path="IntegrationTests/IntegrationTests.csproj" />
+</Solution>

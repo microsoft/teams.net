@@ -18,6 +18,7 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnFetchTask(this App app, Func<IContext<MessageExtensions.FetchTaskActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -35,6 +36,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnFetchTask(this App app, Func<IContext<MessageExtensions.FetchTaskActivity>, Task<Response<Api.MessageExtensions.ActionResponse>>> handler)
     {
         app.Router.Register(new Route()
@@ -48,6 +50,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnFetchTask(this App app, Func<IContext<MessageExtensions.FetchTaskActivity>, Task<Api.MessageExtensions.ActionResponse>> handler)
     {
         app.Router.Register(new Route()

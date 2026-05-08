@@ -24,6 +24,7 @@ public class InstallUpdateAttribute : ActivityAttribute
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnInstallUpdate(this App app, Func<IContext<InstallUpdateActivity>, Task> handler)
     {
         app.Router.Register(new Route()

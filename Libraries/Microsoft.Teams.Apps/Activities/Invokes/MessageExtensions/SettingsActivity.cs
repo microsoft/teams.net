@@ -18,6 +18,7 @@ public static partial class MessageExtension
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSetting(this App app, Func<IContext<MessageExtensions.SettingActivity>, Task> handler)
     {
         app.Router.Register(new Route()

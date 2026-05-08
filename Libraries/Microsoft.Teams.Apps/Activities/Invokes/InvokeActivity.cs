@@ -31,6 +31,7 @@ public class InvokeAttribute : ActivityAttribute
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -48,6 +49,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()
@@ -61,6 +63,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnInvoke(this App app, Func<IContext<InvokeActivity>, Task<Response>> handler)
     {
         app.Router.Register(new Route()

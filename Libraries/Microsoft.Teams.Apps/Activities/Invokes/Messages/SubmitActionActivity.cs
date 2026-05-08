@@ -18,6 +18,7 @@ public static partial class Message
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSubmitAction(this App app, Func<IContext<Messages.SubmitActionActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -35,6 +36,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSubmitAction(this App app, Func<IContext<Messages.SubmitActionActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()

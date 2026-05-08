@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Api.Activities;
+using Microsoft.Teams.Api.Entities;
 
 namespace Microsoft.Teams.Api.Tests.Activities;
 
@@ -547,7 +548,7 @@ public class MessageActivityTests
         var msg = new MessageActivity("Hello")
             .WithDeliveryMode(DeliveryMode.Notification)
             .WithRecipient(new Account() { Id = "user-123", Name = "Test User", Role = Role.User }, true)
-            .WithImportance(Importance.High); 
+            .WithImportance(Importance.High);
 
         Assert.Equal("Hello", msg.Text);
         Assert.True(msg.Recipient.IsTargeted);
@@ -555,5 +556,25 @@ public class MessageActivityTests
         Assert.Equal("user-123", msg.Recipient.Id);
         Assert.Equal("Test User", msg.Recipient.Name);
         Assert.Equal(Role.User, msg.Recipient.Role);
+    }
+
+    [Fact]
+    public void AddStreamFinal_OverridesExistingStreamType()
+    {
+        var activity = new MessageActivity("done")
+        {
+            Id = "stream-1",
+            ChannelData = new ChannelData { StreamType = StreamType.Informative }
+        };
+
+        activity.AddStreamFinal();
+
+        Assert.Equal(StreamType.Final, activity.ChannelData.StreamType);
+        Assert.Equal("stream-1", activity.ChannelData.StreamId);
+
+        var streamInfo = activity.Entities?.OfType<Microsoft.Teams.Api.Entities.StreamInfoEntity>().Single();
+        Assert.NotNull(streamInfo);
+        Assert.Equal(StreamType.Final, streamInfo.StreamType);
+        Assert.Equal("stream-1", streamInfo.StreamId);
     }
 }

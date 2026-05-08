@@ -27,6 +27,7 @@ public static partial class Conversation
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTeamDeleted(this App app, Func<IContext<ConversationUpdateActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -52,6 +53,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnTeamHardDeleted(this App app, Func<IContext<ConversationUpdateActivity>, Task> handler)
     {
         app.Router.Register(new Route()

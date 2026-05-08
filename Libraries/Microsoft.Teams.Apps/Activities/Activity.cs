@@ -18,6 +18,7 @@ public class ActivityAttribute(string? name = null, Type? type = null) : Attribu
 
 public static partial class AppActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnActivity(this App app, Func<IContext<IActivity>, Task> handler)
     {
         app.Router.Register(async (context) =>
@@ -40,6 +41,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnActivity(this App app, Func<IContext<IActivity>, Task<object?>> handler)
     {
         app.Router.Register(handler);
@@ -52,6 +54,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnActivity(this App app, ActivityType type, Func<IContext<IActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -86,6 +89,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnActivity(this App app, ActivityType type, Func<IContext<IActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()
@@ -112,6 +116,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnActivity<TActivity>(this App app, Func<IContext<TActivity>, Task> handler) where TActivity : IActivity
     {
         app.Router.Register(new Route()
@@ -146,6 +151,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnActivity<TActivity>(this App app, Func<IContext<TActivity>, Task<object?>> handler) where TActivity : IActivity
     {
         app.Router.Register(new Route()
@@ -172,6 +178,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnActivity(this App app, Func<IActivity, bool> select, Func<IContext<IActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -206,6 +213,7 @@ public static partial class AppActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnActivity(this App app, Func<IActivity, bool> select, Func<IContext<IActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()

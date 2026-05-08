@@ -21,6 +21,7 @@ public static partial class AppInvokeActivityExtensions
     /// <summary>
     /// Registers a handler for signin/failure invoke activities sent when SSO token exchange fails.
     /// </summary>
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSignInFailure(this App app, Func<IContext<SignIn.FailureActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -41,6 +42,7 @@ public static partial class AppInvokeActivityExtensions
     /// <summary>
     /// Registers a handler for signin/failure invoke activities sent when SSO token exchange fails.
     /// </summary>
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSignInFailure(this App app, Func<IContext<SignIn.FailureActivity>, Task<object?>> handler)
     {
         app.Router.Register(new Route()
@@ -57,6 +59,7 @@ public static partial class AppInvokeActivityExtensions
     /// <summary>
     /// Registers a handler for signin/failure invoke activities sent when SSO token exchange fails.
     /// </summary>
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSignInFailure(this App app, Func<IContext<SignIn.FailureActivity>, Task<Response?>> handler)
     {
         app.Router.Register(new Route()

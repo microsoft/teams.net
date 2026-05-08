@@ -13,6 +13,7 @@ public class SearchAttribute() : InvokeAttribute(Api.Activities.Invokes.Name.Sea
 
 public static partial class AppInvokeActivityExtensions
 {
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSearch(this App app, Func<IContext<SearchActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -30,6 +31,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSearch(this App app, Func<IContext<SearchActivity>, Task<Response<SearchResponse>>> handler)
     {
         app.Router.Register(new Route()
@@ -43,6 +45,7 @@ public static partial class AppInvokeActivityExtensions
         return app;
     }
 
+    [Obsolete("Use the handler with the cancellation token")]
     public static App OnSearch(this App app, Func<IContext<SearchActivity>, Task<SearchResponse>> handler)
     {
         app.Router.Register(new Route()

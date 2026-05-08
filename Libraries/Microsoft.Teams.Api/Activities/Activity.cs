@@ -82,8 +82,10 @@ public partial interface IActivity : IConvertible, ICloneable
     public string GetPath();
 
     /// <summary>
-    /// get the quote reply string form of this activity
+    /// Generates a quoted reply placeholder for the current activity.
+    /// See <see cref="MessageActivity.AddQuote(string, string?)"/> for the recommended approach.
     /// </summary>
+    [Obsolete("Use MessageActivity.AddQuote() instead.")]
     public string ToQuoteReply();
 }
 
@@ -192,12 +194,6 @@ public partial class Activity : IActivity
         return this;
     }
 
-    public virtual Activity WithReplyToId(string value)
-    {
-        ReplyToId = value;
-        return this;
-    }
-
     public virtual Activity WithChannelId(ChannelId value)
     {
         ChannelId = value;
@@ -225,9 +221,9 @@ public partial class Activity : IActivity
     public virtual Activity WithRecipient(Account value)
     {
         Recipient = value;
-        #pragma warning disable ExperimentalTeamsTargeted
+#pragma warning disable ExperimentalTeamsTargeted
         Recipient.IsTargeted = null;
-        #pragma warning restore ExperimentalTeamsTargeted
+#pragma warning restore ExperimentalTeamsTargeted
         return this;
     }
 
@@ -235,9 +231,9 @@ public partial class Activity : IActivity
     public virtual Activity WithRecipient(Account value, bool isTargeted)
     {
         Recipient = value;
-        #pragma warning disable ExperimentalTeamsTargeted
+#pragma warning disable ExperimentalTeamsTargeted
         Recipient.IsTargeted = isTargeted ? true : null;
-        #pragma warning restore ExperimentalTeamsTargeted
+#pragma warning restore ExperimentalTeamsTargeted
         return this;
     }
 
@@ -269,7 +265,29 @@ public partial class Activity : IActivity
     {
         ChannelData ??= new();
         ChannelData.Merge(value);
+        NormalizeFeedback();
         return this;
+    }
+
+    /// <summary>
+    /// The Teams service rejects <c>feedbackLoop</c> and <c>feedbackLoopEnabled</c>
+    /// set at the same time. When <see cref="ChannelData.FeedbackLoop"/> is set it
+    /// wins; otherwise a legacy <c>FeedbackLoopEnabled = true</c> is upgraded to
+    /// <see cref="FeedbackType.Default"/>.
+    /// </summary>
+    private void NormalizeFeedback()
+    {
+        if (ChannelData is null) return;
+
+        if (ChannelData.FeedbackLoop is not null)
+        {
+            ChannelData.FeedbackLoopEnabled = null;
+        }
+        else if (ChannelData.FeedbackLoopEnabled == true)
+        {
+            ChannelData.FeedbackLoop = new FeedbackLoop(FeedbackType.Default);
+            ChannelData.FeedbackLoopEnabled = null;
+        }
     }
 
     public virtual Activity WithData(string key, object? value)
@@ -373,12 +391,39 @@ public partial class Activity : IActivity
     }
 
     /// <summary>
-    /// enable/disable message feedback
+    /// Legacy builder method of enabling default message feedback.
     /// </summary>
+    /// <param name="value">Whether to enable default message feedback.</param>
     public virtual Activity AddFeedback(bool value = true)
     {
         ChannelData ??= new();
-        ChannelData.FeedbackLoopEnabled = value;
+
+        if (value)
+        {
+            ChannelData.FeedbackLoop = new FeedbackLoop(FeedbackType.Default);
+        }
+        else
+        {
+            ChannelData.FeedbackLoop = null;
+        }
+
+        ChannelData.FeedbackLoopEnabled = null;
+        return this;
+    }
+
+    /// <summary>
+    /// Enable message feedback with an explicit mode (default or custom).
+    /// </summary>
+    /// <param name="mode">
+    /// <see cref="FeedbackType.Default"/> shows Teams' built-in thumbs up/down UI.
+    /// <see cref="FeedbackType.Custom"/> triggers a <c>message/fetchTask</c> invoke
+    /// so the bot can return its own task module dialog.
+    /// </param>
+    public virtual Activity AddFeedback(FeedbackType mode)
+    {
+        ChannelData ??= new();
+        ChannelData.FeedbackLoop = new FeedbackLoop(mode);
+        ChannelData.FeedbackLoopEnabled = null;
         return this;
     }
 
@@ -446,24 +491,15 @@ public partial class Activity : IActivity
         return this;
     }
 
-    public string ToQuoteReply()
+    /// <summary>
+    /// Generates a quoted reply placeholder for the current activity.
+    /// See <see cref="MessageActivity.AddQuote(string, string?)"/> for the recommended approach.
+    /// </summary>
+    [Obsolete("Use MessageActivity.AddQuote() instead.")]
+    public virtual string ToQuoteReply()
     {
-        var text = string.Empty;
-
-        if (this is MessageActivity message)
-        {
-            text = $"<p itemprop=\"preview\">{message.Text}</p>";
-        }
-
-        return $"""
-        <blockquote itemscope="" itemtype="http://schema.skype.com/Reply" itemid="{Id}">
-            <strong itemprop="mri" itemid="{From.Id}">
-                {From.Name}
-            </strong>
-            <span itemprop="time" itemid="{Id}"></span>
-            {text}
-        </blockquote>
-        """;
+        if (Id == null) return string.Empty;
+        return $"<quoted messageId=\"{Id}\"/>";
     }
 
     public override string ToString()
