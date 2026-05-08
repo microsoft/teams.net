@@ -34,7 +34,8 @@ builder.Services.AddOpenTelemetry()
             ["deployment.environment"] = builder.Environment.EnvironmentName,
             ["service.namespace"] = "Microsoft.Teams"
         }))
-    .UseMicrosoftOpenTelemetry(o => {
+    .UseMicrosoftOpenTelemetry(async o => {
+        
         o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Exporters = ExportTarget.Otlp | ExportTarget.Agent365 | ExportTarget.AzureMonitor;
         o.Instrumentation.EnableAspNetCoreInstrumentation = true;

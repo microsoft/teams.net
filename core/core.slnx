@@ -47,6 +47,7 @@
     <Project Path="test/msal-config-api/msal-config-api.csproj" Id="54f814fa-348e-4fd3-8bc9-70cd2aedc9ae" />
   </Folder>
   <Project Path="src/Microsoft.Teams.Apps/Microsoft.Teams.Apps.csproj" Id="0e993a63-8a1a-4cdf-8a29-cc8c59bd6c30" />
+  <Project Path="../../opentelemetry-distro-dotnet/src/Microsoft.OpenTelemetry/Microsoft.OpenTelemetry.csproj" />
   <Project Path="src/Microsoft.Teams.Apps.BotBuilder/Microsoft.Teams.Apps.BotBuilder.csproj" />
   <Project Path="src/Microsoft.Teams.Core/Microsoft.Teams.Core.csproj" />
 </Solution>
