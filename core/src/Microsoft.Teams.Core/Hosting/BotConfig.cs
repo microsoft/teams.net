@@ -27,12 +27,6 @@ internal sealed class BotConfig
     public string ClientId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the client secret for client credentials authentication.
-    /// Optional if using managed identity or federated identity credentials.
-    /// </summary>
-    public string? ClientSecret { get; set; }
-
-    /// <summary>
     /// Gets or sets the configuration section name used to resolve this BotConfig.
     /// Also used as the MSAL named-options key and the JWT auth scheme name.
     /// </summary>
@@ -80,7 +74,6 @@ internal sealed class BotConfig
         {
             TenantId = section["TenantId"] ?? string.Empty,
             ClientId = section["ClientId"] ?? string.Empty,
-            ClientSecret = section["ClientSecret"],
             Scope = section["Scope"] ?? BotScope,
             MsalConfigurationSection = section,
             SectionName = sectionName
