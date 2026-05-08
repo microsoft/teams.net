@@ -29,7 +29,7 @@ internal sealed class BotAuthenticationHandler(
     IOptions<ManagedIdentityOptions>? managedIdentityOptions = null) : DelegatingHandler
 {
     private const string AgenticScope = "https://botapi.skype.com/.default";
-    private const string AppScope = "https://api.botframework.com/.default";
+    private const string BotAppScope = "https://api.botframework.com/.default";
 
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -108,8 +108,8 @@ internal sealed class BotAuthenticationHandler(
             }
         }
 
-        _logAppOnlyToken(_logger, AppScope, null);
-        string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(AppScope, options, cancellationToken).ConfigureAwait(false);
+        _logAppOnlyToken(_logger, BotAppScope, null);
+        string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(BotAppScope, options, cancellationToken).ConfigureAwait(false);
 
 
         return appToken;
