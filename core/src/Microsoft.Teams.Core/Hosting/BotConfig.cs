@@ -17,7 +17,7 @@ namespace Microsoft.Teams.Core.Hosting;
 /// It supports multiple authentication modes: client secrets, system-assigned managed identities,
 /// user-assigned managed identities, and federated identity credentials (FIC).
 /// </remarks>
-internal sealed class BotConfig
+public sealed class BotConfig
 {
     /// <summary>
     /// Identifier used to specify system-assigned managed identity authentication.
