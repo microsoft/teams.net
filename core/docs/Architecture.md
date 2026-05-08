@@ -792,10 +792,12 @@ Hierarchical configuration with conventions.
 }
 ```
 
-**Configuration Sources** (standard ASP.NET Core resolution):
-1. Environment variables (e.g. `AzureAd__ClientId`)
+**Configuration Sources** (standard ASP.NET Core resolution order, lowest to highest priority):
+1. `appsettings.json`
 2. `appsettings.{Environment}.json`
-3. `appsettings.json`
+3. User Secrets (Development environment only)
+4. Environment variables (e.g. `AzureAd__ClientId`)
+5. Command-line arguments
 
 ### 3. **Authentication Pattern**
 

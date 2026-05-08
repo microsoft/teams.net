@@ -136,4 +136,115 @@ public class AddBotApplicationExtensionsTests
         // Assert
         Assert.Equal("custom-client-id", GetAppId(serviceProvider));
     }
+
+    // --- ManagedIdentityOptions (UMI) tests ---
+
+    private static ServiceProvider BuildServiceProviderWithManagedIdentity(Dictionary<string, string?> configData, string? sectionName = null)
+    {
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+
+        if (sectionName is null)
+            services.AddBotApplication();
+        else
+            services.AddBotApplication(sectionName);
+
+        return services.BuildServiceProvider();
+    }
+
+    [Fact]
+    public void AddBotApplication_WithNoClientCredentials_ConfiguresManagedIdentityOptions()
+    {
+        // Arrange: Configuration with ClientId/TenantId but NO ClientCredentials (implies UMI)
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "umi-client-id",
+            ["AzureAd:TenantId"] = "tenant-id"
+            // No AzureAd:ClientCredentials
+        };
+
+        // Act
+        ServiceProvider serviceProvider = BuildServiceProviderWithManagedIdentity(configData);
+
+        // Assert
+        ManagedIdentityOptions miOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<ManagedIdentityOptions>>()
+            .CurrentValue;
+
+        Assert.NotNull(miOptions);
+        Assert.Equal("umi-client-id", miOptions.UserAssignedClientId);
+    }
+
+    [Fact]
+    public void AddBotApplication_WithClientCredentials_DoesNotConfigureUmiAsUserAssigned()
+    {
+        // Arrange: Configuration WITH ClientCredentials (app-only authentication, not UMI)
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "app-client-id",
+            ["AzureAd:TenantId"] = "tenant-id",
+            ["AzureAd:ClientCredentials:0:SourceType"] = "ClientSecret",
+            ["AzureAd:ClientCredentials:0:ClientSecret"] = "secret-value"
+        };
+
+        // Act
+        ServiceProvider serviceProvider = BuildServiceProviderWithManagedIdentity(configData);
+
+        // Assert
+        ManagedIdentityOptions miOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<ManagedIdentityOptions>>()
+            .CurrentValue;
+
+        // When ClientCredentials are present, ManagedIdentityOptions should not be configured with UserAssignedClientId
+        Assert.Null(miOptions.UserAssignedClientId);
+    }
+
+    [Fact]
+    public void AddBotApplication_WithCustomSectionNoClientCredentials_ConfiguresManagedIdentityFromCustomSection()
+    {
+        // Arrange: Custom section with no ClientCredentials
+        Dictionary<string, string?> configData = new()
+        {
+            ["CustomAuth:ClientId"] = "custom-umi-client-id",
+            ["CustomAuth:TenantId"] = "custom-tenant-id"
+        };
+
+        // Act
+        ServiceProvider serviceProvider = BuildServiceProviderWithManagedIdentity(configData, "CustomAuth");
+
+        // Assert
+        ManagedIdentityOptions miOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<ManagedIdentityOptions>>()
+            .CurrentValue;
+
+        Assert.NotNull(miOptions);
+        Assert.Equal("custom-umi-client-id", miOptions.UserAssignedClientId);
+    }
+
+    [Fact]
+    public void AddBotApplication_WithNestedSectionPath_ConfiguresOptionsUnderFullSectionName()
+    {
+        // Arrange: Nested section path (e.g., "Auth:AzureAd")
+        Dictionary<string, string?> configData = new()
+        {
+            ["Auth:AzureAd:ClientId"] = "nested-client-id",
+            ["Auth:AzureAd:TenantId"] = "nested-tenant-id"
+        };
+
+        // Act
+        ServiceProvider serviceProvider = BuildServiceProviderWithManagedIdentity(configData, "Auth:AzureAd");
+
+        // Assert: Verify MSAL options are configured under the full section name (not just the leaf key)
+        MicrosoftIdentityApplicationOptions msalOptions = serviceProvider
+            .GetRequiredService<IOptionsMonitor<MicrosoftIdentityApplicationOptions>>()
+            .Get("Auth:AzureAd");
+
+        Assert.Equal("nested-client-id", msalOptions.ClientId);
+        Assert.Equal("nested-tenant-id", msalOptions.TenantId);
+    }
 }

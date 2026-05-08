@@ -41,6 +41,14 @@ internal sealed class BotConfig
     internal IConfigurationSection? MsalConfigurationSection { get; set; }
 
     /// <summary>
+    /// Gets a value indicating whether this configuration uses User-Assigned Managed Identity (UMI) for authentication.
+    /// Returns true when no ClientCredentials are configured in the section.
+    /// </summary>
+    internal bool IsUserAssignedManagedIdentity =>
+        MsalConfigurationSection is not null &&
+        !MsalConfigurationSection.GetSection("ClientCredentials").GetChildren().Any();
+
+    /// <summary>
     /// Resolves a BotConfig from a service collection by extracting configuration and logger.
     /// </summary>
     /// <param name="services">The service collection containing IConfiguration and ILoggerFactory registrations.</param>

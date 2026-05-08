@@ -156,12 +156,9 @@ public static class AddBotApplicationExtensions
 
         if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
         {
-            string sectionKey = botConfig.MsalConfigurationSection.Key;
-            IConfigurationSection section = botConfig.MsalConfigurationSection;
-
-            services.Configure<MicrosoftIdentityApplicationOptions>(sectionKey, options =>
+            services.Configure<MicrosoftIdentityApplicationOptions>(botConfig.SectionName, options =>
             {
-                section.Bind(options);
+                botConfig.MsalConfigurationSection.Bind(options);
 
                 // Default Instance when only TenantId is configured.
                 if (string.IsNullOrEmpty(options.Instance) && !string.IsNullOrEmpty(options.TenantId))
@@ -184,7 +181,7 @@ public static class AddBotApplicationExtensions
             // the bot's ClientId is the UMI's clientId (as in ABS bots with the UserAssignedMSI app type).
             // Register ManagedIdentityOptions so BotAuthenticationHandler routes token acquisition through
             // the IMDS endpoint instead of the standard app-credentials flow.
-            if (!section.GetSection("ClientCredentials").GetChildren().Any())
+            if (botConfig.IsUserAssignedManagedIdentity)
             {
                 ILogger logger = GetLoggerFromServices(services);
                 logger.InferringUserAssignedManagedIdentity(botConfig.ClientId);
