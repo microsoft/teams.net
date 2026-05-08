@@ -19,7 +19,7 @@ sealed class CitationCollector
         try
         {
             using JsonDocument doc = JsonDocument.Parse(result);
-            if (!doc.RootElement.TryGetProperty("results", out JsonElement results)) return;
+            if (!TryFindResults(doc.RootElement, out JsonElement results)) return;
 
             foreach (JsonElement item in results.EnumerateArray())
             {
@@ -62,6 +62,25 @@ sealed class CitationCollector
         return claims.Count == 0
             ? []
             : [new CitationEntity { AdditionalType = ["AIGeneratedContent"], Citation = claims }];
+    }
+
+    // MCP InvokeAsync returns a JsonElement of CallToolResult, not the raw server JSON.
+    // Results may be at root or nested one level deep (e.g. CallToolResult.structuredContent.results).
+    private static bool TryFindResults(JsonElement element, out JsonElement results)
+    {
+        if (element.TryGetProperty("results", out results) && results.ValueKind == JsonValueKind.Array)
+            return true;
+
+        foreach (JsonProperty prop in element.EnumerateObject())
+        {
+            if (prop.Value.ValueKind == JsonValueKind.Object &&
+                prop.Value.TryGetProperty("results", out results) &&
+                results.ValueKind == JsonValueKind.Array)
+                return true;
+        }
+
+        results = default;
+        return false;
     }
 
     private static string? GetString(JsonElement el, string property) =>

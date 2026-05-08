@@ -58,10 +58,15 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         ? [.. result.PendingCards.Select(c => TeamsAttachment.CreateBuilder().WithAdaptiveCard(c).Build())]
         : null;
 
+    SuggestedActions? suggestedActions = result.PendingActions.Count > 0
+        ? new SuggestedActions().AddActions([.. result.PendingActions])
+        : null;
+
     await writer.FinalizeResponseAsync(
         attachments: attachments,
         entities: entities.Count > 0 ? entities : null,
         feedbackEnabled: true,
+        suggestedActions: suggestedActions,
         cancellationToken: cancellationToken);
 });
 

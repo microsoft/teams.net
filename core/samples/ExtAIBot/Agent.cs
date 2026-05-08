@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.AI;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Schema;
 
 namespace ExtAIBot;
 
@@ -24,6 +25,9 @@ sealed class Agent
         When a user asks a technical question, use the available Microsoft Learn search tools to find
         relevant documentation. Cite sources inline using [1], [2], etc. when you reference search results.
         Do not add a references list at the end — citations are displayed separately in the UI.
+
+        At the end of every response, call suggest_follow_ups with 2 concise follow-up questions
+        the user might want to ask next, relevant to what was just discussed.
         """;
 
     public Agent(IChatClient chatClient, McpToolSet mcpTools)
@@ -43,6 +47,7 @@ sealed class Agent
             _ => [new ChatMessage(ChatRole.System, SystemPrompt)]);
 
         List<object> pendingCards = [];
+        List<SuggestedAction> pendingActions = [];
         CitationCollector citations = new();
 
         ChatOptions options = new()
@@ -50,6 +55,7 @@ sealed class Agent
             Tools =
             [
                 LocalTools.CreateWelcomeCardTool(pendingCards),
+                LocalTools.CreateSuggestFollowUpsTool(pendingActions),
                 .. _mcpTools.GetTools(citations)
             ]
         };
@@ -71,11 +77,12 @@ sealed class Agent
         if (!string.IsNullOrEmpty(fullText))
             history.Add(new ChatMessage(ChatRole.Assistant, fullText));
 
-        return new RunResult(fullText, pendingCards, citations);
+        return new RunResult(fullText, pendingCards, pendingActions, citations);
     }
 }
 
 readonly record struct RunResult(
     string FullText,
     IList<object> PendingCards,
+    IList<SuggestedAction> PendingActions,
     CitationCollector Citations);

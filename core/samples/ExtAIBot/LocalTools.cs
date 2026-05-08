@@ -3,6 +3,7 @@
 
 using System.ComponentModel;
 using Microsoft.Extensions.AI;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Cards;
 
 namespace ExtAIBot;
@@ -21,6 +22,19 @@ static class LocalTools
             },
             "send_welcome_card",
             "Attach a welcome Adaptive Card that shows the bot's capabilities.");
+
+    // Stores 2 follow-up prompt suggestions the model thinks the user might want next.
+    public static AIFunction CreateSuggestFollowUpsTool(IList<SuggestedAction> pendingActions) =>
+        AIFunctionFactory.Create(
+            ([Description("First follow-up prompt suggestion")] string prompt1,
+             [Description("Second follow-up prompt suggestion")] string prompt2) =>
+            {
+                pendingActions.Add(new SuggestedAction(ActionType.IMBack, prompt1));
+                pendingActions.Add(new SuggestedAction(ActionType.IMBack, prompt2));
+                return "Suggestions set.";
+            },
+            "suggest_follow_ups",
+            "Suggest 2 follow-up prompts the user might want to ask next.");
 
     private static AdaptiveCard BuildWelcomeCard(string greeting) =>
         new AdaptiveCard(

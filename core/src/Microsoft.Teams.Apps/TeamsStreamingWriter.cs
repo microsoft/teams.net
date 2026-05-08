@@ -129,9 +129,10 @@ public sealed class TeamsStreamingWriter
     /// <param name="attachments">Optional attachments to include in the final message activity.</param>
     /// <param name="entities">Optional entities (e.g. citations, mentions) to include in the final message activity.</param>
     /// <param name="feedbackEnabled">Whether to enable the feedback loop (thumbs up/down) on the final message.</param>
+    /// <param name="suggestedActions">Optional suggested actions (quick-reply buttons) to show below the final message.</param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <exception cref="InvalidOperationException">Thrown if <see cref="FinalizeResponseAsync"/> has already been called, or if no content has been accumulated via <see cref="AppendResponseAsync"/>.</exception>
-    public async Task FinalizeResponseAsync(IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false, CancellationToken cancellationToken = default)
+    public async Task FinalizeResponseAsync(IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false, SuggestedActions? suggestedActions = null, CancellationToken cancellationToken = default)
     {
         if (_finalized)
             throw new InvalidOperationException("Cannot finalize after FinalizeResponseAsync has already been called.");
@@ -143,51 +144,47 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
 
         _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).", _streamId, _accumulated.Length, _sequence);
-        await _client.SendActivityAsync(BuildActivity(_accumulated.ToString(), StreamType.Final, attachments, entities, feedbackEnabled), cancellationToken: cancellationToken).ConfigureAwait(false);
+        await _client.SendActivityAsync(BuildFinalActivity(_accumulated.ToString(), attachments, entities, feedbackEnabled, suggestedActions), cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _finalized = true;
         _logger.LogDebug("Stream finalized (streamId '{StreamId}').", _streamId);
     }
 
-    private TeamsActivity BuildActivity(string text, string streamType, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false)
+    private TeamsActivity BuildFinalActivity(string text, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false, SuggestedActions? suggestedActions = null)
     {
-        bool isFinal = streamType == StreamType.Final;
+        StreamInfoEntity streamInfo = new() { StreamType = StreamType.Final };
+        if (_streamId != null)
+            streamInfo.StreamId = _streamId;
 
-        TeamsActivityBuilder builder;
+        TeamsActivityBuilder builder = new TeamsActivityBuilder(new MessageActivity(text))
+            .WithConversationReference(_reference)
+            .AddEntity(streamInfo);
 
-        if (isFinal)
-        {
-            StreamInfoEntity streamInfo = new() { StreamType = streamType };
-            if (_streamId != null)
-                streamInfo.StreamId = _streamId;
+        if (entities != null)
+            foreach (Entity entity in entities)
+                builder.AddEntity(entity);
 
-            builder = new TeamsActivityBuilder(new MessageActivity(text))
-                .WithConversationReference(_reference)
-                .AddEntity(streamInfo);
+        if (attachments?.Count > 0)
+            builder.WithAttachments(attachments);
 
-            if (entities != null)
-                foreach (Entity entity in entities)
-                    builder.AddEntity(entity);
+        if (suggestedActions != null)
+            builder.WithSuggestedActions(suggestedActions);
 
-            if (attachments?.Count > 0)
-                builder.WithAttachments(attachments);
+        TeamsActivity activity = builder.Build();
+        if (feedbackEnabled) activity.AddFeedback();
+        return activity;
+    }
 
-            TeamsActivity activity = builder.Build();
-            if (feedbackEnabled) activity.AddFeedback();
-            return activity;
-        }
-        else
-        {
-            StreamingActivity streaming = new(text);
-            streaming.StreamInfo.StreamType = streamType;
-            streaming.StreamInfo.StreamSequence = _sequence;
-            if (_streamId != null)
-                streaming.StreamInfo.StreamId = _streamId;
+    private TeamsActivity BuildActivity(string text, string streamType)
+    {
+        StreamingActivity streaming = new(text);
+        streaming.StreamInfo.StreamType = streamType;
+        streaming.StreamInfo.StreamSequence = _sequence;
+        if (_streamId != null)
+            streaming.StreamInfo.StreamId = _streamId;
 
-            builder = new TeamsActivityBuilder(streaming)
-                .WithConversationReference(_reference);
-        }
-
-        return builder.Build();
+        return new TeamsActivityBuilder(streaming)
+            .WithConversationReference(_reference)
+            .Build();
     }
 }

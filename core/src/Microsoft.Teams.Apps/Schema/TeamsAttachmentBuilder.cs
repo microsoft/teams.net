@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
+
 namespace Microsoft.Teams.Apps.Schema;
 
 /// <summary>
@@ -101,7 +103,7 @@ public class TeamsAttachmentBuilder
     {
         ArgumentNullException.ThrowIfNull(adaptiveCard);
         _attachment.ContentType = AdaptiveCardContentType;
-        _attachment.Content = adaptiveCard;
+        _attachment.Content = adaptiveCard is JsonElement je ? je : JsonSerializer.SerializeToElement(adaptiveCard);
         _attachment.ContentUrl = null;
         return this;
     }
