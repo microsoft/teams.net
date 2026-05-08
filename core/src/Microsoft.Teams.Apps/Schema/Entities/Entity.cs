@@ -69,6 +69,7 @@ public class EntityList : List<Entity>
                     "message" or "https://schema.org/Message" => DeserializeMessageEntity(item, options),
                     "ProductInfo" => item.Deserialize<ProductInfoEntity>(options),
                     "streaminfo" => item.Deserialize<StreamInfoEntity>(options),
+                    "quotedReply" => item.Deserialize<QuotedReplyEntity>(options),
                     _ => item.Deserialize<Entity>(options)
                 };
                 if (entity != null)
