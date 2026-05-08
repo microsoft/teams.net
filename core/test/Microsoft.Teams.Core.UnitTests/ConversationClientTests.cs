@@ -378,77 +378,6 @@ public class ConversationClientTests
     }
 
     [Fact]
-    public async Task SendActivityAsync_WithReplyToId_AppendsReplyToIdToUrl()
-    {
-        HttpRequestMessage? capturedRequest = null;
-        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
-        mockHttpMessageHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .Callback<HttpRequestMessage, CancellationToken>((req, ct) => capturedRequest = req)
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("{\"id\":\"activity123\"}")
-            });
-
-        HttpClient httpClient = new(mockHttpMessageHandler.Object);
-        ConversationClient conversationClient = new(httpClient);
-
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://test.service.url/"),
-            Conversation = new("conv123"),
-            ReplyToId = "originalActivity456"
-        };
-
-        await conversationClient.SendActivityAsync(activity);
-
-        Assert.NotNull(capturedRequest);
-        Assert.Equal("https://test.service.url/v3/conversations/conv123/activities/originalActivity456", capturedRequest.RequestUri?.ToString());
-        Assert.Equal(HttpMethod.Post, capturedRequest.Method);
-    }
-
-    [Fact]
-    public async Task SendActivityAsync_WithEmptyReplyToId_DoesNotAppendReplyToIdToUrl()
-    {
-        HttpRequestMessage? capturedRequest = null;
-        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
-        mockHttpMessageHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .Callback<HttpRequestMessage, CancellationToken>((req, ct) => capturedRequest = req)
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("{\"id\":\"activity123\"}")
-            });
-
-        HttpClient httpClient = new(mockHttpMessageHandler.Object);
-        ConversationClient conversationClient = new(httpClient);
-
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://test.service.url/"),
-            Conversation = new("conv123"),
-            ReplyToId = ""
-        };
-
-        await conversationClient.SendActivityAsync(activity);
-
-        Assert.NotNull(capturedRequest);
-        Assert.Equal("https://test.service.url/v3/conversations/conv123/activities/", capturedRequest.RequestUri?.ToString());
-    }
-
-    [Fact]
     public async Task SendActivityAsync_WithAgentsChannel_TruncatesConversationId()
     {
         HttpRequestMessage? capturedRequest = null;
@@ -596,41 +525,4 @@ public class ConversationClientTests
         Assert.NotNull(result);
     }
 
-    [Fact]
-    public async Task SendActivityAsync_WithAgentsChannel_TruncatesConversationIdAndAppendsReplyToId()
-    {
-        HttpRequestMessage? capturedRequest = null;
-        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
-        mockHttpMessageHandler
-            .Protected()
-            .Setup<Task<HttpResponseMessage>>(
-                "SendAsync",
-                ItExpr.IsAny<HttpRequestMessage>(),
-                ItExpr.IsAny<CancellationToken>())
-            .Callback<HttpRequestMessage, CancellationToken>((req, ct) => capturedRequest = req)
-            .ReturnsAsync(new HttpResponseMessage
-            {
-                StatusCode = HttpStatusCode.OK,
-                Content = new StringContent("{\"id\":\"activity123\"}")
-            });
-
-        HttpClient httpClient = new(mockHttpMessageHandler.Object);
-        ConversationClient conversationClient = new(httpClient, NullLogger<ConversationClient>.Instance);
-
-        string longConversationId = new('x', 150);
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            ChannelId = "agents",
-            ServiceUrl = new Uri("https://test.service.url/"),
-            Conversation = new(longConversationId),
-            ReplyToId = "replyActivity789"
-        };
-
-        await conversationClient.SendActivityAsync(activity);
-
-        Assert.NotNull(capturedRequest);
-        string expectedTruncatedId = "acf";
-        Assert.Equal($"https://test.service.url/v3/conversations/{expectedTruncatedId}/activities/replyActivity789", capturedRequest.RequestUri?.ToString());
-    }
 }
