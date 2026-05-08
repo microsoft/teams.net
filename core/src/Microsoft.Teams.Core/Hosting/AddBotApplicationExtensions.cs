@@ -201,12 +201,10 @@ public static class AddBotApplicationExtensions
     {
         if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
         {
-            string scope = botConfig.Scope;
             services.AddHttpClient<TClient>(httpClientName)
                 .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
-                    scope,
                     botConfig.SectionName,
                     sp.GetService<IOptions<ManagedIdentityOptions>>()));
         }
