@@ -126,4 +126,71 @@ public class PromptPreviewTests
         // The developer-provided entity should be preserved, not overwritten
         Assert.Equal("9999", targetedEntities[0].MessageId);
     }
+
+    [Fact]
+    public async Task Send_Throws_WhenTargetedMessage_InPersonalChat()
+    {
+        _app.OnMessage(async (context, cancellationToken) =>
+        {
+            await context.Send(
+                new MessageActivity("Secret!")
+                    .WithRecipient(new Account() { Id = "user1", Name = "User" }, true),
+                cancellationToken);
+        });
+
+        var incomingActivity = new MessageActivity("hello")
+            .WithId("123456")
+            .WithFrom(new Account() { Id = "user1", Name = "User" })
+            .WithConversation(new Api.Conversation() { Id = "conv1", Type = ConversationType.Personal })
+            .WithRecipient(new Account() { Id = "bot1", Name = "Bot" });
+
+        var ex = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => _app.Process<TestPlugin>(_token, incomingActivity));
+        Assert.Contains("personal", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Send_Succeeds_WhenNonTargetedMessage_InPersonalChat()
+    {
+        IActivity? sentActivity = null;
+
+        _app.OnMessage(async (context, cancellationToken) =>
+        {
+            sentActivity = await context.Send("Hello!", cancellationToken);
+        });
+
+        var incomingActivity = new MessageActivity("hello")
+            .WithId("123456")
+            .WithFrom(new Account() { Id = "user1", Name = "User" })
+            .WithConversation(new Api.Conversation() { Id = "conv1", Type = ConversationType.Personal })
+            .WithRecipient(new Account() { Id = "bot1", Name = "Bot" });
+
+        await _app.Process<TestPlugin>(_token, incomingActivity);
+
+        Assert.NotNull(sentActivity);
+    }
+
+    [Fact]
+    public async Task Send_Succeeds_WhenTargetedMessage_InGroupChat()
+    {
+        IActivity? sentActivity = null;
+
+        _app.OnMessage(async (context, cancellationToken) =>
+        {
+            sentActivity = await context.Send(
+                new MessageActivity("Only you can see this!")
+                    .WithRecipient(new Account() { Id = "user1", Name = "User" }, true),
+                cancellationToken);
+        });
+
+        var incomingActivity = new MessageActivity("hello")
+            .WithId("123456")
+            .WithFrom(new Account() { Id = "user1", Name = "User" })
+            .WithConversation(new Api.Conversation() { Id = "conv1", Type = ConversationType.GroupChat })
+            .WithRecipient(new Account() { Id = "bot1", Name = "Bot" });
+
+        await _app.Process<TestPlugin>(_token, incomingActivity);
+
+        Assert.NotNull(sentActivity);
+    }
 }
