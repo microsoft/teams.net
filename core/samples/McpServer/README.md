@@ -14,16 +14,6 @@ wait for them to reply or approve.
 | `request_approval` | Send an Approve/Reject card to a user. Returns an `approvalId`.                      | `userId`, `title`, `description`    |
 | `get_approval`     | Poll for the decision on an earlier `request_approval`.                              | `approvalId`                        |
 
-## Layout
-
-| File          | Responsibility                                                                            |
-| ------------- | ----------------------------------------------------------------------------------------- |
-| `Program.cs`  | Wires `/api/messages` (Teams) and `/mcp` (MCP) on the same `WebApplication`.              |
-| `McpTools.cs` | The five `[McpServerTool]` methods, registered via `WithTools<McpTools>()`.               |
-| `Cards.cs`    | Adaptive Card factory for the Approve/Reject card (built with `Microsoft.Teams.Cards`).   |
-| `Models.cs`   | Typed result records (`NotifyResult`, `AskResult`, `ReplyResult`, …) — snake_case wire.   |
-| `State.cs`    | DI-singleton: conversation map, pending asks, approvals, current service URL.             |
-
 ## Configure
 
 Set credentials in `appsettings.json` *or* `Properties/launchSettings.json`
@@ -34,7 +24,6 @@ Set credentials in `appsettings.json` *or* `Properties/launchSettings.json`
 ```json
 {
   "AzureAd": {
-    "Instance": "https://login.microsoftonline.com/",
     "TenantId": "<your-tenant-id>",
     "ClientId": "<your-azure-bot-app-id>",
     "ClientCredentials": [
@@ -47,16 +36,11 @@ Set credentials in `appsettings.json` *or* `Properties/launchSettings.json`
 Or via env vars in `launchSettings.json`:
 
 ```
-AzureAd__Instance=https://login.microsoftonline.com/
 AzureAd__TenantId=<your-tenant-id>
 AzureAd__ClientId=<your-azure-bot-app-id>
 AzureAd__ClientCredentials__0__SourceType=ClientSecret
 AzureAd__ClientCredentials__0__ClientSecret=<your-azure-bot-app-secret>
 ```
-
-`TenantId` is required because the MCP tools open 1:1 conversations
-*proactively* via `app.Api.Conversations.CreateAsync` — it can't be inferred
-from the bot's own credentials.
 
 The `userId` argument passed to `notify`, `ask`, and `request_approval` is the
 Teams user id of someone in the same tenant. For the simplest setup, message
