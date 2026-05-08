@@ -58,7 +58,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Send(string text, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> SendAsync(string text, CancellationToken cancellationToken = default)
         => SendActivityAsync(text, cancellationToken);
 
     /// <summary>
@@ -67,7 +67,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Send(TeamsActivity activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> SendAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
         => SendActivityAsync(activity, cancellationToken);
 
     /// <summary>
@@ -78,8 +78,8 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
-        => Reply(new MessageActivity(text), cancellationToken);
+    public Task<SendActivityResponse?> ReplyAsync(string text, CancellationToken cancellationToken = default)
+        => ReplyAsync(new MessageActivity(text), cancellationToken);
 
     /// <summary>
     /// Sends an activity to the conversation. When the inbound activity has an id, the response
@@ -89,7 +89,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Reply(TeamsActivity activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> ReplyAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
 #pragma warning disable ExperimentalTeamsQuotedReplies
@@ -107,7 +107,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">Reserved for future use; currently ignored.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Typing(string? text = null, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> TypingAsync(string? text = null, CancellationToken cancellationToken = default)
         => SendTypingActivityAsync(cancellationToken);
 
     /// <summary>
@@ -141,6 +141,26 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         }
         return SendActivityAsync(activity, cancellationToken);
     }
+
+    /// <inheritdoc cref="SendAsync(string, CancellationToken)"/>
+    public Task<SendActivityResponse?> Send(string text, CancellationToken cancellationToken = default)
+        => SendAsync(text, cancellationToken);
+
+    /// <inheritdoc cref="SendAsync(TeamsActivity, CancellationToken)"/>
+    public Task<SendActivityResponse?> Send(TeamsActivity activity, CancellationToken cancellationToken = default)
+        => SendAsync(activity, cancellationToken);
+
+    /// <inheritdoc cref="ReplyAsync(string, CancellationToken)"/>
+    public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
+        => ReplyAsync(text, cancellationToken);
+
+    /// <inheritdoc cref="ReplyAsync(TeamsActivity, CancellationToken)"/>
+    public Task<SendActivityResponse?> Reply(TeamsActivity activity, CancellationToken cancellationToken = default)
+        => ReplyAsync(activity, cancellationToken);
+
+    /// <inheritdoc cref="TypingAsync(string?, CancellationToken)"/>
+    public Task<SendActivityResponse?> Typing(string? text = null, CancellationToken cancellationToken = default)
+        => TypingAsync(text, cancellationToken);
 
     // ==================== Core Send Methods ====================
 
@@ -196,7 +216,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="options">OAuth options including connection name and card text.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The existing user token if found, or null if the sign-in flow was initiated.</returns>
-    public Task<string?> SignIn(OAuthOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<string?> SignInAsync(OAuthOptions? options = null, CancellationToken cancellationToken = default)
     {
         OAuthFlow flow = ResolveOAuthFlow(options?.ConnectionName);
         return flow.SignInAsync(this, options, cancellationToken);
@@ -207,11 +227,19 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     /// <param name="connectionName">The connection name to sign out from. If null, uses the default registered connection.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
-    public Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default)
+    public Task SignOutAsync(string? connectionName = null, CancellationToken cancellationToken = default)
     {
         OAuthFlow flow = ResolveOAuthFlow(connectionName);
         return flow.SignOutAsync(this, cancellationToken);
     }
+
+    /// <inheritdoc cref="SignInAsync(OAuthOptions?, CancellationToken)"/>
+    public Task<string?> SignIn(OAuthOptions? options = null, CancellationToken cancellationToken = default)
+        => SignInAsync(options, cancellationToken);
+
+    /// <inheritdoc cref="SignOutAsync(string?, CancellationToken)"/>
+    public Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default)
+        => SignOutAsync(connectionName, cancellationToken);
 
     /// <summary>
     /// Whether the activity sender has a valid cached token.

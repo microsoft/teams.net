@@ -17,6 +17,10 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     string conversationId = context.Activity.Conversation!.Id;
     string messageId = context.Activity.Id!;
 
+    // Store the agentic identity from the inbound activity's Recipient (the bot).
+    // Required for proactive messaging when running with agentic identities.
+    AgenticIdentity? agenticIdentity = context.Activity.Recipient?.GetAgenticIdentity();
+
     // When inside a thread, conversationId contains ;messageid=<rootId>.
     // Extract the root ID for threading; for top-level messages, use activity.id.
     string[] threadParts = conversationId.Split(";messageid=");
@@ -45,7 +49,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     // ============================================
     if (text.Contains("test proactive"))
     {
-        await teamsApp.Reply(conversationId, threadRootId, "This is a proactive threaded reply using teamsApp.Reply().", cancellationToken);
+        await teamsApp.Reply(conversationId, threadRootId, "This is a proactive threaded reply using teamsApp.Reply().", agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
         return;
     }
 
@@ -55,7 +59,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     if (text.Contains("test manual"))
     {
         string threadId = Conversation.ToThreadedConversationId(conversationId, threadRootId);
-        await teamsApp.Send(threadId, "This was sent using ToThreadedConversationId() + teamsApp.Send() for manual control.", cancellationToken: cancellationToken);
+        await teamsApp.Send(threadId, "This was sent using ToThreadedConversationId() + teamsApp.Send() for manual control.", agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
         return;
     }
 
