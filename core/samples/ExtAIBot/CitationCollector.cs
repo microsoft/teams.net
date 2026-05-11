@@ -12,7 +12,7 @@ namespace ExtAIBot;
 // [N] references that appear in the final response text.
 sealed class CitationCollector
 {
-    private readonly Dictionary<string, CitationEntry> _citations = new();
+    private readonly Dictionary<string, CitationEntry> _citations = [];
 
     public void TryExtract(string result)
     {
@@ -59,6 +59,7 @@ sealed class CitationCollector
                 }.ToDocument()
             })];
 
+        // TODO : work on Add Citations/feedback/AI label etc in builder 
         return claims.Count == 0
             ? [new OMessageEntity { AdditionalType = ["AIGeneratedContent"] }]
             : [new CitationEntity { AdditionalType = ["AIGeneratedContent"], Citation = claims }];

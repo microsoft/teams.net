@@ -128,11 +128,20 @@ public sealed class TeamsStreamingWriter
     /// </summary>
     /// <param name="attachments">Optional attachments to include in the final message activity.</param>
     /// <param name="entities">Optional entities (e.g. citations, mentions) to include in the final message activity.</param>
-    /// <param name="feedbackEnabled">Whether to enable the feedback loop (thumbs up/down) on the final message.</param>
+    /// <param name="feedback">
+    /// Feedback loop mode. <c>null</c> disables feedback;
+    /// <see cref="FeedbackType.Default"/> shows Teams' built-in thumbs up/down UI;
+    /// <see cref="FeedbackType.Custom"/> triggers a <c>message/fetchTask</c> invoke
+    /// so the bot can return its own task module dialog.
+    /// </param>
     /// <param name="suggestedActions">Optional suggested actions (quick-reply buttons) to show below the final message.</param>
+    /// <param name="text">
+    /// If non-null, replaces the accumulated streamed text in the final activity. Pass <c>""</c>
+    /// to send the final message with no text body (e.g. when delivering an attachment-only reply).
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <exception cref="InvalidOperationException">Thrown if <see cref="FinalizeResponseAsync"/> has already been called, or if no content has been accumulated via <see cref="AppendResponseAsync"/>.</exception>
-    public async Task FinalizeResponseAsync(IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false, SuggestedActions? suggestedActions = null, CancellationToken cancellationToken = default)
+    public async Task FinalizeResponseAsync(IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, string? feedback = null, SuggestedActions? suggestedActions = null, string? text = null, CancellationToken cancellationToken = default)
     {
         if (_finalized)
             throw new InvalidOperationException("Cannot finalize after FinalizeResponseAsync has already been called.");
@@ -140,17 +149,19 @@ public sealed class TeamsStreamingWriter
         if (_cancelled)
             return;
 
-        if (_accumulated.Length == 0 && (attachments == null || attachments.Count == 0))
+        string finalText = text ?? _accumulated.ToString();
+
+        if (finalText.Length == 0 && (attachments == null || attachments.Count == 0))
             throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
 
-        _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).", _streamId, _accumulated.Length, _sequence);
-        await _client.SendActivityAsync(BuildFinalActivity(_accumulated.ToString(), attachments, entities, feedbackEnabled, suggestedActions), cancellationToken: cancellationToken).ConfigureAwait(false);
+        _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).", _streamId, finalText.Length, _sequence);
+        await _client.SendActivityAsync(BuildFinalActivity(finalText, attachments, entities, feedback, suggestedActions), cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _finalized = true;
         _logger.LogDebug("Stream finalized (streamId '{StreamId}').", _streamId);
     }
 
-    private TeamsActivity BuildFinalActivity(string text, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, bool feedbackEnabled = false, SuggestedActions? suggestedActions = null)
+    private TeamsActivity BuildFinalActivity(string text, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, string? feedback = null, SuggestedActions? suggestedActions = null)
     {
         StreamInfoEntity streamInfo = new() { StreamType = StreamType.Final };
         if (_streamId != null)
@@ -171,7 +182,7 @@ public sealed class TeamsStreamingWriter
             builder.WithSuggestedActions(suggestedActions);
 
         TeamsActivity activity = builder.Build();
-        if (feedbackEnabled) activity.AddFeedback();
+        if (feedback is not null) activity.AddFeedback(feedback);
         return activity;
     }
 

@@ -80,7 +80,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
     await writer.FinalizeResponseAsync(
         attachments: [card],
         entities: [citation],
-        feedbackEnabled: true,
+        feedback: FeedbackType.Default,
         cancellationToken: cancellationToken);
 });
 

@@ -1,15 +1,16 @@
 # ExtAIBot — Microsoft.Extensions.AI sample
 
-A Teams bot powered by [Microsoft.Extensions.AI](https://learn.microsoft.com/dotnet/ai/ai-extensions) and Azure OpenAI. Demonstrates streaming responses, per-conversation memory, local AI tools, remote MCP server tools, inline citations, and a feedback form.
+A Teams bot powered by [Microsoft.Extensions.AI](https://learn.microsoft.com/dotnet/ai/ai-extensions) and Azure OpenAI. Demonstrates streaming responses, per-conversation memory, a local clarification tool, remote MCP server tools, inline citations, follow-up suggestions, and custom feedback.
 
 ## Features
 
 - **Streaming** — token-by-token replies via `TeamsStreamingWriter`
 - **Conversation memory** — each conversation keeps its own `List<ChatMessage>` so the bot remembers context across turns
-- **Local tool** — the model calls `send_welcome_card` (an `AIFunction`) on first greeting, attaching a typed Adaptive Card (`Microsoft.Teams.Cards`) to the reply
-- **MCP client** — connects to the [Microsoft Learn docs MCP server](https://learn.microsoft.com/api/mcp) at startup; its tools are passed alongside local tools in every `ChatOptions`
+- **Local tool** — the model calls `request_clarification` when the user's request is ambiguous; the bot replies with an Adaptive Card listing 2–4 candidate interpretations
+- **MCP client** — connects to the [Microsoft Learn docs MCP server](https://learn.microsoft.com/api/mcp) at startup; its tools are passed alongside the local tool in every `ChatOptions`
 - **Inline citations** — MCP tool results are intercepted by `CitationCapturingTool` to extract source URLs; citations render as `[1]`, `[2]`, etc. in the Teams message
-- **Feedback** — every reply includes thumbs up/down buttons; clicking one opens a task module with a follow-up text form (`OnMessageFetchTask` + `OnMessageSubmitAction`)
+- **Follow-up suggestions** — after each reply, a structured-output call produces two short follow-up prompts shown as suggested-action chips
+- **Custom feedback** — every text reply enables `FeedbackType.Custom`; clicking thumbs up/down opens a bot-rendered task module form, and submissions are handled by the typed `OnMessageSubmitFeedback` route
 
 ## Prerequisites
 
@@ -36,7 +37,6 @@ Fill in `appsettings.json` with your Azure OpenAI details:
 Configure bot credentials via environment variables (or `launchSettings.json`):
 
 ```
-AzureAD__Instance=https://login.microsoftonline.com/
 AzureAD__TenantId=<tenant-id>
 AzureAD__ClientId=<app-id>
 AzureAD__ClientCredentials__0__SourceType=ClientSecret
@@ -56,37 +56,35 @@ The bot connects to the MS Learn MCP server at startup and lists its tools befor
 
 ## Example interactions
 
-- `Hi!` — model calls `send_welcome_card`, bot replies with a greeting and an Adaptive Card listing its capabilities
-- `How do I stream in teams.net?` — model calls an MS Learn search tool, replies with docs-grounded answer and inline citations
-- `What did I just say?` — bot recalls earlier messages in the conversation
+- `Tell me about streaming` — ambiguous request: the model calls `request_clarification` and the bot replies with a card asking the user to choose between, e.g., "Teams streaming" vs ".NET I/O streams"
+- `How do I stream in teams.net?` — model calls an MS Learn search tool, replies with docs-grounded answer and inline citations, plus two follow-up chips
 
-## Architecture
+### Clarification flow
 
-```
-Program.cs
-├── AzureOpenAIClient → IChatClient (Microsoft.Extensions.AI)
-│     └── UseFunctionInvocation()          ← handles tool calls transparently during streaming
-├── McpClient (HttpClientTransport, StreamableHttp)
-│     └── https://learn.microsoft.com/api/mcp  ← MS Learn docs search tools
-│           └── CitationCapturingTool           ← wraps each McpClientTool to extract citations
-├── CitationCollector                           ← accumulates citations per turn
-├── ConcurrentDictionary<conversationId, List<ChatMessage>>  ← conversation memory
-├── AIFunctionFactory.Create(send_welcome_card)              ← local AI tool
-└── TeamsStreamingWriter                                      ← streams reply into Teams
-```
+When the user's message is ambiguous, the model calls `request_clarification` with a question and 2–4 options. `LocalTools` builds an Adaptive Card with an `Action.Execute` whose `verb` is `"clarification"`. The bot finalizes the reply as an attachment-only message (no text, no feedback loop) so the card stands alone.
 
-### How MCP tools are wired in
-
-At startup, `McpClient.CreateAsync` connects to the MS Learn MCP server using the Streamable HTTP transport. `ListToolsAsync()` returns `IList<McpClientTool>`, where each `McpClientTool` is an `AIFunction` that holds a reference to the client and calls the server when invoked.
-
-Each tool is wrapped in a `CitationCapturingTool` (a `DelegatingAIFunction`) that intercepts the result to extract citation URLs before passing it back to the model. These are spread into `ChatOptions.Tools` alongside the local `send_welcome_card` tool:
-
-```csharp
-ChatOptions options = new() { Tools = [welcomeCardTool, .. mcpTools.GetTools(citations)] };
-```
-
-`UseFunctionInvocation()` then handles all tool calls — local or remote — transparently during streaming.
+When the user picks an option, Teams sends an `adaptiveCard/action` invoke. `OnAdaptiveCardAction` reads `clarificationChoice` from the action's data and feeds it back through the agent as the next user turn.
 
 ### Feedback flow
 
-When the user clicks thumbs up or thumbs down on a bot reply, Teams sends a `message/fetchTask` invoke. `OnMessageFetchTask` returns a task module containing a feedback form (built with `Microsoft.Teams.Cards`). On submit, `OnMessageSubmitAction` receives the reaction and free-text feedback.
+Every text reply is finalized with `FeedbackType.Custom`, which renders thumbs up/down on the bot bubble. Clicking either button sends a `message/fetchTask` invoke; `OnMessageFetchTask` returns a task module containing a follow-up text form built with `Microsoft.Teams.Cards`. On submit, the typed `OnMessageSubmitFeedback` route fires with `context.Activity.Value` already deserialized to `MessageSubmitFeedbackValue { Reaction, Feedback }`. (`Feedback` is the form payload as a JSON-encoded string — Teams wraps the inputs the bot defined in its task module.)
+
+
+### How MCP tools are wired in
+
+At startup, `McpToolSet.CreateAsync` connects to the MS Learn MCP server using the Streamable HTTP transport and lists its tools. Each `McpClientTool` is an `AIFunction` that holds a reference to the client and calls the server when invoked.
+
+Each tool is wrapped in a `CitationCapturingTool` (a `DelegatingAIFunction`) that intercepts the result to extract citation URLs before passing it back to the model. These are spread into `ChatOptions.Tools` alongside the local clarification tool:
+
+```csharp
+ChatOptions options = new()
+{
+    Tools =
+    [
+        LocalTools.CreateClarificationCardTool(pendingCards),
+        .. _mcpTools.GetTools(citations)
+    ]
+};
+```
+
+`UseFunctionInvocation()` then handles all tool calls — local or remote — transparently during streaming.

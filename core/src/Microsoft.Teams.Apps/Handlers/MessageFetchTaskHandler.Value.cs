@@ -27,13 +27,13 @@ public class MessageFetchTaskData
     /// <summary>
     /// The name of the action.
     /// </summary>
-    [JsonPropertyName("action_name")]
+    [JsonPropertyName("actionName")]
     public string? ActionName { get; set; }
 
     /// <summary>
     /// Contains the user's reaction.
     /// </summary>
-    [JsonPropertyName("action_value")]
+    [JsonPropertyName("actionValue")]
     public MessageFetchTaskActionValue? ActionValue { get; set; }
 }
 

@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System.ClientModel;
-using System.Text.Json;
 using Azure.AI.OpenAI;
 using ExtAIBot;
 using Microsoft.Extensions.AI;
@@ -64,11 +63,16 @@ async Task RespondAsync<TActivity>(Context<TActivity> context, string userText, 
         ? new SuggestedActions().AddActions([.. result.FollowUpActions])
         : null;
 
+    // When the agent returns a card (e.g. clarification), send it as an attachment-only
+    // reply — no text and no feedback loop, since the card IS the question. Citations and
+    // suggested actions still go through.
+    //TODO : work on streaming final response API
     await writer.FinalizeResponseAsync(
         attachments: attachments,
         entities: entities,
-        feedbackEnabled: true,
+        feedback: attachments != null ? null : FeedbackType.Custom,
         suggestedActions: suggestedActions,
+        text: attachments != null ? "" : null,
         cancellationToken: cancellationToken);
 }
 
@@ -76,8 +80,21 @@ async Task RespondAsync<TActivity>(Context<TActivity> context, string userText, 
 
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
-    string userText = ResolveUserText(context.Activity);
+    string userText = context.Activity.TextWithoutMentions ?? "";
     await RespondAsync(context, userText, cancellationToken);
+});
+
+// ── Clarification: adaptive card action ───────────────────────────────────────
+// Triggered when the user submits the clarification card (Action.Execute, verb "clarification").
+
+teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
+{
+    if (context.Activity.Value?.Action?.Verb == "clarification")
+    {
+        string choice = context.Activity.Value.Action.Data?["clarificationChoice"]?.ToString() ?? "";
+        await RespondAsync(context, choice, cancellationToken);
+    }
+    return InvokeResponse.Ok();
 });
 
 // ── Feedback: message fetch task ───────────────────────────────────────────────
@@ -99,49 +116,19 @@ teamsApp.OnMessageFetchTask((context, cancellationToken) =>
 // ── Feedback: message submit action ───────────────────────────────────────────
 // Triggered when the user submits the feedback form.
 
-teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
+teamsApp.OnMessageSubmitFeedback((context, cancellationToken) =>
 {
-    string? actionName = context.Activity.Value?.ActionName;
-
-    if (actionName == "feedback")
-    {
-        string? reaction = context.Activity.Value?.ActionValue?["reaction"]?.GetValue<string>();
-        string? feedbackText = context.Activity.Value?.ActionValue?["feedbackText"]?.GetValue<string>();
-        Console.WriteLine($"Feedback received — reaction: {reaction}, text: {feedbackText}");
-    }
-
-    return InvokeResponse.Ok();
+    MessageSubmitFeedbackValue? feedback = context.Activity.Value;
+    Console.WriteLine($"Feedback received — reaction: {feedback?.Reaction}, feedback: {feedback?.Feedback}");
+    return Task.FromResult(InvokeResponse.Ok());
 });
 
 webApp.Run();
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
-// Adaptive Card Submit actions arrive as a MessageActivity with empty Text and
-// a JSON Value containing the form data merged with the action's `data` property.
-// Unwrap our clarification action's chosen value so it flows into the agent as
-// a normal user turn.
-static string ResolveUserText(MessageActivity activity)
-{
-    if (activity.Properties.TryGetValue("value", out object? raw)
-        && raw is JsonElement value
-        && value.ValueKind == JsonValueKind.Object
-        && value.TryGetProperty("actionName", out JsonElement actionName)
-        && actionName.GetString() == "clarification"
-        && value.TryGetProperty("clarificationChoice", out JsonElement choice))
-    {
-        return choice.GetString() ?? "";
-    }
-
-    return activity.TextWithoutMentions ?? "";
-}
-
 static TeamsAttachment BuildFeedbackCard(string? reaction)
 {
-    var submitData = new SubmitActionData();
-    submitData.NonSchemaProperties["actionName"] = "feedback";
-    submitData.NonSchemaProperties["actionValue"] = new Dictionary<string, object?> { ["reaction"] = reaction ?? "" };
-
     return TeamsAttachment.CreateBuilder()
         .WithAdaptiveCard(new AdaptiveCard(
             new TextBlock(reaction is null
@@ -152,9 +139,6 @@ static TeamsAttachment BuildFeedbackCard(string? reaction)
                 .WithId("feedbackText")
                 .WithPlaceholder("Enter your feedback here...")
                 .WithIsMultiline(true))
-            .WithActions(
-                new SubmitAction()
-                    .WithTitle("Submit")
-                    .WithData(new Union<string, SubmitActionData>(submitData))))
+        .WithActions(new SubmitAction().WithTitle("Submit")))  
         .Build();
 }

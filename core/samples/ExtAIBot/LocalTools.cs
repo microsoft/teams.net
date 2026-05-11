@@ -30,17 +30,12 @@ static class LocalTools
             },
             "request_clarification",
             "Show an Adaptive Card asking the user to clarify their request. " +
-            "The card IS the entire response — do not emit any text alongside " +
-            "or after calling this tool. " +
             "Use only when the user's message is genuinely ambiguous and you cannot answer " +
             "without knowing which of several interpretations they meant. The user picks " +
             "one option and submits; their choice arrives as the next user turn.");
 
     private static JsonElement BuildClarificationCard(string question, string[] options)
     {
-        SubmitActionData submitData = new();
-        submitData.NonSchemaProperties["actionName"] = "clarification";
-
         AdaptiveCard card = new AdaptiveCard(
             new TextBlock(question)
                 .WithSize(TextSize.Medium)
@@ -52,9 +47,9 @@ static class LocalTools
                 .WithErrorMessage("Please pick one option."))
             .WithVersion(Microsoft.Teams.Cards.Version.Version1_6)
             .WithActions(
-                new SubmitAction()
+                new ExecuteAction()
                     .WithTitle("Submit")
-                    .WithData(new Union<string, SubmitActionData>(submitData))
+                    .WithVerb("clarification")
                     .WithAssociatedInputs(AssociatedInputs.Auto));
 
         return JsonSerializer.SerializeToElement(card, SerializerOptions);
