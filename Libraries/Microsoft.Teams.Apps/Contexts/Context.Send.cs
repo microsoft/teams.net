@@ -89,6 +89,15 @@ public partial class Context<TActivity> : IContext<TActivity>
 {
     public async Task<T> Send<T>(T activity, CancellationToken cancellationToken = default) where T : IActivity
     {
+        // Auto-populate targetedMessageInfo entity for prompt preview
+        // when the incoming activity was a targeted message (reactive flow).
+        #pragma warning disable ExperimentalTeamsTargeted
+        if (activity is MessageActivity messageActivity && Activity.Recipient?.IsTargeted == true && Activity.Id is not null)
+        {
+            messageActivity.AddTargetedMessageInfo(Activity.Id);
+        }
+        #pragma warning restore ExperimentalTeamsTargeted
+
         var res = await Sender.Send(activity, Ref, CancellationToken);
         await OnActivitySent(res, ToActivityType<IActivity>());
         return res;
