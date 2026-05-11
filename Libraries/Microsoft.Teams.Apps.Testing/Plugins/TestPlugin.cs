@@ -119,11 +119,19 @@ public partial class TestPlugin : ISenderPlugin
 
     public Task<IActivity> Send(IActivity activity, ConversationReference reference, CancellationToken cancellationToken = default)
     {
-        return Task.FromResult(activity);
+        return Send<IActivity>(activity, reference, cancellationToken);
     }
 
     public Task<TActivity> Send<TActivity>(TActivity activity, ConversationReference reference, CancellationToken cancellationToken = default) where TActivity : IActivity
     {
+        #pragma warning disable ExperimentalTeamsTargeted
+        if (activity.Recipient?.IsTargeted == true && reference.Conversation.Type?.IsPersonal == true)
+        {
+            throw new InvalidOperationException(
+                "Targeted messages are not supported in personal (1:1) chats.");
+        }
+        #pragma warning restore ExperimentalTeamsTargeted
+
         return Task.FromResult(activity);
     }
 
