@@ -185,7 +185,7 @@ public static class AddBotApplicationExtensions
             {
                 ILogger logger = GetLoggerFromServices(services);
                 logger.InferringUserAssignedManagedIdentity(botConfig.ClientId);
-                services.Configure<ManagedIdentityOptions>(options =>
+                services.Configure<ManagedIdentityOptions>(botConfig.SectionName, options =>
                 {
                     options.UserAssignedClientId = botConfig.ClientId;
                 });
@@ -206,7 +206,7 @@ public static class AddBotApplicationExtensions
                     sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                     sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
                     botConfig.SectionName,
-                    sp.GetService<IOptions<ManagedIdentityOptions>>()));
+                    sp.GetService<IOptionsMonitor<ManagedIdentityOptions>>()));
         }
         else
         {

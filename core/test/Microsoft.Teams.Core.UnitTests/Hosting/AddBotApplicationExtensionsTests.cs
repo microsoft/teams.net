@@ -171,10 +171,10 @@ public class AddBotApplicationExtensionsTests
         // Act
         ServiceProvider serviceProvider = BuildServiceProviderWithManagedIdentity(configData);
 
-        // Assert
+        // Assert: named options entry under the section name carries the UMI client id
         ManagedIdentityOptions miOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<ManagedIdentityOptions>>()
-            .CurrentValue;
+            .Get("AzureAd");
 
         Assert.NotNull(miOptions);
         Assert.Equal("umi-client-id", miOptions.UserAssignedClientId);
@@ -195,12 +195,11 @@ public class AddBotApplicationExtensionsTests
         // Act
         ServiceProvider serviceProvider = BuildServiceProviderWithManagedIdentity(configData);
 
-        // Assert
+        // Assert: when ClientCredentials are present, the named entry must remain empty
         ManagedIdentityOptions miOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<ManagedIdentityOptions>>()
-            .CurrentValue;
+            .Get("AzureAd");
 
-        // When ClientCredentials are present, ManagedIdentityOptions should not be configured with UserAssignedClientId
         Assert.Null(miOptions.UserAssignedClientId);
     }
 
@@ -220,10 +219,47 @@ public class AddBotApplicationExtensionsTests
         // Assert
         ManagedIdentityOptions miOptions = serviceProvider
             .GetRequiredService<IOptionsMonitor<ManagedIdentityOptions>>()
-            .CurrentValue;
+            .Get("CustomAuth");
 
         Assert.NotNull(miOptions);
         Assert.Equal("custom-umi-client-id", miOptions.UserAssignedClientId);
+    }
+
+    [Fact]
+    public void AddBotApplication_WithMultipleSections_IsolatesManagedIdentityPerSection()
+    {
+        // Arrange: one UMI section and one app-secret section in the same host.
+        Dictionary<string, string?> configData = new()
+        {
+            // UMI bot — no ClientCredentials
+            ["UmiBot:ClientId"] = "umi-client-id",
+            ["UmiBot:TenantId"] = "umi-tenant-id",
+
+            // App-secret bot — has ClientCredentials, must NOT be classified as UMI
+            ["SecretBot:ClientId"] = "secret-client-id",
+            ["SecretBot:TenantId"] = "secret-tenant-id",
+            ["SecretBot:ClientCredentials:0:SourceType"] = "ClientSecret",
+            ["SecretBot:ClientCredentials:0:ClientSecret"] = "secret-value"
+        };
+
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+        services.AddBotApplication("UmiBot");
+        services.AddBotApplication("SecretBot");
+
+        // Act
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        IOptionsMonitor<ManagedIdentityOptions> monitor = serviceProvider
+            .GetRequiredService<IOptionsMonitor<ManagedIdentityOptions>>();
+
+        // Assert: UMI section gets its own ClientId; app-secret section is untouched.
+        Assert.Equal("umi-client-id", monitor.Get("UmiBot").UserAssignedClientId);
+        Assert.Null(monitor.Get("SecretBot").UserAssignedClientId);
     }
 
     [Fact]
