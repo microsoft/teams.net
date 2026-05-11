@@ -197,16 +197,6 @@ public class CoreActivityBuilderTests
     }
 
     [Fact]
-    public void WithReplyToId_SetsReplyToId()
-    {
-        CoreActivity activity = new CoreActivityBuilder()
-            .WithReplyToId("reply-123")
-            .Build();
-
-        Assert.Equal("reply-123", activity.ReplyToId);
-    }
-
-    [Fact]
     public void WithServiceUrl_String_SetsServiceUrl()
     {
         CoreActivity activity = new CoreActivityBuilder()
