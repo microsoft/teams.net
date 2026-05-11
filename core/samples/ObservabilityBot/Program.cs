@@ -51,19 +51,36 @@ builder.Services.AddOpenTelemetry()
 
 builder.Logging.AddOpenTelemetry(o => o.IncludeFormattedMessage = true);
 
-// Register MCP client
-builder.Services.AddSingleton(async sp =>
-{
-    var mcpClient = await McpClient.CreateAsync(
+// Register MCP clients
+builder.Services.AddKeyedSingleton("msdocs", (sp, key) =>
+    McpClient.CreateAsync(
         new HttpClientTransport(new()
         {
             Endpoint = new Uri("https://learn.microsoft.com/api/mcp"),
             TransportMode = HttpTransportMode.AutoDetect,
             Name = "msdocs"
-        }));
+        })));
 
-    return mcpClient;
-});
+var tenantId = builder.Configuration["AzureAd:TenantId"] ?? throw new InvalidDataException("AzureAd:TenantId not found");
+
+builder.Services.AddKeyedSingleton("calendarTools", (sp, key) =>
+    McpClient.CreateAsync(
+        new HttpClientTransport(new()
+        {
+            Endpoint = new Uri("https://agent365.svc.cloud.microsoft/agents/servers/mcp_CalendarTools"),
+            TransportMode = HttpTransportMode.AutoDetect,
+            Name = "calendarTools"
+        })));
+
+builder.Services.AddKeyedSingleton("disco", (sp, key) =>
+    McpClient.CreateAsync(
+        new HttpClientTransport(new()
+        {
+            Endpoint = new Uri("https://agent365.svc.cloud.microsoft/agents/discoverMCPServers"),
+            TransportMode = HttpTransportMode.AutoDetect,
+            Name = "disco"
+        })));
+
 
 // Register IChatClient
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidDataException("AZURE_OPENAI_ENDPOINT not found");
@@ -80,17 +97,25 @@ builder.Services.AddSingleton<IChatClient>(sp =>
     .UseLogging(sp.GetRequiredService<ILoggerFactory>())
     .Build());
 
-builder.Services.AddSingleton(async sp =>
+builder.Services.AddSingleton(sp =>
 {
-    var mcpClient = sp.GetRequiredService<McpClient>();
-    var tools = await mcpClient.ListToolsAsync();
-    Console.WriteLine("Tools Found: " + string.Join(", ", tools.Select(t => t.Name)));
+    var msdocsClient = sp.GetRequiredKeyedService<Task<McpClient>>("msdocs").GetAwaiter().GetResult();
+    //var calendarClient = sp.GetRequiredKeyedService<Task<McpClient>>("calendarTools").GetAwaiter().GetResult();
+    var discoClient = sp.GetRequiredKeyedService<Task<McpClient>>("disco").GetAwaiter().GetResult();
+
+    var msdocsTools = msdocsClient.ListToolsAsync().GetAwaiter().GetResult();
+    //var calendarTools = calendarClient.ListToolsAsync().GetAwaiter().GetResult();
+    var discoTools = discoClient.ListToolsAsync().GetAwaiter().GetResult();
+
+    //var allTools = msdocsTools.Concat(calendarTools).Concat(discoTools).ToList();
+    var allTools = msdocsTools.Concat(discoTools).ToList();
+    Console.WriteLine("Tools Found: " + string.Join(", ", allTools.Select(t => t.Name)));
 
     return new ChatOptions
     {
         AllowMultipleToolCalls = true,
-        Instructions = "Use the following tools to answer the user's question. If you don't know the answer, use the 'Search Microsoft Docs' tool to find relevant information.",
-        Tools = [.. tools]
+        Instructions = "Use the following tools to answer the user's question. If you don't know the answer, use the 'Search Microsoft Docs' tool to find relevant information. Use calendar tools for scheduling-related queries.",
+        Tools = [.. allTools]
     };
 });
 
