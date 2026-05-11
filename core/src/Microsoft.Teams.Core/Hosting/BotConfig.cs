@@ -13,7 +13,6 @@ namespace Microsoft.Teams.Core.Hosting;
 /// </summary>
 internal sealed class BotConfig
 {
-    private const string BotScope = "https://api.botframework.com/.default";
     internal const string DefaultSectionName = "AzureAd";
 
     /// <summary>
@@ -31,12 +30,6 @@ internal sealed class BotConfig
     /// Also used as the MSAL named-options key and the JWT auth scheme name.
     /// </summary>
     public string SectionName { get; set; } = DefaultSectionName;
-
-    /// <summary>
-    /// Gets or sets the scope for token acquisition.
-    /// Defaults to "https://api.botframework.com/.default" if not specified.
-    /// </summary>
-    public string Scope { get; set; } = BotScope;
 
     internal IConfigurationSection? MsalConfigurationSection { get; set; }
 
@@ -82,7 +75,6 @@ internal sealed class BotConfig
         {
             TenantId = section["TenantId"] ?? string.Empty,
             ClientId = section["ClientId"] ?? string.Empty,
-            Scope = section["Scope"] ?? BotScope,
             MsalConfigurationSection = section,
             SectionName = sectionName
         };
