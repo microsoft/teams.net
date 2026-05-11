@@ -781,7 +781,6 @@ Hierarchical configuration with conventions.
     "Instance": "https://login.microsoftonline.com/",
     "TenantId": "...",
     "ClientId": "...",
-    "Scope": "https://api.botframework.com/.default",
     "ClientCredentials": [
       {
         "SourceType": "ClientSecret",
