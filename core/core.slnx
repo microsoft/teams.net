@@ -19,7 +19,9 @@
     <Project Path="samples/MeetingsBot/MeetingsBot.csproj" />
     <Project Path="samples/MessageExtensionBot/MessageExtensionBot.csproj" />
     <Project Path="samples/OAuthFlowBot/OAuthFlowBot.csproj" />
-    <Project Path="samples/ObservabilityBot/ObservabilityBot.csproj" />
+    <Project Path="samples/ObservabilityBot/ObservabilityBot.csproj">
+      <Build Solution="Debug|*" Project="false" />
+    </Project>
     <Project Path="samples/PABot/PABot.csproj" Id="ef8f29ef-fe59-4edf-8a50-6e7ab6699a45" />
     <Project Path="samples/SsoBot/SsoBot.csproj" />
     <Project Path="samples/StreamingBot/StreamingBot.csproj" />
@@ -44,10 +46,14 @@
     <Project Path="test/Microsoft.Teams.Apps.UnitTests/Microsoft.Teams.Apps.UnitTests.csproj" Id="16f5e8eb-ccb0-40e6-9630-a9d936d6ccde" />
     <Project Path="test/Microsoft.Teams.Apps.BotBuilder.UnitTests/Microsoft.Teams.Apps.BotBuilder.UnitTests.csproj" Id="17f5e8eb-ccb0-40e6-9630-a9d936d6ccde" />
     <Project Path="test/Microsoft.Teams.Core.UnitTests/Microsoft.Teams.Core.UnitTests.csproj" Id="8e6790ed-0352-45f6-b3dc-0c4c3bcab038" />
-    <Project Path="test/msal-config-api/msal-config-api.csproj" Id="54f814fa-348e-4fd3-8bc9-70cd2aedc9ae" />
+    <Project Path="test/msal-config-api/msal-config-api.csproj" Id="54f814fa-348e-4fd3-8bc9-70cd2aedc9ae">
+      <Build Solution="Debug|*" Project="false" />
+    </Project>
   </Folder>
   <Project Path="src/Microsoft.Teams.Apps/Microsoft.Teams.Apps.csproj" Id="0e993a63-8a1a-4cdf-8a29-cc8c59bd6c30" />
-  <Project Path="../../opentelemetry-distro-dotnet/src/Microsoft.OpenTelemetry/Microsoft.OpenTelemetry.csproj" />
+  <Project Path="../../opentelemetry-distro-dotnet/src/Microsoft.OpenTelemetry/Microsoft.OpenTelemetry.csproj">
+    <Build Solution="Debug|*" Project="false" />
+  </Project>
   <Project Path="src/Microsoft.Teams.Apps.BotBuilder/Microsoft.Teams.Apps.BotBuilder.csproj" />
   <Project Path="src/Microsoft.Teams.Core/Microsoft.Teams.Core.csproj" />
 </Solution>
