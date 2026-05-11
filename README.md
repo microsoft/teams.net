@@ -16,25 +16,25 @@ a suite of packages used to build on the Teams Platform.
 ### Build
 
 ```bash
-$: dotnet build
+dotnet build
 ```
 
 ### Clean
 
 ```bash
-$: dotnet clean
+dotnet clean
 ```
 
 ### Format
 
 ```bash
-$: dotnet format
+dotnet format
 ```
 
 ### Test
 
 ```bash
-$: dotnet test
+dotnet test
 ```
 
 ## Public Preview Packages
