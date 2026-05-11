@@ -103,7 +103,7 @@ public class TeamsAttachmentBuilder
     {
         ArgumentNullException.ThrowIfNull(adaptiveCard);
         _attachment.ContentType = AdaptiveCardContentType;
-        _attachment.Content = adaptiveCard is JsonElement je ? je : JsonSerializer.SerializeToElement(adaptiveCard);
+        _attachment.Content = adaptiveCard;
         _attachment.ContentUrl = null;
         return this;
     }

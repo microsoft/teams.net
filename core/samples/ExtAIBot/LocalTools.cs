@@ -2,9 +2,11 @@
 // Licensed under the MIT License.
 
 using System.ComponentModel;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
-using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Cards;
+using Microsoft.Teams.Common;
 
 namespace ExtAIBot;
 
@@ -13,39 +15,48 @@ static class LocalTools
 {
     // Returns a fresh AIFunction each turn; pendingCards is a per-turn accumulator
     // captured by closure.
-    public static AIFunction CreateWelcomeCardTool(IList<object> pendingCards) =>
-        AIFunctionFactory.Create(
-            ([Description("Greeting message for the user, e.g. 'Hello, Alex!'")] string greeting) =>
-            {
-                pendingCards.Add(BuildWelcomeCard(greeting));
-                return "Card attached.";
-            },
-            "send_welcome_card",
-            "Attach a welcome Adaptive Card that shows the bot's capabilities.");
 
-    // Stores 2 follow-up prompt suggestions the model thinks the user might want next.
-    public static AIFunction CreateSuggestFollowUpsTool(IList<SuggestedAction> pendingActions) =>
+    private static readonly JsonSerializerOptions SerializerOptions = new()
+    {
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+    };
+    public static AIFunction CreateClarificationCardTool(IList<object> pendingCards) =>
         AIFunctionFactory.Create(
-            ([Description("First follow-up prompt suggestion")] string prompt1,
-             [Description("Second follow-up prompt suggestion")] string prompt2) =>
+            ([Description("The clarification question to ask the user.")] string question,
+             [Description("2–4 candidate interpretations the user can pick between.")] string[] options) =>
             {
-                pendingActions.Add(new SuggestedAction(ActionType.IMBack, prompt1));
-                pendingActions.Add(new SuggestedAction(ActionType.IMBack, prompt2));
-                return "Suggestions set.";
+                pendingCards.Add(BuildClarificationCard(question, options));
+                return "Clarification card attached.";
             },
-            "suggest_follow_ups",
-            "Suggest 2 follow-up prompts the user might want to ask next.");
+            "request_clarification",
+            "Show an Adaptive Card asking the user to clarify their request. " +
+            "The card IS the entire response — do not emit any text alongside " +
+            "or after calling this tool. " +
+            "Use only when the user's message is genuinely ambiguous and you cannot answer " +
+            "without knowing which of several interpretations they meant. The user picks " +
+            "one option and submits; their choice arrives as the next user turn.");
 
-    private static AdaptiveCard BuildWelcomeCard(string greeting) =>
-        new AdaptiveCard(
-            new TextBlock($"{greeting} Here are some things I can do:")
-                .WithSize(TextSize.Large)
+    private static JsonElement BuildClarificationCard(string question, string[] options)
+    {
+        SubmitActionData submitData = new();
+        submitData.NonSchemaProperties["actionName"] = "clarification";
+
+        AdaptiveCard card = new AdaptiveCard(
+            new TextBlock(question)
+                .WithSize(TextSize.Medium)
                 .WithWeight(TextWeight.Bolder)
                 .WithWrap(true),
-            new FactSet(
-                new Fact("Memory",    "Per-conversation context across turns"),
-                new Fact("Streaming", "Token-by-token replies as the model generates them"),
-                new Fact("Tools",     "Local functions + remote MCP servers"),
-                new Fact("Docs",      "Microsoft Learn search with inline citations"),
-                new Fact("Feedback",  "Thumbs up / down with a follow-up form")));
+            new ChoiceSetInput([.. options.Select(o => new Choice { Title = o, Value = o })])
+                .WithId("clarificationChoice")
+                .WithIsRequired(true)
+                .WithErrorMessage("Please pick one option."))
+            .WithVersion(Microsoft.Teams.Cards.Version.Version1_6)
+            .WithActions(
+                new SubmitAction()
+                    .WithTitle("Submit")
+                    .WithData(new Union<string, SubmitActionData>(submitData))
+                    .WithAssociatedInputs(AssociatedInputs.Auto));
+
+        return JsonSerializer.SerializeToElement(card, SerializerOptions);
+    }
 }

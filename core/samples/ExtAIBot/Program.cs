@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System.ClientModel;
+using System.Text.Json;
 using Azure.AI.OpenAI;
 using ExtAIBot;
 using Microsoft.Extensions.AI;
@@ -41,13 +42,14 @@ webApp.Lifetime.ApplicationStopping.Register(() => _ = mcpTools.DisposeAsync());
 
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
-// ── Message handler ────────────────────────────────────────────────────────────
-
-teamsApp.OnMessage(async (context, cancellationToken) =>
+// Runs the agent and streams a response back. Shared between the incoming-message
+// handler and the clarification-card submit handler — both flows ultimately just
+// feed a user-supplied string into the agent.
+async Task RespondAsync<TActivity>(Context<TActivity> context, string userText, CancellationToken cancellationToken)
+    where TActivity : TeamsActivity
 {
     string conversationId = context.Activity.Conversation?.Id
         ?? throw new InvalidOperationException("Missing conversation ID.");
-    string userText = context.Activity.TextWithoutMentions ?? string.Empty;
 
     TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
     RunResult result = await agent.RunAsync(conversationId, userText, writer, cancellationToken);
@@ -58,16 +60,24 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         ? [.. result.PendingCards.Select(c => TeamsAttachment.CreateBuilder().WithAdaptiveCard(c).Build())]
         : null;
 
-    SuggestedActions? suggestedActions = result.PendingActions.Count > 0
-        ? new SuggestedActions().AddActions([.. result.PendingActions])
+    SuggestedActions? suggestedActions = result.FollowUpActions.Count > 0
+        ? new SuggestedActions().AddActions([.. result.FollowUpActions])
         : null;
 
     await writer.FinalizeResponseAsync(
         attachments: attachments,
-        entities: entities.Count > 0 ? entities : null,
+        entities: entities,
         feedbackEnabled: true,
         suggestedActions: suggestedActions,
         cancellationToken: cancellationToken);
+}
+
+// ── Message handler ────────────────────────────────────────────────────────────
+
+teamsApp.OnMessage(async (context, cancellationToken) =>
+{
+    string userText = ResolveUserText(context.Activity);
+    await RespondAsync(context, userText, cancellationToken);
 });
 
 // ── Feedback: message fetch task ───────────────────────────────────────────────
@@ -89,20 +99,42 @@ teamsApp.OnMessageFetchTask((context, cancellationToken) =>
 // ── Feedback: message submit action ───────────────────────────────────────────
 // Triggered when the user submits the feedback form.
 
-teamsApp.OnMessageSubmitAction((context, cancellationToken) =>
+teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
 {
-    if (context.Activity.Value?.ActionName == "feedback")
+    string? actionName = context.Activity.Value?.ActionName;
+
+    if (actionName == "feedback")
     {
         string? reaction = context.Activity.Value?.ActionValue?["reaction"]?.GetValue<string>();
         string? feedbackText = context.Activity.Value?.ActionValue?["feedbackText"]?.GetValue<string>();
         Console.WriteLine($"Feedback received — reaction: {reaction}, text: {feedbackText}");
     }
-    return Task.FromResult(InvokeResponse.Ok());
+
+    return InvokeResponse.Ok();
 });
 
 webApp.Run();
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
+
+// Adaptive Card Submit actions arrive as a MessageActivity with empty Text and
+// a JSON Value containing the form data merged with the action's `data` property.
+// Unwrap our clarification action's chosen value so it flows into the agent as
+// a normal user turn.
+static string ResolveUserText(MessageActivity activity)
+{
+    if (activity.Properties.TryGetValue("value", out object? raw)
+        && raw is JsonElement value
+        && value.ValueKind == JsonValueKind.Object
+        && value.TryGetProperty("actionName", out JsonElement actionName)
+        && actionName.GetString() == "clarification"
+        && value.TryGetProperty("clarificationChoice", out JsonElement choice))
+    {
+        return choice.GetString() ?? "";
+    }
+
+    return activity.TextWithoutMentions ?? "";
+}
 
 static TeamsAttachment BuildFeedbackCard(string? reaction)
 {

@@ -60,7 +60,7 @@ sealed class CitationCollector
             })];
 
         return claims.Count == 0
-            ? []
+            ? [new OMessageEntity { AdditionalType = ["AIGeneratedContent"] }]
             : [new CitationEntity { AdditionalType = ["AIGeneratedContent"], Citation = claims }];
     }
 
