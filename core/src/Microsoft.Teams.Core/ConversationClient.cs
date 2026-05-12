@@ -27,7 +27,12 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
     internal const string ConversationHttpClientName = "BotConversationClient";
 
-    internal BotHttpClient BotHttpClient => _botHttpClient;
+    /// <summary>
+    /// Gets the underlying <see cref="Http.BotHttpClient"/> used to issue authenticated requests to the conversation service.
+    /// Exposed so consumers can reuse the same auth-bound HTTP pipeline for channel- or platform-specific endpoints
+    /// not modeled directly on <see cref="ConversationClient"/>.
+    /// </summary>
+    public BotHttpClient BotHttpClient => _botHttpClient;
 
     /// <summary>
     /// Gets the default custom headers that will be included in all requests.

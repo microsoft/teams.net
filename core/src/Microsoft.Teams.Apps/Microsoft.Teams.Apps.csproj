@@ -7,12 +7,17 @@
     <NoWarn>$(NoWarn);ExperimentalTeamsQuotedReplies</NoWarn>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PackageId>Microsoft.Teams.Apps</PackageId>
+    <Description>Create Microsoft Teams Bot Applications with ease.</Description>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-	  <InternalsVisibleTo Include="Microsoft.Teams.Apps.UnitTests" />
+    <InternalsVisibleTo Include="Microsoft.Teams.Apps.UnitTests" />
   </ItemGroup>
 
 </Project>
