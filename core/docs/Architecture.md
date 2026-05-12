@@ -780,7 +780,6 @@ Hierarchical configuration with conventions.
   "AzureAd": {
     "TenantId": "...",
     "ClientId": "...",
-    "Scope": "https://api.botframework.com/.default",
     "ClientCredentials": [
       {
         "SourceType": "ClientSecret",
