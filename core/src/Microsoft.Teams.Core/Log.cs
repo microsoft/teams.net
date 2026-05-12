@@ -85,11 +85,6 @@ internal static partial class Log
     [LoggerMessage(EventId = 32, Level = LogLevel.Debug, Message = "Executing middleware '{Middleware}' ({Index}/{Count}).")]
     public static partial void MiddlewareExecuting(this ILogger logger, string middleware, int index, int count);
 
-    // ── BotAuthenticationHandler ────────────────────────────────────────
-
-    [LoggerMessage(EventId = 40, Level = LogLevel.Debug, Message = "Applying User-Assigned Managed Identity for token acquisition (ClientId '{ClientId}').")]
-    public static partial void ApplyingManagedIdentity(this ILogger logger, string clientId);
-
     // ── JwtExtensions ───────────────────────────────────────────────────
 
     [LoggerMessage(EventId = 50, Level = LogLevel.Trace, Message = "Resolving signing keys from OIDC authority '{Authority}' for issuer '{Issuer}'.")]
@@ -112,4 +107,9 @@ internal static partial class Log
 
     [LoggerMessage(EventId = 56, Level = LogLevel.Warning, Message = "Using bypass authentication scheme succeeded for scheme: {Scheme}. This is INSECURE and should only be used for development.")]
     public static partial void BypassAuthenticationSucceeded(this ILogger logger, string scheme);
+
+    // ── Hosting (UMI inference) ─────────────────────────────────────────
+
+    [LoggerMessage(EventId = 60, Level = LogLevel.Information, Message = "No ClientCredentials configured; treating ClientId '{ClientId}' as a User-Assigned Managed Identity. Bot Framework tokens will be acquired via the IMDS endpoint.")]
+    public static partial void InferringUserAssignedManagedIdentity(this ILogger logger, string clientId);
 }

@@ -775,24 +775,27 @@ graph TB
 
 Hierarchical configuration with conventions.
 
-```csharp
+```json
 {
   "AzureAd": {
-    "ClientId": "...",
     "TenantId": "...",
-    "ClientSecret": "..."
-  },
-  "MicrosoftAppId": "...",
-  "MicrosoftAppPassword": "...",
-  "MicrosoftAppType": "MultiTenant"
+    "ClientId": "...",
+    "ClientCredentials": [
+      {
+        "SourceType": "ClientSecret",
+        "ClientSecret": "..."
+      }
+    ]
+  }
 }
 ```
 
-**Configuration Precedence**:
-1. Environment variables
-2. appsettings.json
-3. Configuration section (AzureAd, etc.)
-4. Fallback defaults
+**Configuration Sources** (standard ASP.NET Core resolution order, lowest to highest priority):
+1. `appsettings.json`
+2. `appsettings.{Environment}.json`
+3. User Secrets (Development environment only)
+4. Environment variables (e.g. `AzureAd__ClientId`)
+5. Command-line arguments
 
 ### 3. **Authentication Pattern**
 
