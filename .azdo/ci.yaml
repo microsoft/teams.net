@@ -39,9 +39,19 @@ stages:
     - bash: |
         set -euo pipefail
 
+        echo "Build.Reason: ${BUILD_REASON:-unset}"
+        echo "System.PullRequest.TargetBranch: ${SYSTEM_PULLREQUEST_TARGETBRANCH:-unset}"
+        echo "System.PullRequest.TargetBranchName: ${SYSTEM_PULLREQUEST_TARGETBRANCHNAME:-unset}"
+        echo "Build.SourceBranch: ${BUILD_SOURCEBRANCH:-unset}"
+
         if [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCH:-}" ]; then
           target="${SYSTEM_PULLREQUEST_TARGETBRANCH#refs/heads/}"
           base="origin/$target"
+        elif [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCHNAME:-}" ]; then
+          base="origin/${SYSTEM_PULLREQUEST_TARGETBRANCHNAME}"
+        elif [ "${BUILD_REASON:-}" = "PullRequest" ]; then
+          echo "Warning: PullRequest run but target-branch variable is unset; defaulting to origin/main"
+          base="origin/main"
         else
           base="HEAD^"
         fi
