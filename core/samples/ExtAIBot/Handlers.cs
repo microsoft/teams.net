@@ -88,7 +88,6 @@ internal static class Handlers
         }
         else
         {
-            final.AddFeedback();
             final.AddFeedback(FeedbackType.Custom);
         }
 
