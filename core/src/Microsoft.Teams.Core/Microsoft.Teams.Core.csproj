@@ -7,11 +7,14 @@
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
 	</PropertyGroup>
 
+	<PropertyGroup>
+		<PackageId>Microsoft.Teams.Core</PackageId>
+		<Description>BotApplication and CoreActivity to support Microsoft Teams development.</Description>
+	</PropertyGroup>
+
 	<ItemGroup>
 		<InternalsVisibleTo Include="Microsoft.Teams.Apps.UnitTests" />
 		<InternalsVisibleTo Include="Microsoft.Teams.Core.UnitTests" />
-		<InternalsVisibleTo Include="Microsoft.Teams.Apps" />
-		<InternalsVisibleTo Include="Microsoft.Teams.Apps.BotBuilder" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.22" />

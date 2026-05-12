@@ -20,20 +20,20 @@ namespace Microsoft.Teams.Core.Hosting;
 /// </remarks>
 /// <param name="authorizationHeaderProvider">The authorization header provider for acquiring tokens.</param>
 /// <param name="logger">The logger instance.</param>
-/// <param name="scope">The scope for the token request.</param>
-/// <param name="managedIdentityOptions">Optional managed identity options for user-assigned managed identity authentication.</param>
-/// <param name="authenticationOptionsName">The name of the MSAL configuration options to use for token acquisition. Defaults to <see cref="MsalConfigurationExtensions.MsalConfigKey"/>.</param>
+/// <param name="authenticationOptionsName">The name of the MSAL configuration options to use for token acquisition. Defaults to "AzureAd".</param>
+/// <param name="managedIdentityOptions">Optional managed identity options monitor. When the named entry matching <paramref name="authenticationOptionsName"/> has a non-empty <c>UserAssignedClientId</c>, tokens are acquired via the IMDS endpoint as the configured managed identity instead of via the app-credentials flow.</param>
 internal sealed class BotAuthenticationHandler(
     IAuthorizationHeaderProvider authorizationHeaderProvider,
     ILogger<BotAuthenticationHandler> logger,
-    string scope,
-    IOptions<ManagedIdentityOptions>? managedIdentityOptions = null,
-    string? authenticationOptionsName = null) : DelegatingHandler
+    string? authenticationOptionsName = null,
+    IOptionsMonitor<ManagedIdentityOptions>? managedIdentityOptions = null) : DelegatingHandler
 {
+    private const string AgenticScope = "https://botapi.skype.com/.default";
+    private const string BotAppScope = "https://api.botframework.com/.default";
+
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-    private readonly string _scope = scope ?? throw new ArgumentNullException(nameof(scope));
-    private readonly IOptions<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
+    private readonly IOptionsMonitor<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
     private static readonly Action<ILogger, string, Exception?> _logAgenticToken =
         LoggerMessage.Define<string>(LogLevel.Debug, new(2), "Acquiring agentic token for AgenticAppId {AgenticAppId}");
     private static readonly Action<ILogger, string, Exception?> _logAppOnlyToken =
@@ -77,24 +77,18 @@ internal sealed class BotAuthenticationHandler(
     /// <returns>The authorization header value.</returns>
     private async Task<string> GetAuthorizationHeaderAsync(AgenticIdentity? agenticIdentity, CancellationToken cancellationToken)
     {
+        string optionsName = authenticationOptionsName ?? BotConfig.DefaultSectionName;
         AuthorizationHeaderProviderOptions options = new()
         {
             AcquireTokenOptions = new AcquireTokenOptions()
             {
-                AuthenticationOptionsName = authenticationOptionsName ?? MsalConfigurationExtensions.MsalConfigKey,
+                AuthenticationOptionsName = optionsName,
             }
         };
 
-        // Conditionally apply ManagedIdentity configuration if registered
-        if (_managedIdentityOptions is not null)
+        if (_managedIdentityOptions?.Get(optionsName) is { UserAssignedClientId.Length: > 0 } miOptions)
         {
-            ManagedIdentityOptions miOptions = _managedIdentityOptions.Value;
-
-            if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
-            {
-                _logger.ApplyingManagedIdentity(miOptions.UserAssignedClientId);
-                options.AcquireTokenOptions.ManagedIdentity = miOptions;
-            }
+            options.AcquireTokenOptions.ManagedIdentity = miOptions;
         }
 
         if (agenticIdentity is not null &&
@@ -110,13 +104,13 @@ internal sealed class BotAuthenticationHandler(
             else
             {
                 options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserGuid);
-                string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([_scope], options, null, cancellationToken).ConfigureAwait(false);
+                string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticScope], options, null, cancellationToken).ConfigureAwait(false);
                 return token;
             }
         }
 
-        _logAppOnlyToken(_logger, _scope, null);
-        string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(_scope, options, cancellationToken).ConfigureAwait(false);
+        _logAppOnlyToken(_logger, BotAppScope, null);
+        string appToken = await _authorizationHeaderProvider.CreateAuthorizationHeaderForAppAsync(BotAppScope, options, cancellationToken).ConfigureAwait(false);
 
 
         return appToken;
