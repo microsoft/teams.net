@@ -277,5 +277,35 @@ public class TargetedMessageInfoEntityTests
         Assert.Contains("\"messageId\"", json);
         Assert.Contains("msg-123", json);
     }
+
+    [Fact]
+    public void Builder_WithTargetedMessageInfo_StripsEscapedPlaceholder()
+    {
+#pragma warning disable ExperimentalTeamsQuotedReplies
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithQuote("a\"b", "response")
+            .WithTargetedMessageInfo("a\"b")
+            .Build();
+#pragma warning restore ExperimentalTeamsQuotedReplies
+
+        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        Assert.Equal("response", text?.ToString());
+        Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
+        Assert.DoesNotContain(activity.Entities!, e => e.Type == "quotedReply");
+    }
+
+    [Fact]
+    public void Builder_WithTargetedMessageInfo_OnFreshBuilder()
+    {
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
+
+        Assert.Single(activity.Entities!);
+        Assert.Equal("msg-123", ((TargetedMessageInfoEntity)activity.Entities![0]).MessageId);
+        Assert.False(activity.Properties.ContainsKey("text"));
+    }
 }
 #pragma warning restore ExperimentalTeamsTargeted
