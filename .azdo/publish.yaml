@@ -20,6 +20,13 @@ trigger: none
 pr: none
 
 parameters:
+- name: packageSet
+  displayName: 'Package Set'
+  type: string
+  default: 'Core'
+  values:
+  - Legacy
+  - Core
 - name: publishType
   displayName: 'Publish Type'
   type: string
@@ -64,18 +71,6 @@ extends:
           displayName: 'Build, Test, Pack, and Push to Internal Feed'
           steps:
             - checkout: self
-            - task: UseDotNet@2
-              displayName: 'Use .NET 8'
-              inputs:
-                packageType: 'sdk'
-                version: '8.0.x'
-
-            - task: UseDotNet@2
-              displayName: 'Use .NET 10'
-              inputs:
-                packageType: 'sdk'
-                version: '10.0.x'
-
             - pwsh: |
                 $nugetConfig = @"
                 <?xml version="1.0" encoding="utf-8"?>
@@ -92,32 +87,18 @@ extends:
             - task: NuGetAuthenticate@1
               displayName: 'Authenticate with NuGet feeds'
 
-            - script: dotnet restore
-              displayName: 'Restore'
-
-            - script: dotnet build --no-restore --configuration $(buildConfiguration)
-              displayName: 'Build'
-
-            - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
-              displayName: 'Test'
-
-            - task: PublishTestResults@2
-              displayName: 'Publish Test Results'
-              condition: succeededOrFailed()
-              inputs:
-                testResultsFormat: 'VSTest'
-                testResultsFiles: '**/*.trx'
-                mergeTestResults: true
-
-            - task: DotNetCoreCLI@2
-              displayName: 'Pack'
-              inputs:
-                command: 'pack'
-                packagesToPack: 'Libraries/**/*.csproj'
-                nobuild: true
-                configuration: '$(buildConfiguration)'
-                outputDir: '$(Build.ArtifactStagingDirectory)'
-                buildProperties: 'SymbolPackageFormat=snupkg'
+            - ${{ if eq(parameters.packageSet, 'Legacy') }}:
+              - template: .azdo/templates/build-test-pack.yaml@self
+                parameters:
+                  sourceRoot: '.'
+                  packPattern: 'Libraries/**/*.csproj'
+                  publishArtifact: false
+            - ${{ if eq(parameters.packageSet, 'Core') }}:
+              - template: .azdo/templates/build-test-pack.yaml@self
+                parameters:
+                  sourceRoot: 'core'
+                  packPattern: 'core/src/**/*.csproj'
+                  publishArtifact: false
 
             - task: 1ES.PublishNuget@1
               displayName: 'Push NuGet Packages to Internal Feed'
@@ -146,18 +127,6 @@ extends:
           steps:
             - checkout: self
 
-            - task: UseDotNet@2
-              displayName: 'Use .NET 8'
-              inputs:
-                packageType: 'sdk'
-                version: '8.0.x'
-
-            - task: UseDotNet@2
-              displayName: 'Use .NET 10'
-              inputs:
-                packageType: 'sdk'
-                version: '10.0.x'
-
             - pwsh: |
                 $nugetConfig = @"
                 <?xml version="1.0" encoding="utf-8"?>
@@ -174,24 +143,29 @@ extends:
             - task: NuGetAuthenticate@1
               displayName: 'Authenticate with NuGet feeds'
 
-            - script: dotnet restore
-              displayName: 'Restore'
+            - ${{ if eq(parameters.packageSet, 'Legacy') }}:
+              - template: .azdo/templates/build-test-pack.yaml@self
+                parameters:
+                  sourceRoot: '.'
+                  pack: false
+                  publishArtifact: false
+            - ${{ if eq(parameters.packageSet, 'Core') }}:
+              - template: .azdo/templates/build-test-pack.yaml@self
+                parameters:
+                  sourceRoot: 'core'
+                  pack: false
+                  publishArtifact: false
 
-            - script: dotnet build --no-restore --configuration $(buildConfiguration)
-              displayName: 'Build'
-
-            - script: dotnet test --no-build --verbosity normal --logger trx --configuration $(buildConfiguration)
-              displayName: 'Test'
-
-            - task: PublishTestResults@2
-              displayName: 'Publish Test Results'
-              condition: succeededOrFailed()
-              inputs:
-                testResultsFormat: 'VSTest'
-                testResultsFiles: '**/*.trx'
-                mergeTestResults: true
-
-            - template: .azdo/templates/sign-and-pack.yaml@self
+            - ${{ if eq(parameters.packageSet, 'Legacy') }}:
+              - template: .azdo/templates/sign-and-pack.yaml@self
+                parameters:
+                  assemblyPattern: 'Libraries/**/*.dll'
+                  packagePattern: 'Libraries/**/*.csproj'
+            - ${{ if eq(parameters.packageSet, 'Core') }}:
+              - template: .azdo/templates/sign-and-pack.yaml@self
+                parameters:
+                  assemblyPattern: 'core/src/**/*.dll'
+                  packagePattern: 'core/src/**/*.csproj'
 
             - task: 1ES.PublishPipelineArtifact@1
               displayName: 'Publish NuGet Packages as Pipeline Artifact'
