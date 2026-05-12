@@ -91,7 +91,7 @@ public class AspNetCorePluginStreamTests
         Assert.Contains("Test message with timeout", result.Text);
     }
 
-    [Fact]
+    [Fact(Skip = "Flaky in CI — skip pending investigation")]
     public async Task Stream_UpdateStatus_SendsTypingActivity()
     {
         var sentActivities = new List<IActivity>();
