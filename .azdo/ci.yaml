@@ -75,7 +75,7 @@ stages:
             core/*)
               core=true
               ;;
-            .editorconfig|.azdo/*|Makefile)
+            .editorconfig|.azdo/*|.azdo/*/*|.azdo/*/*/*|Makefile)
               legacy=true
               core=true
               ;;
