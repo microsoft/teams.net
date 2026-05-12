@@ -103,8 +103,11 @@ public static class AddBotApplicationExtensions
     /// <param name="services">The service collection to add services to.</param>
     /// <param name="botConfig">The configuration containing Azure AD settings.</param>
     /// <returns>The service collection for method chaining.</returns>
-    internal static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, BotConfig botConfig) where TApp : BotApplication
+    public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, BotConfig botConfig) where TApp : BotApplication
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(botConfig);
+
         services.AddSingleton<BotApplicationOptions>(sp =>
         {
             IConfiguration config = sp.GetRequiredService<IConfiguration>();
@@ -157,7 +160,17 @@ public static class AddBotApplicationExtensions
     private static IServiceCollection AddUserTokenClient(this IServiceCollection services, BotConfig botConfig) =>
         services.AddBotClient<UserTokenClient>(UserTokenClient.UserTokenHttpClientName, botConfig);
 
-    internal static IServiceCollection AddBotClient<TClient>(
+    /// <summary>
+    /// Registers a typed <see cref="HttpClient"/> for <typeparamref name="TClient"/> wired to bot authentication using
+    /// an already-resolved <see cref="BotConfig"/>. Use this overload when registering multiple bot clients that should
+    /// share a single resolved configuration.
+    /// </summary>
+    /// <typeparam name="TClient">The client class to register the named <see cref="HttpClient"/> for.</typeparam>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="httpClientName">The named <see cref="HttpClient"/> registration to associate with <typeparamref name="TClient"/>.</param>
+    /// <param name="botConfig">The resolved bot configuration containing tenant, client, and scope settings.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddBotClient<TClient>(
         this IServiceCollection services,
         string httpClientName,
         BotConfig botConfig) where TClient : class
