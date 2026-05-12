@@ -29,7 +29,7 @@
     <Project Path="samples/TeamsChannelBot/TeamsChannelBot.csproj" />
   </Folder>
   <Folder Name="/Solution Items/">
-    <File Path="../.azdo/cd-core.yaml" />
+    <File Path="../.azdo/ci.yaml" />
     <File Path="../.github/workflows/core-ci.yaml" />
     <File Path="../.github/workflows/core-test.yaml" />
     <File Path=".editorconfig" />
