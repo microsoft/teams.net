@@ -187,6 +187,23 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendActivityAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(activity);
+
+        bool isTargeted = activity.Recipient?.IsTargeted == true;
+
+        if (isTargeted && Activity.Conversation?.ConversationType == ConversationType.Personal)
+        {
+            throw new InvalidOperationException(
+                "Targeted messages are not supported in personal (1:1) chats.");
+        }
+
+        if (activity is MessageActivity messageActivity
+            && Activity.Recipient?.IsTargeted == true
+            && Activity.Id is not null)
+        {
+            messageActivity.AddTargetedMessageInfo(Activity.Id);
+        }
+
         TeamsActivity reply = new TeamsActivityBuilder(activity)
             .WithConversationReference(Activity)
             .Build();
