@@ -197,11 +197,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
                 "Targeted messages are not supported in personal (1:1) chats.");
         }
 
-        if (activity is MessageActivity messageActivity
+        if (activity.Type == TeamsActivityType.Message
             && Activity.Recipient?.IsTargeted == true
             && Activity.Id is not null)
         {
-            messageActivity.AddTargetedMessageInfo(Activity.Id);
+            activity.AddTargetedMessageInfo(Activity.Id);
         }
 
         TeamsActivity reply = new TeamsActivityBuilder(activity)

@@ -322,34 +322,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
             throw new InvalidOperationException("WithTargetedMessageInfo can only be used on message activities. Call WithType(TeamsActivityType.Message) first.");
         }
 
-        if (_activity.Entities is not null)
-        {
-            for (int i = _activity.Entities.Count - 1; i >= 0; i--)
-            {
-                if (_activity.Entities[i].Type == "quotedReply")
-                {
-                    _activity.Entities.RemoveAt(i);
-                }
-            }
-        }
-
-        string placeholder = $"<quoted messageId=\"{System.Security.SecurityElement.Escape(messageId)}\"/>";
-        if (_activity is MessageActivity msg && msg.Text is not null)
-        {
-            msg.Text = msg.Text.Replace(placeholder, string.Empty, StringComparison.Ordinal).Trim();
-        }
-        else if (_activity.Properties.TryGetValue("text", out object? rawText) && rawText is string text)
-        {
-            _activity.Properties["text"] = text.Replace(placeholder, string.Empty, StringComparison.Ordinal).Trim();
-        }
-
-        bool hasEntity = _activity.Entities?.Any(e => e.Type == "targetedMessageInfo") ?? false;
-        if (!hasEntity)
-        {
-            _activity.Entities ??= [];
-            _activity.Entities.Add(new TargetedMessageInfoEntity { MessageId = messageId });
-        }
-
+        _activity.AddTargetedMessageInfo(messageId);
         return this;
     }
 
