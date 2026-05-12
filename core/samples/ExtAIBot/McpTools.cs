@@ -12,14 +12,16 @@ sealed class McpToolSet : IAsyncDisposable
 {
     private readonly McpClient _client;
     private readonly IList<McpClientTool> _tools;
+    private readonly ILogger<McpToolSet> _logger;
 
-    private McpToolSet(McpClient client, IList<McpClientTool> tools)
+    private McpToolSet(McpClient client, IList<McpClientTool> tools, ILogger<McpToolSet> logger)
     {
         _client = client;
         _tools = tools;
+        _logger = logger;
     }
 
-    public static async Task<McpToolSet> CreateAsync(CancellationToken cancellationToken = default)
+    public static async Task<McpToolSet> CreateAsync(ILogger<McpToolSet> logger, CancellationToken cancellationToken = default)
     {
         McpClient client = await McpClient.CreateAsync(
             new HttpClientTransport(new HttpClientTransportOptions
@@ -33,25 +35,29 @@ sealed class McpToolSet : IAsyncDisposable
         IList<McpClientTool> tools =
             await client.ListToolsAsync(cancellationToken: cancellationToken);
 
-        return new McpToolSet(client, tools);
+        return new McpToolSet(client, tools, logger);
     }
 
     // Returns each MCP tool wrapped so its results feed into the CitationCollector.
     public IList<AITool> GetTools(CitationCollector citations) =>
-        [.. _tools.Select(t => new CitationCapturingTool(t, citations))];
+        [.. _tools.Select(t => new CitationCapturingTool(t, citations, _logger))];
 
     public ValueTask DisposeAsync() => _client.DisposeAsync();
 }
 
 // Wraps an McpClientTool, delegating all metadata to it while intercepting
 // InvokeCoreAsync to extract citation data from the raw result string.
-file sealed class CitationCapturingTool(McpClientTool inner, CitationCollector citations)
+file sealed class CitationCapturingTool(McpClientTool inner, CitationCollector citations, ILogger logger)
     : DelegatingAIFunction(inner)
 {
     protected override async ValueTask<object?> InvokeCoreAsync(
         AIFunctionArguments arguments,
         CancellationToken cancellationToken)
     {
+        logger.LogInformation("[tool] {Name}({Args})",
+            inner.Name,
+            string.Join(", ", arguments.Select(a => $"{a.Key}={a.Value}")));
+
         object? result = await inner.InvokeAsync(arguments, cancellationToken);
         if (result?.ToString() is string text)
             citations.TryExtract(text);

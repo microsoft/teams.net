@@ -6,7 +6,6 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 using Microsoft.Teams.Cards;
-using Microsoft.Teams.Common;
 
 namespace ExtAIBot;
 
@@ -20,19 +19,19 @@ static class LocalTools
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
-    public static AIFunction CreateClarificationCardTool(IList<object> pendingCards) =>
+    public static AIFunction CreateClarificationCardTool(IList<object> pendingCards, ILogger logger) =>
         AIFunctionFactory.Create(
             ([Description("The clarification question to ask the user.")] string question,
              [Description("2–4 candidate interpretations the user can pick between.")] string[] options) =>
             {
+                logger.LogInformation("[tool] request_clarification(question={Question}, options=[{Options}])",
+                    question, string.Join(", ", options));
                 pendingCards.Add(BuildClarificationCard(question, options));
                 return "Clarification card attached.";
             },
             "request_clarification",
-            "Show an Adaptive Card asking the user to clarify their request. " +
-            "Use only when the user's message is genuinely ambiguous and you cannot answer " +
-            "without knowing which of several interpretations they meant. The user picks " +
-            "one option and submits; their choice arrives as the next user turn.");
+            "Show an Adaptive Card asking the user to clarify their request when needed. " +
+            "The user picks one option and submits; their choice arrives as the next user turn.");
 
     private static JsonElement BuildClarificationCard(string question, string[] options)
     {

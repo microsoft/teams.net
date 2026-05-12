@@ -77,11 +77,11 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         })
         .Build();
 
-    await writer.FinalizeResponseAsync(
-        attachments: [card],
-        entities: [citation],
-        feedback: FeedbackType.Default,
-        cancellationToken: cancellationToken);
+    MessageActivity final = new MessageActivity().AddAttachment(card);
+    final.AddEntity(citation);
+    final.AddFeedback(FeedbackType.Default);
+
+    await writer.FinalizeResponseAsync(final, cancellationToken);
 });
 
 teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>

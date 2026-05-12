@@ -27,12 +27,14 @@ namespace Microsoft.Teams.Apps;
 ///     await writer.FinalizeResponseAsync();            // sends accumulated " Hello, world"
 /// </code>
 ///
-/// Entities and Attachments are only sent with the final message activity.
-/// Pass them directly to <see cref="FinalizeResponseAsync"/>:
+/// To attach entities, attachments, suggested actions, or feedback to the final message,
+/// build a <see cref="MessageActivity"/> and pass it in. If its <c>Text</c> is null the
+/// writer fills in the accumulated streamed text.
 /// <code>
-///     await writer.FinalizeResponseAsync(
-///         entities: [new CitationEntity(...)],
-///         attachments: [new TeamsAttachment(...)]);
+///     MessageActivity final = new MessageActivity().AddAttachment(card);
+///     final.AddEntity(citation);
+///     final.AddFeedback(FeedbackType.Default);
+///     await writer.FinalizeResponseAsync(final);
 /// </code>
 /// </remarks>
 public sealed class TeamsStreamingWriter
@@ -124,24 +126,20 @@ public sealed class TeamsStreamingWriter
     }
 
     /// <summary>
-    /// Sends the accumulated text as the final update (streamType = "final") and marks the stream complete.
+    /// Sends the final streaming activity and marks the stream complete.
     /// </summary>
-    /// <param name="attachments">Optional attachments to include in the final message activity.</param>
-    /// <param name="entities">Optional entities (e.g. citations, mentions) to include in the final message activity.</param>
-    /// <param name="feedback">
-    /// Feedback loop mode. <c>null</c> disables feedback;
-    /// <see cref="FeedbackType.Default"/> shows Teams' built-in thumbs up/down UI;
-    /// <see cref="FeedbackType.Custom"/> triggers a <c>message/fetchTask</c> invoke
-    /// so the bot can return its own task module dialog.
-    /// </param>
-    /// <param name="suggestedActions">Optional suggested actions (quick-reply buttons) to show below the final message.</param>
-    /// <param name="text">
-    /// If non-null, replaces the accumulated streamed text in the final activity. Pass <c>""</c>
-    /// to send the final message with no text body (e.g. when delivering an attachment-only reply).
+    /// <param name="final">
+    /// The final message activity. If <c>null</c>, a plain <see cref="MessageActivity"/> is built
+    /// from the accumulated streamed text. If non-null, the caller-supplied activity is used as-is;
+    /// when its <see cref="MessageActivity.Text"/> is <c>null</c>, the accumulated text is filled in
+    /// (pass <c>""</c> explicitly to send an attachment-only reply).
     /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
-    /// <exception cref="InvalidOperationException">Thrown if <see cref="FinalizeResponseAsync"/> has already been called, or if no content has been accumulated via <see cref="AppendResponseAsync"/>.</exception>
-    public async Task FinalizeResponseAsync(IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, string? feedback = null, SuggestedActions? suggestedActions = null, string? text = null, CancellationToken cancellationToken = default)
+    /// <exception cref="InvalidOperationException">
+    /// Thrown if <see cref="FinalizeResponseAsync"/> has already been called, or if the final
+    /// activity has neither text nor attachments.
+    /// </exception>
+    public async Task FinalizeResponseAsync(MessageActivity? final = null, CancellationToken cancellationToken = default)
     {
         if (_finalized)
             throw new InvalidOperationException("Cannot finalize after FinalizeResponseAsync has already been called.");
@@ -149,41 +147,28 @@ public sealed class TeamsStreamingWriter
         if (_cancelled)
             return;
 
-        string finalText = text ?? _accumulated.ToString();
+        final ??= new MessageActivity();
+        final.Text ??= _accumulated.ToString();
 
-        if (finalText.Length == 0 && (attachments == null || attachments.Count == 0))
-            throw new InvalidOperationException("Cannot finalize with no content. Call AppendResponseAsync at least once before FinalizeResponseAsync.");
+        if (string.IsNullOrEmpty(final.Text) && (final.Attachments == null || final.Attachments.Count == 0))
+            throw new InvalidOperationException(
+                "Cannot finalize with no content. Stream text via AppendResponseAsync, or provide attachments on the final MessageActivity.");
 
-        _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).", _streamId, finalText.Length, _sequence);
-        await _client.SendActivityAsync(BuildFinalActivity(finalText, attachments, entities, feedback, suggestedActions), cancellationToken: cancellationToken).ConfigureAwait(false);
+        StreamInfoEntity streamInfo = new() { StreamType = StreamType.Final };
+        if (_streamId != null) streamInfo.StreamId = _streamId;
+
+        TeamsActivity activity = new TeamsActivityBuilder(final)
+            .WithConversationReference(_reference)
+            .AddEntity(streamInfo)
+            .Build();
+
+        _logger.LogDebug("Finalizing stream (streamId '{StreamId}', {Length} chars, {Sequences} sequences).",
+            _streamId, final.Text?.Length ?? 0, _sequence);
+
+        await _client.SendActivityAsync(activity, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         _finalized = true;
         _logger.LogDebug("Stream finalized (streamId '{StreamId}').", _streamId);
-    }
-
-    private TeamsActivity BuildFinalActivity(string text, IList<TeamsAttachment>? attachments = null, IList<Entity>? entities = null, string? feedback = null, SuggestedActions? suggestedActions = null)
-    {
-        StreamInfoEntity streamInfo = new() { StreamType = StreamType.Final };
-        if (_streamId != null)
-            streamInfo.StreamId = _streamId;
-
-        TeamsActivityBuilder builder = new TeamsActivityBuilder(new MessageActivity(text))
-            .WithConversationReference(_reference)
-            .AddEntity(streamInfo);
-
-        if (entities != null)
-            foreach (Entity entity in entities)
-                builder.AddEntity(entity);
-
-        if (attachments?.Count > 0)
-            builder.WithAttachments(attachments);
-
-        if (suggestedActions != null)
-            builder.WithSuggestedActions(suggestedActions);
-
-        TeamsActivity activity = builder.Build();
-        if (feedback is not null) activity.AddFeedback(feedback);
-        return activity;
     }
 
     private TeamsActivity BuildActivity(string text, string streamType)

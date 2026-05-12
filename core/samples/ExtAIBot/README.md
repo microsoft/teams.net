@@ -56,8 +56,9 @@ The bot connects to the MS Learn MCP server at startup and lists its tools befor
 
 ## Example interactions
 
-- `Tell me about streaming` — ambiguous request: the model calls `request_clarification` and the bot replies with a card asking the user to choose between, e.g., "Teams streaming" vs ".NET I/O streams"
+- `Tell me about streaming` — ambiguous request: the model calls `request_clarification` and the bot replies with a clarification card.
 - `How do I stream in teams.net?` — model calls an MS Learn search tool, replies with docs-grounded answer and inline citations, plus two follow-up chips
+- - `How do I list users with Microsoft Graph?` — same MCP search path, but lands on Graph documentation; reply cites the relevant `/users` endpoint docs and shows a code snippet
 
 ### Clarification flow
 

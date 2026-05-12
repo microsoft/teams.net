@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Collections.Concurrent;
+using System.Text;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.AI;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Schema;
@@ -16,10 +18,15 @@ sealed class Agent
 {
     private readonly IChatClient _chatClient;
     private readonly McpToolSet _mcpTools;
+    private readonly ILogger<Agent> _logger;
     private readonly ConcurrentDictionary<string, List<ChatMessage>> _histories = new();
+    // One lock per conversation so concurrent turns on the same conversation serialize
+    // their history mutations (List<ChatMessage> is not thread-safe).
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _locks = new();
 
     private const string SystemPrompt = """
-        You are a helpful Teams assistant with tool-calling capabilities.
+        You are a Teams docs assistant that can search Microsoft Learn (Teams, .NET, Microsoft Graph, Azure)
+        and explain bot concepts (streaming, Adaptive Cards, citations, feedback).
 
         When you use information from a search tool, cite your sources inline using the "citation" value \
         provided in each result (e.g. [1], [2]).
@@ -27,22 +34,32 @@ sealed class Agent
         """;
 
     private const string FollowUpsPrompt = """
-        Given the conversation above, produce 2 specific follow-up prompts the
-        user might want to ask next.
+        Produce 2 specific prompts the user might want to ask next.
+
+        Output format — read carefully:
+        Return ONLY a JSON object INSTANCE, like this:
+        {"prompt1": "How do I stream a reply?", "prompt2": "Show me an Adaptive Card example"}
 
         Each prompt MUST:
-        - Drill into a concrete topic or concept from the recent history.
-        - Be a natural next question a curious user would type after reading it.
         - Be phrased in the first person, as the user would type.
         - Stay under 8 words.
+
+        Pick based on the conversation:
+        - If recent turns have substantive content, drill into a concrete topic, API, or
+          concept that just came up.
+        - Otherwise (e.g. conversation just started, or the last turn is generic),
+          suggest prompts that showcase what you can help with based on the MCP tools available.
         """;
 
-    private sealed record FollowUps(string Prompt1, string Prompt2);
+    private sealed record FollowUps(
+        [property: JsonPropertyName("prompt1")] string Prompt1,
+        [property: JsonPropertyName("prompt2")] string Prompt2);
 
-    public Agent(IChatClient chatClient, McpToolSet mcpTools)
+    public Agent(IChatClient chatClient, McpToolSet mcpTools, ILogger<Agent> logger)
     {
         _chatClient = chatClient;
         _mcpTools = mcpTools;
+        _logger = logger;
     }
 
     public async Task<RunResult> RunAsync(
@@ -55,38 +72,50 @@ sealed class Agent
             conversationId,
             _ => [new ChatMessage(ChatRole.System, SystemPrompt)]);
 
-        List<object> pendingCards = [];
-        CitationCollector citations = new();
-
-        ChatOptions options = new()
+        // Serialize turns within a single conversation so concurrent submits
+        // (e.g. clarification race) don't interleave history mutations.
+        SemaphoreSlim gate = _locks.GetOrAdd(conversationId, _ => new SemaphoreSlim(1, 1));
+        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+        try
         {
-            Tools =
-            [
-                LocalTools.CreateClarificationCardTool(pendingCards),
-                .. _mcpTools.GetTools(citations)
-            ]
-        };
+            List<object> pendingCards = [];
+            CitationCollector citations = new();
 
-        history.Add(new ChatMessage(ChatRole.User, userText));
-        await writer.SendInformativeUpdateAsync("Thinking…", cancellationToken);
-
-        string fullText = string.Empty;
-        await foreach (ChatResponseUpdate update in
-            _chatClient.GetStreamingResponseAsync(history, options, cancellationToken))
-        {
-            if (!string.IsNullOrEmpty(update.Text))
+            ChatOptions options = new()
             {
-                await writer.AppendResponseAsync(update.Text, cancellationToken);
-                fullText += update.Text;
+                Tools =
+                [
+                    LocalTools.CreateClarificationCardTool(pendingCards, _logger),
+                    .. _mcpTools.GetTools(citations)
+                ]
+            };
+
+            history.Add(new ChatMessage(ChatRole.User, userText));
+            await writer.SendInformativeUpdateAsync("Thinking…", cancellationToken);
+
+            StringBuilder fullText = new();
+            await foreach (ChatResponseUpdate update in
+                _chatClient.GetStreamingResponseAsync(history, options, cancellationToken))
+            {
+                if (!string.IsNullOrEmpty(update.Text))
+                {
+                    await writer.AppendResponseAsync(update.Text, cancellationToken);
+                    fullText.Append(update.Text);
+                }
             }
+
+            string fullTextStr = fullText.ToString();
+            if (fullTextStr.Length > 0)
+                history.Add(new ChatMessage(ChatRole.Assistant, fullTextStr));
+
+            List<SuggestedAction> followUpActions = await GenerateFollowUpsAsync(history, cancellationToken);
+
+            return new RunResult(fullTextStr, pendingCards, followUpActions, citations);
         }
-
-        if (!string.IsNullOrEmpty(fullText))
-            history.Add(new ChatMessage(ChatRole.Assistant, fullText));
-
-        List<SuggestedAction> followUpActions = await GenerateFollowUpsAsync(history, cancellationToken);
-
-        return new RunResult(fullText, pendingCards, followUpActions, citations);
+        finally
+        {
+            gate.Release();
+        }
     }
 
     // Runs after the streamed reply is in history. Forces structured JSON output matching
@@ -105,10 +134,16 @@ sealed class Agent
             messages,
             cancellationToken: cancellationToken);
 
-        return response.TryGetResult(out FollowUps? followUps) && followUps is not null
-            ? [new SuggestedAction(ActionType.IMBack, followUps.Prompt1),
-               new SuggestedAction(ActionType.IMBack, followUps.Prompt2)]
-            : [];
+        if (!response.TryGetResult(out FollowUps? followUps) || followUps is null)
+        {
+            _logger.LogWarning("Follow-up generation did not return parseable JSON. Raw response: {Text}", response.Text);
+            return [];
+        }
+
+        return [
+            new SuggestedAction(ActionType.IMBack, followUps.Prompt1),
+            new SuggestedAction(ActionType.IMBack, followUps.Prompt2)
+        ];
     }
 }
 
