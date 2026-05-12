@@ -181,7 +181,7 @@ No approval. Internal feed pushes are immediate.
 
 #### `Build_Test_Sign_Pack` — when `publishType == 'Public'`
 
-- Same restore/build/test path as Internal (reusing `build-test-pack.yaml` with `pack: false` or by calling the build steps and skipping pack — implementation detail for the plan stage).
+- Calls `templates/build-test-pack.yaml` with `sourceRoot`, `pack: false`, `publishArtifact: false`. This runs restore + build + test but skips pack (the sign-and-pack template handles packing after signing DLLs).
 - Calls `templates/sign-and-pack.yaml` with `assemblyPattern: $(signAssemblyPattern)`, `packagePattern: $(packPattern)`. This authenticode-signs the DLLs, packs to nupkg, then signs the nupkgs.
 - `1ES.PublishPipelineArtifact@1` publishes signed `Packages` artifact.
 
@@ -208,9 +208,10 @@ None in the pipeline. A run with `Public` + `Legacy` from a feature branch is te
 | Name | Type | Default | Purpose |
 |---|---|---|---|
 | `sourceRoot` | string | (required) | `.` or `core` — working directory for restore/build/test |
-| `packPattern` | string | (required) | Glob passed to `dotnet pack` `packagesToPack` |
+| `packPattern` | string | `''` | Glob passed to `dotnet pack` `packagesToPack`. Required when `pack: true`. |
+| `pack` | boolean | `true` | When false, skip the pack and artifact-publish steps (used by `publish.yaml`'s Public stage, which packs via `sign-and-pack.yaml`) |
 | `publishTestResults` | boolean | `true` | Toggle `PublishTestResults@2` step |
-| `publishArtifact` | boolean | `true` | Toggle `PublishPipelineArtifact@1` — set false when caller uses `1ES.PublishPipelineArtifact@1` |
+| `publishArtifact` | boolean | `true` | Toggle `PublishPipelineArtifact@1` — set false when caller uses `1ES.PublishPipelineArtifact@1`. Implicitly ignored when `pack: false`. |
 | `buildConfiguration` | string | `Release` | Build/test/pack configuration |
 
 **Steps:**
@@ -221,8 +222,8 @@ None in the pipeline. A run with `Public` + `Legacy` from a feature branch is te
 4. `dotnet build --no-restore --configuration ${{ parameters.buildConfiguration }}`
 5. `dotnet test --no-build --configuration ${{ parameters.buildConfiguration }} --logger trx`
 6. `PublishTestResults@2` — conditional on `publishTestResults`, `condition: succeededOrFailed()`
-7. `dotnet pack --no-build --configuration ${{ parameters.buildConfiguration }}` — packs only projects matching `packPattern`, output to `$(Build.ArtifactStagingDirectory)`, with `/p:SymbolPackageFormat=snupkg`
-8. `PublishPipelineArtifact@1` — conditional on `publishArtifact`, publishes `Packages`
+7. `dotnet pack --no-build --configuration ${{ parameters.buildConfiguration }}` — conditional on `pack`. Packs only projects matching `packPattern`, output to `$(Build.ArtifactStagingDirectory)`, with `/p:SymbolPackageFormat=snupkg`
+8. `PublishPipelineArtifact@1` — conditional on `pack` AND `publishArtifact`, publishes `Packages`
 
 ### `.azdo/templates/sign-and-pack.yaml` (modified)
 
