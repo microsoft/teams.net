@@ -66,6 +66,9 @@ stages:
         while IFS= read -r f; do
           [ -z "$f" ] && continue
           case "$f" in
+            *.md|docs/*|core/docs/*|Assets/*)
+              # Docs / asset-only — skip both groups.
+              ;;
             Libraries/*|Samples/*|Tests/*|Microsoft.Teams.sln|version.json)
               legacy=true
               ;;

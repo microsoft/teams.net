@@ -1,11 +1,15 @@
 # =============================================================================
 # This pipeline publishes NuGet packages. Manually triggered only.
-# - "Internal": pushes unsigned packages to the internal TeamsSDKPreviews feed.
-# - "Public": signs (Authenticode + NuGet) and pushes to nuget.org (requires approval).
-# Version is determined by Nerdbank.GitVersioning (nbgv) from version.json.
+# Parameters:
+#   - packageSet: Legacy (Libraries/) or Core (core/)
+#   - publishType: Internal (unsigned, TeamsSDKPreviews feed) or Public (ESRP-
+#     signed, nuget.org, requires approval).
+# Versions come from Nerdbank.GitVersioning, per packageSet:
+#   - Legacy: root version.json
+#   - Core:   core/version.json (plus per-project overrides such as
+#             core/src/Microsoft.Teams.Apps/version.json)
 #
-# MIGRATED TO 1ES OFFICIAL PIPELINE TEMPLATE: This pipeline now extends from
-# 1ES.Official.PipelineTemplate to ensure compliance with M365 security requirements.
+# Extends 1ES.Official.PipelineTemplate for M365 security compliance.
 # =============================================================================
 
 resources:

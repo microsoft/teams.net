@@ -86,7 +86,7 @@ The version comes from nbgv (root `version.json` for Legacy, `core/version.json`
 Pushes unsigned packages to the `TeamsSDKPreviews` internal ADO feed. No approval required.
 
 1. Pipelines > Teams.NET-ESRP > Run pipeline
-2. Select the branch (`main` for previews, `releases/v*` or `releases/core` for stable previews)
+2. Select the branch (`main` for previews, `releases/core` or `releases/v*` for stable releases)
 3. Choose Package Set and Publish Type: `Internal`
 4. Stages: Build → Test → Pack → Push to internal feed
 
