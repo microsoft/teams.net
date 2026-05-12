@@ -93,7 +93,7 @@ Docs-only changes (`**/*.md`, `docs/**`, `core/docs/**`, `Assets/**`) match neit
 ```yaml
 - stage: Build_Legacy
   dependsOn: DetectChanges
-  condition: eq(stageDependencies.DetectChanges.outputs['detect.flags.legacyChanged'], 'true')
+  condition: eq(dependencies.DetectChanges.outputs['detect.flags.legacyChanged'], 'true')
   jobs:
     - job: BuildTestPack
       steps:
@@ -110,7 +110,7 @@ Docs-only changes (`**/*.md`, `docs/**`, `core/docs/**`, `Assets/**`) match neit
 ```yaml
 - stage: Build_Core
   dependsOn: DetectChanges
-  condition: eq(stageDependencies.DetectChanges.outputs['detect.flags.coreChanged'], 'true')
+  condition: eq(dependencies.DetectChanges.outputs['detect.flags.coreChanged'], 'true')
   jobs:
     - job: BuildTestPack
       steps:
@@ -309,4 +309,4 @@ Single atomic PR against `main`.
 
 ## Open questions
 
-None at design-approval time. Implementation-plan stage will resolve exact YAML syntax for the `DetectChanges` output-variable expression (ADO's `stageDependencies.X.outputs['job.step.var']` syntax is version-sensitive) and the precise `git diff` invocation for the merge-base detection.
+None at design-approval time. Implementation-plan stage will resolve exact YAML syntax for the `DetectChanges` output-variable expression (ADO uses `dependencies.X.outputs['job.step.var']` at the stage-condition level, vs `stageDependencies.X.<job>.outputs['step.var']` at the job-condition level — easy to get backwards) and the precise `git diff` invocation for the merge-base detection.
