@@ -108,7 +108,7 @@ extends:
                 packageParentPath: '$(Build.ArtifactStagingDirectory)'
                 publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
                 nuGetFeedType: internal
-                allowPackageConflicts: false  # Allow duplicate versions for preview testing
+                allowPackageConflicts: false  # Disallow duplicate versions; bump the version to re-publish
                 publishPackageMetadata: true
                 retryCountOnTaskFailure: 2
 
