@@ -26,6 +26,18 @@ teamsApp.OnMessage("(?i)^test send$", async (context, cancellationToken) =>
     await context.SendActivityAsync(reply, cancellationToken);
 });
 
+// Targeted reply to the inbound message: same wire format as send, but goes through
+// Context.Reply which prepends a quoted reference to the inbound message.
+teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
+{
+    TeamsActivity reply = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText("🔒 Targeted reply visible only to you.")
+        .WithRecipient(context.Activity.From, isTargeted: true)
+        .Build();
+    await context.Reply(reply, cancellationToken);
+});
+
 // Send → Update a targeted message after 3 seconds.
 teamsApp.OnMessage("(?i)^test update$", async (context, cancellationToken) =>
 {
@@ -87,24 +99,6 @@ teamsApp.OnMessage("(?i)^test delete$", async (context, cancellationToken) =>
     });
 });
 
-// Prompt Preview reactive flow: when the inbound message is targeted (e.g. a slash-command invocation
-// addressed only to one user), the outbound reply auto-populates a targetedMessageInfo entity pointing
-// back at the inbound activity id. The developer doesn't have to do anything extra; just send a reply.
-teamsApp.OnMessage("(?i)^summarize$", async (context, cancellationToken) =>
-{
-    await context.SendActivityAsync(
-        new MessageActivity("Here's the summary: …"),
-        cancellationToken);
-});
-
-// Manually adding a targetedMessageInfo entity (overrides the auto-populate).
-teamsApp.OnMessage("(?i)^test manual$", async (context, cancellationToken) =>
-{
-    MessageActivity msg = new("Manually attached targetedMessageInfo entity.");
-    msg.AddTargetedMessageInfo("manually-chosen-message-id");
-    await context.SendActivityAsync(msg, cancellationToken);
-});
-
 // Help
 teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
 {
@@ -113,10 +107,9 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             "**Targeted Messages Test Bot**\n\n" +
             "**Commands:**\n" +
             "- `test send` — Send a targeted message (visible only to you)\n" +
+            "- `test reply` — Reply with a targeted message\n" +
             "- `test update` — Send then update a targeted message\n" +
-            "- `test delete` — Send then delete a targeted message\n" +
-            "- `summarize` — Reactive Prompt Preview flow (only meaningful when sent as a targeted message)\n" +
-            "- `test manual` — Manually attach a targetedMessageInfo entity\n")
+            "- `test delete` — Send then delete a targeted message\n")
         { TextFormat = TextFormats.Markdown },
         cancellationToken);
 });
