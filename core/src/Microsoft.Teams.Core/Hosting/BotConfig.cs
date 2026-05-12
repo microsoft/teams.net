@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Core.Hosting;
 /// Configuration model for bot authentication credentials, sourced from a
 /// Microsoft.Identity.Web compatible configuration section (e.g. "AzureAd").
 /// </summary>
-internal sealed class BotConfig
+public sealed class BotConfig
 {
     internal const string DefaultSectionName = "AzureAd";
 

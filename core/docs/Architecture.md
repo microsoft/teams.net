@@ -775,10 +775,9 @@ graph TB
 
 Hierarchical configuration with conventions.
 
-```csharp
+```json
 {
   "AzureAd": {
-    "Instance": "https://login.microsoftonline.com/",
     "TenantId": "...",
     "ClientId": "...",
     "Scope": "https://api.botframework.com/.default",

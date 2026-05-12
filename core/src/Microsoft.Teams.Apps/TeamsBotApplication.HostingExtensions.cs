@@ -106,14 +106,13 @@ public static class TeamsBotApplicationHostingExtensions
     {
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
 
-        services.AddBotClient<ApiClient>(nameof(ApiClient), botConfig);
-
         // Register TeamsBotApplicationOptions
         TeamsBotApplicationOptions teamsOptions = new();
         configure?.Invoke(teamsOptions);
         services.AddSingleton(teamsOptions);
 
         services.AddBotApplication<TApp>(botConfig);
+        services.AddBotClient<ApiClient>(nameof(ApiClient), botConfig);
         return services;
     }
 

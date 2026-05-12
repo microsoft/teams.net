@@ -105,18 +105,8 @@ public static class AddBotApplicationExtensions
     /// <returns>The service collection for method chaining.</returns>
     public static IServiceCollection AddBotApplication<TApp>(this IServiceCollection services, BotConfig botConfig) where TApp : BotApplication
     {
-        services.AddSingleton<BotApplicationOptions>(_ => new BotApplicationOptions { AppId = botConfig.ClientId });
-        ArgumentNullException.ThrowIfNull(services);
         ArgumentNullException.ThrowIfNull(botConfig);
-
-        services.AddSingleton<BotApplicationOptions>(sp =>
-        {
-            IConfiguration config = sp.GetRequiredService<IConfiguration>();
-            return new BotApplicationOptions
-            {
-                AppId = botConfig.ClientId
-            };
-        });
+        services.AddSingleton<BotApplicationOptions>(_ => new BotApplicationOptions { AppId = botConfig.ClientId });
         services.AddHttpContextAccessor();
         services.AddBotAuthorization(botConfig);
         services.EnsureMsalServices(botConfig);
@@ -154,15 +144,22 @@ public static class AddBotApplicationExtensions
 
     /// <summary>
     /// Registers the shared MSAL token-acquisition pipeline and binds the named MSAL options.
-    /// Microsoft.Identity.Web's registrations are TryAdd-based and safe to call multiple times.
     /// </summary>
-    private static IServiceCollection EnsureMsalServices(this IServiceCollection services, BotConfig botConfig)
+    /// <remarks>
+    /// Safe to call multiple times: the Microsoft.Identity.Web service registrations are TryAdd-based,
+    /// and the named options binding (<see cref="MicrosoftIdentityApplicationOptions"/> and
+    /// <see cref="ManagedIdentityOptions"/>) appends an additional configure delegate per call. Those
+    /// delegates are idempotent against the same <see cref="BotConfig"/>, so re-running them produces
+    /// the same options state.
+    /// </remarks>
+    public static IServiceCollection EnsureMsalServices(this IServiceCollection services, BotConfig botConfig)
     {
         services.AddHttpClient()
                 .AddTokenAcquisition(true)
                 .AddInMemoryTokenCaches()
                 .AddAgentIdentities();
 
+        ArgumentNullException.ThrowIfNull(botConfig);
         ArgumentNullException.ThrowIfNull(botConfig.MsalConfigurationSection);
 
         if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
@@ -186,27 +183,6 @@ public static class AddBotApplicationExtensions
                 {
                     options.Authority = string.Empty;
                 }
-    /// <summary>
-    /// Registers a typed <see cref="HttpClient"/> for <typeparamref name="TClient"/> wired to bot authentication using
-    /// an already-resolved <see cref="BotConfig"/>. Use this overload when registering multiple bot clients that should
-    /// share a single resolved configuration.
-    /// </summary>
-    /// <typeparam name="TClient">The client class to register the named <see cref="HttpClient"/> for.</typeparam>
-    /// <param name="services">The service collection to add services to.</param>
-    /// <param name="httpClientName">The named <see cref="HttpClient"/> registration to associate with <typeparamref name="TClient"/>.</param>
-    /// <param name="botConfig">The resolved bot configuration containing tenant, client, and scope settings.</param>
-    /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddBotClient<TClient>(
-        this IServiceCollection services,
-        string httpClientName,
-        BotConfig botConfig) where TClient : class
-    {
-        // Register options using values from BotConfig
-        services.AddOptions<BotClientOptions>()
-            .Configure(options =>
-            {
-                options.Scope = botConfig.Scope;
-                options.SectionName = botConfig.SectionName;
             });
 
             // No ClientCredentials in the configured section implies pure User-Assigned Managed Identity:
@@ -226,11 +202,26 @@ public static class AddBotApplicationExtensions
         return services;
     }
 
-    internal static IServiceCollection AddBotClient<TClient>(
+    /// <summary>
+    /// Registers a typed <see cref="HttpClient"/> for <typeparamref name="TClient"/> wired to bot authentication
+    /// using an already-resolved <see cref="BotConfig"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="EnsureMsalServices(IServiceCollection, BotConfig)"/> must be called on the same service
+    /// collection before the resulting client is used, so that <c>IAuthorizationHeaderProvider</c> and the
+    /// named MSAL options are registered.
+    /// </remarks>
+    /// <typeparam name="TClient">The client class to register the named <see cref="HttpClient"/> for.</typeparam>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="httpClientName">The named <see cref="HttpClient"/> registration to associate with <typeparamref name="TClient"/>.</param>
+    /// <param name="botConfig">The resolved bot configuration containing tenant and client settings.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddBotClient<TClient>(
         this IServiceCollection services,
         string httpClientName,
         BotConfig botConfig) where TClient : class
     {
+        ArgumentNullException.ThrowIfNull(botConfig);
         if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
         {
             services.AddHttpClient<TClient>(httpClientName)
