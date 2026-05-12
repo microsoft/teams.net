@@ -1,6 +1,6 @@
 # Shared template: dotnet restore, build, test, and (optionally) pack and publish artifact.
-# Used by ci.yaml (always packs) and publish.yaml (packs for Internal; skips pack for Public,
-# where sign-and-pack.yaml packs after signing DLLs).
+# Used by ci.yaml (validates only — no pack) and publish.yaml (packs for Internal;
+# skips pack for Public, where sign-and-pack.yaml packs after signing DLLs).
 
 parameters:
   - name: sourceRoot
@@ -12,7 +12,8 @@ parameters:
     # Required when pack: true. Glob passed to dotnet pack packagesToPack.
   - name: pack
     type: boolean
-    default: true
+    default: false
+    # Default false — CI validates only. publish.yaml's Internal stage sets true.
   - name: publishTestResults
     type: boolean
     default: true
@@ -53,7 +54,7 @@ steps:
     displayName: 'Build'
     workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
 
-  - script: dotnet test --no-build --verbosity normal --configuration ${{ parameters.buildConfiguration }} --logger trx
+  - script: dotnet test --no-build --verbosity normal --configuration ${{ parameters.buildConfiguration }} --logger trx --results-directory $(Agent.TempDirectory)/TestResults
     displayName: 'Test'
     workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
 
@@ -63,9 +64,10 @@ steps:
       condition: succeededOrFailed()
       inputs:
         testResultsFormat: 'VSTest'
-        testResultsFiles: '**/*.trx'
+        testResultsFiles: '*.trx'
         mergeTestResults: true
-        searchFolder: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
+        searchFolder: '$(Agent.TempDirectory)/TestResults'
+        failTaskOnMissingResultsFile: false
 
   - ${{ if eq(parameters.pack, true) }}:
     - task: DotNetCoreCLI@2

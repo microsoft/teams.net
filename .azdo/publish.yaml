@@ -95,12 +95,14 @@ extends:
               - template: .azdo/templates/build-test-pack.yaml@self
                 parameters:
                   sourceRoot: '.'
+                  pack: true
                   packPattern: 'Libraries/**/*.csproj'
                   publishArtifact: false
             - ${{ if eq(parameters.packageSet, 'Core') }}:
               - template: .azdo/templates/build-test-pack.yaml@self
                 parameters:
                   sourceRoot: 'core'
+                  pack: true
                   packPattern: 'core/src/**/*.csproj'
                   publishArtifact: false
 
