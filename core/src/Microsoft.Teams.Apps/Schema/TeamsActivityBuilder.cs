@@ -81,6 +81,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <param name="recipient">The recipient account.</param>
     /// <param name="isTargeted">If true, marks this as a targeted message visible only to the specified recipient.</param>
     /// <returns>The builder instance for chaining.</returns>
+    [Experimental("ExperimentalTeamsTargeted")]
     public TeamsActivityBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
     {
         if (recipient is not null)
@@ -294,6 +295,59 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         else
         {
             WithProperty("text", newText);
+        }
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a targetedMessageInfo entity for Prompt Preview, referencing the inbound targeted-message id.
+    /// Any existing quotedReply entities and matching &lt;quoted messageId="..."/&gt; placeholders are stripped
+    /// to prevent collision with prompt preview. If a targetedMessageInfo entity is already present, no new entity is added.
+    /// The activity type must be set to Message (via <see cref="CoreActivityBuilder{TActivity,TBuilder}.WithType"/>) before calling this method.
+    /// </summary>
+    /// <remarks>
+    /// After the placeholder strip, the activity text is trimmed of leading and trailing whitespace.
+    /// </remarks>
+    /// <param name="messageId">The id of the inbound targeted message being responded to.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the activity type is not Message.</exception>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public TeamsActivityBuilder WithTargetedMessageInfo(string messageId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        if (_activity.Type != TeamsActivityType.Message)
+        {
+            throw new InvalidOperationException("WithTargetedMessageInfo can only be used on message activities. Call WithType(TeamsActivityType.Message) first.");
+        }
+
+        if (_activity.Entities is not null)
+        {
+            for (int i = _activity.Entities.Count - 1; i >= 0; i--)
+            {
+                if (_activity.Entities[i].Type == "quotedReply")
+                {
+                    _activity.Entities.RemoveAt(i);
+                }
+            }
+        }
+
+        string placeholder = $"<quoted messageId=\"{System.Security.SecurityElement.Escape(messageId)}\"/>";
+        if (_activity is MessageActivity msg && msg.Text is not null)
+        {
+            msg.Text = msg.Text.Replace(placeholder, string.Empty, StringComparison.Ordinal).Trim();
+        }
+        else if (_activity.Properties.TryGetValue("text", out object? rawText) && rawText is string text)
+        {
+            _activity.Properties["text"] = text.Replace(placeholder, string.Empty, StringComparison.Ordinal).Trim();
+        }
+
+        bool hasEntity = _activity.Entities?.Any(e => e.Type == "targetedMessageInfo") ?? false;
+        if (!hasEntity)
+        {
+            _activity.Entities ??= [];
+            _activity.Entities.Add(new TargetedMessageInfoEntity { MessageId = messageId });
         }
 
         return this;
