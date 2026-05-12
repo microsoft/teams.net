@@ -30,23 +30,23 @@ When `version.json` has a `-preview` (or `-alpha`) suffix, every build produces 
 
 ### Producing a Stable Release
 
-Legacy stable release (e.g., `2.0.7`):
+Core stable release (e.g., `1.0.0`):
 
-1. Check out the Legacy stable branch:
+1. Check out the Core stable branch:
    ```bash
-   git checkout releases/v2
+   git checkout releases/core
    git merge main
    ```
-2. Edit root `version.json` to remove the preview suffix:
+2. Edit `core/version.json` to remove any preview suffix (and `core/src/Microsoft.Teams.Apps/version.json` if its independent version applies):
    ```json
-   { "version": "2.0.7" }
+   { "version": "1.0.0" }
    ```
-3. Commit and push to `releases/v2`.
-4. Queue `Teams.NET-ESRP` from `releases/v2` with `packageSet=Legacy, publishType=Public`.
+3. Commit and push to `releases/core`.
+4. Queue `Teams.NET-ESRP` from `releases/core` with `packageSet=Core, publishType=Public`.
 5. Approve the push to nuget.org.
-6. After the release, bump for the next cycle on `main`: `"version": "2.0.8-preview.{height}"`.
+6. After the release, bump for the next cycle on `main` (e.g., `"version": "1.0.1-preview.{height}"`).
 
-Core stable release: same flow, but on `releases/core`, editing `core/version.json` (and `core/src/Microsoft.Teams.Apps/version.json` if its independent version applies).
+Legacy stable release: same flow, but on `releases/vN` (e.g., `releases/v2`), editing root `version.json` instead of the Core version files, and queueing with `packageSet=Legacy`.
 
 ### Note on `publicReleaseRefSpec`
 
