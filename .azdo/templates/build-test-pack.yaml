@@ -22,6 +22,12 @@ parameters:
     # Set false when caller publishes via 1ES.PublishPipelineArtifact@1.
     # Only meaningful when pack: true; ignored otherwise (the artifact step
     # is nested inside the pack conditional).
+  - name: artifactName
+    type: string
+    default: 'Packages'
+    # Override when multiple instances of this template run in parallel within
+    # one pipeline (e.g. Build_Legacy + Build_Core in ci.yaml), since artifact
+    # names must be unique within a single ADO pipeline run.
   - name: buildConfiguration
     type: string
     default: 'Release'
@@ -77,5 +83,5 @@ steps:
         displayName: 'Publish NuGet Packages as Pipeline Artifact'
         inputs:
           targetPath: '$(Build.ArtifactStagingDirectory)'
-          artifact: 'Packages'
+          artifact: '${{ parameters.artifactName }}'
           publishLocation: 'pipeline'

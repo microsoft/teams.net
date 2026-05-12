@@ -98,6 +98,7 @@ stages:
       parameters:
         sourceRoot: '.'
         packPattern: 'Libraries/**/*.csproj'
+        artifactName: 'Packages-Legacy'
 
 - stage: Build_Core
   displayName: 'Build Core'
@@ -111,3 +112,4 @@ stages:
       parameters:
         sourceRoot: 'core'
         packPattern: 'core/src/**/*.csproj'
+        artifactName: 'Packages-Core'
