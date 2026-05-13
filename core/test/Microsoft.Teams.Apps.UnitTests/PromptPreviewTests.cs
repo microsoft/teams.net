@@ -54,12 +54,12 @@ public class PromptPreviewTests
     }
 
     [Fact]
-    public async Task SendActivityAsync_StringOverload_Throws_WhenTargetedRecipient_InPersonalChat()
+    public async Task SendActivityAsync_StringOverload_Succeeds_InPersonalChat()
     {
-        // The string overload constructs a MessageActivity with no recipient, so the 1:1 guard
-        // doesn't fire for plain string sends. We still verify the path runs through the typed
-        // overload (i.e. that other behaviors like auto-populate would apply) by confirming the
-        // captured activity carries the same plumbing as the typed path.
+        // The string overload constructs a MessageActivity with no recipient, so IsTargeted is
+        // never set and the 1:1 guard cannot fire. This test pins that behavior: plain string
+        // sends from a personal chat go through without throwing, even though the typed overload
+        // would throw if a caller explicitly built a targeted MessageActivity.
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
 
