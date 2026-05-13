@@ -105,6 +105,17 @@ public partial class AppBuilder
         return this;
     }
 
+    /// <summary>
+    /// When true, performs a per-activity user OAuth token lookup to populate
+    /// <c>IContext.IsSignedIn</c> / <c>IContext.UserGraphToken</c>. Set to false to
+    /// skip the call when SSO is not configured. Defaults to true.
+    /// </summary>
+    public AppBuilder AutoUserTokenLookup(bool enabled)
+    {
+        _options.AutoUserTokenLookup = enabled;
+        return this;
+    }
+
     public App Build()
     {
         return new App(_options);

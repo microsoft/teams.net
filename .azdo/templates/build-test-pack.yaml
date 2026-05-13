@@ -1,0 +1,89 @@
+# Shared template: dotnet restore, build, test, and (optionally) pack and publish artifact.
+# Used by ci.yaml (validates only — no pack) and publish.yaml (packs for Internal;
+# skips pack for Public, where sign-and-pack.yaml packs after signing DLLs).
+
+parameters:
+  - name: sourceRoot
+    type: string
+    # Required. '.' for Legacy (root Microsoft.Teams.sln), 'core' for Core (core.slnx).
+  - name: packPattern
+    type: string
+    default: ''
+    # Required when pack: true. Glob passed to dotnet pack packagesToPack.
+  - name: pack
+    type: boolean
+    default: false
+    # Default false — CI validates only. publish.yaml's Internal stage sets true.
+  - name: publishTestResults
+    type: boolean
+    default: true
+  - name: publishArtifact
+    type: boolean
+    default: true
+    # Set false when caller publishes via 1ES.PublishPipelineArtifact@1.
+    # Only meaningful when pack: true; ignored otherwise (the artifact step
+    # is nested inside the pack conditional).
+  - name: artifactName
+    type: string
+    default: 'Packages'
+    # Override when multiple instances of this template run in parallel within
+    # one pipeline (e.g. Build_Legacy + Build_Core in ci.yaml), since artifact
+    # names must be unique within a single ADO pipeline run.
+  - name: buildConfiguration
+    type: string
+    default: 'Release'
+
+steps:
+  - task: UseDotNet@2
+    displayName: 'Use .NET 8 SDK'
+    inputs:
+      packageType: 'sdk'
+      version: '8.0.x'
+
+  - task: UseDotNet@2
+    displayName: 'Use .NET 10 SDK'
+    inputs:
+      packageType: 'sdk'
+      version: '10.0.x'
+
+  - script: dotnet restore
+    displayName: 'Restore'
+    workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
+
+  - script: dotnet build --no-restore --configuration ${{ parameters.buildConfiguration }}
+    displayName: 'Build'
+    workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
+
+  - script: dotnet test --no-build --verbosity normal --configuration ${{ parameters.buildConfiguration }} --logger trx --results-directory $(Agent.TempDirectory)/TestResults
+    displayName: 'Test'
+    workingDirectory: '$(Build.SourcesDirectory)/${{ parameters.sourceRoot }}'
+
+  - ${{ if eq(parameters.publishTestResults, true) }}:
+    - task: PublishTestResults@2
+      displayName: 'Publish Test Results'
+      condition: succeededOrFailed()
+      inputs:
+        testResultsFormat: 'VSTest'
+        testResultsFiles: '*.trx'
+        mergeTestResults: true
+        searchFolder: '$(Agent.TempDirectory)/TestResults'
+        failTaskOnMissingResultsFile: false
+
+  - ${{ if eq(parameters.pack, true) }}:
+    - task: DotNetCoreCLI@2
+      displayName: 'Pack'
+      inputs:
+        command: 'pack'
+        packagesToPack: '${{ parameters.packPattern }}'
+        nobuild: true
+        configuration: '${{ parameters.buildConfiguration }}'
+        outputDir: '$(Build.ArtifactStagingDirectory)'
+        buildProperties: 'SymbolPackageFormat=snupkg'
+
+    - ${{ if eq(parameters.publishArtifact, true) }}:
+      - task: PublishPipelineArtifact@1
+        displayName: 'Publish NuGet Packages as Pipeline Artifact'
+        inputs:
+          targetPath: '$(Build.ArtifactStagingDirectory)'
+          artifact: '${{ parameters.artifactName }}'
+          publishLocation: 'pipeline'

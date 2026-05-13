@@ -151,7 +151,7 @@ public class CoreActivity
     /// </summary>
     /// <param name="type">The activity type. Defaults to "message".</param>
     [JsonConstructor]
-    internal CoreActivity(string type = ActivityType.Message)
+    public CoreActivity(string type = ActivityType.Message)
     {
         Type = type;
     }
