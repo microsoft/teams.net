@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,6 +15,10 @@ namespace Microsoft.Teams.Core.Hosting;
 public sealed class BotConfig
 {
     internal const string DefaultSectionName = "AzureAd";
+
+    internal const string DefaultOpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openid-configuration";
+
+    internal const string DefaultEntraInstance = "https://login.microsoftonline.com/";
 
     /// <summary>
     /// Gets or sets the Azure AD tenant ID.
@@ -30,6 +35,26 @@ public sealed class BotConfig
     /// Also used as the MSAL named-options key and the JWT auth scheme name.
     /// </summary>
     public string SectionName { get; set; } = DefaultSectionName;
+
+    /// <summary>
+    /// Gets or sets the Bot Framework OpenID metadata URL used to fetch signing keys
+    /// for validating inbound Bot Framework tokens. For sovereign clouds, set
+    /// <c>{SectionName}:OpenIdMetadataUrl</c> in configuration, e.g.
+    /// <c>"https://login.botframework.azure.us/v1/.well-known/openid-configuration"</c> for USGov.
+    /// Defaults to the public-cloud endpoint when not configured.
+    /// </summary>
+    [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "Mirrors Microsoft.Identity.Web's MicrosoftIdentityApplicationOptions.Instance convention; the value flows through as a string to configuration consumers.")]
+    public string OpenIdMetadataUrl { get; set; } = DefaultOpenIdMetadataUrl;
+
+    /// <summary>
+    /// Gets or sets the Entra login instance used when validating Entra-issued tokens.
+    /// For sovereign clouds, set <c>{SectionName}:Instance</c> in configuration
+    /// (the standard Microsoft.Identity.Web key), e.g.
+    /// <c>"https://login.microsoftonline.us/"</c> for USGov.
+    /// Defaults to the public-cloud instance when not configured.
+    /// </summary>
+    [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "Mirrors Microsoft.Identity.Web's MicrosoftIdentityApplicationOptions.Instance convention; the value flows through as a string to configuration consumers.")]
+    public string EntraInstance { get; set; } = DefaultEntraInstance;
 
     internal IConfigurationSection? MsalConfigurationSection { get; set; }
 
@@ -75,6 +100,8 @@ public sealed class BotConfig
         {
             TenantId = section["TenantId"] ?? string.Empty,
             ClientId = section["ClientId"] ?? string.Empty,
+            OpenIdMetadataUrl = section["OpenIdMetadataUrl"] ?? DefaultOpenIdMetadataUrl,
+            EntraInstance = section["Instance"] ?? DefaultEntraInstance,
             MsalConfigurationSection = section,
             SectionName = sectionName
         };

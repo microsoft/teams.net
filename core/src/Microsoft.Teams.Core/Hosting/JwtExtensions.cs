@@ -23,9 +23,6 @@ namespace Microsoft.Teams.Core.Hosting
     /// </summary>
     public static class JwtExtensions
     {
-        internal const string BotOIDC = "https://login.botframework.com/v1/.well-known/openid-configuration";
-        internal const string EntraOIDC = "https://login.microsoftonline.com/";
-
         /// <summary>
         /// Adds JWT authentication for bots and agents using configuration from appsettings.
         /// </summary>
@@ -77,6 +74,8 @@ namespace Microsoft.Teams.Core.Hosting
             string schemeName = BotConfig.DefaultSectionName,
             ILogger? logger = null)
         {
+            ArgumentNullException.ThrowIfNull(builder);
+
             if (string.IsNullOrWhiteSpace(clientId))
             {
                 builder.AddBypassAuthentication(schemeName, logger);
@@ -188,6 +187,12 @@ namespace Microsoft.Teams.Core.Hosting
         /// </remarks>
         private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)
         {
+            // Resolve sovereign-cloud-aware URLs from the same AzureAd section that produced clientId/tenantId.
+            // Defaults to the public-cloud values when the section is missing or doesn't override them.
+            BotConfig botConfig = BotConfig.Resolve(builder.Services, schemeName);
+            string botOidcUrl = botConfig.OpenIdMetadataUrl;
+            string entraInstance = botConfig.EntraInstance;
+
             // One ConfigurationManager per OIDC authority, shared safely across all requests.
             ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
 
@@ -214,8 +219,8 @@ namespace Microsoft.Teams.Core.Hosting
                         if (iss is null) return [];
 
                         string authority = iss.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
-                            ? BotOIDC
-                            : $"{EntraOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
+                            ? botOidcUrl
+                            : $"{entraInstance}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
 
                         logger?.ResolvingSigningKeys(authority, iss);
 
