@@ -81,7 +81,7 @@ internal sealed class BotAuthenticationHandler(
     {
         string optionsName = authenticationOptionsName ?? BotConfig.DefaultSectionName;
         using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.AuthOutbound, ActivityKind.Client);
-        span?.SetTag(Telemetry.Tags.AuthScope, _scope);
+        // span?.SetTag(Telemetry.Tags.AuthScope, _scope); //TODO: review
 
         try
         {
@@ -96,11 +96,11 @@ internal sealed class BotAuthenticationHandler(
             // Conditionally apply ManagedIdentity configuration if registered
             if (_managedIdentityOptions is not null)
             {
-                ManagedIdentityOptions miOptions = _managedIdentityOptions.Value;
+                ManagedIdentityOptions miOptions = _managedIdentityOptions.CurrentValue;
 
                 if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
                 {
-                    _logger.ApplyingManagedIdentity(miOptions.UserAssignedClientId);
+                    // _logger.ApplyingManagedIdentity(miOptions.UserAssignedClientId); // TODO: review
                     options.AcquireTokenOptions.ManagedIdentity = miOptions;
                     span?.SetTag(Telemetry.Tags.AuthFlow, "managed_identity");
                 }
