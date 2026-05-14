@@ -174,6 +174,7 @@ public class CoreActivity
         Properties = new ExtendedPropertiesDictionary(activity.Properties);
     }
 
+#pragma warning disable ExperimentalTeamsTargeted
     private static ConversationAccount CloneConversationAccount(ConversationAccount source) => new()
     {
         Id = source.Id,
@@ -184,6 +185,7 @@ public class CoreActivity
         AgenticAppBlueprintId = source.AgenticAppBlueprintId,
         Properties = new ExtendedPropertiesDictionary(source.Properties)
     };
+#pragma warning restore ExperimentalTeamsTargeted
 
     /// <summary>
     /// Serializes the current activity to a JSON string.
