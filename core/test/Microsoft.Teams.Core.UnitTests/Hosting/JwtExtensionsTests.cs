@@ -111,6 +111,73 @@ public class JwtExtensionsTests
     }
 
     [Fact]
+    public void ResolveSigningAuthority_RoutesPublicBotIssuer_ToConfiguredBotOidcUrl()
+    {
+        string authority = JwtExtensions.ResolveSigningAuthority(
+            iss: "https://api.botframework.com",
+            tid: Tenant,
+            botTokenIssuer: "https://api.botframework.com",
+            botOidcUrl: "https://login.botframework.com/v1/.well-known/openid-configuration",
+            entraInstance: "https://login.microsoftonline.com/");
+
+        Assert.Equal("https://login.botframework.com/v1/.well-known/openid-configuration", authority);
+    }
+
+    [Theory]
+    [InlineData("https://api.botframework.us", "https://login.botframework.azure.us/v1/.well-known/openid-configuration")]
+    [InlineData("https://api.botframework.azure.cn", "https://login.botframework.azure.cn/v1/.well-known/openid-configuration")]
+    public void ResolveSigningAuthority_RoutesSovereignBotIssuer_ToConfiguredBotOidcUrl(string sovereignBotIssuer, string sovereignBotOidcUrl)
+    {
+        string authority = JwtExtensions.ResolveSigningAuthority(
+            iss: sovereignBotIssuer,
+            tid: Tenant,
+            botTokenIssuer: sovereignBotIssuer,
+            botOidcUrl: sovereignBotOidcUrl,
+            entraInstance: "https://login.microsoftonline.us/");
+
+        Assert.Equal(sovereignBotOidcUrl, authority);
+    }
+
+    [Fact]
+    public void ResolveSigningAuthority_RoutesEntraIssuer_ToInstanceDerivedAuthority()
+    {
+        string authority = JwtExtensions.ResolveSigningAuthority(
+            iss: $"https://login.microsoftonline.com/{Tenant}/v2.0",
+            tid: Tenant,
+            botTokenIssuer: "https://api.botframework.com",
+            botOidcUrl: "https://login.botframework.com/v1/.well-known/openid-configuration",
+            entraInstance: "https://login.microsoftonline.com/");
+
+        Assert.Equal($"https://login.microsoftonline.com/{Tenant}/v2.0/.well-known/openid-configuration", authority);
+    }
+
+    [Fact]
+    public void ResolveSigningAuthority_RoutesEntraIssuer_ToSovereignInstanceWhenConfigured()
+    {
+        string authority = JwtExtensions.ResolveSigningAuthority(
+            iss: $"https://login.microsoftonline.us/{Tenant}/v2.0",
+            tid: Tenant,
+            botTokenIssuer: "https://api.botframework.us",
+            botOidcUrl: "https://login.botframework.azure.us/v1/.well-known/openid-configuration",
+            entraInstance: "https://login.microsoftonline.us/");
+
+        Assert.Equal($"https://login.microsoftonline.us/{Tenant}/v2.0/.well-known/openid-configuration", authority);
+    }
+
+    [Fact]
+    public void ResolveSigningAuthority_ReturnsEmpty_WhenIssuerNull()
+    {
+        string authority = JwtExtensions.ResolveSigningAuthority(
+            iss: null,
+            tid: Tenant,
+            botTokenIssuer: "https://api.botframework.com",
+            botOidcUrl: "https://login.botframework.com/v1/.well-known/openid-configuration",
+            entraInstance: "https://login.microsoftonline.com/");
+
+        Assert.Equal(string.Empty, authority);
+    }
+
+    [Fact]
     public void AddBotAuthentication_ManualOverload_DoesNotThrow_WhenNoIConfigurationRegistered()
     {
         // Regression: AddBotAuthentication(clientId, tenantId) manual overload should remain usable

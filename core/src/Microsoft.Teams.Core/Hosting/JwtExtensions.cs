@@ -166,6 +166,20 @@ namespace Microsoft.Teams.Core.Hosting
             throw new SecurityTokenInvalidIssuerException($"Issuer '{issuer}' is not valid.");
         }
 
+        /// <summary>
+        /// Picks the OIDC metadata authority to fetch signing keys from based on the token's
+        /// issuer claim. Tokens issued by the configured Bot Framework issuer (e.g. the public
+        /// "https://api.botframework.com" or a sovereign equivalent like "https://api.botframework.us")
+        /// resolve to the configured Bot OIDC URL; all others fall through to the Entra tenant authority.
+        /// </summary>
+        internal static string ResolveSigningAuthority(string? iss, string? tid, string botTokenIssuer, string botOidcUrl, string entraInstance)
+        {
+            if (iss is null) return string.Empty;
+            return iss.Equals(botTokenIssuer, StringComparison.OrdinalIgnoreCase)
+                ? botOidcUrl
+                : $"{entraInstance}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
+        }
+
         private static (string? iss, string? tid) GetTokenClaims(SecurityToken token) =>
             token is JsonWebToken jwt
                 ? (jwt.Issuer, jwt.TryGetClaim("tid", out Claim? c) ? c.Value : null)
@@ -230,9 +244,7 @@ namespace Microsoft.Teams.Core.Hosting
                         (string? iss, string? tid) = GetTokenClaims(securityToken);
                         if (iss is null) return [];
 
-                        string authority = iss.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
-                            ? botOidcUrl
-                            : $"{entraInstance}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
+                        string authority = ResolveSigningAuthority(iss, tid, botTokenIssuer, botOidcUrl, entraInstance);
 
                         logger?.ResolvingSigningKeys(authority, iss);
 
