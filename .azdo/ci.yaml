@@ -1,18 +1,24 @@
 # =============================================================================
-# This pipeline (teams.net-pr) builds, tests, and packs the SDK (excluding core/).
-# PR trigger: main and release/* branches. No CI trigger.
+# Teams.NET-PR — unified CI pipeline.
+#
+# Validates Legacy (Libraries/, Samples/, Tests/) and Core (core/) package sets.
+# Always runs; the DetectChanges stage decides which build stages execute.
+# Neither stage publishes anything — pack output goes to a pipeline artifact only.
+# Pushes are handled by publish.yaml.
+#
+# Spec: docs/superpowers/specs/2026-05-12-pipeline-consolidation-design.md
 # =============================================================================
 
-trigger: none
+trigger:
+  branches:
+    include:
+      - main
 
 pr:
   branches:
     include:
       - main
-      - release/*
-  paths:
-    exclude:
-      - core/**
+      - releases/*
 
 pool:
   vmImage: 'ubuntu-22.04'
@@ -21,47 +27,88 @@ variables:
   buildConfiguration: 'Release'
 
 stages:
-- stage: Build_Test_Pack
+- stage: DetectChanges
+  displayName: 'Detect Changed Paths'
+  jobs:
+  - job: detect
+    displayName: 'Compute change flags'
+    steps:
+    - checkout: self
+      fetchDepth: 0
+
+    - bash: |
+        set -euo pipefail
+
+        echo "Build.Reason: ${BUILD_REASON:-unset}"
+        echo "System.PullRequest.TargetBranch: ${SYSTEM_PULLREQUEST_TARGETBRANCH:-unset}"
+        echo "System.PullRequest.TargetBranchName: ${SYSTEM_PULLREQUEST_TARGETBRANCHNAME:-unset}"
+        echo "Build.SourceBranch: ${BUILD_SOURCEBRANCH:-unset}"
+
+        if [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCH:-}" ]; then
+          target="${SYSTEM_PULLREQUEST_TARGETBRANCH#refs/heads/}"
+          base="origin/$target"
+        elif [ -n "${SYSTEM_PULLREQUEST_TARGETBRANCHNAME:-}" ]; then
+          base="origin/${SYSTEM_PULLREQUEST_TARGETBRANCHNAME}"
+        elif [ "${BUILD_REASON:-}" = "PullRequest" ]; then
+          echo "Warning: PullRequest run but target-branch variable is unset; defaulting to origin/main"
+          base="origin/main"
+        else
+          base="HEAD^"
+        fi
+
+        echo "Diff base: $base"
+        changed=$(git diff --name-only "$base"...HEAD)
+        echo "Changed paths:"
+        echo "$changed"
+
+        legacy=false
+        core=false
+        while IFS= read -r f; do
+          [ -z "$f" ] && continue
+          case "$f" in
+            *.md|docs/*|core/docs/*|Assets/*)
+              # Docs / asset-only — skip both groups.
+              ;;
+            Libraries/*|Samples/*|Tests/*|Microsoft.Teams.sln|version.json)
+              legacy=true
+              ;;
+            core/*)
+              core=true
+              ;;
+            .editorconfig|.azdo/*|.azdo/*/*|.azdo/*/*/*|Makefile)
+              legacy=true
+              core=true
+              ;;
+          esac
+        done <<< "$changed"
+
+        echo "legacyChanged=$legacy"
+        echo "coreChanged=$core"
+        echo "##vso[task.setvariable variable=legacyChanged;isOutput=true]$legacy"
+        echo "##vso[task.setvariable variable=coreChanged;isOutput=true]$core"
+      name: flags
+      displayName: 'git diff and flag groups'
+
+- stage: Build_Legacy
+  displayName: 'Build Legacy'
+  dependsOn: DetectChanges
+  condition: eq(dependencies.DetectChanges.outputs['detect.flags.legacyChanged'], 'true')
   jobs:
   - job: BuildTestPack
-    displayName: 'Build, Test, and Pack'
+    displayName: 'Build, Test, Pack — Legacy'
     steps:
+    - template: templates/build-test-pack.yaml
+      parameters:
+        sourceRoot: '.'
 
-      - task: UseDotNet@2
-        displayName: 'Use .NET 8'
-        inputs:
-          packageType: 'sdk'
-          version: '8.0.x'
-
-      - task: UseDotNet@2
-        displayName: 'Use .NET 10'
-        inputs:
-          packageType: 'sdk'
-          version: '10.0.x'
-
-      - script: dotnet restore 
-        displayName: 'Restore'
-
-      - script: dotnet build --no-restore --configuration $(buildConfiguration)
-        displayName: 'Build'
-
-      - script: dotnet test --no-build --configuration $(buildConfiguration) --logger trx
-        displayName: 'Test'
-
-      - task: PublishTestResults@2
-        displayName: 'Publish Test Results'
-        condition: succeededOrFailed()
-        inputs:
-          testResultsFormat: 'VSTest'
-          testResultsFiles: '**/*.trx'
-          mergeTestResults: true
-
-      - script: dotnet pack --no-build -o $(Build.ArtifactStagingDirectory) /p:SymbolPackageFormat=snupkg --configuration $(buildConfiguration)
-        displayName: 'Pack'
-
-      - task: PublishPipelineArtifact@1
-        displayName: 'Publish NuGet Packages as Pipeline Artifact'
-        inputs:
-          targetPath: '$(Build.ArtifactStagingDirectory)'
-          artifact: 'Packages'
-          publishLocation: 'pipeline'
+- stage: Build_Core
+  displayName: 'Build Core'
+  dependsOn: DetectChanges
+  condition: eq(dependencies.DetectChanges.outputs['detect.flags.coreChanged'], 'true')
+  jobs:
+  - job: BuildTestPack
+    displayName: 'Build, Test, Pack — Core'
+    steps:
+    - template: templates/build-test-pack.yaml
+      parameters:
+        sourceRoot: 'core'

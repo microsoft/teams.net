@@ -1,0 +1,232 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using Microsoft.Bot.Builder;
+using Microsoft.Bot.Builder.Teams;
+using Microsoft.Bot.Schema;
+using Microsoft.Bot.Schema.Teams;
+using Microsoft.Teams.Apps.BotBuilder;
+using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+namespace CompatBot;
+
+public class ConversationData
+{
+    public int MessageCount { get; set; } = 0;
+
+}
+
+internal class EchoBot(BotApplication teamsBotApp, ConversationState conversationState, ILogger<EchoBot> logger)
+    : TeamsActivityHandler
+{
+    public override async Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken = default)
+    {
+        await base.OnTurnAsync(turnContext, cancellationToken);
+
+        await conversationState.SaveChangesAsync(turnContext, false, cancellationToken);
+    }
+    protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("OnMessage");
+        IStatePropertyAccessor<ConversationData> conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
+        ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
+
+        var mm = await TeamsApiClient.GetMemberAsync(turnContext, turnContext.Activity.From.Id);
+        string replyText = $"Echo {mm.Name} from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
+
+        // Targeted Messaging via BF compat layer: setting isTargeted on the BF ChannelAccount
+        // causes the compat layer to set CoreActivity.Recipient.IsTargeted, which appends
+        // ?isTargetedActivity=true to the URL making the message visible only to that user.
+        var act = MessageFactory.Text(replyText, replyText);
+        act.Recipient = new ChannelAccount();
+        act.Recipient.Properties.Add("isTargeted", true);
+        await turnContext.SendActivityAsync(act, cancellationToken);
+
+
+        if (turnContext.Activity.Conversation.IsGroup == true)
+        {
+            var teamDetails = await TeamsApiClient.GetTeamDetailsAsync(turnContext, null, cancellationToken);
+            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(teamDetails, Formatting.Indented));
+
+            TeamsPagedMembersResult pagedMembersResult;
+            List<TeamsChannelAccount> members = new List<TeamsChannelAccount>();
+            string continuationToken = null!;
+            do
+            {
+                pagedMembersResult = await TeamsApiClient.GetPagedMembersAsync(
+                    turnContext,
+                    5,
+                    continuationToken,
+                    cancellationToken
+                );
+
+                continuationToken = pagedMembersResult.ContinuationToken;
+                members.AddRange(pagedMembersResult.Members);
+            } while (continuationToken != null);
+
+            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(members.Select(m => m.Name).ToList(), Formatting.Indented));
+        }
+
+        // Targeted Messaging via Core SDK (preferred): sends directly through ConversationClient
+        // to bypass the BF compat layer's ApplyConversationReference which would overwrite the Recipient.
+        var incomingCoreActivity = ((Activity)turnContext.Activity).FromBotFrameworkActivity();
+        var incomingFrom = incomingCoreActivity.From;
+        var incomingRecipient = incomingCoreActivity.Recipient;
+#pragma warning disable ExperimentalTeamsTargeted
+        incomingFrom!.IsTargeted = true;
+#pragma warning restore ExperimentalTeamsTargeted
+        CoreActivity tm = CoreActivity.CreateBuilder()
+            .WithConversation(incomingCoreActivity.Conversation!)
+            .WithProperty("text", "Hello TM !")
+            .WithRecipient(incomingFrom)
+            .WithFrom(incomingRecipient)
+            //.WithServiceUrl(activity.ServiceUrl!)
+            .WithServiceUrl("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/")
+            .Build();
+
+        await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
+
+        var res = await turnContext.SendActivityAsync(
+            MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
+
+        await Task.Delay(500, cancellationToken);
+
+        await teamsBotApp.ConversationClient.AddReactionAsync(
+            turnContext.Activity.Conversation.Id,
+            res.Id,
+            "laugh",
+            new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
+            //incomingCoreActivity.ServiceUrl!,
+            AgenticIdentity.FromAccount(incomingRecipient),
+            null,
+            cancellationToken);
+
+        await Task.Delay(500, cancellationToken);
+
+        await teamsBotApp.ConversationClient.AddReactionAsync(
+            turnContext.Activity.Conversation.Id,
+            res.Id,
+            "sad",
+            incomingCoreActivity.ServiceUrl!,
+            AgenticIdentity.FromAccount(incomingRecipient),
+            null,
+            cancellationToken);
+
+        await Task.Delay(500, cancellationToken);
+
+        await teamsBotApp.ConversationClient.DeleteReactionAsync(
+            turnContext.Activity.Conversation.Id,
+            res.Id,
+            "laugh",
+            //new Uri("https://pilot1.botapi.skype.com/amer/9a9b49fd-1dc5-4217-88b3-ecf855e91b0e/"),
+            incomingCoreActivity.ServiceUrl!,
+            AgenticIdentity.FromAccount(incomingRecipient),
+            null,
+            cancellationToken);
+
+        // Card submission triggers OnInvokeActivityAsync below.
+        Attachment attachment = new()
+        {
+            ContentType = "application/vnd.microsoft.card.adaptive",
+            Content = Cards.FeedbackCardObj
+        };
+        IMessageActivity attachmentReply = MessageFactory.Attachment(attachment);
+        await turnContext.SendActivityAsync(attachmentReply, cancellationToken);
+
+    }
+
+
+    protected override async Task OnMessageReactionActivityAsync(ITurnContext<IMessageReactionActivity> turnContext, CancellationToken cancellationToken)
+    {
+        await turnContext.SendActivityAsync(MessageFactory.Text("Message reaction received."), cancellationToken);
+    }
+
+    protected override async Task OnInstallationUpdateActivityAsync(ITurnContext<IInstallationUpdateActivity> turnContext, CancellationToken cancellationToken)
+    {
+        await turnContext.SendActivityAsync(MessageFactory.Text("Installation update received."), cancellationToken);
+        await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive messages to  `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
+    }
+
+    protected override async Task OnInstallationUpdateAddAsync(ITurnContext<IInstallationUpdateActivity> turnContext, CancellationToken cancellationToken)
+    {
+        await turnContext.SendActivityAsync(MessageFactory.Text("Installation update Add received."), cancellationToken);
+        await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive messages to  `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
+    }
+
+    protected override async Task<Microsoft.Bot.Builder.InvokeResponse> OnInvokeActivityAsync(ITurnContext<IInvokeActivity> turnContext, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Invoke Activity received: {Name}", turnContext.Activity.Name);
+        JObject actionValue = JObject.FromObject(turnContext.Activity.Value);
+        JObject? action = actionValue["action"] as JObject;
+        JObject? actionData = action?["data"] as JObject;
+        string? userInput = actionData?["feedback"]?.ToString();
+        //var userInput = actionValue["userInput"]?.ToString();
+
+        logger.LogInformation("Action: {Action}, User Input: {UserInput}", action, userInput);
+
+
+
+        Attachment attachment = new()
+        {
+            ContentType = "application/vnd.microsoft.card.adaptive",
+            Content = Cards.ResponseCard(userInput)
+        };
+
+        IMessageActivity card = MessageFactory.Attachment(attachment);
+        await turnContext.SendActivityAsync(card, cancellationToken);
+
+        return new Microsoft.Bot.Builder.InvokeResponse
+        {
+            Status = 200,
+            Body = new { value = "invokes from compat bot" }
+        };
+    }
+
+    protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+    {
+        await turnContext.SendActivityAsync(MessageFactory.Text("Welcome."), cancellationToken);
+        await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive messages to  `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
+    }
+
+    protected override Task OnMembersRemovedAsync(IList<ChannelAccount> membersRemoved, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+    {
+        return turnContext.SendActivityAsync(MessageFactory.Text("Bye."), cancellationToken);
+    }
+
+    protected override async Task OnTeamsMeetingStartAsync(MeetingStartEventDetails meeting, ITurnContext<IEventActivity> turnContext, CancellationToken cancellationToken)
+    {
+        await turnContext.SendActivityAsync(MessageFactory.Text("Welcome to meeting: "), cancellationToken);
+        await turnContext.SendActivityAsync(MessageFactory.Text($"{meeting.Title} {meeting.MeetingType}"), cancellationToken);
+    }
+
+    private static async Task SendUpdateDeleteActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
+    {
+        ConversationReference cr = turnContext.Activity.GetConversationReference();
+        Activity reply = (Activity)Activity.CreateMessageActivity();
+        reply.ApplyConversationReference(cr, isIncoming: false);
+        reply.Text = "This is a proactive message sent using the Conversations API.";
+
+        ResourceResponse[] res = await turnContext.Adapter.SendActivitiesAsync(turnContext, [reply], cancellationToken);
+
+        await Task.Delay(2000, cancellationToken);
+
+        Activity updatedActivity = (Activity)Activity.CreateMessageActivity();
+        updatedActivity.ApplyConversationReference(cr, isIncoming: false);
+        updatedActivity.Id = res[0].Id;
+        updatedActivity.Text = "This message has been updated.";
+
+        await turnContext.Adapter.UpdateActivityAsync(turnContext, updatedActivity, cancellationToken);
+
+        await Task.Delay(2000, cancellationToken);
+
+        ConversationReference deleteReference = cr;
+        deleteReference.ActivityId = res[0].Id;
+        await turnContext.Adapter.DeleteActivityAsync(turnContext, deleteReference, cancellationToken);
+
+        await turnContext.SendActivityAsync(MessageFactory.Text("Proactive message sent and deleted."), cancellationToken);
+    }
+
+}

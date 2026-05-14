@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>Microsoft.Teams.Apps.BotBuilder</PackageId>
+    <Description>Bridge to support smooth migration from BotFramework SDK into Teams SDK.</Description>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Microsoft.Teams.Apps.BotBuilder.UnitTests" />
+    <InternalsVisibleTo Include="IntegrationTests" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
+  </ItemGroup>
+</Project>

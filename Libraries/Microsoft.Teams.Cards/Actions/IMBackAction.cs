@@ -5,6 +5,10 @@ using Microsoft.Teams.Common;
 
 namespace Microsoft.Teams.Cards;
 
+/// <summary>
+/// This class is deprecated. Please use <see cref="ImBackSubmitActionData"/> instead. This will be removed in a future version of the SDK.
+/// </summary>
+[Obsolete("This class is deprecated. Use ImBackSubmitActionData instead. This will be removed in a future version of the SDK.")]
 public class IMBackAction : SubmitAction
 {
     /// <summary>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);ExperimentalTeamsQuotedReplies;ExperimentalTeamsTargeted</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>Microsoft.Teams.Apps</PackageId>
+    <Description>Create Microsoft Teams Bot Applications with ease.</Description>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Microsoft.Teams.Apps.UnitTests" />
+  </ItemGroup>
+
+</Project>
