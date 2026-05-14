@@ -54,15 +54,13 @@ teamsApp.OnMessage("(?i)^test update$", async (context, cancellationToken) =>
     if (response?.Id is null) return;
 
     string messageId = response.Id;
-    // Use CancellationToken.None for the delayed background work: the per-turn cancellationToken
-    // is request-scoped and may be canceled by the time the 3-second delay completes.
     _ = Task.Run(async () =>
     {
         await Task.Delay(3000);
         try
         {
             MessageActivity updated = new($"✏️ Updated at {DateTime.UtcNow:HH:mm:ss}");
-            await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updated, CancellationToken.None);
+            await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updated, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -87,20 +85,31 @@ teamsApp.OnMessage("(?i)^test delete$", async (context, cancellationToken) =>
     if (response?.Id is null) return;
 
     string messageId = response.Id;
-    // Use CancellationToken.None for the delayed background work: the per-turn cancellationToken
-    // is request-scoped and may be canceled by the time the 3-second delay completes.
     _ = Task.Run(async () =>
     {
         await Task.Delay(3000);
         try
         {
-            await context.Api.Conversations.Activities.DeleteTargetedAsync(conversationId, messageId, cancellationToken: CancellationToken.None);
+            await context.Api.Conversations.Activities.DeleteTargetedAsync(conversationId, messageId, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[DELETE] error: {ex.Message}");
         }
     });
+});
+
+// Detect whether the inbound message was itself a targeted message
+// (i.e. sent only to the bot). Read it from context.Activity.Recipient?.IsTargeted.
+// The reactive Prompt Preview auto-populate hook uses this same signal internally.
+teamsApp.OnMessage("(?i)^test inbound$", async (context, cancellationToken) =>
+{
+    bool wasTargeted = context.Activity.Recipient?.IsTargeted == true;
+    await context.SendActivityAsync(
+        wasTargeted
+            ? "✅ Your message was delivered to me as a *targeted* message."
+            : "ℹ️ Your message was delivered to me as a regular (broadcast) message.",
+        cancellationToken);
 });
 
 // Help
@@ -113,7 +122,8 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             "- `test send` — Send a targeted message (visible only to you)\n" +
             "- `test reply` — Reply with a targeted message\n" +
             "- `test update` — Send then update a targeted message\n" +
-            "- `test delete` — Send then delete a targeted message\n")
+            "- `test delete` — Send then delete a targeted message\n" +
+            "- `test inbound` — Show whether the inbound message was targeted at the bot\n")
         { TextFormat = TextFormats.Markdown },
         cancellationToken);
 });
