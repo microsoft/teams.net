@@ -12,7 +12,13 @@ namespace ExtAIBot;
 // [N] references that appear in the final response text.
 sealed class CitationCollector
 {
+    private readonly ILogger _logger;
     private readonly Dictionary<string, CitationEntry> _citations = [];
+
+    public CitationCollector(ILogger logger)
+    {
+        _logger = logger;
+    }
 
     public void TryExtract(string result)
     {
@@ -34,13 +40,24 @@ sealed class CitationCollector
                     Snippet: snippet.Length > 160 ? snippet[..160] : snippet);
             }
         }
-        catch { /* not a JSON result with citations */ }
+        catch (JsonException ex)
+        {
+            _logger.LogDebug(ex, "Skipped citation extraction because the tool result was not valid JSON.");
+        }
+        catch (FormatException ex)
+        {
+            _logger.LogDebug(ex, "Skipped citation extraction because the tool result had an unexpected format.");
+        }
     }
 
     public IList<Entity> BuildEntities(string fullText)
     {
-        HashSet<int> used = [.. Regex.Matches(fullText, @"\[(\d+)\]")
-            .Select(m => int.Parse(m.Groups[1].Value))];
+        HashSet<int> used = [];
+        foreach (Match match in Regex.Matches(fullText, @"\[(\d+)\]"))
+        {
+            if (int.TryParse(match.Groups[1].Value, out int position))
+                used.Add(position);
+        }
 
         List<CitationClaim> claims = [.. _citations.Values
             .Where(e => used.Contains(e.Position))
@@ -59,7 +76,7 @@ sealed class CitationCollector
                 }.ToDocument()
             })];
 
-        // TODO : work on Add Citations/feedback/AI label etc in builder 
+        // TODO : work on Add Citations/feedback/AI label etc in builder
         return claims.Count == 0
             ? [new OMessageEntity { AdditionalType = ["AIGeneratedContent"] }]
             : [new CitationEntity { AdditionalType = ["AIGeneratedContent"], Citation = claims }];

@@ -17,7 +17,7 @@ namespace ExtAIBot;
 sealed class Agent
 {
     private readonly IChatClient _chatClient;
-    private readonly McpToolSet _mcpTools;
+    private readonly McpToolSetLifetimeService _mcpTools;
     private readonly ILogger<Agent> _logger;
     private readonly ConcurrentDictionary<string, List<ChatMessage>> _histories = new();
     // One lock per conversation so concurrent turns on the same conversation serialize
@@ -55,7 +55,7 @@ sealed class Agent
         [property: JsonPropertyName("prompt1")] string Prompt1,
         [property: JsonPropertyName("prompt2")] string Prompt2);
 
-    public Agent(IChatClient chatClient, McpToolSet mcpTools, ILogger<Agent> logger)
+    public Agent(IChatClient chatClient, McpToolSetLifetimeService mcpTools, ILogger<Agent> logger)
     {
         _chatClient = chatClient;
         _mcpTools = mcpTools;
@@ -79,14 +79,15 @@ sealed class Agent
         try
         {
             List<object> pendingCards = [];
-            CitationCollector citations = new();
+            CitationCollector citations = new(_logger);
+            McpToolSet mcpTools = _mcpTools.Value;
 
             ChatOptions options = new()
             {
                 Tools =
                 [
                     LocalTools.CreateClarificationCardTool(pendingCards, _logger),
-                    .. _mcpTools.GetTools(citations)
+                    .. mcpTools.GetTools(citations)
                 ]
             };
 

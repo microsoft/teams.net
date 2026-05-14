@@ -13,7 +13,7 @@ namespace ExtAIBot;
 // Bot activity handlers: incoming messages, clarification-card submits, and the
 // custom-feedback fetch/submit pair. Each handler ultimately funnels a user-supplied
 // string back through the Agent.
-internal static class Handlers
+internal static class TeamsBotAppHandlers
 {
     public static TeamsBotApplication RegisterHandlers(this TeamsBotApplication teamsApp, Agent agent, ILogger logger)
     {

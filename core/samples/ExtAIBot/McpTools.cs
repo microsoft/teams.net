@@ -45,6 +45,26 @@ sealed class McpToolSet : IAsyncDisposable
     public ValueTask DisposeAsync() => _client.DisposeAsync();
 }
 
+sealed class McpToolSetLifetimeService(ILogger<McpToolSet> logger) : IHostedService
+{
+    private McpToolSet? _value;
+
+    public McpToolSet Value => _value ?? throw new InvalidOperationException("MCP tool set is not initialized.");
+
+    public async Task StartAsync(CancellationToken cancellationToken)
+    {
+        _value = await McpToolSet.CreateAsync(logger, cancellationToken);
+    }
+
+    public async Task StopAsync(CancellationToken cancellationToken)
+    {
+        if (_value is null) return;
+
+        await _value.DisposeAsync();
+        _value = null;
+    }
+}
+
 // Wraps an McpClientTool, delegating all metadata to it while intercepting
 // InvokeCoreAsync to extract citation data from the raw result string.
 file sealed class CitationCapturingTool(McpClientTool inner, CitationCollector citations, ILogger logger)

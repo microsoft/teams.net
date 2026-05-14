@@ -52,13 +52,13 @@ cd samples/ExtAIBot
 dotnet run
 ```
 
-The bot connects to the MS Learn MCP server at startup and lists its tools before accepting messages. If the MCP server is unreachable the app will fail to start.
+The bot initializes the MS Learn MCP tool set at startup before accepting messages. If the MCP server is unreachable the app will fail to start.
 
 ## Example interactions
 
 - `Tell me about streaming` — ambiguous request: the model calls `request_clarification` and the bot replies with a clarification card.
 - `How do I stream in teams.net?` — model calls an MS Learn search tool, replies with docs-grounded answer and inline citations, plus two follow-up chips
-- - `How do I list users with Microsoft Graph?` — same MCP search path, but lands on Graph documentation; reply cites the relevant `/users` endpoint docs and shows a code snippet
+- `How do I list users with Microsoft Graph?` — same MCP search path, but lands on Graph documentation; reply cites the relevant `/users` endpoint docs and shows a code snippet
 
 ### Clarification flow
 
@@ -82,7 +82,7 @@ ChatOptions options = new()
 {
     Tools =
     [
-        LocalTools.CreateClarificationCardTool(pendingCards),
+      LocalTools.CreateClarificationCardTool(pendingCards, _logger),
         .. _mcpTools.GetTools(citations)
     ]
 };
