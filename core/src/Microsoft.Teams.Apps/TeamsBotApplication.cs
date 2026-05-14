@@ -124,14 +124,18 @@ public class TeamsBotApplication : BotApplication
 
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
+            HttpContext? httpContext = httpContextAccessor.HttpContext;
             if (teamsActivity.Type != TeamsActivityType.Invoke)
             {
+                if (httpContext is not null)
+                {
+                    await httpContext.Response.CompleteAsync().ConfigureAwait(false);
+                }
                 await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
             }
             else // invokes
             {
                 InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                HttpContext? httpContext = httpContextAccessor.HttpContext;
                 if (httpContext is not null && invokeResponse is not null)
                 {
                     httpContext.Response.StatusCode = invokeResponse.Status;

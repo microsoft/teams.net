@@ -77,6 +77,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string body = activity.ToJson();
 
+        logger.SendingActivity(url);
+
         return await _botHttpClient.SendAsync<SendActivityResponse>(
             HttpMethod.Post,
             url,
