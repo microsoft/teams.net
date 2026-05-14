@@ -31,9 +31,8 @@ builder.Services.AddOpenTelemetry()
             ["service.namespace"] = "Microsoft.Teams"
         }))
     .UseMicrosoftOpenTelemetry(async o => {
-
-        o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Exporters = ExportTarget.Otlp | ExportTarget.Agent365 | ExportTarget.AzureMonitor;
+        o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Instrumentation.EnableAspNetCoreInstrumentation = true;
         o.Agent365.Exporter.UseS2SEndpoint = true;
         o.Agent365.Exporter.TokenResolver = async (agentId, tenantId) =>
@@ -61,7 +60,6 @@ builder.Services.AddKeyedSingleton("msdocs", (sp, key) =>
             Name = "msdocs"
         })));
 
-var tenantId = builder.Configuration["AzureAd:TenantId"] ?? throw new InvalidDataException("AzureAd:TenantId not found");
 
 builder.Services.AddKeyedSingleton("calendarTools", (sp, key) =>
     McpClient.CreateAsync(
@@ -72,13 +70,13 @@ builder.Services.AddKeyedSingleton("calendarTools", (sp, key) =>
             Name = "calendarTools"
         })));
 
-builder.Services.AddKeyedSingleton("disco", (sp, key) =>
+builder.Services.AddKeyedSingleton("teams", (sp, key) =>
     McpClient.CreateAsync(
         new HttpClientTransport(new()
         {
-            Endpoint = new Uri("https://agent365.svc.cloud.microsoft/agents/discoverMCPServers"),
+            Endpoint = new Uri("https://agent365.svc.cloud.microsoft/agents/servers/mcp_TeamsServer"),
             TransportMode = HttpTransportMode.AutoDetect,
-            Name = "disco"
+            Name = "teams"
         })));
 
 
@@ -100,15 +98,15 @@ builder.Services.AddSingleton<IChatClient>(sp =>
 builder.Services.AddSingleton(sp =>
 {
     var msdocsClient = sp.GetRequiredKeyedService<Task<McpClient>>("msdocs").GetAwaiter().GetResult();
-    //var calendarClient = sp.GetRequiredKeyedService<Task<McpClient>>("calendarTools").GetAwaiter().GetResult();
-    var discoClient = sp.GetRequiredKeyedService<Task<McpClient>>("disco").GetAwaiter().GetResult();
+    var calendarClient = sp.GetRequiredKeyedService<Task<McpClient>>("calendarTools").GetAwaiter().GetResult();
+    var teamsClient = sp.GetRequiredKeyedService<Task<McpClient>>("teams").GetAwaiter().GetResult();
 
     var msdocsTools = msdocsClient.ListToolsAsync().GetAwaiter().GetResult();
-    //var calendarTools = calendarClient.ListToolsAsync().GetAwaiter().GetResult();
-    var discoTools = discoClient.ListToolsAsync().GetAwaiter().GetResult();
+    var calendarTools = calendarClient.ListToolsAsync().GetAwaiter().GetResult();
+    var teamsTools = teamsClient.ListToolsAsync().GetAwaiter().GetResult();
 
-    //var allTools = msdocsTools.Concat(calendarTools).Concat(discoTools).ToList();
-    var allTools = msdocsTools.Concat(discoTools).ToList();
+    var allTools = msdocsTools.Concat(calendarTools).Concat(teamsTools).Concat(calendarTools).ToList();
+    
     Console.WriteLine("Tools Found: " + string.Join(", ", allTools.Select(t => t.Name)));
 
     return new ChatOptions

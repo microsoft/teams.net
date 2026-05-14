@@ -3,6 +3,8 @@
 
 using System.Collections.Concurrent;
 using System.Text.Json;
+using Microsoft.Agents.A365.Observability.Runtime.Tracing.Contracts;
+using Microsoft.Agents.A365.Observability.Runtime.Tracing.Scopes;
 using Microsoft.Extensions.AI;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Api.Clients;
@@ -19,6 +21,7 @@ public class ObservabilityBotApp : TeamsBotApplication
     private readonly IChatClient _chatClient;
     private readonly ChatOptions _chatOptions;
     private readonly ConcurrentDictionary<string, List<ChatMessage>> _chatHistories = new();
+    private readonly string _deploymentName;
 
     public ObservabilityBotApp(
         ConversationClient conversationClient,
@@ -34,6 +37,7 @@ public class ObservabilityBotApp : TeamsBotApplication
     {
         _chatClient = chatClient;
         _chatOptions = chatOptions;
+        _deploymentName = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT") ?? "unknown";
 
         this.OnMessage(HandleMessageAsync);
     }
@@ -54,41 +58,76 @@ public class ObservabilityBotApp : TeamsBotApplication
             history.Add(new ChatMessage(ChatRole.User, context.Activity.Text));
         }
 
-        var (responseText, citations) = await GetChatResponseAsync(history);
+        // Build Agent365 scope contracts from the turn context.
+        var recipient = context.Activity.Recipient;
+        var agentDetails = new AgentDetails(
+            agentId: recipient?.AgenticAppId ?? recipient?.Id,
+            agentName: recipient?.Name,
+            agenticUserId: recipient?.AgenticUserId,
+            agentBlueprintId: recipient?.AgenticAppBlueprintId,
+            tenantId: recipient?.TenantId);
 
-        var responseMsg = TeamsActivity.CreateBuilder()
-            .WithText(responseText, TextFormats.Markdown)
-            .AddMention(context.Activity?.From!)
-            .Build();
+        var request = new Request(
+            content: context.Activity.Text,
+            conversationId: conversationId,
+            channel: new Channel(context.Activity.ChannelId));
 
-        responseMsg.AddAIGenerated();
+        // === InferenceScope: wraps the LLM + tool-call loop ===
+        var inferenceDetails = new InferenceCallDetails(
+            InferenceOperationType.Chat,
+            model: _deploymentName,
+            providerName: "AzureOpenAI");
 
-        for (int i = 0; i < citations.Count; i++)
-        {
-            var citation = citations[i];
-            var abstract_ = citation.Content.Length > 400 ? citation.Content[..200] + "..." : citation.Content;
-            responseMsg.AddCitation(i + 1, new CitationAppearance() { Name = citation.Title, Url = new Uri(citation.Url), Abstract = abstract_, Icon = CitationIcon.Text });
-        }
-
-        await context.Send(responseMsg, ct);
-    }
-
-    private async Task<(string ResponseText, List<(string Title, string Url, string Content)> Citations)> GetChatResponseAsync(List<ChatMessage> history)
-    {
         List<ChatMessage> snapshot;
-        lock (history)
+        lock (history) { snapshot = [.. history]; }
+
+        ChatResponse chatResponse;
+        using (var inferenceScope = InferenceScope.Start(request, inferenceDetails, agentDetails))
         {
-            snapshot = [.. history];
+            chatResponse = await _chatClient.GetResponseAsync(snapshot, _chatOptions, ct);
+
+            if (chatResponse.Usage is { } usage)
+            {
+                if (usage.InputTokenCount is { } inputTokens)
+                    inferenceScope.RecordInputTokens((int)inputTokens);
+                if (usage.OutputTokenCount is { } outputTokens)
+                    inferenceScope.RecordOutputTokens((int)outputTokens);
+            }
+
+            var finishReason = chatResponse.FinishReason?.Value ?? "stop";
+            inferenceScope.RecordFinishReasons([finishReason]);
         }
 
-        ChatResponse response = await _chatClient.GetResponseAsync(snapshot, _chatOptions);
-
         lock (history)
         {
-            history.AddRange(response.Messages);
+            history.AddRange(chatResponse.Messages);
         }
 
-        var citations = response.Messages
+        // === ExecuteToolScope: record each tool invocation ===
+        var toolCalls = chatResponse.Messages
+            .SelectMany(m => m.Contents.OfType<FunctionCallContent>())
+            .GroupBy(fc => fc.CallId ?? fc.Name ?? "")
+            .ToDictionary(g => g.Key, g => g.First());
+
+        foreach (var funcResult in chatResponse.Messages
+            .SelectMany(m => m.Contents.OfType<FunctionResultContent>()))
+        {
+            toolCalls.TryGetValue(funcResult.CallId ?? "", out var matchingCall);
+
+            var toolDetails = new ToolCallDetails(
+                toolName: matchingCall?.Name ?? "unknown",
+                arguments: matchingCall?.Arguments is { } args ? JsonSerializer.Serialize(args) : null,
+                toolCallId: funcResult.CallId);
+
+            using var toolScope = ExecuteToolScope.Start(request, toolDetails, agentDetails);
+            if (funcResult.Result is not null)
+            {
+                toolScope.RecordResponse(funcResult.Result.ToString()!);
+            }
+        }
+
+        // Extract citations from tool results.
+        var citations = chatResponse.Messages
             .SelectMany(m => m.Contents.OfType<FunctionResultContent>())
             .Where(frc => frc.Result is not null)
             .SelectMany(frc =>
@@ -114,13 +153,32 @@ public class ObservabilityBotApp : TeamsBotApplication
             .DistinctBy(c => c.Url)
             .Take(5).ToList();
 
-        var responseText = response.Text;
+        var responseText = chatResponse.Text;
 
         for (int i = 1; i < citations.Count; i++)
         {
             responseText += $"[{i}] ";
         }
 
-        return (responseText, citations);
+        // === OutputScope: record the agent's reply ===
+        using (OutputScope.Start(request, new Response([responseText]), agentDetails))
+        {
+        }
+
+        var responseMsg = TeamsActivity.CreateBuilder()
+            .WithText(responseText, TextFormats.Markdown)
+            .AddMention(context.Activity?.From!)
+            .Build();
+
+        responseMsg.AddAIGenerated();
+
+        for (int i = 0; i < citations.Count; i++)
+        {
+            var citation = citations[i];
+            var abstract_ = citation.Content.Length > 400 ? citation.Content[..200] + "..." : citation.Content;
+            responseMsg.AddCitation(i + 1, new CitationAppearance() { Name = citation.Title, Url = new Uri(citation.Url), Abstract = abstract_, Icon = CitationIcon.Text });
+        }
+
+        await context.Send(responseMsg, ct);
     }
 }
