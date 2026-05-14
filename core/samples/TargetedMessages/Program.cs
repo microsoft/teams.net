@@ -107,7 +107,7 @@ teamsApp.OnMessage("(?i)^test inbound$", async (context, cancellationToken) =>
     bool wasTargeted = context.Activity.Recipient?.IsTargeted == true;
     await context.SendActivityAsync(
         wasTargeted
-            ? "✅ Your message was delivered to me as a *targeted* message."
+            ? "✅ Your message was delivered to me as a targeted message."
             : "ℹ️ Your message was delivered to me as a regular (broadcast) message.",
         cancellationToken);
 });
