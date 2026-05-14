@@ -33,9 +33,33 @@ public class JwtExtensionsTests
         SecurityToken token = FakeJsonWebToken(Tenant);
 
         string result = JwtExtensions.ValidateTeamsIssuer(
-            "https://api.botframework.com", token, Tenant, "https://login.microsoftonline.com/");
+            "https://api.botframework.com", token, Tenant, "https://login.microsoftonline.com/", "https://api.botframework.com");
 
         Assert.Equal("https://api.botframework.com", result);
+    }
+
+    [Theory]
+    [InlineData("https://api.botframework.us")]
+    [InlineData("https://api.botframework.azure.cn")]
+    public void ValidateTeamsIssuer_AcceptsSovereignBotFrameworkIssuer_WhenConfigured(string sovereignBotIssuer)
+    {
+        SecurityToken token = FakeJsonWebToken(Tenant);
+
+        string result = JwtExtensions.ValidateTeamsIssuer(
+            sovereignBotIssuer, token, Tenant, "https://login.microsoftonline.us/", sovereignBotIssuer);
+
+        Assert.Equal(sovereignBotIssuer, result);
+    }
+
+    [Fact]
+    public void ValidateTeamsIssuer_RejectsPublicBotIssuer_WhenSovereignBotIssuerConfigured()
+    {
+        SecurityToken token = FakeJsonWebToken(Tenant);
+
+        Assert.Throws<SecurityTokenInvalidIssuerException>(() =>
+            JwtExtensions.ValidateTeamsIssuer(
+                "https://api.botframework.com", token, Tenant,
+                "https://login.microsoftonline.us/", "https://api.botframework.us"));
     }
 
     [Fact]
@@ -45,7 +69,7 @@ public class JwtExtensionsTests
         string issuer = $"https://login.microsoftonline.com/{Tenant}/v2.0";
 
         string result = JwtExtensions.ValidateTeamsIssuer(
-            issuer, token, Tenant, "https://login.microsoftonline.com/");
+            issuer, token, Tenant, "https://login.microsoftonline.com/", "https://api.botframework.com");
 
         Assert.Equal(issuer, result);
     }
@@ -58,7 +82,7 @@ public class JwtExtensionsTests
         string issuer = $"{sovereignInstance}{Tenant}/v2.0";
 
         string result = JwtExtensions.ValidateTeamsIssuer(
-            issuer, token, Tenant, sovereignInstance);
+            issuer, token, Tenant, sovereignInstance, "https://api.botframework.com");
 
         Assert.Equal(issuer, result);
     }
@@ -71,7 +95,7 @@ public class JwtExtensionsTests
 
         Assert.Throws<SecurityTokenInvalidIssuerException>(() =>
             JwtExtensions.ValidateTeamsIssuer(
-                publicIssuer, token, Tenant, "https://login.microsoftonline.us/"));
+                publicIssuer, token, Tenant, "https://login.microsoftonline.us/", "https://api.botframework.com"));
     }
 
     [Fact]
@@ -81,7 +105,7 @@ public class JwtExtensionsTests
         string issuer = $"https://sts.windows.net/{Tenant}/";
 
         string result = JwtExtensions.ValidateTeamsIssuer(
-            issuer, token, Tenant, "https://login.microsoftonline.com/");
+            issuer, token, Tenant, "https://login.microsoftonline.com/", "https://api.botframework.com");
 
         Assert.Equal(issuer, result);
     }

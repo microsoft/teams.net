@@ -144,10 +144,11 @@ namespace Microsoft.Teams.Core.Hosting
                 });
         }
 
-        internal static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId, string entraInstance)
+        internal static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId, string entraInstance, string botTokenIssuer)
         {
-            // Bot Framework tokens
-            if (issuer.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase))
+            // Bot Framework tokens. The expected issuer varies by sovereign cloud
+            // (e.g. https://api.botframework.us for USGov) so it comes from configuration.
+            if (issuer.Equals(botTokenIssuer, StringComparison.OrdinalIgnoreCase))
                 return issuer;
 
             // Entra tokens � bot-to-bot (agent) and user (tab/API)
@@ -195,11 +196,13 @@ namespace Microsoft.Teams.Core.Hosting
             // or when the section is missing or doesn't override them.
             string botOidcUrl = BotConfig.DefaultOpenIdMetadataUrl;
             string entraInstance = BotConfig.DefaultEntraInstance;
+            string botTokenIssuer = BotConfig.DefaultBotTokenIssuer;
             if (builder.Services.Any(d => d.ServiceType == typeof(IConfiguration)))
             {
                 BotConfig botConfig = BotConfig.Resolve(builder.Services, schemeName);
                 botOidcUrl = botConfig.OpenIdMetadataUrl;
                 entraInstance = botConfig.EntraInstance;
+                botTokenIssuer = botConfig.BotTokenIssuer;
             }
 
             // One ConfigurationManager per OIDC authority, shared safely across all requests.
@@ -221,7 +224,7 @@ namespace Microsoft.Teams.Core.Hosting
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidAudiences = [audience, $"api://{audience}"],
-                    IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId, entraInstance),
+                    IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId, entraInstance, botTokenIssuer),
                     IssuerSigningKeyResolver = (_, securityToken, _, _) =>
                     {
                         (string? iss, string? tid) = GetTokenClaims(securityToken);

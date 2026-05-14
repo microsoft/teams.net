@@ -20,6 +20,8 @@ public sealed class BotConfig
 
     internal const string DefaultEntraInstance = "https://login.microsoftonline.com/";
 
+    internal const string DefaultBotTokenIssuer = "https://api.botframework.com";
+
     /// <summary>
     /// Gets or sets the Azure AD tenant ID.
     /// </summary>
@@ -55,6 +57,14 @@ public sealed class BotConfig
     /// </summary>
     [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "Mirrors Microsoft.Identity.Web's MicrosoftIdentityApplicationOptions.Instance convention; the value flows through as a string to configuration consumers.")]
     public string EntraInstance { get; set; } = DefaultEntraInstance;
+
+    /// <summary>
+    /// Gets or sets the expected Bot Framework token issuer used to validate inbound
+    /// Bot Framework tokens. For sovereign clouds, set <c>{SectionName}:BotTokenIssuer</c>
+    /// in configuration, e.g. <c>"https://api.botframework.us"</c> for USGov.
+    /// Defaults to the public-cloud issuer when not configured.
+    /// </summary>
+    public string BotTokenIssuer { get; set; } = DefaultBotTokenIssuer;
 
     internal IConfigurationSection? MsalConfigurationSection { get; set; }
 
@@ -102,6 +112,7 @@ public sealed class BotConfig
             ClientId = section["ClientId"] ?? string.Empty,
             OpenIdMetadataUrl = section["OpenIdMetadataUrl"] ?? DefaultOpenIdMetadataUrl,
             EntraInstance = section["Instance"] ?? DefaultEntraInstance,
+            BotTokenIssuer = section["BotTokenIssuer"] ?? DefaultBotTokenIssuer,
             MsalConfigurationSection = section,
             SectionName = sectionName
         };

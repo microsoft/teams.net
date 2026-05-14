@@ -84,6 +84,37 @@ public class BotConfigTests
     }
 
     [Fact]
+    public void Resolve_BotTokenIssuer_DefaultsToPublicCloud_WhenNotConfigured()
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["AzureAd:TenantId"] = "tenant-id",
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal("https://api.botframework.com", config.BotTokenIssuer);
+    }
+
+    [Theory]
+    [InlineData("https://api.botframework.us")]
+    [InlineData("https://api.botframework.azure.cn")]
+    public void Resolve_BotTokenIssuer_HonorsAzureAdOverride(string configured)
+    {
+        ServiceCollection services = BuildServices(new Dictionary<string, string?>
+        {
+            ["AzureAd:ClientId"] = "client-id",
+            ["AzureAd:TenantId"] = "tenant-id",
+            ["AzureAd:BotTokenIssuer"] = configured,
+        });
+
+        BotConfig config = BotConfig.Resolve(services);
+
+        Assert.Equal(configured, config.BotTokenIssuer);
+    }
+
+    [Fact]
     public void Resolve_OpenIdMetadataUrl_ReadsFromCustomSection_WhenSectionNameProvided()
     {
         ServiceCollection services = BuildServices(new Dictionary<string, string?>
