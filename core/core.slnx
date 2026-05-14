@@ -10,6 +10,7 @@
     <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Streaming/Microsoft.Bot.Streaming.csproj" />
   </Folder> -->
   <Folder Name="/Samples/">
+    <Project Path="samples/A365Mcp/A365Mcp.csproj" Id="6358289d-3d76-4950-89c9-76c71b00fe7a" />
     <Project Path="samples/AFBot/AFBot.csproj" Id="ca5b4abd-3f26-457b-8197-ff9415506beb" />
     <Project Path="samples/AllInvokesBot/AllInvokesBot.csproj" />
     <Project Path="samples/CompatBot/CompatBot.csproj" Id="39461362-c3d0-41ae-9ed7-f7e1232a8ead" />
