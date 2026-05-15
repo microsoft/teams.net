@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
-
 using Microsoft.Teams.Api.Messages;
 using Microsoft.Teams.Common.Http;
 
@@ -11,7 +9,6 @@ namespace Microsoft.Teams.Api.Clients;
 /// <summary>
 /// Client for working with app message reactions for a given conversation/activity.
 /// </summary>
-[Experimental("ExperimentalTeamsReactions")]
 public class ReactionClient : Client
 {
     public readonly string ServiceUrl;

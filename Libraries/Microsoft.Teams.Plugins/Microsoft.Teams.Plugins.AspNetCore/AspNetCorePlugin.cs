@@ -96,6 +96,12 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         #pragma warning disable ExperimentalTeamsTargeted
         var isTargeted = activity.Recipient?.IsTargeted == true;
 
+        if (isTargeted && reference.Conversation.Type?.IsPersonal == true)
+        {
+            throw new InvalidOperationException(
+                "Targeted messages are not supported in personal (1:1) chats.");
+        }
+
         if (!isTargeted)
         {
             activity.Recipient = reference.User;
