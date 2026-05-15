@@ -17,7 +17,6 @@ internal sealed class McpClientFactory(
     IAuthorizationHeaderProvider authorizationHeaderProvider,
     ILoggerFactory loggerFactory) : IMcpClientFactory
 {
-    private const string DefaultMcpServerUrl = "https://agent365.svc.cloud.microsoft/agents/servers/mcp_TeamsServer";
     private const string McpScope = "ea9ffc3e-8a23-4a7d-836d-234d7c7565c1/.default";
 
     public async Task<McpClient> CreateClientAsync(string serverUrl, AgenticIdentity agenticIdentity, CancellationToken cancellationToken = default)
