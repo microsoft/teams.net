@@ -76,6 +76,25 @@ public static class ActivityCitationExtensions
     }
 
     /// <summary>
+    /// Enables the feedback loop with an explicit mode.
+    /// Use <see cref="FeedbackType.Default"/> for Teams' built-in thumbs up/down UI,
+    /// or <see cref="FeedbackType.Custom"/> to trigger a <c>message/fetchTask</c>
+    /// invoke so the bot can return its own task module dialog.
+    /// </summary>
+    /// <param name="activity">The activity to enable feedback on. Cannot be null.</param>
+    /// <param name="mode">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    /// <returns>The activity for chaining.</returns>
+    public static TeamsActivity AddFeedback(this TeamsActivity activity, string mode)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+
+        activity.ChannelData ??= new TeamsChannelData();
+        activity.ChannelData.FeedbackLoop = new FeedbackLoop(mode);
+        activity.ChannelData.FeedbackLoopEnabled = null;
+        return activity;
+    }
+
+    /// <summary>
     /// Adds a content sensitivity label to the activity.
     /// </summary>
     /// <param name="activity">The activity to label. Cannot be null.</param>
