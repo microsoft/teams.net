@@ -49,6 +49,26 @@ public class StreamInfoEntity : Entity
 }
 
 /// <summary>
+/// Stream info entity extension methods.
+/// </summary>
+public static class StreamInfoEntityExtensions
+{
+    /// <summary>
+    /// Gets the first stream info entity from the activity.
+    /// </summary>
+    public static StreamInfoEntity? GetStreamInfo(this TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        if (activity.Entities == null)
+        {
+            return null;
+        }
+
+        return activity.Entities.FirstOrDefault(e => e is StreamInfoEntity) as StreamInfoEntity;
+    }
+}
+
+/// <summary>
 /// Represents the types of streams.
 /// </summary>
 public static class StreamType

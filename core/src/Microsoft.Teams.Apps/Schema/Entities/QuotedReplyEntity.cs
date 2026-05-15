@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Security;
+using System.Text.RegularExpressions;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
@@ -36,6 +38,19 @@ public class QuotedReplyEntity : Entity
         get => base.Properties.Get<QuotedReplyData>("quotedReply");
         set => base.Properties["quotedReply"] = value;
     }
+
+    /// <summary>
+    /// Builds the inline placeholder element that pairs with a <see cref="QuotedReplyEntity"/>.
+    /// </summary>
+    private static readonly Regex _quotedPlaceholderRegex = new("<quoted messageId=\"[^\"]*\"/>");
+
+    internal static Regex QuotedPlaceholderRegex() => _quotedPlaceholderRegex;
+
+    /// <summary>
+    /// Builds the inline placeholder string for a quoted reply.
+    /// </summary>
+    internal static string QuotedPlaceholder(string messageId)
+        => $"<quoted messageId=\"{SecurityElement.Escape(messageId)}\"/>";
 }
 
 /// <summary>
@@ -86,4 +101,25 @@ public class QuotedReplyData
     /// </summary>
     [JsonPropertyName("validatedMessageReference")]
     public bool? ValidatedMessageReference { get; set; }
+}
+
+/// <summary>
+/// Quoted reply entity extension methods.
+/// </summary>
+[Experimental("ExperimentalTeamsQuotedReplies")]
+public static class QuotedReplyEntityExtensions
+{
+    /// <summary>
+    /// Gets all quoted reply entities from the activity.
+    /// </summary>
+    public static IEnumerable<QuotedReplyEntity> GetQuotedMessages(this TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        if (activity.Entities == null)
+        {
+            return [];
+        }
+
+        return activity.Entities.OfType<QuotedReplyEntity>();
+    }
 }

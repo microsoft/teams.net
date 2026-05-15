@@ -9,50 +9,6 @@ using Microsoft.Teams.Core.Schema;
 namespace Microsoft.Teams.Apps.Schema.Entities;
 
 /// <summary>
-/// Extension methods for Activity to handle mentions.
-/// </summary>
-public static class ActivityMentionExtensions
-{
-    /// <summary>
-    /// Gets the MentionEntity from the activity's entities.
-    /// </summary>
-    /// <param name="activity">The activity to extract the mention from.</param>
-    /// <returns>The MentionEntity if found; otherwise, null.</returns>
-    public static IEnumerable<MentionEntity> GetMentions(this TeamsActivity activity)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Entities == null)
-        {
-            return [];
-        }
-        return activity.Entities.Where(e => e is MentionEntity).Cast<MentionEntity>();
-    }
-
-    /// <summary>
-    /// Adds a mention (@ mention) of a user or bot to the activity.
-    /// </summary>
-    /// <param name="activity">The activity to add the mention to. Cannot be null.</param>
-    /// <param name="account">The conversation account being mentioned. Cannot be null.</param>
-    /// <param name="text">Optional custom text for the mention. If null, uses the account name.</param>
-    /// <param name="addText">If true, prepends the mention text to the activity's existing text content. Defaults to true.</param>
-    /// <returns>The created MentionEntity that was added to the activity.</returns>
-    public static MentionEntity AddMention(this TeamsActivity activity, ConversationAccount account, string? text = null, bool addText = true)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        ArgumentNullException.ThrowIfNull(account);
-        string? mentionText = text ?? account.Name;
-        if (addText && activity is MessageActivity msg)
-        {
-            msg.Text = $"<at>{mentionText}</at> {msg.Text}";
-        }
-        activity.Entities ??= [];
-        MentionEntity mentionEntity = new(account, $"<at>{mentionText}</at>");
-        activity.Entities.Add(mentionEntity);
-        return mentionEntity;
-    }
-}
-
-/// <summary>
 /// Mention entity.
 /// </summary>
 public class MentionEntity : Entity
@@ -111,5 +67,25 @@ public class MentionEntity : Entity
             Text = jsonNode?["text"]?.GetValue<string>()
         };
         return res;
+    }
+}
+
+/// <summary>
+/// Mention entity extension methods.
+/// </summary>
+public static class MentionEntityExtensions
+{
+    /// <summary>
+    /// Gets all mention entities from the activity.
+    /// </summary>
+    public static IEnumerable<MentionEntity> GetMentions(this TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        if (activity.Entities == null)
+        {
+            return [];
+        }
+
+        return activity.Entities.Where(e => e is MentionEntity).Cast<MentionEntity>();
     }
 }

@@ -28,3 +28,23 @@ public class ProductInfoEntity : Entity
         set => base.Properties["id"] = value;
     }
 }
+
+/// <summary>
+/// Product info entity extension methods.
+/// </summary>
+public static class ProductInfoEntityExtensions
+{
+    /// <summary>
+    /// Gets the first product info entity from the activity.
+    /// </summary>
+    public static ProductInfoEntity? GetProductInfo(this TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        if (activity.Entities == null)
+        {
+            return null;
+        }
+
+        return activity.Entities.FirstOrDefault(e => e is ProductInfoEntity) as ProductInfoEntity;
+    }
+}

@@ -5,49 +5,6 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
 
-
-/// <summary>
-/// Extension methods for Activity to handle client info.
-/// </summary>
-public static class ActivityClientInfoExtensions
-{
-    /// <summary>
-    /// Adds client information to the activity's entity collection.
-    /// </summary>
-    /// <param name="activity">The activity to add client information to. Cannot be null.</param>
-    /// <param name="platform">The platform identifier (e.g., "web", "desktop", "mobile").</param>
-    /// <param name="country">The country code (e.g., "US", "GB").</param>
-    /// <param name="timeZone">The time zone identifier (e.g., "America/New_York").</param>
-    /// <param name="locale">The locale identifier (e.g., "en-US", "fr-FR").</param>
-    /// <returns>The created ClientInfoEntity that was added to the activity.</returns>
-    public static ClientInfoEntity AddClientInfo(this TeamsActivity activity, string platform, string country, string timeZone, string locale)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-
-        ClientInfoEntity clientInfo = new(platform, country, timeZone, locale);
-        activity.Entities ??= [];
-        activity.Entities.Add(clientInfo);
-        return clientInfo;
-    }
-
-    /// <summary>
-    /// Retrieves the client information entity from the activity's entity collection.
-    /// </summary>
-    /// <param name="activity">The activity to extract client information from. Cannot be null.</param>
-    /// <returns>The ClientInfoEntity if found in the activity's entities; otherwise, null.</returns>
-    public static ClientInfoEntity? GetClientInfo(this TeamsActivity activity)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Entities == null)
-        {
-            return null;
-        }
-        ClientInfoEntity? clientInfo = activity.Entities.FirstOrDefault(e => e is ClientInfoEntity) as ClientInfoEntity;
-
-        return clientInfo;
-    }
-}
-
 /// <summary>
 /// Client info entity.
 /// </summary>
@@ -114,5 +71,25 @@ public class ClientInfoEntity : Entity
     {
         get => base.Properties.TryGetValue("timezone", out object? value) ? value?.ToString() : null;
         set => base.Properties["timezone"] = value;
+    }
+}
+
+/// <summary>
+/// Client info entity extension methods.
+/// </summary>
+public static class ClientInfoEntityExtensions
+{
+    /// <summary>
+    /// Gets the first client information entity from the activity.
+    /// </summary>
+    public static ClientInfoEntity? GetClientInfo(this TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        if (activity.Entities == null)
+        {
+            return null;
+        }
+
+        return activity.Entities.FirstOrDefault(e => e is ClientInfoEntity) as ClientInfoEntity;
     }
 }

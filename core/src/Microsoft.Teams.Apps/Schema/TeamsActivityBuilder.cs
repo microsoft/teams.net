@@ -281,7 +281,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
             currentText = _activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
         }
 
-        var placeholder = ActivityQuotedReplyExtensions.QuotedPlaceholder(messageId);
+        var placeholder = QuotedReplyEntity.QuotedPlaceholder(messageId);
         var newText = (currentText ?? "") + placeholder;
         if (text != null)
         {
