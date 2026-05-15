@@ -395,9 +395,9 @@ These were identified by comparing the full public API surface between old and n
 
 **Decision: IMPLEMENTED** — MessageActivity fluent extension methods added.
 
-Methods added: `WithText()`, `WithSuggestedActions()`, `WithTextFormat()`, `WithAttachmentLayout()`, `AddAttachment()`, `AddStreamFinal()`.
+Methods added: `WithText()`, `AddText()`, `WithSuggestedActions()`, `WithTextFormat()`, `WithAttachmentLayout()`, `AddAttachment()`, `AddStreamFinal()`.
 
-Not migrated (low priority, underlying properties commented out): `WithSpeak()`, `WithInputHint()`, `WithSummary()`, `WithImportance()`, `WithDeliveryMode()`, `WithExpiration()`, `AddText()`, `Merge()`.
+Not migrated (low priority, underlying properties commented out): `WithSpeak()`, `WithInputHint()`, `WithSummary()`, `WithImportance()`, `WithDeliveryMode()`, `WithExpiration()`, `Merge()`.
 
 ---
 
