@@ -14,7 +14,7 @@
 	<PropertyGroup>
 		<PackageId>Microsoft.Teams.Core</PackageId>
 		<PackageDescription>BotApplication and CoreActivity to support Microsoft Teams development.</PackageDescription>
-		<PackageTags>microsoft;teams;msteams;copilot;ai;adaptive-cards;apps;bots</PackageTags>
+		<PackageTags>microsoft;teams;msteams;copilot;apps;bots</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>

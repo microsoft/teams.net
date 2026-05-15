@@ -12,7 +12,7 @@
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Apps.BotBuilder</PackageId>
     <PackageDescription>Bridge to support smooth migration from BotFramework SDK into Teams SDK.</PackageDescription>
-    <PackageTags>microsoft;teams;msteams;copilot;ai;adaptive-cards;apps;bots</PackageTags>
+    <PackageTags>microsoft;teams;msteams;copilot;apps;bots</PackageTags>
   </PropertyGroup>
 
 	<ItemGroup>

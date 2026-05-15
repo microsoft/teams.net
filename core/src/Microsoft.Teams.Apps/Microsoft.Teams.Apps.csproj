@@ -13,7 +13,7 @@
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Apps</PackageId>
     <PackageDescription>Create Microsoft Teams Bot Applications with ease.</PackageDescription>
-    <PackageTags>microsoft;teams;msteams;copilot;ai;adaptive-cards;apps;bots</PackageTags>
+    <PackageTags>microsoft;teams;msteams;copilot;apps;bots</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>
