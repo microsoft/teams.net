@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Api.Activities.Invokes;
 public partial class Name : StringEnum
 {
     [Experimental("ExperimentalTeamsSuggestedAction")]
-    public static readonly Name SuggestedActionSubmit = new("suggestedAction/submit");
+    public static readonly Name SuggestedActionSubmit = new("suggestedActions/submit");
 
     [Experimental("ExperimentalTeamsSuggestedAction")]
     public bool IsSuggestedActionSubmit => SuggestedActionSubmit.Equals(Value);

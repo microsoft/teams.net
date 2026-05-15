@@ -21,7 +21,7 @@ public class SuggestedActionSubmitActivityTests
         Assert.NotNull(activity);
         Assert.Equal("suggestedActionSubmitId", activity!.Id);
         Assert.Equal("channelId", activity.ChannelId.Value);
-        Assert.Equal("suggestedAction/submit", activity.Name.Value);
+        Assert.Equal("suggestedActions/submit", activity.Name.Value);
         Assert.NotNull(activity.Value);
     }
 
@@ -50,7 +50,7 @@ public class SuggestedActionSubmitActivityTests
     {
         var activity = new SuggestedActionSubmitActivity();
 
-        Assert.Equal("Activity.Invoke.SuggestedAction/submit", activity.GetPath());
+        Assert.Equal("Activity.Invoke.SuggestedActions/submit", activity.GetPath());
     }
 
     [Fact]

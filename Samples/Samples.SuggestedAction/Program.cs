@@ -38,7 +38,7 @@ teams.OnMessage(async (context, cancellationToken) =>
     await context.Send(reply, cancellationToken);
 });
 
-// Handle the resulting suggestedAction/submit invoke when the user clicks a chip.
+// Handle the resulting suggestedActions/submit invoke when the user clicks a chip.
 teams.OnSuggestedActionSubmit(async (context, cancellationToken) =>
 {
     var serializedValue = context.Activity.Value is JsonElement value
@@ -46,7 +46,7 @@ teams.OnSuggestedActionSubmit(async (context, cancellationToken) =>
         : "<none>";
 
     context.Log.Info($"[SUGGESTED_ACTION_SUBMIT] value={serializedValue}");
-    await context.Send($"Got suggestedAction/submit with value: {serializedValue}", cancellationToken);
+    await context.Send($"Got suggestedActions/submit with value: {serializedValue}", cancellationToken);
 });
 
 app.Run();

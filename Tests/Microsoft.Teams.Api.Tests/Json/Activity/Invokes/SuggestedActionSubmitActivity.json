@@ -2,7 +2,7 @@
   "id": "suggestedActionSubmitId",
   "type": "invoke",
   "channelId": "channelId",
-  "name": "suggestedAction/submit",
+  "name": "suggestedActions/submit",
   "value": {
     "vote": "approve"
   }

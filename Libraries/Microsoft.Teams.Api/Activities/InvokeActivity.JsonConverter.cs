@@ -78,7 +78,7 @@ public partial class InvokeActivity
                 "handoff/action" => JsonSerializer.Deserialize<Invokes.HandoffActivity>(element.ToString(), options),
                 "application/search" => JsonSerializer.Deserialize<Invokes.SearchActivity>(element.ToString(), options),
 #pragma warning disable ExperimentalTeamsSuggestedAction
-                "suggestedAction/submit" => JsonSerializer.Deserialize<Invokes.SuggestedActionSubmitActivity>(element.ToString(), options),
+                "suggestedActions/submit" => JsonSerializer.Deserialize<Invokes.SuggestedActionSubmitActivity>(element.ToString(), options),
 #pragma warning restore ExperimentalTeamsSuggestedAction
                 _ => throw new JsonException($"failed to deserialize invoke activity '{name}' doesn't match any known types.")
             };

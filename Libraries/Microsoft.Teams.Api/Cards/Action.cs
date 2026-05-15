@@ -40,7 +40,7 @@ public class ActionType(string value) : StringEnum(value)
 
     /// <summary>
     /// Suggested action of type Action.Submit. The action's Value is delivered to the bot
-    /// as a <c>suggestedAction/submit</c> invoke without sending a chat-visible message.
+    /// as a <c>suggestedActions/submit</c> invoke without sending a chat-visible message.
     /// </summary>
     [Experimental("ExperimentalTeamsSuggestedAction")]
     public static readonly ActionType Submit = new("Action.Submit");

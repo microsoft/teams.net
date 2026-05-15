@@ -1,13 +1,13 @@
 # Example: Suggested Action Submit
 
-A bot that demonstrates the `Action.Submit` suggested action and the `suggestedAction/submit` invoke it produces when clicked.
+A bot that demonstrates the `Action.Submit` suggested action and the `suggestedActions/submit` invoke it produces when clicked.
 
 ## Behavior
 
 | Trigger | Behavior |
 |---------|----------|
 | Any user message | Bot replies with `Approve` / `Reject` suggested-action chips (`type: "Action.Submit"`, each with a structured `value`) |
-| User clicks a chip | Platform dispatches a `suggestedAction/submit` invoke; bot reads `activity.Value` and echoes it back |
+| User clicks a chip | Platform dispatches a `suggestedActions/submit` invoke; bot reads `activity.Value` and echoes it back |
 
 ## Notes
 
