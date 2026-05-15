@@ -24,7 +24,7 @@
     <Project Path="samples/ObservabilityBot/ObservabilityBot.csproj" />
     <Project Path="samples/PABot/PABot.csproj" Id="ef8f29ef-fe59-4edf-8a50-6e7ab6699a45" />
     <Project Path="samples/Quoting/Quoting.csproj" />
-    <Project Path="samples/SsoBot/SsoBot.csproj"  />
+    <Project Path="samples/SsoBot/SsoBot.csproj" />
     <Project Path="samples/StreamingBot/StreamingBot.csproj" />
     <Project Path="samples/TabApp/TabApp.csproj" />
     <Project Path="samples/TargetedMessages/TargetedMessages.csproj" />
@@ -54,6 +54,5 @@
   </Folder>
   <Project Path="src/Microsoft.Teams.Apps.BotBuilder/Microsoft.Teams.Apps.BotBuilder.csproj" />
   <Project Path="src/Microsoft.Teams.Apps/Microsoft.Teams.Apps.csproj" Id="0e993a63-8a1a-4cdf-8a29-cc8c59bd6c30" />
-  <Project Path="../../opentelemetry-distro-dotnet/src/Microsoft.OpenTelemetry/Microsoft.OpenTelemetry.csproj" />
   <Project Path="src/Microsoft.Teams.Core/Microsoft.Teams.Core.csproj" />
 </Solution>

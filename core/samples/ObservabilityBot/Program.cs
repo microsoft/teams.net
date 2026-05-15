@@ -60,26 +60,6 @@ builder.Services.AddKeyedSingleton("msdocs", (sp, key) =>
             Name = "msdocs"
         })));
 
-
-builder.Services.AddKeyedSingleton("calendarTools", (sp, key) =>
-    McpClient.CreateAsync(
-        new HttpClientTransport(new()
-        {
-            Endpoint = new Uri("https://agent365.svc.cloud.microsoft/agents/servers/mcp_CalendarTools"),
-            TransportMode = HttpTransportMode.AutoDetect,
-            Name = "calendarTools"
-        })));
-
-builder.Services.AddKeyedSingleton("teams", (sp, key) =>
-    McpClient.CreateAsync(
-        new HttpClientTransport(new()
-        {
-            Endpoint = new Uri("https://agent365.svc.cloud.microsoft/agents/servers/mcp_TeamsServer"),
-            TransportMode = HttpTransportMode.AutoDetect,
-            Name = "teams"
-        })));
-
-
 // Register IChatClient
 var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT") ?? throw new InvalidDataException("AZURE_OPENAI_ENDPOINT not found");
 var azoai_key = Environment.GetEnvironmentVariable("AZURE_OPENAI_KEY") ?? throw new InvalidDataException("AZURE_OPENAI_KEY not found");
@@ -95,25 +75,16 @@ builder.Services.AddSingleton<IChatClient>(sp =>
     .UseLogging(sp.GetRequiredService<ILoggerFactory>())
     .Build());
 
-builder.Services.AddSingleton(sp =>
+builder.Services.AddSingleton<ChatOptions>(sp =>
 {
     var msdocsClient = sp.GetRequiredKeyedService<Task<McpClient>>("msdocs").GetAwaiter().GetResult();
-    var calendarClient = sp.GetRequiredKeyedService<Task<McpClient>>("calendarTools").GetAwaiter().GetResult();
-    var teamsClient = sp.GetRequiredKeyedService<Task<McpClient>>("teams").GetAwaiter().GetResult();
-
     var msdocsTools = msdocsClient.ListToolsAsync().GetAwaiter().GetResult();
-    var calendarTools = calendarClient.ListToolsAsync().GetAwaiter().GetResult();
-    var teamsTools = teamsClient.ListToolsAsync().GetAwaiter().GetResult();
-
-    var allTools = msdocsTools.Concat(calendarTools).Concat(teamsTools).Concat(calendarTools).ToList();
-    
-    Console.WriteLine("Tools Found: " + string.Join(", ", allTools.Select(t => t.Name)));
 
     return new ChatOptions
     {
         AllowMultipleToolCalls = true,
         Instructions = "Use the following tools to answer the user's question. If you don't know the answer, use the 'Search Microsoft Docs' tool to find relevant information. Use calendar tools for scheduling-related queries.",
-        Tools = [.. allTools]
+        Tools = [..msdocsTools]
     };
 });
 

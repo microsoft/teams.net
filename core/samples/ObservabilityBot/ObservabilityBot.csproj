@@ -8,6 +8,7 @@
 
 	<ItemGroup>
 		<!--<PackageReference Include="Microsoft.OpenTelemetry" Version="1.0.2" />-->
+		<PackageReference Include="Microsoft.OpenTelemetry" Version="1.0.2" />
 		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
 		<PackageReference Include="OpenTelemetry.Exporter.Console" Version="1.15.3" />
 		<PackageReference Include="OpenTelemetry.Extensions.Hosting" Version="1.15.3" />
@@ -20,7 +21,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\..\..\opentelemetry-distro-dotnet\src\Microsoft.OpenTelemetry\Microsoft.OpenTelemetry.csproj" />
 	  <ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
 	</ItemGroup>
 
