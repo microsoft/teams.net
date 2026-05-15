@@ -2,39 +2,63 @@
 // Licensed under the MIT License.
 
 using Microsoft.Identity.Abstractions;
+using Microsoft.Identity.Web;
 using Microsoft.Teams.Core.Schema;
 using ModelContextProtocol.Client;
 
 namespace A365Mcp;
 
 /// <summary>
-/// Creates authenticated <see cref="McpClient"/> instances using a
-/// <see cref="McpAuthenticationHandler"/> that transparently attaches
+/// Creates authenticated <see cref="McpClient"/> instances using the SDK's
+/// <see cref="HttpClientTransportOptions.AdditionalHeaders"/> to attach
 /// user-delegated tokens to outbound MCP HTTP requests.
 /// </summary>
 internal sealed class McpClientFactory(
     IAuthorizationHeaderProvider authorizationHeaderProvider,
-    ILogger<McpAuthenticationHandler> handlerLogger,
-    IConfiguration configuration) : IMcpClientFactory
+    ILoggerFactory loggerFactory) : IMcpClientFactory
 {
     private const string DefaultMcpServerUrl = "https://agent365.svc.cloud.microsoft/agents/servers/mcp_TeamsServer";
+    private const string McpScope = "ea9ffc3e-8a23-4a7d-836d-234d7c7565c1/.default";
 
-    public async Task<McpClient> CreateClientAsync(AgenticIdentity agenticIdentity, CancellationToken cancellationToken = default)
+    public async Task<McpClient> CreateClientAsync(string serverUrl, AgenticIdentity agenticIdentity, CancellationToken cancellationToken = default)
     {
-        string mcpServerUrl = configuration["Mcp:ServerUrl"] ?? DefaultMcpServerUrl;
-
-        var handler = new McpAuthenticationHandler(
-            authorizationHeaderProvider,
-            agenticIdentity,
-            handlerLogger);
-
-        var httpClient = new HttpClient(handler);
+        string token = await AcquireTokenAsync(agenticIdentity, cancellationToken).ConfigureAwait(false);
 
         return await McpClient.CreateAsync(
             new HttpClientTransport(new()
             {
-                Endpoint = new Uri(mcpServerUrl),
-                Name = "Agent365 Teams Client"
-            }, httpClient), cancellationToken: cancellationToken).ConfigureAwait(false);
+                Endpoint = new Uri(serverUrl),
+                Name = "Agent365 Teams Client",
+                AdditionalHeaders = new Dictionary<string, string> { ["Authorization"] = $"Bearer {token}" }
+            }),
+            loggerFactory: loggerFactory,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<string> AcquireTokenAsync(AgenticIdentity agenticIdentity, CancellationToken cancellationToken)
+    {
+        ArgumentNullException.ThrowIfNullOrEmpty(agenticIdentity.AgenticAppId);
+        ArgumentNullException.ThrowIfNullOrEmpty(agenticIdentity.AgenticUserId);
+
+        if (!Guid.TryParse(agenticIdentity.AgenticUserId, out Guid agenticUserGuid))
+        {
+            throw new InvalidOperationException($"Invalid AgenticUserId '{agenticIdentity.AgenticUserId}'.");
+        }
+
+        var options = new AuthorizationHeaderProviderOptions()
+        {
+            AcquireTokenOptions = new()
+            {
+                AuthenticationOptionsName = "AzureAd",
+            }
+        }.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserGuid);
+
+        string header = await authorizationHeaderProvider.CreateAuthorizationHeaderAsync(
+            [McpScope], options, cancellationToken: cancellationToken).ConfigureAwait(false);
+
+        // Strip "Bearer " prefix if present
+        return header.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+            ? header["Bearer ".Length..]
+            : header;
     }
 }

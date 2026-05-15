@@ -24,8 +24,18 @@ internal class Agent
     }
 
     private const string SystemPrompt = """
-        You are a Teams assistant that can use the MCP Teams tools to send messages to users, channels, and meetings.
+        You are a Teams assistant that can use the MCP Teams tools to send messages to users, channels, and meetings,
+        the MCP Mail tools to read and send emails, the MCP Calendar tools to manage calendar events,
+        and the MCP Me tools to access user profile information.
         """;
+
+    private static readonly string[] McpServerUrls =
+    [
+        "https://agent365.svc.cloud.microsoft/agents/servers/mcp_TeamsServer",
+        "https://agent365.svc.cloud.microsoft/agents/servers/mcp_MailTools",
+        "https://agent365.svc.cloud.microsoft/agents/servers/mcp_CalendarTools",
+        "https://agent365.svc.cloud.microsoft/agents/servers/mcp_MeServer",
+    ];
 
     public async Task<string> RunAsync(
        string conversationId,
@@ -36,31 +46,48 @@ internal class Agent
         ArgumentNullException.ThrowIfNullOrEmpty(agentic?.AgenticAppId);
         ArgumentNullException.ThrowIfNullOrEmpty(agentic?.AgenticUserId);
 
-        await using var teamsMcpClient = await _mcpClientFactory.CreateClientAsync(agentic, cancellationToken).ConfigureAwait(false);
-        var teamsMcpTools = await teamsMcpClient.ListToolsAsync(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var mcpClients = await Task.WhenAll(
+            McpServerUrls.Select(url => _mcpClientFactory.CreateClientAsync(url, agentic, cancellationToken)))
+            .ConfigureAwait(false);
 
-        List<ChatMessage> history = _histories.GetOrAdd(conversationId, _ => [new ChatMessage(ChatRole.System, SystemPrompt)]);
-
-        // Serialize turns within a single conversation so concurrent submits
-        // (e.g. clarification race) don't interleave history mutations.
-        SemaphoreSlim gate = _locks.GetOrAdd(conversationId, _ => new SemaphoreSlim(1, 1));
-        await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
-            history.Add(new ChatMessage(ChatRole.User, userText));
+            var toolLists = await Task.WhenAll(
+                mcpClients.Select(c => c.ListToolsAsync(cancellationToken: cancellationToken).AsTask()))
+                .ConfigureAwait(false);
 
-            ChatOptions options = new()
+            var allTools = toolLists.SelectMany(t => t).ToList();
+
+            List<ChatMessage> history = _histories.GetOrAdd(conversationId, _ => [new ChatMessage(ChatRole.System, SystemPrompt)]);
+
+            // Serialize turns within a single conversation so concurrent submits
+            // (e.g. clarification race) don't interleave history mutations.
+            SemaphoreSlim gate = _locks.GetOrAdd(conversationId, _ => new SemaphoreSlim(1, 1));
+            await gate.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
             {
-                Tools = [.. teamsMcpTools]
-            };
+                history.Add(new ChatMessage(ChatRole.User, userText));
 
-            var chatResponse = await _chatClient.GetResponseAsync(history, options, cancellationToken).ConfigureAwait(false);
+                ChatOptions options = new()
+                {
+                    Tools = [.. allTools]
+                };
 
-            return chatResponse.Text;
+                var chatResponse = await _chatClient.GetResponseAsync(history, options, cancellationToken).ConfigureAwait(false);
+
+                return chatResponse.Text;
+            }
+            finally
+            {
+                gate.Release();
+            }
         }
         finally
         {
-            gate.Release();
+            foreach (var client in mcpClients)
+            {
+                await client.DisposeAsync().ConfigureAwait(false);
+            }
         }
     }
 }

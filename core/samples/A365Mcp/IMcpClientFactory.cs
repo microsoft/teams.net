@@ -12,5 +12,5 @@ namespace A365Mcp;
 /// </summary>
 internal interface IMcpClientFactory
 {
-    Task<McpClient> CreateClientAsync(AgenticIdentity agenticIdentity, CancellationToken cancellationToken = default);
+    Task<McpClient> CreateClientAsync(string serverUrl, AgenticIdentity agenticIdentity, CancellationToken cancellationToken = default);
 }

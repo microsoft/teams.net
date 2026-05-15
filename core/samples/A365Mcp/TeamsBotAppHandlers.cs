@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Identity.Client;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
@@ -13,6 +14,7 @@ internal static class TeamsBotAppHandlers
     {
         teamsApp.OnMessage(async (context, cancellationToken) =>
         {
+            await context.SendTypingActivityAsync(cancellationToken);
             string userText = context.Activity.TextWithoutMentions ?? "";
             await RespondAsync(agent, context, userText, cancellationToken);
         });

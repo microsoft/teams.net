@@ -13,7 +13,7 @@ using Microsoft.Teams.Apps;
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.AddTeamsBotApplication();
 
-builder.Services.AddSingleton<IChatClient>(sp =>
+builder.Services.AddChatClient(sp =>
 {
     IConfiguration config = sp.GetRequiredService<IConfiguration>();
     string endpoint = config["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required.");
@@ -22,12 +22,9 @@ builder.Services.AddSingleton<IChatClient>(sp =>
 
     return new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey))
         .GetChatClient(modelId)
-        .AsIChatClient()
-        .AsBuilder()
-        .UseFunctionInvocation()
-        .Build();
-});
-
+        .AsIChatClient();
+})
+.UseFunctionInvocation();
 
 builder.Services.AddSingleton<IMcpClientFactory, McpClientFactory>();
 builder.Services.AddSingleton<Agent>();
