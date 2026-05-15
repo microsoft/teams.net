@@ -11,6 +11,9 @@ namespace Microsoft.Teams.Apps.Schema;
 /// <summary>
 /// Extension methods for <see cref="TeamsActivity"/>.
 /// </summary>
+/// <remarks>
+/// These methods provide backward compatibility with the old library's fluent activity composition pattern.
+/// </remarks>
 public static class TeamsActivityExtensions
 {
     /// <summary>
