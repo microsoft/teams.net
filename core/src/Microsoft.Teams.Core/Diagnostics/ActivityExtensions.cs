@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Core.Diagnostics;
 /// Helpers for setting standardized tags and recording exceptions on <see cref="Activity"/> instances
 /// emitted by the Teams SDK's bot pipeline.
 /// </summary>
-internal static class ActivityExtensions
+public static class ActivityExtensions
 {
     /// <summary>
     /// Records an exception on the span: sets status to <see cref="ActivityStatusCode.Error"/> and

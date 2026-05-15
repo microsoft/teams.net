@@ -43,6 +43,7 @@ public class TeamsConversationAccount : ConversationAccount
         result.AgenticAppId = conversationAccount.AgenticAppId;
         result.AgenticUserId = conversationAccount.AgenticUserId;
         result.AgenticAppBlueprintId = conversationAccount.AgenticAppBlueprintId;
+        result.TenantId = conversationAccount.TenantId;
         result.Properties = conversationAccount.Properties;
         return result;
     }

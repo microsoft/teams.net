@@ -109,7 +109,7 @@ internal sealed class Router
             }
             catch (Exception ex)
             {
-                span?.AddException(ex);
+                span.RecordException(ex);
                 throw;
             }
 
@@ -166,7 +166,7 @@ internal sealed class Router
         }
         catch (Exception ex)
         {
-            span?.AddException(ex);
+            span.RecordException(ex);
             throw;
         }
 

@@ -137,6 +137,28 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
+    public void FromConversationAccount_PreservesTenantId()
+    {
+        ConversationAccount source = new()
+        {
+            Id = "user-id",
+            Name = "User Name",
+            TenantId = "tenant-abc",
+            AgenticAppId = "app-1",
+            AgenticUserId = "user-1",
+            AgenticAppBlueprintId = "bp-1",
+        };
+
+        TeamsConversationAccount? result = TeamsConversationAccount.FromConversationAccount(source);
+
+        Assert.NotNull(result);
+        Assert.Equal("tenant-abc", result.TenantId);
+        Assert.Equal("app-1", result.AgenticAppId);
+        Assert.Equal("user-1", result.AgenticUserId);
+        Assert.Equal("bp-1", result.AgenticAppBlueprintId);
+    }
+
+    [Fact]
     public void WithConversation_SetsConversationInfo()
     {
         Conversation baseConversation = new("conversation-id");
