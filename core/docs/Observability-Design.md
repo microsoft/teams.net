@@ -28,7 +28,10 @@ Consuming bot                            Teams SDK (this design)
                                           └─ teams.outbound.errors       (Counter)
 
                                          Meter("Microsoft.Teams.Apps")
-                                          └─ (no instruments yet — reserved for Apps-level metrics)
+                                          ├─ teams.handler.dispatched    (Counter)
+                                          ├─ teams.handler.duration      (Histogram, ms)
+                                          ├─ teams.handler.failures      (Counter)
+                                          └─ teams.handler.unmatched     (Counter)
 ```
 
 ## Layering constraints
@@ -43,7 +46,7 @@ Telemetry follows the same rule: **each assembly publishes its own ActivitySourc
 | Layer | Public name class | Source / Meter name | Spans | Metrics |
 |---|---|---|---|---|
 | `Microsoft.Teams.Core` | `Microsoft.Teams.Core.Diagnostics.CoreTelemetryNames` | `"Microsoft.Teams.Core"` | `turn`, `middleware`, `auth.outbound`, `conversation_client` | `teams.activities.received`, `teams.turn.duration`, `teams.handler.errors`, `teams.middleware.duration`, `teams.outbound.calls`, `teams.outbound.errors` |
-| `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Diagnostics.TeamsBotApplicationTelemetry` | `"Microsoft.Teams.Apps"` | `handler` | (none yet) |
+| `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Diagnostics.TeamsBotApplicationTelemetry` | `"Microsoft.Teams.Apps"` | `handler` | `teams.handler.dispatched`, `teams.handler.duration`, `teams.handler.failures`, `teams.handler.unmatched` |
 
 Cross-assembly use is one-way: Apps's `Router` may call Core utilities (for example, the public `RecordException` extension on `Activity` defined in `Microsoft.Teams.Core.Diagnostics.ActivityExtensions`), but Core never reaches up into Apps. If a future Core-level helper would need an Apps concept, that helper belongs in Apps, not in Core.
 
@@ -91,7 +94,9 @@ The `auth.inbound` span belongs to the auth middleware, not the bot pipeline. Th
 
 ## Metrics
 
-All metrics emit on the **Core** meter. Apps does not yet have its own instruments; the Apps meter is published symmetrically with the Apps source so a future Apps-level metric can be added without changing the public surface.
+Core-meter instruments cover the turn pipeline, middleware, and outbound HTTP clients. Apps-meter instruments cover router dispatch (one observation per matched route).
+
+### Core meter (`Microsoft.Teams.Core`)
 
 | Metric | Kind | Unit | Tags | Where |
 |---|---|---|---|---|
@@ -101,6 +106,15 @@ All metrics emit on the **Core** meter. Apps does not yet have its own instrumen
 | `teams.middleware.duration` | Histogram | ms | `middleware.name` | `finally` of the `middleware` span |
 | `teams.outbound.calls` | Counter | — | `operation` ∈ {`sendActivity`, `updateActivity`, `deleteActivity`} | success branch of `ConversationClient` calls |
 | `teams.outbound.errors` | Counter | — | `operation` | exception branch of `ConversationClient` calls |
+
+### Apps meter (`Microsoft.Teams.Apps`)
+
+| Metric | Kind | Unit | Tags | Where |
+|---|---|---|---|---|
+| `teams.handler.dispatched` | Counter | — | `handler.type`, `handler.dispatch` | `Router.DispatchAsync` / `DispatchWithReturnAsync` before each matched-route invocation |
+| `teams.handler.duration` | Histogram | ms | `handler.type`, `handler.dispatch` | `finally` block around each matched-route invocation (recorded even on exception) |
+| `teams.handler.failures` | Counter | — | `handler.type`, `handler.dispatch` | catch block when a route handler throws |
+| `teams.handler.unmatched` | Counter | — | `activity.type` (DispatchAsync) or `activity.type` + `invoke.name` (DispatchWithReturnAsync) | branch where no route selector matched |
 
 OTLP exposes these names with dots; Prometheus/Mimir maps them to `teams_*_total` (counters) and `teams_*_milliseconds_*` (histograms).
 
