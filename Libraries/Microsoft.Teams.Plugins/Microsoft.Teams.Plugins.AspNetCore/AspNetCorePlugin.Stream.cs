@@ -87,7 +87,9 @@ public partial class AspNetCorePlugin
         {
             if (_index == 1 && _queue.Count == 0 && _lock.CurrentCount > 0) return null;
             if (_result is not null) return _result;
-            while (_id is null || _queue.Count > 0)
+            // _lock.CurrentCount == 0 means Flush() is mid-await (queue drained but SendActivity calls
+            // still pending). Wait it out so the final message doesn't race in-flight chunks.
+            while (_id is null || _queue.Count > 0 || _lock.CurrentCount == 0)
             {
                 await Task.Delay(50, cancellationToken);
             }

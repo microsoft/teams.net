@@ -29,6 +29,8 @@ namespace Microsoft.Teams.Apps.Schema;
 [JsonSerializable(typeof(ProductInfoEntity))]
 [JsonSerializable(typeof(StreamInfoEntity))]
 [JsonSerializable(typeof(CitationEntity))]
+[JsonSerializable(typeof(QuotedReplyEntity))]
+[JsonSerializable(typeof(QuotedReplyData))]
 [JsonSerializable(typeof(CitationClaim))]
 [JsonSerializable(typeof(CitationAppearanceDocument))]
 [JsonSerializable(typeof(CitationImageObject))]

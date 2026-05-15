@@ -1,6 +1,17 @@
 # Shared template: Authenticode sign DLLs, pack NuGet packages, sign NuGet packages.
 # Requires the calling pipeline to define variables:
 #   $(appRegistrationTenantId), $(authenticodeSignId), $(nugetSignId), $(folderPath), $(buildConfiguration)
+# Parameters:
+#   assemblyPattern — DLL glob for Authenticode signing (relative to folderPath)
+#   packagePattern  — csproj glob for pack (relative to folderPath)
+
+parameters:
+  - name: assemblyPattern
+    type: string
+    default: 'Libraries/**/*.dll'
+  - name: packagePattern
+    type: string
+    default: 'Libraries/**/*.csproj'
 
 steps:
   - task: EsrpCodeSigning@5
@@ -14,7 +25,7 @@ steps:
       AuthAKVName: esrp-teams
       UseMSIAuthentication: true
       FolderPath: '$(folderPath)'
-      Pattern: 'Libraries/**/*.dll'
+      Pattern: '${{ parameters.assemblyPattern }}'
       UseMinimatch: true
       signConfigType: 'inlineSignParams'
       inlineOperation: |
@@ -48,7 +59,7 @@ steps:
     displayName: 'Pack NuGet Packages'
     inputs:
       command: pack
-      packagesToPack: '$(folderPath)/Libraries/**/*.csproj'
+      packagesToPack: '$(folderPath)/${{ parameters.packagePattern }}'
       packDestination: '$(Build.ArtifactStagingDirectory)'
       includeSymbols: false
       nobuild: true
