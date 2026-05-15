@@ -1,0 +1,126 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Schema;
+
+namespace Microsoft.Teams.Apps.Handlers;
+
+/// <summary>
+/// Represents a message reaction activity.
+/// </summary>
+public class MessageReactionActivity : TeamsActivity
+{
+    /// <summary>
+    /// Convenience method to create a MessageReactionActivity from a CoreActivity.
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    /// <returns>A MessageReactionActivity instance.</returns>
+    public static new MessageReactionActivity FromActivity(CoreActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return new MessageReactionActivity(activity);
+    }
+
+    /// <summary>
+    /// Default constructor.
+    /// </summary>
+    [JsonConstructor]
+    public MessageReactionActivity() : base(TeamsActivityType.MessageReaction)
+    {
+    }
+
+    /// <summary>
+    /// Internal constructor to create MessageReactionActivity from CoreActivity.
+    /// </summary>
+    /// <param name="activity">The CoreActivity to convert.</param>
+    protected MessageReactionActivity(CoreActivity activity) : base(activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ReactionsAdded = activity.Properties.Extract<IList<MessageReaction>>("reactionsAdded");
+        ReactionsRemoved = activity.Properties.Extract<IList<MessageReaction>>("reactionsRemoved");
+        ReplyToId = activity.Properties.Extract<string>("replyToId");
+    }
+
+    /// <summary>
+    /// Gets or sets the reactions added to the message.
+    /// </summary>
+    [JsonPropertyName("reactionsAdded")]
+    public IList<MessageReaction>? ReactionsAdded { get; set; }
+
+    /// <summary>
+    /// Gets or sets the reactions removed from the message.
+    /// </summary>
+    [JsonPropertyName("reactionsRemoved")]
+    public IList<MessageReaction>? ReactionsRemoved { get; set; }
+}
+
+/// <summary>
+/// Represents a reaction to a message.
+/// </summary>
+public class MessageReaction
+{
+    /// <summary>
+    /// Gets or sets the type of reaction.
+    /// See <see cref="ReactionTypes"/> for common values.
+    /// </summary>
+    [JsonPropertyName("type")]
+    public string? Type { get; set; }
+}
+
+/// <summary>
+/// String constants for reaction types.
+/// </summary>
+public static class ReactionTypes
+{
+    /// <summary>
+    /// Like reaction (👍).
+    /// </summary>
+    public const string Like = "like";
+
+    /// <summary>
+    /// Heart reaction (❤️).
+    /// </summary>
+    public const string Heart = "heart";
+
+    /// <summary>
+    /// Checkmark reaction (✅).
+    /// </summary>
+    public const string Checkmark = "checkmark";
+
+    /// <summary>
+    /// Hourglass reaction (⏳).
+    /// </summary>
+    public const string Hourglass = "hourglass";
+
+    /// <summary>
+    /// Pushpin reaction (📌).
+    /// </summary>
+    public const string Pushpin = "pushpin";
+
+    /// <summary>
+    /// Exclamation reaction (❗).
+    /// </summary>
+    public const string Exclamation = "exclamation";
+
+    /// <summary>
+    /// Laugh reaction (😆).
+    /// </summary>
+    public const string Laugh = "laugh";
+
+    /// <summary>
+    /// Surprise reaction (😮).
+    /// </summary>
+    public const string Surprise = "surprise";
+
+    /// <summary>
+    /// Sad reaction (🙁).
+    /// </summary>
+    public const string Sad = "sad";
+
+    /// <summary>
+    /// Angry reaction (😠).
+    /// </summary>
+    public const string Angry = "angry";
+}

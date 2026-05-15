@@ -1,0 +1,207 @@
+# =============================================================================
+# This pipeline publishes NuGet packages. Manually triggered only.
+# Parameters:
+#   - packageSet: Legacy (Libraries/) or Core (core/)
+#   - publishType: Internal (unsigned, TeamsSDKPreviews feed) or Public (ESRP-
+#     signed, nuget.org, requires approval).
+# Versions come from Nerdbank.GitVersioning, per packageSet:
+#   - Legacy: root version.json
+#   - Core:   core/version.json (plus per-project overrides such as
+#             core/src/Microsoft.Teams.Apps/version.json)
+#
+# Extends 1ES.Official.PipelineTemplate for M365 security compliance.
+# =============================================================================
+
+resources:
+  repositories:
+  - repository: 1esPipelines
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+trigger: none
+
+pr: none
+
+parameters:
+- name: packageSet
+  displayName: 'Package Set'
+  type: string
+  default: 'Core'
+  values:
+  - Legacy
+  - Core
+- name: publishType
+  displayName: 'Publish Type'
+  type: string
+  default: 'Internal'
+  values:
+  - Internal
+  - Public
+
+variables:
+  buildConfiguration: 'Release'
+  folderPath: '$(Build.SourcesDirectory)'
+  ${{ if eq(parameters.publishType, 'Public') }}:
+    appRegistrationTenantId: 'cdc5aeea-15c5-4db6-b079-fcadd2505dc2'
+    authenticodeSignId: '2d5c4ab9-0b7e-4f60-bb92-70322df77b94'
+    nugetSignId: 'a94a770a-9a7b-4888-a3ea-24584b851e49'
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  parameters:
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: ubuntu-22.04
+      os: linux
+
+    sdl:
+      sourceAnalysisPool:
+        name: Azure-Pipelines-1ESPT-ExDShared
+        image: windows-2022
+        os: windows
+
+    # Required for M365PT tracking and drift management
+    customBuildTags:
+    - ES365AIMigrationTooling
+
+    stages:
+
+    - ${{ if eq(parameters.publishType, 'Internal') }}:
+      - stage: Build_Test_Pack_Push_Internal
+        displayName: 'Build, Test, Pack, and Push (Internal)'
+        jobs:
+        - job: BuildTestPackPush
+          displayName: 'Build, Test, Pack, and Push to Internal Feed'
+          steps:
+            - checkout: self
+            - pwsh: |
+                $nugetConfig = @"
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <clear />
+                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
+                  </packageSources>
+                </configuration>
+                "@
+                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
+              displayName: 'Create nuget.config'
+
+            - task: NuGetAuthenticate@1
+              displayName: 'Authenticate with NuGet feeds'
+
+            - ${{ if eq(parameters.packageSet, 'Legacy') }}:
+              - template: .azdo/templates/build-test-pack.yaml@self
+                parameters:
+                  sourceRoot: '.'
+                  pack: true
+                  packPattern: 'Libraries/**/*.csproj'
+                  publishArtifact: false
+            - ${{ if eq(parameters.packageSet, 'Core') }}:
+              - template: .azdo/templates/build-test-pack.yaml@self
+                parameters:
+                  sourceRoot: 'core'
+                  pack: true
+                  packPattern: 'core/src/**/*.csproj'
+                  publishArtifact: false
+
+            - task: 1ES.PublishNuget@1
+              displayName: 'Push NuGet Packages to Internal Feed'
+              inputs:
+                useDotNetTask: false
+                packagesToPush: '$(Build.ArtifactStagingDirectory)/*.nupkg'
+                packageParentPath: '$(Build.ArtifactStagingDirectory)'
+                publishVstsFeed: '$(System.TeamProject)/TeamsSDKPreviews'
+                nuGetFeedType: internal
+                allowPackageConflicts: false  # Disallow duplicate versions; bump the version to re-publish
+                publishPackageMetadata: true
+                retryCountOnTaskFailure: 2
+
+            - task: 1ES.PublishPipelineArtifact@1
+              displayName: 'Publish NuGet Packages as Pipeline Artifact'
+              inputs:
+                targetPath: '$(Build.ArtifactStagingDirectory)'
+                artifactName: 'Packages'
+
+    - ${{ if eq(parameters.publishType, 'Public') }}:
+      - stage: Build_Test_Sign_Pack
+        displayName: 'Build, Test, Sign, and Pack (Public)'
+        jobs:
+        - job: BuildTestSignPack
+          displayName: 'Build, Test, Sign, and Pack'
+          steps:
+            - checkout: self
+
+            - pwsh: |
+                $nugetConfig = @"
+                <?xml version="1.0" encoding="utf-8"?>
+                <configuration>
+                  <packageSources>
+                    <clear />
+                    <add key="TeamsSDKPreviews" value="https://pkgs.dev.azure.com/DomoreexpGithub/Github_Pipelines/_packaging/TeamsSDKPreviews/nuget/v3/index.json" />
+                  </packageSources>
+                </configuration>
+                "@
+                $nugetConfig | Out-File -FilePath "$(Build.SourcesDirectory)/nuget.config" -Encoding utf8
+              displayName: 'Create nuget.config'
+
+            - task: NuGetAuthenticate@1
+              displayName: 'Authenticate with NuGet feeds'
+
+            - ${{ if eq(parameters.packageSet, 'Legacy') }}:
+              - template: .azdo/templates/build-test-pack.yaml@self
+                parameters:
+                  sourceRoot: '.'
+                  pack: false
+                  publishArtifact: false
+            - ${{ if eq(parameters.packageSet, 'Core') }}:
+              - template: .azdo/templates/build-test-pack.yaml@self
+                parameters:
+                  sourceRoot: 'core'
+                  pack: false
+                  publishArtifact: false
+
+            - ${{ if eq(parameters.packageSet, 'Legacy') }}:
+              - template: .azdo/templates/sign-and-pack.yaml@self
+                parameters:
+                  assemblyPattern: 'Libraries/**/*.dll'
+                  packagePattern: 'Libraries/**/*.csproj'
+            - ${{ if eq(parameters.packageSet, 'Core') }}:
+              - template: .azdo/templates/sign-and-pack.yaml@self
+                parameters:
+                  assemblyPattern: 'core/src/**/*.dll'
+                  packagePattern: 'core/src/**/*.csproj'
+
+            - task: 1ES.PublishPipelineArtifact@1
+              displayName: 'Publish NuGet Packages as Pipeline Artifact'
+              inputs:
+                targetPath: '$(Build.ArtifactStagingDirectory)'
+                artifactName: 'Packages'
+
+    - ${{ if eq(parameters.publishType, 'Public') }}:
+      - stage: PushToNuGet
+        displayName: 'Push Packages to nuget.org'
+        dependsOn: Build_Test_Sign_Pack
+        jobs:
+        - deployment: PushPackages
+          displayName: 'Manual Approval Required to Push Packages'
+          environment:
+            name: 'teams-net-publish'
+          strategy:
+            runOnce:
+              deploy:
+                steps:
+                - download: current
+                  artifact: Packages
+
+                - task: 1ES.PublishNuget@1
+                  displayName: 'Push Packages to nuget.org'
+                  inputs:
+                    useDotNetTask: false
+                    packagesToPush: '$(Pipeline.Workspace)/Packages/*.nupkg'
+                    packageParentPath: '$(Pipeline.Workspace)/Packages'
+                    nuGetFeedType: external
+                    publishFeedCredentials: 'Microsoft.Teams.*'
+                    publishPackageMetadata: true
+                    retryCountOnTaskFailure: 2

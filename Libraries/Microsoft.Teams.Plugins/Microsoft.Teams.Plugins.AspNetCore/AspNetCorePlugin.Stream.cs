@@ -87,7 +87,9 @@ public partial class AspNetCorePlugin
         {
             if (_index == 1 && _queue.Count == 0 && _lock.CurrentCount > 0) return null;
             if (_result is not null) return _result;
-            while (_id is null || _queue.Count > 0)
+            // _lock.CurrentCount == 0 means Flush() is mid-await (queue drained but SendActivity calls
+            // still pending). Wait it out so the final message doesn't race in-flight chunks.
+            while (_id is null || _queue.Count > 0 || _lock.CurrentCount == 0)
             {
                 await Task.Delay(50, cancellationToken);
             }
@@ -134,11 +136,10 @@ public partial class AspNetCorePlugin
                     _timeout = null;
                 }
 
-                var i = 0;
-
                 Queue<TypingActivity> informativeUpdates = new();
+                var dequeued = 0;
 
-                while (i <= 10 && _queue.TryDequeue(out var activity))
+                while (_queue.TryDequeue(out var activity))
                 {
                     if (activity is MessageActivity message)
                     {
@@ -159,11 +160,11 @@ public partial class AspNetCorePlugin
                         informativeUpdates.Enqueue(typing);
                     }
 
-                    i++;
+                    dequeued++;
                     _count++;
                 }
 
-                if (i == 0) return;
+                if (dequeued == 0) return;
 
                 // Send informative updates
                 if (informativeUpdates.Count > 0)
