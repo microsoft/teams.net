@@ -4,17 +4,19 @@
 using System.ClientModel;
 using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
+using Microsoft.Teams.Apps;
 
 namespace A365Mcp;
 
 /// <summary>
-/// Extension methods for registering the Agent and its dependencies with DI.
+/// Extension methods for registering the Agent, its dependencies, and the
+/// custom <see cref="A365TeamsBotApp"/> with DI.
 /// </summary>
 internal static class ServiceCollectionExtensions
 {
     /// <summary>
-    /// Registers <see cref="Agent"/>, <see cref="IMcpClientFactory"/>, and <see cref="IChatClient"/>
-    /// with the service collection.
+    /// Registers <see cref="A365TeamsBotApp"/>, <see cref="Agent"/>, <see cref="IConversationHistoryStore"/>,
+    /// <see cref="IMcpClientFactory"/>, and <see cref="IChatClient"/> with the service collection.
     /// </summary>
     public static IServiceCollection AddAgent(this IServiceCollection services, IConfiguration configuration)
     {
@@ -34,7 +36,16 @@ internal static class ServiceCollectionExtensions
         .UseFunctionInvocation();
 
         services.AddSingleton<IMcpClientFactory, McpClientFactory>();
-        services.AddSingleton<Agent>();
+
+        // Conversation history must outlive any single turn -> singleton.
+        services.AddSingleton<IConversationHistoryStore, InMemoryConversationHistoryStore>();
+
+        // Agent is a per-turn execution unit; resolved from a fresh scope inside the bot handler.
+        services.AddScoped<Agent>();
+
+        // Register the custom Teams bot subclass so handlers are wired via constructor injection
+        // instead of via a static service-locator extension method.
+        services.AddTeamsBotApplication<A365TeamsBotApp>();
 
         return services;
     }
