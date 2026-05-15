@@ -37,7 +37,9 @@ public class TeamsConversationAccount : ConversationAccount
         TeamsConversationAccount result = new();
         result.Id = conversationAccount.Id;
         result.Name = conversationAccount.Name;
+#pragma warning disable ExperimentalTeamsTargeted
         result.IsTargeted = conversationAccount.IsTargeted;
+#pragma warning restore ExperimentalTeamsTargeted
         result.AgenticAppId = conversationAccount.AgenticAppId;
         result.AgenticUserId = conversationAccount.AgenticUserId;
         result.AgenticAppBlueprintId = conversationAccount.AgenticAppBlueprintId;

@@ -58,7 +58,9 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(activity.ServiceUrl);
 
+#pragma warning disable ExperimentalTeamsTargeted
         bool isTargeted = activity.Recipient?.IsTargeted == true;
+#pragma warning restore ExperimentalTeamsTargeted
         AgenticIdentity? agenticIdentity = AgenticIdentity.FromAccount(activity.From);
 
         string url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/";
