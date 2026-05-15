@@ -29,6 +29,7 @@ builder.Services.AddSingleton<IChatClient>(sp =>
 });
 
 
+builder.Services.AddSingleton<IMcpClientFactory, McpClientFactory>();
 builder.Services.AddSingleton<Agent>();
 
 WebApplication webApp = builder.Build();
