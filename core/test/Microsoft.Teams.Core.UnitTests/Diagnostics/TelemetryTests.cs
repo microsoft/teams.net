@@ -18,7 +18,7 @@ namespace Microsoft.Teams.Core.UnitTests.Diagnostics;
 public class TelemetryTests
 {
     [Fact]
-    public void TeamsCoreTelemetry_ConstantsHaveExpectedValues()
+    public void CoreTelemetryNames_ConstantsHaveExpectedValues()
     {
         Assert.Equal("Microsoft.Teams.Core", CoreTelemetryNames.ActivitySourceName);
         Assert.Equal("Microsoft.Teams.Core", CoreTelemetryNames.MeterName);

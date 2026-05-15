@@ -4,7 +4,7 @@
 
 The Teams .NET SDK (`Microsoft.Teams.Core`, `Microsoft.Teams.Apps`, `Microsoft.Teams.Apps.BotBuilder`) emits OpenTelemetry-compatible traces, metrics, and logs so that consuming bots can wire observability through the [Microsoft OpenTelemetry distro](https://github.com/microsoft/opentelemetry-distro-dotnet) and ship telemetry to Azure Monitor, an OTLP collector (Aspire Dashboard, Grafana LGTM, Jaeger), or the console.
 
-The SDK takes **no new package dependencies**. It uses the BCL `System.Diagnostics.ActivitySource` and `System.Diagnostics.Metrics.Meter`. The OpenTelemetry SDK and exporters are an application concern: the bot project references `Microsoft.OpenTelemetry`, subscribes to the SDK's source/meter by name, and configures exporters.
+The SDK uses the BCL `System.Diagnostics.ActivitySource` and `System.Diagnostics.Metrics.Meter` for the trace and metric APIs. The OpenTelemetry SDK and exporters are an application concern: the bot project references `Microsoft.OpenTelemetry`, subscribes to the SDK's source/meter by name, and configures exporters. `Microsoft.Teams.Core` takes a single new package dependency on `OpenTelemetry.Api` so the `BaggageBuilder` can write to `OpenTelemetry.Baggage.Current` (see "Dependency impact" below).
 
 ```
 Consuming bot                            Teams SDK (this design)
@@ -12,14 +12,14 @@ Consuming bot                            Teams SDK (this design)
 .UseMicrosoftOpenTelemetry(...)
                                          ActivitySource("Microsoft.Teams.Core")
 .WithTracing(t => t                       ├─ "turn"                (BotApplication.ProcessAsync)
-    .AddSource(TeamsCoreTelemetry         ├─ "middleware"          (TurnMiddleware.RunPipelineAsync)
+    .AddSource(CoreTelemetryNames         ├─ "middleware"          (TurnMiddleware.RunPipelineAsync)
         .ActivitySourceName)              ├─ "auth.outbound"       (BotAuthenticationHandler)
     .AddSource(                           └─ "conversation_client" (ConversationClient send/update/delete)
         TeamsBotApplicationTelemetry
         .ActivitySourceName))            ActivitySource("Microsoft.Teams.Apps")
                                           └─ "handler"             (Router.DispatchAsync)
 .WithMetrics(m => m
-    .AddMeter(TeamsCoreTelemetry         Meter("Microsoft.Teams.Core")
+    .AddMeter(CoreTelemetryNames         Meter("Microsoft.Teams.Core")
         .MeterName)                       ├─ teams.activities.received   (Counter)
     .AddMeter(                            ├─ teams.turn.duration         (Histogram, ms)
         TeamsBotApplicationTelemetry      ├─ teams.handler.errors        (Counter)
@@ -38,22 +38,22 @@ The SDK is split across two assemblies that observability must respect:
 - `Microsoft.Teams.Core` is the lower layer. It owns `BotApplication`, the turn pipeline (`TurnMiddleware`), the outbound HTTP clients (`ConversationClient`, `UserTokenClient`), and the auth-handler (`BotAuthenticationHandler`). It must **not reference anything in `Microsoft.Teams.Apps`**, including no string literals or constants tied to the Apps brand.
 - `Microsoft.Teams.Apps` depends on Core. It owns the typed activity model, `TeamsBotApplication`, and the `Router` that dispatches to user handlers.
 
-Telemetry follows the same rule: **each assembly publishes its own ActivitySource and Meter, named after the assembly.** A class named `TeamsBotApplicationTelemetry` describes Apps-level telemetry; it lives in Apps. Core's analogue is `TeamsCoreTelemetry`. Neither references the other.
+Telemetry follows the same rule: **each assembly publishes its own ActivitySource and Meter, named after the assembly.** A class named `TeamsBotApplicationTelemetry` describes Apps-level telemetry; it lives in Apps. Core's analogue is `CoreTelemetryNames`. Neither references the other.
 
 | Layer | Public name class | Source / Meter name | Spans | Metrics |
 |---|---|---|---|---|
-| `Microsoft.Teams.Core` | `Microsoft.Teams.Core.Diagnostics.TeamsCoreTelemetry` | `"Microsoft.Teams.Core"` | `turn`, `middleware`, `auth.outbound`, `conversation_client` | `teams.activities.received`, `teams.turn.duration`, `teams.handler.errors`, `teams.middleware.duration`, `teams.outbound.calls`, `teams.outbound.errors` |
+| `Microsoft.Teams.Core` | `Microsoft.Teams.Core.Diagnostics.CoreTelemetryNames` | `"Microsoft.Teams.Core"` | `turn`, `middleware`, `auth.outbound`, `conversation_client` | `teams.activities.received`, `teams.turn.duration`, `teams.handler.errors`, `teams.middleware.duration`, `teams.outbound.calls`, `teams.outbound.errors` |
 | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Diagnostics.TeamsBotApplicationTelemetry` | `"Microsoft.Teams.Apps"` | `handler` | (none yet) |
 
-Cross-assembly use is one-way: Apps's `Router` may call Core utilities (for example, the `RecordException` extension on `Activity` defined in `Microsoft.Teams.Core.Diagnostics`), but Core never reaches up into Apps. If a future Core-level helper would need an Apps concept, that helper belongs in Apps, not in Core.
+Cross-assembly use is one-way: Apps's `Router` may call Core utilities (for example, the public `RecordException` extension on `Activity` defined in `Microsoft.Teams.Core.Diagnostics.ActivityExtensions`), but Core never reaches up into Apps. If a future Core-level helper would need an Apps concept, that helper belongs in Apps, not in Core.
 
-A consumer that uses both layers (the common case) registers both names. A consumer that only references Core (a minimal `BotApplication` bot without the `TeamsBotApplication` router) registers just `TeamsCoreTelemetry` and gets the full Core-level signal.
+A consumer that uses both layers (the common case) registers both names. A consumer that only references Core (a minimal `BotApplication` bot without the `TeamsBotApplication` router) registers just `CoreTelemetryNames` and gets the full Core-level signal.
 
 ## Public surface
 
 ```csharp
 namespace Microsoft.Teams.Core.Diagnostics;
-public static class TeamsCoreTelemetry
+public static class CoreTelemetryNames
 {
     public const string ActivitySourceName = "Microsoft.Teams.Core";
     public const string MeterName          = "Microsoft.Teams.Core";
@@ -80,10 +80,10 @@ The auto-instrumented HTTP-server span (from the OTel distro's ASP.NET Core inst
 | `turn` | Core | `Microsoft.Teams.Core/BotApplication.cs` `ProcessAsync` body, after the request body has been deserialized into a `CoreActivity` | `activity.type`, `activity.id`, `conversation.id`, `channel.id`, `bot.id`, `service.url` |
 | `middleware` | Core | `Microsoft.Teams.Core/TurnMiddleware.cs` `RunPipelineAsync` per-middleware execution | `middleware.name`, `middleware.index` |
 | `handler` | Apps | `Microsoft.Teams.Apps/Routing/Router.cs` `DispatchAsync` matched-route invocation | `handler.type` (activity type or invoke name), `handler.dispatch` (`type` / `invoke` / `catchall`) |
-| `auth.outbound` | Core | `Microsoft.Teams.Core/Hosting/BotAuthenticationHandler.cs` `GetAuthorizationHeaderAsync` | `auth.flow` (`agentic` / `app_only` / `managed_identity` / `client_credentials`), `auth.scope` |
+| `auth.outbound` | Core | `Microsoft.Teams.Core/Hosting/BotAuthenticationHandler.cs` `GetAuthorizationHeaderAsync` | `auth.flow` (`agentic` / `app_only` / `managed_identity`) |
 | `conversation_client` | Core | `Microsoft.Teams.Core/ConversationClient.cs` `SendActivityAsync` / `UpdateActivityAsync` / `DeleteActivityAsync` | `service.url`, `conversation.id`, `activity.type`, `activity.id` (set after response when known), `operation` |
 
-On exception every span sets `Status = Error` with the exception message, and the exception is recorded as a span event (`exception.type`, `exception.message`, `exception.stacktrace`) — `Activity.AddException` on net9+, manual event tagging on net8.0. The helper extension lives in Core (`ActivityExtensions.RecordException`) and is consumed from Apps.
+On exception every span sets `Status = Error` with the exception message and adds an `exception` span event with `exception.type`, `exception.message`, and `exception.stacktrace` tags. This is done through the `RecordException` extension method in `Microsoft.Teams.Core.Diagnostics.ActivityExtensions`, which is `public` so the Apps layer (`Router`) can use it too. The extension uses manual event tagging on both `net8.0` and `net10.0` to stay consistent across target frameworks; it intentionally does not delegate to the BCL `Activity.AddException` (added in .NET 9), because that API only adds the event without setting `ActivityStatusCode.Error`.
 
 ### `auth.inbound` is intentionally omitted
 
@@ -122,10 +122,10 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenTelemetry()
     .UseMicrosoftOpenTelemetry(o => o.Exporters = ExportTarget.AzureMonitor | ExportTarget.Otlp)
     .WithTracing(t => t
-        .AddSource(TeamsCoreTelemetry.ActivitySourceName)
+        .AddSource(CoreTelemetryNames.ActivitySourceName)
         .AddSource(TeamsBotApplicationTelemetry.ActivitySourceName))
     .WithMetrics(m => m
-        .AddMeter(TeamsCoreTelemetry.MeterName)
+        .AddMeter(CoreTelemetryNames.MeterName)
         .AddMeter(TeamsBotApplicationTelemetry.MeterName));
 
 builder.Logging.AddOpenTelemetry(o => o.IncludeFormattedMessage = true);
@@ -223,7 +223,7 @@ Every Required attribute on each scope must be **non-null at scope close**. The 
 | Caller (human) | `user.email` | **Yes** | `((TeamsConversationAccount)Activity.From).Email` (Apps-only) |
 | Target agent | `gen_ai.agent.id` | **Yes** | `Activity.Recipient.AgenticAppId ?? Activity.Recipient.Id` |
 | Target agent | `gen_ai.agent.name` | **Yes** | `Activity.Recipient.Name` |
-| Target agent | `microsoft.agent.user.id` | **Yes** | `Activity.Recipient.AgenticUserId ?? ((TeamsConversationAccount)Activity.Recipient).AadObjectId` |
+| Target agent | `microsoft.agent.user.id` | **Yes** | `Activity.Recipient.AgenticUserId` |
 | Target agent | `microsoft.agent.user.email` | **Yes** | `((TeamsConversationAccount)Activity.Recipient).Email` (Apps-only) |
 | Target agent | `gen_ai.agent.description` | Optional | `((TeamsConversationAccount)Activity.Recipient).UserRole` (Apps-only) |
 | Target agent | `microsoft.a365.agent.blueprint.id` | **Yes** | `Activity.Recipient.AgenticAppBlueprintId` |

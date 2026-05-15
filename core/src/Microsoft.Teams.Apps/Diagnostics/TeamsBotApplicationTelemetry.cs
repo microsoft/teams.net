@@ -15,10 +15,10 @@ namespace Microsoft.Teams.Apps.Diagnostics;
 /// <code>
 /// builder.Services.AddOpenTelemetry()
 ///     .WithTracing(t => t
-///         .AddSource(TeamsCoreTelemetry.ActivitySourceName)
+///         .AddSource(CoreTelemetryNames.ActivitySourceName)
 ///         .AddSource(TeamsBotApplicationTelemetry.ActivitySourceName))
 ///     .WithMetrics(m => m
-///         .AddMeter(TeamsCoreTelemetry.MeterName)
+///         .AddMeter(CoreTelemetryNames.MeterName)
 ///         .AddMeter(TeamsBotApplicationTelemetry.MeterName));
 /// </code>
 /// </remarks>
