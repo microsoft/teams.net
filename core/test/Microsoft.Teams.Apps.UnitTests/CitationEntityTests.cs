@@ -119,6 +119,19 @@ public class CitationEntityTests
     }
 
     [Fact]
+    public void AddFeedback_WithMode_SetsFeedbackLoopAndClearsFeedbackLoopEnabled()
+    {
+      MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
+
+      activity.AddFeedback(FeedbackType.Custom);
+
+      Assert.NotNull(activity.ChannelData);
+      Assert.Null(activity.ChannelData.FeedbackLoopEnabled);
+      Assert.NotNull(activity.ChannelData.FeedbackLoop);
+      Assert.Equal(FeedbackType.Custom, activity.ChannelData.FeedbackLoop.Type);
+    }
+
+    [Fact]
     public void AddCitation_WithAllAppearanceFields_SetsCorrectly()
     {
         MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));

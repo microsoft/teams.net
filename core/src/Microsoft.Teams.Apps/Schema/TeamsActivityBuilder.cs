@@ -368,6 +368,21 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     }
 
     /// <summary>
+    /// Configures feedback loop mode on the activity.
+    /// </summary>
+    /// <param name="mode">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder AddFeedback(string mode)
+    {
+        ArgumentNullException.ThrowIfNull(_activity);
+
+        _activity.ChannelData ??= new TeamsChannelData();
+        _activity.ChannelData.FeedbackLoop = new FeedbackLoop(mode);
+        _activity.ChannelData.FeedbackLoopEnabled = null;
+        return this;
+    }
+
+    /// <summary>
     /// Adds a citation claim to the activity.
     /// </summary>
     public TeamsActivityBuilder AddCitation(int position, CitationAppearance appearance)

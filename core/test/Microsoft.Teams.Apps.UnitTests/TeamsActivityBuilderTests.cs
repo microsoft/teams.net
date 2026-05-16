@@ -347,6 +347,19 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
+    public void AddFeedback_WithMode_SetsFeedbackLoopAndClearsFeedbackLoopEnabled()
+    {
+        TeamsActivity activity = builder
+            .AddFeedback(FeedbackType.Custom)
+            .Build();
+
+        Assert.NotNull(activity.ChannelData);
+        Assert.Null(activity.ChannelData.FeedbackLoopEnabled);
+        Assert.NotNull(activity.ChannelData.FeedbackLoop);
+        Assert.Equal(FeedbackType.Custom, activity.ChannelData.FeedbackLoop.Type);
+    }
+
+    [Fact]
     public void AddAttachment_AddsAttachmentToCollection()
     {
         TeamsAttachment attachment = new()

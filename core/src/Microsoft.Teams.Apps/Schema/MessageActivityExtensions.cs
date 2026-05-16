@@ -446,6 +446,22 @@ public static class MessageActivityExtensions
     }
 
     /// <summary>
+    /// Configures feedback loop mode on the message.
+    /// </summary>
+    /// <param name="message">The message activity.</param>
+    /// <param name="mode">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    /// <returns>The message activity for chaining.</returns>
+    public static MessageActivity AddFeedback(this MessageActivity message, string mode)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        message.ChannelData ??= new TeamsChannelData();
+        message.ChannelData.FeedbackLoop = new FeedbackLoop(mode);
+        message.ChannelData.FeedbackLoopEnabled = null;
+        return message;
+    }
+
+    /// <summary>
     /// Adds a citation claim to the message.
     /// </summary>
     public static CitationEntity AddCitation(this MessageActivity message, int position, CitationAppearance appearance)
