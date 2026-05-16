@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Teams.Core.Schema;
 
@@ -43,86 +42,55 @@ public class TeamsConversationAccount : ConversationAccount
         result.AgenticAppId = conversationAccount.AgenticAppId;
         result.AgenticUserId = conversationAccount.AgenticUserId;
         result.AgenticAppBlueprintId = conversationAccount.AgenticAppBlueprintId;
-        result.Properties = conversationAccount.Properties;
+        result.AadObjectId = conversationAccount.Properties.Extract<string>("aadObjectId");
+        result.GivenName = conversationAccount.Properties.Extract<string>("givenName");
+        result.Surname = conversationAccount.Properties.Extract<string>("surname");
+        result.Email = conversationAccount.Properties.Extract<string>("email");
+        result.UserPrincipalName = conversationAccount.Properties.Extract<string>("userPrincipalName");
+        result.UserRole = conversationAccount.Properties.Extract<string>("userRole");
+        result.TenantId = conversationAccount.Properties.Extract<string>("tenantId");
         return result;
     }
 
     /// <summary>
     /// Gets or sets the Azure Active Directory (AAD) Object ID associated with the conversation account.
     /// </summary>
-    [JsonIgnore]
-    public string? AadObjectId
-    {
-        get => GetStringProperty("aadObjectId");
-        set => Properties["aadObjectId"] = value;
-    }
+    [JsonPropertyName("aadObjectId")]
+    public string? AadObjectId { get; set; }
 
     /// <summary>
     /// Gets or sets given name part of the user name.
     /// </summary>
-    [JsonIgnore]
-    public string? GivenName
-    {
-        get => GetStringProperty("givenName");
-        set => Properties["givenName"] = value;
-    }
+    [JsonPropertyName("givenName")]
+    public string? GivenName { get; set; }
 
     /// <summary>
     /// Gets or sets surname part of the user name.
     /// </summary>
-    [JsonIgnore]
-    public string? Surname
-    {
-        get => GetStringProperty("surname");
-        set => Properties["surname"] = value;
-    }
+    [JsonPropertyName("surname")]
+    public string? Surname { get; set; }
 
     /// <summary>
     /// Gets or sets email Id of the user.
     /// </summary>
-    [JsonIgnore]
-    public string? Email
-    {
-        get => GetStringProperty("email");
-        set => Properties["email"] = value;
-    }
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
 
     /// <summary>
     /// Gets or sets unique user principal name.
     /// </summary>
-    [JsonIgnore]
-    public string? UserPrincipalName
-    {
-        get => GetStringProperty("userPrincipalName");
-        set => Properties["userPrincipalName"] = value;
-    }
+    [JsonPropertyName("userPrincipalName")]
+    public string? UserPrincipalName { get; set; }
 
     /// <summary>
     /// Gets or sets the UserRole.
     /// </summary>
-    [JsonIgnore]
-    public string? UserRole
-    {
-        get => GetStringProperty("userRole");
-        set => Properties["userRole"] = value;
-    }
+    [JsonPropertyName("userRole")]
+    public string? UserRole { get; set; }
 
     /// <summary>
     /// Gets or sets the TenantId.
     /// </summary>
-    [JsonIgnore]
-    public string? TenantId
-    {
-        get => GetStringProperty("tenantId");
-        set => Properties["tenantId"] = value;
-    }
-
-    private string? GetStringProperty(string key)
-    {
-        if (Properties.TryGetValue(key, out object? val) && val is JsonElement je && je.ValueKind == JsonValueKind.String)
-        {
-            return je.GetString();
-        }
-        return val?.ToString();
-    }
+    [JsonPropertyName("tenantId")]
+    public string? TenantId { get; set; }
 }

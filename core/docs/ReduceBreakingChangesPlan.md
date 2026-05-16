@@ -409,27 +409,11 @@ Not migrated (low priority, underlying properties commented out): `WithSpeak()`,
 
 ### BC-17: Base Activity fluent `With*()` methods removed
 
-**Decision: IMPLEMENTED (mostly)** — Base activity fluent methods are available via `TeamsActivityExtensions` and `TeamsActivityBuilder`.
+**Decision: IMPLEMENTED (mostly)** — Base activity fluent methods added.
 
-Implemented on `TeamsActivityExtensions`:
 - **With* methods:** `WithId`, `WithChannelId`, `WithFrom`, `WithRecipient`, `WithRecipient(..., bool isTargeted)`, `WithConversation`, `WithServiceUrl`, `WithLocale`, `WithTimestamp`, `WithLocalTimestamp`, `WithData(ChannelData)`, `WithData(string, object?)`, `WithAppId`
 - **Add* methods:** `AddEntity`, `UpdateEntity`, `AddAIGenerated`, `AddFeedback(bool)`, `AddTargetedMessageInfo`, `AddCitation`, `AddMention`, `AddSensitivityLabel`, `AddClientInfo`
-- **Get* methods:** Entity helpers scoped to entity-level extension classes (e.g., `GetMentions()` in `MentionEntityExtensions`)
-
-Message-level fluent methods are available via `MessageActivityExtensions`: `WithText`, `WithTextFormat`, `WithAttachmentLayout`, `WithSuggestedActions`, `AddText`, `AddQuote`, `PrependQuote`, `AddAttachment`, `AddMention`, `AddStreamFinal`, `GetAccountMention`.
-
-Builder path remains fully supported:
-
-```csharp
-// Old:
-var activity = new Activity().WithFrom(account).WithConversation(conv);
-
-// New:
-var activity = new TeamsActivityBuilder()
-    .WithFrom(account)
-    .WithConversation(conv)
-    .Build();
-```
+- **Get* methods:** `GetAccountMention`
 
 Remaining gap: `WithRelatesTo` is still not migrated because core currently has no `ConversationReference` model.
 

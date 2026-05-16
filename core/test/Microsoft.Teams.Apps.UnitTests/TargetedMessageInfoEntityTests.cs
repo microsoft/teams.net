@@ -158,14 +158,9 @@ public class TargetedMessageInfoEntityTests
     }
 
     [Fact]
-    public void AddTargetedMessageInfo_OnTeamsActivity_AutoPopulatesEntity()
+    public void AddTargetedMessageInfo_OnMessageActivity_AutoPopulatesEntity()
     {
-        // TeamsActivity (non-MessageActivity) with Type=Message — the common shape produced
-        // by TeamsActivity.CreateBuilder().WithType(Message).Build(). Auto-populate must still apply.
-        TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
-            .WithText("response")
-            .Build();
+        MessageActivity activity = new("response");
 
         activity.AddTargetedMessageInfo("msg-123");
 
@@ -274,7 +269,7 @@ public class TargetedMessageInfoEntityTests
 #pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithQuote("msg-1", "old reply")
+            .AddQuote("msg-1", "old reply")
             .WithTargetedMessageInfo("msg-123")
             .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
@@ -289,7 +284,7 @@ public class TargetedMessageInfoEntityTests
 #pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithQuote("msg-123", "my response")
+            .AddQuote("msg-123", "my response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
@@ -319,7 +314,7 @@ public class TargetedMessageInfoEntityTests
 #pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithQuote("a\"b", "response")
+            .AddQuote("a\"b", "response")
             .WithTargetedMessageInfo("a\"b")
             .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
@@ -336,8 +331,8 @@ public class TargetedMessageInfoEntityTests
 #pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithQuote("msg-1", "first")
-            .WithQuote("msg-2", "second")
+            .AddQuote("msg-1", "first")
+            .AddQuote("msg-2", "second")
             .WithTargetedMessageInfo("msg-99")
             .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies

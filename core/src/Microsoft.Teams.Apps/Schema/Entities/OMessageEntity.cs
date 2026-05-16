@@ -29,23 +29,3 @@ public class OMessageEntity : Entity
         set => base.Properties["additionalType"] = value;
     }
 }
-
-/// <summary>
-/// OMessage entity extension methods.
-/// </summary>
-public static class OMessageEntityExtensions
-{
-    /// <summary>
-    /// Gets the first message entity from the activity.
-    /// </summary>
-    public static OMessageEntity? GetMessageEntity(this TeamsActivity activity)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Entities == null)
-        {
-            return null;
-        }
-
-        return activity.Entities.FirstOrDefault(e => e.Type == "https://schema.org/Message" && e is OMessageEntity) as OMessageEntity;
-    }
-}

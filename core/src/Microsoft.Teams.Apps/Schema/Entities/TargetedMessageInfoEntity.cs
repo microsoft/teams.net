@@ -35,24 +35,3 @@ public class TargetedMessageInfoEntity : Entity
         set => base.Properties["messageId"] = value;
     }
 }
-
-/// <summary>
-/// Targeted message info entity extension methods.
-/// </summary>
-[Experimental("ExperimentalTeamsTargeted")]
-public static class TargetedMessageInfoEntityExtensions
-{
-    /// <summary>
-    /// Gets the first targeted message info entity from the activity.
-    /// </summary>
-    public static TargetedMessageInfoEntity? GetTargetedMessageInfo(this TeamsActivity activity)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Entities == null)
-        {
-            return null;
-        }
-
-        return activity.Entities.FirstOrDefault(e => e is TargetedMessageInfoEntity) as TargetedMessageInfoEntity;
-    }
-}

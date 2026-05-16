@@ -73,23 +73,3 @@ public class ClientInfoEntity : Entity
         set => base.Properties["timezone"] = value;
     }
 }
-
-/// <summary>
-/// Client info entity extension methods.
-/// </summary>
-public static class ClientInfoEntityExtensions
-{
-    /// <summary>
-    /// Gets the first client information entity from the activity.
-    /// </summary>
-    public static ClientInfoEntity? GetClientInfo(this TeamsActivity activity)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Entities == null)
-        {
-            return null;
-        }
-
-        return activity.Entities.FirstOrDefault(e => e is ClientInfoEntity) as ClientInfoEntity;
-    }
-}

@@ -14,6 +14,174 @@ namespace Microsoft.Teams.Apps.Schema;
 /// </summary>
 public static class MessageActivityExtensions
 {
+
+    /// <summary>
+    /// Sets the activity id.
+    /// </summary>
+    public static MessageActivity WithId(this MessageActivity message, string value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        message.Id = value;
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the channel id.
+    /// </summary>
+    public static MessageActivity WithChannelId(this MessageActivity message, string? value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        message.ChannelId = value;
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the sender account.
+    /// </summary>
+    public static MessageActivity WithFrom(this MessageActivity message, ConversationAccount? value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        message.From = value is TeamsConversationAccount teamsAccount
+            ? teamsAccount
+            : TeamsConversationAccount.FromConversationAccount(value);
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the recipient account on the message.
+    /// </summary>
+    /// <param name="message">The message activity.</param>
+    /// <param name="account">The recipient account.</param>
+    /// <returns>The message activity for chaining.</returns>
+    public static MessageActivity WithRecipient(this MessageActivity message, ConversationAccount account)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        message.Recipient = account is TeamsConversationAccount teamsAccount
+            ? teamsAccount
+            : TeamsConversationAccount.FromConversationAccount(account);
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the recipient account and targeted flag on the message.
+    /// </summary>
+    /// <param name="message">The message activity.</param>
+    /// <param name="account">The recipient account.</param>
+    /// <param name="isTargeted">Whether the recipient is targeted.</param>
+    /// <returns>The message activity for chaining.</returns>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public static MessageActivity WithRecipient(this MessageActivity message, ConversationAccount account, bool isTargeted = false)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        if (account is not null)
+        {
+            account.IsTargeted = isTargeted ? true : null;
+            message.Recipient = account is TeamsConversationAccount teamsAccount
+                ? teamsAccount
+                : TeamsConversationAccount.FromConversationAccount(account);
+        }
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the conversation information.
+    /// </summary>
+    public static MessageActivity WithConversation(this MessageActivity message, Conversation? value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(value);
+
+        message.Conversation = value is TeamsConversation teamsConversation
+            ? teamsConversation
+            : TeamsConversation.FromConversation(value);
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the service url.
+    /// </summary>
+    public static MessageActivity WithServiceUrl(this MessageActivity message, Uri? value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        message.ServiceUrl = value;
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the locale.
+    /// </summary>
+    public static MessageActivity WithLocale(this MessageActivity message, string? value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        message.Locale = value;
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the UTC timestamp value.
+    /// </summary>
+    public static MessageActivity WithTimestamp(this MessageActivity message, string? value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        message.Timestamp = value;
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the local timestamp value.
+    /// </summary>
+    public static MessageActivity WithLocalTimestamp(this MessageActivity message, string? value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        message.LocalTimestamp = value;
+        return message;
+    }
+
+    /// <summary>
+    /// Merges channel data properties into the activity.
+    /// </summary>
+    public static MessageActivity WithData(this MessageActivity message, ChannelData value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(value);
+
+        message.ChannelData ??= new TeamsChannelData();
+        foreach (KeyValuePair<string, object?> kv in value.Properties)
+        {
+            message.ChannelData.Properties[kv.Key] = kv.Value;
+        }
+
+        return message;
+    }
+
+    /// <summary>
+    /// Sets a channel data key/value property.
+    /// </summary>
+    public static MessageActivity WithData(this MessageActivity message, string key, object? value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+
+        message.ChannelData ??= new TeamsChannelData();
+        message.ChannelData.Properties[key] = value;
+        return message;
+    }
+
+    /// <summary>
+    /// Sets the app id inside channel data.
+    /// </summary>
+    public static MessageActivity WithAppId(this MessageActivity message, string value)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentException.ThrowIfNullOrWhiteSpace(value);
+
+        message.ChannelData ??= new TeamsChannelData();
+        message.ChannelData.Properties["app"] = new Dictionary<string, object?> { ["id"] = value };
+        return message;
+    }
+
     /// <summary>
     /// Sets the text content of the message.
     /// </summary>
@@ -29,6 +197,18 @@ public static class MessageActivityExtensions
         return message;
     }
 
+    /// <summary>
+    /// Appends text to the current message text.
+    /// </summary>
+    /// <param name="message">The message activity.</param>
+    /// <param name="text">The text to append.</param>
+    /// <returns>The message activity for chaining.</returns>
+    public static MessageActivity AddText(this MessageActivity message, string text)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        message.Text = $"{message.Text}{text}";
+        return message;
+    }
 
     /// <summary>
     /// Sets the text format for the message.
@@ -40,6 +220,24 @@ public static class MessageActivityExtensions
     {
         ArgumentNullException.ThrowIfNull(message);
         message.TextFormat = textFormat;
+        return message;
+    }
+
+    /// <summary>
+    /// Adds one or more attachments to the message.
+    /// </summary>
+    /// <param name="message">The message activity.</param>
+    /// <param name="attachments">The attachments to add.</param>
+    /// <returns>The message activity for chaining.</returns>
+    public static MessageActivity AddAttachment(this MessageActivity message, params TeamsAttachment[] attachments)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(attachments);
+        message.Attachments ??= [];
+        foreach (TeamsAttachment attachment in attachments)
+        {
+            message.Attachments.Add(attachment);
+        }
         return message;
     }
 
@@ -70,15 +268,48 @@ public static class MessageActivityExtensions
     }
 
     /// <summary>
-    /// Appends text to the current message text.
+    /// Adds one or more entities to the message.
     /// </summary>
-    /// <param name="message">The message activity.</param>
-    /// <param name="text">The text to append.</param>
-    /// <returns>The message activity for chaining.</returns>
-    public static MessageActivity AddText(this MessageActivity message, string text)
+    /// <param name="message">The target message.</param>
+    /// <param name="entities">Entities to add.</param>
+    /// <returns>The message for chaining.</returns>
+    public static MessageActivity AddEntity(this MessageActivity message, params Entity[] entities)
     {
         ArgumentNullException.ThrowIfNull(message);
-        message.Text = $"{message.Text}{text}";
+        ArgumentNullException.ThrowIfNull(entities);
+
+        message.Entities ??= [];
+        foreach (Entity entity in entities)
+        {
+            message.Entities.Add(entity);
+        }
+
+        return message;
+    }
+
+    /// <summary>
+    /// Replaces an existing entity with a new entity.
+    /// </summary>
+    /// <param name="message">The target message.</param>
+    /// <param name="oldEntity">The entity to replace.</param>
+    /// <param name="newEntity">The replacement entity.</param>
+    /// <returns>The message for chaining.</returns>
+    public static MessageActivity UpdateEntity(this MessageActivity message, Entity oldEntity, Entity newEntity)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(oldEntity);
+        ArgumentNullException.ThrowIfNull(newEntity);
+
+        if (message.Entities != null)
+        {
+            message.Entities.Remove(oldEntity);
+        }
+        else
+        {
+            message.Entities = [];
+        }
+
+        message.Entities.Add(newEntity);
         return message;
     }
 
@@ -95,15 +326,7 @@ public static class MessageActivityExtensions
         ArgumentNullException.ThrowIfNull(message);
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
 
-        QuotedReplyEntity entity = new() { QuotedReply = new QuotedReplyData { MessageId = messageId } };
-        message.Entities ??= [];
-        message.Entities.Add(entity);
-
-        message.Text = (message.Text ?? "") + QuotedReplyEntity.QuotedPlaceholder(messageId);
-        if (text != null)
-        {
-            message.Text += $" {text}";
-        }
+        QuotedReplyEntityExtensions.AddToActivity(message, messageId, text);
 
         return message;
     }
@@ -122,28 +345,25 @@ public static class MessageActivityExtensions
 
         message.Entities ??= [];
         message.Entities.Insert(0, new QuotedReplyEntity { QuotedReply = new QuotedReplyData { MessageId = messageId } });
-        var placeholder = QuotedReplyEntity.QuotedPlaceholder(messageId);
+        var placeholder = QuotedReplyEntityExtensions.QuotedPlaceholder(messageId);
         var text = message.Text?.Trim() ?? "";
         message.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
 
         return message;
     }
 
+
     /// <summary>
-    /// Adds one or more attachments to the message.
+    /// Adds targeted message info entity for prompt preview and strips quote placeholders.
     /// </summary>
-    /// <param name="message">The message activity.</param>
-    /// <param name="attachments">The attachments to add.</param>
-    /// <returns>The message activity for chaining.</returns>
-    public static MessageActivity AddAttachment(this MessageActivity message, params TeamsAttachment[] attachments)
+    [Experimental("ExperimentalTeamsTargeted")]
+    public static MessageActivity AddTargetedMessageInfo(this MessageActivity message, string messageId)
     {
         ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(attachments);
-        message.Attachments ??= [];
-        foreach (TeamsAttachment attachment in attachments)
-        {
-            message.Attachments.Add(attachment);
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        TargetedMessageInfoEntityExtensions.AddToActivity(message, messageId);
+
         return message;
     }
 
@@ -160,7 +380,8 @@ public static class MessageActivityExtensions
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(account);
 
-        TeamsActivityExtensions.AddMention(message, account, text, addText);
+        MentionEntityExtensions.AddToActivity(message, account, text, addText);
+
         return message;
     }
 
@@ -174,19 +395,7 @@ public static class MessageActivityExtensions
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        message.ChannelData ??= new TeamsChannelData();
-        if (!message.ChannelData.Properties.TryGetValue("streamId", out object? streamId) || streamId is null)
-        {
-            message.ChannelData.Properties["streamId"] = message.Id;
-        }
-        message.ChannelData.Properties["streamType"] = StreamType.Final;
-
-        message.Entities ??= [];
-        message.Entities.Add(new StreamInfoEntity
-        {
-            StreamId = message.Id,
-            StreamType = StreamType.Final
-        });
+        StreamInfoEntityExtensions.AddToActivity(message, StreamType.Final);
         return message;
     }
 
@@ -202,6 +411,50 @@ public static class MessageActivityExtensions
         ArgumentException.ThrowIfNullOrWhiteSpace(accountId);
 
         return (MentionEntity?)(message.Entities ?? []).FirstOrDefault(e => e is MentionEntity mention && mention.Mentioned?.Id == accountId);
+    }
+
+    /// <summary>
+    /// Adds the AI-generated content label to the root message entity.
+    /// </summary>
+    public static OMessageEntity AddAIGenerated(this MessageActivity message)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        return OMessageEntityExtensions.AddAIGeneratedContent(message);
+    }
+
+    /// <summary>
+    /// Adds a content sensitivity label to the message.
+    /// </summary>
+    public static MessageActivity AddSensitivityLabel(this MessageActivity message, string name, string? description = null, DefinedTerm? pattern = null)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        SensitiveUsageEntityExtensions.AddToActivity(message, name, description, pattern);
+        return message;
+    }
+
+    /// <summary>
+    /// Enables/disables feedback loop on the message.
+    /// </summary>
+    public static MessageActivity AddFeedback(this MessageActivity message, bool value = true)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+
+        message.ChannelData ??= new TeamsChannelData();
+        message.ChannelData.FeedbackLoopEnabled = value;
+        return message;
+    }
+
+    /// <summary>
+    /// Adds a citation claim to the message.
+    /// </summary>
+    public static CitationEntity AddCitation(this MessageActivity message, int position, CitationAppearance appearance)
+    {
+        ArgumentNullException.ThrowIfNull(message);
+        ArgumentNullException.ThrowIfNull(appearance);
+
+        message.Entities ??= [];
+        return CitationEntityExtensions.AddToActivity(message, position, appearance);
     }
 
 }

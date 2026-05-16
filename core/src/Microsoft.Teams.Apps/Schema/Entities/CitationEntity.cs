@@ -52,26 +52,6 @@ public class CitationEntity : OMessageEntity
 }
 
 /// <summary>
-/// Citation entity extension methods.
-/// </summary>
-public static class CitationEntityExtensions
-{
-    /// <summary>
-    /// Gets the first citation entity from the activity.
-    /// </summary>
-    public static CitationEntity? GetCitation(this TeamsActivity activity)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Entities == null)
-        {
-            return null;
-        }
-
-        return activity.Entities.FirstOrDefault(e => e is CitationEntity) as CitationEntity;
-    }
-}
-
-/// <summary>
 /// Represents a citation claim with a position and appearance document.
 /// </summary>
 public class CitationClaim

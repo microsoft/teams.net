@@ -57,18 +57,11 @@ public class TeamsConversation : Conversation
         {
             return result;
         }
-        if (conversation.Properties.TryGetValue("tenantId", out object? tenantObj))
-        {
-            result.TenantId = tenantObj?.ToString();
-        }
-        if (conversation.Properties.TryGetValue("conversationType", out object? convTypeObj))
-        {
-            result.ConversationType = convTypeObj?.ToString();
-        }
-        if (conversation.Properties.TryGetValue("isGroup", out object? isGroupObj))
-        {
-            result.IsGroup = Convert.ToBoolean(isGroupObj?.ToString());
-        }
+
+        result.TenantId = conversation.Properties.Extract<string>("tenantId");
+        result.ConversationType = conversation.Properties.Extract<string>("conversationType");
+        result.IsGroup = conversation.Properties.Extract<bool?>("isGroup");
+
         return result;
     }
 

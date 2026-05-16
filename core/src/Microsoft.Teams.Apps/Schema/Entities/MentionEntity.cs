@@ -69,23 +69,3 @@ public class MentionEntity : Entity
         return res;
     }
 }
-
-/// <summary>
-/// Mention entity extension methods.
-/// </summary>
-public static class MentionEntityExtensions
-{
-    /// <summary>
-    /// Gets all mention entities from the activity.
-    /// </summary>
-    public static IEnumerable<MentionEntity> GetMentions(this TeamsActivity activity)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Entities == null)
-        {
-            return [];
-        }
-
-        return activity.Entities.Where(e => e is MentionEntity).Cast<MentionEntity>();
-    }
-}

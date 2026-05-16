@@ -172,9 +172,10 @@ public sealed class TeamsStreamingWriter
             if (attachments?.Count > 0)
                 builder.WithAttachments(attachments);
 
-            TeamsActivity activity = builder.Build();
-            if (feedbackEnabled) activity.AddFeedback();
-            return activity;
+            if (feedbackEnabled)
+                builder.AddFeedback();
+
+            return builder.Build();
         }
         else
         {

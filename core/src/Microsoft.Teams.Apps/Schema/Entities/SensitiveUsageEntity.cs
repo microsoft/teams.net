@@ -48,26 +48,6 @@ public class SensitiveUsageEntity : OMessageEntity
 }
 
 /// <summary>
-/// Sensitive usage entity extension methods.
-/// </summary>
-public static class SensitiveUsageEntityExtensions
-{
-    /// <summary>
-    /// Gets all sensitivity label entities from the activity.
-    /// </summary>
-    public static IEnumerable<SensitiveUsageEntity> GetSensitivityLabels(this TeamsActivity activity)
-    {
-        ArgumentNullException.ThrowIfNull(activity);
-        if (activity.Entities == null)
-        {
-            return [];
-        }
-
-        return activity.Entities.OfType<SensitiveUsageEntity>();
-    }
-}
-
-/// <summary>
 /// Defined term.
 /// </summary>
 public class DefinedTerm

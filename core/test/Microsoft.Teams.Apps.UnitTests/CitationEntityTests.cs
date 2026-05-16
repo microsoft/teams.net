@@ -12,7 +12,7 @@ public class CitationEntityTests
     [Fact]
     public void AddCitation_CreatesEntityWithClaim()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
 
         var citation = activity.AddCitation(1, new CitationAppearance
         {
@@ -33,7 +33,7 @@ public class CitationEntityTests
     [Fact]
     public void AddCitation_MultipleCitations_AccumulateOnSameEntity()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
 
         activity.AddCitation(1, new CitationAppearance
         {
@@ -60,7 +60,7 @@ public class CitationEntityTests
     [Fact]
     public void AddAIGenerated_SetsAdditionalType()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
 
         var messageEntity = activity.AddAIGenerated();
 
@@ -74,7 +74,7 @@ public class CitationEntityTests
     [Fact]
     public void AddAIGenerated_CalledTwice_DoesNotDuplicate()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
 
         activity.AddAIGenerated();
         activity.AddAIGenerated();
@@ -89,7 +89,7 @@ public class CitationEntityTests
     [Fact]
     public void AddAIGenerated_ThenAddCitation_PreservesAILabel()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
 
         activity.AddAIGenerated();
         var citation = activity.AddCitation(1, new CitationAppearance
@@ -110,7 +110,7 @@ public class CitationEntityTests
     [Fact]
     public void AddFeedback_SetsFeedbackLoopEnabled()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
 
         activity.AddFeedback();
 
@@ -121,7 +121,7 @@ public class CitationEntityTests
     [Fact]
     public void AddCitation_WithAllAppearanceFields_SetsCorrectly()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
 
         var citation = activity.AddCitation(1, new CitationAppearance
         {
@@ -153,7 +153,7 @@ public class CitationEntityTests
     [Fact]
     public void CitationEntity_RoundTrip_Serialization()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
 
         activity.AddAIGenerated();
         activity.AddCitation(1, new CitationAppearance
@@ -182,7 +182,7 @@ public class CitationEntityTests
     [Fact]
     public void CitationEntity_Rebase_SurvivesRoundTrip()
     {
-        TeamsActivity activity = TeamsActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
 
         activity.AddAIGenerated();
         activity.AddCitation(1, new CitationAppearance
