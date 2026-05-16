@@ -32,6 +32,11 @@ export OTEL_EXPORTER_OTLP_ENDPOINT=http://localhost:4317
 export OTEL_SERVICE_NAME=teams-observability-bot
 export OTEL_RESOURCE_ATTRIBUTES="deployment.environment=local,service.version=dev"
 
+# Required for the AI chat client (Azure OpenAI)
+export AZURE_OPENAI_ENDPOINT=https://your-resource.openai.azure.com
+export AZURE_OPENAI_KEY=your-key
+export AZURE_OPENAI_DEPLOYMENT=your-deployment-name
+
 dotnet run --project core/samples/ObservabilityBot
 ```
 
@@ -57,11 +62,11 @@ Per turn, the trace has the shape:
 
 ```
 HTTP server span                       (auto, OTel ASP.NET Core)
-└─ turn                                (Microsoft.Teams.Apps)
-   ├─ middleware [n times]             (Microsoft.Teams.Apps)
+└─ turn                                (Microsoft.Teams.Core)
+   ├─ middleware [n times]             (Microsoft.Teams.Core)
    ├─ handler                          (Microsoft.Teams.Apps)
-   └─ conversation_client              (Microsoft.Teams.Apps)
-      ├─ auth.outbound                 (Microsoft.Teams.Apps)
+   └─ conversation_client              (Microsoft.Teams.Core)
+      ├─ auth.outbound                 (Microsoft.Teams.Core)
       │  └─ HTTP client span           (auto — token endpoint)
       └─ HTTP client span              (auto — Bot Service API)
 ```

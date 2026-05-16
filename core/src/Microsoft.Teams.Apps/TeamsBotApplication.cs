@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
@@ -152,7 +153,7 @@ public class TeamsBotApplication : BotApplication
                         logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
                         if (invokeResponse.Body is not null)
                         {
-                            invokeScope.RecordOutputMessages(invokeResponse.Body.ToString()!);
+                            invokeScope.RecordOutputMessages(JsonSerializer.Serialize(invokeResponse.Body));
                             await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
                         }
                     }

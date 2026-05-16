@@ -18,7 +18,7 @@ namespace Microsoft.Teams.Core.Diagnostics;
 /// (<c>microsoft.tenant.id</c>, <c>gen_ai.conversation.id</c>, <c>microsoft.channel.name</c>, etc.)
 /// from a <see cref="CoreActivity"/> without depending on the Apps-layer
 /// <c>TeamsConversationAccount</c>. Use the Apps-layer builder
-/// (<c>Microsoft.Teams.Apps.Diagnostics.CoreBaggageBuilder</c>) when you have a
+/// (<c>Microsoft.Teams.Apps.Diagnostics.TeamsBaggageBuilder</c>) when you have a
 /// <c>Context&lt;TeamsActivity&gt;</c>; it adds the Apps-only keys (<c>user.id</c>, <c>user.email</c>,
 /// <c>microsoft.agent.user.email</c>, <c>gen_ai.agent.description</c>).
 /// </para>

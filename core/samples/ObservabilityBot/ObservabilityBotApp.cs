@@ -155,9 +155,9 @@ public class ObservabilityBotApp : TeamsBotApplication
 
         var responseText = chatResponse.Text;
 
-        for (int i = 1; i < citations.Count; i++)
+        for (int i = 0; i < citations.Count; i++)
         {
-            responseText += $"[{i}] ";
+            responseText += $"[{i + 1}] ";
         }
 
         // === OutputScope: record the agent's reply ===
@@ -175,7 +175,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         for (int i = 0; i < citations.Count; i++)
         {
             var citation = citations[i];
-            var abstract_ = citation.Content.Length > 400 ? citation.Content[..200] + "..." : citation.Content;
+            var abstract_ = citation.Content.Length > 160 ? citation.Content[..157] + "..." : citation.Content;
             responseMsg.AddCitation(i + 1, new CitationAppearance() { Name = citation.Title, Url = new Uri(citation.Url), Abstract = abstract_, Icon = CitationIcon.Text });
         }
 

@@ -13,8 +13,8 @@ namespace Microsoft.Teams.Apps.Diagnostics;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This class is independent from <c>Microsoft.Teams.Core.Diagnostics.TeamsBaggageBuilder</c> — same name
-/// in a different namespace, no inheritance. Apps's builder exposes the **superset** of the cert-relevant
+/// This class is independent from <c>Microsoft.Teams.Core.Diagnostics.CoreBaggageBuilder</c> —
+/// no inheritance. Apps's builder exposes the **superset** of the cert-relevant
 /// setters: everything Core's builder has plus the keys backed by <see cref="TeamsConversationAccount"/>
 /// (<c>user.id</c>, <c>user.email</c>, <c>microsoft.agent.user.email</c>, <c>gen_ai.agent.description</c>).
 /// </para>
