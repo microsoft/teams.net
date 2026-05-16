@@ -146,7 +146,8 @@ public class TargetedMessageInfoEntityTests
             .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
 
-        Assert.Equal("my response", activity.Text);
+        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        Assert.Equal("my response", text?.ToString());
         Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
     }
 
@@ -164,7 +165,8 @@ public class TargetedMessageInfoEntityTests
 
         // Passes a different messageId than either existing quote — placeholders for msg-1 and msg-2
         // must still be stripped to keep the activity text consistent with the entity removal.
-        Assert.DoesNotContain("<quoted", activity.Text);
+        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        Assert.DoesNotContain("<quoted", text?.ToString());
         Assert.DoesNotContain(activity.Entities!, e => e.Type == "quotedReply");
         Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
     }
@@ -192,7 +194,8 @@ public class TargetedMessageInfoEntityTests
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
-        Assert.Equal("plain response", activity.Text);
+        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        Assert.Equal("plain response", text?.ToString());
     }
 
     [Fact]
