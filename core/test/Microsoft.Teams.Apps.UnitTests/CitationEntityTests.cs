@@ -12,17 +12,20 @@ public class CitationEntityTests
     [Fact]
     public void AddCitation_CreatesEntityWithClaim()
     {
-        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
+    TeamsActivity activity = TeamsActivity.CreateBuilder()
+      .AddCitation(1, new CitationAppearance
+      {
+        Name = "Test Document",
+        Abstract = "Test abstract content"
+      })
+      .Build();
 
-        var citation = activity.AddCitation(1, new CitationAppearance
-        {
-            Name = "Test Document",
-            Abstract = "Test abstract content"
-        });
+    CitationEntity? citation = activity.GetCitation();
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
         Assert.IsType<CitationEntity>(activity.Entities[0]);
+      Assert.NotNull(citation);
         Assert.NotNull(citation.Citation);
         Assert.Single(citation.Citation);
         Assert.Equal(1, citation.Citation[0].Position);
@@ -33,22 +36,24 @@ public class CitationEntityTests
     [Fact]
     public void AddCitation_MultipleCitations_AccumulateOnSameEntity()
     {
-        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
-
-        activity.AddCitation(1, new CitationAppearance
+      TeamsActivity activity = TeamsActivity.CreateBuilder()
+        .AddCitation(1, new CitationAppearance
         {
-            Name = "Document One",
-            Abstract = "First abstract"
-        });
-
-        var citation = activity.AddCitation(2, new CitationAppearance
+          Name = "Document One",
+          Abstract = "First abstract"
+        })
+        .AddCitation(2, new CitationAppearance
         {
-            Name = "Document Two",
-            Abstract = "Second abstract"
-        });
+          Name = "Document Two",
+          Abstract = "Second abstract"
+        })
+        .Build();
+
+      CitationEntity? citation = activity.GetCitation();
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
+        Assert.NotNull(citation);
         Assert.NotNull(citation.Citation);
         Assert.Equal(2, citation.Citation.Count);
         Assert.Equal(1, citation.Citation[0].Position);
@@ -60,13 +65,16 @@ public class CitationEntityTests
     [Fact]
     public void AddAIGenerated_SetsAdditionalType()
     {
-        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .AddAIGenerated()
+            .Build();
 
-        var messageEntity = activity.AddAIGenerated();
+        OMessageEntity? messageEntity = activity.GetMessageEntity();
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
         Assert.IsType<OMessageEntity>(activity.Entities[0]);
+        Assert.NotNull(messageEntity);
         Assert.NotNull(messageEntity.AdditionalType);
         Assert.Contains("AIGeneratedContent", messageEntity.AdditionalType);
     }
@@ -74,10 +82,10 @@ public class CitationEntityTests
     [Fact]
     public void AddAIGenerated_CalledTwice_DoesNotDuplicate()
     {
-        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
-
-        activity.AddAIGenerated();
-        activity.AddAIGenerated();
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .AddAIGenerated()
+            .AddAIGenerated()
+            .Build();
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
@@ -89,18 +97,21 @@ public class CitationEntityTests
     [Fact]
     public void AddAIGenerated_ThenAddCitation_PreservesAILabel()
     {
-        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
-
-        activity.AddAIGenerated();
-        var citation = activity.AddCitation(1, new CitationAppearance
+      TeamsActivity activity = TeamsActivity.CreateBuilder()
+        .AddAIGenerated()
+        .AddCitation(1, new CitationAppearance
         {
-            Name = "Test Doc",
-            Abstract = "Test abstract"
-        });
+          Name = "Test Doc",
+          Abstract = "Test abstract"
+        })
+        .Build();
+
+      CitationEntity? citation = activity.GetCitation();
 
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
         Assert.IsType<CitationEntity>(activity.Entities[0]);
+        Assert.NotNull(citation);
         Assert.NotNull(citation.AdditionalType);
         Assert.Contains("AIGeneratedContent", citation.AdditionalType);
         Assert.NotNull(citation.Citation);
@@ -110,9 +121,9 @@ public class CitationEntityTests
     [Fact]
     public void AddFeedback_SetsFeedbackLoopEnabled()
     {
-        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
-
-        activity.AddFeedback();
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .AddFeedback()
+            .Build();
 
         Assert.NotNull(activity.ChannelData);
         Assert.True(activity.ChannelData.FeedbackLoopEnabled);
@@ -121,33 +132,36 @@ public class CitationEntityTests
     [Fact]
     public void AddFeedback_WithMode_SetsFeedbackLoopAndClearsFeedbackLoopEnabled()
     {
-      MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .AddFeedback(FeedbackType.Custom)
+            .Build();
 
-      activity.AddFeedback(FeedbackType.Custom);
-
-      Assert.NotNull(activity.ChannelData);
-      Assert.Null(activity.ChannelData.FeedbackLoopEnabled);
-      Assert.NotNull(activity.ChannelData.FeedbackLoop);
-      Assert.Equal(FeedbackType.Custom, activity.ChannelData.FeedbackLoop.Type);
+        Assert.NotNull(activity.ChannelData);
+        Assert.Null(activity.ChannelData.FeedbackLoopEnabled);
+        Assert.NotNull(activity.ChannelData.FeedbackLoop);
+        Assert.Equal(FeedbackType.Custom, activity.ChannelData.FeedbackLoop.Type);
     }
 
     [Fact]
     public void AddCitation_WithAllAppearanceFields_SetsCorrectly()
     {
-        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
-
-        var citation = activity.AddCitation(1, new CitationAppearance
+      TeamsActivity activity = TeamsActivity.CreateBuilder()
+        .AddCitation(1, new CitationAppearance
         {
-            Name = "Full Document",
-            Abstract = "Full abstract",
-            Text = "{\"type\":\"AdaptiveCard\"}",
-            Url = new Uri("https://example.com/doc"),
-            EncodingFormat = EncodingFormats.AdaptiveCard,
-            Icon = CitationIcon.MicrosoftWord,
-            Keywords = ["keyword1", "keyword2"],
-            UsageInfo = new SensitiveUsageEntity { Name = "Confidential" }
-        });
+          Name = "Full Document",
+          Abstract = "Full abstract",
+          Text = "{\"type\":\"AdaptiveCard\"}",
+          Url = new Uri("https://example.com/doc"),
+          EncodingFormat = EncodingFormats.AdaptiveCard,
+          Icon = CitationIcon.MicrosoftWord,
+          Keywords = ["keyword1", "keyword2"],
+          UsageInfo = new SensitiveUsageEntity { Name = "Confidential" }
+        })
+        .Build();
 
+      CitationEntity? citation = activity.GetCitation();
+
+        Assert.NotNull(citation);
         Assert.NotNull(citation.Citation);
         var appearance = citation.Citation[0].Appearance;
         Assert.Equal("Full Document", appearance.Name);
@@ -166,18 +180,18 @@ public class CitationEntityTests
     [Fact]
     public void CitationEntity_RoundTrip_Serialization()
     {
-        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
-
-        activity.AddAIGenerated();
-        activity.AddCitation(1, new CitationAppearance
+      TeamsActivity activity = TeamsActivity.CreateBuilder()
+        .AddAIGenerated()
+        .AddCitation(1, new CitationAppearance
         {
-            Name = "Test Document",
-            Abstract = "Test abstract content",
-            Url = new Uri("https://example.com"),
-            Icon = CitationIcon.Pdf,
-            Keywords = ["test", "citation"]
-        });
-        activity.AddFeedback();
+          Name = "Test Document",
+          Abstract = "Test abstract content",
+          Url = new Uri("https://example.com"),
+          Icon = CitationIcon.Pdf,
+          Keywords = ["test", "citation"]
+        })
+        .AddFeedback()
+        .Build();
 
         string json = activity.ToJson();
 
@@ -195,15 +209,15 @@ public class CitationEntityTests
     [Fact]
     public void CitationEntity_Rebase_SurvivesRoundTrip()
     {
-        MessageActivity activity = MessageActivity.FromActivity(new CoreActivity(ActivityType.Message));
-
-        activity.AddAIGenerated();
-        activity.AddCitation(1, new CitationAppearance
+      TeamsActivity activity = TeamsActivity.CreateBuilder()
+        .AddAIGenerated()
+        .AddCitation(1, new CitationAppearance
         {
-            Name = "Rebase Test Doc",
-            Abstract = "Rebase test abstract",
-            Icon = CitationIcon.MicrosoftExcel
-        });
+          Name = "Rebase Test Doc",
+          Abstract = "Rebase test abstract",
+          Icon = CitationIcon.MicrosoftExcel
+        })
+        .Build();
 
         // Verify entities are serialized correctly via the TeamsActivity JSON output
         // CoreActivity no longer has Entities; they are in Properties dict and extracted by TeamsActivity
