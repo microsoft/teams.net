@@ -8,7 +8,7 @@ using OpenTelemetry;
 
 namespace Microsoft.Teams.Core.UnitTests.Diagnostics;
 
-public class BaggageBuilderTests
+public class CoreBaggageBuilderTests
 {
     [Fact]
     public void FromCoreActivity_PopulatesExpectedKeysFromTypedFields()
@@ -119,7 +119,7 @@ public class BaggageBuilderTests
         Baggage.Current = initial;
         try
         {
-            using (new BaggageBuilder().TenantId("tenant-x").Build())
+            using (new CoreBaggageBuilder().TenantId("tenant-x").Build())
             {
                 Assert.Equal("tenant-x", Baggage.GetBaggage("microsoft.tenant.id"));
                 Assert.Equal("yes", Baggage.GetBaggage("preexisting"));
@@ -159,13 +159,13 @@ public class BaggageBuilderTests
         Assert.Equal("aad-123", baggage["user.id"]);
     }
 
-    private static Dictionary<string, string?> ApplyAndCapture(Action<BaggageBuilder> configure)
+    private static Dictionary<string, string?> ApplyAndCapture(Action<CoreBaggageBuilder> configure)
     {
         Baggage previous = Baggage.Current;
         Baggage.Current = default;
         try
         {
-            BaggageBuilder builder = new();
+            CoreBaggageBuilder builder = new();
             configure(builder);
             using (builder.Build())
             {

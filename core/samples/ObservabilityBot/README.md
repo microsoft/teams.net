@@ -7,8 +7,12 @@ Minimal Teams bot wired to the [`Microsoft.OpenTelemetry`](https://github.com/mi
 ```csharp
 builder.Services.AddOpenTelemetry()
     .UseMicrosoftOpenTelemetry(o => o.Exporters = ExportTarget.Console | ExportTarget.Otlp)
-    .WithTracing(t => t.AddSource(TeamsBotApplicationTelemetry.ActivitySourceName))
-    .WithMetrics(m => m.AddMeter(TeamsBotApplicationTelemetry.MeterName));
+    .WithTracing(t => t
+        .AddSource(CoreTelemetryNames.ActivitySourceName)
+        .AddSource(TeamsBotApplicationTelemetry.ActivitySourceName))
+    .WithMetrics(m => m
+        .AddMeter(CoreTelemetryNames.MeterName)
+        .AddMeter(TeamsBotApplicationTelemetry.MeterName));
 
 builder.Logging.AddOpenTelemetry(o => o.IncludeFormattedMessage = true);
 ```

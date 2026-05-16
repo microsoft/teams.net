@@ -18,7 +18,7 @@ namespace Microsoft.Teams.Core.Diagnostics;
 /// (<c>microsoft.tenant.id</c>, <c>gen_ai.conversation.id</c>, <c>microsoft.channel.name</c>, etc.)
 /// from a <see cref="CoreActivity"/> without depending on the Apps-layer
 /// <c>TeamsConversationAccount</c>. Use the Apps-layer builder
-/// (<c>Microsoft.Teams.Apps.Diagnostics.BaggageBuilder</c>) when you have a
+/// (<c>Microsoft.Teams.Apps.Diagnostics.CoreBaggageBuilder</c>) when you have a
 /// <c>Context&lt;TeamsActivity&gt;</c>; it adds the Apps-only keys (<c>user.id</c>, <c>user.email</c>,
 /// <c>microsoft.agent.user.email</c>, <c>gen_ai.agent.description</c>).
 /// </para>
@@ -31,47 +31,47 @@ namespace Microsoft.Teams.Core.Diagnostics;
 /// for the full cert-attribute mapping.
 /// </para>
 /// </remarks>
-public sealed class BaggageBuilder
+public sealed class CoreBaggageBuilder
 {
     private readonly Dictionary<string, string?> _pairs = new(StringComparer.Ordinal);
 
     /// <summary>Sets the Microsoft Entra tenant id (<c>microsoft.tenant.id</c>). Required for cert.</summary>
-    public BaggageBuilder TenantId(string? v) => Set(AgentObservabilityKeys.TenantId, v);
+    public CoreBaggageBuilder TenantId(string? v) => Set(AgentObservabilityKeys.TenantId, v);
 
     /// <summary>Sets the conversation id (<c>gen_ai.conversation.id</c>). Required for cert.</summary>
-    public BaggageBuilder ConversationId(string? v) => Set(AgentObservabilityKeys.ConversationId, v);
+    public CoreBaggageBuilder ConversationId(string? v) => Set(AgentObservabilityKeys.ConversationId, v);
 
     /// <summary>Sets the conversation item link (<c>microsoft.conversation.item.link</c>). Optional.</summary>
-    public BaggageBuilder ConversationItemLink(string? v) => Set(AgentObservabilityKeys.ConversationItemLink, v);
+    public CoreBaggageBuilder ConversationItemLink(string? v) => Set(AgentObservabilityKeys.ConversationItemLink, v);
 
     /// <summary>Sets the channel name (<c>microsoft.channel.name</c>). Required for cert.</summary>
-    public BaggageBuilder ChannelName(string? v) => Set(AgentObservabilityKeys.ChannelName, v);
+    public CoreBaggageBuilder ChannelName(string? v) => Set(AgentObservabilityKeys.ChannelName, v);
 
     /// <summary>Sets the channel link (<c>microsoft.channel.link</c>). Optional. Not auto-populated by
     /// <see cref="FromCoreActivity"/> — Teams's flat <c>ChannelId</c> string has no SubChannel concept.</summary>
-    public BaggageBuilder ChannelLink(string? v) => Set(AgentObservabilityKeys.ChannelLink, v);
+    public CoreBaggageBuilder ChannelLink(string? v) => Set(AgentObservabilityKeys.ChannelLink, v);
 
     /// <summary>Sets the agent id (<c>gen_ai.agent.id</c>). Required for cert.</summary>
-    public BaggageBuilder AgentId(string? v) => Set(AgentObservabilityKeys.AgentId, v);
+    public CoreBaggageBuilder AgentId(string? v) => Set(AgentObservabilityKeys.AgentId, v);
 
     /// <summary>Sets the agent display name (<c>gen_ai.agent.name</c>). Required for cert.</summary>
-    public BaggageBuilder AgentName(string? v) => Set(AgentObservabilityKeys.AgentName, v);
+    public CoreBaggageBuilder AgentName(string? v) => Set(AgentObservabilityKeys.AgentName, v);
 
     /// <summary>Sets the agentic user id (<c>microsoft.agent.user.id</c>). Required for cert.</summary>
-    public BaggageBuilder AgenticUserId(string? v) => Set(AgentObservabilityKeys.AgenticUserId, v);
+    public CoreBaggageBuilder AgenticUserId(string? v) => Set(AgentObservabilityKeys.AgenticUserId, v);
 
     /// <summary>Sets the agent blueprint id (<c>microsoft.a365.agent.blueprint.id</c>). Required for cert.</summary>
-    public BaggageBuilder AgentBlueprintId(string? v) => Set(AgentObservabilityKeys.AgentBlueprintId, v);
+    public CoreBaggageBuilder AgentBlueprintId(string? v) => Set(AgentObservabilityKeys.AgentBlueprintId, v);
 
     /// <summary>Sets the human user name (<c>user.name</c>). Optional.</summary>
-    public BaggageBuilder UserName(string? v) => Set(AgentObservabilityKeys.UserName, v);
+    public CoreBaggageBuilder UserName(string? v) => Set(AgentObservabilityKeys.UserName, v);
 
     /// <summary>Sets the operation source (<c>service.name</c>). Required for cert on server spans.</summary>
-    public BaggageBuilder OperationSource(string source) => Set(AgentObservabilityKeys.ServiceName, source);
+    public CoreBaggageBuilder OperationSource(string source) => Set(AgentObservabilityKeys.ServiceName, source);
 
     /// <summary>Sets the InvokeAgent server address and (optional) port. Required for InvokeAgentScope cert.
     /// The port is recorded only when different from the HTTPS default (443).</summary>
-    public BaggageBuilder InvokeAgentServer(string? address, int? port = null)
+    public CoreBaggageBuilder InvokeAgentServer(string? address, int? port = null)
     {
         Set(AgentObservabilityKeys.ServerAddress, address);
         if (port.HasValue && port.Value != 443)
@@ -84,7 +84,7 @@ public sealed class BaggageBuilder
     /// <summary>Escape hatch for setting any baggage key not exposed by a typed setter
     /// (e.g. <c>user.id</c> / <c>user.email</c> from a non-Apps auth pipeline,
     /// or <c>client.address</c> derived in HTTP middleware).</summary>
-    public BaggageBuilder Set(string key, string? value)
+    public CoreBaggageBuilder Set(string key, string? value)
     {
         if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
         {
@@ -98,7 +98,7 @@ public sealed class BaggageBuilder
     /// <c>Properties["channelData"]</c> JSON for <c>tenant.id</c> when <c>Recipient.TenantId</c> is null
     /// (classic Bot Framework Teams traffic carries tenant id in channelData, not on the recipient).
     /// </summary>
-    public BaggageBuilder FromCoreActivity(CoreActivity activity)
+    public CoreBaggageBuilder FromCoreActivity(CoreActivity activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
 

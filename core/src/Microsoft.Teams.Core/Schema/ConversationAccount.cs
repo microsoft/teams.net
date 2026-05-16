@@ -57,7 +57,7 @@ public class ConversationAccount()
     /// telemetry enrichment) can populate <c>microsoft.tenant.id</c> without requiring the Apps-layer
     /// <c>TeamsConversationAccount</c>. Classic Bot Framework activities still carry tenant id in
     /// <c>channelData.tenant.id</c>; consumers that need the channel-data fallback should use
-    /// <c>BaggageBuilder.FromCoreActivity</c> / <c>FromTeamsContext</c>, which transparently fall
+    /// <c>CoreBaggageBuilder.FromCoreActivity</c> / <c>TeamsBaggageBuilder.FromTeamsContext</c>, which transparently fall
     /// back when this property is null.
     /// </remarks>
     [JsonPropertyName("tenantId")]

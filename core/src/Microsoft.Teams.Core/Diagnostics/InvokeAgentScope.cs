@@ -24,10 +24,10 @@ namespace Microsoft.Teams.Core.Diagnostics;
 /// Fields reachable only from the Apps-layer <c>TeamsConversationAccount</c>
 /// (<c>user.id</c>, <c>user.email</c>, <c>microsoft.agent.user.email</c>,
 /// <c>gen_ai.agent.description</c>) are not set here. They reach the exporter via
-/// baggage set by the Apps-layer <c>BaggageBuilder</c>.
+/// baggage set by the Apps-layer <c>TeamsBaggageBuilder</c>.
 /// </para>
 /// </remarks>
-internal sealed class InvokeAgentScope : IDisposable
+public sealed class InvokeAgentScope : IDisposable
 {
     private const string SourceName = "Agent365Sdk";
     private const string OperationName = "invoke_agent";
@@ -141,6 +141,7 @@ internal sealed class InvokeAgentScope : IDisposable
     /// </summary>
     public void RecordOutputMessages(params string[] messages)
     {
+        ArgumentNullException.ThrowIfNull(messages);
         if (_activity is null || messages.Length == 0)
         {
             return;
@@ -154,6 +155,7 @@ internal sealed class InvokeAgentScope : IDisposable
     /// </summary>
     public void RecordError(Exception exception)
     {
+        ArgumentNullException.ThrowIfNull(exception);
         if (_activity is null)
         {
             return;
@@ -164,6 +166,7 @@ internal sealed class InvokeAgentScope : IDisposable
         _activity.SetTag(ErrorTypeKey, _errorType);
     }
 
+    /// <inheritdoc/>
     public void Dispose()
     {
         if (Interlocked.Exchange(ref _disposed, 1) != 0)

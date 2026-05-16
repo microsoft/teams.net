@@ -71,7 +71,7 @@ internal sealed class TurnMiddleware : ITurnMiddleware, IEnumerable<ITurnMiddlew
             }
             if (callback is not null)
             {
-                await callback(activity, cancellationToken).ConfigureAwait(false);
+                await (callback(activity, cancellationToken) ?? Task.CompletedTask).ConfigureAwait(false);
             }
             return;
         }

@@ -96,7 +96,7 @@ internal sealed class BotAuthenticationHandler(
             // Conditionally apply ManagedIdentity configuration if registered
             if (_managedIdentityOptions is not null)
             {
-                ManagedIdentityOptions miOptions = _managedIdentityOptions.CurrentValue;
+                ManagedIdentityOptions miOptions = _managedIdentityOptions.Get(optionsName);
 
                 if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
                 {

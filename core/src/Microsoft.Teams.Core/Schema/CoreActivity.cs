@@ -183,6 +183,7 @@ public class CoreActivity
         AgenticAppId = source.AgenticAppId,
         AgenticUserId = source.AgenticUserId,
         AgenticAppBlueprintId = source.AgenticAppBlueprintId,
+        TenantId = source.TenantId,
         Properties = new ExtendedPropertiesDictionary(source.Properties)
     };
 #pragma warning restore ExperimentalTeamsTargeted

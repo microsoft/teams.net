@@ -10,6 +10,7 @@ using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 
@@ -126,27 +127,41 @@ public class TeamsBotApplication : BotApplication
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
             // Agent365: set baggage (user.id, user.email, agent details, etc.) for all
-            // child spans. The invoke_agent scope itself is created in Core's ProcessAsync.
-            using var baggageScope = new BaggageBuilder()
+            // child spans, then open the invoke_agent scope inside the baggage scope so
+            // the span inherits Apps-only required baggage.
+            using var baggageScope = new TeamsBaggageBuilder()
                 .FromTeamsContext(defaultContext)
                 .Build();
 
-            if (teamsActivity.Type != TeamsActivityType.Invoke)
+            using var invokeScope = InvokeAgentScope.Start(activity);
+
+            try
             {
-                await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-            }
-            else // invokes
-            {
-                InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                HttpContext? httpContext = httpContextAccessor.HttpContext;
-                if (httpContext is not null && invokeResponse is not null)
+                if (teamsActivity.Type != TeamsActivityType.Invoke)
                 {
-                    httpContext.Response.StatusCode = invokeResponse.Status;
-                    logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
-                    logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
-                    if (invokeResponse.Body is not null)
-                        await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+                    await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
                 }
+                else // invokes
+                {
+                    InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+                    HttpContext? httpContext = httpContextAccessor.HttpContext;
+                    if (httpContext is not null && invokeResponse is not null)
+                    {
+                        httpContext.Response.StatusCode = invokeResponse.Status;
+                        logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
+                        logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
+                        if (invokeResponse.Body is not null)
+                        {
+                            invokeScope.RecordOutputMessages(invokeResponse.Body.ToString()!);
+                            await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                invokeScope.RecordError(ex);
+                throw;
             }
         };
     }

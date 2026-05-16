@@ -4,7 +4,7 @@
 
 The Teams .NET SDK (`Microsoft.Teams.Core`, `Microsoft.Teams.Apps`, `Microsoft.Teams.Apps.BotBuilder`) emits OpenTelemetry-compatible traces, metrics, and logs so that consuming bots can wire observability through the [Microsoft OpenTelemetry distro](https://github.com/microsoft/opentelemetry-distro-dotnet) and ship telemetry to Azure Monitor, an OTLP collector (Aspire Dashboard, Grafana LGTM, Jaeger), or the console.
 
-The SDK uses the BCL `System.Diagnostics.ActivitySource` and `System.Diagnostics.Metrics.Meter` for the trace and metric APIs. The OpenTelemetry SDK and exporters are an application concern: the bot project references `Microsoft.OpenTelemetry`, subscribes to the SDK's source/meter by name, and configures exporters. `Microsoft.Teams.Core` takes a single new package dependency on `OpenTelemetry.Api` so the `BaggageBuilder` can write to `OpenTelemetry.Baggage.Current` (see "Dependency impact" below).
+The SDK uses the BCL `System.Diagnostics.ActivitySource` and `System.Diagnostics.Metrics.Meter` for the trace and metric APIs. The OpenTelemetry SDK and exporters are an application concern: the bot project references `Microsoft.OpenTelemetry`, subscribes to the SDK's source/meter by name, and configures exporters. `Microsoft.Teams.Core` takes a single new package dependency on `OpenTelemetry.Api` so the `CoreBaggageBuilder` can write to `OpenTelemetry.Baggage.Current` (see "Dependency impact" below).
 
 ```
 Consuming bot                            Teams SDK (this design)
@@ -168,7 +168,7 @@ When the consuming bot also exports to **Agent365** (`ExportTarget.Agent365` in 
 
 **These helpers take `Microsoft.Agents.Builder.ITurnContext`. The Teams SDK does not produce an `ITurnContext`** — the Apps layer hands handlers a `Microsoft.Teams.Apps.Context<TeamsActivity>`, and the Core layer has no per-turn context type at all. The two activity object models are also subtly different (see field map below). A consumer cannot pass a Teams context into `FromTurnContext(...)` directly.
 
-We deliberately do **not** wrap `ITurnContext`: synthesizing a fake Activity shape (with `ChannelId.Channel` / `ChannelId.SubChannel` sub-properties, `StackState` dictionary, `ServiceUrl` as string) drags in `Microsoft.Agents.Builder` and is brittle to upstream changes. Instead, each Teams SDK layer ships its own `BaggageBuilder` that reads directly off Teams types. See "Bridging strategy" below.
+We deliberately do **not** wrap `ITurnContext`: synthesizing a fake Activity shape (with `ChannelId.Channel` / `ChannelId.SubChannel` sub-properties, `StackState` dictionary, `ServiceUrl` as string) drags in `Microsoft.Agents.Builder` and is brittle to upstream changes. Instead, each Teams SDK layer ships its own baggage builder (`CoreBaggageBuilder` / `TeamsBaggageBuilder`) that reads directly off Teams types. See "Bridging strategy" below.
 
 ### Agent365 certification — crisp definition
 
@@ -191,37 +191,37 @@ Auto-instrumentation (Semantic Kernel, OpenAI, Azure OpenAI, Agent Framework) em
 
 #### (2) Attribute coverage
 
-Every Required attribute on each scope must be **non-null at scope close**. The bulk of these come from baggage (set once per turn via `BaggageBuilder`); a handful are scope-specific and come from `ScopeDetails` / `Record*` methods.
+Every Required attribute on each scope must be **non-null at scope close**. The bulk of these come from baggage (set once per turn via `CoreBaggageBuilder` / `TeamsBaggageBuilder`); a handful are scope-specific and come from `ScopeDetails` / `Record*` methods.
 
 **Common Required attributes (all scopes):**
 
 | Key | Where it comes from |
 |---|---|
-| `microsoft.tenant.id` | `BaggageBuilder.TenantId(...)` |
-| `gen_ai.agent.id` | `BaggageBuilder.AgentId(...)` |
-| `gen_ai.agent.name` | `BaggageBuilder.AgentName(...)` |
-| `microsoft.a365.agent.blueprint.id` | `BaggageBuilder.AgentBlueprintId(...)` |
-| `microsoft.agent.user.id` | `BaggageBuilder.AgenticUserId(...)` |
-| `microsoft.agent.user.email` | `BaggageBuilder.AgenticUserEmail(...)` |
+| `microsoft.tenant.id` | `CoreBaggageBuilder.TenantId(...)` / `TeamsBaggageBuilder.TenantId(...)` |
+| `gen_ai.agent.id` | `CoreBaggageBuilder.AgentId(...)` / `TeamsBaggageBuilder.AgentId(...)` |
+| `gen_ai.agent.name` | `CoreBaggageBuilder.AgentName(...)` / `TeamsBaggageBuilder.AgentName(...)` |
+| `microsoft.a365.agent.blueprint.id` | `CoreBaggageBuilder.AgentBlueprintId(...)` / `TeamsBaggageBuilder.AgentBlueprintId(...)` |
+| `microsoft.agent.user.id` | `CoreBaggageBuilder.AgenticUserId(...)` / `TeamsBaggageBuilder.AgenticUserId(...)` |
+| `microsoft.agent.user.email` | `TeamsBaggageBuilder.AgenticUserEmail(...)` |
 | `client.address` | Caller-supplied (HTTP request remote IP) |
-| `user.id` | `BaggageBuilder.UserId(...)` |
-| `user.email` | `BaggageBuilder.UserEmail(...)` |
-| `microsoft.channel.name` | `BaggageBuilder.ChannelName(...)` |
-| `gen_ai.conversation.id` | `BaggageBuilder.ConversationId(...)` |
+| `user.id` | `TeamsBaggageBuilder.UserId(...)` |
+| `user.email` | `TeamsBaggageBuilder.UserEmail(...)` |
+| `microsoft.channel.name` | `CoreBaggageBuilder.ChannelName(...)` / `TeamsBaggageBuilder.ChannelName(...)` |
+| `gen_ai.conversation.id` | `CoreBaggageBuilder.ConversationId(...)` / `TeamsBaggageBuilder.ConversationId(...)` |
 | `gen_ai.operation.name` | Set by the scope automatically |
 
 **Scope-specific Required attributes:**
 
 | Scope | Additional Required attributes | Source |
 |---|---|---|
-| `InvokeAgentScope` | `gen_ai.input.messages`, `gen_ai.output.messages`, `server.address`, `server.port` | `scope.RecordInputMessages(...)` / `RecordOutputMessages(...)` + `BaggageBuilder.InvokeAgentServer(host, port)` |
+| `InvokeAgentScope` | `gen_ai.input.messages`, `gen_ai.output.messages`, `server.address`, `server.port` | `scope.RecordInputMessages(...)` / `RecordOutputMessages(...)` + `CoreBaggageBuilder.InvokeAgentServer(host, port)` |
 | `ExecuteToolScope` | `gen_ai.tool.call.arguments`, `gen_ai.tool.call.id`, `gen_ai.tool.call.result`, `gen_ai.tool.name`, `gen_ai.tool.type` | `ToolCallDetails` + `scope.RecordResponse(...)` |
 | `InferenceScope` | `gen_ai.input.messages`, `gen_ai.output.messages`, `gen_ai.provider.name`, `gen_ai.request.model` | `InferenceCallDetails` + `RecordInputMessages` / `RecordOutputMessages` |
 | `OutputScope` | `gen_ai.output.messages` | `Response` constructor |
 
 **Optional (recommended but not gating):** `gen_ai.agent.description`, `gen_ai.agent.version`, `microsoft.a365.agent.platform.id`, `microsoft.session.id`, `microsoft.session.description`, `microsoft.conversation.item.link`, `microsoft.channel.link`, all `microsoft.a365.caller.agent.*`, `microsoft.a365.agent.thought.process` (InferenceScope only).
 
-**Out of scope of this SDK:** the scope objects themselves (`InvokeAgentScope`, `InferenceScope`, `ExecuteToolScope`, `OutputScope`) ship in `Microsoft.OpenTelemetry`. The Teams SDK only ships the `BaggageBuilder` that populates the cert-required baggage; agents create the scopes themselves at the appropriate boundaries.
+**Out of scope of this SDK:** the scope objects themselves (`InvokeAgentScope`, `InferenceScope`, `ExecuteToolScope`, `OutputScope`) ship in `Microsoft.OpenTelemetry`. The Teams SDK only ships the `CoreBaggageBuilder` / `TeamsBaggageBuilder` that populates the cert-required baggage; agents create the scopes themselves at the appropriate boundaries.
 
 ### Required baggage map (Teams activity → Agent365 keys)
 
@@ -241,7 +241,7 @@ Every Required attribute on each scope must be **non-null at scope close**. The 
 | Target agent | `microsoft.agent.user.email` | **Yes** | `((TeamsConversationAccount)Activity.Recipient).Email` (Apps-only) |
 | Target agent | `gen_ai.agent.description` | Optional | `((TeamsConversationAccount)Activity.Recipient).UserRole` (Apps-only) |
 | Target agent | `microsoft.a365.agent.blueprint.id` | **Yes** | `Activity.Recipient.AgenticAppBlueprintId` |
-| Operation source | `service.name` (set via `BaggageBuilder.OperationSource`) | **Yes** (server spans) | Caller-supplied constant (e.g. `"teams-bot"`) |
+| Operation source | `service.name` (set via `CoreBaggageBuilder.OperationSource` / `TeamsBaggageBuilder.OperationSource`) | **Yes** (server spans) | Caller-supplied constant (e.g. `"teams-bot"`) |
 
 The fields the Agent365 helpers also access that have **no Teams equivalent**:
 
@@ -249,14 +249,14 @@ The fields the Agent365 helpers also access that have **no Teams equivalent**:
 
 ### Channel / SubChannel mapping
 
-The upstream `BaggageBuilderExtensions.FromTurnContext` reads `Activity.ChannelId.Channel` and `Activity.ChannelId.SubChannel` — Agent Builder's `ChannelId` is a complex object. Teams's `ChannelId` is a **plain string** (`"msteams"`, `"webchat"`, …) and has no `SubChannel` concept. Resolution:
+The upstream `BaggageBuilderExtensions.FromTurnContext` (in Agent Builder) reads `Activity.ChannelId.Channel` and `Activity.ChannelId.SubChannel` — Agent Builder's `ChannelId` is a complex object. Teams's `ChannelId` is a **plain string** (`"msteams"`, `"webchat"`, …) and has no `SubChannel` concept. Resolution:
 
 | Agent365 baggage key | Teams source | Auto-populated by `FromCoreActivity` / `FromTeamsContext`? |
 |---|---|---|
 | `microsoft.channel.name` (Required) | `Activity.ChannelId` (the whole string) | **Yes** |
 | `microsoft.channel.link` (Optional in all four cert scopes) | No equivalent on the Teams activity | **No** — left unset by the extractor |
 
-`microsoft.channel.link` is **Optional** in every cert-scope manifest, so leaving it unset does not block certification. The `ChannelLink(string?)` fluent setter remains on both `BaggageBuilder` classes for callers who do have a meaningful sub-channel value (for example, derived in HTTP middleware before the bot pipeline runs, or supplied from configuration).
+`microsoft.channel.link` is **Optional** in every cert-scope manifest, so leaving it unset does not block certification. The `ChannelLink(string?)` fluent setter remains on both `CoreBaggageBuilder` and `TeamsBaggageBuilder` for callers who do have a meaningful sub-channel value (for example, derived in HTTP middleware before the bot pipeline runs, or supplied from configuration).
 
 We deliberately avoid synthesizing `ChannelLink` from `TeamsChannelData.Channel.Id` (the Teams team/channel id) or from `ServiceUrl`: the upstream semantics of `microsoft.channel.link` is "the sub-channel within the channel" (`M365CopilotSubChannel`-style routing), which is a different concept from a Teams channel id. Misclassifying these would mis-categorize spans in Agent365 dashboards.
 
@@ -272,11 +272,11 @@ public string? TenantId { get; set; }
 
 `TeamsConversationAccount` (Apps) loses its custom `Properties["tenantId"]` shim — the inherited typed property replaces it. `tenantId` is a cross-channel concept (the M365 tenant the conversation belongs to), not a Teams-specific extension; promoting it is consistent with how Agent Builder's schema treats it.
 
-**Wire-format note:** classic Bot Framework Teams traffic carries tenant id in `channelData.tenant.id`, **not** at `from.tenantId` / `recipient.tenantId`. The schema change does not auto-populate `Recipient.TenantId` from such activities — both `BaggageBuilder.FromCoreActivity` and `BaggageBuilder.FromTeamsContext` therefore fall back to `channelData.tenant.id` when the typed field is null. In Apps, the fallback uses the typed `TeamsActivity.ChannelData?.Tenant?.Id`. In Core, it parses `Activity.Properties["channelData"]` as JSON and extracts `tenant.id`.
+**Wire-format note:** classic Bot Framework Teams traffic carries tenant id in `channelData.tenant.id`, **not** at `from.tenantId` / `recipient.tenantId`. The schema change does not auto-populate `Recipient.TenantId` from such activities — both `CoreBaggageBuilder.FromCoreActivity` and `TeamsBaggageBuilder.FromTeamsContext` therefore fall back to `channelData.tenant.id` when the typed field is null. In Apps, the fallback uses the typed `TeamsActivity.ChannelData?.Tenant?.Id`. In Core, it parses `Activity.Properties["channelData"]` as JSON and extracts `tenant.id`.
 
 ### Bridging strategy
 
-**Two layer-specific baggage builders, one per assembly.** Each layer ships its own independent `BaggageBuilder` class shaped by the activity model that layer owns. Same name in different namespaces, no inheritance, no cross-references — each is self-contained. This honors the layering rule: neither builder downcasts to types it doesn't own.
+**Two layer-specific baggage builders, one per assembly.** Each layer ships its own independent baggage builder class shaped by the activity model that layer owns: `CoreBaggageBuilder` in Core, `TeamsBaggageBuilder` in Apps. Distinct names, no inheritance, no cross-references — each is self-contained. This honors the layering rule: neither builder downcasts to types it doesn't own.
 
 The two field-set partitions:
 
@@ -290,73 +290,73 @@ Apps's class duplicates Core's setter bodies (each is `Set(key, value); return t
 #### Proposed surface
 
 ```csharp
-// Microsoft.Teams.Core/Diagnostics/BaggageBuilder.cs  (NEW, public)
+// Microsoft.Teams.Core/Diagnostics/CoreBaggageBuilder.cs  (public)
 namespace Microsoft.Teams.Core.Diagnostics;
 
-public sealed class BaggageBuilder
+public sealed class CoreBaggageBuilder
 {
     // Keys reachable from CoreActivity / ConversationAccount.
-    public BaggageBuilder TenantId(string? v);
-    public BaggageBuilder ConversationId(string? v);
-    public BaggageBuilder ConversationItemLink(string? v);     // from ServiceUrl
-    public BaggageBuilder ChannelName(string? v);              // from ChannelId (string)
-    public BaggageBuilder ChannelLink(string? v);              // caller-supplied — no auto source
-    public BaggageBuilder AgentId(string? v);                  // Recipient.AgenticAppId ?? Recipient.Id
-    public BaggageBuilder AgentName(string? v);                // Recipient.Name
-    public BaggageBuilder AgenticUserId(string? v);            // Recipient.AgenticUserId
-    public BaggageBuilder AgentBlueprintId(string? v);         // Recipient.AgenticAppBlueprintId
-    public BaggageBuilder UserName(string? v);                 // From.Name
-    public BaggageBuilder OperationSource(string source);      // service.name — caller-supplied
-    public BaggageBuilder InvokeAgentServer(string? address, int? port = null);
-    public BaggageBuilder Set(string key, string? value);      // escape hatch
+    public CoreBaggageBuilder TenantId(string? v);
+    public CoreBaggageBuilder ConversationId(string? v);
+    public CoreBaggageBuilder ConversationItemLink(string? v);     // from ServiceUrl
+    public CoreBaggageBuilder ChannelName(string? v);              // from ChannelId (string)
+    public CoreBaggageBuilder ChannelLink(string? v);              // caller-supplied — no auto source
+    public CoreBaggageBuilder AgentId(string? v);                  // Recipient.AgenticAppId ?? Recipient.Id
+    public CoreBaggageBuilder AgentName(string? v);                // Recipient.Name
+    public CoreBaggageBuilder AgenticUserId(string? v);            // Recipient.AgenticUserId
+    public CoreBaggageBuilder AgentBlueprintId(string? v);         // Recipient.AgenticAppBlueprintId
+    public CoreBaggageBuilder UserName(string? v);                 // From.Name
+    public CoreBaggageBuilder OperationSource(string source);      // service.name — caller-supplied
+    public CoreBaggageBuilder InvokeAgentServer(string? address, int? port = null);
+    public CoreBaggageBuilder Set(string key, string? value);      // escape hatch
 
     /// <summary>Populates every setter above whose source field is non-null on <paramref name="activity"/>.
     /// Falls back to parsing <c>Properties["channelData"]</c> JSON for tenant id when
     /// <c>Recipient.TenantId</c> is empty.</summary>
-    public BaggageBuilder FromCoreActivity(CoreActivity activity);
+    public CoreBaggageBuilder FromCoreActivity(CoreActivity activity);
 
     public IDisposable Build();  // applies pairs to OpenTelemetry.Baggage.Current; returns restore-scope
 }
 ```
 
 ```csharp
-// Microsoft.Teams.Apps/Diagnostics/BaggageBuilder.cs  (NEW, public — separate class, same name in a different namespace)
+// Microsoft.Teams.Apps/Diagnostics/TeamsBaggageBuilder.cs  (public — separate class)
 namespace Microsoft.Teams.Apps.Diagnostics;
 
-public sealed class BaggageBuilder
+public sealed class TeamsBaggageBuilder
 {
     // Same setters as Core's class …
-    public BaggageBuilder TenantId(string? v);
-    public BaggageBuilder ConversationId(string? v);
-    public BaggageBuilder ConversationItemLink(string? v);
-    public BaggageBuilder ChannelName(string? v);
-    public BaggageBuilder ChannelLink(string? v);
-    public BaggageBuilder AgentId(string? v);
-    public BaggageBuilder AgentName(string? v);
-    public BaggageBuilder AgenticUserId(string? v);
-    public BaggageBuilder AgentBlueprintId(string? v);
-    public BaggageBuilder UserName(string? v);
-    public BaggageBuilder OperationSource(string source);
-    public BaggageBuilder InvokeAgentServer(string? address, int? port = null);
-    public BaggageBuilder Set(string key, string? value);
+    public TeamsBaggageBuilder TenantId(string? v);
+    public TeamsBaggageBuilder ConversationId(string? v);
+    public TeamsBaggageBuilder ConversationItemLink(string? v);
+    public TeamsBaggageBuilder ChannelName(string? v);
+    public TeamsBaggageBuilder ChannelLink(string? v);
+    public TeamsBaggageBuilder AgentId(string? v);
+    public TeamsBaggageBuilder AgentName(string? v);
+    public TeamsBaggageBuilder AgenticUserId(string? v);
+    public TeamsBaggageBuilder AgentBlueprintId(string? v);
+    public TeamsBaggageBuilder UserName(string? v);
+    public TeamsBaggageBuilder OperationSource(string source);
+    public TeamsBaggageBuilder InvokeAgentServer(string? address, int? port = null);
+    public TeamsBaggageBuilder Set(string key, string? value);
 
     // … plus setters whose source field only exists on TeamsConversationAccount:
-    public BaggageBuilder UserId(string? v);                   // From.AadObjectId
-    public BaggageBuilder UserEmail(string? v);                // From.Email
-    public BaggageBuilder AgentDescription(string? v);         // Recipient.UserRole
-    public BaggageBuilder AgenticUserEmail(string? v);         // Recipient.Email
+    public TeamsBaggageBuilder UserId(string? v);                   // From.AadObjectId
+    public TeamsBaggageBuilder UserEmail(string? v);                // From.Email
+    public TeamsBaggageBuilder AgentDescription(string? v);         // Recipient.UserRole
+    public TeamsBaggageBuilder AgenticUserEmail(string? v);         // Recipient.Email
 
     /// <summary>Populates every setter above whose source field is non-null on <c>ctx.Activity</c>,
     /// reading TeamsConversationAccount-only fields without any downcast (the activity already
     /// types From / Recipient as TeamsConversationAccount). Tenant fallback uses the typed
     /// <c>TeamsActivity.ChannelData?.Tenant?.Id</c>.</summary>
-    public BaggageBuilder FromTeamsContext<TActivity>(Context<TActivity> ctx) where TActivity : TeamsActivity;
+    public TeamsBaggageBuilder FromTeamsContext<TActivity>(Context<TActivity> ctx) where TActivity : TeamsActivity;
 
     public IDisposable Build();
 }
 ```
 
-The same-name-in-different-namespaces shape is intentional: a Core-only bot writes `using Microsoft.Teams.Core.Diagnostics; new BaggageBuilder()…`, a Teams-router bot writes `using Microsoft.Teams.Apps.Diagnostics; new BaggageBuilder()…`. The chosen `using` directive disambiguates; no caller ever sees both at once.
+The distinct names (`CoreBaggageBuilder` / `TeamsBaggageBuilder`) eliminate ambiguity when both namespaces are imported: a Core-only bot writes `new CoreBaggageBuilder()…`, a Teams-router bot writes `new TeamsBaggageBuilder()…`.
 
 The Agent365 wire keys are duplicated as `internal const` strings in each assembly (`Microsoft.Teams.Core.Diagnostics.AgentObservabilityKeys` and the Apps equivalent) — same string values on both sides, kept in sync against the upstream Agent365 spec. They are not part of the public API of either assembly.
 
@@ -368,7 +368,7 @@ using Microsoft.Teams.Apps.Diagnostics;
 
 botApp.OnMessage(async (ctx, ct) =>
 {
-    using IDisposable scope = new BaggageBuilder()
+    using IDisposable scope = new TeamsBaggageBuilder()
         .FromTeamsContext(ctx)
         .OperationSource("teams-bot")     // required-for-cert; not derivable from the activity
         .Build();
@@ -386,7 +386,7 @@ using Microsoft.Teams.Core.Diagnostics;
 
 botApp.OnActivity = async (activity, ct) =>
 {
-    using IDisposable scope = new BaggageBuilder()
+    using IDisposable scope = new CoreBaggageBuilder()
         .FromCoreActivity(activity)
         .Set(/* user.id  */ "user.id",  myAadObjectIdFromAuth)
         .Set(/* user.email */ "user.email", myUserEmailFromAuth)

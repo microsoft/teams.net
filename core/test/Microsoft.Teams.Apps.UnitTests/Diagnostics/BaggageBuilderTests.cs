@@ -8,7 +8,7 @@ using OpenTelemetry;
 
 namespace Microsoft.Teams.Apps.UnitTests.Diagnostics;
 
-public class BaggageBuilderTests
+public class TeamsBaggageBuilderTests
 {
     [Fact]
     public void FromTeamsContext_PopulatesAppsOnlyKeysFromTeamsConversationAccount()
@@ -102,7 +102,7 @@ public class BaggageBuilderTests
         Baggage.Current = default;
         try
         {
-            using (new BaggageBuilder().UserId("u").UserEmail("u@example.com").Build())
+            using (new TeamsBaggageBuilder().UserId("u").UserEmail("u@example.com").Build())
             {
                 Assert.Equal("u", Baggage.GetBaggage("user.id"));
                 Assert.Equal("u@example.com", Baggage.GetBaggage("user.email"));
@@ -134,13 +134,13 @@ public class BaggageBuilderTests
 
     private static Context<TeamsActivity> BuildCtx(TeamsActivity activity) => new(null!, activity);
 
-    private static Dictionary<string, string?> ApplyAndCapture(Action<BaggageBuilder> configure)
+    private static Dictionary<string, string?> ApplyAndCapture(Action<TeamsBaggageBuilder> configure)
     {
         Baggage previous = Baggage.Current;
         Baggage.Current = default;
         try
         {
-            BaggageBuilder builder = new();
+            TeamsBaggageBuilder builder = new();
             configure(builder);
             using (builder.Build())
             {

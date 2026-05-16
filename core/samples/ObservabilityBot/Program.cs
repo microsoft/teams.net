@@ -15,7 +15,7 @@ using OpenTelemetry;
 using OpenTelemetry.Resources;
 
 
-string[] activitySources = [CoreTelemetryNames.ActivitySourceName, TeamsBotApplicationTelemetry.ActivitySourceName, "Experimental.Microsoft.Agents.AI", "ModelContextProtocol"];
+string[] activitySources = [CoreTelemetryNames.ActivitySourceName, TeamsBotApplicationTelemetry.ActivitySourceName, "Experimental.Microsoft.Extensions.AI", "ModelContextProtocol"];
 string[] meterNames      = [CoreTelemetryNames.MeterName, TeamsBotApplicationTelemetry.MeterName, "Experimental.Microsoft.Agents.AI", "ModelContextProtocol"];
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
