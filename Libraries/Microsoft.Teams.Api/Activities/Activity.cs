@@ -428,6 +428,43 @@ public partial class Activity : IActivity
     }
 
     /// <summary>
+    /// add a targeted message info entity for prompt preview.
+    /// If an entity with type "targetedMessageInfo" already exists, it is not added again.
+    /// Any existing "quotedReply" entities are always removed from <see cref="Entities"/>
+    /// and matching &lt;quoted messageId="..."/&gt; placeholders are always stripped
+    /// from <see cref="MessageActivity.Text"/> to prevent collision between
+    /// quoted replies and prompt preview.
+    /// </summary>
+    /// <param name="messageId">the message ID of the targeted message</param>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public virtual Activity AddTargetedMessageInfo(string messageId)
+    {
+        // Always strip quotedReply entities and matching <quoted .../> placeholder
+        // to avoid collision with prompt preview
+        if (Entities is not null)
+        {
+            for (var i = Entities.Count - 1; i >= 0; i--)
+            {
+                if (Entities[i].Type == "quotedReply") Entities.RemoveAt(i);
+            }
+        }
+
+        if (this is MessageActivity message && message.Text is not null)
+        {
+            message.Text = message.Text.Replace($"<quoted messageId=\"{messageId}\"/>", string.Empty).Trim();
+        }
+
+        // Only add entity if not already present
+        var hasEntity = Entities?.Any(e => e.Type == "targetedMessageInfo") ?? false;
+        if (!hasEntity)
+        {
+            AddEntity(new TargetedMessageInfoEntity { MessageId = messageId });
+        }
+
+        return this;
+    }
+
+    /// <summary>
     /// add a citation
     /// </summary>
     public virtual Activity AddCitation(int position, CitationAppearance appearance)

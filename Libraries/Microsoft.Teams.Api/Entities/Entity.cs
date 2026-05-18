@@ -117,6 +117,9 @@ public class Entity : IEntity
                 "message" or "https://schema.org/Message" => (Entity?)element.Deserialize<IMessageEntity>(options),
                 "ProductInfo" => element.Deserialize<ProductInfoEntity>(options),
                 "streaminfo" => element.Deserialize<StreamInfoEntity>(options),
+                #pragma warning disable ExperimentalTeamsTargeted
+                "targetedMessageInfo" => element.Deserialize<TargetedMessageInfoEntity>(options),
+                #pragma warning restore ExperimentalTeamsTargeted
                 #pragma warning disable ExperimentalTeamsQuotedReplies
                 "quotedReply" => element.Deserialize<QuotedReplyEntity>(options),
                 #pragma warning restore ExperimentalTeamsQuotedReplies
@@ -164,14 +167,22 @@ public class Entity : IEntity
                 return;
             }
 
+            #pragma warning disable ExperimentalTeamsTargeted
+            if (value is TargetedMessageInfoEntity targetedMessageInfo)
+            {
+                JsonSerializer.Serialize(writer, targetedMessageInfo, options);
+                return;
+            }
+            #pragma warning restore ExperimentalTeamsTargeted
+
             #pragma warning disable ExperimentalTeamsQuotedReplies
             if (value is QuotedReplyEntity quotedReply)
             {
                 JsonSerializer.Serialize(writer, quotedReply, options);
                 return;
             }
-
             #pragma warning restore ExperimentalTeamsQuotedReplies
+
             JsonSerializer.Serialize(writer, value.ToJsonObject(options), options);
         }
     }
