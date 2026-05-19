@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
-#pragma warning disable CS0618
-
 using Microsoft.Teams.Api.Activities;
 using Microsoft.Teams.Apps.Routing;
 
@@ -11,15 +9,19 @@ namespace Microsoft.Teams.Apps.Activities;
 public static partial class Conversation
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+    [Obsolete("This will be removed by end of summer 2026.")]
+    #pragma warning disable CS0618
     public class EndAttribute() : ActivityAttribute(ActivityType.EndOfConversation, typeof(EndOfConversationActivity))
     {
         public override object Coerce(IContext<IActivity> context) => context.ToActivityType<EndOfConversationActivity>();
     }
+    #pragma warning restore CS0618
 }
 
 public static partial class AppActivityExtensions
 {
-    [Obsolete("Use the handler with the cancellation token")]
+    [Obsolete("Use the handler with the cancellation token. This will be removed by end of summer 2026.")]
+    #pragma warning disable CS0618
     public static App OnConversationEnd(this App app, Func<IContext<EndOfConversationActivity>, Task> handler)
     {
         app.Router.Register(new Route()
@@ -36,7 +38,10 @@ public static partial class AppActivityExtensions
 
         return app;
     }
+    #pragma warning restore CS0618
 
+    [Obsolete("This will be removed by end of summer 2026.")]
+    #pragma warning disable CS0618
     public static App OnConversationEnd(this App app, Func<IContext<EndOfConversationActivity>, CancellationToken, Task> handler)
     {
         app.Router.Register(new Route()
@@ -53,6 +58,5 @@ public static partial class AppActivityExtensions
 
         return app;
     }
+    #pragma warning restore CS0618
 }
-
-#pragma warning restore CS0618
