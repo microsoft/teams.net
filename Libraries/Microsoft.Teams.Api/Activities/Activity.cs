@@ -88,8 +88,10 @@ public partial interface IActivity : IConvertible, ICloneable
     public string GetPath();
 
     /// <summary>
-    /// get the quote reply string form of this activity
+    /// Generates a quoted reply placeholder for the current activity.
+    /// See <see cref="MessageActivity.AddQuote(string, string?)"/> for the recommended approach.
     /// </summary>
+    [Obsolete("Use MessageActivity.AddQuote() instead.")]
     public string ToQuoteReply();
 }
 
@@ -204,12 +206,6 @@ public partial class Activity : IActivity
         return this;
     }
 
-    public virtual Activity WithReplyToId(string value)
-    {
-        ReplyToId = value;
-        return this;
-    }
-
     public virtual Activity WithChannelId(ChannelId value)
     {
         ChannelId = value;
@@ -240,9 +236,9 @@ public partial class Activity : IActivity
     public virtual Activity WithRecipient(Account value)
     {
         Recipient = value;
-        #pragma warning disable ExperimentalTeamsTargeted
+#pragma warning disable ExperimentalTeamsTargeted
         Recipient.IsTargeted = null;
-        #pragma warning restore ExperimentalTeamsTargeted
+#pragma warning restore ExperimentalTeamsTargeted
         return this;
     }
 
@@ -250,9 +246,9 @@ public partial class Activity : IActivity
     public virtual Activity WithRecipient(Account value, bool isTargeted)
     {
         Recipient = value;
-        #pragma warning disable ExperimentalTeamsTargeted
+#pragma warning disable ExperimentalTeamsTargeted
         Recipient.IsTargeted = isTargeted ? true : null;
-        #pragma warning restore ExperimentalTeamsTargeted
+#pragma warning restore ExperimentalTeamsTargeted
         return this;
     }
 
@@ -447,6 +443,43 @@ public partial class Activity : IActivity
     }
 
     /// <summary>
+    /// add a targeted message info entity for prompt preview.
+    /// If an entity with type "targetedMessageInfo" already exists, it is not added again.
+    /// Any existing "quotedReply" entities are always removed from <see cref="Entities"/>
+    /// and matching &lt;quoted messageId="..."/&gt; placeholders are always stripped
+    /// from <see cref="MessageActivity.Text"/> to prevent collision between
+    /// quoted replies and prompt preview.
+    /// </summary>
+    /// <param name="messageId">the message ID of the targeted message</param>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public virtual Activity AddTargetedMessageInfo(string messageId)
+    {
+        // Always strip quotedReply entities and matching <quoted .../> placeholder
+        // to avoid collision with prompt preview
+        if (Entities is not null)
+        {
+            for (var i = Entities.Count - 1; i >= 0; i--)
+            {
+                if (Entities[i].Type == "quotedReply") Entities.RemoveAt(i);
+            }
+        }
+
+        if (this is MessageActivity message && message.Text is not null)
+        {
+            message.Text = message.Text.Replace($"<quoted messageId=\"{messageId}\"/>", string.Empty).Trim();
+        }
+
+        // Only add entity if not already present
+        var hasEntity = Entities?.Any(e => e.Type == "targetedMessageInfo") ?? false;
+        if (!hasEntity)
+        {
+            AddEntity(new TargetedMessageInfoEntity { MessageId = messageId });
+        }
+
+        return this;
+    }
+
+    /// <summary>
     /// add a citation
     /// </summary>
     public virtual Activity AddCitation(int position, CitationAppearance appearance)
@@ -514,24 +547,15 @@ public partial class Activity : IActivity
         return this;
     }
 
-    public string ToQuoteReply()
+    /// <summary>
+    /// Generates a quoted reply placeholder for the current activity.
+    /// See <see cref="MessageActivity.AddQuote(string, string?)"/> for the recommended approach.
+    /// </summary>
+    [Obsolete("Use MessageActivity.AddQuote() instead.")]
+    public virtual string ToQuoteReply()
     {
-        var text = string.Empty;
-
-        if (this is MessageActivity message)
-        {
-            text = $"<p itemprop=\"preview\">{message.Text}</p>";
-        }
-
-        return $"""
-        <blockquote itemscope="" itemtype="http://schema.skype.com/Reply" itemid="{Id}">
-            <strong itemprop="mri" itemid="{From.Id}">
-                {From.Name}
-            </strong>
-            <span itemprop="time" itemid="{Id}"></span>
-            {text}
-        </blockquote>
-        """;
+        if (Id == null) return string.Empty;
+        return $"<quoted messageId=\"{Id}\"/>";
     }
 
     public override string ToString()

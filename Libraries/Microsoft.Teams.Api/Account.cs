@@ -46,6 +46,7 @@ public class Account
 
     [JsonPropertyName("isTargeted")]
     [JsonPropertyOrder(6)]
+    [JsonInclude]
     [Experimental("ExperimentalTeamsTargeted")]
     public bool? IsTargeted { get; internal set; }
 }

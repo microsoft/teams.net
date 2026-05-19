@@ -5,6 +5,8 @@ using Microsoft.Teams.Apps.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
+#pragma warning disable ExperimentalTeamsTargeted
+
 var builder = WebApplication.CreateBuilder(args);
 builder.AddTeams().AddTeamsDevTools();
 var app = builder.Build();
@@ -25,23 +27,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
     context.Log.Info($"[MESSAGE] Received: {text}");
 
-    if (text.Contains("send"))
-    {
-        var members = await context.Api.Conversations.Members.GetAsync(activity.Conversation.Id, cancellationToken);
-
-        foreach (var member in members)
-        {
-            context.Log.Info($"[MEMBER] {member.Name} (ID: {member.Id})");
-
-            // SEND: Create a new targeted message
-            await context.Send(
-                new MessageActivity($"👋 {member.Name} This is a **targeted message** - only YOU can see this!")
-                    .WithRecipient(new Account() { Id = member.Id, Name = member.Name }, true), cancellationToken);
-        }
-        
-        context.Log.Info($"[SEND] Sent targeted message");
-    }
-    else if (text.Contains("update"))
+    if (text.Contains("test update"))
     {
         // UPDATE: Send a targeted message, then update it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
@@ -75,7 +61,7 @@ teams.OnMessage(async (context, cancellationToken) =>
 
         context.Log.Info($"[UPDATE] Scheduled update in 3 seconds");
     }
-    else if (text.Contains("delete"))
+    else if (text.Contains("test delete"))
     {
         // DELETE: Send a targeted message, then delete it after 3 seconds
         var conversationId = activity.Conversation?.Id ?? "";
@@ -107,29 +93,38 @@ teams.OnMessage(async (context, cancellationToken) =>
 
         context.Log.Info($"[DELETE] Scheduled delete in 3 seconds");
     }
-    else if (text.Contains("reply"))
+    else if (text.Contains("test public"))
     {
-        // REPLY: Send a targeted reply to the user's message
-        await context.Reply(
-            new MessageActivity("💬 This is a **targeted reply** - threaded and private!")
-                .WithRecipient(context.Activity.From, true), cancellationToken);
+        // PUBLIC: Send a public message visible to everyone in the chat.
+        await context.Send(
+            new MessageActivity("📋 Here is the public result — everyone can see this!"),
+            cancellationToken);
         
-        context.Log.Info("[REPLY] Sent targeted reply");
+        context.Log.Info("[PUBLIC] Sent public message");
+    }
+    else if (text.Contains("test send"))
+    {
+        // SEND: Send a targeted message visible only to the sender.
+        await context.Send(
+            new MessageActivity("👋 This is a **targeted message** — only YOU can see this!")
+                .WithRecipient(context.Activity.From, true),
+            cancellationToken);
+        
+        context.Log.Info("[SEND] Sent targeted message");
     }
     else if (text.Contains("help"))
     {
         await context.Send(
             "**🎯 Targeted Messages Demo**\n\n" +
             "**Commands:**\n" +
-            "- `send` - Send a targeted message (only you see it)\n" +
-            "- `update` - Send a message, then update it after 3 seconds\n" +
-            "- `delete` - Send a message, then delete it after 3 seconds\n" +
-            "- `reply` - Get a targeted reply (threaded)\n\n" +
+            "- `test send` - Send a targeted message (only visible to you)\n" +
+            "- `test update` - Send a targeted message, then update it after 3 seconds\n" +
+            "- `test delete` - Send a targeted message, then delete it after 3 seconds\n" +
+            "- `test public` - Send a public reply (visible to all)\n\n" +
             "_Targeted messages are only visible to you, even in group chats!_", cancellationToken);
     }
     else
     {
-        await context.Typing(null, cancellationToken);
         await context.Send($"You said: '{activity.Text}'\n\nType `help` to see available commands.", cancellationToken);
     }
 });

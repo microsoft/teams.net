@@ -132,6 +132,13 @@ public class TeamsChannelData : ChannelData
             {
                 FeedbackLoopEnabled = jeFeedback.GetBoolean();
             }
+
+            if (cd.Properties.TryGetValue("feedbackLoop", out object? loopObj)
+                && loopObj is JsonElement jeLoop
+                && jeLoop.ValueKind == JsonValueKind.Object)
+            {
+                FeedbackLoop = JsonSerializer.Deserialize<FeedbackLoop>(jeLoop.GetRawText());
+            }
         }
     }
 
@@ -181,4 +188,51 @@ public class TeamsChannelData : ChannelData
     /// </summary>
     [JsonPropertyName("feedbackLoopEnabled")] public bool? FeedbackLoopEnabled { get; set; }
 
+    /// <summary>
+    /// Feedback loop configuration. When set, takes precedence over
+    /// <see cref="FeedbackLoopEnabled"/>. Set <c>Type</c> to
+    /// <see cref="FeedbackType.Custom"/> to trigger a <c>message/fetchTask</c>
+    /// invoke for a bot-provided task module dialog.
+    /// </summary>
+    [JsonPropertyName("feedbackLoop")] public FeedbackLoop? FeedbackLoop { get; set; }
+}
+
+/// <summary>
+/// Known values for <see cref="FeedbackLoop.Type"/>.
+/// </summary>
+public static class FeedbackType
+{
+    /// <summary>Teams' built-in thumbs up/down UI.</summary>
+    public const string Default = "default";
+
+    /// <summary>
+    /// Triggers a <c>message/fetchTask</c> invoke so the bot can return its
+    /// own task module dialog when the user clicks thumbs up/down.
+    /// </summary>
+    public const string Custom = "custom";
+}
+
+/// <summary>
+/// Configuration for a feedback loop on a message. Serializes to
+/// <c>channelData.feedbackLoop</c>. Must not coexist with
+/// <see cref="TeamsChannelData.FeedbackLoopEnabled"/> — Teams rejects activities
+/// that set both.
+/// </summary>
+public class FeedbackLoop
+{
+    /// <summary>
+    /// The feedback loop type. See <see cref="FeedbackType"/> for known values.
+    /// </summary>
+    [JsonPropertyName("type")] public string Type { get; set; } = FeedbackType.Default;
+
+    /// <summary>
+    /// Creates a new instance with the default <see cref="FeedbackType.Default"/> type.
+    /// </summary>
+    public FeedbackLoop() { }
+
+    /// <summary>
+    /// Creates a new instance with the specified type.
+    /// </summary>
+    /// <param name="type">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    public FeedbackLoop(string type) { Type = type; }
 }
