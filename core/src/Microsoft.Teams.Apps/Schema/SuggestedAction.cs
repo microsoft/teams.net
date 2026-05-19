@@ -18,14 +18,16 @@ public class SuggestedAction
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="SuggestedAction"/> class with the specified type and title.
+    /// Initializes a new instance of the <see cref="SuggestedAction"/> class with the specified type, title, and value.
     /// </summary>
     /// <param name="type">The type of action. See <see cref="ActionType"/> for common values.</param>
     /// <param name="title">The text description displayed on the button.</param>
-    public SuggestedAction(string type, string title)
+    /// <param name="value">The value sent when the button is clicked. Defaults to <paramref name="title"/> when not specified.</param>
+    public SuggestedAction(string type, string title, string? value = null)
     {
         Type = type;
         Title = title;
+        Value = value ?? title;
     }
 
     /// <summary>

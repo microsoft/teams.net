@@ -31,7 +31,6 @@ public class ConversationApiClient
     /// <summary>
     /// Client for reaction operations.
     /// </summary>
-    [Experimental("ExperimentalTeamsReactions")]
     public ReactionClient Reactions { get; }
 
     internal ConversationApiClient(Uri serviceUrl, CoreConversationClient client)
@@ -40,9 +39,7 @@ public class ConversationApiClient
         _client = client;
         Activities = new ActivityClient(serviceUrl, client);
         Members = new MemberClient(serviceUrl, client);
-#pragma warning disable ExperimentalTeamsReactions // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
         Reactions = new ReactionClient(serviceUrl, client);
-#pragma warning restore ExperimentalTeamsReactions // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
     }
 
     /// <summary>

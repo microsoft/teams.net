@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Core.Schema;
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
 
@@ -11,7 +10,6 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 /// Client for managing reactions on activities in a conversation.
 /// Delegates to the core <see cref="CoreConversationClient"/>.
 /// </summary>
-[Experimental("ExperimentalTeamsReactions")]
 public class ReactionClient
 {
     private readonly CoreConversationClient _client;
