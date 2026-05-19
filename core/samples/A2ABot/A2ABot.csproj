@@ -13,6 +13,14 @@
   <ItemGroup>
     <PackageReference Include="A2A" Version="1.0.0-preview2" />
     <PackageReference Include="A2A.AspNetCore" Version="1.0.0-preview2" />
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
+    <PackageReference Include="Microsoft.Agents.AI.OpenAI" Version="1.0.0-preview.251204.1" />
+    <!-- Force a unified Microsoft.Extensions.AI version. Microsoft.Agents.AI
+         preview needs APIs (e.g. FunctionApprovalRequestContent) added in
+         10.5+; without this pin the transitive resolution lands on 10.4.x
+         and you get TypeLoadException at first LLM call. -->
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.6.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.6.0" />
   </ItemGroup>
 
 </Project>

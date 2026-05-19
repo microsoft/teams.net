@@ -1,141 +1,49 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using A2A;
 using A2A.AspNetCore;
 using A2ABot;
+using A2ABot.A2A;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
+using AgentCard = A2A.AgentCard;
 
-// ── Configuration ─────────────────────────────────────────────────────────────
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
 builder.Services.AddTeamsBotApplication();
-builder.Services.AddHttpClient("a2a");
-builder.Services.AddSingleton<State>();
-builder.Services.AddSingleton<PeerClient>();
+builder.Services.AddHttpClient("a2a", c => c.Timeout = TimeSpan.FromSeconds(5));
+builder.Services.AddSingleton<A2AClient>();
+builder.Services.AddSingleton<Agent>();
 
 Config config = new(
-    Name:     builder.Configuration["Bot:Name"]    ?? "Alice",
-    SelfUrl:  builder.Configuration["Bot:SelfUrl"] ?? "http://localhost:3978",
-    PeerUrl:  builder.Configuration["Bot:PeerUrl"] ?? string.Empty);
+    Name:        builder.Configuration["Bot:Name"]        ?? throw new InvalidOperationException("Bot:Name is required."),
+    SelfUrl:     builder.Configuration["Bot:SelfUrl"]     ?? throw new InvalidOperationException("Bot:SelfUrl is required."),
+    Description: builder.Configuration["Bot:Description"] ?? throw new InvalidOperationException("Bot:Description is required."),
+    PeerUrl:     builder.Configuration["Bot:PeerUrl"]     ?? throw new InvalidOperationException("Bot:PeerUrl is required."),
+    PeerName:    builder.Configuration["Bot:PeerName"]    ?? throw new InvalidOperationException("Bot:PeerName is required."));
 
 builder.Services.AddSingleton(config);
 
-// Register the A2A agent — exposes a standard A2A endpoint for bot-to-bot messages.
-AgentCard agentCard = new()
-{
-    Name        = config.Name,
-    Description = builder.Configuration["Bot:Description"] ?? $"{config.Name} Teams bot",
-    Version     = "1.0.0",
-    SupportedInterfaces =
-    [
-        new AgentInterface
-        {
-            Url             = $"{config.SelfUrl}/a2a",
-            ProtocolBinding = "JSONRPC",
-            ProtocolVersion = "1.0",
-        }
-    ],
-    DefaultInputModes  = ["application/json"],
-    DefaultOutputModes = ["text/plain"],
-    Capabilities = new AgentCapabilities { Streaming = false },
-    Skills =
-    [
-        new AgentSkill
-        {
-            Id          = "ask-reply",
-            Name        = "Ask / Reply",
-            Description = "Accepts ask and reply messages from peer bots.",
-            Tags        = ["a2a", "teams"],
-        }
-    ],
-};
-
-builder.Services.AddA2AAgent<Agent>(agentCard);
+AgentCard agentCard = AgentCardFactory.Build(config);
+builder.Services.AddA2AAgent<A2AServer>(agentCard);
 
 WebApplication webApp = builder.Build();
-
-State state          = webApp.Services.GetRequiredService<State>();
-PeerClient peerClient = webApp.Services.GetRequiredService<PeerClient>();
-
+Agent agent = webApp.Services.GetRequiredService<Agent>();
 TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
-// ── Teams: handle incoming user messages ──────────────────────────────────────
-teamsApp.OnMessage(async (context, cancellationToken) =>
+teamsApp.OnMessage(async (context, ct) =>
 {
-    // Remember the operator's conversation reference on first contact.
-    state.OperatorConvId     ??= context.Activity.Conversation?.Id;
-    state.OperatorServiceUrl ??= context.Activity.ServiceUrl?.ToString();
+    string text        = context.Activity.Text?.Trim() ?? string.Empty;
+    string convId      = context.Activity.Conversation!.Id!;
+    string userName    = context.Activity.From?.Name ?? "User";
+    string aadObjectId = context.Activity.From?.AadObjectId ?? string.Empty;
+    string tenantId    = context.Activity.Conversation?.TenantId ?? string.Empty;
+    string serviceUrl  = context.Activity.ServiceUrl?.ToString() ?? string.Empty;
 
-    string text     = context.Activity.Text?.Trim() ?? string.Empty;
-    string userName = context.Activity.From?.Name ?? "User";
-
-    // Messages ending with '?' are forwarded to the peer bot via A2A.
-    if (!string.IsNullOrEmpty(config.PeerUrl) && text.EndsWith('?'))
-    {
-        string qid = Guid.NewGuid().ToString("N")[..8];
-
-        state.PendingOutbound[qid] = (
-            ConvId:     context.Activity.Conversation!.Id!,
-            ServiceUrl: context.Activity.ServiceUrl!.ToString(),
-            Question:   text);
-
-        try
-        {
-            await peerClient.SendAskAsync(
-                config.PeerUrl,
-                new AskMessage(qid, text, $"{config.Name} ({userName})", config.SelfUrl),
-                cancellationToken);
-
-            await context.SendActivityAsync("_Forwarded to peer bot via A2A. You'll receive a reply shortly._", cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            state.PendingOutbound.TryRemove(qid, out _);
-            await context.SendActivityAsync($"Could not reach peer bot: {ex.Message}", cancellationToken);
-        }
-
-        return;
-    }
-
-    await context.SendActivityAsync(
-        $"**{config.Name}:** {text}\n\n_Tip: End your message with `?` to forward it to the peer bot via A2A._",
-        cancellationToken);
+    string reply = await agent.RunAsync(convId, aadObjectId, userName, tenantId, serviceUrl, text, ct);
+    if (!string.IsNullOrWhiteSpace(reply))
+        await context.SendActivityAsync(reply, ct);
 });
 
-// ── Teams: operator submits a reply card ──────────────────────────────────────
-teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
-{
-    if (context.Activity.Value?.Action?.Verb != "a2a-reply")
-        return AdaptiveCardResponse.CreateMessageResponse("Unknown action.");
-
-    string? qid    = context.Activity.Value?.Action?.Data?["qid"]?.ToString();
-    string? answer = context.Activity.Value?.Action?.Data?["answer"]?.ToString();
-
-    if (string.IsNullOrWhiteSpace(qid) || string.IsNullOrWhiteSpace(answer))
-        return AdaptiveCardResponse.CreateMessageResponse("Please provide an answer before submitting.");
-
-    if (!state.PendingInbound.TryRemove(qid, out AskMessage? ask))
-        return AdaptiveCardResponse.CreateMessageResponse("Question not found — it may have already been answered.");
-
-    try
-    {
-        // Reply via A2A back to the asking bot.
-        await peerClient.SendReplyAsync(
-            ask.ReplyBaseUrl,
-            new ReplyMessage(qid, answer, config.Name),
-            cancellationToken);
-
-        return AdaptiveCardResponse.CreateMessageResponse($"Reply sent back to {ask.From} via A2A.");
-    }
-    catch (Exception ex)
-    {
-        state.PendingInbound[qid] = ask; // restore so operator can retry
-        return AdaptiveCardResponse.CreateMessageResponse($"Failed to send reply: {ex.Message}");
-    }
-});
-
-// ── A2A: expose the standard A2A endpoint and well-known agent card ───────────
 webApp.MapA2A("/a2a");
 webApp.MapWellKnownAgentCard(agentCard);
 

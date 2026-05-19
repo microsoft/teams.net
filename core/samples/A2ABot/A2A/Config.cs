@@ -1,6 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace A2ABot;
+namespace A2ABot.A2A;
 
-record Config(string Name, string SelfUrl, string PeerUrl);
+// Description goes into this bot's A2A AgentCard — the peer's LLM reads
+// it to decide whether to hand off to us.
+record Config(
+    string Name,
+    string SelfUrl,
+    string Description,
+    string PeerUrl,
+    string PeerName);
