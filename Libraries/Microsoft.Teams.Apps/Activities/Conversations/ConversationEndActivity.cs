@@ -54,3 +54,5 @@ public static partial class AppActivityExtensions
         return app;
     }
 }
+
+#pragma warning restore CS0618

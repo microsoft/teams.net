@@ -21,7 +21,7 @@ public class Account
 
     [JsonPropertyName("role")]
     [JsonPropertyOrder(2)]
-    [Obsolete("This will be removed by end of summer 2026.")]
+    [Obsolete("Use Account.Type instead (values: 'person', 'bot', 'channel', 'team', 'tag'). Will be removed by end of summer 2026.")]
     public Role? Role { get; set; }
 
     /// <summary>

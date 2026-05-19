@@ -64,9 +64,9 @@ public partial class Activity
                 "messageDelete" => element.Deserialize<MessageDeleteActivity>(options),
                 "messageReaction" => element.Deserialize<MessageReactionActivity>(options),
                 "conversationUpdate" => element.Deserialize<ConversationUpdateActivity>(options),
-#pragma warning disable CS0618
+                #pragma warning disable CS0618
                 "endOfConversation" => element.Deserialize<EndOfConversationActivity>(options),
-#pragma warning restore CS0618
+                #pragma warning restore CS0618
                 "installationUpdate" => element.Deserialize<InstallUpdateActivity>(options),
                 "command" => element.Deserialize<CommandActivity>(options),
                 "commandResult" => element.Deserialize<CommandResultActivity>(options),
