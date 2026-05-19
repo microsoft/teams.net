@@ -91,7 +91,6 @@ public static class MessageActivityExtensions
     public static MessageActivity WithConversation(this MessageActivity message, Conversation? value)
     {
         ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(value);
 
         message.Conversation = value is TeamsConversation teamsConversation
             ? teamsConversation

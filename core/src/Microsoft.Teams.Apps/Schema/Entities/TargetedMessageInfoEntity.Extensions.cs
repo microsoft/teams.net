@@ -16,7 +16,7 @@ public static class TargetedMessageInfoEntityExtensions
     /// <summary>
     /// Builds the inline placeholder element that pairs with a <see cref="QuotedReplyEntity"/>.
     /// </summary>
-    private static readonly Regex QuotedPlaceholderRegex = new("<quoted messageId=\"[^\"]*\"/>");
+    private static readonly Regex QuotedPlaceholderRegex = new("<quoted messageId=\"[^\"]*\"/>", RegexOptions.Compiled);
 
     /// <summary>
     /// Gets the first targeted message info entity from the activity.

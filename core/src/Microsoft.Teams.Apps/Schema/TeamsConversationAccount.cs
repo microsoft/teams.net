@@ -42,13 +42,14 @@ public class TeamsConversationAccount : ConversationAccount
         result.AgenticAppId = conversationAccount.AgenticAppId;
         result.AgenticUserId = conversationAccount.AgenticUserId;
         result.AgenticAppBlueprintId = conversationAccount.AgenticAppBlueprintId;
-        result.AadObjectId = conversationAccount.Properties.Extract<string>("aadObjectId");
-        result.GivenName = conversationAccount.Properties.Extract<string>("givenName");
-        result.Surname = conversationAccount.Properties.Extract<string>("surname");
-        result.Email = conversationAccount.Properties.Extract<string>("email");
-        result.UserPrincipalName = conversationAccount.Properties.Extract<string>("userPrincipalName");
-        result.UserRole = conversationAccount.Properties.Extract<string>("userRole");
-        result.TenantId = conversationAccount.Properties.Extract<string>("tenantId");
+        result.Properties = new ExtendedPropertiesDictionary(conversationAccount.Properties);
+        result.AadObjectId = result.Properties.Extract<string>("aadObjectId");
+        result.GivenName = result.Properties.Extract<string>("givenName");
+        result.Surname = result.Properties.Extract<string>("surname");
+        result.Email = result.Properties.Extract<string>("email");
+        result.UserPrincipalName = result.Properties.Extract<string>("userPrincipalName");
+        result.UserRole = result.Properties.Extract<string>("userRole");
+        result.TenantId = result.Properties.Extract<string>("tenantId");
         return result;
     }
 

@@ -86,8 +86,6 @@ public class TeamsActivityTests
             .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US")
         .Build();
 
-      ClientInfoEntityExtensions.AddToActivity(activity, "Web", "US", "America/Los_Angeles", "en-US");
-
         string jsonResult = activity.ToJson();
         Assert.Contains("clientInfo", jsonResult);
         Assert.Contains("Web", jsonResult);

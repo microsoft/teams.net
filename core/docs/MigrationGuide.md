@@ -287,15 +287,15 @@ var activity = new TeamsActivityBuilder()
     .Build();
 ```
 
-**New (extension methods on `TeamsActivity`):**
+**New (extension methods on `MessageActivity`):**
 ```csharp
-var activity = new TeamsActivity()
+var activity = new MessageActivity()
     .WithFrom(account)
     .WithConversation(conv)
     .WithChannelId("msteams");
 ```
 
-Most base `With*()` methods are now available as extension methods in `TeamsActivityExtensions` (for example `WithId`, `WithChannelId`, `WithFrom`, `WithRecipient`, `WithConversation`, `WithServiceUrl`, `WithLocale`, `WithTimestamp`, `WithLocalTimestamp`, `WithData`, and `WithAppId`).
+Most base `With*()` methods are available as extension methods in `MessageActivityExtensions` (for example `WithId`, `WithChannelId`, `WithFrom`, `WithRecipient`, `WithConversation`, `WithServiceUrl`, `WithLocale`, `WithTimestamp`, `WithLocalTimestamp`, `WithData`, and `WithAppId`).
 
 `WithRelatesTo` is still unavailable because there is no `ConversationReference` equivalent in core.
 

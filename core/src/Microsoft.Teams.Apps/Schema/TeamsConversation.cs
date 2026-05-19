@@ -58,9 +58,10 @@ public class TeamsConversation : Conversation
             return result;
         }
 
-        result.TenantId = conversation.Properties.Extract<string>("tenantId");
-        result.ConversationType = conversation.Properties.Extract<string>("conversationType");
-        result.IsGroup = conversation.Properties.Extract<bool?>("isGroup");
+        result.Properties = new ExtendedPropertiesDictionary(conversation.Properties);
+        result.TenantId = result.Properties.Extract<string>("tenantId");
+        result.ConversationType = result.Properties.Extract<string>("conversationType");
+        result.IsGroup = result.Properties.Extract<bool?>("isGroup");
 
         return result;
     }

@@ -403,7 +403,7 @@ Not migrated (low priority, underlying properties commented out): `WithSpeak()`,
 
 ### BC-16: `AddSensitivityLabel()` missing on TeamsActivity
 
-**Decision: IMPLEMENTED** — Extension method added in `TeamsActivityExtensions`.
+**Decision: IMPLEMENTED** — Extension method added in `MessageActivityExtensions`.
 
 ---
 
