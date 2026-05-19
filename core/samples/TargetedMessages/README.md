@@ -1,11 +1,20 @@
 # Targeted Messages Sample
 
-Demonstrates sending, updating, and deleting targeted (ephemeral) messages in a Teams bot. Targeted messages are visible only to a specific recipient in a group chat or channel.
+Demonstrates sending, updating, and deleting targeted (ephemeral) messages in a Teams bot, plus the slash-command surface (in developer preview) that delivers user prompts as targeted message activities. Targeted messages are visible only to a specific recipient in a group chat or channel.
 
 ## Prerequisites
 
 - Bot registered and installed in a group chat or channel (targeted messages are not supported in personal 1:1 chats).
-- Install via the included [`manifest.json`](./manifest.json). Replace the `YOUR_BOT_ID` placeholders (`id`, `bots[].botId`) with your Azure bot's app ID, package together with `color.png` and `outline.png` icons of your choice, and sideload into Teams. The manifest's `commandLists` registers `test send`, `test reply`, `test update`, `test delete`, and `test inbound` as slash-command autocomplete suggestions in group chats and channels.
+- Install via the included [`manifest.json`](./manifest.json). Replace the `YOUR_BOT_ID` placeholders (`id`, `bots[].botId`) with your Azure bot's app ID, package together with `color.png` and `outline.png` icons of your choice, and sideload into Teams.
+
+### Manifest configuration
+
+The manifest uses `manifestVersion: "devPreview"` because the slash-command opt-in fields are only defined in the devPreview schema:
+
+- `bots[].supportsTargetedMessages: true` — opts the bot into receiving slash-command-style targeted messages.
+- `bots[].commandLists[].triggers: ["slash"]` — declares the listed commands (`test send`, `test reply`, `test update`, `test delete`, `test inbound`) as slash commands. They appear in the Teams `/` picker for group chats and channels.
+
+Slash commands arrive at the bot as regular `MessageActivity` events with `Activity.Recipient.IsTargeted == true`, which the `test inbound` handler in this sample demonstrates.
 
 ---
 
