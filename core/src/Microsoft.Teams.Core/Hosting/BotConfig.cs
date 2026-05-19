@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -15,6 +14,8 @@ namespace Microsoft.Teams.Core.Hosting;
 public sealed class BotConfig
 {
     internal const string DefaultSectionName = "AzureAd";
+
+    internal const string BotFrameworkSectionName = "BotFramework";
 
     internal const string DefaultOpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openid-configuration";
 
@@ -41,11 +42,10 @@ public sealed class BotConfig
     /// <summary>
     /// Gets or sets the Bot Framework OpenID metadata URL used to fetch signing keys
     /// for validating inbound Bot Framework tokens. For sovereign clouds, set
-    /// <c>{SectionName}:OpenIdMetadataUrl</c> in configuration, e.g.
+    /// <c>BotFramework:OpenIdMetadataUrl</c> in configuration, e.g.
     /// <c>"https://login.botframework.azure.us/v1/.well-known/openid-configuration"</c> for USGov.
     /// Defaults to the public-cloud endpoint when not configured.
     /// </summary>
-    [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "Mirrors Microsoft.Identity.Web's MicrosoftIdentityApplicationOptions.Instance convention; the value flows through as a string to configuration consumers.")]
     public string OpenIdMetadataUrl { get; set; } = DefaultOpenIdMetadataUrl;
 
     /// <summary>
@@ -55,12 +55,11 @@ public sealed class BotConfig
     /// <c>"https://login.microsoftonline.us/"</c> for USGov.
     /// Defaults to the public-cloud instance when not configured.
     /// </summary>
-    [SuppressMessage("Design", "CA1056:URI-like properties should not be strings", Justification = "Mirrors Microsoft.Identity.Web's MicrosoftIdentityApplicationOptions.Instance convention; the value flows through as a string to configuration consumers.")]
     public string EntraInstance { get; set; } = DefaultEntraInstance;
 
     /// <summary>
     /// Gets or sets the expected Bot Framework token issuer used to validate inbound
-    /// Bot Framework tokens. For sovereign clouds, set <c>{SectionName}:BotTokenIssuer</c>
+    /// Bot Framework tokens. For sovereign clouds, set <c>BotFramework:BotTokenIssuer</c>
     /// in configuration, e.g. <c>"https://api.botframework.us"</c> for USGov.
     /// Defaults to the public-cloud issuer when not configured.
     /// </summary>
@@ -106,13 +105,14 @@ public sealed class BotConfig
         ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));
 
         IConfigurationSection section = configuration.GetSection(sectionName);
+        IConfigurationSection botFrameworkSection = configuration.GetSection(BotFrameworkSectionName);
         BotConfig config = new()
         {
             TenantId = section["TenantId"] ?? string.Empty,
             ClientId = section["ClientId"] ?? string.Empty,
-            OpenIdMetadataUrl = section["OpenIdMetadataUrl"] ?? DefaultOpenIdMetadataUrl,
-            EntraInstance = section["Instance"] ?? DefaultEntraInstance,
-            BotTokenIssuer = section["BotTokenIssuer"] ?? DefaultBotTokenIssuer,
+            EntraInstance = ResolveAbsoluteUri(section, "Instance", DefaultEntraInstance, sectionName),
+            OpenIdMetadataUrl = ResolveAbsoluteUri(botFrameworkSection, "OpenIdMetadataUrl", DefaultOpenIdMetadataUrl, BotFrameworkSectionName),
+            BotTokenIssuer = ResolveAbsoluteUri(botFrameworkSection, "BotTokenIssuer", DefaultBotTokenIssuer, BotFrameworkSectionName),
             MsalConfigurationSection = section,
             SectionName = sectionName
         };
@@ -126,6 +126,21 @@ public sealed class BotConfig
             _logNoConfigFound(logger, null);
         }
         return config;
+    }
+
+    private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue, string sectionName)
+    {
+        string? value = section[key];
+        if (value is null)
+        {
+            return defaultValue;
+        }
+        if (!Uri.TryCreate(value, UriKind.Absolute, out _))
+        {
+            throw new InvalidOperationException(
+                $"Configuration value '{sectionName}:{key}' is not a valid absolute URI: '{value}'.");
+        }
+        return value;
     }
 
     private static readonly Action<ILogger, string, Exception?> _logUsingSectionConfig =

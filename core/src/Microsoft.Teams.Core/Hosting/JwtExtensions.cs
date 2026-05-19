@@ -149,7 +149,9 @@ namespace Microsoft.Teams.Core.Hosting
             // Bot Framework tokens. The expected issuer varies by sovereign cloud
             // (e.g. https://api.botframework.us for USGov) so it comes from configuration.
             if (issuer.Equals(botTokenIssuer, StringComparison.OrdinalIgnoreCase))
+            {
                 return issuer;
+            }
 
             // Entra tokens � bot-to-bot (agent) and user (tab/API)
             // Use the token's own tid claim for multi-tenant; fall back to configured tenant.
