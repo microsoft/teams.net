@@ -6,6 +6,7 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Extensions;
 
@@ -125,6 +126,13 @@ public static class HostApplicationBuilderExtensions
         if (!string.IsNullOrEmpty(settings.ClientId))
         {
             teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
+        }
+        else
+        {
+            using var bootstrapLoggerFactory = LoggerFactory.Create(b => b.AddConsole());
+            bootstrapLoggerFactory.CreateLogger("Microsoft.Teams.Auth").LogWarning(
+                "No credentials configured (CLIENT_ID / CLIENT_SECRET / TENANT_ID). " +
+                "Bot will accept unauthenticated requests on /api/messages.");
         }
 
         builder.Services.
