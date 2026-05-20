@@ -110,28 +110,26 @@ public class Example
 // Citation handler: matches "citation" (case-insensitive)
 teamsApp.OnMessage("(?i)citation", async (context, cancellationToken) =>
 {
-    MessageActivity reply = new("Here is a response with citations [1] [2].")
-    {
-        TextFormat = TextFormats.Markdown
-    };
-
-    reply.AddCitation(1, new CitationAppearance()
-    {
-        Name = "Teams SDK Documentation",
-        Abstract = "The Teams Bot SDK provides a streamlined way to build bots for Microsoft Teams.",
-        Url = new Uri("https://github.com/microsoft/teams.net"),
-        Icon = CitationIcon.Text
-    });
-
-    reply.AddCitation(2, new CitationAppearance()
-    {
-        Name = "Bot Framework Overview",
-        Abstract = "Build intelligent bots that interact naturally with users on Teams.",
-        Keywords = ["bot", "framework"]
-    });
-
-    reply.AddAIGenerated();
-    reply.AddFeedback();
+    TeamsActivity reply = TeamsActivity.CreateBuilder()
+        .WithType(TeamsActivityType.Message)
+        .WithText("Here is a response with citations [1] [2].")
+        .WithProperty("textFormat", TextFormats.Markdown)
+        .AddCitation(1, new CitationAppearance()
+        {
+            Name = "Teams SDK Documentation",
+            Abstract = "The Teams Bot SDK provides a streamlined way to build bots for Microsoft Teams.",
+            Url = new Uri("https://github.com/microsoft/teams.net"),
+            Icon = CitationIcon.Text
+        })
+        .AddCitation(2, new CitationAppearance()
+        {
+            Name = "Bot Framework Overview",
+            Abstract = "Build intelligent bots that interact naturally with users on Teams.",
+            Keywords = ["bot", "framework"]
+        })
+        .AddAIGenerated()
+        .AddFeedback()
+        .Build();
 
     await context.SendActivityAsync(reply, cancellationToken);
 });
