@@ -201,7 +201,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
             && Activity.Recipient?.IsTargeted == true
             && Activity.Id is not null)
         {
-            activity.AddTargetedMessageInfo(Activity.Id);
+            TargetedMessageInfoEntityExtensions.AddToActivity(activity, Activity.Id);
         }
 
         TeamsActivity reply = new TeamsActivityBuilder(activity)

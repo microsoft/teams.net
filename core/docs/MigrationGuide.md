@@ -177,15 +177,24 @@ Available: `WithText()`, `WithSuggestedActions()`, `WithTextFormat()`, `WithAtta
 
 ### Activity Entity Methods
 
-These work on any `TeamsActivity` (including `MessageActivity`):
+Entity getter helpers are exposed via entity-scoped extension methods:
 
 ```csharp
-activity.AddEntity(entity);           // inherited method
-activity.AddAIGenerated();            // extension method
-activity.AddCitation(position, appearance); // extension method
-activity.AddFeedback();               // extension method
-activity.AddSensitivityLabel("name"); // extension method
+// Retrieve entity collections
+activity.GetMentions();             // IEnumerable<MentionEntity>
+activity.GetQuotedMessages();       // IEnumerable<QuotedReplyEntity> (ExperimentalTeamsQuotedReplies)
+activity.GetSensitivityLabels();    // IEnumerable<SensitiveUsageEntity>
+
+// Retrieve single entities
+activity.GetClientInfo();           // ClientInfoEntity?
+activity.GetCitation();             // CitationEntity?
+activity.GetStreamInfo();           // StreamInfoEntity?
+activity.GetTargetedMessageInfo();  // TargetedMessageInfoEntity? (ExperimentalTeamsTargeted)
+activity.GetProductInfo();          // ProductInfoEntity?
+activity.GetMessageEntity();        // OMessageEntity?
 ```
+
+All Get* methods are extension methods defined in the respective entity files (e.g., `GetMentions` is in `MentionEntityExtensions`).
 
 ---
 
@@ -263,14 +272,14 @@ Member access (`.Text`, `.From`, `.Conversation`, `.Value`, etc.) remains the sa
 
 ---
 
-### BC-17: Activity fluent `With*()` methods moved to builder
+### BC-17: Activity fluent `With*()` methods moved to builder/extensions
 
 **Old:**
 ```csharp
 var activity = new Activity().WithFrom(account).WithConversation(conv);
 ```
 
-**New:**
+**New (recommended builder):**
 ```csharp
 var activity = new TeamsActivityBuilder()
     .WithFrom(account)
@@ -278,7 +287,17 @@ var activity = new TeamsActivityBuilder()
     .Build();
 ```
 
-The base `TeamsActivity` no longer has `With*()` methods. Use `TeamsActivityBuilder` instead.
+**New (extension methods on `MessageActivity`):**
+```csharp
+var activity = new MessageActivity()
+    .WithFrom(account)
+    .WithConversation(conv)
+    .WithChannelId("msteams");
+```
+
+Most base `With*()` methods are available as extension methods in `MessageActivityExtensions` (for example `WithId`, `WithChannelId`, `WithFrom`, `WithRecipient`, `WithConversation`, `WithServiceUrl`, `WithLocale`, `WithTimestamp`, `WithLocalTimestamp`, `WithData`, and `WithAppId`).
+
+`WithRelatesTo` is still unavailable because there is no `ConversationReference` equivalent in core.
 
 ---
 

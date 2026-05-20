@@ -393,34 +393,29 @@ These were identified by comparing the full public API surface between old and n
 
 ### BC-15: MessageActivity fluent methods removed
 
-**Decision: IMPLEMENTED** — Extension methods added in `MessageActivityExtensions.cs`
+**Decision: IMPLEMENTED** — MessageActivity fluent extension methods added.
 
-Methods added: `WithText()`, `WithSuggestedActions()`, `WithTextFormat()`, `WithAttachmentLayout()`, `AddAttachment()`, `AddStreamFinal()`.
+Methods added: `WithText()`, `AddText()`, `WithSuggestedActions()`, `WithTextFormat()`, `WithAttachmentLayout()`, `AddAttachment()`, `AddStreamFinal()`.
 
-Not migrated (low priority, underlying properties commented out): `WithSpeak()`, `WithInputHint()`, `WithSummary()`, `WithImportance()`, `WithDeliveryMode()`, `WithExpiration()`, `AddText()`, `Merge()`.
+Not migrated (low priority, underlying properties commented out): `WithSpeak()`, `WithInputHint()`, `WithSummary()`, `WithImportance()`, `WithDeliveryMode()`, `WithExpiration()`, `Merge()`.
 
 ---
 
 ### BC-16: `AddSensitivityLabel()` missing on TeamsActivity
 
-**Decision: IMPLEMENTED** — Extension method added in `ActivityCitationExtensions`.
+**Decision: IMPLEMENTED** — Extension method added in `MessageActivityExtensions`.
 
 ---
 
 ### BC-17: Base Activity fluent `With*()` methods removed
 
-**Decision: NOT MIGRATED** — The old `Activity` base class had 13+ `With*()` methods (`WithId`, `WithFrom`, `WithRecipient`, `WithConversation`, `WithServiceUrl`, `WithTimestamp`, etc.). These are all available on `TeamsActivityBuilder`. Use the builder pattern instead:
+**Decision: IMPLEMENTED (mostly)** — Base activity fluent methods added.
 
-```csharp
-// Old:
-var activity = new Activity().WithFrom(account).WithConversation(conv);
+- **With* methods:** `WithId`, `WithChannelId`, `WithFrom`, `WithRecipient`, `WithRecipient(..., bool isTargeted)`, `WithConversation`, `WithServiceUrl`, `WithLocale`, `WithTimestamp`, `WithLocalTimestamp`, `WithData(ChannelData)`, `WithData(string, object?)`, `WithAppId`
+- **Add* methods:** `AddEntity`, `UpdateEntity`, `AddAIGenerated`, `AddFeedback(bool)`, `AddTargetedMessageInfo`, `AddCitation`, `AddMention`, `AddSensitivityLabel`, `AddClientInfo`
+- **Get* methods:** `GetAccountMention`
 
-// New:
-var activity = new TeamsActivityBuilder()
-    .WithFrom(account)
-    .WithConversation(conv)
-    .Build();
-```
+Remaining gap: `WithRelatesTo` is still not migrated because core currently has no `ConversationReference` model.
 
 ---
 
