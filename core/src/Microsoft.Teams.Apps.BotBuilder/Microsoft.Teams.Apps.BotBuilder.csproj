@@ -1,14 +1,29 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+<!-- Licensed under the MIT License.-->
+
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.3" />
-    </ItemGroup>
-    <ItemGroup>
-      <ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
-    </ItemGroup>
+
+  <PropertyGroup>
+    <PackageId>Microsoft.Teams.Apps.BotBuilder</PackageId>
+    <PackageDescription>Bridge to support smooth migration from BotFramework SDK into Teams SDK.</PackageDescription>
+    <PackageTags>microsoft;teams;msteams;copilot;apps;bots</PackageTags>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<InternalsVisibleTo Include="Microsoft.Teams.Apps.BotBuilder.UnitTests" />
+    <InternalsVisibleTo Include="IntegrationTests" />
+	</ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.22.3" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
+  </ItemGroup>
 </Project>
