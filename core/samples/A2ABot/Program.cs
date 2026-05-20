@@ -32,17 +32,23 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
 teamsApp.OnMessage(async (context, ct) =>
 {
-    string text        = context.Activity.Text?.Trim() ?? string.Empty;
-    string convId      = context.Activity.Conversation!.Id!;
-    string userName    = context.Activity.From?.Name ?? "User";
-    string aadObjectId = context.Activity.From?.AadObjectId ?? string.Empty;
-    string tenantId    = context.Activity.Conversation?.TenantId ?? string.Empty;
-    string serviceUrl  = context.Activity.ServiceUrl?.ToString() ?? string.Empty;
+    string text   = context.Activity.Text?.Trim() ?? string.Empty;
+    string convId = context.Activity.Conversation!.Id!;
+    TurnIdentity identity = new(
+        AadObjectId: Required(context.Activity.From?.AadObjectId,      "From.AadObjectId"),
+        UserName:    context.Activity.From?.Name ?? "User",
+        TenantId:    Required(context.Activity.Conversation?.TenantId, "Conversation.TenantId"),
+        ServiceUrl:  Required(context.Activity.ServiceUrl?.ToString(), "ServiceUrl"));
 
-    string reply = await agent.RunAsync(convId, aadObjectId, userName, tenantId, serviceUrl, text, ct);
+    string reply = await agent.RunAsync(convId, identity, text, ct);
     if (!string.IsNullOrWhiteSpace(reply))
         await context.SendActivityAsync(reply, ct);
 });
+
+static string Required(string? value, string field) =>
+    string.IsNullOrWhiteSpace(value)
+        ? throw new InvalidOperationException($"Activity is missing required field for handoff: {field}.")
+        : value;
 
 webApp.MapA2A("/a2a");
 webApp.MapWellKnownAgentCard(agentCard);

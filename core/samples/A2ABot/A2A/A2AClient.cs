@@ -12,24 +12,25 @@ namespace A2ABot.A2A;
 sealed class A2AClient(IHttpClientFactory factory, Config config)
 {
     private readonly SemaphoreSlim _initLock = new(1, 1);
-    private AgentCard? _cachedCard;
-    private global::A2A.A2AClient? _cachedClient;
+    private volatile CachedPeer? _cached;
+
+    private sealed record CachedPeer(AgentCard Card, global::A2A.A2AClient Client);
 
     public async Task<AgentCard> GetPeerCardAsync(CancellationToken ct)
     {
-        if (_cachedCard is not null) return _cachedCard;
+        if (_cached is not null) return _cached.Card;
 
         await _initLock.WaitAsync(ct);
         try
         {
-            if (_cachedCard is not null) return _cachedCard;
+            if (_cached is not null) return _cached.Card;
 
             HttpClient http = factory.CreateClient("a2a");
             A2ACardResolver resolver = new(new Uri(config.PeerUrl), http);
             AgentCard card = await resolver.GetAgentCardAsync(ct);
 
-            _cachedCard = card;
-            _cachedClient = new global::A2A.A2AClient(new Uri(card.SupportedInterfaces[0].Url), http);
+            global::A2A.A2AClient client = new(new Uri(card.SupportedInterfaces[0].Url), http);
+            _cached = new CachedPeer(card, client);
             return card;
         }
         finally
@@ -42,7 +43,7 @@ sealed class A2AClient(IHttpClientFactory factory, Config config)
     {
         await GetPeerCardAsync(ct);
 
-        await _cachedClient!.SendMessageAsync(new SendMessageRequest
+        await _cached!.Client.SendMessageAsync(new SendMessageRequest
         {
             Message = new Message
             {

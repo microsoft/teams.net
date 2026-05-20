@@ -46,8 +46,9 @@ User-A    Alice (LLM)               Bob (HandoffHandler + LLM)
    ```
 3. Bob's `A2AServer` (an `IAgentHandler`) validates the payload, then uses
    `ConversationClient.CreateConversationAsync` to open a 1:1 with the user,
-   pre-seeds `State.Histories[newConvId]` with the handoff context + a
-   synthetic greeting, and sends the greeting as a proactive message.
+   asks `Agent.GreetWithHandoffAsync` to run the LLM with the handoff context
+   (which leaves the turn in Bob's `AgentThread` for that new conversation),
+   and sends the resulting greeting as a proactive message.
 4. The user sees Bob's DM light up. When they reply, Bob's LLM has both
    the handoff context and its own greeting already in history, so it
    picks up coherently.

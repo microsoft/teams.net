@@ -8,7 +8,6 @@ using A2ABot.A2A;
 using Azure.AI.OpenAI;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
 using AgentCard = A2A.AgentCard;
 
 namespace A2ABot;
@@ -18,9 +17,7 @@ namespace A2ABot;
 // pre-seed it via A2AServer when a peer hands off a user.
 sealed class Agent
 {
-    private static readonly AsyncLocal<TurnContext?> CurrentTurn = new();
-
-    private sealed record TurnContext(string AadObjectId, string UserName, string TenantId, string ServiceUrl);
+    private static readonly AsyncLocal<TurnIdentity?> CurrentTurn = new();
 
     private readonly Config _config;
     private readonly A2AClient _a2aClient;
@@ -37,27 +34,35 @@ sealed class Agent
         _a2aClient = a2aClient;
         _logger = logger;
 
-        string endpoint   = configuration["AzureOpenAI:Endpoint"]   ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required.");
-        string apiKey     = configuration["AzureOpenAI:ApiKey"]     ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required.");
-        string deployment = configuration["AzureOpenAI:Deployment"] ?? throw new InvalidOperationException("AzureOpenAI:Deployment is required.");
+        string endpoint   = Require(configuration, "AzureOpenAI:Endpoint");
+        string apiKey     = Require(configuration, "AzureOpenAI:ApiKey");
+        string deployment = Require(configuration, "AzureOpenAI:Deployment");
 
-        AzureOpenAIClient azure = new(new Uri(endpoint), new ApiKeyCredential(apiKey));
+        if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? endpointUri))
+            throw new InvalidOperationException($"AzureOpenAI:Endpoint is not a valid absolute URI: '{endpoint}'.");
+
+        AzureOpenAIClient azure = new(endpointUri, new ApiKeyCredential(apiKey));
         _chatClient = azure.GetChatClient(deployment).AsIChatClient();
+    }
+
+    private static string Require(IConfiguration cfg, string key)
+    {
+        string? value = cfg[key];
+        if (string.IsNullOrWhiteSpace(value))
+            throw new InvalidOperationException($"{key} is required (set it in appsettings.json or environment).");
+        return value;
     }
 
     public async Task<string> RunAsync(
         string convId,
-        string aadObjectId,
-        string userName,
-        string tenantId,
-        string serviceUrl,
+        TurnIdentity identity,
         string userText,
         CancellationToken ct)
     {
         ChatClientAgent agent = await EnsureAgentAsync(ct);
         AgentThread thread = _threads.GetOrAdd(convId, _ => agent.GetNewThread());
 
-        CurrentTurn.Value = new TurnContext(aadObjectId, userName, tenantId, serviceUrl);
+        CurrentTurn.Value = identity;
 
         AgentRunResponse response = await agent.RunAsync(userText, thread, cancellationToken: ct);
         return response.Text ?? string.Empty;
@@ -145,8 +150,12 @@ sealed class Agent
         [Description("Concise summary of what's been discussed and the user's current question, written so the peer can pick up cold.")] string summary,
         CancellationToken ct)
     {
-        TurnContext turn = CurrentTurn.Value
-            ?? throw new InvalidOperationException("handoff_to_peer invoked outside an active turn.");
+        TurnIdentity? turn = CurrentTurn.Value;
+        if (turn is null)
+        {
+            // Called from a handoff greeting (no identity) — guard against ping-pong.
+            return "handoff_to_peer is unavailable in this context.";
+        }
 
         _logger.LogInformation(
             "[{Bot}] handoff_to_peer firing → peer={Peer} user={User} aadId={AadId} tenant={TenantId}",
