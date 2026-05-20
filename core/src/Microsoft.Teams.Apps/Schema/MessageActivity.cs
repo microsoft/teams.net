@@ -62,19 +62,6 @@ public class MessageActivity : TeamsActivity
         TextFormat = activity.Properties.Extract<string>("textFormat");
         AttachmentLayout = activity.Properties.Extract<string>("attachmentLayout");
         SuggestedActions = activity.Properties.Extract<SuggestedActions>("suggestedActions");
-
-        /*
-        if (activity.Properties.TryGetValue("summary", out var summary))
-        {
-            Summary = summary?.ToString();
-            activity.Properties.Remove("summary");
-        }
-        if (activity.Properties.TryGetValue("deliveryMode", out var deliveryMode))
-        {
-            DeliveryMode = deliveryMode?.ToString();
-            activity.Properties.Remove("deliveryMode");
-        }
-        */
     }
 
     /// <summary>
@@ -124,23 +111,6 @@ public class MessageActivity : TeamsActivity
     [JsonPropertyName("attachmentLayout")]
     public string? AttachmentLayout { get; set; }
 
-
-
-    //TODO : Review properties
-    /*
-    /// <summary>
-    /// Gets or sets the summary of the message.
-    /// </summary>
-    [JsonPropertyName("summary")]
-    public string? Summary { get; set; }
-
-    /// <summary>
-    /// Gets or sets the delivery mode. See <see cref="DeliveryModes"/> for common values.
-    /// </summary>
-    [JsonPropertyName("deliveryMode")]
-    public string? DeliveryMode { get; set; }
-    */
-
 }
 
 /// <summary>
@@ -163,31 +133,3 @@ public static class TextFormats
     /// </summary>
     public const string Xml = "xml";
 }
-
-/*
-/// <summary>
-/// String constants for delivery modes.
-/// </summary>
-public static class DeliveryModes
-{
-    /// <summary>
-    /// Normal delivery mode.
-    /// </summary>
-    public const string Normal = "normal";
-
-    /// <summary>
-    /// Notification delivery mode.
-    /// </summary>
-    public const string Notification = "notification";
-
-    /// <summary>
-    /// Ephemeral delivery mode.
-    /// </summary>
-    public const string Ephemeral = "ephemeral";
-
-    /// <summary>
-    /// Expected replies delivery mode.
-    /// </summary>
-    public const string ExpectedReplies = "expectReplies";
-}
-*/

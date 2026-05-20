@@ -48,6 +48,7 @@ public class StreamInfoEntity : Entity
     }
 }
 
+
 /// <summary>
 /// Represents the types of streams.
 /// </summary>
