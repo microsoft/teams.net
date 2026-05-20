@@ -1,17 +1,25 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+<!-- Licensed under the MIT License.-->
+
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<EnforceCodeStyleInBuild>True</EnforceCodeStyleInBuild>
+		<NoWarn>$(NoWarn);ExperimentalTeamsTargeted</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<PackageId>Microsoft.Teams.Core</PackageId>
+		<PackageDescription>BotApplication and CoreActivity to support Microsoft Teams development.</PackageDescription>
+		<PackageTags>microsoft;teams;msteams;copilot;apps;bots</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<InternalsVisibleTo Include="Microsoft.Teams.Apps.UnitTests" />
 		<InternalsVisibleTo Include="Microsoft.Teams.Core.UnitTests" />
-		<InternalsVisibleTo Include="Microsoft.Teams.Apps" />
-		<InternalsVisibleTo Include="Microsoft.Teams.Apps.BotBuilder" />
 	</ItemGroup>
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.22" />

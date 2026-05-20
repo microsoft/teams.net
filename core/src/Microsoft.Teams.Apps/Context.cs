@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
 
 namespace Microsoft.Teams.Apps;
@@ -56,7 +58,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Send(string text, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> SendAsync(string text, CancellationToken cancellationToken = default)
         => SendActivityAsync(text, cancellationToken);
 
     /// <summary>
@@ -65,36 +67,38 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Send(TeamsActivity activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> SendAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
         => SendActivityAsync(activity, cancellationToken);
 
     /// <summary>
-    /// Sends a text message as a threaded reply to the current activity.
+    /// Sends a text message as a threaded reply to the current activity. When the inbound activity
+    /// has an id, the response auto-quotes it (rendered as a quote bubble above the response in Teams);
+    /// otherwise sends without quoting.
     /// </summary>
     /// <param name="text">The text to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
-    {
-        TeamsActivity reply = new TeamsActivityBuilder()
-            .WithConversationReference(Activity)
-            .WithText(text)
-            .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
-    }
+    public Task<SendActivityResponse?> ReplyAsync(string text, CancellationToken cancellationToken = default)
+        => ReplyAsync(new MessageActivity(text), cancellationToken);
 
     /// <summary>
-    /// Sends an activity as a threaded reply to the current activity.
+    /// Sends an activity to the conversation. When the inbound activity has an id, the response
+    /// auto-quotes it (rendered as a quote bubble above the response in Teams). Otherwise sends
+    /// without quoting. To send without quoting unconditionally, use <see cref="Send(TeamsActivity, CancellationToken)"/>.
     /// </summary>
     /// <param name="activity">The activity to send.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Reply(TeamsActivity activity, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> ReplyAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
     {
-        TeamsActivity reply = new TeamsActivityBuilder(activity)
-            .WithConversationReference(Activity)
-            .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
+        ArgumentNullException.ThrowIfNull(activity);
+#pragma warning disable ExperimentalTeamsQuotedReplies
+        if (!string.IsNullOrWhiteSpace(Activity.Id))
+        {
+            return Quote(Activity.Id, activity, cancellationToken);
+        }
+#pragma warning restore ExperimentalTeamsQuotedReplies
+        return SendActivityAsync(activity, cancellationToken);
     }
 
     /// <summary>
@@ -103,8 +107,60 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">Reserved for future use; currently ignored.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> Typing(string? text = null, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> TypingAsync(string? text = null, CancellationToken cancellationToken = default)
         => SendTypingActivityAsync(cancellationToken);
+
+    /// <summary>
+    /// Send a message to the conversation with a quoted message reference prepended to the text.
+    /// Teams renders the quoted message as a preview bubble above the response text.
+    /// </summary>
+    /// <param name="messageId">The ID of the message to quote.</param>
+    /// <param name="text">The response text, appended to the quoted message placeholder.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The response from sending the activity.</returns>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+    public Task<SendActivityResponse?> Quote(string messageId, string text, CancellationToken cancellationToken = default)
+        => Quote(messageId, new MessageActivity(text), cancellationToken);
+
+    /// <summary>
+    /// Send a message to the conversation with a quoted message reference prepended to the text.
+    /// Teams renders the quoted message as a preview bubble above the response text.
+    /// </summary>
+    /// <param name="messageId">The ID of the message to quote.</param>
+    /// <param name="activity">The activity to send. For <see cref="MessageActivity"/>, a quote placeholder for messageId is prepended to its text. Other activity types are sent as-is without quoting.</param>
+    /// <param name="cancellationToken">Optional cancellation token.</param>
+    /// <returns>The response from sending the activity.</returns>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+    public Task<SendActivityResponse?> Quote(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+        if (activity is MessageActivity message)
+        {
+            message.PrependQuote(messageId);
+        }
+        return SendActivityAsync(activity, cancellationToken);
+    }
+
+    /// <inheritdoc cref="SendAsync(string, CancellationToken)"/>
+    public Task<SendActivityResponse?> Send(string text, CancellationToken cancellationToken = default)
+        => SendAsync(text, cancellationToken);
+
+    /// <inheritdoc cref="SendAsync(TeamsActivity, CancellationToken)"/>
+    public Task<SendActivityResponse?> Send(TeamsActivity activity, CancellationToken cancellationToken = default)
+        => SendAsync(activity, cancellationToken);
+
+    /// <inheritdoc cref="ReplyAsync(string, CancellationToken)"/>
+    public Task<SendActivityResponse?> Reply(string text, CancellationToken cancellationToken = default)
+        => ReplyAsync(text, cancellationToken);
+
+    /// <inheritdoc cref="ReplyAsync(TeamsActivity, CancellationToken)"/>
+    public Task<SendActivityResponse?> Reply(TeamsActivity activity, CancellationToken cancellationToken = default)
+        => ReplyAsync(activity, cancellationToken);
+
+    /// <inheritdoc cref="TypingAsync(string?, CancellationToken)"/>
+    public Task<SendActivityResponse?> Typing(string? text = null, CancellationToken cancellationToken = default)
+        => TypingAsync(text, cancellationToken);
 
     // ==================== Core Send Methods ====================
 
@@ -131,6 +187,23 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendActivityAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(activity);
+
+        bool isTargeted = activity.Recipient?.IsTargeted == true;
+
+        if (isTargeted && Activity.Conversation?.ConversationType == ConversationType.Personal)
+        {
+            throw new InvalidOperationException(
+                "Targeted messages are not supported in personal (1:1) chats.");
+        }
+
+        if (activity.Type == TeamsActivityType.Message
+            && Activity.Recipient?.IsTargeted == true
+            && Activity.Id is not null)
+        {
+            activity.AddTargetedMessageInfo(Activity.Id);
+        }
+
         TeamsActivity reply = new TeamsActivityBuilder(activity)
             .WithConversationReference(Activity)
             .Build();
@@ -160,7 +233,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="options">OAuth options including connection name and card text.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The existing user token if found, or null if the sign-in flow was initiated.</returns>
-    public Task<string?> SignIn(OAuthOptions? options = null, CancellationToken cancellationToken = default)
+    public Task<string?> SignInAsync(OAuthOptions? options = null, CancellationToken cancellationToken = default)
     {
         OAuthFlow flow = ResolveOAuthFlow(options?.ConnectionName);
         return flow.SignInAsync(this, options, cancellationToken);
@@ -171,11 +244,19 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     /// <param name="connectionName">The connection name to sign out from. If null, uses the default registered connection.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
-    public Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default)
+    public Task SignOutAsync(string? connectionName = null, CancellationToken cancellationToken = default)
     {
         OAuthFlow flow = ResolveOAuthFlow(connectionName);
         return flow.SignOutAsync(this, cancellationToken);
     }
+
+    /// <inheritdoc cref="SignInAsync(OAuthOptions?, CancellationToken)"/>
+    public Task<string?> SignIn(OAuthOptions? options = null, CancellationToken cancellationToken = default)
+        => SignInAsync(options, cancellationToken);
+
+    /// <inheritdoc cref="SignOutAsync(string?, CancellationToken)"/>
+    public Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default)
+        => SignOutAsync(connectionName, cancellationToken);
 
     /// <summary>
     /// Whether the activity sender has a valid cached token.
