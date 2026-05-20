@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core.Schema;
@@ -49,6 +50,24 @@ public class TargetedMessageInfoEntityTests
         Assert.NotNull(entity);
         Assert.Equal("targetedMessageInfo", entity.Type);
         Assert.Equal("1772129782775", entity.MessageId);
+    }
+
+    [Fact]
+    public void TargetedMessageInfoEntity_RoundTripsThroughSourceGenContext()
+    {
+        // Pins the [JsonSerializable(typeof(TargetedMessageInfoEntity))] registration on
+        // TeamsActivityJsonContext. Without that line, .Default.TargetedMessageInfoEntity wouldn't
+        // exist and this test would fail to compile / run — preventing a silent Native AOT regression.
+        TargetedMessageInfoEntity entity = new() { MessageId = "1772129782775" };
+
+        string json = JsonSerializer.Serialize(entity, TeamsActivityJsonContext.Default.TargetedMessageInfoEntity);
+        Assert.Contains("\"messageId\"", json);
+        Assert.Contains("1772129782775", json);
+
+        TargetedMessageInfoEntity? roundTripped = JsonSerializer.Deserialize(json, TeamsActivityJsonContext.Default.TargetedMessageInfoEntity);
+        Assert.NotNull(roundTripped);
+        Assert.Equal("targetedMessageInfo", roundTripped.Type);
+        Assert.Equal("1772129782775", roundTripped.MessageId);
     }
 
     [Fact]

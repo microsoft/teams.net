@@ -171,13 +171,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendActivityAsync(string text, CancellationToken cancellationToken = default)
-    {
-        TeamsActivity reply = new TeamsActivityBuilder()
-            .WithConversationReference(Activity)
-            .WithText(text)
-            .Build();
-        return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);
-    }
+        => SendActivityAsync(new MessageActivity(text) { TextFormat = TextFormats.Plain }, cancellationToken);
 
     /// <summary>
     /// Sends an activity to the conversation.
