@@ -6,6 +6,7 @@
         <Copyright>© Microsoft Corporation. All rights reserved.</Copyright>
         <RepositoryUrl>https://github.com/microsoft/teams.net</RepositoryUrl>
         <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl>https://microsoft.github.io/teams-sdk</PackageProjectUrl>
         <GenerateDocumentationFile>false</GenerateDocumentationFile>
         <PackageIcon>bot_icon.png</PackageIcon>
         <PackageReadmeFile>README.md</PackageReadmeFile>
@@ -22,7 +23,7 @@
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
     </PropertyGroup>
     <ItemGroup>
-        <None Include="(MSBuildThisFileDirectory)../../../../bot_icon.png" Pack="true" PackagePath="/" />
+        <None Include="$(MSBuildThisFileDirectory)../bot_icon.png" Pack="true" PackagePath="/" />
         <None Include="README.md" Pack="true" PackagePath="/" />
     </ItemGroup>
     <ItemGroup>

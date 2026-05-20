@@ -2,8 +2,10 @@
 // Licensed under the MIT License.
 
 using System.Net;
+using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
@@ -143,6 +145,81 @@ public class TeamsStreamingWriterTests
         await writer.SendInformativeUpdateAsync("Thinking…");
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync());
+    }
+
+    // ── MessageActivity-based finalize ────────────────────────────────────────
+
+    [Fact]
+    public async Task FinalizeAsync_WithCustomMessageActivity_UsesCallerSuppliedContent()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.AppendResponseAsync("streamed text");
+
+        MessageActivity final = new("explicit text");
+        final.AddFeedback(FeedbackType.Custom);
+
+        await writer.FinalizeResponseAsync(final);
+
+        string finalBody = handler.RequestBodies.Last();
+        // Caller-supplied text wins over accumulated.
+        Assert.Contains("explicit text", finalBody);
+        Assert.DoesNotContain("streamed text", finalBody);
+        // Writer still injects the streamType=final marker.
+        Assert.Contains("\"streamType\": \"final\"", finalBody);
+        // Custom feedback set on the caller's activity is preserved.
+        Assert.Contains("\"feedbackLoop\"", finalBody);
+        Assert.Contains("\"type\": \"custom\"", finalBody);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_WithMessageActivityWithoutText_FallsBackToAccumulated()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        await writer.AppendResponseAsync("Hello, ");
+        await writer.AppendResponseAsync("world");
+
+        // No Text set on the activity — writer should fill in the accumulated text.
+        MessageActivity final = new();
+        final.AddFeedback(FeedbackType.Default);
+
+        await writer.FinalizeResponseAsync(final);
+
+        string finalBody = handler.RequestBodies.Last();
+        Assert.Contains("Hello, world", finalBody);
+        Assert.Contains("\"type\": \"default\"", finalBody);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_AttachmentOnlyReply_RequiresExplicitEmptyText()
+    {
+        (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) = CreateWriter();
+
+        // Note: no AppendResponseAsync — the reply is the attachment only.
+        TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
+            .WithContentType("application/vnd.microsoft.card.adaptive")
+            .WithContent(new JsonObject { ["type"] = "AdaptiveCard", ["version"] = "1.5" })
+            .Build();
+
+        MessageActivity final = new() { Text = "" };
+        final.AddAttachment(attachment);
+
+        await writer.FinalizeResponseAsync(final);
+
+        string finalBody = handler.RequestBodies.Last();
+        Assert.Contains("\"streamType\": \"final\"", finalBody);
+        Assert.Contains("AdaptiveCard", finalBody);
+    }
+
+    [Fact]
+    public async Task FinalizeAsync_EmptyActivityWithNoStreamedText_Throws()
+    {
+        (TeamsStreamingWriter writer, _) = CreateWriter();
+
+        MessageActivity final = new();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() => writer.FinalizeResponseAsync(final));
     }
 
     // ── Shared streamId ───────────────────────────────────────────────────────
