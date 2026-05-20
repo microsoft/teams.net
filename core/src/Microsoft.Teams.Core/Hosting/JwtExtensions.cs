@@ -153,7 +153,7 @@ namespace Microsoft.Teams.Core.Hosting
                 return issuer;
             }
 
-            // Entra tokens � bot-to-bot (agent) and user (tab/API)
+            // Entra tokens - bot-to-bot (agent) and user (tab/API)
             // Use the token's own tid claim for multi-tenant; fall back to configured tenant.
             // The v2.0 expected issuer is derived from the configured Entra instance so sovereign
             // tokens (e.g. login.microsoftonline.us) validate correctly.
@@ -163,9 +163,12 @@ namespace Microsoft.Teams.Core.Hosting
             if (effectiveTenant is not null &&
                 (issuer == $"{entraInstance}{effectiveTenant}/v2.0" ||
                  issuer == $"https://sts.windows.net/{effectiveTenant}/"))
+            {
                 return issuer;
+            }
 
-            throw new SecurityTokenInvalidIssuerException($"Issuer '{issuer}' is not valid.");
+            throw new SecurityTokenInvalidIssuerException(
+                $"Issuer '{issuer}' is not valid for tenant '{effectiveTenant ?? "<unknown>"}'.");
         }
 
         /// <summary>

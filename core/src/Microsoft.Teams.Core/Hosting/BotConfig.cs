@@ -110,9 +110,9 @@ public sealed class BotConfig
         {
             TenantId = section["TenantId"] ?? string.Empty,
             ClientId = section["ClientId"] ?? string.Empty,
-            EntraInstance = ResolveAbsoluteUri(section, "Instance", DefaultEntraInstance, sectionName),
-            OpenIdMetadataUrl = ResolveAbsoluteUri(botFrameworkSection, "OpenIdMetadataUrl", DefaultOpenIdMetadataUrl, BotFrameworkSectionName),
-            BotTokenIssuer = ResolveAbsoluteUri(botFrameworkSection, "BotTokenIssuer", DefaultBotTokenIssuer, BotFrameworkSectionName),
+            EntraInstance = ResolveAbsoluteUri(section, "Instance", DefaultEntraInstance),
+            OpenIdMetadataUrl = ResolveAbsoluteUri(botFrameworkSection, "OpenIdMetadataUrl", DefaultOpenIdMetadataUrl),
+            BotTokenIssuer = ResolveAbsoluteUri(botFrameworkSection, "BotTokenIssuer", DefaultBotTokenIssuer),
             MsalConfigurationSection = section,
             SectionName = sectionName
         };
@@ -128,8 +128,10 @@ public sealed class BotConfig
         return config;
     }
 
-    private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue, string sectionName)
+    private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue)
     {
+        ArgumentNullException.ThrowIfNull(section);
+
         string? value = section[key];
         if (value is null)
         {
@@ -138,7 +140,7 @@ public sealed class BotConfig
         if (!Uri.TryCreate(value, UriKind.Absolute, out _))
         {
             throw new InvalidOperationException(
-                $"Configuration value '{sectionName}:{key}' is not a valid absolute URI: '{value}'.");
+                $"Configuration value '{section.Key}:{key}' is not a valid absolute URI: '{value}'.");
         }
         return value;
     }

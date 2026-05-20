@@ -93,9 +93,12 @@ public class JwtExtensionsTests
         SecurityToken token = FakeJsonWebToken(Tenant);
         string publicIssuer = $"https://login.microsoftonline.com/{Tenant}/v2.0";
 
-        Assert.Throws<SecurityTokenInvalidIssuerException>(() =>
+        SecurityTokenInvalidIssuerException ex = Assert.Throws<SecurityTokenInvalidIssuerException>(() =>
             JwtExtensions.ValidateTeamsIssuer(
                 publicIssuer, token, Tenant, "https://login.microsoftonline.us/", "https://api.botframework.com"));
+
+        Assert.Contains(publicIssuer, ex.Message, StringComparison.Ordinal);
+        Assert.Contains(Tenant, ex.Message, StringComparison.Ordinal);
     }
 
     [Fact]
