@@ -4,9 +4,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Microsoft.Teams.AI.Models.OpenAI</PackageId>
-    <PackageDescription>OpenAI model implementations to be used with `Microsoft.Teams.AI`. Supports all OpenAI-like API models.</PackageDescription>
+    <PackageDescription>[DEPRECATED] Microsoft.Teams.AI.Models.OpenAI is deprecated and will be removed by end of summer 2026.</PackageDescription>
     <PackageProjectUrl>https://microsoft.github.io/teams-sdk</PackageProjectUrl>
-    <PackageTags>microsoft;teams;msteams;copilot;ai;openai</PackageTags>
+    <PackageTags>microsoft;teams;msteams;copilot;ai;openai;deprecated</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -14,6 +14,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <NoWarn>$(NoWarn);CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
