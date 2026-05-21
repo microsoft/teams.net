@@ -8,8 +8,7 @@ namespace Microsoft.Teams.Core.Diagnostics;
 
 /// <summary>
 /// Singletons for the SDK's <see cref="ActivitySource"/>, <see cref="Meter"/>, and instruments.
-/// Internal to <c>Microsoft.Teams.Core</c>; visible to <c>Microsoft.Teams.Apps</c>
-/// and <c>Microsoft.Teams.Apps.BotBuilder</c> via <c>InternalsVisibleTo</c>.
+/// Internal to <c>Microsoft.Teams.Core</c>.
 /// </summary>
 internal static class Telemetry
 {

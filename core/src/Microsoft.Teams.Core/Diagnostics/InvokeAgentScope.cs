@@ -193,36 +193,8 @@ public sealed class InvokeAgentScope : IDisposable
         }
     }
 
-    private static string? TryReadChannelDataTenantId(CoreActivity activity)
-    {
-        if (!activity.Properties.TryGetValue("channelData", out object? channelData) || channelData is null)
-        {
-            return null;
-        }
-
-        try
-        {
-            JsonElement root = channelData switch
-            {
-                JsonElement je => je,
-                _ => JsonSerializer.SerializeToElement(channelData),
-            };
-            if (root.ValueKind == JsonValueKind.Object &&
-                root.TryGetProperty("tenant", out JsonElement tenant) &&
-                tenant.ValueKind == JsonValueKind.Object &&
-                tenant.TryGetProperty("id", out JsonElement id) &&
-                id.ValueKind == JsonValueKind.String)
-            {
-                return id.GetString();
-            }
-        }
-        catch (JsonException)
-        {
-            // Best-effort fallback; ignore malformed channelData.
-        }
-
-        return null;
-    }
+    private static string? TryReadChannelDataTenantId(CoreActivity activity) =>
+        ChannelDataHelper.TryReadTenantId(activity);
 
     private static string SerializeInputMessages(string text)
     {

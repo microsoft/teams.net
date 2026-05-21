@@ -71,7 +71,7 @@ public static class TeamsBotApplicationTelemetry
 ```
 
 The matching internal singletons live in each assembly's `Diagnostics/` folder:
-- `Microsoft.Teams.Core/Diagnostics/Telemetry.cs` — owned by Core; visible to Apps and BotBuilder via `InternalsVisibleTo` (used by Core types only — Apps does not call into it).
+- `Microsoft.Teams.Core/Diagnostics/Telemetry.cs` — owned by Core; internal to `Microsoft.Teams.Core` (Apps has its own `AppsTelemetry` class).
 - `Microsoft.Teams.Apps/Diagnostics/AppsTelemetry.cs` — owned by Apps; the class is named `AppsTelemetry` to avoid collision with the Core `Telemetry` class when both namespaces are imported.
 
 ## Spans

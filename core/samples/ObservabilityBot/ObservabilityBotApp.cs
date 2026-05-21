@@ -147,7 +147,7 @@ public class ObservabilityBotApp : TeamsBotApplication
                             ));
                     }
                 }
-                catch { }
+                catch (JsonException) { }
                 return [];
             })
             .DistinctBy(c => c.Url)
@@ -165,20 +165,18 @@ public class ObservabilityBotApp : TeamsBotApplication
         {
         }
 
-        var responseMsg = TeamsActivity.CreateBuilder()
+        var builder = TeamsActivity.CreateBuilder()
             .WithText(responseText, TextFormats.Markdown)
             .AddMention(context.Activity?.From!)
-            .Build();
-
-        responseMsg.AddAIGenerated();
+            .AddAIGenerated();
 
         for (int i = 0; i < citations.Count; i++)
         {
             var citation = citations[i];
             var abstract_ = citation.Content.Length > 160 ? citation.Content[..157] + "..." : citation.Content;
-            responseMsg.AddCitation(i + 1, new CitationAppearance() { Name = citation.Title, Url = new Uri(citation.Url), Abstract = abstract_, Icon = CitationIcon.Text });
+            builder.AddCitation(i + 1, new CitationAppearance() { Name = citation.Title, Url = new Uri(citation.Url), Abstract = abstract_, Icon = CitationIcon.Text });
         }
 
-        await context.Send(responseMsg, ct);
+        await context.Send(builder.Build(), ct);
     }
 }
