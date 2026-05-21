@@ -13,10 +13,7 @@ namespace Microsoft.Teams.Apps.Diagnostics;
 /// </summary>
 internal static class AppsTelemetry
 {
-    private static readonly string s_version =
-        typeof(AppsTelemetry).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
-        ?? typeof(AppsTelemetry).Assembly.GetName().Version?.ToString()
-        ?? "0.0.0";
+    private const string s_version = ThisAssembly.NuGetPackageVersion;
 
     public static readonly ActivitySource Source =
         new(TeamsBotApplicationTelemetry.ActivitySourceName, s_version);
