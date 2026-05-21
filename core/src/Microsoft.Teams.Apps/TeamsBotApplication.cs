@@ -130,11 +130,11 @@ public class TeamsBotApplication : BotApplication
             // Agent365: set baggage (user.id, user.email, agent details, etc.) for all
             // child spans, then open the invoke_agent scope inside the baggage scope so
             // the span inherits Apps-only required baggage.
-            using var baggageScope = new TeamsBaggageBuilder()
+            using IDisposable baggageScope = new TeamsBaggageBuilder()
                 .FromTeamsContext(defaultContext)
                 .Build();
 
-            using var invokeScope = InvokeAgentScope.Start(activity);
+            using InvokeAgentScope invokeScope = InvokeAgentScope.Start(activity);
 
             try
             {

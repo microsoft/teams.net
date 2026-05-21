@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
-using System.Reflection;
 
 namespace Microsoft.Teams.Apps.Diagnostics;
 

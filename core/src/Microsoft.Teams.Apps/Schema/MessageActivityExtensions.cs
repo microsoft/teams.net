@@ -344,8 +344,8 @@ public static class MessageActivityExtensions
 
         message.Entities ??= [];
         message.Entities.Insert(0, new QuotedReplyEntity { QuotedReply = new QuotedReplyData { MessageId = messageId } });
-        var placeholder = QuotedReplyEntityExtensions.QuotedPlaceholder(messageId);
-        var text = message.Text?.Trim() ?? "";
+        string placeholder = QuotedReplyEntityExtensions.QuotedPlaceholder(messageId);
+        string text = message.Text?.Trim() ?? "";
         message.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
 
         return message;

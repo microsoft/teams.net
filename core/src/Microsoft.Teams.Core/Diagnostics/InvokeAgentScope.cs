@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Core.Diagnostics;
@@ -227,7 +226,7 @@ public sealed class InvokeAgentScope : IDisposable
 
     private static string SerializeInputMessages(string text)
     {
-        var envelope = new MessageEnvelope
+        MessageEnvelope envelope = new()
         {
             Version = MessageSchemaVersion,
             Messages =
@@ -244,7 +243,7 @@ public sealed class InvokeAgentScope : IDisposable
 
     private static string SerializeOutputMessages(string[] texts)
     {
-        var messages = new MessageEntry[texts.Length];
+        MessageEntry[] messages = new MessageEntry[texts.Length];
         for (int i = 0; i < texts.Length; i++)
         {
             messages[i] = new MessageEntry
@@ -254,7 +253,7 @@ public sealed class InvokeAgentScope : IDisposable
             };
         }
 
-        var envelope = new MessageEnvelope { Version = MessageSchemaVersion, Messages = messages };
+        MessageEnvelope envelope = new() { Version = MessageSchemaVersion, Messages = messages };
         return JsonSerializer.Serialize(envelope, s_jsonOptions);
     }
 

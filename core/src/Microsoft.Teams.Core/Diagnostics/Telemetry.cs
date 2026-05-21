@@ -14,7 +14,7 @@ namespace Microsoft.Teams.Core.Diagnostics;
 internal static class Telemetry
 {
     private const string s_version = ThisAssembly.NuGetPackageVersion;
-        
+
     public static readonly ActivitySource Source =
         new(CoreTelemetryNames.ActivitySourceName, s_version);
 
