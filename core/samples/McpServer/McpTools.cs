@@ -14,11 +14,11 @@ namespace McpServer;
 // [McpServerTool] method below becomes one tool surfaced to MCP clients.
 // The class is registered via WithTools<McpTools>() in Program.cs.
 [McpServerToolType]
-public sealed class McpTools(TeamsBotApplication app, State state, IConfiguration config)
+public sealed class McpTools(TeamsBotApplication app, State state, IConfiguration config, GraphClient graph)
 {
     [McpServerTool(Name = "notify"), Description("Send a notification to a Teams user. No response expected.")]
     public async Task<NotifyResult> Notify(
-        [Description("The Teams user id (e.g. 29:...) to notify.")] string userId,
+        [Description("The AAD object id of the Teams user to notify.")] string userId,
         [Description("The message text to send.")] string message,
         CancellationToken cancellationToken = default)
     {
@@ -37,7 +37,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         "Ask a Teams user a question. Returns a request_id — use get_reply for their response. " +
         "Only one outstanding ask per user is supported; their next message answers it.")]
     public async Task<AskResult> Ask(
-        [Description("The Teams user id to ask.")] string userId,
+        [Description("The AAD object id of the Teams user to ask.")] string userId,
         [Description("The question to ask.")] string question,
         CancellationToken cancellationToken = default)
     {
@@ -91,7 +91,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
     [McpServerTool(Name = "request_approval"), Description(
         "Send an approval request to a Teams user. Returns an approval_id — use get_approval for the decision.")]
     public async Task<ApprovalRequestResult> RequestApproval(
-        [Description("The Teams user id to ask for approval.")] string userId,
+        [Description("The AAD object id of the Teams user to ask for approval.")] string userId,
         [Description("Title of the approval request.")] string title,
         [Description("Description of what is being approved.")] string description,
         CancellationToken cancellationToken = default)
@@ -130,6 +130,18 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
             throw new InvalidOperationException($"No approval found with approval_id {approvalId}.");
         }
         return new ApprovalResult(ApprovalId: approvalId, Status: status);
+    }
+
+    [McpServerTool(Name = "find_user"), Description(
+        "Find users in this tenant by partial name, email, or UPN. " +
+        "Returns up to 5 matches with their AAD object ids — pass an id to " +
+        "notify, ask, or request_approval.")]
+    public async Task<FindUserResult> FindUser(
+        [Description("Name, email, or UPN fragment to search for.")] string query,
+        CancellationToken cancellationToken = default)
+    {
+        IReadOnlyList<UserMatch> matches = await graph.SearchUsersAsync(query, top: 5, cancellationToken);
+        return new FindUserResult(matches);
     }
 
     // Returns the cached 1:1 conversation id for a user, or opens a new 1:1 proactively.

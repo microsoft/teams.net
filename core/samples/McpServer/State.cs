@@ -30,13 +30,13 @@ public sealed record PendingAsk(string UserId, string Status = AskStatus.Pending
 /// </summary>
 public sealed class State
 {
-    /// <summary>userId -> personal conversationId. Populated on first incoming 1:1 message.</summary>
+    /// <summary>User AAD object id -> personal conversationId. Populated on first incoming 1:1 message.</summary>
     public ConcurrentDictionary<string, string> Conversations { get; } = new();
 
     /// <summary>requestId -> PendingAsk.</summary>
     public ConcurrentDictionary<string, PendingAsk> PendingAsks { get; } = new();
 
-    /// <summary>userId -> requestId for their current pending ask. Cleared once the user replies.</summary>
+    /// <summary>User AAD object id -> requestId for their current pending ask. Cleared once the user replies.</summary>
     public ConcurrentDictionary<string, string> UserPendingAsk { get; } = new();
 
     /// <summary>approvalId -> approval status. Values: "pending", "approved", "rejected".</summary>

@@ -12,6 +12,7 @@ builder.Services.AddTeamsBotApplication();
 // State is a singleton so the same maps are shared between the bot's
 // activity handlers and the MCP tools. Replace with a persistent store for production.
 builder.Services.AddSingleton<State>();
+builder.Services.AddHttpClient<GraphClient>();
 builder.Services
     .AddMcpServer()
     .WithHttpTransport()
@@ -26,7 +27,7 @@ ILogger<Program> logger = webApp.Services.GetRequiredService<ILogger<Program>>()
 
 bot.OnMessage(async (context, cancellationToken) =>
 {
-    string userId = context.Activity.From?.Id ?? string.Empty;
+    string userId = context.Activity.From?.AadObjectId ?? string.Empty;
     string conversationId = context.Activity.Conversation?.Id ?? string.Empty;
 
     if (context.Activity.ServiceUrl is not null)
