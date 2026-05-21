@@ -10,6 +10,7 @@
     <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Streaming/Microsoft.Bot.Streaming.csproj" />
   </Folder> -->
   <Folder Name="/Samples/">
+    <Project Path="samples/A2ABot/A2ABot.csproj" />
     <Project Path="samples/AFBot/AFBot.csproj" Id="ca5b4abd-3f26-457b-8197-ff9415506beb" />
     <Project Path="samples/AllInvokesBot/AllInvokesBot.csproj" />
     <Project Path="samples/CompatBot/CompatBot.csproj" Id="39461362-c3d0-41ae-9ed7-f7e1232a8ead" />
@@ -38,7 +39,6 @@
     <File Path="../.github/workflows/core-test.yaml" />
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
-    <File Path="docs/Architecture.md" />
     <File Path="README.md" />
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Build.targets" />

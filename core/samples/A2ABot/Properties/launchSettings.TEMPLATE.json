@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "Alice": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Alice"
+      }
+    },
+    "Bob": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:3979",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Bob"
+      }
+    }
+  }
+}
