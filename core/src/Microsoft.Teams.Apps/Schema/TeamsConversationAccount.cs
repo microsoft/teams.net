@@ -49,7 +49,7 @@ public class TeamsConversationAccount : ConversationAccount
         result.Email = result.Properties.Extract<string>("email");
         result.UserPrincipalName = result.Properties.Extract<string>("userPrincipalName");
         result.UserRole = result.Properties.Extract<string>("userRole");
-        result.TenantId = result.Properties.Extract<string>("tenantId");
+        result.TenantId = result.Properties.Extract<string>("tenantId") ?? conversationAccount.TenantId;
         return result;
     }
 
@@ -93,5 +93,9 @@ public class TeamsConversationAccount : ConversationAccount
     /// Gets or sets the TenantId.
     /// </summary>
     [JsonPropertyName("tenantId")]
-    public string? TenantId { get; set; }
+    public new string? TenantId
+    {
+        get => base.TenantId;
+        set => base.TenantId = value;
+    }
 }
