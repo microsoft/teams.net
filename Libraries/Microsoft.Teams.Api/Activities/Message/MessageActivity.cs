@@ -306,18 +306,14 @@ public class MessageActivity : Activity
         #pragma warning disable CS0618
         Speak ??= from.Speak;
         InputHint ??= from.InputHint;
+        Importance ??= from.Importance;
+        Expiration ??= from.Expiration;
         #pragma warning restore CS0618
         Summary ??= from.Summary;
         TextFormat ??= from.TextFormat;
         AttachmentLayout ??= from.AttachmentLayout;
         SuggestedActions ??= from.SuggestedActions;
-        #pragma warning disable CS0618
-        Importance ??= from.Importance;
-        #pragma warning restore CS0618
         DeliveryMode ??= from.DeliveryMode;
-        #pragma warning disable CS0618
-        Expiration ??= from.Expiration;
-        #pragma warning restore CS0618
         Value ??= from.Value;
         AddAttachment(from.Attachments?.ToArray() ?? []);
 
