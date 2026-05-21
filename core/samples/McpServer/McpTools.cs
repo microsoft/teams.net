@@ -34,8 +34,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
     }
 
     [McpServerTool(Name = "ask"), Description(
-        "Ask a Teams user a question. Returns a request_id — use get_reply for their response. " +
-        "Only one outstanding ask per user is supported; their next message answers it.")]
+        "Ask a Teams user a question. Returns a request_id — call wait_for_reply with it to get the answer.")]
     public async Task<AskResult> Ask(
         [Description("The AAD object id of the Teams user to ask.")] string userId,
         [Description("The question to ask.")] string question,
@@ -44,24 +43,13 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         string conversationId = await GetOrCreateConversationAsync(userId, cancellationToken);
         string requestId = Guid.NewGuid().ToString();
 
-        // If the user already has a pending ask, mark it superseded before replacing it,
-        // so callers polling get_reply on the old request_id don't wait indefinitely.
-        if (state.UserPendingAsk.TryGetValue(userId, out string? previousRequestId)
-            && state.PendingAsks.TryGetValue(previousRequestId, out PendingAsk? previousAsk)
-            && previousAsk.Status == AskStatus.Pending)
-        {
-            PendingAsk superseded = previousAsk with { Status = AskStatus.Superseded };
-            state.PendingAsks.TryUpdate(previousRequestId, superseded, previousAsk);
-        }
-
         // Record the pending ask before sending, so a fast reply is never lost.
         state.PendingAsks[requestId] = new PendingAsk(userId);
-        state.UserPendingAsk[userId] = requestId;
         TeamsActivity askActivity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .WithServiceUrl(state.ServiceUrl)
             .WithConversation(new Conversation(conversationId))
-            .WithText(question)
+            .WithAdaptiveCardAttachment(Cards.AskCard(requestId, question))
             .Build();
         try
         {
@@ -70,14 +58,14 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         catch
         {
             state.PendingAsks.TryRemove(requestId, out _);
-            state.UserPendingAsk.TryRemove(userId, out _);
             throw;
         }
         return new AskResult(RequestId: requestId);
     }
 
     [McpServerTool(Name = "get_reply"), Description(
-        "Get the reply to a question sent with ask. Returns status 'pending' until the user responds.")]
+        "Snapshot the current reply state for an ask. this exists for manual polling. " +
+        "Returns status 'pending' until the user responds.")]
     public ReplyResult GetReply(
         [Description("The request_id returned from ask.")] string requestId)
     {
@@ -88,8 +76,50 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
         return new ReplyResult(Status: entry.Status, Reply: entry.Reply);
     }
 
+    [McpServerTool(Name = "wait_for_reply"), Description(
+        "Wait for the user's reply to an earlier ask. Blocks up to timeout_seconds (default 30). " +
+        "Returns the reply when it arrives, or status='pending' if the timeout fires")]
+    public async Task<ReplyResult> WaitForReply(
+        [Description("The request_id returned from ask.")] string requestId,
+        [Description("Max seconds to wait before returning (default 30).")] int timeoutSeconds = 30,
+        CancellationToken cancellationToken = default)
+    {
+        if (!state.PendingAsks.TryGetValue(requestId, out PendingAsk? entry))
+        {
+            throw new InvalidOperationException($"No ask found with request_id {requestId}.");
+        }
+        if (entry.Status != AskStatus.Pending)
+        {
+            return new ReplyResult(entry.Status, entry.Reply);
+        }
+
+        TaskCompletionSource<PendingAsk> waiter = state.ReplyWaiters.GetOrAdd(
+            requestId,
+            _ => new TaskCompletionSource<PendingAsk>(TaskCreationOptions.RunContinuationsAsynchronously));
+
+        // Re-check after registering the waiter so we don't miss a signal that
+        // fired between the initial read and GetOrAdd.
+        if (state.PendingAsks.TryGetValue(requestId, out PendingAsk? latest)
+            && latest.Status != AskStatus.Pending)
+        {
+            return new ReplyResult(latest.Status, latest.Reply);
+        }
+
+        try
+        {
+            PendingAsk result = await waiter.Task.WaitAsync(
+                TimeSpan.FromSeconds(timeoutSeconds), cancellationToken);
+            return new ReplyResult(result.Status, result.Reply);
+        }
+        catch (TimeoutException)
+        {
+            state.PendingAsks.TryGetValue(requestId, out PendingAsk? current);
+            return new ReplyResult(current?.Status ?? AskStatus.Pending, current?.Reply);
+        }
+    }
+
     [McpServerTool(Name = "request_approval"), Description(
-        "Send an approval request to a Teams user. Returns an approval_id — use get_approval for the decision.")]
+        "Send an approval request to a Teams user. Returns an approval_id — call wait_for_approval with it to get the decision.")]
     public async Task<ApprovalRequestResult> RequestApproval(
         [Description("The AAD object id of the Teams user to ask for approval.")] string userId,
         [Description("Title of the approval request.")] string title,
@@ -121,7 +151,8 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
     }
 
     [McpServerTool(Name = "get_approval"), Description(
-        "Get the status of an approval request. Returns 'pending', 'approved', or 'rejected'.")]
+        "Snapshot the current status of an approval request. this exists for manual polling." +
+        "Returns 'pending', 'approved', or 'rejected'.")]
     public ApprovalResult GetApproval(
         [Description("The approval_id returned from request_approval.")] string approvalId)
     {
@@ -130,6 +161,45 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
             throw new InvalidOperationException($"No approval found with approval_id {approvalId}.");
         }
         return new ApprovalResult(ApprovalId: approvalId, Status: status);
+    }
+
+    [McpServerTool(Name = "wait_for_approval"), Description(
+        "Wait for an approval decision. Blocks up to timeout_seconds (default 30). " +
+        "Returns 'approved' or 'rejected' when the user clicks, or 'pending' if the timeout fires.")]
+    public async Task<ApprovalResult> WaitForApproval(
+        [Description("The approval_id returned from request_approval.")] string approvalId,
+        [Description("Max seconds to wait before returning (default 30).")] int timeoutSeconds = 30,
+        CancellationToken cancellationToken = default)
+    {
+        if (!state.Approvals.TryGetValue(approvalId, out string? status))
+        {
+            throw new InvalidOperationException($"No approval found with approval_id {approvalId}.");
+        }
+        if (status != ApprovalStatus.Pending)
+        {
+            return new ApprovalResult(approvalId, status);
+        }
+
+        TaskCompletionSource<string> waiter = state.ApprovalWaiters.GetOrAdd(
+            approvalId,
+            _ => new TaskCompletionSource<string>(TaskCreationOptions.RunContinuationsAsynchronously));
+
+        if (state.Approvals.TryGetValue(approvalId, out string? latest) && latest != ApprovalStatus.Pending)
+        {
+            return new ApprovalResult(approvalId, latest);
+        }
+
+        try
+        {
+            string result = await waiter.Task.WaitAsync(
+                TimeSpan.FromSeconds(timeoutSeconds), cancellationToken);
+            return new ApprovalResult(approvalId, result);
+        }
+        catch (TimeoutException)
+        {
+            state.Approvals.TryGetValue(approvalId, out string? current);
+            return new ApprovalResult(approvalId, current ?? ApprovalStatus.Pending);
+        }
     }
 
     [McpServerTool(Name = "find_user"), Description(
