@@ -31,7 +31,7 @@ public class TeamsBotApplicationHostingExtensionsTests
             ["AzureAd:TenantId"] = "teams-bundle-tenant-id"
         };
 
-        ServiceProvider serviceProvider = BuildServiceProvider(configData);
+        using ServiceProvider serviceProvider = BuildServiceProvider(configData);
         TeamsBotApplicationDependencies deps = serviceProvider.GetRequiredService<TeamsBotApplicationDependencies>();
 
         Assert.NotNull(deps.ConversationClient);
