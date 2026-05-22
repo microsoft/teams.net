@@ -10,35 +10,45 @@ using Microsoft.Teams.Cards;
 
 namespace ExtAIBot;
 
-// Bot activity handlers: incoming messages, clarification-card submits, and the
-// custom-feedback fetch/submit pair. Each handler ultimately funnels a user-supplied
-// string back through the Agent.
-internal static class TeamsBotAppHandlers
+// Teams bot subclass: wires the four activity handlers (message, clarification card
+// submit, custom-feedback fetch/submit) in its constructor. Each handler funnels a
+// user-supplied string back through the Agent.
+internal class ExtAIBotApp : TeamsBotApplication
 {
-    public static TeamsBotApplication RegisterHandlers(this TeamsBotApplication teamsApp, Agent agent, ILogger logger)
+    private readonly Agent _agent;
+    private readonly ILogger<ExtAIBotApp> _logger;
+
+    public ExtAIBotApp(
+        TeamsBotApplicationDependencies dependencies,
+        Agent agent,
+        ILogger<ExtAIBotApp> logger)
+        : base(dependencies)
     {
+        _agent = agent;
+        _logger = logger;
+
         // Message handler.
-        teamsApp.OnMessage(async (context, cancellationToken) =>
+        this.OnMessage(async (context, cancellationToken) =>
         {
             string userText = context.Activity.TextWithoutMentions ?? "";
-            await RespondAsync(agent, context, userText, cancellationToken);
+            await RespondAsync(context, userText, cancellationToken);
         });
 
         // Clarification: adaptive card action.
         // Triggered when the user submits the clarification card (Action.Execute, verb "clarification").
-        teamsApp.OnAdaptiveCardAction(async (context, cancellationToken) =>
+        this.OnAdaptiveCardAction(async (context, cancellationToken) =>
         {
             if (context.Activity.Value?.Action?.Verb == "clarification")
             {
                 string choice = context.Activity.Value.Action.Data?["clarificationChoice"]?.ToString() ?? "";
-                await RespondAsync(agent, context, choice, cancellationToken);
+                await RespondAsync(context, choice, cancellationToken);
             }
             return InvokeResponse.Ok();
         });
 
         // Feedback: message fetch task.
         // Triggered when the user clicks thumbs up or thumbs down on a bot reply.
-        teamsApp.OnMessageFetchTask((context, cancellationToken) =>
+        this.OnMessageFetchTask((context, cancellationToken) =>
         {
             string? reaction = context.Activity.Value?.Data?.ActionValue?.Reaction;
 
@@ -52,28 +62,26 @@ internal static class TeamsBotAppHandlers
         });
 
         // Feedback: message submit action.
-        teamsApp.OnMessageSubmitFeedback((context, cancellationToken) =>
+        this.OnMessageSubmitFeedback((context, cancellationToken) =>
         {
             MessageSubmitFeedbackValue? feedback = context.Activity.Value;
-            logger.LogInformation("Feedback received — reaction: {Reaction}, feedback: {Feedback}",
+            _logger.LogInformation("Feedback received — reaction: {Reaction}, feedback: {Feedback}",
                 feedback?.Reaction, feedback?.Feedback);
             return Task.FromResult(InvokeResponse.Ok());
         });
-
-        return teamsApp;
     }
 
     // Runs the agent and streams a response back. Shared between the incoming-message
     // handler and the clarification-card submit handler — both flows ultimately just
     // feed a user-supplied string into the agent.
-    private static async Task RespondAsync<TActivity>(Agent agent, Context<TActivity> context, string userText, CancellationToken cancellationToken)
+    private async Task RespondAsync<TActivity>(Context<TActivity> context, string userText, CancellationToken cancellationToken)
         where TActivity : TeamsActivity
     {
         _ = context.Activity.Conversation?.Id
             ?? throw new InvalidOperationException("Missing conversation ID.");
 
         TeamsStreamingWriter writer = TeamsStreamingWriter.CreateFromContext(context);
-        RunResult result = await agent.RunAsync(context.Activity.Conversation!.Id, userText, writer, cancellationToken);
+        RunResult result = await _agent.RunAsync(context.Activity.Conversation!.Id, userText, writer, cancellationToken);
 
         IList<Entity> entities = result.Citations.BuildEntities(result.FullText);
 

@@ -113,6 +113,7 @@ public static class TeamsBotApplicationHostingExtensions
 
         services.AddBotApplication<TApp>(botConfig);
         services.AddBotClient<ApiClient>(nameof(ApiClient), botConfig);
+        services.AddSingleton<TeamsBotApplicationDependencies>();
         return services;
     }
 
