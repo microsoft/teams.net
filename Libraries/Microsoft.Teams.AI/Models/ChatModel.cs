@@ -9,6 +9,7 @@ namespace Microsoft.Teams.AI.Models;
 /// a model that can reason over and
 /// respond with text
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IChatModel<TOptions> : IModel<TOptions>
 {
     /// <summary>
@@ -33,6 +34,7 @@ public interface IChatModel<TOptions> : IModel<TOptions>
 /// <summary>
 /// options to send with the message
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class ChatModelOptions<TOptions>
 {
     /// <summary>

@@ -12,6 +12,7 @@ public partial class OpenAIChatModel
     /// <summary>
     /// the model options
     /// </summary>
+    [Obsolete("Microsoft.Teams.AI.Models.OpenAI is deprecated and will be removed by end of summer 2026.")]
     public class Options : OpenAIClientOptions
     {
         /// <summary>

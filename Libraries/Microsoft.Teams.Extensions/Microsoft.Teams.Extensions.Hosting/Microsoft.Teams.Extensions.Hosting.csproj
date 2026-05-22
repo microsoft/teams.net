@@ -14,7 +14,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <NoWarn>CS8618</NoWarn>
+    <NoWarn>CS8618;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -6,6 +6,7 @@ namespace Microsoft.Teams.AI;
 /// <summary>
 /// a collection of functions
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class FunctionCollection : Dictionary<string, IFunction>
 {
     /// <summary>
