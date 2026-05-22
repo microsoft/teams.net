@@ -9,6 +9,7 @@ namespace Microsoft.Teams.AI.Models.OpenAI.Builders;
 /// <summary>
 /// https://github.com/openai/openai-dotnet/blob/main/examples/Chat/Example04_FunctionCallingStreaming.cs#L74
 /// </summary>
+[Obsolete("Microsoft.Teams.AI.Models.OpenAI is deprecated and will be removed by end of summer 2026.")]
 public class SequenceBuilder<T>
 {
     Segment? _first;
