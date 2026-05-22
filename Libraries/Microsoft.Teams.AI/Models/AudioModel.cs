@@ -8,6 +8,7 @@ namespace Microsoft.Teams.AI.Models;
 /// <summary>
 /// a model that can reason over audio
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IAudioModel<TOptions> : IModel<TOptions>
 {
     /// <summary>
