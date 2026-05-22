@@ -117,7 +117,6 @@ Provide credentials via `appsettings.json`:
     "Instance": "https://login.microsoftonline.com/",
     "TenantId": "<your-tenant-id>",
     "ClientId": "<your-client-id>",
-    "Scope": "https://api.botframework.com/.default",
     "ClientCredentials": [
       {
         "SourceType": "ClientSecret",

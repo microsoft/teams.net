@@ -7,11 +7,13 @@ namespace Microsoft.Teams.AI;
 /// used to handler streamed chunks of text
 /// </summary>
 /// <param name="text">the text chunk</param>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public delegate Task OnStreamChunk(string text);
 
 /// <summary>
 /// represents a stream
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IStream
 {
     /// <summary>
@@ -24,6 +26,7 @@ public interface IStream
 /// <summary>
 /// Streams text chunks
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class Stream(OnStreamChunk onChunk) : IStream
 {
     public void Emit(string text)
