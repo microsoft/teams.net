@@ -1,7 +1,5 @@
 <Project>
     <PropertyGroup>
         <TreatWarningsAsErrors>True</TreatWarningsAsErrors>
-        <!-- CS0618 suppressed while samples still demonstrate AddTeamsDevTools (deprecated). Remove when samples are migrated. -->
-        <NoWarn>$(NoWarn);CS0618</NoWarn>
     </PropertyGroup>
 </Project>
