@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Apps.Schema;
@@ -19,10 +21,12 @@ internal class ExtAIBotApp : TeamsBotApplication
     private readonly ILogger<ExtAIBotApp> _logger;
 
     public ExtAIBotApp(
-        TeamsBotApplicationDependencies dependencies,
+        ApiClient api,
+        IHttpContextAccessor accessor,
+        ILogger<ExtAIBotApp> logger,
         Agent agent,
-        ILogger<ExtAIBotApp> logger)
-        : base(dependencies)
+        TeamsBotApplicationOptions? options = null)
+        : base(api, accessor, logger, options)
     {
         _agent = agent;
         _logger = logger;

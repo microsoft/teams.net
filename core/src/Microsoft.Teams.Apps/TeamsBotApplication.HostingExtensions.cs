@@ -107,13 +107,12 @@ public static class TeamsBotApplicationHostingExtensions
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
 
         // Register TeamsBotApplicationOptions
-        TeamsBotApplicationOptions teamsOptions = new();
+        TeamsBotApplicationOptions teamsOptions = new() { AppId = botConfig.ClientId };
         configure?.Invoke(teamsOptions);
         services.AddSingleton(teamsOptions);
 
         services.AddBotApplication<TApp>(botConfig);
         services.AddBotClient<ApiClient>(nameof(ApiClient), botConfig);
-        services.AddSingleton<TeamsBotApplicationDependencies>();
         return services;
     }
 

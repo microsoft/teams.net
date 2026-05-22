@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Apps.Api.Clients;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
@@ -23,7 +26,7 @@ public class TeamsBotApplicationHostingExtensionsTests
     }
 
     [Fact]
-    public void AddTeamsBotApplication_RegistersTeamsBotApplicationDependencies_WithAllFieldsPopulated()
+    public void AddTeamsBotApplication_RegistersAllRequiredServices()
     {
         Dictionary<string, string?> configData = new()
         {
@@ -32,20 +35,15 @@ public class TeamsBotApplicationHostingExtensionsTests
         };
 
         using ServiceProvider serviceProvider = BuildServiceProvider(configData);
-        TeamsBotApplicationDependencies deps = serviceProvider.GetRequiredService<TeamsBotApplicationDependencies>();
 
-        Assert.NotNull(deps.ConversationClient);
-        Assert.NotNull(deps.UserTokenClient);
-        Assert.NotNull(deps.TeamsApiClient);
-        Assert.NotNull(deps.HttpContextAccessor);
-        Assert.NotNull(deps.Logger);
-        Assert.NotNull(deps.Options);
-        Assert.Equal("teams-bundle-client-id", deps.Options!.AppId);
-        Assert.NotNull(deps.TeamsOptions);
+        Assert.NotNull(serviceProvider.GetRequiredService<ApiClient>());
+        Assert.NotNull(serviceProvider.GetRequiredService<IHttpContextAccessor>());
+        TeamsBotApplicationOptions options = serviceProvider.GetRequiredService<TeamsBotApplicationOptions>();
+        Assert.Equal("teams-bundle-client-id", options.AppId);
     }
 
     [Fact]
-    public void AddTeamsBotApplication_WithCustomSubclass_ResolvesViaBundledCtor()
+    public void AddTeamsBotApplication_WithCustomSubclass_ResolvesViaDI()
     {
         Dictionary<string, string?> configData = new()
         {
@@ -60,22 +58,27 @@ public class TeamsBotApplicationHostingExtensionsTests
         ServiceCollection services = new();
         services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging();
-        services.AddTeamsBotApplication<BundleSubclassBot>();
+        services.AddTeamsBotApplication<SubclassBot>();
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        BundleSubclassBot bot = serviceProvider.GetRequiredService<BundleSubclassBot>();
+        SubclassBot bot = serviceProvider.GetRequiredService<SubclassBot>();
 
-        Assert.True(bot.ConstructedViaBundle);
+        Assert.True(bot.ConstructedViaDI);
         Assert.Equal("subclass-client-id", bot.AppId);
     }
 
-    private sealed class BundleSubclassBot : TeamsBotApplication
+    private sealed class SubclassBot : TeamsBotApplication
     {
-        public bool ConstructedViaBundle { get; }
+        public bool ConstructedViaDI { get; }
 
-        public BundleSubclassBot(TeamsBotApplicationDependencies services) : base(services)
+        public SubclassBot(
+            ApiClient api,
+            IHttpContextAccessor accessor,
+            ILogger<SubclassBot> logger,
+            TeamsBotApplicationOptions? options = null)
+            : base(api, accessor, logger, options)
         {
-            ConstructedViaBundle = true;
+            ConstructedViaDI = true;
         }
     }
 }

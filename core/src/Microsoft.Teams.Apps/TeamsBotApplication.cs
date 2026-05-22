@@ -82,16 +82,18 @@ public class TeamsBotApplication : BotApplication
     public ApiClient Api { get; }
 
     /// <summary>
-    /// Initializes a new instance using a bundled <see cref="TeamsBotApplicationDependencies"/>.
-    /// Designed for subclassing: derived types declare a single-parameter constructor that
-    /// forwards to this overload.
+    /// Initializes a new <see cref="TeamsBotApplication"/>.
     /// </summary>
-    /// <param name="dependencies">The bundled dependencies. Cannot be null.</param>
+    /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
+    /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
+    /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
+    /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
     /// <example>
     /// <code>
     /// public class MyBot : TeamsBotApplication
     /// {
-    ///     public MyBot(TeamsBotApplicationDependencies deps) : base(deps)
+    ///     public MyBot(ApiClient api, IHttpContextAccessor accessor, ILogger&lt;MyBot&gt; logger, TeamsBotApplicationOptions? options = null)
+    ///         : base(api, accessor, logger, options)
     ///     {
     ///         this.OnMessage(async (ctx, ct) =>
     ///             await ctx.SendActivityAsync("Hello!", ct));
@@ -99,28 +101,30 @@ public class TeamsBotApplication : BotApplication
     /// }
     /// </code>
     /// </example>
-    public TeamsBotApplication(TeamsBotApplicationDependencies dependencies)
+    public TeamsBotApplication(
+        ApiClient teamsApiClient,
+        IHttpContextAccessor httpContextAccessor,
+        ILogger<TeamsBotApplication> logger,
+        TeamsBotApplicationOptions? options = null)
         : base(
-            (dependencies ?? throw new ArgumentNullException(nameof(dependencies))).ConversationClient,
-            dependencies.UserTokenClient,
-            dependencies.Logger,
-            dependencies.Options)
+            (teamsApiClient ?? throw new ArgumentNullException(nameof(teamsApiClient))).ConversationClient,
+            teamsApiClient.UserTokenClient,
+            logger,
+            options)
     {
-        _teamsApiClient = dependencies.TeamsApiClient;
-        Api = dependencies.TeamsApiClient;
-        Logger = dependencies.Logger;
-        Router = new Router(dependencies.Logger);
+        _teamsApiClient = teamsApiClient;
+        Api = teamsApiClient;
+        Logger = logger;
+        Router = new Router(logger);
 
-        if (dependencies.TeamsOptions is not null)
+        if (options is not null)
         {
-            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor descriptor in dependencies.TeamsOptions.OAuthFlows)
+            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor descriptor in options.OAuthFlows)
             {
                 this.AddOAuthFlow(descriptor.Options);
             }
         }
 
-        IHttpContextAccessor httpContextAccessor = dependencies.HttpContextAccessor;
-        ILogger<TeamsBotApplication> logger = dependencies.Logger;
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogDebug("OnActivity invoked for activity: Id={Id}", activity.Id);

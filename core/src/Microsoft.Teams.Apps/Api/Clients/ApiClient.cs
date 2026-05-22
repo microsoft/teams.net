@@ -31,6 +31,18 @@ public class ApiClient
     private readonly CoreUserTokenClient _userTokenClient;
 
     /// <summary>
+    /// The underlying Core conversation client. Exposed primarily so derived bot applications
+    /// can forward it to <see cref="Microsoft.Teams.Core.BotApplication"/> without taking a second dependency.
+    /// </summary>
+    public CoreConversationClient ConversationClient => _conversationClient;
+
+    /// <summary>
+    /// The underlying Core user token client. Exposed primarily so derived bot applications
+    /// can forward it to <see cref="Microsoft.Teams.Core.BotApplication"/> without taking a second dependency.
+    /// </summary>
+    public CoreUserTokenClient UserTokenClient => _userTokenClient;
+
+    /// <summary>
     /// The service URL used by this client.
     /// Null when constructed without a service URL (DI-friendly constructor).
     /// Call <see cref="ForServiceUrl"/> to create a scoped instance with a service URL.

@@ -56,12 +56,10 @@ public class TeamsBotApplicationTests
             mockConversationClient.Object,
             mockUserTokenClient.Object);
 
-        return new TeamsBotApplication(new TeamsBotApplicationDependencies(
-            mockConversationClient.Object,
-            mockUserTokenClient.Object,
+        return new TeamsBotApplication(
             apiClient,
             new HttpContextAccessor(),
             NullLogger<TeamsBotApplication>.Instance,
-            new BotApplicationOptions { AppId = "test-app-id" }));
+            new TeamsBotApplicationOptions { AppId = "test-app-id" });
     }
 }

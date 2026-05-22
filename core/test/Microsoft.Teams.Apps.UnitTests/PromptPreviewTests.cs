@@ -219,13 +219,11 @@ public class PromptPreviewTests
             mockConversationClient.Object,
             mockUserTokenClient.Object);
 
-        TeamsBotApplication app = new(new TeamsBotApplicationDependencies(
-            mockConversationClient.Object,
-            mockUserTokenClient.Object,
+        TeamsBotApplication app = new(
             apiClient,
             new HttpContextAccessor(),
             NullLogger<TeamsBotApplication>.Instance,
-            new BotApplicationOptions { AppId = "test-app-id" }));
+            new TeamsBotApplicationOptions { AppId = "test-app-id" });
 
         return new TestHarness
         {
