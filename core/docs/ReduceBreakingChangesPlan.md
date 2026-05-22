@@ -41,7 +41,7 @@ teams.OnActivity(async (context, cancellationToken) => {
 
 ---
 
-### BC-14: `app.AddTab()` missing (1 sample affected)
+### BC-14: `app.AddTab()` missing (2 samples affected)
 
 **Decision: REVIEW LATER**
 
