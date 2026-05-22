@@ -417,7 +417,7 @@ Remaining gap: `WithRelatesTo` — no longer a concern since `RelatesTo` is mark
 
 ### BC-22: `Conversation.ToThreadedConversationId()` missing
 
-**Decision: IMPLEMENTED** — Available as `ConversationExtensions.ToThreadedConversationId(conversationId, messageId)` in `Microsoft.Teams.Core`. Note: in the old library this was a static method on the `Conversation` class; in the new library it lives on `ConversationExtensions`. Direct callers will need a minor namespace/type adjustment, but the functionality is available and `TeamsBotApplication.Reply()` uses it internally.
+**Decision: IMPLEMENTED** — Available as `Microsoft.Teams.Core.Schema.ConversationExtensions.ToThreadedConversationId(conversationId, messageId)`. Note: in the old library this was a static method on the `Conversation` class; in the new library it lives on `ConversationExtensions` in the `Microsoft.Teams.Core.Schema` namespace. Direct callers will need a minor namespace/type adjustment, but the functionality is available and `TeamsBotApplication.Reply()` uses it internally.
 
 **File:** `core/src/Microsoft.Teams.Core/Schema/ConversationExtensions.cs`
 
