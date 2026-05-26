@@ -130,4 +130,11 @@ public static class ActionType
     /// Initiates a phone call.
     /// </summary>
     public const string Call = "call";
+
+    /// <summary>
+    /// Suggested action of type Action.Submit. The action's Value is delivered to the bot
+    /// as a <c>suggestedActions/submit</c> invoke without sending a chat-visible message.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
+    public const string Submit = "Action.Submit";
 }
