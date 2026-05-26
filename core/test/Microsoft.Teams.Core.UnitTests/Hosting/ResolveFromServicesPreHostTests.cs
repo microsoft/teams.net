@@ -108,7 +108,7 @@ public class ResolveFromServicesPreHostTests
     {
         // Arrange — validates corinagum's concern: logger must work after method returns
         ServiceCollection services = new();
-        services.AddLogging(builder => builder.AddDebug());
+        services.AddLogging();
 
         // Act
         ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services);

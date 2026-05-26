@@ -239,10 +239,17 @@ public static class AddBotApplicationExtensions
     }
 
     /// <summary>
-    /// Resolves a service from the service collection, preferring a direct instance
-    /// and falling back to building a temporary <see cref="ServiceProvider"/> when
-    /// the service is registered via factory or type.
+    /// Resolves a service from the service collection before the host is built,
+    /// preferring a direct instance and falling back to building a temporary
+    /// <see cref="ServiceProvider"/> when the service is registered via factory or type.
     /// </summary>
+    /// <remarks>
+    /// The temporary <see cref="ServiceProvider"/> is disposed before the method returns.
+    /// Only use this for services whose resolved instances remain valid after their
+    /// owning provider is disposed (e.g. <see cref="IConfiguration"/>). Do NOT use for
+    /// disposable services like <see cref="ILoggerFactory"/> — see
+    /// <see cref="GetLoggerFromServices"/> for that case.
+    /// </remarks>
     internal static T? ResolveFromServicesPreHost<T>(IServiceCollection services) where T : class
     {
         ServiceDescriptor? descriptor = services.LastOrDefault(d => d.ServiceType == typeof(T));
@@ -277,7 +284,9 @@ public static class AddBotApplicationExtensions
         // returned by CreateLogger holds references to ILoggerProviders owned by
         // the factory. Disposing the provider tears down those providers before
         // the caller gets to log. The leak is small and happens once at startup.
+#pragma warning disable CA2000 // Dispose objects before losing scope — intentional: ILogger needs living providers
         ServiceProvider tempProvider = services.BuildServiceProvider();
+#pragma warning restore CA2000
         ILoggerFactory? factory = tempProvider.GetService<ILoggerFactory>();
         return factory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
             ?? Extensions.Logging.Abstractions.NullLogger.Instance;
