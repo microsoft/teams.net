@@ -131,12 +131,11 @@ public static class HostApplicationBuilderExtensions
         else
         {
             // No Teams:ClientId configured; warn the consumer their bot will accept
-            // anonymous traffic. Look up the host's already-registered ILoggerFactory
-            // instance directly off the service collection so we respect the
-            // configured logging pipeline without forcing a console sink or
-            // double-building the service provider. Falls back to NullLogger if no
-            // factory has been registered yet (warning is silently dropped in that
-            // edge case).
+            // anonymous traffic. Resolve the host's configured ILoggerFactory from
+            // the service collection (preferring an already-registered instance,
+            // otherwise building an undisposed temp provider — bounded startup
+            // leak) so the warning routes through whatever logging pipeline the
+            // consumer set up.
             GetLoggerFromServices(builder.Services).LogWarning(
                 "No Teams:ClientId configured. Bot will accept unauthenticated requests on /api/messages.");
         }
@@ -181,23 +180,35 @@ public static class HostApplicationBuilderExtensions
     }
 
     /// <summary>
-    /// Resolve an <see cref="ILogger"/> from the service collection without building a service provider.
-    /// Returns <see cref="NullLogger.Instance"/> if no <see cref="ILoggerFactory"/> instance has been
-    /// registered yet, so callers in DI-configuration phases can log safely.
+    /// Resolve an <see cref="ILogger"/> from the service collection during DI configuration,
+    /// preferring an already-registered <see cref="ILoggerFactory"/> instance and falling back
+    /// to a temporary <see cref="ServiceProvider"/> when the factory is registered via
+    /// factory delegate or type. Returns <see cref="NullLogger.Instance"/> when no
+    /// <see cref="ILoggerFactory"/> is registered.
     /// </summary>
     /// <remarks>
     /// Mirrors the helper in <c>core/src/Microsoft.Teams.Core/Hosting/AddBotApplicationExtensions.cs</c>.
     /// </remarks>
     internal static ILogger GetLoggerFromServices(IServiceCollection services, Type? categoryType = null)
     {
-        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
-
-        if (loggerFactory != null)
+        ServiceDescriptor? descriptor = services.LastOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        if (descriptor is null)
         {
-            return loggerFactory.CreateLogger(categoryType ?? typeof(HostApplicationBuilderExtensions));
+            return NullLogger.Instance;
         }
 
-        return NullLogger.Instance;
+        if (descriptor.ImplementationInstance is ILoggerFactory directFactory)
+        {
+            return directFactory.CreateLogger(categoryType ?? typeof(HostApplicationBuilderExtensions));
+        }
+
+        // Build a temp provider but intentionally do NOT dispose it: the ILogger
+        // returned by CreateLogger holds references to ILoggerProviders owned by
+        // the factory. Disposing the provider tears down those providers before
+        // the caller gets to log. The leak is small and happens once at startup.
+        ServiceProvider tempProvider = services.BuildServiceProvider();
+        ILoggerFactory? factory = tempProvider.GetService<ILoggerFactory>();
+        return factory?.CreateLogger(categoryType ?? typeof(HostApplicationBuilderExtensions))
+            ?? NullLogger.Instance;
     }
 }
