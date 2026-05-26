@@ -85,7 +85,7 @@ public sealed class BotConfig
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        IConfiguration? configuration = AddBotApplicationExtensions.ResolveFromServices<IConfiguration>(services);
+        IConfiguration? configuration = AddBotApplicationExtensions.ResolveFromServicesPreHost<IConfiguration>(services);
 
         if (configuration is null)
         {

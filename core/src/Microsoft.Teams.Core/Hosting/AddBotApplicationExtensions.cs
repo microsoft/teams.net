@@ -243,9 +243,9 @@ public static class AddBotApplicationExtensions
     /// and falling back to building a temporary <see cref="ServiceProvider"/> when
     /// the service is registered via factory or type.
     /// </summary>
-    internal static T? ResolveFromServices<T>(IServiceCollection services) where T : class
+    internal static T? ResolveFromServicesPreHost<T>(IServiceCollection services) where T : class
     {
-        ServiceDescriptor? descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(T));
+        ServiceDescriptor? descriptor = services.LastOrDefault(d => d.ServiceType == typeof(T));
         if (descriptor is null)
         {
             return null;
@@ -262,7 +262,7 @@ public static class AddBotApplicationExtensions
 
     internal static ILogger GetLoggerFromServices(IServiceCollection services, Type? categoryType = null)
     {
-        ServiceDescriptor? descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        ServiceDescriptor? descriptor = services.LastOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
         if (descriptor is null)
         {
             return Extensions.Logging.Abstractions.NullLogger.Instance;
@@ -273,9 +273,11 @@ public static class AddBotApplicationExtensions
             return directFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions));
         }
 
-        // Build a temp provider and create the logger before disposing,
-        // since disposal tears down the LoggerFactory.
-        using ServiceProvider tempProvider = services.BuildServiceProvider();
+        // Build a temp provider but intentionally do NOT dispose it: the ILogger
+        // returned by CreateLogger holds references to ILoggerProviders owned by
+        // the factory. Disposing the provider tears down those providers before
+        // the caller gets to log. The leak is small and happens once at startup.
+        ServiceProvider tempProvider = services.BuildServiceProvider();
         ILoggerFactory? factory = tempProvider.GetService<ILoggerFactory>();
         return factory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
             ?? Extensions.Logging.Abstractions.NullLogger.Instance;
