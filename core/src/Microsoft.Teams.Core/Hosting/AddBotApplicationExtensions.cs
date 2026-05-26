@@ -239,25 +239,45 @@ public static class AddBotApplicationExtensions
     }
 
     /// <summary>
-    /// Gets a logger instance from the service collection.
-    /// If the logger factory is not available as an instance, builds a temporary service provider to create the logger.
+    /// Resolves a service from the service collection, preferring a direct instance
+    /// and falling back to building a temporary <see cref="ServiceProvider"/> when
+    /// the service is registered via factory or type.
     /// </summary>
-    /// <param name="services">The service collection to extract the logger from.</param>
-    /// <param name="categoryType">The type to use for the logger category. If null, uses AddBotApplicationExtensions.</param>
-    /// <returns>An ILogger instance, or NullLogger if no logger factory is registered.</returns>
-    internal static ILogger GetLoggerFromServices(IServiceCollection services, Type? categoryType = null)
+    internal static T? ResolveFromServices<T>(IServiceCollection services) where T : class
     {
-        ServiceDescriptor? loggerFactoryDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
-        ILoggerFactory? loggerFactory = loggerFactoryDescriptor?.ImplementationInstance as ILoggerFactory;
-
-        // If logger factory is available as an instance, use it directly
-        if (loggerFactory != null)
+        ServiceDescriptor? descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(T));
+        if (descriptor is null)
         {
-            return loggerFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions));
+            return null;
         }
 
-        // Logger factory not available as a direct instance; return NullLogger
-        // to avoid building a throwaway ServiceProvider during DI configuration.
-        return Extensions.Logging.Abstractions.NullLogger.Instance;
+        if (descriptor.ImplementationInstance is T instance)
+        {
+            return instance;
+        }
+
+        using ServiceProvider tempProvider = services.BuildServiceProvider();
+        return tempProvider.GetService<T>();
+    }
+
+    internal static ILogger GetLoggerFromServices(IServiceCollection services, Type? categoryType = null)
+    {
+        ServiceDescriptor? descriptor = services.FirstOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        if (descriptor is null)
+        {
+            return Extensions.Logging.Abstractions.NullLogger.Instance;
+        }
+
+        if (descriptor.ImplementationInstance is ILoggerFactory directFactory)
+        {
+            return directFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions));
+        }
+
+        // Build a temp provider and create the logger before disposing,
+        // since disposal tears down the LoggerFactory.
+        using ServiceProvider tempProvider = services.BuildServiceProvider();
+        ILoggerFactory? factory = tempProvider.GetService<ILoggerFactory>();
+        return factory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
+            ?? Extensions.Logging.Abstractions.NullLogger.Instance;
     }
 }

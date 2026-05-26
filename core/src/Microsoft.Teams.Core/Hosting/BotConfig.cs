@@ -85,15 +85,7 @@ public sealed class BotConfig
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Extract IConfiguration from service collection — prefer the instance if available,
-        // otherwise resolve via the factory registered in the descriptor.
-        ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-        IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
-        if (configuration is null && configDescriptor?.ImplementationFactory is not null)
-        {
-            using ServiceProvider tempProvider = services.BuildServiceProvider();
-            configuration = tempProvider.GetService<IConfiguration>();
-        }
+        IConfiguration? configuration = AddBotApplicationExtensions.ResolveFromServices<IConfiguration>(services);
 
         if (configuration is null)
         {
