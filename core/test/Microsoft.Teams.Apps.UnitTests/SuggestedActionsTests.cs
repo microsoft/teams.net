@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+#pragma warning disable ExperimentalTeamsSuggestedAction
+
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
@@ -20,6 +22,7 @@ public class SuggestedActionsTests
         Assert.Equal("downloadFile", ActionType.DownloadFile);
         Assert.Equal("signin", ActionType.SignIn);
         Assert.Equal("call", ActionType.Call);
+        Assert.Equal("Action.Submit", ActionType.Submit);
     }
 
     [Fact]

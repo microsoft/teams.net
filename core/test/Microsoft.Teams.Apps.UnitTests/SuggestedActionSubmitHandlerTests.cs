@@ -22,12 +22,6 @@ public class SuggestedActionSubmitHandlerTests
     }
 
     [Fact]
-    public void ActionType_Submit_HasExpectedValue()
-    {
-        Assert.Equal("Action.Submit", ActionType.Submit);
-    }
-
-    [Fact]
     public void Register_SuggestedActionSubmitRoute_Succeeds()
     {
         Router router = new(NullLogger.Instance);
