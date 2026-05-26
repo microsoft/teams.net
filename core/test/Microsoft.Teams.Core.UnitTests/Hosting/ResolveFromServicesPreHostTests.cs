@@ -73,78 +73,80 @@ public class ResolveFromServicesPreHostTests
         Assert.Same(second, result);
     }
 
-    // --- GetLoggerFromServices ---
+    // --- LogFromServices ---
 
     [Fact]
-    public void GetLoggerFromServices_WithNoLoggerFactory_ReturnsNullLogger()
+    public void LogFromServices_WithNoLoggerFactory_CallsActionWithNullLogger()
     {
         // Arrange
         ServiceCollection services = new();
+        ILogger? captured = null;
 
         // Act
-        ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services);
+        AddBotApplicationExtensions.LogFromServices(services, l => captured = l);
 
         // Assert
-        Assert.Same(NullLogger.Instance, logger);
+        Assert.Same(NullLogger.Instance, captured);
     }
 
     [Fact]
-    public void GetLoggerFromServices_WithAddLogging_ReturnsRealLogger()
+    public void LogFromServices_WithAddLogging_CallsActionWithRealLogger()
     {
         // Arrange — typical ASP.NET Core registration via factory delegate
         ServiceCollection services = new();
         services.AddLogging();
+        ILogger? captured = null;
 
         // Act
-        ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services);
+        AddBotApplicationExtensions.LogFromServices(services, l => captured = l);
 
         // Assert
-        Assert.NotNull(logger);
-        Assert.IsNotType<NullLogger>(logger);
+        Assert.NotNull(captured);
+        Assert.IsNotType<NullLogger>(captured);
     }
 
     [Fact]
-    public void GetLoggerFromServices_WithAddLogging_LoggerRemainsUsableAfterReturn()
+    public void LogFromServices_WithAddLogging_LoggingDoesNotThrow()
     {
-        // Arrange — validates corinagum's concern: logger must work after method returns
+        // Arrange — validates that logging within the action does not throw ObjectDisposedException
+        // even though the temporary ServiceProvider is disposed after the action completes
         ServiceCollection services = new();
         services.AddLogging();
 
-        // Act
-        ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services);
-
-        // Assert — should not throw ObjectDisposedException
-        logger.LogInformation("test message");
+        // Act / Assert — should not throw
+        AddBotApplicationExtensions.LogFromServices(services, l => l.LogInformation("test message"));
     }
 
     [Fact]
-    public void GetLoggerFromServices_WithDirectInstance_ReturnsLoggerFromInstance()
+    public void LogFromServices_WithDirectInstance_CallsActionWithRealLogger()
     {
         // Arrange
         ServiceCollection services = new();
         LoggerFactory factory = new();
         services.AddSingleton<ILoggerFactory>(factory);
+        ILogger? captured = null;
 
         // Act
-        ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services);
+        AddBotApplicationExtensions.LogFromServices(services, l => captured = l);
 
         // Assert
-        Assert.NotNull(logger);
-        Assert.IsNotType<NullLogger>(logger);
+        Assert.NotNull(captured);
+        Assert.IsNotType<NullLogger>(captured);
     }
 
     [Fact]
-    public void GetLoggerFromServices_WithCustomCategory_UsesCategoryType()
+    public void LogFromServices_WithCustomCategory_UsesCategoryType()
     {
         // Arrange
         ServiceCollection services = new();
         services.AddLogging();
+        ILogger? captured = null;
 
         // Act
-        ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(ResolveFromServicesPreHostTests));
+        AddBotApplicationExtensions.LogFromServices(services, l => captured = l, typeof(ResolveFromServicesPreHostTests));
 
         // Assert
-        Assert.NotNull(logger);
-        Assert.IsNotType<NullLogger>(logger);
+        Assert.NotNull(captured);
+        Assert.IsNotType<NullLogger>(captured);
     }
 }

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
@@ -191,8 +192,7 @@ public static class AddBotApplicationExtensions
             // the IMDS endpoint instead of the standard app-credentials flow.
             if (botConfig.IsUserAssignedManagedIdentity)
             {
-                ILogger logger = GetLoggerFromServices(services);
-                logger.InferringUserAssignedManagedIdentity(botConfig.ClientId);
+                LogFromServices(services, l => l.InferringUserAssignedManagedIdentity(botConfig.ClientId));
                 services.Configure<ManagedIdentityOptions>(botConfig.SectionName, options =>
                 {
                     options.UserAssignedClientId = botConfig.ClientId;
@@ -248,7 +248,7 @@ public static class AddBotApplicationExtensions
     /// Only use this for services whose resolved instances remain valid after their
     /// owning provider is disposed (e.g. <see cref="IConfiguration"/>). Do NOT use for
     /// disposable services like <see cref="ILoggerFactory"/> — see
-    /// <see cref="GetLoggerFromServices"/> for that case.
+    /// <see cref="LogFromServices"/> for that case.
     /// </remarks>
     internal static T? ResolveFromServicesPreHost<T>(IServiceCollection services) where T : class
     {
@@ -267,28 +267,23 @@ public static class AddBotApplicationExtensions
         return tempProvider.GetService<T>();
     }
 
-    internal static ILogger GetLoggerFromServices(IServiceCollection services, Type? categoryType = null)
+    internal static void LogFromServices(IServiceCollection services, Action<ILogger> action, Type? categoryType = null)
     {
         ServiceDescriptor? descriptor = services.LastOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
         if (descriptor is null)
         {
-            return Extensions.Logging.Abstractions.NullLogger.Instance;
+            action(NullLogger.Instance);
+            return;
         }
 
         if (descriptor.ImplementationInstance is ILoggerFactory directFactory)
         {
-            return directFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions));
+            action(directFactory.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions)));
+            return;
         }
 
-        // Build a temp provider but intentionally do NOT dispose it: the ILogger
-        // returned by CreateLogger holds references to ILoggerProviders owned by
-        // the factory. Disposing the provider tears down those providers before
-        // the caller gets to log. The leak is small and happens once at startup.
-#pragma warning disable CA2000 // Dispose objects before losing scope — intentional: ILogger needs living providers
-        ServiceProvider tempProvider = services.BuildServiceProvider();
-#pragma warning restore CA2000
+        using ServiceProvider tempProvider = services.BuildServiceProvider();
         ILoggerFactory? factory = tempProvider.GetService<ILoggerFactory>();
-        return factory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions))
-            ?? Extensions.Logging.Abstractions.NullLogger.Instance;
+        action(factory?.CreateLogger(categoryType ?? typeof(AddBotApplicationExtensions)) ?? NullLogger.Instance);
     }
 }

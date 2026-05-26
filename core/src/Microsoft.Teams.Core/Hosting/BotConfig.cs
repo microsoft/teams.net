@@ -94,8 +94,6 @@ public sealed class BotConfig
                 "Ensure AddConfiguration() or WebApplication.CreateBuilder() has been called.");
         }
 
-        ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));
-
         IConfigurationSection section = configuration.GetSection(sectionName);
         IConfigurationSection botFrameworkSection = configuration.GetSection(BotFrameworkSectionName);
         BotConfig config = new()
@@ -109,14 +107,14 @@ public sealed class BotConfig
             SectionName = sectionName
         };
 
-        if (!string.IsNullOrEmpty(config.ClientId))
+        AddBotApplicationExtensions.LogFromServices(services, l =>
         {
-            _logUsingSectionConfig(logger, sectionName, null);
-        }
-        else
-        {
-            _logNoConfigFound(logger, null);
-        }
+            if (!string.IsNullOrEmpty(config.ClientId))
+                _logUsingSectionConfig(l, sectionName, null);
+            else
+                _logNoConfigFound(l, null);
+        }, typeof(BotConfig));
+
         return config;
     }
 
