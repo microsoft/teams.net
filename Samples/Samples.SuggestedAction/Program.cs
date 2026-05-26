@@ -1,4 +1,4 @@
-// SuggestedAction.Submit and the OnSuggestedActionSubmit handler are marked
+// Action.Submit and the OnSuggestedActionSubmit handler are marked
 // [Experimental("ExperimentalTeamsSuggestedAction")]. See README.md.
 #pragma warning disable ExperimentalTeamsSuggestedAction
 

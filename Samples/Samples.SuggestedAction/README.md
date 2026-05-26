@@ -16,7 +16,7 @@ A bot that demonstrates the `Action.Submit` suggested action and the `suggestedA
 
 ## Experimental API
 
-`CardActionType.Submit`, `SuggestedActionSubmitActivity`, and `OnSuggestedActionSubmit` are marked `[Experimental("ExperimentalTeamsSuggestedAction")]` because the underlying platform feature is still rolling out. The C# compiler reports references to them as **errors** by default, so consuming code has to opt in.
+`Microsoft.Teams.Api.Cards.ActionType.Submit`, `SuggestedActionSubmitActivity`, and `OnSuggestedActionSubmit` are marked `[Experimental("ExperimentalTeamsSuggestedAction")]` because the underlying platform feature is still rolling out. The C# compiler reports references to them as **errors** by default, so consuming code has to opt in.
 
 This sample opts in **per-file** with a `#pragma` at the top of `Program.cs`. For a project-wide opt-in, add to your `.csproj`:
 

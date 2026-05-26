@@ -22,7 +22,9 @@ public class SuggestedActionSubmitActivityTests
         Assert.Equal("suggestedActionSubmitId", activity!.Id);
         Assert.Equal("channelId", activity.ChannelId.Value);
         Assert.Equal("suggestedActions/submit", activity.Name.Value);
-        Assert.NotNull(activity.Value);
+        var value = Assert.IsType<JsonElement>(activity.Value);
+        Assert.Equal(JsonValueKind.Object, value.ValueKind);
+        Assert.Equal("approve", value.GetProperty("vote").GetString());
     }
 
     [Fact]
