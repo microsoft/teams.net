@@ -54,7 +54,7 @@ public class Action(ActionType type)
     /// <summary>
     /// The type of action implemented by this button. Possible values include: 'openUrl', 'imBack',
     /// 'postBack', 'playAudio', 'playVideo', 'showImage', 'downloadFile', 'signin', 'call',
-    /// 'messageBack'
+    /// 'messageBack', 'Action.Submit'
     /// </summary>
     [JsonPropertyName("type")]
     [JsonPropertyOrder(0)]
