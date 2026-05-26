@@ -77,7 +77,7 @@ public class SuggestedActionSubmitHandlerTests
             SuggestedActions = new SuggestedActions()
         };
         activity.SuggestedActions.AddAction(
-            new SuggestedAction(ActionType.Submit, "Approve") { Value = new JsonObject { ["vote"] = "approve" } }
+            new SuggestedAction(ActionType.Submit, "Approve", new { vote = "approve" })
         );
 
         string json = activity.ToJson();
