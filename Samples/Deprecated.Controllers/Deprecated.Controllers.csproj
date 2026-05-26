@@ -4,6 +4,8 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Sample demonstrates deprecated APIs; keep CS0618 visible as a warning rather than promoting to an error. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CS0618</WarningsNotAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -12,6 +14,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
   </ItemGroup>
 
 </Project>
