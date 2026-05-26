@@ -21,6 +21,7 @@ namespace Microsoft.Teams.AI;
 /// can be called by a model
 /// </summary>
 [JsonConverter(typeof(TrueTypeJsonConverter<IFunction>))]
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IFunction
 {
     /// <summary>
@@ -45,6 +46,7 @@ public interface IFunction
 /// defines a block of code that
 /// can be called by a model
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class Function : IFunction
 {
     [JsonPropertyName("name")]

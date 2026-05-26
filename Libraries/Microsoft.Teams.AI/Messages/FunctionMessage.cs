@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.AI.Messages;
 
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class FunctionMessage : IMessage
 {
     [JsonPropertyName("role")]
