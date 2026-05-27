@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -54,10 +55,28 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {
-        builder.UseWebSockets(new WebSocketOptions()
+        // Reject cross-origin WebSocket upgrades. The DevTools UI is always
+        // loaded same-origin, so Origin must equal request Host; absent
+        // Origin is rejected. Headers are inspected directly so this
+        // middleware does not require UseWebSockets to run first.
+        builder.Use(async (context, next) =>
         {
-            AllowedOrigins = { "*" }
+            var upgrade = context.Request.Headers["Upgrade"].ToString();
+            if (string.Equals(upgrade, "websocket", StringComparison.OrdinalIgnoreCase))
+            {
+                var origin = context.Request.Headers["Origin"].ToString();
+                var expectedOrigin = $"{context.Request.Scheme}://{context.Request.Host}";
+                if (string.IsNullOrEmpty(origin) ||
+                    !string.Equals(origin, expectedOrigin, StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return;
+                }
+            }
+            await next(context);
         });
+
+        builder.UseWebSockets();
 
         builder.UseStaticFiles(new StaticFileOptions()
         {

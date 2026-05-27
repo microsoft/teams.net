@@ -114,7 +114,26 @@ namespace Microsoft.Teams.Core.Hosting
         {
             logger ??= NullLogger.Instance;
 
-            return services.AddBotAuthorization(botConfig.ClientId, botConfig.TenantId, botConfig.SectionName, logger);
+            // Call AddTeamsJwtBearer with the already-resolved BotConfig to avoid a redundant
+            // BotConfig.Resolve call (and duplicate startup log) that would occur through the
+            // public string-based AddBotAuthentication → AddTeamsJwtBearer chain.
+            AuthenticationBuilder authBuilder = services.AddAuthentication();
+            if (string.IsNullOrWhiteSpace(botConfig.ClientId))
+            {
+                authBuilder.AddBypassAuthentication(botConfig.SectionName, logger);
+            }
+            else
+            {
+                authBuilder.AddTeamsJwtBearer(botConfig, logger);
+            }
+
+            return services
+                .AddAuthorizationBuilder()
+                .AddDefaultPolicy(botConfig.SectionName, policy =>
+                {
+                    policy.AuthenticationSchemes.Add(botConfig.SectionName);
+                    policy.RequireAuthenticatedUser();
+                });
         }
 
         /// <summary>
@@ -191,23 +210,21 @@ namespace Microsoft.Teams.Core.Hosting
                 : (null, null);
 
         /// <summary>
-        /// Adds Teams JWT Bearer authentication that supports both Bot Framework and Entra ID tokens.
+        /// Overload that accepts an already-resolved <see cref="BotConfig"/> to avoid a redundant
+        /// <see cref="BotConfig.Resolve"/> call during internal registration paths.
         /// </summary>
-        /// <param name="builder">The authentication builder.</param>
-        /// <param name="schemeName">The authentication scheme name.</param>
-        /// <param name="audience">The application (client) ID used to validate the audience of tokens.</param>
-        /// <param name="tenantId">The Azure AD tenant ID.</param>
-        /// <param name="logger">Optional logger for authentication events.</param>
-        /// <returns>The authentication builder for chaining.</returns>
-        /// <remarks>
-        /// This method configures authentication to support both types of tokens:
-        /// <list type="bullet">
-        /// <item><description>Bot Framework tokens: Issued by the Bot Connector service when channels send activities to your bot (issuer: https://api.botframework.com).</description></item>
-        /// <item><description>Entra ID tokens: Issued by Azure AD when the bot is registered as an agentic application (issuer: https://login.microsoftonline.com). See https://learn.microsoft.com/en-us/microsoft-agent-365/developer/identity#understanding-agent-identity-components</description></item>
-        /// </list>
-        /// The signing keys for both token types are dynamically resolved at runtime using OpenID Connect discovery,
-        /// allowing the same authentication configuration to validate tokens from multiple issuers.
-        /// </remarks>
+        private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, BotConfig botConfig, ILogger? logger = null)
+        {
+            return builder.AddTeamsJwtBearer(
+                botConfig.SectionName,
+                botConfig.ClientId,
+                botConfig.TenantId,
+                botConfig.OpenIdMetadataUrl,
+                botConfig.EntraInstance,
+                botConfig.BotTokenIssuer,
+                logger);
+        }
+
         private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)
         {
             // Resolve sovereign-cloud-aware URLs from the same AzureAd section that produced clientId/tenantId.
@@ -223,6 +240,20 @@ namespace Microsoft.Teams.Core.Hosting
                 entraInstance = botConfig.EntraInstance;
                 botTokenIssuer = botConfig.BotTokenIssuer;
             }
+
+            return builder.AddTeamsJwtBearer(schemeName, audience, tenantId, botOidcUrl, entraInstance, botTokenIssuer, logger);
+        }
+
+        private static AuthenticationBuilder AddTeamsJwtBearer(
+            this AuthenticationBuilder builder,
+            string schemeName,
+            string audience,
+            string tenantId,
+            string botOidcUrl,
+            string entraInstance,
+            string botTokenIssuer,
+            ILogger? logger)
+        {
 
             // One ConfigurationManager per OIDC authority, shared safely across all requests.
             ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
