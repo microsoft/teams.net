@@ -24,6 +24,7 @@ using Microsoft.Teams.Plugins.AspNetCore.DevTools.Models;
 namespace Microsoft.Teams.Plugins.AspNetCore.DevTools;
 
 [Plugin]
+[Obsolete("DevTools is deprecated and will be removed in a later version. Use Microsoft 365 Agents Playground instead.")]
 public class DevToolsPlugin : IAspNetCorePlugin
 {
     [AllowNull]
