@@ -85,15 +85,7 @@ public sealed class BotConfig
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Extract IConfiguration from service collection — prefer the instance if available,
-        // otherwise resolve via the factory registered in the descriptor.
-        ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-        IConfiguration? configuration = configDescriptor?.ImplementationInstance as IConfiguration;
-        if (configuration is null && configDescriptor?.ImplementationFactory is not null)
-        {
-            using ServiceProvider tempProvider = services.BuildServiceProvider();
-            configuration = tempProvider.GetService<IConfiguration>();
-        }
+        IConfiguration? configuration = AddBotApplicationExtensions.ResolveFromServicesPreHost<IConfiguration>(services);
 
         if (configuration is null)
         {
@@ -101,8 +93,6 @@ public sealed class BotConfig
                 "IConfiguration must be registered in the service collection before calling BotConfig.Resolve. " +
                 "Ensure AddConfiguration() or WebApplication.CreateBuilder() has been called.");
         }
-
-        ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));
 
         IConfigurationSection section = configuration.GetSection(sectionName);
         IConfigurationSection botFrameworkSection = configuration.GetSection(BotFrameworkSectionName);
@@ -117,14 +107,14 @@ public sealed class BotConfig
             SectionName = sectionName
         };
 
-        if (!string.IsNullOrEmpty(config.ClientId))
+        AddBotApplicationExtensions.LogFromServices(services, l =>
         {
-            _logUsingSectionConfig(logger, sectionName, null);
-        }
-        else
-        {
-            _logNoConfigFound(logger, null);
-        }
+            if (!string.IsNullOrEmpty(config.ClientId))
+                _logUsingSectionConfig(l, sectionName, null);
+            else
+                _logNoConfigFound(l, null);
+        }, typeof(BotConfig));
+
         return config;
     }
 
