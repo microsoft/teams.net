@@ -15,6 +15,40 @@ public static class Cards
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
+    public static JsonElement AskCard(string requestId, string question)
+    {
+        AdaptiveCard card = new(
+            new TextBlock(question) { Weight = TextWeight.Bolder, Size = TextSize.Medium, Wrap = true },
+            new TextInput
+            {
+                Id = "reply",
+                Placeholder = "Type your reply...",
+                IsMultiline = true,
+                IsRequired = true,
+                ErrorMessage = "Please enter a reply."
+            })
+        {
+            Version = Microsoft.Teams.Cards.Version.Version1_4,
+            Actions = new List<Microsoft.Teams.Cards.Action>
+            {
+                new ExecuteAction
+                {
+                    Title = "Send",
+                    Verb = "ask_reply",
+                    AssociatedInputs = AssociatedInputs.Auto,
+                    Data = new Union<string, SubmitActionData>(new SubmitActionData
+                    {
+                        NonSchemaProperties = new Dictionary<string, object?>
+                        {
+                            ["request_id"] = requestId
+                        }
+                    })
+                }
+            }
+        };
+        return JsonSerializer.SerializeToElement(card, SerializerOptions);
+    }
+
     public static JsonElement ApprovalCard(string approvalId, string title, string description)
     {
         AdaptiveCard card = new(
