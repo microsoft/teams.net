@@ -6,13 +6,12 @@ using Microsoft.Teams.Apps.Activities.Invokes;
 using Microsoft.Teams.Apps.Extensions;
 using Microsoft.Teams.Cards;
 using Microsoft.Teams.Common;
-using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://localhost:3978");
 builder.Services.AddOpenApi();
-builder.AddTeams().AddTeamsDevTools();
+builder.AddTeams();
 
 var app = builder.Build();
 
