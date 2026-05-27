@@ -153,10 +153,17 @@ public static class HostApplicationBuilderExtensions
         {
             options.AddPolicy(TeamsTokenAuthConstants.AuthorizationPolicy, policy =>
             {
-                if (skipAuth || string.IsNullOrEmpty(settings.ClientId))
+                if (skipAuth)
                 {
                     // bypass authentication
                     policy.RequireAssertion(_ => true);
+                }
+                else if (string.IsNullOrEmpty(settings.ClientId))
+                {
+                    // No credentials configured: reject all requests. Pass
+                    // skipAuth: true to AddTeams(...) to opt into the bypass
+                    // for local development without credentials.
+                    policy.RequireAssertion(_ => false);
                 }
                 else
                 {
