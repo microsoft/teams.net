@@ -34,14 +34,15 @@ builder.Services.AddOpenTelemetry()
         o.Exporters = ExportTarget.Otlp | ExportTarget.Agent365 | ExportTarget.AzureMonitor;
         o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Instrumentation.EnableAspNetCoreInstrumentation = true;
-        o.Agent365.Exporter.UseS2SEndpoint = true;
-        o.Agent365.Exporter.TokenResolver = async (agentId, tenantId) =>
+
+        o.Agent365.ContextualTokenResolver = async trctx =>
         {
             var provider = rootProvider!.GetRequiredService<IAuthorizationHeaderProvider>();
-            var options = new AuthorizationHeaderProviderOptions { AcquireTokenOptions = new() { AuthenticationOptionsName = "AzureAd", Tenant = tenantId } };
-            options.WithAgentIdentity(agentId);
-            var token = await provider.CreateAuthorizationHeaderForAppAsync(
-                "api://9b975845-388f-4429-889e-eab1ef63949c/.default", options);
+            var options = new AuthorizationHeaderProviderOptions { AcquireTokenOptions = new() { AuthenticationOptionsName = "AzureAd", Tenant = trctx.TenantId } };
+            ArgumentNullException.ThrowIfNull(trctx.Identity.AgenticUserId);
+            options.WithAgentUserIdentity(trctx.Identity.AgentId, new Guid(trctx.Identity.AgenticUserId));
+            var token = await provider.CreateAuthorizationHeaderAsync(
+                ["api://9b975845-388f-4429-889e-eab1ef63949c/.default"], options);
             return token.Substring("Bearer".Length).Trim();
         };
      })
