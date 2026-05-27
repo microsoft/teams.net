@@ -45,6 +45,7 @@ public class MemberClient : Client
         return response.Body;
     }
 
+    [Obsolete("This will be removed by end of summer 2026.")]
     public async Task DeleteAsync(string conversationId, string memberId, CancellationToken cancellationToken = default)
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;

@@ -77,7 +77,6 @@ public partial class Context<TActivity> : IContext<TActivity>
         {
             ConnectionName = options.ConnectionName ?? ConnectionName,
             Conversation = reference,
-            RelatesTo = Activity.RelatesTo,
             MsAppId = AppId
         };
 
@@ -88,8 +87,6 @@ public partial class Context<TActivity> : IContext<TActivity>
             var (id, _, _) = await api.Conversations.CreateAsync(new()
             {
                 TenantId = Ref.Conversation.TenantId,
-                IsGroup = false,
-                Bot = Ref.Bot,
                 Members = [Activity.From]
             }).ConfigureAwait(false);
 
@@ -104,7 +101,6 @@ public partial class Context<TActivity> : IContext<TActivity>
         var resource = await api.Bots.SignIn.GetResourceAsync(new() { State = state }).ConfigureAwait(false);
         var activity = new MessageActivity();
 
-        activity.InputHint = InputHint.AcceptingInput;
         activity.Recipient = Activity.From;
         activity.Conversation = reference.Conversation;
         activity.AddAttachment(new Api.Cards.OAuthCard()
@@ -140,8 +136,6 @@ public partial class Context<TActivity> : IContext<TActivity>
             var (id, _, _) = await Api.Conversations.CreateAsync(new()
             {
                 TenantId = Ref.Conversation.TenantId,
-                IsGroup = false,
-                Bot = Ref.Bot,
                 Members = [Activity.From]
             }).ConfigureAwait(false);
 
@@ -154,7 +148,6 @@ public partial class Context<TActivity> : IContext<TActivity>
 
         var activity = new MessageActivity();
 
-        activity.InputHint = InputHint.AcceptingInput;
         activity.Recipient = Activity.From;
         activity.Conversation = reference.Conversation;
         activity.AddAttachment(new Api.Cards.OAuthCard()

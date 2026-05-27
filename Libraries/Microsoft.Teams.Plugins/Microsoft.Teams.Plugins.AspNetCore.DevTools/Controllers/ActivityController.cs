@@ -43,7 +43,6 @@ public class ActivityController : ControllerBase
         {
             Id = "devtools",
             Name = "devtools",
-            Role = Role.User
         });
 
         body["conversation"] = JsonSerializer.SerializeToNode(new Conversation()
@@ -57,7 +56,6 @@ public class ActivityController : ControllerBase
         {
             Id = _plugin.AppId ?? string.Empty,
             Name = _plugin.AppName,
-            Role = Role.Bot
         });
 
         var activity = JsonSerializer.Deserialize<Activity>(JsonSerializer.Serialize(body));

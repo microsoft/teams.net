@@ -203,7 +203,6 @@ public partial class App
             {
                 Id = Id,
                 Name = Name,
-                Role = Role.Bot
             },
             Conversation = new()
             {

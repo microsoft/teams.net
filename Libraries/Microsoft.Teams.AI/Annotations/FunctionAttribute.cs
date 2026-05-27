@@ -4,6 +4,7 @@
 namespace Microsoft.Teams.AI.Annotations;
 
 [AttributeUsage(AttributeTargets.Method, Inherited = true)]
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class FunctionAttribute : Attribute
 {
     /// <summary>

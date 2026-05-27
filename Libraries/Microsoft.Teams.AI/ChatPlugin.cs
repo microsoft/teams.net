@@ -10,6 +10,7 @@ namespace Microsoft.Teams.AI;
 /// a component that can change the
 /// way a ChatPrompt works
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IChatPlugin
 {
     /// <summary>

@@ -147,21 +147,6 @@ public class TeamsActivity : CoreActivity
     [JsonPropertyName("suggestedActions")]
     public SuggestedActions? SuggestedActions { get; set; }
 
-
-    /// <summary>
-    /// Adds an entity to the activity's Entities collection.
-    /// </summary>
-    /// <param name="entity"></param>
-    /// <returns></returns>
-    public TeamsActivity AddEntity(Entity entity)
-    {
-        // TODO: Pick up nuances about entities.
-        // For eg, there can only be 1 single MessageEntity
-        Entities ??= [];
-        Entities.Add(entity);
-        return this;
-    }
-
     /// <summary>
     /// Creates a new TeamsActivityBuilder instance for building a TeamsActivity with a fluent API.
     /// </summary>
