@@ -6,6 +6,8 @@ using System.Reflection;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Extensions;
 
@@ -126,6 +128,14 @@ public static class HostApplicationBuilderExtensions
         {
             teamsValidationSettings.AddDefaultAudiences(settings.ClientId);
         }
+        else
+        {
+            // No Teams:ClientId configured; warn the consumer their bot will accept
+            // anonymous traffic. The warning routes through whatever logging
+            // pipeline the consumer set up.
+            LogFromServices(builder.Services, l => l.LogWarning(
+                "No Teams:ClientId configured. Bot will accept unauthenticated requests on /api/messages."));
+        }
 
         builder.Services.
             AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -164,5 +174,36 @@ public static class HostApplicationBuilderExtensions
         });
 
         return builder;
+    }
+
+    /// <summary>
+    /// Invoke <paramref name="action"/> with an <see cref="ILogger"/> resolved from the
+    /// service collection during DI configuration. Prefers an already-registered
+    /// <see cref="ILoggerFactory"/> instance; otherwise builds a temporary
+    /// <see cref="ServiceProvider"/>, invokes <paramref name="action"/> inside its
+    /// <c>using</c> scope, and disposes cleanly. Passes <see cref="NullLogger.Instance"/>
+    /// when no <see cref="ILoggerFactory"/> is registered.
+    /// </summary>
+    /// <remarks>
+    /// Mirrors <c>LogFromServices</c> in <c>core/src/Microsoft.Teams.Core/Hosting/AddBotApplicationExtensions.cs</c>.
+    /// </remarks>
+    internal static void LogFromServices(IServiceCollection services, Action<ILogger> action, Type? categoryType = null)
+    {
+        ServiceDescriptor? descriptor = services.LastOrDefault(d => d.ServiceType == typeof(ILoggerFactory));
+        if (descriptor is null)
+        {
+            action(NullLogger.Instance);
+            return;
+        }
+
+        if (descriptor.ImplementationInstance is ILoggerFactory directFactory)
+        {
+            action(directFactory.CreateLogger(categoryType ?? typeof(HostApplicationBuilderExtensions)));
+            return;
+        }
+
+        using ServiceProvider tempProvider = services.BuildServiceProvider();
+        ILoggerFactory? factory = tempProvider.GetService<ILoggerFactory>();
+        action(factory?.CreateLogger(categoryType ?? typeof(HostApplicationBuilderExtensions)) ?? NullLogger.Instance);
     }
 }

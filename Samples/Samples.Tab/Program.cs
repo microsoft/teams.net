@@ -1,10 +1,9 @@
 using Microsoft.Teams.Extensions.Logging;
-using Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 using Microsoft.Teams.Plugins.AspNetCore.Extensions;
 using Samples.Tab.Components;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.AddTeams().AddTeamsDevTools();
+builder.AddTeams();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
