@@ -27,3 +27,11 @@ public sealed record ApprovalRequestResult(
 public sealed record ApprovalResult(
     [property: JsonPropertyName("approval_id")] string ApprovalId,
     [property: JsonPropertyName("status")] string Status);
+
+public sealed record UserMatch(
+    [property: JsonPropertyName("id")] string Id,
+    [property: JsonPropertyName("display_name")] string? DisplayName,
+    [property: JsonPropertyName("user_principal_name")] string? UserPrincipalName);
+
+public sealed record FindUserResult(
+    [property: JsonPropertyName("matches")] IReadOnlyList<UserMatch> Matches);

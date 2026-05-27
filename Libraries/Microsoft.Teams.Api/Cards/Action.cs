@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common;
@@ -36,6 +37,16 @@ public class ActionType(string value) : StringEnum(value)
 
     public static readonly ActionType Call = new("call");
     public bool IsCall => Call.Equals(Value);
+
+    /// <summary>
+    /// Suggested action of type Action.Submit. The action's Value is delivered to the bot
+    /// as a <c>suggestedActions/submit</c> invoke without sending a chat-visible message.
+    /// </summary>
+    [Experimental("ExperimentalTeamsSuggestedAction")]
+    public static readonly ActionType Submit = new("Action.Submit");
+
+    [Experimental("ExperimentalTeamsSuggestedAction")]
+    public bool IsSubmit => Submit.Equals(Value);
 }
 
 public class Action(ActionType type)
@@ -43,7 +54,7 @@ public class Action(ActionType type)
     /// <summary>
     /// The type of action implemented by this button. Possible values include: 'openUrl', 'imBack',
     /// 'postBack', 'playAudio', 'playVideo', 'showImage', 'downloadFile', 'signin', 'call',
-    /// 'messageBack'
+    /// 'messageBack', 'Action.Submit'
     /// </summary>
     [JsonPropertyName("type")]
     [JsonPropertyOrder(0)]

@@ -12,6 +12,7 @@ builder.Services.AddTeamsBotApplication();
 // State is a singleton so the same maps are shared between the bot's
 // activity handlers and the MCP tools. Replace with a persistent store for production.
 builder.Services.AddSingleton<State>();
+builder.Services.AddHttpClient<GraphClient>();
 builder.Services
     .AddMcpServer()
     .WithHttpTransport()
@@ -26,7 +27,7 @@ ILogger<Program> logger = webApp.Services.GetRequiredService<ILogger<Program>>()
 
 bot.OnMessage(async (context, cancellationToken) =>
 {
-    string userId = context.Activity.From?.Id ?? string.Empty;
+    string userId = context.Activity.From?.AadObjectId ?? string.Empty;
     string conversationId = context.Activity.Conversation?.Id ?? string.Empty;
 
     if (context.Activity.ServiceUrl is not null)
@@ -39,20 +40,8 @@ bot.OnMessage(async (context, cancellationToken) =>
         state.Conversations[userId] = conversationId;
     }
 
-    // If this user has a pending ask, treat their next message as the answer.
-    // Only one outstanding ask per user is supported (see README Limitations).
-    if (!string.IsNullOrEmpty(userId)
-        && state.UserPendingAsk.TryRemove(userId, out string? requestId)
-        && state.PendingAsks.TryGetValue(requestId, out PendingAsk? entry))
-    {
-        PendingAsk answered = entry with { Status = AskStatus.Answered, Reply = context.Activity.Text ?? string.Empty };
-        state.PendingAsks.TryUpdate(requestId, answered, entry);
-        await context.SendActivityAsync("Got it, thank you!", cancellationToken);
-        return;
-    }
-
     logger.LogInformation(
-        "Received message from user {UserId} in conversation {ConversationId}, but no pending ask found.",
+        "Received message from user {UserId} in conversation {ConversationId}. Replies to asks now arrive via adaptive card actions.",
         userId, conversationId);
     await context.SendActivityAsync("Hi! I'll let you know if I need anything.", cancellationToken);
 });
@@ -61,11 +50,21 @@ bot.OnMessage(async (context, cancellationToken) =>
 bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
 {
     AdaptiveCardAction? action = context.Activity.Value?.Action;
-    if (action?.Verb != "approval_response")
-    {
-        return AdaptiveCardResponse.CreateMessageResponse("Unknown action");
-    }
 
+    switch (action?.Verb)
+    {
+        case "approval_response":
+            return HandleApprovalResponse(action, state);
+        case "ask_reply":
+            return HandleAskReply(action, state);
+        default:
+            await Task.CompletedTask;
+            return AdaptiveCardResponse.CreateMessageResponse("Unknown action");
+    }
+});
+
+static InvokeResponse HandleApprovalResponse(AdaptiveCardAction action, State state)
+{
     string? approvalId = TryGetString(action.Data, "approval_id");
     string? decision = TryGetString(action.Data, "decision");
 
@@ -74,13 +73,36 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
         && state.Approvals.TryGetValue(approvalId, out string? currentDecision)
         && state.Approvals.TryUpdate(approvalId, decision, currentDecision))
     {
+        if (state.ApprovalWaiters.TryRemove(approvalId, out TaskCompletionSource<string>? waiter))
+            waiter.TrySetResult(decision);
         return AdaptiveCardResponse.CreateMessageResponse("Response recorded");
     }
 
-    await Task.CompletedTask;
     return AdaptiveCardResponse.CreateMessageResponse(
         "Unable to record response. The approval request may be invalid or expired.");
-});
+}
+
+static InvokeResponse HandleAskReply(AdaptiveCardAction action, State state)
+{
+    string? requestId = TryGetString(action.Data, "request_id");
+    string? reply = TryGetString(action.Data, "reply");
+
+    if (requestId is not null
+        && state.PendingAsks.TryGetValue(requestId, out PendingAsk? entry)
+        && entry.Status == AskStatus.Pending)
+    {
+        PendingAsk answered = entry with { Status = AskStatus.Answered, Reply = reply ?? string.Empty };
+        if (state.PendingAsks.TryUpdate(requestId, answered, entry))
+        {
+            if (state.ReplyWaiters.TryRemove(requestId, out TaskCompletionSource<PendingAsk>? waiter))
+                waiter.TrySetResult(answered);
+            return AdaptiveCardResponse.CreateMessageResponse("Thanks for your reply!");
+        }
+    }
+
+    return AdaptiveCardResponse.CreateMessageResponse(
+        "Unable to record reply. The ask may be invalid or expired.");
+}
 
 webApp.MapMcp("/mcp");
 webApp.Run();
