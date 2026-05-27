@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Collections;
@@ -65,7 +65,7 @@ public class WebSocketCollection : IEnumerable<KeyValuePair<string, WebSocket>>
 
         foreach (var socket in _store.Values)
         {
-            await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken);
+            await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -81,7 +81,7 @@ public class WebSocketCollection : IEnumerable<KeyValuePair<string, WebSocket>>
         });
 
         var buffer = new ArraySegment<byte>(payload, 0, payload.Length);
-        await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken);
+        await socket.SendAsync(buffer, WebSocketMessageType.Text, true, cancellationToken).ConfigureAwait(false);
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

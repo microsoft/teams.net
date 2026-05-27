@@ -99,6 +99,7 @@ public static class ServiceCollectionExtensions
         collection.AddSingleton(provider => provider.GetRequiredService<Common.Logging.ILogger>());
         collection.AddSingleton<ILoggerFactory, LoggerFactory>();
         collection.AddHostedService<TeamsService>();
+        // DI factory delegates must be synchronous; this blocks the calling thread during service resolution.
         collection.AddSingleton(provider => factory(provider).GetAwaiter().GetResult());
         collection.AddSingleton(provider => provider.GetRequiredService<App>().Logger);
         collection.AddSingleton(provider => provider.GetRequiredService<App>().Storage);

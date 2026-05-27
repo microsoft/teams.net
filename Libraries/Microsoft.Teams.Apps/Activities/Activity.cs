@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Api.Activities;
@@ -23,7 +23,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(async (context) =>
         {
-            await handler(context);
+            await handler(context).ConfigureAwait(false);
             return null;
         });
 
@@ -34,7 +34,7 @@ public static partial class AppActivityExtensions
     {
         app.Router.Register(async (context) =>
         {
-            await handler(context, context.CancellationToken);
+            await handler(context, context.CancellationToken).ConfigureAwait(false);
             return null;
         });
 
@@ -63,7 +63,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async (context) =>
             {
-                await handler(context);
+                await handler(context).ConfigureAwait(false);
                 return null;
             },
             Selector = (activity) => activity.Type.Equals(type),
@@ -80,7 +80,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async (context) =>
             {
-                await handler(context, context.CancellationToken);
+                await handler(context, context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = (activity) => activity.Type.Equals(type),
@@ -125,7 +125,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async (context) =>
             {
-                await handler(context.ToActivityType<TActivity>());
+                await handler(context.ToActivityType<TActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = (activity) => activity.GetType() == typeof(TActivity),
@@ -142,7 +142,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async (context) =>
             {
-                await handler(context.ToActivityType<TActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<TActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = (activity) => activity.GetType() == typeof(TActivity),
@@ -188,7 +188,7 @@ public static partial class AppActivityExtensions
             Selector = select,
             Handler = async (context) =>
             {
-                await handler(context);
+                await handler(context).ConfigureAwait(false);
                 return null;
             }
         });
@@ -205,7 +205,7 @@ public static partial class AppActivityExtensions
             Selector = select,
             Handler = async (context) =>
             {
-                await handler(context, context.CancellationToken);
+                await handler(context, context.CancellationToken).ConfigureAwait(false);
                 return null;
             }
         });
