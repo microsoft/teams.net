@@ -40,8 +40,8 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
         {
             To = [context.Activity.From?.Id!],
             Actions = [
-                    new SuggestedAction(ActionType.IMBack, "hello") { Value = "hello" },
-                    new SuggestedAction(ActionType.IMBack, "feedback") { Value = "feedback" },
+                    new SuggestedAction(ActionType.IMBack, "hello"),
+                    new SuggestedAction(ActionType.IMBack, "feedback"),
                  ]
         })
         .Build();
@@ -261,9 +261,9 @@ teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
     {
         To = [context.Activity.From?.Id!],
         Actions = [
-            new SuggestedAction(ActionType.IMBack, "Option 1") { Value = "You chose option 1" },
-            new SuggestedAction(ActionType.IMBack, "Option 2") { Value = "You chose option 2" },
-            new SuggestedAction(ActionType.IMBack, "Option 3") { Value = "You chose option 3" }
+            new SuggestedAction(ActionType.IMBack, "Option 1", "You chose option 1"),
+            new SuggestedAction(ActionType.IMBack, "Option 2", "You chose option 2"),
+            new SuggestedAction(ActionType.IMBack, "Option 3", "You chose option 3")
         ]
     };
 

@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.Apps.Schema;
@@ -22,12 +24,17 @@ public class SuggestedAction
     /// </summary>
     /// <param name="type">The type of action. See <see cref="ActionType"/> for common values.</param>
     /// <param name="title">The text description displayed on the button.</param>
-    /// <param name="value">The value sent when the button is clicked. Defaults to <paramref name="title"/> when not specified.</param>
-    public SuggestedAction(string type, string title, string? value = null)
+    /// <param name="value">The value sent when the button is clicked. Accepts strings, anonymous objects, or <see cref="JsonNode"/> instances. Defaults to <paramref name="title"/> when not specified.</param>
+    public SuggestedAction(string type, string title, object? value = null)
     {
         Type = type;
         Title = title;
-        Value = value ?? title;
+        Value = value switch
+        {
+            null => JsonValue.Create(title),
+            JsonNode n => n,
+            _ => JsonSerializer.SerializeToNode(value)
+        };
     }
 
     /// <summary>
@@ -66,7 +73,7 @@ public class SuggestedAction
     /// The content of this property depends on the action type.
     /// </summary>
     [JsonPropertyName("value")]
-    public object? Value { get; set; }
+    public JsonNode? Value { get; set; }
 
     /// <summary>
     /// Gets or sets the channel-specific data associated with this action.
@@ -130,4 +137,11 @@ public static class ActionType
     /// Initiates a phone call.
     /// </summary>
     public const string Call = "call";
+
+    /// <summary>
+    /// Suggested action of type Action.Submit. The action's Value is delivered to the bot
+    /// as a <c>suggestedActions/submit</c> invoke without sending a chat-visible message.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
+    public const string Submit = "Action.Submit";
 }
