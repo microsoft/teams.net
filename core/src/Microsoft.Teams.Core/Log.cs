@@ -45,6 +45,9 @@ internal static partial class Log
     [LoggerMessage(EventId = 10, Level = LogLevel.Information, Message = "Truncating conversation ID for 'agents' channel to comply with length restrictions.")]
     public static partial void TruncatingConversationId(this ILogger logger);
 
+    [LoggerMessage(EventId = 16, Level = LogLevel.Information, Message = "Sending activity to {Url}")]
+    public static partial void SendingActivity(this ILogger logger, string url);
+
     [LoggerMessage(EventId = 11, Level = LogLevel.Trace, Message = "Updating activity at {Url}: {Activity}")]
     public static partial void UpdatingActivity(this ILogger logger, string url, string activity);
 

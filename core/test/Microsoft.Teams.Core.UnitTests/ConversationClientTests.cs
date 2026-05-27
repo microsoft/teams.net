@@ -173,6 +173,79 @@ public class ConversationClientTests
     }
 
     [Fact]
+    public async Task SendActivityAsync_WithAgentsChannelId_UsesTruncatedConversationId()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
+        mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((req, ct) => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"id\":\"activity123\"}")
+            });
+
+        HttpClient httpClient = new(mockHttpMessageHandler.Object);
+        ConversationClient conversationClient = new(httpClient);
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            ChannelId = "agents",
+            ServiceUrl = new Uri("https://test.service.url/"),
+            Conversation = new("conv123")
+        };
+
+        await conversationClient.SendActivityAsync(activity);
+
+        Assert.NotNull(capturedRequest);
+        Assert.Equal("https://test.service.url/v3/conversations/acf/activities/", capturedRequest.RequestUri?.ToString());
+    }
+
+    [Fact]
+    public async Task SendActivityAsync_WithAgentsChannelIdAndIsTargeted_AppendsQueryString()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        Mock<HttpMessageHandler> mockHttpMessageHandler = new();
+        mockHttpMessageHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .Callback<HttpRequestMessage, CancellationToken>((req, ct) => capturedRequest = req)
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent("{\"id\":\"activity123\"}")
+            });
+
+        HttpClient httpClient = new(mockHttpMessageHandler.Object);
+        ConversationClient conversationClient = new(httpClient);
+
+#pragma warning disable ExperimentalTeamsTargeted
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            ChannelId = "agents",
+            ServiceUrl = new Uri("https://test.service.url/"),
+            Conversation = new("conv123"),
+            Recipient = new ConversationAccount { IsTargeted = true }
+        };
+#pragma warning restore ExperimentalTeamsTargeted
+
+        await conversationClient.SendActivityAsync(activity);
+
+        Assert.NotNull(capturedRequest);
+        Assert.Equal("https://test.service.url/v3/conversations/acf/activities/?isTargetedActivity=true", capturedRequest.RequestUri?.ToString());
+    }
+
+    [Fact]
     public async Task SendActivityAsync_WithIsTargeted_AppendsQueryString()
     {
         HttpRequestMessage? capturedRequest = null;

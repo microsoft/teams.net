@@ -65,7 +65,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         if (activity.ChannelId == "agents")
         {
-            logger.TruncatingConversationId();
+            logger?.TruncatingConversationId();
             string convId = "acf"; //conversationId.Length > 100 ? conversationId[..100] : conversationId;
             url = $"{activity.ServiceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(convId)}/activities/";
         }
@@ -76,6 +76,8 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
         }
 
         string body = activity.ToJson();
+
+        logger?.SendingActivity(url);
 
         return await _botHttpClient.SendAsync<SendActivityResponse>(
             HttpMethod.Post,
