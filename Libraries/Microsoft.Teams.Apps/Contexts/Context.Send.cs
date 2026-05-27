@@ -98,7 +98,7 @@ public partial class Context<TActivity> : IContext<TActivity>
         }
         #pragma warning restore ExperimentalTeamsTargeted
 
-        var res = await Sender.Send(activity, Ref, CancellationToken);
+        var res = await Sender.Send(activity, Ref, cancellationToken);
         await OnActivitySent(res, ToActivityType<IActivity>());
         return res;
     }

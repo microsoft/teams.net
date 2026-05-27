@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Common.Http;
@@ -33,7 +33,7 @@ public class TeamClient : Client
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Get($"{ServiceUrl}v3/teams/{id}");
-        var response = await _http.SendAsync<Team>(request, token);
+        var response = await _http.SendAsync<Team>(request, token).ConfigureAwait(false);
         return response.Body;
     }
 
@@ -41,7 +41,7 @@ public class TeamClient : Client
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var request = HttpRequest.Get($"{ServiceUrl}v3/teams/{id}/conversations");
-        var response = await _http.SendAsync<List<Channel>>(request, token);
+        var response = await _http.SendAsync<List<Channel>>(request, token).ConfigureAwait(false);
         return response.Body;
     }
 }

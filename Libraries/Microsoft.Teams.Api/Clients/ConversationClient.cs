@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
@@ -51,7 +51,7 @@ public class ConversationClient : Client
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var req = HttpRequest.Post($"{ServiceUrl}v3/conversations", body: request);
-        var res = await _http.SendAsync<ConversationResource>(req, token);
+        var res = await _http.SendAsync<ConversationResource>(req, token).ConfigureAwait(false);
         return res.Body;
     }
 

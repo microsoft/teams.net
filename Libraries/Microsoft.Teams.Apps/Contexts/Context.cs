@@ -140,7 +140,7 @@ public partial class Context<TActivity>(ISenderPlugin sender, IStreamer stream) 
     public CancellationToken CancellationToken { get; set; }
 
     internal Func<IContext<IActivity>, Task<object?>> OnNext { get; set; } = (_) => Task.FromResult<object?>(null);
-    internal ActivitySentHandler OnActivitySent { get; set; } = (_, _) => Task.Run(() => { });
+    internal ActivitySentHandler OnActivitySent { get; set; } = (_, _) => Task.CompletedTask;
 
     public void Deconstruct(out ILogger log, out ApiClient api, out TActivity activity)
     {

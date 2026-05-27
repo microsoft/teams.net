@@ -42,7 +42,7 @@ public class UserTokenClient : Client
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get($"{TokenServiceUrl}/api/usertoken/GetToken?{query}");
-        var res = await _http.SendAsync<Token.Response>(req, token);
+        var res = await _http.SendAsync<Token.Response>(req, token).ConfigureAwait(false);
         return res.Body;
     }
 
@@ -51,7 +51,7 @@ public class UserTokenClient : Client
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Post($"{TokenServiceUrl}/api/usertoken/GetAadTokens?{query}", body: request);
-        var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, token);
+        var res = await _http.SendAsync<IDictionary<string, Token.Response>>(req, token).ConfigureAwait(false);
         return res.Body;
     }
 
@@ -60,7 +60,7 @@ public class UserTokenClient : Client
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Get($"{TokenServiceUrl}/api/usertoken/GetTokenStatus?{query}");
-        var res = await _http.SendAsync<IList<Token.Status>>(req, token);
+        var res = await _http.SendAsync<IList<Token.Status>>(req, token).ConfigureAwait(false);
         return res.Body;
     }
 
@@ -69,7 +69,7 @@ public class UserTokenClient : Client
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var query = QueryString.Serialize(request);
         var req = HttpRequest.Delete($"{TokenServiceUrl}/api/usertoken/SignOut?{query}");
-        await _http.SendAsync(req, token);
+        await _http.SendAsync(req, token).ConfigureAwait(false);
     }
 
     public async Task<Token.Response> ExchangeAsync(ExchangeTokenRequest request, CancellationToken cancellationToken = default)
@@ -89,7 +89,7 @@ public class UserTokenClient : Client
         var req = HttpRequest.Post($"{TokenServiceUrl}/api/usertoken/exchange?{query}", body);
         req.Headers.Add("Content-Type", new List<string>() { "application/json" });
 
-        var res = await _http.SendAsync<Token.Response>(req, token);
+        var res = await _http.SendAsync<Token.Response>(req, token).ConfigureAwait(false);
         return res.Body;
     }
 

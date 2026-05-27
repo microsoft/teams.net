@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 namespace Microsoft.Teams.Common.Storage;
@@ -57,7 +57,7 @@ public class LocalStorage<TValue> : IStorage<string, TValue>
 
     public async Task<T?> GetAsync<T>(string key) where T : TValue
     {
-        var value = await GetAsync(key);
+        var value = await GetAsync(key).ConfigureAwait(false);
         return (T?)value;
     }
 
@@ -79,7 +79,8 @@ public class LocalStorage<TValue> : IStorage<string, TValue>
 
     public Task SetAsync(string key, TValue value)
     {
-        return Task.Run(() => Set(key, value));
+        Set(key, value);
+        return Task.CompletedTask;
     }
 
     public void Delete(string key)
@@ -94,7 +95,8 @@ public class LocalStorage<TValue> : IStorage<string, TValue>
 
     public Task DeleteAsync(string key)
     {
-        return Task.Run(() => Delete(key));
+        Delete(key);
+        return Task.CompletedTask;
     }
 
     protected bool Hit(string key)
