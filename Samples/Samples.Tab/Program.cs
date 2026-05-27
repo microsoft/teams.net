@@ -10,8 +10,10 @@ builder.Services.AddRazorComponents()
 var app = builder.Build();
 
 app.UseStaticFiles();
+app.UseTeams(routing: false);
+app.UseRouting();
 app.UseAntiforgery();
-app.UseTeams();
+app.UseAuthorization();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 app.AddFunction<Samples.Tab.Body>("post-to-chat", async context =>
