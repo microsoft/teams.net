@@ -21,10 +21,10 @@ internal class ExtAIBotApp : TeamsBotApplication
     private readonly ILogger<ExtAIBotApp> _logger;
 
     public ExtAIBotApp(
+        Agent agent,
         ApiClient api,
         IHttpContextAccessor accessor,
         ILogger<ExtAIBotApp> logger,
-        Agent agent,
         TeamsBotApplicationOptions? options = null)
         : base(api, accessor, logger, options)
     {

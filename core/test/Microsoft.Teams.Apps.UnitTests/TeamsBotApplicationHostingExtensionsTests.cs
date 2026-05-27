@@ -40,6 +40,10 @@ public class TeamsBotApplicationHostingExtensionsTests
         Assert.NotNull(serviceProvider.GetRequiredService<IHttpContextAccessor>());
         TeamsBotApplicationOptions options = serviceProvider.GetRequiredService<TeamsBotApplicationOptions>();
         Assert.Equal("teams-bundle-client-id", options.AppId);
+
+        BotApplicationOptions botOptions = serviceProvider.GetRequiredService<BotApplicationOptions>();
+        Assert.Equal("teams-bundle-client-id", botOptions.AppId);
+        Assert.Equal(options.AppId, botOptions.AppId);
     }
 
     [Fact]
