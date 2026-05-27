@@ -30,7 +30,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<SignIn.FailureActivity>());
+                await handler(context.ToActivityType<SignIn.FailureActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is SignIn.FailureActivity
@@ -66,7 +66,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.Failure]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.FailureActivity>()),
+            Handler = async context => await handler(context.ToActivityType<SignIn.FailureActivity>()).ConfigureAwait(false),
             Selector = activity => activity is SignIn.FailureActivity
         });
 
@@ -84,7 +84,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<SignIn.FailureActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<SignIn.FailureActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is SignIn.FailureActivity
@@ -118,7 +118,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.SignIn.Failure]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SignIn.FailureActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<SignIn.FailureActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is SignIn.FailureActivity
         });
 
