@@ -11,6 +11,7 @@ namespace Microsoft.Teams.Plugins.AspNetCore.DevTools.Extensions;
 
 public static class HostApplicationBuilderExtensions
 {
+    [Obsolete("DevTools is deprecated and will be removed in a later version. Use Microsoft 365 Agents Playground instead.")]
     public static IHostApplicationBuilder AddTeamsDevTools(this IHostApplicationBuilder builder)
     {
         builder.Services.AddSingleton(builder.Configuration.GetTeamsDevTools());
