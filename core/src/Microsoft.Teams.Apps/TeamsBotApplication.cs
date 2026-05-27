@@ -142,6 +142,7 @@ public class TeamsBotApplication : BotApplication
                 }
             }
         };
+        logger.LogDebug("TeamsBotApplication version {Version}", Version);
     }
 
     // ==================== Proactive Messaging ====================
@@ -205,4 +206,9 @@ public class TeamsBotApplication : BotApplication
     /// <inheritdoc cref="ReplyAsync(string, string, string, AgenticIdentity?, CancellationToken)"/>
     public Task<SendActivityResponse?> Reply(string conversationId, string messageId, string text, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
         => ReplyAsync(conversationId, messageId, text, agenticIdentity, cancellationToken);
+
+    /// <summary>
+    /// NuGet package version
+    /// </summary>
+    public static new string Version => ThisAssembly.NuGetPackageVersion;
 }
