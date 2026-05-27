@@ -23,7 +23,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<CommandActivity>());
+                await handler(context.ToActivityType<CommandActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is CommandActivity
@@ -40,7 +40,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<CommandActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<CommandActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is CommandActivity

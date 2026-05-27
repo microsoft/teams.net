@@ -210,6 +210,13 @@ public static class InvokeNames
     /// </summary>
     public const string MessageSubmitAction = "message/submitAction";
 
+    /// <summary>
+    /// Suggested action submit invoke name.
+    /// Sent when the user clicks a suggested action of type <c>Action.Submit</c>.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
+    public const string SuggestedActionSubmit = "suggestedActions/submit";
+
     //TODO : review
     /*
     /// <summary>

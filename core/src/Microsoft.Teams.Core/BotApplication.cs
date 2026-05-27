@@ -112,7 +112,7 @@ public class BotApplication
         _conversationClient = conversationClient;
         _userTokenClient = userTokenClient;
         _processActivityTimeout = options.ProcessActivityTimeout;
-        logger.BotStarted(GetType().Name, options.AppId, Version);
+        logger.BotStarted(options.AppId, Version);
     }
 
 

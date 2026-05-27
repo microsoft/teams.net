@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Common.Http;
@@ -28,6 +28,6 @@ public class TokenCredentials : IHttpCredentials
 
     public async Task<ITokenResponse> Resolve(IHttpClient _client, string[] scopes, CancellationToken cancellationToken = default)
     {
-        return await Token(TenantId, scopes);
+        return await Token(TenantId, scopes).ConfigureAwait(false);
     }
 }

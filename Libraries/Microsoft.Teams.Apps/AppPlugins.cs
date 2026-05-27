@@ -37,11 +37,11 @@ public partial class App
         {
             var eventType = new EventType(name);
 
-            await Events.Emit(plugin, $"{attr.Name}.{name}", @event, token);
+            await Events.Emit(plugin, $"{attr.Name}.{name}", @event, token).ConfigureAwait(false);
 
             if (eventType.IsBuiltIn && !eventType.IsStart)
             {
-                return await Events.Emit(plugin, name, @event, token);
+                return await Events.Emit(plugin, name, @event, token).ConfigureAwait(false);
             }
 
             return null;
