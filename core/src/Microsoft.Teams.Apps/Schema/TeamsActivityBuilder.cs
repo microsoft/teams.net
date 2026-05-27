@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core.Schema;
 
@@ -45,11 +46,6 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
         WithConversation(activity.Conversation);
         WithFrom(activity.Recipient);
 
-        if (!string.IsNullOrEmpty(activity.Id))
-        {
-            WithReplyToId(activity.Id);
-        }
-
         return this;
     }
 
@@ -85,6 +81,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <param name="recipient">The recipient account.</param>
     /// <param name="isTargeted">If true, marks this as a targeted message visible only to the specified recipient.</param>
     /// <returns>The builder instance for chaining.</returns>
+    [Experimental("ExperimentalTeamsTargeted")]
     public TeamsActivityBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
     {
         if (recipient is not null)
@@ -233,8 +230,16 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <returns></returns>
     public TeamsActivityBuilder WithText(string text, string textFormat = "plain")
     {
-        WithProperty("text", text);
-        WithProperty("textFormat", textFormat);
+        if (_activity is MessageActivity msg)
+        {
+            msg.Text = text;
+            msg.TextFormat = textFormat;
+        }
+        else
+        {
+            _activity.Properties["text"] = text;
+            _activity.Properties["textFormat"] = textFormat;
+        }
         return this;
     }
 
@@ -251,6 +256,56 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     }
 
     /// <summary>
+    /// Adds a quoted reply entity and appends a placeholder to the activity text.
+    /// The activity type must be set to Message (via <see cref="CoreActivityBuilder{TActivity,TBuilder}.WithType"/>) before calling this method.
+    /// </summary>
+    /// <param name="messageId">The ID of the message to quote.</param>
+    /// <param name="text">Optional text, appended to the quoted message placeholder.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the activity type is not Message.</exception>
+    [Experimental("ExperimentalTeamsQuotedReplies")]
+    public TeamsActivityBuilder AddQuote(string messageId, string? text = null)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        if (_activity.Type != TeamsActivityType.Message)
+        {
+            throw new InvalidOperationException("AddQuote can only be used on message activities. Call WithType(TeamsActivityType.Message) first.");
+        }
+
+        QuotedReplyEntityExtensions.AddToActivity(_activity, messageId, text);
+
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a targetedMessageInfo entity for Prompt Preview, referencing the inbound targeted-message id.
+    /// Any existing quotedReply entities and matching &lt;quoted messageId="..."/&gt; placeholders are stripped
+    /// to prevent collision with prompt preview. If a targetedMessageInfo entity is already present, no new entity is added.
+    /// The activity type must be set to Message (via <see cref="CoreActivityBuilder{TActivity,TBuilder}.WithType"/>) before calling this method.
+    /// </summary>
+    /// <remarks>
+    /// After the placeholder strip, the activity text is trimmed of leading and trailing whitespace.
+    /// </remarks>
+    /// <param name="messageId">The id of the inbound targeted message being responded to.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    /// <exception cref="InvalidOperationException">Thrown when the activity type is not Message.</exception>
+    [Experimental("ExperimentalTeamsTargeted")]
+    public TeamsActivityBuilder WithTargetedMessageInfo(string messageId)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
+
+        if (_activity.Type != TeamsActivityType.Message)
+        {
+            throw new InvalidOperationException("WithTargetedMessageInfo can only be used on message activities. Call WithType(TeamsActivityType.Message) first.");
+        }
+
+        TargetedMessageInfoEntityExtensions.AddToActivity(_activity, messageId);
+
+        return this;
+    }
+
+    /// <summary>
     /// Adds a mention to the activity.
     /// </summary>
     /// <param name="account">The account to mention.</param>
@@ -260,17 +315,97 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     public TeamsActivityBuilder AddMention(ConversationAccount account, string? text = null, bool addText = true)
     {
         ArgumentNullException.ThrowIfNull(account);
-        string? mentionText = text ?? account.Name;
+        MentionEntityExtensions.AddToActivity(_activity, account, text, addText);
+        return this;
+    }
 
-        if (addText)
-        {
-            string? currentText = _activity.Properties.TryGetValue("text", out object? value) ? value?.ToString() : null;
-            WithProperty("text", $"<at>{mentionText}</at> {currentText}");
-        }
+    /// <summary>
+    /// Adds a clientInfo entity to the activity.
+    /// </summary>
+    /// <param name="platform">The client platform (for example, Web or Desktop).</param>
+    /// <param name="country">The client's country/region code.</param>
+    /// <param name="timezone">The client's IANA timezone.</param>
+    /// <param name="locale">The client's locale (for example, en-US).</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder AddClientInfo(string? platform, string? country, string? timezone, string? locale)
+    {
+        ClientInfoEntityExtensions.AddToActivity(_activity, platform, country, timezone, locale);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a productInfo entity to the activity.
+    /// </summary>
+    /// <param name="id">The product identifier.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder AddProductInfo(string? id)
+    {
+        ProductInfoEntityExtensions.AddToActivity(_activity, id);
+        return this;
+    }
+
+    /// <summary>
+    /// Adds the AI-generated content label to the root message entity.
+    /// </summary>
+    public TeamsActivityBuilder AddAIGenerated()
+    {
+        ArgumentNullException.ThrowIfNull(_activity);
+
+        OMessageEntityExtensions.AddAIGeneratedContent(_activity);
+        return this;
+    }
+
+    /// <summary>
+    /// Enables/disables feedback loop on the activity.
+    /// </summary>
+    public TeamsActivityBuilder AddFeedback(bool value = true)
+    {
+        ArgumentNullException.ThrowIfNull(_activity);
+
+        _activity.ChannelData ??= new TeamsChannelData();
+        _activity.ChannelData.FeedbackLoopEnabled = value;
+        return this;
+    }
+
+    /// <summary>
+    /// Configures feedback loop mode on the activity.
+    /// </summary>
+    /// <param name="mode">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder AddFeedback(string mode)
+    {
+        ArgumentNullException.ThrowIfNull(_activity);
+
+        _activity.ChannelData ??= new TeamsChannelData();
+        _activity.ChannelData.FeedbackLoop = new FeedbackLoop(mode);
+        _activity.ChannelData.FeedbackLoopEnabled = null;
+        return this;
+    }
+
+    /// <summary>
+    /// Adds a citation claim to the activity.
+    /// </summary>
+    public TeamsActivityBuilder AddCitation(int position, CitationAppearance appearance)
+    {
+        ArgumentNullException.ThrowIfNull(_activity);
+        ArgumentNullException.ThrowIfNull(appearance);
 
         _activity.Entities ??= [];
-        _activity.Entities.Add(new MentionEntity(account, $"<at>{mentionText}</at>"));
+        CitationEntityExtensions.AddToActivity(_activity, position, appearance);
+        return this;
+    }
 
+    /// <summary>
+    /// Adds a content sensitivity label to the activity.
+    /// </summary>
+    /// <param name="name">The name of the sensitivity label.</param>
+    /// <param name="description">Optional description of the sensitivity label.</param>
+    /// <param name="pattern">Optional pattern associated with the sensitivity label.</param>
+    /// <returns>The builder instance for chaining.</returns>
+    public TeamsActivityBuilder AddSensitivityLabel(string name, string? description = null, DefinedTerm? pattern = null)
+    {
+        ArgumentNullException.ThrowIfNull(_activity);
+        SensitiveUsageEntityExtensions.AddToActivity(_activity, name, description, pattern);
         return this;
     }
 

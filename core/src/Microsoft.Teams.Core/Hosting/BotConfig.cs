@@ -4,30 +4,24 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.Teams.Core.Hosting;
 
 /// <summary>
-/// Configuration model for bot authentication credentials.
+/// Configuration model for bot authentication credentials, sourced from a
+/// Microsoft.Identity.Web compatible configuration section (e.g. "AzureAd").
 /// </summary>
-/// <remarks>
-/// This class consolidates bot authentication settings from various configuration sources including
-/// Bot Framework SDK configuration, Core configuration, and MSAL configuration sections.
-/// It supports multiple authentication modes: client secrets, system-assigned managed identities,
-/// user-assigned managed identities, and federated identity credentials (FIC).
-/// </remarks>
-internal sealed class BotConfig
+public sealed class BotConfig
 {
-    /// <summary>
-    /// Identifier used to specify system-assigned managed identity authentication.
-    /// When FicClientId equals this value, the system will use the system-assigned managed identity.
-    /// </summary>
-    public const string SystemManagedIdentityIdentifier = "system";
+    internal const string DefaultSectionName = "AzureAd";
 
-    private const string BotScope = "https://api.botframework.com/.default";
+    internal const string BotFrameworkSectionName = "BotFramework";
 
-    private const string DefaultSectionName = "AzureAd";
+    internal const string DefaultOpenIdMetadataUrl = "https://login.botframework.com/v1/.well-known/openid-configuration";
+
+    internal const string DefaultEntraInstance = "https://login.microsoftonline.com/";
+
+    internal const string DefaultBotTokenIssuer = "https://api.botframework.com";
 
     /// <summary>
     /// Gets or sets the Azure AD tenant ID.
@@ -40,105 +34,54 @@ internal sealed class BotConfig
     public string ClientId { get; set; } = string.Empty;
 
     /// <summary>
-    /// Gets or sets the client secret for client credentials authentication.
-    /// Optional if using managed identity or federated identity credentials.
-    /// </summary>
-    public string? ClientSecret { get; set; }
-
-    /// <summary>
-    /// Gets or sets the client ID for federated identity credentials or user-assigned managed identity.
-    /// Use <see cref="SystemManagedIdentityIdentifier"/> to specify system-assigned managed identity.
-    /// </summary>
-    public string? FicClientId { get; set; }
-
-    /// <summary>
     /// Gets or sets the configuration section name used to resolve this BotConfig.
+    /// Also used as the MSAL named-options key and the JWT auth scheme name.
     /// </summary>
     public string SectionName { get; set; } = DefaultSectionName;
 
     /// <summary>
-    /// Gets or sets the scope for token acquisition.
-    /// Defaults to "https://api.botframework.com/.default" if not specified.
+    /// Gets or sets the Bot Framework OpenID metadata URL used to fetch signing keys
+    /// for validating inbound Bot Framework tokens. For sovereign clouds, set
+    /// <c>BotFramework:OpenIdMetadataUrl</c> in configuration, e.g.
+    /// <c>"https://login.botframework.azure.us/v1/.well-known/openid-configuration"</c> for USGov.
+    /// Defaults to the public-cloud endpoint when not configured.
     /// </summary>
-    public string Scope { get; set; } = BotScope;
+    public string OpenIdMetadataUrl { get; set; } = DefaultOpenIdMetadataUrl;
+
+    /// <summary>
+    /// Gets or sets the Entra login instance used when validating Entra-issued tokens.
+    /// For sovereign clouds, set <c>{SectionName}:Instance</c> in configuration
+    /// (the standard Microsoft.Identity.Web key), e.g.
+    /// <c>"https://login.microsoftonline.us/"</c> for USGov.
+    /// Defaults to the public-cloud instance when not configured.
+    /// </summary>
+    public string EntraInstance { get; set; } = DefaultEntraInstance;
+
+    /// <summary>
+    /// Gets or sets the expected Bot Framework token issuer used to validate inbound
+    /// Bot Framework tokens. For sovereign clouds, set <c>BotFramework:BotTokenIssuer</c>
+    /// in configuration, e.g. <c>"https://api.botframework.us"</c> for USGov.
+    /// Defaults to the public-cloud issuer when not configured.
+    /// </summary>
+    public string BotTokenIssuer { get; set; } = DefaultBotTokenIssuer;
 
     internal IConfigurationSection? MsalConfigurationSection { get; set; }
 
     /// <summary>
-    /// Creates a BotConfig from Bot Framework SDK configuration format.
+    /// Gets a value indicating whether this configuration uses User-Assigned Managed Identity (UMI) for authentication.
+    /// Returns true when no ClientCredentials are configured in the section.
     /// </summary>
-    /// <param name="configuration">Configuration containing MicrosoftAppId, MicrosoftAppPassword, and MicrosoftAppTenantId settings.</param>
-    /// <returns>A new BotConfig instance with settings from Bot Framework configuration.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
-    public static BotConfig FromBFConfig(IConfiguration configuration)
-    {
-        ArgumentNullException.ThrowIfNull(configuration);
-        return new()
-        {
-            TenantId = configuration["MicrosoftAppTenantId"] ?? string.Empty,
-            ClientId = configuration["MicrosoftAppId"] ?? string.Empty,
-            ClientSecret = configuration["MicrosoftAppPassword"],
-            Scope = configuration["Scope"] ?? BotScope
-        };
-    }
+    internal bool IsUserAssignedManagedIdentity =>
+        MsalConfigurationSection is not null &&
+        !MsalConfigurationSection.GetSection("ClientCredentials").GetChildren().Any();
 
     /// <summary>
-    /// Creates a BotConfig from Teams Bot Core environment variable format.
-    /// </summary>
-    /// <param name="configuration">Configuration containing TENANT_ID, CLIENT_ID, CLIENT_SECRET, and MANAGED_IDENTITY_CLIENT_ID settings.</param>
-    /// <returns>A new BotConfig instance with settings from Core configuration.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
-    /// <remarks>
-    /// This format is typically used with environment variables in containerized deployments.
-    /// The MANAGED_IDENTITY_CLIENT_ID can be set to "system" for system-assigned managed identity.
-    /// </remarks>
-    public static BotConfig FromCoreConfig(IConfiguration configuration)
-    {
-        ArgumentNullException.ThrowIfNull(configuration);
-        return new()
-        {
-            TenantId = configuration["TENANT_ID"] ?? string.Empty,
-            ClientId = configuration["CLIENT_ID"] ?? string.Empty,
-            ClientSecret = configuration["CLIENT_SECRET"],
-            FicClientId = configuration["MANAGED_IDENTITY_CLIENT_ID"],
-            Scope = configuration["Scope"] ?? BotScope,
-        };
-    }
-
-    /// <summary>
-    /// Creates a BotConfig from MSAL configuration section format.
-    /// </summary>
-    /// <param name="configuration">Configuration containing an MSAL configuration section.</param>
-    /// <param name="sectionName">The name of the configuration section containing MSAL settings. Defaults to "AzureAd".</param>
-    /// <returns>A new BotConfig instance with settings from the MSAL configuration section.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
-    /// <remarks>
-    /// This format is compatible with Microsoft.Identity.Web configuration sections in appsettings.json.
-    /// The section should contain TenantId, ClientId, and optionally ClientSecret properties.
-    /// </remarks>
-    public static BotConfig FromMsalConfig(IConfiguration configuration, string sectionName = "AzureAd")
-    {
-        ArgumentNullException.ThrowIfNull(configuration);
-        IConfigurationSection section = configuration.GetSection(sectionName);
-        return new()
-        {
-            TenantId = section["TenantId"] ?? string.Empty,
-            ClientId = section["ClientId"] ?? string.Empty,
-            ClientSecret = section["ClientSecret"],
-            Scope = section["Scope"] ?? BotScope,
-            MsalConfigurationSection = section,
-            SectionName = sectionName
-        };
-    }
-
-    /// <summary>
-    /// Resolves a BotConfig from a service collection by extracting configuration and logger,
-    /// then trying all configuration formats in priority order.
+    /// Resolves a BotConfig from a service collection by extracting configuration and logger.
     /// </summary>
     /// <param name="services">The service collection containing IConfiguration and ILoggerFactory registrations.</param>
-    /// <param name="sectionName">The MSAL configuration section name. Defaults to "AzureAd".</param>
-    /// <returns>The first BotConfig with a non-empty ClientId, or a BotConfig with empty ClientId if none is found.</returns>
-    public static BotConfig Resolve(IServiceCollection services, string sectionName = "AzureAd")
+    /// <param name="sectionName">The configuration section name. Defaults to "AzureAd".</param>
+    /// <returns>A BotConfig populated from the section, or an empty BotConfig if no ClientId is configured.</returns>
+    public static BotConfig Resolve(IServiceCollection services, string sectionName = DefaultSectionName)
     {
         ArgumentNullException.ThrowIfNull(services);
 
@@ -159,58 +102,49 @@ internal sealed class BotConfig
                 "Ensure AddConfiguration() or WebApplication.CreateBuilder() has been called.");
         }
 
-        // Get logger using the helper method from AddBotApplicationExtensions
         ILogger logger = AddBotApplicationExtensions.GetLoggerFromServices(services, typeof(BotConfig));
 
-        return Resolve(configuration, sectionName, logger);
-    }
+        IConfigurationSection section = configuration.GetSection(sectionName);
+        IConfigurationSection botFrameworkSection = configuration.GetSection(BotFrameworkSectionName);
+        BotConfig config = new()
+        {
+            TenantId = section["TenantId"] ?? string.Empty,
+            ClientId = section["ClientId"] ?? string.Empty,
+            EntraInstance = ResolveAbsoluteUri(section, "Instance", DefaultEntraInstance),
+            OpenIdMetadataUrl = ResolveAbsoluteUri(botFrameworkSection, "OpenIdMetadataUrl", DefaultOpenIdMetadataUrl),
+            BotTokenIssuer = ResolveAbsoluteUri(botFrameworkSection, "BotTokenIssuer", DefaultBotTokenIssuer),
+            MsalConfigurationSection = section,
+            SectionName = sectionName
+        };
 
-    /// <summary>
-    /// Resolves a BotConfig by trying all configuration formats in priority order:
-    /// MSAL section, Core environment variables, then Bot Framework SDK keys.
-    /// </summary>
-    /// <param name="configuration">The application configuration.</param>
-    /// <param name="sectionName">The MSAL configuration section name. Defaults to "AzureAd".</param>
-    /// <param name="logger">Optional logger to log which configuration source was used.</param>
-    /// <returns>The first BotConfig with a non-empty ClientId, or a BotConfig with empty ClientId if none is found.</returns>
-    public static BotConfig Resolve(IConfiguration configuration, string sectionName = "AzureAd", ILogger? logger = null)
-    {
-        ArgumentNullException.ThrowIfNull(configuration);
-        logger ??= NullLogger.Instance;
-
-        BotConfig config = FromMsalConfig(configuration, sectionName);
         if (!string.IsNullOrEmpty(config.ClientId))
         {
             _logUsingSectionConfig(logger, sectionName, null);
-            config.SectionName = sectionName;
-            return config;
         }
-
-        config = FromCoreConfig(configuration);
-        if (!string.IsNullOrEmpty(config.ClientId))
+        else
         {
-            _logUsingCoreConfig(logger, null);
-            config.SectionName = sectionName;
-            return config;
+            _logNoConfigFound(logger, null);
         }
-
-        config = FromBFConfig(configuration);
-        if (!string.IsNullOrEmpty(config.ClientId))
-        {
-            _logUsingBFConfig(logger, null);
-            config.SectionName = sectionName;
-            return config;
-        }
-
-        // No configuration found - log warning and return empty config
-        _logNoConfigFound(logger, null);
-        return new BotConfig { SectionName = sectionName };
+        return config;
     }
 
-    private static readonly Action<ILogger, Exception?> _logUsingBFConfig =
-        LoggerMessage.Define(LogLevel.Debug, new(1), "Resolved bot configuration from Bot Framework configuration keys");
-    private static readonly Action<ILogger, Exception?> _logUsingCoreConfig =
-        LoggerMessage.Define(LogLevel.Debug, new(2), "Resolved bot configuration from Core environment variables");
+    private static string ResolveAbsoluteUri(IConfigurationSection section, string key, string defaultValue)
+    {
+        ArgumentNullException.ThrowIfNull(section);
+
+        string? value = section[key];
+        if (value is null)
+        {
+            return defaultValue;
+        }
+        if (!Uri.TryCreate(value, UriKind.Absolute, out _))
+        {
+            throw new InvalidOperationException(
+                $"Configuration value '{section.Key}:{key}' is not a valid absolute URI: '{value}'.");
+        }
+        return value;
+    }
+
     private static readonly Action<ILogger, string, Exception?> _logUsingSectionConfig =
         LoggerMessage.Define<string>(LogLevel.Debug, new(3), "Resolved bot configuration from '{SectionName}' configuration section");
     private static readonly Action<ILogger, Exception?> _logNoConfigFound =

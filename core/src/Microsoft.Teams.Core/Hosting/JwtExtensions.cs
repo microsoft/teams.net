@@ -24,9 +24,6 @@ namespace Microsoft.Teams.Core.Hosting
     /// </summary>
     public static class JwtExtensions
     {
-        internal const string BotOIDC = "https://login.botframework.com/v1/.well-known/openid-configuration";
-        internal const string EntraOIDC = "https://login.microsoftonline.com/";
-
         /// <summary>
         /// Adds JWT authentication for bots and agents using configuration from appsettings.
         /// </summary>
@@ -34,9 +31,9 @@ namespace Microsoft.Teams.Core.Hosting
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
         /// <param name="logger">The logger instance for logging.</param>
         /// <returns>An <see cref="AuthenticationBuilder"/> for further authentication configuration.</returns>
-        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, string aadSectionName = "AzureAd", ILogger? logger = null)
+        public static AuthenticationBuilder AddBotAuthentication(this IServiceCollection services, string aadSectionName = BotConfig.DefaultSectionName, ILogger? logger = null)
         {
-            BotConfig botConfig = ResolveBotConfig(services, aadSectionName);
+            BotConfig botConfig = BotConfig.Resolve(services, aadSectionName);
             return services.AddBotAuthentication(botConfig.ClientId, botConfig.TenantId, aadSectionName, logger);
         }
 
@@ -53,7 +50,7 @@ namespace Microsoft.Teams.Core.Hosting
             this IServiceCollection services,
             string clientId,
             string tenantId = "",
-            string schemeName = "AzureAd",
+            string schemeName = BotConfig.DefaultSectionName,
             ILogger? logger = null)
         {
             AuthenticationBuilder builder = services.AddAuthentication();
@@ -75,9 +72,11 @@ namespace Microsoft.Teams.Core.Hosting
             this AuthenticationBuilder builder,
             string clientId,
             string tenantId = "",
-            string schemeName = "AzureAd",
+            string schemeName = BotConfig.DefaultSectionName,
             ILogger? logger = null)
         {
+            ArgumentNullException.ThrowIfNull(builder);
+
             if (string.IsNullOrWhiteSpace(clientId))
             {
                 builder.AddBypassAuthentication(schemeName, logger);
@@ -96,11 +95,11 @@ namespace Microsoft.Teams.Core.Hosting
         /// <param name="aadSectionName">The configuration section name for the settings. Defaults to "AzureAd".</param>
         /// <param name="logger">Optional logger instance for logging. If null, a NullLogger will be used.</param>
         /// <returns>An <see cref="AuthorizationBuilder"/> for further authorization configuration.</returns>
-        public static AuthorizationBuilder AddBotAuthorization(this IServiceCollection services, string aadSectionName = "AzureAd", ILogger? logger = null)
+        public static AuthorizationBuilder AddBotAuthorization(this IServiceCollection services, string aadSectionName = BotConfig.DefaultSectionName, ILogger? logger = null)
         {
             logger ??= NullLogger.Instance;
 
-            BotConfig botConfig = ResolveBotConfig(services, aadSectionName);
+            BotConfig botConfig = BotConfig.Resolve(services, aadSectionName);
             return services.AddBotAuthorization(botConfig, logger);
         }
 
@@ -131,7 +130,7 @@ namespace Microsoft.Teams.Core.Hosting
             this IServiceCollection services,
             string clientId,
             string tenantId = "",
-            string schemeName = "AzureAd",
+            string schemeName = BotConfig.DefaultSectionName,
             ILogger? logger = null)
         {
             services.AddBotAuthentication(clientId, tenantId, schemeName, logger);
@@ -145,23 +144,45 @@ namespace Microsoft.Teams.Core.Hosting
                 });
         }
 
-        private static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId)
+        internal static string ValidateTeamsIssuer(string issuer, SecurityToken token, string configuredTenantId, string entraInstance, string botTokenIssuer)
         {
-            // Bot Framework tokens
-            if (issuer.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase))
+            // Bot Framework tokens. The expected issuer varies by sovereign cloud
+            // (e.g. https://api.botframework.us for USGov) so it comes from configuration.
+            if (issuer.Equals(botTokenIssuer, StringComparison.OrdinalIgnoreCase))
+            {
                 return issuer;
+            }
 
-            // Entra tokens � bot-to-bot (agent) and user (tab/API)
-            // Use the token's own tid claim for multi-tenant; fall back to configured tenant
+            // Entra tokens - bot-to-bot (agent) and user (tab/API)
+            // Use the token's own tid claim for multi-tenant; fall back to configured tenant.
+            // The v2.0 expected issuer is derived from the configured Entra instance so sovereign
+            // tokens (e.g. login.microsoftonline.us) validate correctly.
             (_, string? tid) = GetTokenClaims(token);
             string? effectiveTenant = string.IsNullOrEmpty(configuredTenantId) ? tid : configuredTenantId;
 
             if (effectiveTenant is not null &&
-                (issuer == $"https://login.microsoftonline.com/{effectiveTenant}/v2.0" ||
+                (issuer == $"{entraInstance}{effectiveTenant}/v2.0" ||
                  issuer == $"https://sts.windows.net/{effectiveTenant}/"))
+            {
                 return issuer;
+            }
 
-            throw new SecurityTokenInvalidIssuerException($"Issuer '{issuer}' is not valid.");
+            throw new SecurityTokenInvalidIssuerException(
+                $"Issuer '{issuer}' is not valid for tenant '{effectiveTenant ?? "<unknown>"}'.");
+        }
+
+        /// <summary>
+        /// Picks the OIDC metadata authority to fetch signing keys from based on the token's
+        /// issuer claim. Tokens issued by the configured Bot Framework issuer (e.g. the public
+        /// "https://api.botframework.com" or a sovereign equivalent like "https://api.botframework.us")
+        /// resolve to the configured Bot OIDC URL; all others fall through to the Entra tenant authority.
+        /// </summary>
+        internal static string ResolveSigningAuthority(string? iss, string? tid, string botTokenIssuer, string botOidcUrl, string entraInstance)
+        {
+            if (iss is null) return string.Empty;
+            return iss.Equals(botTokenIssuer, StringComparison.OrdinalIgnoreCase)
+                ? botOidcUrl
+                : $"{entraInstance}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
         }
 
         private static (string? iss, string? tid) GetTokenClaims(SecurityToken token) =>
@@ -189,6 +210,20 @@ namespace Microsoft.Teams.Core.Hosting
         /// </remarks>
         private static AuthenticationBuilder AddTeamsJwtBearer(this AuthenticationBuilder builder, string schemeName, string audience, string tenantId, ILogger? logger = null)
         {
+            // Resolve sovereign-cloud-aware URLs from the same AzureAd section that produced clientId/tenantId.
+            // Defaults to the public-cloud values when IConfiguration is not registered (manual-credentials callers)
+            // or when the section is missing or doesn't override them.
+            string botOidcUrl = BotConfig.DefaultOpenIdMetadataUrl;
+            string entraInstance = BotConfig.DefaultEntraInstance;
+            string botTokenIssuer = BotConfig.DefaultBotTokenIssuer;
+            if (builder.Services.Any(d => d.ServiceType == typeof(IConfiguration)))
+            {
+                BotConfig botConfig = BotConfig.Resolve(builder.Services, schemeName);
+                botOidcUrl = botConfig.OpenIdMetadataUrl;
+                entraInstance = botConfig.EntraInstance;
+                botTokenIssuer = botConfig.BotTokenIssuer;
+            }
+
             // One ConfigurationManager per OIDC authority, shared safely across all requests.
             ConcurrentDictionary<string, ConfigurationManager<OpenIdConnectConfiguration>> configManagerCache = new(StringComparer.OrdinalIgnoreCase);
 
@@ -208,15 +243,13 @@ namespace Microsoft.Teams.Core.Hosting
                     ValidateIssuer = true,
                     ValidateAudience = true,
                     ValidAudiences = [audience, $"api://{audience}"],
-                    IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId),
+                    IssuerValidator = (issuer, token, _) => ValidateTeamsIssuer(issuer, token, tenantId, entraInstance, botTokenIssuer),
                     IssuerSigningKeyResolver = (_, securityToken, _, _) =>
                     {
                         (string? iss, string? tid) = GetTokenClaims(securityToken);
                         if (iss is null) return [];
 
-                        string authority = iss.Equals("https://api.botframework.com", StringComparison.OrdinalIgnoreCase)
-                            ? BotOIDC
-                            : $"{EntraOIDC}{tid ?? "botframework.com"}/v2.0/.well-known/openid-configuration";
+                        string authority = ResolveSigningAuthority(iss, tid, botTokenIssuer, botOidcUrl, entraInstance);
 
                         logger?.ResolvingSigningKeys(authority, iss);
 
@@ -332,15 +365,6 @@ namespace Microsoft.Teams.Core.Hosting
                 };
             });
             return builder;
-        }
-
-        private static BotConfig ResolveBotConfig(IServiceCollection services, string sectionName)
-        {
-            ServiceDescriptor? configDescriptor = services.FirstOrDefault(d => d.ServiceType == typeof(IConfiguration));
-            IConfiguration configuration = configDescriptor?.ImplementationInstance as IConfiguration
-                ?? services.BuildServiceProvider().GetRequiredService<IConfiguration>();
-
-            return BotConfig.Resolve(configuration, sectionName);
         }
 
         private static ILogger GetLogger(HttpContext context, ILogger? fallback) =>

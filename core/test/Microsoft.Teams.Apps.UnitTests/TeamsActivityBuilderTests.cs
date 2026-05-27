@@ -103,6 +103,62 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
+    public void WithFrom_SyncsBaseProperty()
+    {
+        TeamsActivity incoming = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithText("test")
+            .Build();
+
+        CoreActivity coreRef = reply;
+        Assert.NotNull(coreRef.From);
+        Assert.Equal(incoming.Recipient?.Id, coreRef.From.Id);
+
+        ConversationAccount fromWithAgentic = new() { Id = "bot1", AgenticAppId = "app-1" };
+        TeamsActivity agenticReply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithFrom(fromWithAgentic)
+            .Build();
+
+        CoreActivity agenticCoreRef = agenticReply;
+        Assert.NotNull(agenticCoreRef.From);
+        Assert.Equal("app-1", agenticCoreRef.From.AgenticAppId);
+        Assert.NotNull(AgenticIdentity.FromAccount(agenticCoreRef.From));
+    }
+
+    [Fact]
+    public void WithFrom_DoesNotProduceDuplicateFromInJson()
+    {
+        TeamsActivity incoming = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithText("hello")
+            .Build();
+
+        string serialized = reply.ToJson();
+
+        int fromCount = System.Text.RegularExpressions.Regex.Matches(serialized, "\"from\"\\s*:").Count;
+        Assert.Equal(1, fromCount);
+    }
+
+    [Fact]
+    public void WithRecipient_DoesNotProduceDuplicateRecipientInJson()
+    {
+        TeamsActivity incoming = TeamsActivity.FromActivity(CoreActivity.FromJsonString(json));
+        TeamsActivity reply = TeamsActivity.CreateBuilder()
+            .WithConversationReference(incoming)
+            .WithRecipient(incoming.From)
+            .WithText("hello")
+            .Build();
+
+        string serialized = reply.ToJson();
+
+        int recipientCount = System.Text.RegularExpressions.Regex.Matches(serialized, "\"recipient\"\\s*:").Count;
+        Assert.Equal(1, recipientCount);
+    }
+
+    [Fact]
     public void WithFrom_SetsSenderAccount()
     {
         TeamsConversationAccount? fromAccount = TeamsConversationAccount.FromConversationAccount(new ConversationAccount
@@ -261,6 +317,46 @@ public class TeamsActivityBuilderTests
 
         Assert.NotNull(activity.Entities);
         Assert.Equal(2, activity.Entities?.Count);
+    }
+
+    [Fact]
+    public void AddClientInfo_AddsClientInfoEntity()
+    {
+        TeamsActivity activity = builder
+            .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US")
+            .Build();
+
+        ClientInfoEntity? entity = activity.Entities?.OfType<ClientInfoEntity>().SingleOrDefault();
+        Assert.NotNull(entity);
+        Assert.Equal("Web", entity.Platform);
+        Assert.Equal("US", entity.Country);
+        Assert.Equal("America/Los_Angeles", entity.Timezone);
+        Assert.Equal("en-US", entity.Locale);
+    }
+
+    [Fact]
+    public void AddProductInfo_AddsProductInfoEntity()
+    {
+        TeamsActivity activity = builder
+            .AddProductInfo("product-123")
+            .Build();
+
+        ProductInfoEntity? entity = activity.Entities?.OfType<ProductInfoEntity>().SingleOrDefault();
+        Assert.NotNull(entity);
+        Assert.Equal("product-123", entity.Id);
+    }
+
+    [Fact]
+    public void AddFeedback_WithMode_SetsFeedbackLoopAndClearsFeedbackLoopEnabled()
+    {
+        TeamsActivity activity = builder
+            .AddFeedback(FeedbackType.Custom)
+            .Build();
+
+        Assert.NotNull(activity.ChannelData);
+        Assert.Null(activity.ChannelData.FeedbackLoopEnabled);
+        Assert.NotNull(activity.ChannelData.FeedbackLoop);
+        Assert.Equal(FeedbackType.Custom, activity.ChannelData.FeedbackLoop.Type);
     }
 
     [Fact]
@@ -447,7 +543,12 @@ public class TeamsActivityBuilderTests
         Assert.Equal(TeamsActivityType.Message, activity.Type);
         Assert.Equal("activity-123", activity.Id);
         Assert.Equal("msteams", activity.ChannelId);
-        Assert.Equal("<at>User</at> Test message", activity.Properties["text"]);
+        string? text = activity.Text;
+        if (text is null && activity.Properties.TryGetValue("text", out object? rawText))
+        {
+            text = rawText?.ToString();
+        }
+        Assert.Equal("<at>User</at> Test message", text);
         Assert.Equal("sender-id", activity.From?.Id);
         Assert.Equal("recipient-id", activity.Recipient?.Id);
         Assert.Equal("conv-id", activity.Conversation?.Id);
@@ -837,7 +938,12 @@ public class TeamsActivityBuilderTests
         Assert.Equal("msg-001", activity.Id);
         Assert.Equal(serviceUrl, activity.ServiceUrl);
         Assert.Equal("msteams", activity.ChannelId);
-        Assert.Equal("<at>Manager</at> Please review this document", activity.Properties["text"]);
+        string? text = activity.Text;
+        if (text is null && activity.Properties.TryGetValue("text", out object? rawText))
+        {
+            text = rawText?.ToString();
+        }
+        Assert.Equal("<at>Manager</at> Please review this document", text);
         Assert.Equal("bot-id", activity.From?.Id);
         Assert.Equal("user-id", activity.Recipient?.Id);
         Assert.Equal("conv-001", activity.Conversation?.Id);
@@ -850,4 +956,25 @@ public class TeamsActivityBuilderTests
         Assert.NotNull(activity.Attachments);
         Assert.Single(activity.Attachments);
     }
+
+        private const string json = """
+                {
+                    "type": "message",
+                    "channelId": "msteams",
+                    "serviceUrl": "https://smba.trafficmanager.net/amer/test/",
+                    "text": "hello",
+                    "from": {
+                        "id": "user-1",
+                        "name": "User One"
+                    },
+                    "recipient": {
+                        "id": "bot-1",
+                        "name": "Bot One"
+                    },
+                    "conversation": {
+                        "id": "conv-1",
+                        "tenantId": "tenant-1"
+                    }
+                }
+                """;
 }

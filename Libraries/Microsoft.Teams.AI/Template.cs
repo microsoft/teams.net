@@ -7,6 +7,7 @@ namespace Microsoft.Teams.AI;
 /// templates render contextual data
 /// into a string
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface ITemplate
 {
     /// <summary>
