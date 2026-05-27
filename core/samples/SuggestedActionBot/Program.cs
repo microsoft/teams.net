@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json.Nodes;
-
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
@@ -22,8 +20,8 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         {
             To = [context.Activity.From?.Id!],
             Actions = [
-                new SuggestedAction(ActionType.Submit, "Approve") { Value = new JsonObject { ["vote"] = "approve" } },
-                new SuggestedAction(ActionType.Submit, "Reject") { Value = new JsonObject { ["vote"] = "reject" } },
+                new SuggestedAction(ActionType.Submit, "Approve", new { vote = "approve" }),
+                new SuggestedAction(ActionType.Submit, "Reject", new { vote = "reject" }),
             ]
         }
     };
