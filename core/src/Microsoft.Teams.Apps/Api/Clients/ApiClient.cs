@@ -27,8 +27,10 @@ namespace Microsoft.Teams.Apps.Api.Clients;
 public class ApiClient
 {
     private readonly BotHttpClient _http;
-    private readonly CoreConversationClient _conversationClient;
-    private readonly CoreUserTokenClient _userTokenClient;
+
+    internal CoreConversationClient ConversationClient { get; }
+
+    internal CoreUserTokenClient UserTokenClient { get; }
 
     /// <summary>
     /// The service URL used by this client.
@@ -78,8 +80,8 @@ public class ApiClient
         ArgumentNullException.ThrowIfNull(userTokenClient);
 
         _http = new BotHttpClient(httpClient, logger);
-        _conversationClient = conversationClient;
-        _userTokenClient = userTokenClient;
+        ConversationClient = conversationClient;
+        UserTokenClient = userTokenClient;
         Bots = new BotClient(userTokenClient);
         Users = new UserClient(userTokenClient);
 
@@ -106,8 +108,8 @@ public class ApiClient
         ArgumentNullException.ThrowIfNull(userTokenClient);
 
         _http = new BotHttpClient(httpClient, logger);
-        _conversationClient = conversationClient;
-        _userTokenClient = userTokenClient;
+        ConversationClient = conversationClient;
+        UserTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
         Bots = new BotClient(userTokenClient);
         Conversations = new ConversationApiClient(serviceUrl, conversationClient);
@@ -125,8 +127,8 @@ public class ApiClient
 
         ServiceUrl = client.ServiceUrl;
         _http = client._http;
-        _conversationClient = client._conversationClient;
-        _userTokenClient = client._userTokenClient;
+        ConversationClient = client.ConversationClient;
+        UserTokenClient = client.UserTokenClient;
         Bots = client.Bots;
         Conversations = client.Conversations;
         Users = client.Users;
@@ -138,8 +140,8 @@ public class ApiClient
     private ApiClient(BotHttpClient http, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, Uri serviceUrl)
     {
         _http = http;
-        _conversationClient = conversationClient;
-        _userTokenClient = userTokenClient;
+        ConversationClient = conversationClient;
+        UserTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
         Bots = new BotClient(userTokenClient);
         Conversations = new ConversationApiClient(serviceUrl, conversationClient);
@@ -157,6 +159,6 @@ public class ApiClient
     public virtual ApiClient ForServiceUrl(Uri serviceUrl)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
-        return new ApiClient(_http, _conversationClient, _userTokenClient, serviceUrl);
+        return new ApiClient(_http, ConversationClient, UserTokenClient, serviceUrl);
     }
 }
