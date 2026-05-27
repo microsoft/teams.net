@@ -293,7 +293,7 @@ public class QuotedReplyEntityTests
     public void Builder_WithQuote_AddsEntityAndPlaceholder()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithQuote("msg-1")
+            .AddQuote("msg-1")
             .Build();
 
         Assert.NotNull(activity.Entities);
@@ -309,7 +309,7 @@ public class QuotedReplyEntityTests
     public void Builder_WithQuote_WithResponse()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithQuote("msg-1", "my response")
+            .AddQuote("msg-1", "my response")
             .Build();
 
         Assert.True(activity.Properties.TryGetValue("text", out object? text));
@@ -390,7 +390,7 @@ public class QuotedReplyEntityTests
     public void Builder_WithQuote_EscapesSpecialCharsInPlaceholder()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithQuote("a\"b")
+            .AddQuote("a\"b")
             .Build();
 
         Assert.True(activity.Properties.TryGetValue("text", out object? text));
@@ -401,8 +401,8 @@ public class QuotedReplyEntityTests
     public void Builder_WithQuote_MultipleQuotes()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithQuote("msg-1", "first response")
-            .WithQuote("msg-2", "second response")
+            .AddQuote("msg-1", "first response")
+            .AddQuote("msg-2", "second response")
             .Build();
 
         Assert.NotNull(activity.Entities);

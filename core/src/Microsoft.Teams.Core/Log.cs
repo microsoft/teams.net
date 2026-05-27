@@ -19,8 +19,8 @@ internal static partial class Log
     public static IDisposable? BeginActivityScope(this ILogger logger, string? activityType, string? activityId, Uri? serviceUrl, string? mscv) =>
         ActivityScopeCallback(logger, activityType, activityId, serviceUrl, mscv);
 
-    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Started {ThisType} listener for AppID:{AppId} with SDK version {SdkVersion}")]
-    public static partial void BotStarted(this ILogger logger, string thisType, string appId, string sdkVersion);
+    [LoggerMessage(EventId = 1, Level = LogLevel.Information, Message = "Started BotApplication listener for AppID:{AppId} with Teams.Core version {SdkVersion}")]
+    public static partial void BotStarted(this ILogger logger, string appId, string sdkVersion);
 
     [LoggerMessage(EventId = 2, Level = LogLevel.Debug, Message = "Start processing HTTP request for activity")]
     public static partial void StartProcessingActivity(this ILogger logger);
