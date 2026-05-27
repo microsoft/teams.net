@@ -126,7 +126,8 @@ public partial class AspNetCorePlugin
 
         protected async Task Flush()
         {
-            if (_queue.Count == 0) return;
+            bool hasPendingState = _id is null && _count > 0 && _text != string.Empty;
+            if (_queue.Count == 0 && !hasPendingState) return;
 
             await _lock.WaitAsync().ConfigureAwait(false);
 
@@ -166,7 +167,9 @@ public partial class AspNetCorePlugin
                     _count++;
                 }
 
-                if (dequeued == 0) return;
+                // Recalculate inside the lock to account for any concurrent changes.
+                hasPendingState = _id is null && _count > 0 && _text != string.Empty;
+                if (dequeued == 0 && !hasPendingState) return;
 
                 // Send informative updates
                 if (informativeUpdates.Count > 0)

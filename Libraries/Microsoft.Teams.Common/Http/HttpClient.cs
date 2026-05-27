@@ -122,7 +122,7 @@ public class HttpClient : IHttpClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            var errorBody = await ParseErrorBody(response).ConfigureAwait(false);
+            var errorBody = await ParseErrorBody(response, cancellationToken).ConfigureAwait(false);
 
             throw new HttpException()
             {
@@ -147,7 +147,7 @@ public class HttpClient : IHttpClient
     {
         if (!response.IsSuccessStatusCode)
         {
-            var errorBody = await ParseErrorBody(response).ConfigureAwait(false);
+            var errorBody = await ParseErrorBody(response, cancellationToken).ConfigureAwait(false);
 
             throw new HttpException()
             {
@@ -168,9 +168,9 @@ public class HttpClient : IHttpClient
         };
     }
 
-    private async Task<object> ParseErrorBody(HttpResponseMessage response)
+    private async Task<object> ParseErrorBody(HttpResponseMessage response, CancellationToken cancellationToken = default)
     {
-        var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false) ?? throw new ArgumentNullException();
+        var content = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false) ?? throw new ArgumentNullException();
         object errorBody = content;
 
         try

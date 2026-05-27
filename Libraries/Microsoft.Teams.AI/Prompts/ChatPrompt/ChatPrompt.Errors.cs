@@ -15,7 +15,7 @@ public partial class ChatPrompt<TOptions>
     {
         ErrorEvent += (_, ex) =>
         {
-            onError(ex).ContinueWith(t =>
+            _ = onError(ex).ContinueWith(t =>
             {
                 if (t.IsFaulted)
                 {

@@ -20,7 +20,15 @@ public static class ActionExtensions
                 {
                     if (t.IsCompletedSuccessfully)
                     {
-                        func(arg);
+                        try
+                        {
+                            func(arg);
+                        }
+                        catch
+                        {
+                            // Observe exception to prevent UnobservedTaskException.
+                            // Callers use fire-and-forget; there is no upstream to propagate to.
+                        }
                     }
                 }, TaskScheduler.Default);
         };

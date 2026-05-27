@@ -381,6 +381,10 @@ public partial class App
 
                 userToken = new JsonWebToken(tokenResponse);
             }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
             catch { }
         }
 
