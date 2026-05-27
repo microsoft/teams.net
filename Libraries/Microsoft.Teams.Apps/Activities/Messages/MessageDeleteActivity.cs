@@ -26,7 +26,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageDeleteActivity>());
+                await handler(context.ToActivityType<MessageDeleteActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageDeleteActivity
@@ -43,7 +43,7 @@ public static partial class AppActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageDeleteActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageDeleteActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageDeleteActivity

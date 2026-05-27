@@ -53,7 +53,7 @@ public static partial class ApplicationBuilderExtensions
         {
             endpoints.MapGet($"/tabs/{name}", async context =>
             {
-                await OnGet("index.html").ExecuteAsync(context);
+                await OnGet("index.html").ExecuteAsync(context).ConfigureAwait(false);
             });
 
             endpoints.MapGet($"/tabs/{name}/{{*path}}", async context =>
@@ -62,11 +62,11 @@ public static partial class ApplicationBuilderExtensions
 
                 if (path is null)
                 {
-                    await Results.NotFound().ExecuteAsync(context);
+                    await Results.NotFound().ExecuteAsync(context).ConfigureAwait(false);
                     return;
                 }
 
-                await OnGet(path).ExecuteAsync(context);
+                await OnGet(path).ExecuteAsync(context).ConfigureAwait(false);
             });
         });
 
