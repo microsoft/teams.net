@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Common.Http;
@@ -40,12 +40,12 @@ public class BotTokenClient : Client
     public virtual async Task<ITokenResponse> GetAsync(IHttpCredentials credentials, IHttpClient? http = null, CancellationToken cancellationToken = default)
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
-        return await credentials.Resolve(http ?? _http, [ActiveBotScope], token);
+        return await credentials.Resolve(http ?? _http, [ActiveBotScope], token).ConfigureAwait(false);
     }
 
     public async Task<ITokenResponse> GetGraphAsync(IHttpCredentials credentials, IHttpClient? http = null, CancellationToken cancellationToken = default)
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
-        return await credentials.Resolve(http ?? _http, [ActiveGraphScope], token);
+        return await credentials.Resolve(http ?? _http, [ActiveGraphScope], token).ConfigureAwait(false);
     }
 }

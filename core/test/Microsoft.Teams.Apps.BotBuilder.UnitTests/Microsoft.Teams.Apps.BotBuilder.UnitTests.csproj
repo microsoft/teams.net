@@ -22,7 +22,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.Teams.Apps.BotBuilder\Microsoft.Teams.Apps.BotBuilder.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
   </ItemGroup>
 
   <ItemGroup>

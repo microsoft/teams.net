@@ -16,7 +16,6 @@
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
 
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" /> 
     <ProjectReference Include="..\..\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.BotBuilder\Microsoft.Teams.Plugins.AspNetCore.BotBuilder.csproj" />
   </ItemGroup>
 
