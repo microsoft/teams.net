@@ -24,7 +24,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<Tasks.FetchActivity>());
+                await handler(context.ToActivityType<Tasks.FetchActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is Tasks.FetchActivity
@@ -40,7 +40,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Tasks.Fetch]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<Tasks.FetchActivity>()),
+            Handler = async context => await handler(context.ToActivityType<Tasks.FetchActivity>()).ConfigureAwait(false),
             Selector = activity => activity is Tasks.FetchActivity
         });
 
@@ -54,7 +54,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Tasks.Fetch]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<Tasks.FetchActivity>()),
+            Handler = async context => await handler(context.ToActivityType<Tasks.FetchActivity>()).ConfigureAwait(false),
             Selector = activity => activity is Tasks.FetchActivity
         });
 
@@ -69,7 +69,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<Tasks.FetchActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<Tasks.FetchActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is Tasks.FetchActivity
@@ -84,7 +84,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Tasks.Fetch]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<Tasks.FetchActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<Tasks.FetchActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is Tasks.FetchActivity
         });
 
@@ -97,7 +97,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Tasks.Fetch]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<Tasks.FetchActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<Tasks.FetchActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is Tasks.FetchActivity
         });
 

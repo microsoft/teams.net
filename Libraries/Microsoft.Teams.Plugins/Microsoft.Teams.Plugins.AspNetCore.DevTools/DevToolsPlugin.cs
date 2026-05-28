@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
@@ -90,7 +90,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
         {
             try
             {
-                await next(context);
+                await next(context).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -168,7 +168,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
                 @event.Activity.Conversation
             ),
             cancellationToken
-        );
+        ).ConfigureAwait(false);
     }
 
     public async Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
@@ -181,7 +181,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
                 @event.Activity.Conversation
             ),
             cancellationToken
-        );
+        ).ConfigureAwait(false);
     }
 
     public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)

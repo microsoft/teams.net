@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Common.Http;
@@ -37,7 +37,7 @@ public class BotSignInClient : Client
             $"{TokenServiceUrl}/api/botsignin/GetSignInUrl?{query}"
         );
 
-        var res = await _http.SendAsync(req, token);
+        var res = await _http.SendAsync(req, token).ConfigureAwait(false);
         return res.Body;
     }
 
@@ -49,7 +49,7 @@ public class BotSignInClient : Client
             $"{TokenServiceUrl}/api/botsignin/GetSignInResource?{query}"
         );
 
-        var res = await _http.SendAsync<SignIn.UrlResponse>(req, token);
+        var res = await _http.SendAsync<SignIn.UrlResponse>(req, token).ConfigureAwait(false);
         return res.Body;
     }
 
