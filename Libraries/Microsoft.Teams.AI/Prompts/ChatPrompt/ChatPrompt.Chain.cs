@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Json.Schema;
@@ -22,7 +22,7 @@ public partial class ChatPrompt<TOptions>
             ),
             async (string text) =>
             {
-                var res = await prompt.Send(text);
+                var res = await prompt.Send(text).ConfigureAwait(false);
                 return res.Content;
             }
         ));

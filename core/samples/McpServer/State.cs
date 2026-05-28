@@ -9,7 +9,6 @@ public static class AskStatus
 {
     public const string Pending = "pending";
     public const string Answered = "answered";
-    public const string Superseded = "superseded";
 }
 
 public static class ApprovalStatus
@@ -30,17 +29,26 @@ public sealed record PendingAsk(string UserId, string Status = AskStatus.Pending
 /// </summary>
 public sealed class State
 {
-    /// <summary>userId -> personal conversationId. Populated on first incoming 1:1 message.</summary>
+    /// <summary>User AAD object id -> personal conversationId. Populated on first incoming 1:1 message.</summary>
     public ConcurrentDictionary<string, string> Conversations { get; } = new();
 
     /// <summary>requestId -> PendingAsk.</summary>
     public ConcurrentDictionary<string, PendingAsk> PendingAsks { get; } = new();
 
-    /// <summary>userId -> requestId for their current pending ask. Cleared once the user replies.</summary>
-    public ConcurrentDictionary<string, string> UserPendingAsk { get; } = new();
-
     /// <summary>approvalId -> approval status. Values: "pending", "approved", "rejected".</summary>
     public ConcurrentDictionary<string, string> Approvals { get; } = new();
+
+    /// <summary>
+    /// requestId -> TCS completed when the user replies (or the ask is superseded).
+    /// Lets <c>wait_for_reply</c> return sub-millisecond after the answer lands instead of polling.
+    /// </summary>
+    public ConcurrentDictionary<string, TaskCompletionSource<PendingAsk>> ReplyWaiters { get; } = new();
+
+    /// <summary>
+    /// approvalId -> TCS completed with the final status when the user clicks Approve/Reject.
+    /// Lets <c>wait_for_approval</c> return sub-millisecond after the decision lands instead of polling.
+    /// </summary>
+    public ConcurrentDictionary<string, TaskCompletionSource<string>> ApprovalWaiters { get; } = new();
 
     /// <summary>
     /// Service URL used by proactive sends and <c>conversations.create</c>. Updated from

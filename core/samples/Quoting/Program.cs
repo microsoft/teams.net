@@ -45,14 +45,16 @@ teamsApp.OnMessage("(?i)^test quote$", async (context, cancellationToken) =>
     }
 });
 
-// AddQuote() extension — builder with response
+// AddQuote() builder method — fluent API
 teamsApp.OnMessage("(?i)^test add$", async (context, cancellationToken) =>
 {
     var sent = await context.SendActivityAsync("Please review the latest PR before end of day.", cancellationToken);
     if (sent?.Id != null)
     {
-        MessageActivity msg = new();
-        msg.AddQuote(sent.Id, "Done! Left my comments on the PR.");
+        TeamsActivity msg = TeamsActivity.CreateBuilder()
+            .WithType("message")
+            .AddQuote(sent.Id, "Done! Left my comments on the PR.")
+            .Build();
         await context.SendActivityAsync(msg, cancellationToken);
     }
 });
@@ -66,25 +68,13 @@ teamsApp.OnMessage("(?i)^test multi$", async (context, cancellationToken) =>
 
     if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
     {
-        MessageActivity msg = new();
-        msg.AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.");
-        msg.AddQuote(sentB.Id, "Looks great, approved!");
-        msg.AddQuote(sentC.Id);
-        await context.SendActivityAsync(msg, cancellationToken);
-    }
-});
-
-// Builder pattern — WithQuote on TeamsActivityBuilder
-teamsApp.OnMessage("(?i)^test builder$", async (context, cancellationToken) =>
-{
-    var sent = await context.SendActivityAsync("Deployment to staging is complete.", cancellationToken);
-    if (sent?.Id != null)
-    {
-        TeamsActivity reply = TeamsActivity.CreateBuilder()
+        TeamsActivity msg = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithQuote(sent.Id, "Verified — all smoke tests passing.")
+            .AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.")
+            .AddQuote(sentB.Id, "Looks great, approved!")
+            .AddQuote(sentC.Id)
             .Build();
-        await context.SendActivityAsync(reply, cancellationToken);
+        await context.SendActivityAsync(msg, cancellationToken);
     }
 });
 
@@ -99,7 +89,6 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
             "- `test quote` - Quote() quotes a previously sent message\n" +
             "- `test add` - AddQuote() extension with response\n" +
             "- `test multi` - Multi-quote with mixed responses\n" +
-            "- `test builder` - WithQuote() on TeamsActivityBuilder\n\n" +
             "Quote any message to me to see the parsed metadata!")
         { TextFormat = TextFormats.Markdown },
         cancellationToken);

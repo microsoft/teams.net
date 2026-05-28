@@ -4,9 +4,8 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps;
-using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 using Moq;
@@ -253,59 +252,19 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             return mock;
         }
 
-        private static Mock<TeamsBotApplication> CreateMockTeamsBotApplication()
-        {
-            Mock<ConversationClient> mockConversationClient = CreateMockConversationClient();
-            Mock<UserTokenClient> mockUserTokenClient = new(
-                new HttpClient(),
-                Mock.Of<Microsoft.Extensions.Configuration.IConfiguration>(),
-                NullLogger<UserTokenClient>.Instance);
-            ApiClient mockTeamsApiClient = new(
-                new Uri("https://service.url"),
-                new HttpClient(),
-                mockConversationClient.Object,
-                mockUserTokenClient.Object,
-                NullLogger<ApiClient>.Instance);
-
-            Mock<TeamsBotApplication> mock = new(
-                mockConversationClient.Object,
-                mockUserTokenClient.Object,
-                mockTeamsApiClient,
-                Mock.Of<IHttpContextAccessor>(),
-                NullLogger<TeamsBotApplication>.Instance);
-
-            return mock;
-        }
-
         private static TeamsBotAdapter CreateCompatBotAdapter(ConversationClient conversationClient)
         {
             Mock<UserTokenClient> mockUserTokenClient = new(
                 new HttpClient(),
-                Mock.Of<Microsoft.Extensions.Configuration.IConfiguration>(),
+                Mock.Of<IConfiguration>(),
                 NullLogger<UserTokenClient>.Instance);
-            ApiClient mockTeamsApiClient = new(
-                new Uri("https://service.url"),
-                new HttpClient(),
+            BotApplication botApplication = new(
                 conversationClient,
                 mockUserTokenClient.Object,
-                NullLogger<ApiClient>.Instance);
-            TeamsBotApplication teamsBotApplication = new(
-                conversationClient,
-                mockUserTokenClient.Object,
-                mockTeamsApiClient,
-                Mock.Of<IHttpContextAccessor>(),
-                NullLogger<TeamsBotApplication>.Instance);
+                NullLogger<BotApplication>.Instance);
 
             return new TeamsBotAdapter(
-                teamsBotApplication,
-                Mock.Of<IHttpContextAccessor>(),
-                NullLogger<TeamsBotAdapter>.Instance);
-        }
-
-        private static TeamsBotAdapter CreateCompatBotAdapter(TeamsBotApplication teamsBotApplication)
-        {
-            return new TeamsBotAdapter(
-                teamsBotApplication,
+                botApplication,
                 Mock.Of<IHttpContextAccessor>(),
                 NullLogger<TeamsBotAdapter>.Instance);
         }

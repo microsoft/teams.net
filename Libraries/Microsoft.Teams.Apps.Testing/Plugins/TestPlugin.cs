@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Net;
@@ -147,7 +147,7 @@ public partial class TestPlugin : ISenderPlugin
             Token = token,
             Activity = activity,
             Extra = extra
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task<Response> Do(ActivityEvent @event, CancellationToken cancellationToken = default)
@@ -161,7 +161,7 @@ public partial class TestPlugin : ISenderPlugin
                     "message",
                     new TestMessageEvent() { Message = message.Text },
                     cancellationToken
-                );
+                ).ConfigureAwait(false);
             }
 
             var @out = await Events(
@@ -169,7 +169,7 @@ public partial class TestPlugin : ISenderPlugin
                 EventType.Activity,
                 @event,
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             var res = (Response?)@out;
 
@@ -187,7 +187,7 @@ public partial class TestPlugin : ISenderPlugin
                 EventType.Error,
                 new ErrorEvent() { Exception = ex },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             return new(HttpStatusCode.InternalServerError, ex.ToString());
         }

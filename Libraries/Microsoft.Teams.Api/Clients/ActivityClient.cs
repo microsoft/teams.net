@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
@@ -41,7 +41,7 @@ public class ActivityClient : Client
             body: activity
         );
 
-        var res = await _http.SendAsync(req, token);
+        var res = await _http.SendAsync(req, token).ConfigureAwait(false);
 
         if (res.Body == string.Empty) return null;
 
@@ -57,7 +57,7 @@ public class ActivityClient : Client
             body: activity
         );
 
-        var res = await _http.SendAsync(req, token);
+        var res = await _http.SendAsync(req, token).ConfigureAwait(false);
 
         if (res.Body == string.Empty) return null;
 
@@ -74,7 +74,7 @@ public class ActivityClient : Client
             body: activity
         );
 
-        var res = await _http.SendAsync(req, token);
+        var res = await _http.SendAsync(req, token).ConfigureAwait(false);
 
         if (res.Body == string.Empty) return null;
 
@@ -89,7 +89,7 @@ public class ActivityClient : Client
             $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}"
         );
 
-        await _http.SendAsync(req, token);
+        await _http.SendAsync(req, token).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -109,7 +109,7 @@ public class ActivityClient : Client
             body: activity
         );
 
-        var res = await _http.SendAsync(req, token);
+        var res = await _http.SendAsync(req, token).ConfigureAwait(false);
 
         if (res.Body == string.Empty) return null;
 
@@ -134,7 +134,7 @@ public class ActivityClient : Client
             body: activity
         );
 
-        var res = await _http.SendAsync(req, token);
+        var res = await _http.SendAsync(req, token).ConfigureAwait(false);
 
         if (res.Body == string.Empty) return null;
 
@@ -156,6 +156,6 @@ public class ActivityClient : Client
             $"{ServiceUrl}v3/conversations/{conversationId}/activities/{id}?isTargetedActivity=true"
         );
 
-        await _http.SendAsync(req, token);
+        await _http.SendAsync(req, token).ConfigureAwait(false);
     }
 }

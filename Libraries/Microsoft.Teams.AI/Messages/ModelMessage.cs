@@ -6,6 +6,7 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.Teams.AI.Messages;
 
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class ModelMessage(object? content) : ModelMessage<object?>(content)
 {
     public static ModelMessage<string> Text(string content) => new(content);
@@ -13,6 +14,7 @@ public class ModelMessage(object? content) : ModelMessage<object?>(content)
     public static ModelMessage<Stream> Media(Stream content) => new(content);
 }
 
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class ModelMessage<T> : IMessage
 {
     [JsonPropertyName("role")]
@@ -51,6 +53,7 @@ public class ModelMessage<T> : IMessage
 /// represents a models request to
 /// invoke a function
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class FunctionCall
 {
     [JsonPropertyName("id")]

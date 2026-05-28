@@ -10,6 +10,7 @@
     <Project Path="../../botbuilder-dotnet/libraries/Microsoft.Bot.Streaming/Microsoft.Bot.Streaming.csproj" />
   </Folder> -->
   <Folder Name="/Samples/">
+    <Project Path="samples/A2ABot/A2ABot.csproj" />
     <Project Path="samples/AFBot/AFBot.csproj" Id="ca5b4abd-3f26-457b-8197-ff9415506beb" />
     <Project Path="samples/AllInvokesBot/AllInvokesBot.csproj" />
     <Project Path="samples/CompatBot/CompatBot.csproj" Id="39461362-c3d0-41ae-9ed7-f7e1232a8ead" />
@@ -25,6 +26,7 @@
     <Project Path="samples/Quoting/Quoting.csproj" />
     <Project Path="samples/SsoBot/SsoBot.csproj" />
     <Project Path="samples/StreamingBot/StreamingBot.csproj" />
+    <Project Path="samples/SuggestedActionBot/SuggestedActionBot.csproj" />
     <Project Path="samples/TabApp/TabApp.csproj" />
     <Project Path="samples/TargetedMessages/TargetedMessages.csproj" />
     <Project Path="samples/TeamsBot/TeamsBot.csproj" Id="94a35050-6826-446f-9b29-863f2bbc75b7" />
@@ -37,7 +39,6 @@
     <File Path="../.github/workflows/core-test.yaml" />
     <File Path=".editorconfig" />
     <File Path=".gitignore" />
-    <File Path="docs/Architecture.md" />
     <File Path="README.md" />
     <File Path="src/Directory.Build.props" />
     <File Path="src/Directory.Build.targets" />

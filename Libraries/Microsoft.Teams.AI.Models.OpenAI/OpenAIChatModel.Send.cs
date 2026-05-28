@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Text;
@@ -19,14 +19,14 @@ public partial class OpenAIChatModel
         {
             Functions = [],
             Messages = []
-        }, cancellationToken);
+        }, cancellationToken).ConfigureAwait(false);
 
         return res;
     }
 
     public async Task<ModelMessage<string>> Send(IMessage message, ChatModelOptions<ChatCompletionOptions> options, CancellationToken cancellationToken = default)
     {
-        var messages = await CallFunctions(message, options, cancellationToken);
+        var messages = await CallFunctions(message, options, cancellationToken).ConfigureAwait(false);
         var chatMessages = messages.Select(m => m.ToOpenAI()).ToList();
 
         if (options.Prompt is not null)
@@ -48,14 +48,14 @@ public partial class OpenAIChatModel
             var result = await ChatClient.CompleteChatAsync(
                 chatMessages,
                 requestOptions,
-                CancellationToken.None
-            );
+                cancellationToken
+            ).ConfigureAwait(false);
 
             var modelMessage = ChatMessage.CreateAssistantMessage(result.Value).ToTeams();
 
             if (modelMessage.HasFunctionCalls)
             {
-                return await Send(modelMessage, options, cancellationToken);
+                return await Send(modelMessage, options, cancellationToken).ConfigureAwait(false);
             }
 
             messages.Add(modelMessage);
@@ -70,7 +70,7 @@ public partial class OpenAIChatModel
 
     public async Task<ModelMessage<string>> Send(IMessage message, ChatModelOptions<ChatCompletionOptions> options, IStream stream, CancellationToken cancellationToken = default)
     {
-        var messages = await CallFunctions(message, options, cancellationToken);
+        var messages = await CallFunctions(message, options, cancellationToken).ConfigureAwait(false);
         var chatMessages = messages.Select(m => m.ToOpenAI()).ToList();
 
         if (options.Prompt is not null)
@@ -89,7 +89,7 @@ public partial class OpenAIChatModel
                 requestOptions.Tools.Add(tool);
             }
 
-            var res = ChatClient.CompleteChatStreamingAsync(chatMessages, requestOptions, CancellationToken.None);
+            var res = ChatClient.CompleteChatStreamingAsync(chatMessages, requestOptions, cancellationToken);
             var content = new StringBuilder();
             var toolCalls = new StreamingChatToolCallsBuilder();
 
@@ -108,12 +108,12 @@ public partial class OpenAIChatModel
                 }
 
                 content.Append(delta);
-                stream.Emit(delta.ToString());
+                await stream.EmitAsync(delta.ToString()).ConfigureAwait(false);
 
                 if (chunk.FinishReason == ChatFinishReason.ToolCalls)
                 {
                     var input = ChatMessage.CreateAssistantMessage(toolCalls.Build()).ToTeams();
-                    return await Send(input, options, stream, cancellationToken);
+                    return await Send(input, options, stream, cancellationToken).ConfigureAwait(false);
                 }
                 else if (chunk.FinishReason == ChatFinishReason.Length)
                 {
@@ -152,7 +152,7 @@ public partial class OpenAIChatModel
                 try
                 {
                     var args = call.Parse() ?? new Dictionary<string, object?>();
-                    var res = await options.Invoke(call, cancellationToken);
+                    var res = await options.Invoke(call, cancellationToken).ConfigureAwait(false);
 
                     content = res is string asString ? asString : JsonSerializer.Serialize(res);
                     logger.Debug(content);

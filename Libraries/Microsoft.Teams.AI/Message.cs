@@ -13,6 +13,7 @@ namespace Microsoft.Teams.AI;
 /// via a Model
 /// </summary>
 [JsonConverter(typeof(TrueTypeJsonConverter<IMessage>))]
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IMessage
 {
     /// <summary>
@@ -23,6 +24,7 @@ public interface IMessage
 }
 
 [JsonConverter(typeof(JsonConverter<Role>))]
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class Role(string value) : StringEnum(value)
 {
     public static readonly Role User = new("user");

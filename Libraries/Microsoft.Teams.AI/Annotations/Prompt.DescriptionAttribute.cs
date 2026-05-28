@@ -3,9 +3,11 @@
 
 namespace Microsoft.Teams.AI.Annotations;
 
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public static partial class Prompt
 {
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, Inherited = true)]
+    [Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
     public class DescriptionAttribute : Attribute
     {
         /// <summary>
