@@ -134,3 +134,19 @@ The `teams-net-publish` ADO pipeline environment controls who can approve public
 2. Select **teams-net-publish**
 3. Click **Approvals and checks**
 4. Add/remove approvers as needed
+
+## Appendix: Pipeline Reference
+
+| Pipeline | File | Trigger |
+|----------|------|---------|
+| **Teams.NET-PR** | `ci.yaml` | PRs targeting `main` or `releases/*`; pushes to `main` |
+| **Teams.NET-ESRP** | `publish.yaml` | Manual (select `packageSet` and `publishType`) |
+
+### CI path detection
+
+The `Teams.NET-PR` pipeline has a `DetectChanges` stage that skips builds when the relevant package set is unchanged. Docs-only PRs produce a green run with no builds.
+
+- `Libraries/**`, `Samples/**`, `Tests/**`, `Microsoft.Teams.sln`, `version.json` → Legacy
+- `core/**` → Core
+- `.editorconfig`, `.azdo/**`, `Makefile` → both (shared infrastructure)
+- `**/*.md`, `docs/**`, `Assets/**` → neither (skipped)
