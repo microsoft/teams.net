@@ -4,13 +4,13 @@ on:
   workflow_call:
   workflow_dispatch:
   pull_request:
-    branches: ['main']
+    branches: ['main', 'releases/v2']
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
       - 'Assets/**'
   push:
-    branches: ['main']
+    branches: ['main', 'releases/v2']
     paths-ignore:
       - '**/*.md'
       - 'docs/**'
