@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Humanizer;
@@ -36,7 +36,7 @@ public partial class ChatPrompt<TOptions>
 
     public Func<FunctionCall, CancellationToken, Task<object?>> Invoke(FunctionCollection functions)
     {
-        return async (call, cancellationToken) => await _Invoke(call, functions, cancellationToken);
+        return async (call, cancellationToken) => await _Invoke(call, functions, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task<object?> _Invoke(FunctionCall call, FunctionCollection functions, CancellationToken cancellationToken = default)
@@ -48,13 +48,13 @@ public partial class ChatPrompt<TOptions>
         {
             foreach (var plugin in Plugins)
             {
-                call = await plugin.OnBeforeFunctionCall(this, func, call, cancellationToken);
+                call = await plugin.OnBeforeFunctionCall(this, func, call, cancellationToken).ConfigureAwait(false);
             }
 
             var startedAt = DateTime.Now;
             logger.Debug(call.Arguments);
 
-            var res = await func.Invoke(call);
+            var res = await func.Invoke(call).ConfigureAwait(false);
             var endedAt = DateTime.Now;
 
             logger.Debug(res);
@@ -62,7 +62,7 @@ public partial class ChatPrompt<TOptions>
 
             foreach (var plugin in Plugins)
             {
-                res = await plugin.OnAfterFunctionCall(this, func, call, res, cancellationToken);
+                res = await plugin.OnAfterFunctionCall(this, func, call, res, cancellationToken).ConfigureAwait(false);
             }
 
             return res;

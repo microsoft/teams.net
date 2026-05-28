@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.Hosting;
@@ -31,7 +31,7 @@ public class TeamsService : IHostedLifecycleService
 
     public async Task StartedAsync(CancellationToken cancellationToken)
     {
-        await _app.Start(cancellationToken);
+        await _app.Start(cancellationToken).ConfigureAwait(false);
         _logger.LogDebug("Started");
     }
 

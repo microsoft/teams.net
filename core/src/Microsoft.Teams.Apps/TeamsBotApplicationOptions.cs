@@ -2,13 +2,15 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps.OAuth;
+using Microsoft.Teams.Core.Hosting;
 
 namespace Microsoft.Teams.Apps;
 
 /// <summary>
 /// Options for configuring a <see cref="TeamsBotApplication"/>.
+/// Inherits <see cref="BotApplicationOptions"/> so a single options object covers both Core and Teams settings.
 /// </summary>
-public sealed class TeamsBotApplicationOptions
+public sealed class TeamsBotApplicationOptions : BotApplicationOptions
 {
     internal List<OAuthFlowDescriptor> OAuthFlows { get; } = [];
 

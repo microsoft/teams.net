@@ -81,36 +81,50 @@ public class TeamsBotApplication : BotApplication
     /// </remarks>
     public ApiClient Api { get; }
 
-    /// <param name="conversationClient">The conversation client for sending and managing activities.</param>
-    /// <param name="userTokenClient">The user token client for OAuth operations.</param>
-    /// <param name="teamsApiClient">The Teams API client for Teams-specific operations.</param>
-    /// <param name="httpContextAccessor">The HTTP context accessor for reading invoke responses.</param>
-    /// <param name="logger">The logger instance.</param>
-    /// <param name="options">Options containing the application (client) ID, used for logging and diagnostics. Defaults to an empty instance if not provided.</param>
-    /// <param name="teamsOptions">Teams-specific options including OAuth flow configuration. Defaults to an empty instance if not provided.</param>
+    /// <summary>
+    /// Initializes a new <see cref="TeamsBotApplication"/>.
+    /// </summary>
+    /// <param name="teamsApiClient">The Teams API facade. Also carries the underlying Core conversation and user-token clients.</param>
+    /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
+    /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
+    /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
+    /// <example>
+    /// <code>
+    /// public class MyBot : TeamsBotApplication
+    /// {
+    ///     public MyBot(ApiClient api, IHttpContextAccessor accessor, ILogger&lt;MyBot&gt; logger, TeamsBotApplicationOptions? options = null)
+    ///         : base(api, accessor, logger, options)
+    ///     {
+    ///         this.OnMessage(async (ctx, ct) =>
+    ///             await ctx.SendActivityAsync("Hello!", ct));
+    ///     }
+    /// }
+    /// </code>
+    /// </example>
     public TeamsBotApplication(
-        ConversationClient conversationClient,
-        UserTokenClient userTokenClient,
         ApiClient teamsApiClient,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
-        BotApplicationOptions? options = null,
-        TeamsBotApplicationOptions? teamsOptions = null)
-        : base(conversationClient, userTokenClient, logger, options)
+        TeamsBotApplicationOptions? options = null)
+        : base(
+            (teamsApiClient ?? throw new ArgumentNullException(nameof(teamsApiClient))).ConversationClient,
+            teamsApiClient.UserTokenClient,
+            logger,
+            options)
     {
         _teamsApiClient = teamsApiClient;
         Api = teamsApiClient;
         Logger = logger;
         Router = new Router(logger);
 
-        // Auto-register OAuth flows from DI options
-        if (teamsOptions is not null)
+        if (options is not null)
         {
-            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor descriptor in teamsOptions.OAuthFlows)
+            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor descriptor in options.OAuthFlows)
             {
                 this.AddOAuthFlow(descriptor.Options);
             }
         }
+
         OnActivity = async (activity, cancellationToken) =>
         {
             logger.LogDebug("OnActivity invoked for activity: Id={Id}", activity.Id);
@@ -142,6 +156,7 @@ public class TeamsBotApplication : BotApplication
                 }
             }
         };
+        logger.LogDebug("TeamsBotApplication version {Version}", Version);
     }
 
     // ==================== Proactive Messaging ====================
@@ -205,4 +220,9 @@ public class TeamsBotApplication : BotApplication
     /// <inheritdoc cref="ReplyAsync(string, string, string, AgenticIdentity?, CancellationToken)"/>
     public Task<SendActivityResponse?> Reply(string conversationId, string messageId, string text, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
         => ReplyAsync(conversationId, messageId, text, agenticIdentity, cancellationToken);
+
+    /// <summary>
+    /// NuGet package version
+    /// </summary>
+    public static new string Version => ThisAssembly.NuGetPackageVersion;
 }

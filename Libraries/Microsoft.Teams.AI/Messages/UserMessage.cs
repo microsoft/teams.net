@@ -8,6 +8,7 @@ using Microsoft.Teams.Common;
 
 namespace Microsoft.Teams.AI.Messages;
 
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class UserMessage(object? content) : UserMessage<object?>(content)
 {
     public static UserMessage<string> Text(string content) => new(content);
@@ -15,6 +16,7 @@ public class UserMessage(object? content) : UserMessage<object?>(content)
     public static UserMessage<Stream> Media(Stream content) => new(content);
 }
 
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class UserMessage<T> : IMessage
 {
     [JsonPropertyName("role")]
@@ -57,6 +59,7 @@ public class UserMessage<T> : IMessage
 }
 
 [JsonConverter(typeof(JsonConverter<ContentType>))]
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class ContentType(string value) : StringEnum(value)
 {
     public static readonly ContentType Text = new("text");
@@ -69,6 +72,7 @@ public class ContentType(string value) : StringEnum(value)
 /// <summary>
 /// represents some message content
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IContent
 {
     /// <summary>
@@ -77,6 +81,7 @@ public interface IContent
     public ContentType Type { get; }
 }
 
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class TextContent : IContent
 {
     [JsonPropertyName("type")]
@@ -90,6 +95,7 @@ public class TextContent : IContent
     public override string ToString() => Text;
 }
 
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class ImageContent : IContent
 {
     [JsonPropertyName("type")]

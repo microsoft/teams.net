@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="ModelContextProtocol.AspNetCore" Version="1.2.0" />
+    <PackageReference Include="Azure.Identity" Version="1.17.0" />
   </ItemGroup>
 
   <ItemGroup>

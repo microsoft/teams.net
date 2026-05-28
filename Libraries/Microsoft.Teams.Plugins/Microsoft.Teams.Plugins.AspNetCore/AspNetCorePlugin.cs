@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Text.Json;
@@ -114,22 +114,22 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 await client
                 .Conversations
                 .Activities
-                .UpdateTargetedAsync(reference.Conversation.Id, activity.Id, activity);
+                .UpdateTargetedAsync(reference.Conversation.Id, activity.Id, activity).ConfigureAwait(false);
             }
             else
             {
                 await client
                 .Conversations
                 .Activities
-                .UpdateAsync(reference.Conversation.Id, activity.Id, activity);
+                .UpdateAsync(reference.Conversation.Id, activity.Id, activity).ConfigureAwait(false);
             }
 
             return activity;
         }
 
         var res = isTargeted
-            ? await client.Conversations.Activities.CreateTargetedAsync(reference.Conversation.Id, activity)
-            : await client.Conversations.Activities.CreateAsync(reference.Conversation.Id, activity);
+            ? await client.Conversations.Activities.CreateTargetedAsync(reference.Conversation.Id, activity).ConfigureAwait(false)
+            : await client.Conversations.Activities.CreateAsync(reference.Conversation.Id, activity).ConfigureAwait(false);
         #pragma warning restore ExperimentalTeamsTargeted
 
         activity.Id = res?.Id;
@@ -142,9 +142,10 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         {
             Send = async activity =>
             {
-                var res = await Send(activity, reference, cancellationToken);
+                var res = await Send(activity, reference, cancellationToken).ConfigureAwait(false);
                 return res;
-            }
+            },
+            Logger = Logger.Child("stream")
         };
     }
 
@@ -157,7 +158,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 "activity",
                 @event,
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             var res = (Response?)@out ?? throw new Exception("expected activity response");
             Logger.Debug(res);
@@ -171,7 +172,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 "error",
                 new ErrorEvent() { Exception = ex },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             return new Response(System.Net.HttpStatusCode.InternalServerError, ex.ToString());
         }
@@ -183,7 +184,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         {
             var request = httpContext.Request;
             var token = ExtractToken(request);
-            var activity = await ParseActivity(request);
+            var activity = await ParseActivity(request).ConfigureAwait(false);
 
             if (activity is null)
             {
@@ -210,7 +211,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 Activity = activity,
                 Extra = data,
                 Services = httpContext.RequestServices
-            }, cancellationToken);
+            }, cancellationToken).ConfigureAwait(false);
 
             // convert response metadata to headers
             foreach (var (key, value) in res.Meta)
@@ -235,7 +236,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
                 "error",
                 new ErrorEvent() { Exception = ex },
                 cancellationToken
-            );
+            ).ConfigureAwait(false);
 
             return Results.Problem(detail: ex.Message, statusCode: 500);
         }
@@ -258,7 +259,7 @@ public partial class AspNetCorePlugin : ISenderPlugin, IAspNetCorePlugin
         }
 
         using StreamReader sr = new(httpRequest.Body);
-        var body = await sr.ReadToEndAsync();
+        var body = await sr.ReadToEndAsync().ConfigureAwait(false);
         Activity? activity = JsonSerializer.Deserialize<Activity>(body);
 
         return activity;

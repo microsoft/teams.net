@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Diagnostics.CodeAnalysis;
@@ -8,6 +8,7 @@ using System.Text;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -23,6 +24,7 @@ using Microsoft.Teams.Plugins.AspNetCore.DevTools.Models;
 namespace Microsoft.Teams.Plugins.AspNetCore.DevTools;
 
 [Plugin]
+[Obsolete("DevTools is deprecated and will be removed in a later version. Use Microsoft 365 Agents Playground instead.")]
 public class DevToolsPlugin : IAspNetCorePlugin
 {
     [AllowNull]
@@ -54,10 +56,28 @@ public class DevToolsPlugin : IAspNetCorePlugin
 
     public IApplicationBuilder Configure(IApplicationBuilder builder)
     {
-        builder.UseWebSockets(new WebSocketOptions()
+        // Reject cross-origin WebSocket upgrades. The DevTools UI is always
+        // loaded same-origin, so Origin must equal request Host; absent
+        // Origin is rejected. Headers are inspected directly so this
+        // middleware does not require UseWebSockets to run first.
+        builder.Use(async (context, next) =>
         {
-            AllowedOrigins = { "*" }
+            var upgrade = context.Request.Headers["Upgrade"].ToString();
+            if (string.Equals(upgrade, "websocket", StringComparison.OrdinalIgnoreCase))
+            {
+                var origin = context.Request.Headers["Origin"].ToString();
+                var expectedOrigin = $"{context.Request.Scheme}://{context.Request.Host}";
+                if (string.IsNullOrEmpty(origin) ||
+                    !string.Equals(origin, expectedOrigin, StringComparison.OrdinalIgnoreCase))
+                {
+                    context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                    return;
+                }
+            }
+            await next(context);
         });
+
+        builder.UseWebSockets();
 
         builder.UseStaticFiles(new StaticFileOptions()
         {
@@ -70,7 +90,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
         {
             try
             {
-                await next(context);
+                await next(context).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -148,7 +168,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
                 @event.Activity.Conversation
             ),
             cancellationToken
-        );
+        ).ConfigureAwait(false);
     }
 
     public async Task OnActivitySent(App app, ISenderPlugin sender, ActivitySentEvent @event, CancellationToken cancellationToken = default)
@@ -161,7 +181,7 @@ public class DevToolsPlugin : IAspNetCorePlugin
                 @event.Activity.Conversation
             ),
             cancellationToken
-        );
+        ).ConfigureAwait(false);
     }
 
     public Task OnActivityResponse(App app, ISenderPlugin sender, ActivityResponseEvent @event, CancellationToken cancellationToken = default)
