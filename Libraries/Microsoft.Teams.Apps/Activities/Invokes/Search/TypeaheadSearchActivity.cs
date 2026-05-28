@@ -33,7 +33,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<SearchActivity>());
+                await handler(context.ToActivityType<SearchActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity =>
@@ -57,7 +57,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.Typeahead]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SearchActivity>()),
+            Handler = async context => await handler(context.ToActivityType<SearchActivity>()).ConfigureAwait(false),
             Selector = activity =>
             {
                 if (activity is SearchActivity search)
@@ -79,7 +79,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.Typeahead]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SearchActivity>()),
+            Handler = async context => await handler(context.ToActivityType<SearchActivity>()).ConfigureAwait(false),
             Selector = activity =>
             {
                 if (activity is SearchActivity search)
@@ -102,7 +102,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity =>
@@ -125,7 +125,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.Typeahead]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity =>
             {
                 if (activity is SearchActivity search)
@@ -146,7 +146,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.Search, SearchType.Typeahead]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<SearchActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity =>
             {
                 if (activity is SearchActivity search)

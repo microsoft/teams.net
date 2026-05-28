@@ -24,7 +24,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<ExecuteActionActivity>());
+                await handler(context.ToActivityType<ExecuteActionActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is ExecuteActionActivity
@@ -55,7 +55,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<ExecuteActionActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<ExecuteActionActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is ExecuteActionActivity

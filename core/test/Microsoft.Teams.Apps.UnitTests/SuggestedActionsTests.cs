@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+#pragma warning disable ExperimentalTeamsSuggestedAction
+
+using System.Text.Json.Nodes;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
@@ -20,6 +23,7 @@ public class SuggestedActionsTests
         Assert.Equal("downloadFile", ActionType.DownloadFile);
         Assert.Equal("signin", ActionType.SignIn);
         Assert.Equal("call", ActionType.Call);
+        Assert.Equal("Action.Submit", ActionType.Submit);
     }
 
     [Fact]
@@ -118,7 +122,7 @@ public class SuggestedActionsTests
             SuggestedActions = new SuggestedActions()
         };
         activity.SuggestedActions.AddRecipients("user1");
-        activity.SuggestedActions.AddAction(new SuggestedAction(ActionType.IMBack, "Option 1") { Value = "opt1" });
+        activity.SuggestedActions.AddAction(new SuggestedAction(ActionType.IMBack, "Option 1", "opt1"));
 
         string json = activity.ToJson();
 
@@ -208,7 +212,7 @@ public class SuggestedActionsTests
     public void MessageActivity_WithSuggestedActions()
     {
         var suggestedActions = new SuggestedActions()
-            .AddAction(new SuggestedAction(ActionType.IMBack, "Option 1") { Value = "opt1" });
+            .AddAction(new SuggestedAction(ActionType.IMBack, "Option 1", "opt1"));
 
         var activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
@@ -231,8 +235,8 @@ public class SuggestedActionsTests
         activity.SuggestedActions = new SuggestedActions();
         activity.SuggestedActions.AddRecipients("user1");
         activity.SuggestedActions.AddActions(
-            new SuggestedAction(ActionType.OpenUrl, "Open") { Value = "https://example.com" },
-            new SuggestedAction(ActionType.IMBack, "Say Hi") { Value = "hi" }
+            new SuggestedAction(ActionType.OpenUrl, "Open", "https://example.com"),
+            new SuggestedAction(ActionType.IMBack, "Say Hi", "hi")
         );
 
         string json = activity.ToJson();

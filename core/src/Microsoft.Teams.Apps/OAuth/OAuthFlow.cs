@@ -164,7 +164,7 @@ public class OAuthFlow
             ConnectionName = _connectionName,
             Buttons =
             [
-                new SuggestedAction(ActionType.SignIn, options.SignInButtonText) { Value = signInResource.SignInLink }
+                new SuggestedAction(ActionType.SignIn, options.SignInButtonText, signInResource.SignInLink)
             ],
             TokenExchangeResource = signInResource.TokenExchangeResource,
             TokenPostResource = signInResource.TokenPostResource

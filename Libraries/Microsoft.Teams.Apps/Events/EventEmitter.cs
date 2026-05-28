@@ -50,7 +50,7 @@ internal class EventEmitter
 
         Topics[name].Add(async (plugin, @event, cancellationToken) =>
         {
-            await handler(plugin, @event, cancellationToken);
+            await handler(plugin, @event, cancellationToken).ConfigureAwait(false);
             return null;
         });
 
@@ -66,7 +66,7 @@ internal class EventEmitter
 
         Topics[name].Add(async (plugin, @event, cancellationToken) =>
         {
-            var res = await handler(plugin, @event, cancellationToken);
+            var res = await handler(plugin, @event, cancellationToken).ConfigureAwait(false);
             return res;
         });
 
@@ -80,6 +80,6 @@ internal class EventEmitter
             Topics[name] = [];
         }
 
-        return await Topics[name].Emit(plugin, @event, cancellationToken);
+        return await Topics[name].Emit(plugin, @event, cancellationToken).ConfigureAwait(false);
     }
 }

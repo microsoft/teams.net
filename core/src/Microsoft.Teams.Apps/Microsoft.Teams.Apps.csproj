@@ -1,4 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<!-- Copyright (c) Microsoft Corporation. All rights reserved.-->
+<!-- Licensed under the MIT License.-->
+
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
@@ -9,7 +12,8 @@
 
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Apps</PackageId>
-    <Description>Create Microsoft Teams Bot Applications with ease.</Description>
+    <PackageDescription>Create Microsoft Teams Bot Applications with ease.</PackageDescription>
+    <PackageTags>microsoft;teams;msteams;copilot;apps;bots</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

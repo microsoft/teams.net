@@ -62,81 +62,6 @@ public class TeamsChannelData : ChannelData
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="TeamsChannelData"/> class from the specified <see cref="ChannelData"/> object.
-    /// </summary>
-    /// <param name="cd"></param>
-    public TeamsChannelData(ChannelData? cd)
-    {
-        if (cd is not null)
-        {
-            //TODO : is channel id needed ? what is teamschannleid and teamsteamid ?
-            if (cd.Properties.TryGetValue("teamsChannelId", out object? channelIdObj)
-                && channelIdObj is JsonElement jeChannelId
-                && jeChannelId.ValueKind == JsonValueKind.String)
-            {
-                TeamsChannelId = jeChannelId.GetString();
-            }
-
-            if (cd.Properties.TryGetValue("teamsTeamId", out object? teamIdObj)
-                && teamIdObj is JsonElement jeTeamId
-                && jeTeamId.ValueKind == JsonValueKind.String)
-            {
-                TeamsTeamId = jeTeamId.GetString();
-            }
-
-            if (cd.Properties.TryGetValue("settings", out object? settingsObj)
-                && settingsObj is JsonElement settingsObjJE
-                && settingsObjJE.ValueKind == JsonValueKind.Object)
-            {
-                Settings = JsonSerializer.Deserialize<TeamsChannelDataSettings?>(settingsObjJE.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("channel", out object? channelObj)
-                && channelObj is JsonElement channelObjJE
-                && channelObjJE.ValueKind == JsonValueKind.Object)
-            {
-                Channel = JsonSerializer.Deserialize<TeamsChannel?>(channelObjJE.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("tenant", out object? tenantObj)
-                && tenantObj is JsonElement je
-                && je.ValueKind == JsonValueKind.Object)
-            {
-                Tenant = JsonSerializer.Deserialize<TeamsChannelDataTenant>(je.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("eventType", out object? eventTypeObj)
-                && eventTypeObj is JsonElement jeEventType
-                && jeEventType.ValueKind == JsonValueKind.String)
-            {
-                EventType = jeEventType.GetString();
-            }
-
-            if (cd.Properties.TryGetValue("team", out object? teamObj)
-                && teamObj is JsonElement teamObjJE
-                && teamObjJE.ValueKind == JsonValueKind.Object)
-            {
-                Team = JsonSerializer.Deserialize<Team?>(teamObjJE.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("source", out object? sourceObj)
-                && sourceObj is JsonElement sourceObjJE
-                && sourceObjJE.ValueKind == JsonValueKind.Object)
-            {
-                Source = JsonSerializer.Deserialize<TeamsChannelDataSource?>(sourceObjJE.GetRawText());
-            }
-
-            if (cd.Properties.TryGetValue("feedbackLoopEnabled", out object? feedbackObj)
-                && feedbackObj is JsonElement jeFeedback
-                && jeFeedback.ValueKind is JsonValueKind.True or JsonValueKind.False)
-            {
-                FeedbackLoopEnabled = jeFeedback.GetBoolean();
-            }
-        }
-    }
-
-
-    /// <summary>
     /// Settings for the Teams channel.
     /// </summary>
     [JsonPropertyName("settings")] public TeamsChannelDataSettings? Settings { get; set; }
@@ -181,4 +106,51 @@ public class TeamsChannelData : ChannelData
     /// </summary>
     [JsonPropertyName("feedbackLoopEnabled")] public bool? FeedbackLoopEnabled { get; set; }
 
+    /// <summary>
+    /// Feedback loop configuration. When set, takes precedence over
+    /// <see cref="FeedbackLoopEnabled"/>. Set <c>Type</c> to
+    /// <see cref="FeedbackType.Custom"/> to trigger a <c>message/fetchTask</c>
+    /// invoke for a bot-provided task module dialog.
+    /// </summary>
+    [JsonPropertyName("feedbackLoop")] public FeedbackLoop? FeedbackLoop { get; set; }
+}
+
+/// <summary>
+/// Known values for <see cref="FeedbackLoop.Type"/>.
+/// </summary>
+public static class FeedbackType
+{
+    /// <summary>Teams' built-in thumbs up/down UI.</summary>
+    public const string Default = "default";
+
+    /// <summary>
+    /// Triggers a <c>message/fetchTask</c> invoke so the bot can return its
+    /// own task module dialog when the user clicks thumbs up/down.
+    /// </summary>
+    public const string Custom = "custom";
+}
+
+/// <summary>
+/// Configuration for a feedback loop on a message. Serializes to
+/// <c>channelData.feedbackLoop</c>. Must not coexist with
+/// <see cref="TeamsChannelData.FeedbackLoopEnabled"/> — Teams rejects activities
+/// that set both.
+/// </summary>
+public class FeedbackLoop
+{
+    /// <summary>
+    /// The feedback loop type. See <see cref="FeedbackType"/> for known values.
+    /// </summary>
+    [JsonPropertyName("type")] public string Type { get; set; } = FeedbackType.Default;
+
+    /// <summary>
+    /// Creates a new instance with the default <see cref="FeedbackType.Default"/> type.
+    /// </summary>
+    public FeedbackLoop() { }
+
+    /// <summary>
+    /// Creates a new instance with the specified type.
+    /// </summary>
+    /// <param name="type">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    public FeedbackLoop(string type) { Type = type; }
 }

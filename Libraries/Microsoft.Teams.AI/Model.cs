@@ -8,6 +8,7 @@ namespace Microsoft.Teams.AI;
 /// or connection to one or more LLM's, either remotely or
 /// locally.
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IModel<TOptions>
 {
     /// <summary>

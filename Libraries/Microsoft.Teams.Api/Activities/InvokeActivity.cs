@@ -1,6 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json.Serialization;
 
 using Microsoft.Teams.Common;
@@ -59,11 +60,17 @@ public partial class InvokeActivity(Invokes.Name name) : Activity(ActivityType.I
     public Invokes.TabActivity ToTab() => (Invokes.TabActivity)this;
     public Invokes.TaskActivity ToTask() => (Invokes.TaskActivity)this;
 
+    [Experimental("ExperimentalTeamsSuggestedAction")]
+    public Invokes.SuggestedActionSubmitActivity ToSuggestedActionSubmit() => (Invokes.SuggestedActionSubmitActivity)this;
+
     public override object ToType(Type type, IFormatProvider? provider)
     {
         if (type == Invokes.Name.ExecuteAction.ToType()) return ToExecuteAction();
         if (type == Invokes.Name.FileConsent.ToType()) return ToFileConsent();
         if (type == Invokes.Name.Handoff.ToType()) return ToHandoff();
+#pragma warning disable ExperimentalTeamsSuggestedAction
+        if (type == Invokes.Name.SuggestedActionSubmit.ToType()) return ToSuggestedActionSubmit();
+#pragma warning restore ExperimentalTeamsSuggestedAction
         if (type == typeof(Invokes.AdaptiveCardActivity)) return ToAdaptiveCard();
         if (type == typeof(Invokes.ConfigActivity)) return ToConfig();
         if (type == typeof(Invokes.MessageExtensionActivity)) return ToMessageExtension();

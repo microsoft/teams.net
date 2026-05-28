@@ -16,6 +16,7 @@ namespace Microsoft.Teams.AI.Prompts;
 /// messages and expose chat model specific
 /// features like streaming/functions
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IChatPrompt : IPrompt
 {
     /// <summary>
@@ -34,6 +35,7 @@ public interface IChatPrompt : IPrompt
 /// messages and expose chat model specific
 /// features like streaming/functions
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public interface IChatPrompt<TOptions> : IChatPrompt
 {
     /// <summary>
@@ -112,6 +114,7 @@ public interface IChatPrompt<TOptions> : IChatPrompt
 /// messages and expose chat model specific
 /// features like streaming/functions
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public partial class ChatPrompt<TOptions> : IChatPrompt<TOptions>
 {
     public string Name { get; private set; }

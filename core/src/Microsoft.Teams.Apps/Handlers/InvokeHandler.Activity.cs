@@ -201,9 +201,21 @@ public static class InvokeNames
     public const string MessageExtensionSubmitAction = "composeExtension/submitAction";
 
     /// <summary>
+    /// Message fetch task invoke name. Sent when the user clicks a feedback button on an AI-generated message.
+    /// </summary>
+    public const string MessageFetchTask = "message/fetchTask";
+
+    /// <summary>
     /// Message submit action invoke name.
     /// </summary>
     public const string MessageSubmitAction = "message/submitAction";
+
+    /// <summary>
+    /// Suggested action submit invoke name.
+    /// Sent when the user clicks a suggested action of type <c>Action.Submit</c>.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.Experimental("ExperimentalTeamsSuggestedAction")]
+    public const string SuggestedActionSubmit = "suggestedActions/submit";
 
     //TODO : review
     /*
