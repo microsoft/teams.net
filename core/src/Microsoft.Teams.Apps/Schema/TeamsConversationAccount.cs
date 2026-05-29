@@ -36,20 +36,23 @@ public class TeamsConversationAccount : ConversationAccount
         TeamsConversationAccount result = new();
         result.Id = conversationAccount.Id;
         result.Name = conversationAccount.Name;
-#pragma warning disable ExperimentalTeamsTargeted
         result.IsTargeted = conversationAccount.IsTargeted;
-#pragma warning restore ExperimentalTeamsTargeted
         result.AgenticAppId = conversationAccount.AgenticAppId;
         result.AgenticUserId = conversationAccount.AgenticUserId;
         result.AgenticAppBlueprintId = conversationAccount.AgenticAppBlueprintId;
         result.Properties = new ExtendedPropertiesDictionary(conversationAccount.Properties);
         result.AadObjectId = result.Properties.Extract<string>("aadObjectId");
+        result.ObjectId = result.Properties.Extract<string>("objectId");
         result.GivenName = result.Properties.Extract<string>("givenName");
         result.Surname = result.Properties.Extract<string>("surname");
         result.Email = result.Properties.Extract<string>("email");
         result.UserPrincipalName = result.Properties.Extract<string>("userPrincipalName");
         result.UserRole = result.Properties.Extract<string>("userRole");
         result.TenantId = result.Properties.Extract<string>("tenantId");
+        if (string.IsNullOrEmpty(result.AadObjectId))
+        {
+            result.AadObjectId = result.ObjectId;
+        }
         return result;
     }
 
@@ -58,6 +61,12 @@ public class TeamsConversationAccount : ConversationAccount
     /// </summary>
     [JsonPropertyName("aadObjectId")]
     public string? AadObjectId { get; set; }
+
+    /// <summary>
+    /// Gets or sets the unique identifier of the user in the conversation.
+    /// </summary>
+    [JsonPropertyName("objectId")]
+    public string? ObjectId { get; set; }
 
     /// <summary>
     /// Gets or sets given name part of the user name.

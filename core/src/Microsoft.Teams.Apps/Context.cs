@@ -92,12 +92,11 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> ReplyAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-#pragma warning disable ExperimentalTeamsQuotedReplies
         if (!string.IsNullOrWhiteSpace(Activity.Id))
         {
             return Quote(Activity.Id, activity, cancellationToken);
         }
-#pragma warning restore ExperimentalTeamsQuotedReplies
+
         return SendActivityAsync(activity, cancellationToken);
     }
 

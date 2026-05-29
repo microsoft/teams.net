@@ -9,7 +9,6 @@ using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps;
