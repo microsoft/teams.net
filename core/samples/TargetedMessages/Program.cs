@@ -60,7 +60,7 @@ teamsApp.OnMessage("(?i)^test update$", async (context, cancellationToken) =>
         try
         {
             MessageActivity updated = new($"✏️ Updated at {DateTime.UtcNow:HH:mm:ss}");
-            await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updated, cancellationToken);
+            await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updated, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {
