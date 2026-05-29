@@ -19,6 +19,9 @@ public class Account
     [JsonPropertyOrder(1)]
     public string? AadObjectId { get; set; }
 
+    [JsonPropertyName("objectId")]
+    public string? ObjectId { get; set; }
+
     [JsonPropertyName("role")]
     [JsonPropertyOrder(2)]
     [Obsolete("Use Account.Type instead (e.g., AccountType.Person, AccountType.Bot). Will be removed by end of summer 2026.")]
