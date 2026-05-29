@@ -20,7 +20,6 @@ services.AddLogging(c => {
     c.AddConsole();
 });
 services.AddTeamsBotApplication();
-services.AddControllers();
 var provider = services.BuildServiceProvider();
 var teamsBotApplication = provider.GetRequiredService<TeamsBotApplication>();
 Console.WriteLine($"Running Teams Bot Application for appId '{teamsBotApplication.AppId}' with version '{TeamsBotApplication.Version}'.");
