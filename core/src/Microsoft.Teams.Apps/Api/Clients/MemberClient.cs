@@ -35,9 +35,9 @@ public class MemberClient
     }
 
     /// <summary>
-    /// Get all members of a conversation with pagination support.
+    /// Get members of a conversation with pagination support.
     /// </summary>
-    public async Task<IList<TeamsConversationAccount?>> GetPagedAsync(
+    public async Task<PagedTeamsMembersResult> GetPagedAsync(
         string conversationId,
         int pageSize = 50,
         string? continuationToken = null,
@@ -53,11 +53,16 @@ public class MemberClient
             agenticIdentity: agenticIdentity,
             customHeaders: additionalHeaders,
             cancellationToken: cancellationToken).ConfigureAwait(false);
-        if (paged is not null && paged.Members is not null)
+        var result = new PagedTeamsMembersResult();
+        if (paged is not null)
         {
-            return [.. paged.Members.Select(m => TeamsConversationAccount.FromConversationAccount(m))];
+            result.ContinuationToken = paged.ContinuationToken;
+            if (paged.Members is not null)
+            {
+                result.Members = [.. paged.Members.Select(m => TeamsConversationAccount.FromConversationAccount(m))];
+            }
         }
-        return [];
+        return result;
     }
 
     /// <summary>
