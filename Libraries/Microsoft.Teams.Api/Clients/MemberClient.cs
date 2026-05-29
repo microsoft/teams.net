@@ -64,6 +64,16 @@ public class MemberClient : Client
         }
         var request = HttpRequest.Get(url);
         var response = await _http.SendAsync<PagedMembersResult>(request, token).ConfigureAwait(false);
+        if (response.Body.Members is not null)
+        {
+            foreach (var account in response.Body.Members)
+            {
+                if (string.IsNullOrEmpty(account.AadObjectId) && !string.IsNullOrEmpty(account.ObjectId))
+                {
+                    account.AadObjectId = account.ObjectId;
+                }
+            }
+        }
         return response.Body;
     }
 

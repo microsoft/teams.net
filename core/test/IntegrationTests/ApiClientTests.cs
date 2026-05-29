@@ -191,12 +191,12 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Fact(Timeout = 5000)]
     public async Task Members_GetPagedAsync()
     {
-        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetPagedAsync(_f.ConversationId, agenticIdentity: _f.AgenticIdentity);
+        PagedTeamsMembersResult paged = await _api.Conversations.Members.GetPagedAsync(_f.ConversationId, agenticIdentity: _f.AgenticIdentity);
 
-        Assert.NotNull(members);
-        Assert.NotEmpty(members);
+        Assert.NotNull(paged);
+        Assert.NotEmpty(paged.Members);
 
-        foreach (TeamsConversationAccount? m in members.Take(5))
+        foreach (TeamsConversationAccount? m in paged.Members.Take(5))
         {
             _output.WriteLine($"Member: {m?.Id} — {m?.Name} {m?.AadObjectId}");
         }
