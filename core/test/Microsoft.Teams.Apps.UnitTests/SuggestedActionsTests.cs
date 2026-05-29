@@ -3,7 +3,6 @@
 
 #pragma warning disable ExperimentalTeamsSuggestedAction
 
-using System.Text.Json.Nodes;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;
 
@@ -29,7 +28,7 @@ public class SuggestedActionsTests
     [Fact]
     public void SuggestedAction_DefaultConstructor_AllPropertiesNull()
     {
-        var action = new SuggestedAction();
+        SuggestedAction action = new();
 
         Assert.Null(action.Type);
         Assert.Null(action.Title);
@@ -44,7 +43,7 @@ public class SuggestedActionsTests
     [Fact]
     public void SuggestedAction_ConvenienceConstructor_SetsTypeAndTitle()
     {
-        var action = new SuggestedAction(ActionType.IMBack, "Say Hello");
+        SuggestedAction action = new(ActionType.IMBack, "Say Hello");
 
         Assert.Equal(ActionType.IMBack, action.Type);
         Assert.Equal("Say Hello", action.Title);
@@ -53,7 +52,7 @@ public class SuggestedActionsTests
     [Fact]
     public void SuggestedActions_DefaultConstructor_EmptyCollections()
     {
-        var suggestedActions = new SuggestedActions();
+        SuggestedActions suggestedActions = new();
 
         Assert.NotNull(suggestedActions.To);
         Assert.Empty(suggestedActions.To);
@@ -64,7 +63,7 @@ public class SuggestedActionsTests
     [Fact]
     public void SuggestedActions_AddRecipients_AddsToList()
     {
-        var suggestedActions = new SuggestedActions();
+        SuggestedActions suggestedActions = new();
 
         suggestedActions.AddRecipients("user1", "user2");
 
@@ -76,8 +75,8 @@ public class SuggestedActionsTests
     [Fact]
     public void SuggestedActions_AddAction_AddsToList()
     {
-        var suggestedActions = new SuggestedActions();
-        var action = new SuggestedAction(ActionType.IMBack, "Click me");
+        SuggestedActions suggestedActions = new();
+        SuggestedAction action = new(ActionType.IMBack, "Click me");
 
         suggestedActions.AddAction(action);
 
@@ -88,7 +87,7 @@ public class SuggestedActionsTests
     [Fact]
     public void SuggestedActions_AddActions_AddsMultiple()
     {
-        var suggestedActions = new SuggestedActions();
+        SuggestedActions suggestedActions = new();
 
         suggestedActions.AddActions(
             new SuggestedAction(ActionType.IMBack, "Option 1"),
@@ -102,12 +101,12 @@ public class SuggestedActionsTests
     [Fact]
     public void SuggestedActions_FluentChaining_ReturnsSameInstance()
     {
-        var suggestedActions = new SuggestedActions();
-        var action = new SuggestedAction(ActionType.IMBack, "Test");
+        SuggestedActions suggestedActions = new();
+        SuggestedAction action = new(ActionType.IMBack, "Test");
 
-        var result1 = suggestedActions.AddRecipients("user1");
-        var result2 = suggestedActions.AddAction(action);
-        var result3 = suggestedActions.AddActions(action);
+        SuggestedActions result1 = suggestedActions.AddRecipients("user1");
+        SuggestedActions result2 = suggestedActions.AddAction(action);
+        SuggestedActions result3 = suggestedActions.AddActions(action);
 
         Assert.Same(suggestedActions, result1);
         Assert.Same(suggestedActions, result2);
@@ -117,7 +116,7 @@ public class SuggestedActionsTests
     [Fact]
     public void MessageActivity_SuggestedActions_Serialize()
     {
-        var activity = new MessageActivity("Choose an option")
+        MessageActivity activity = new("Choose an option")
         {
             SuggestedActions = new SuggestedActions()
         };
@@ -193,9 +192,9 @@ public class SuggestedActionsTests
     [Fact]
     public void MessageActivity_WithSuggestedActions_SetsProperty()
     {
-        var suggestedActions = new SuggestedActions();
+        SuggestedActions suggestedActions = new();
 
-        var activity = TeamsActivity.CreateBuilder()
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
@@ -211,10 +210,10 @@ public class SuggestedActionsTests
     [Fact]
     public void MessageActivity_WithSuggestedActions()
     {
-        var suggestedActions = new SuggestedActions()
+        SuggestedActions suggestedActions = new SuggestedActions()
             .AddAction(new SuggestedAction(ActionType.IMBack, "Option 1", "opt1"));
 
-        var activity = TeamsActivity.CreateBuilder()
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .WithText("Choose an option")
             .WithSuggestedActions(suggestedActions)
@@ -231,7 +230,7 @@ public class SuggestedActionsTests
     [Fact]
     public void MessageActivity_SuggestedActions_RoundTrip()
     {
-        var activity = new MessageActivity("Choose");
+        MessageActivity activity = new("Choose");
         activity.SuggestedActions = new SuggestedActions();
         activity.SuggestedActions.AddRecipients("user1");
         activity.SuggestedActions.AddActions(

@@ -14,7 +14,7 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 // Reply to any user message with two Action.Submit suggested-action chips.
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
-    var reply = new MessageActivity("Approve or reject the request:")
+    MessageActivity reply = new("Approve or reject the request:")
     {
         SuggestedActions = new SuggestedActions()
         {
@@ -32,7 +32,7 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
 // Handle the resulting suggestedActions/submit invoke when the user clicks a chip.
 teamsApp.OnSuggestedActionSubmit(async (context, cancellationToken) =>
 {
-    var serializedValue = context.Activity.Value is { } value
+    string serializedValue = context.Activity.Value is { } value
         ? value.ToJsonString()
         : "<none>";
 

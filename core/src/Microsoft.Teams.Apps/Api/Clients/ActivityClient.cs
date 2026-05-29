@@ -77,10 +77,11 @@ public class ActivityClient
         activity.ServiceUrl ??= _serviceUrl;
         activity.Conversation ??= new Conversation(conversationId);
         // Ensure recipient is marked as targeted
-        if (activity.Recipient != null)
+        if (activity.Recipient is not null)
         {
             activity.Recipient.IsTargeted = true;
         }
+
         return _client.SendActivityAsync(activity, cancellationToken: cancellationToken);
     }
 

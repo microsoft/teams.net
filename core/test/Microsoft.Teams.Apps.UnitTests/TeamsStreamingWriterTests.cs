@@ -5,7 +5,6 @@ using System.Net;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Schema;
-using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 

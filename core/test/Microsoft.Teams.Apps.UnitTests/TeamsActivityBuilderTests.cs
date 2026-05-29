@@ -957,7 +957,7 @@ public class TeamsActivityBuilderTests
         Assert.Single(activity.Attachments);
     }
 
-        private const string json = """
+    private const string json = """
                 {
                     "type": "message",
                     "channelId": "msteams",
