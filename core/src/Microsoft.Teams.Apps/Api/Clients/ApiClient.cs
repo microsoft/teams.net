@@ -84,7 +84,7 @@ public class ApiClient
         UserTokenClient = userTokenClient;
         Bots = new BotClient(userTokenClient);
         Users = new UserClient(userTokenClient);
-
+        
         // ServiceUrl-dependent sub-clients require ForServiceUrl() before use
         ServiceUrl = null!;
         Conversations = null!;
@@ -100,7 +100,7 @@ public class ApiClient
     /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
     /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
-    public ApiClient(Uri serviceUrl, HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
+    internal ApiClient(Uri serviceUrl, HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
         ArgumentNullException.ThrowIfNull(httpClient);
@@ -121,7 +121,7 @@ public class ApiClient
     /// <summary>
     /// Creates a copy of an existing <see cref="ApiClient"/> with the same configuration.
     /// </summary>
-    public ApiClient(ApiClient client)
+    internal ApiClient(ApiClient client)
     {
         ArgumentNullException.ThrowIfNull(client);
 
