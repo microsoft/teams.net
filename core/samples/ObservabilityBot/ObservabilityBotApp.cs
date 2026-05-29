@@ -24,16 +24,13 @@ public class ObservabilityBotApp : TeamsBotApplication
     private readonly string _deploymentName;
 
     public ObservabilityBotApp(
-        ConversationClient conversationClient,
-        UserTokenClient userTokenClient,
         ApiClient teamsApiClient,
         IHttpContextAccessor httpContextAccessor,
         ILogger<ObservabilityBotApp> logger,
         IChatClient chatClient,
         ChatOptions chatOptions,
-        BotApplicationOptions? options = null,
         TeamsBotApplicationOptions? teamsOptions = null)
-        : base(conversationClient, userTokenClient, teamsApiClient, httpContextAccessor, logger, options, teamsOptions)
+        : base(teamsApiClient, httpContextAccessor, logger, teamsOptions)
     {
         _chatClient = chatClient;
         _chatOptions = chatOptions;
@@ -172,9 +169,9 @@ public class ObservabilityBotApp : TeamsBotApplication
 
         for (int i = 0; i < citations.Count; i++)
         {
-            var citation = citations[i];
-            var abstract_ = citation.Content.Length > 160 ? citation.Content[..157] + "..." : citation.Content;
-            builder.AddCitation(i + 1, new CitationAppearance() { Name = citation.Title, Url = new Uri(citation.Url), Abstract = abstract_, Icon = CitationIcon.Text });
+            var (Title, Url, Content) = citations[i];
+            var abstract_ = Content.Length > 160 ? Content[..157] + "..." : Content;
+            builder.AddCitation(i + 1, new CitationAppearance() { Name = Title, Url = new Uri(Url), Abstract = abstract_, Icon = CitationIcon.Text });
         }
 
         await context.Send(builder.Build(), ct);
