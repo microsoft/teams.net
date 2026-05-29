@@ -18,16 +18,6 @@ teams.OnMessage(async (context, cancellationToken) =>
     context.Log.Info("hit!");
     await context.Typing("processing your response", cancellationToken);
     await context.Send($"you said '{context.Activity.Text}'", cancellationToken);
-
-
-    var paged = await context.Api.Conversations.Members.GetPagedAsync(context.Activity.Conversation.Id, cancellationToken: cancellationToken);
-
-
-    var first = paged.Members?.FirstOrDefault();
-
-    await context.Send($"there are {paged.Members?.Count} members in this conversation. {first?.AadObjectId}", cancellationToken);
-
-
 });
 
 app.Run();
