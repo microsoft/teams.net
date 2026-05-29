@@ -22,6 +22,15 @@ public class Account
     [JsonPropertyName("objectId")]
     public string? ObjectId { get; set; }
 
+    [JsonPropertyName("givenName")]
+    public string? GivenName { get; set; }
+
+    [JsonPropertyName("surname")]
+    public string? Surname { get; set; }
+
+    [JsonPropertyName("email")]
+    public string? Email { get; set; }
+
     [JsonPropertyName("role")]
     [JsonPropertyOrder(2)]
     [Obsolete("Use Account.Type instead (e.g., AccountType.Person, AccountType.Bot). Will be removed by end of summer 2026.")]
