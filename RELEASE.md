@@ -139,3 +139,28 @@ The `Teams.NET-PR` pipeline has a `DetectChanges` stage that skips builds when t
 - `core/**` → Core
 - `.editorconfig`, `.azdo/**`, `Makefile` → both (shared infrastructure)
 - `**/*.md`, `docs/**`, `Assets/**` → neither (skipped)
+
+## Appendix: Tagging and GitHub Release
+
+> **Do this after the publish pipeline finishes and packages land on nuget.org** — not before. The tag is created at the release branch tip when you publish the draft, so it should point at the exact commit whose artifacts shipped.
+
+Create a draft release at the release branch tip:
+
+```bash
+gh release create v<version> -R microsoft/teams.net \
+  --target releases/<branch> --title "v<version>" --draft \
+  --generate-notes --notes-start-tag v<previous-version>
+```
+
+- `--target` is the release branch packages were published from: `releases/core` for Core, `releases/v<N>` for Legacy.
+- The tag is created at the release branch tip when you publish the draft.
+
+If the auto-generated PR list comes back too small (only the release PR itself, because squash-merges hide ancestry), query the real PR delta from `main`:
+
+```bash
+gh api -X GET search/issues \
+  -f q='repo:microsoft/teams.net is:pr is:merged base:main merged:>=<previous-release-publish-date>' \
+  --jq '.items[] | "* \(.title) by @\(.user.login) in \(.html_url)"' | tac > /tmp/notes.md
+```
+
+Edit the draft (`gh release edit <id> --notes-file /tmp/notes.md`), then publish from the GitHub UI to create the tag.
