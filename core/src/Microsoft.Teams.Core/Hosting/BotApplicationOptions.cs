@@ -6,7 +6,7 @@ namespace Microsoft.Teams.Core.Hosting;
 /// <summary>
 /// Options for configuring a bot application instance.
 /// </summary>
-public sealed class BotApplicationOptions
+public class BotApplicationOptions
 {
     /// <summary>
     /// Gets or sets the application (client) ID, used for logging and diagnostics.
