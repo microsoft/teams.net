@@ -73,7 +73,7 @@ public class ApiClient
     /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
     [ActivatorUtilitiesConstructor]
-    public ApiClient(HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
+    internal ApiClient(HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(conversationClient);
