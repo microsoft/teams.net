@@ -229,11 +229,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
-            Assert.True(coreActivity.Properties.TryGetValue("channelData", out object? cdObj));
-            Assert.IsType<JsonElement>(cdObj);
-            var cdElement = (JsonElement)cdObj!;
-            Assert.True(cdElement.TryGetProperty("customProperty", out var customProp));
-            Assert.Equal("customValue", customProp.GetString());
+            ChannelData? channelData = coreActivity.Properties.Extract<ChannelData>("channelData");
+            Assert.NotNull(channelData);
+            Assert.True(channelData.Properties.ContainsKey("customProperty"));
+            Assert.Equal("customValue", channelData.Properties["customProperty"]?.ToString());
         }
 
         [Fact]
