@@ -51,6 +51,12 @@ public class TeamsConversation : Conversation
         {
             return null;
         }
+
+        if (conversation is TeamsConversation teamsConversation)
+        {
+            return teamsConversation;
+        }
+
         TeamsConversation result = new();
         result.Id = conversation.Id;
         if (conversation.Properties == null)
