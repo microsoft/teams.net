@@ -16,7 +16,7 @@ IConfiguration configuration = new ConfigurationBuilder()
 ServiceCollection services = new ServiceCollection();
 services.AddSingleton(configuration);
 services.AddLogging(c => {
-    c.AddConfiguration(configuration);
+    c.AddConfiguration(configuration.GetSection("Logging"));
     c.AddConsole();
 });
 services.AddTeamsBotApplication();
@@ -28,6 +28,7 @@ Console.WriteLine($"Running Teams Bot Application for appId '{teamsBotApplicatio
 var smba = new Uri("https://smba.trafficmanager.net/amer");
 var membersClient = teamsBotApplication.Api.ForServiceUrl(smba).Conversations.Members;
 
+int pages = 1;
 string cid = "19%3ALydFnezGKSkhYoiLNP6kZ8AuXQr36EDAkvG9CNJSPKc1%40thread.tacv2";
 var paged = await membersClient.GetPagedAsync(cid, 52);
 
@@ -38,6 +39,8 @@ while (!string.IsNullOrEmpty(paged.ContinuationToken))
     Console.WriteLine("Getting next page of members...");
     paged = await membersClient.GetPagedAsync(cid, 52, paged.ContinuationToken);
     members.AddRange(paged.Members);
+    pages++;
 }
 
-Console.WriteLine(members.Count);
+Console.WriteLine("\n*****************\n");
+Console.WriteLine($"Total members: {members.Count} in {pages} pages.");
