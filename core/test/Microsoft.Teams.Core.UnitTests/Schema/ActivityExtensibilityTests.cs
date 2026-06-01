@@ -103,16 +103,13 @@ public class MyCustomActivity : CoreActivity
 }
 
 
-public class MyChannelData
+public class MyChannelData : ChannelData
 {
     [JsonPropertyName("customField")]
     public string? CustomField { get; set; }
 
     [JsonPropertyName("myChannelId")]
     public string? MyChannelId { get; set; }
-
-    [JsonExtensionData]
-    public ExtendedPropertiesDictionary Properties { get; set; } = [];
 }
 
 public class MyCustomChannelDataActivity : CoreActivity

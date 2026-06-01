@@ -51,7 +51,7 @@ public class TeamsChannelDataSettings
 /// <summary>
 /// Represents Teams-specific channel data.
 /// </summary>
-public class TeamsChannelData
+public class TeamsChannelData : ChannelData
 {
     /// <summary>
     /// Creates a new instance of the <see cref="TeamsChannelData"/> class.
@@ -59,13 +59,6 @@ public class TeamsChannelData
     public TeamsChannelData()
     {
     }
-
-    /// <summary>
-    /// Gets or sets the collection of additional properties not explicitly defined by the type.
-    /// </summary>
-    /// <remarks>This property stores extra JSON fields encountered during deserialization that do not map to
-    /// known properties. It enables round-tripping of unknown or custom data without loss.</remarks>
-    [JsonExtensionData] public ExtendedPropertiesDictionary Properties { get; set; } = [];
 
     /// <summary>
     /// Settings for the Teams channel.
