@@ -239,6 +239,37 @@ public static class AddBotApplicationExtensions
     }
 
     /// <summary>
+    /// Registers a named <see cref="HttpClient"/> wired to bot authentication
+    /// using an already-resolved <see cref="BotConfig"/>, without binding it to a typed client.
+    /// Use this when the client type will be registered separately via a factory.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="httpClientName">The logical name for this <see cref="HttpClient"/> registration.</param>
+    /// <param name="botConfig">The resolved bot configuration containing tenant and client settings.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddBotHttpClient(
+        this IServiceCollection services,
+        string httpClientName,
+        BotConfig botConfig)
+    {
+        ArgumentNullException.ThrowIfNull(botConfig);
+        if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
+        {
+            services.AddHttpClient(httpClientName)
+                .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
+                    sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                    sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
+                    botConfig.SectionName,
+                    sp.GetService<IOptionsMonitor<ManagedIdentityOptions>>()));
+        }
+        else
+        {
+            services.AddHttpClient(httpClientName);
+        }
+        return services;
+    }
+
+    /// <summary>
     /// Resolves a service from the service collection before the host is built,
     /// preferring a direct instance and falling back to building a temporary
     /// <see cref="ServiceProvider"/> when the service is registered via factory or type.

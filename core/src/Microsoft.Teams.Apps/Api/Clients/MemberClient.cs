@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
 using CoreConversationClient = Microsoft.Teams.Core.ConversationClient;
@@ -25,24 +27,58 @@ public class MemberClient
     /// <summary>
     /// Get all members of a conversation.
     /// </summary>
-    public Task<IList<ConversationAccount>> GetAsync(string conversationId, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    [Obsolete("Use GetPagedAsync instead.")]
+    public async Task<IList<TeamsConversationAccount?>> GetAsync(string conversationId, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.GetConversationMembersAsync(conversationId, _serviceUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+        IList<ConversationAccount> members = await _client.GetConversationMembersAsync(conversationId, _serviceUrl, agenticIdentity: agenticIdentity, customHeaders: additionalHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+        return [.. members.Select(m => TeamsConversationAccount.FromConversationAccount(m))];
+    }
+
+    /// <summary>
+    /// Get members of a conversation with pagination support.
+    /// </summary>
+    public async Task<PagedTeamsMembersResult> GetPagedAsync(
+        string conversationId,
+        int pageSize = 50,
+        string? continuationToken = null,
+        AgenticIdentity? agenticIdentity = null,
+        Dictionary<string, string>? additionalHeaders = null,
+        CancellationToken cancellationToken = default)
+    {
+        PagedMembersResult? paged = await _client.GetConversationPagedMembersAsync(
+            conversationId,
+            _serviceUrl,
+            pageSize,
+            continuationToken,
+            agenticIdentity: agenticIdentity,
+            customHeaders: additionalHeaders,
+            cancellationToken: cancellationToken).ConfigureAwait(false);
+        var result = new PagedTeamsMembersResult();
+        if (paged is not null)
+        {
+            result.ContinuationToken = paged.ContinuationToken;
+            if (paged.Members is not null)
+            {
+                result.Members = [.. paged.Members.Select(m => TeamsConversationAccount.FromConversationAccount(m))];
+            }
+        }
+        return result;
     }
 
     /// <summary>
     /// Get a specific member of a conversation by ID.
     /// </summary>
-    public Task<T> GetByIdAsync<T>(string conversationId, string memberId, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default) where T : ConversationAccount
+    public Task<T> GetByIdAsync<T>(string conversationId, string memberId, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default) where T : ConversationAccount
     {
-        return _client.GetConversationMemberAsync<T>(conversationId, memberId, _serviceUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+        return _client.GetConversationMemberAsync<T>(conversationId, memberId, _serviceUrl, agenticIdentity: agenticIdentity, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
     /// Get a specific member of a conversation by ID.
     /// </summary>
-    public Task<ConversationAccount> GetByIdAsync(string conversationId, string memberId, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    public async Task<TeamsConversationAccount?> GetByIdAsync(string conversationId, string memberId, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return GetByIdAsync<ConversationAccount>(conversationId, memberId, agenticIdentity, cancellationToken);
+        ConversationAccount member = await GetByIdAsync<ConversationAccount>(conversationId, memberId, agenticIdentity, additionalHeaders, cancellationToken).ConfigureAwait(false);
+        return TeamsConversationAccount.FromConversationAccount(member);
     }
 }
