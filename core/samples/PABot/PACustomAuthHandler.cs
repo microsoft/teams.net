@@ -12,6 +12,7 @@ namespace PABot
     internal class PACustomAuthHandler(
         IAuthorizationHeaderProvider authorizationHeaderProvider,
         IRoutedTokenAcquisitionService routedTokenService,
+        IHttpContextAccessor httpContextAccessor,
         ILogger<PACustomAuthHandler> logger,
         string botScope,
         string? agenticScope = null,
@@ -19,6 +20,7 @@ namespace PABot
     {
         private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
         private readonly IRoutedTokenAcquisitionService _routedTokenService = routedTokenService ?? throw new ArgumentNullException(nameof(routedTokenService));
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor));
         private readonly ILogger<PACustomAuthHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         private readonly string _botScope = botScope ?? throw new ArgumentNullException(nameof(botScope));
         private readonly string _agenticScope = agenticScope ?? botScope; // Default to bot scope if not specified
@@ -33,6 +35,9 @@ namespace PABot
         /// <inheritdoc/>
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
         {
+            string? botId = _httpContextAccessor.HttpContext?.GetBotId();
+            _logger.LogInformation("[E2E] HttpContext.GetBotId() = '{BotId}'", botId);
+
             request.Options.TryGetValue(AgenticIdentityKey, out AgenticIdentity? agenticIdentity);
 
             string token = await GetAuthorizationHeaderAsync(agenticIdentity, cancellationToken).ConfigureAwait(false);

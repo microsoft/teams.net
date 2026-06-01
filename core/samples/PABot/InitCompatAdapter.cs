@@ -277,7 +277,8 @@ namespace PABot
                 return new BotApplication(
                     sp.GetRequiredService<ConversationClient>(),
                     sp.GetRequiredService<UserTokenClient>(),
-                    sp.GetRequiredService<ILogger<BotApplication>>()
+                    sp.GetRequiredService<ILogger<BotApplication>>(),
+                    new BotApplicationOptions { AppId = config.BotIdentity?.ClientId ?? config.AgentIdentity?.ClientId ?? string.Empty }
                 );
             });
         }
@@ -291,6 +292,7 @@ namespace PABot
             return new PACustomAuthHandler(
                 sp.GetRequiredService<IAuthorizationHeaderProvider>(),
                 sp.GetRequiredService<IRoutedTokenAcquisitionService>(),
+                sp.GetRequiredService<IHttpContextAccessor>(),
                 sp.GetRequiredService<ILogger<PACustomAuthHandler>>(),
                 botScope ?? agentScope ?? DefaultScope,
                 agentScope,

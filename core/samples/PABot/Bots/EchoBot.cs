@@ -7,8 +7,18 @@ using Microsoft.Bot.Schema;
 
 namespace PABot.Bots
 {
-    public class EchoBot : ActivityHandler
+    public class EchoBot(IHttpContextAccessor httpContextAccessor) : ActivityHandler
     {
+        public override Task OnTurnAsync(ITurnContext turnContext, CancellationToken cancellationToken)
+        {
+            string recipientId = turnContext.Activity.Recipient?.Id ?? string.Empty;
+            string botId = recipientId.StartsWith("28:", StringComparison.Ordinal) ? recipientId[3..] : recipientId;
+
+            httpContextAccessor.HttpContext?.SetBotId(botId);
+
+            return base.OnTurnAsync(turnContext, cancellationToken);
+        }
+
         protected override async Task OnMessageActivityAsync(ITurnContext<IMessageActivity> turnContext, CancellationToken cancellationToken)
         {
             await turnContext.SendActivityAsync(MessageFactory.Text($"Echo from TurnContext.SendActivityAsync: {turnContext.Activity.Text}"), cancellationToken);
