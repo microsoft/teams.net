@@ -47,7 +47,7 @@ public class TeamsConversationAccount : ConversationAccount
         result.Email = result.Properties.Extract<string>("email");
         result.UserPrincipalName = result.Properties.Extract<string>("userPrincipalName");
         result.UserRole = result.Properties.Extract<string>("userRole");
-        result.TenantId = result.Properties.Extract<string>("tenantId") ?? (conversationAccount as TeamsConversationAccount)?.TenantId;
+        result.TenantId = result.Properties.Extract<string>("tenantId");
         return result;
     }
 
