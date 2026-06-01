@@ -47,7 +47,7 @@ public class TeamsConversationAccount : ConversationAccount
         result.Email = result.Properties.Extract<string>("email");
         result.UserPrincipalName = result.Properties.Extract<string>("userPrincipalName");
         result.UserRole = result.Properties.Extract<string>("userRole");
-        result.TenantId = result.Properties.Extract<string>("tenantId") ?? conversationAccount.TenantId;
+        result.TenantId = result.Properties.Extract<string>("tenantId") ?? (conversationAccount as TeamsConversationAccount)?.TenantId;
         return result;
     }
 
@@ -88,12 +88,8 @@ public class TeamsConversationAccount : ConversationAccount
     public string? UserRole { get; set; }
 
     /// <summary>
-    /// Gets or sets the TenantId.
+    /// Gets or sets the Microsoft Entra tenant ID associated with this account.
     /// </summary>
     [JsonPropertyName("tenantId")]
-    public new string? TenantId
-    {
-        get => base.TenantId;
-        set => base.TenantId = value;
-    }
+    public string? TenantId { get; set; }
 }

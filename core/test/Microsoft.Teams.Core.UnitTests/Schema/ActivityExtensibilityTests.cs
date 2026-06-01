@@ -103,36 +103,16 @@ public class MyCustomActivity : CoreActivity
 }
 
 
-public class MyChannelData : ChannelData
+public class MyChannelData
 {
-    public MyChannelData()
-    {
-    }
-    public MyChannelData(ChannelData cd)
-    {
-        if (cd is not null)
-        {
-            if (cd.Properties.TryGetValue("customField", out object? channelIdObj)
-                && channelIdObj is JsonElement jeChannelId
-                && jeChannelId.ValueKind == JsonValueKind.String)
-            {
-                CustomField = jeChannelId.GetString();
-            }
-
-            if (cd.Properties.TryGetValue("myChannelId", out object? mychannelIdObj)
-                && mychannelIdObj is JsonElement jemyChannelId
-                && jemyChannelId.ValueKind == JsonValueKind.String)
-            {
-                MyChannelId = jemyChannelId.GetString();
-            }
-        }
-    }
-
     [JsonPropertyName("customField")]
     public string? CustomField { get; set; }
 
     [JsonPropertyName("myChannelId")]
     public string? MyChannelId { get; set; }
+
+    [JsonExtensionData]
+    public ExtendedPropertiesDictionary Properties { get; set; } = [];
 }
 
 public class MyCustomChannelDataActivity : CoreActivity
@@ -142,15 +122,13 @@ public class MyCustomChannelDataActivity : CoreActivity
 
     internal static MyCustomChannelDataActivity FromActivity(CoreActivity coreActivity)
     {
-        ChannelData? extractedChannelData = coreActivity.Properties.Extract<ChannelData>("channelData");
-
         return new MyCustomChannelDataActivity
         {
             Type = coreActivity.Type,
             ChannelId = coreActivity.ChannelId,
             Id = coreActivity.Id,
             ServiceUrl = coreActivity.ServiceUrl,
-            ChannelData = new MyChannelData(extractedChannelData ?? new Core.Schema.ChannelData()),
+            ChannelData = coreActivity.Properties.Extract<MyChannelData>("channelData"),
             Properties = coreActivity.Properties
         };
     }

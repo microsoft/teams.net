@@ -11,7 +11,6 @@ using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 
@@ -128,41 +127,29 @@ public class TeamsBotApplication : BotApplication
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
             // Agent365: set baggage (user.id, user.email, agent details, etc.) for all
-            // child spans, then open the invoke_agent scope inside the baggage scope so
-            // the span inherits Apps-only required baggage.
+            // child spans.
             using IDisposable baggageScope = new TeamsBaggageBuilder()
                 .FromTeamsContext(defaultContext)
                 .Build();
 
-            using InvokeAgentScope invokeScope = InvokeAgentScope.Start(activity);
-
-            try
+            if (teamsActivity.Type != TeamsActivityType.Invoke)
             {
-                if (teamsActivity.Type != TeamsActivityType.Invoke)
+                await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+            }
+            else // invokes
+            {
+                InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+                HttpContext? httpContext = httpContextAccessor.HttpContext;
+                if (httpContext is not null && invokeResponse is not null)
                 {
-                    await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                }
-                else // invokes
-                {
-                    InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                    HttpContext? httpContext = httpContextAccessor.HttpContext;
-                    if (httpContext is not null && invokeResponse is not null)
+                    httpContext.Response.StatusCode = invokeResponse.Status;
+                    logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
+                    logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
+                    if (invokeResponse.Body is not null)
                     {
-                        httpContext.Response.StatusCode = invokeResponse.Status;
-                        logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
-                        logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
-                        if (invokeResponse.Body is not null)
-                        {
-                            invokeScope.RecordOutputMessages(JsonSerializer.Serialize(invokeResponse.Body));
-                            await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
-                        }
+                        await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
                     }
                 }
-            }
-            catch (Exception ex)
-            {
-                invokeScope.RecordError(ex);
-                throw;
             }
         };
         logger.LogDebug("TeamsBotApplication version {Version}", Version);

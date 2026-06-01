@@ -229,10 +229,11 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
-            ChannelData? channelData = coreActivity.Properties.Extract<ChannelData>("channelData");
-            Assert.NotNull(channelData);
-            Assert.True(channelData.Properties.ContainsKey("customProperty"));
-            Assert.Equal("customValue", channelData.Properties["customProperty"]?.ToString());
+            Assert.True(coreActivity.Properties.TryGetValue("channelData", out object? cdObj));
+            Assert.IsType<JsonElement>(cdObj);
+            var cdElement = (JsonElement)cdObj!;
+            Assert.True(cdElement.TryGetProperty("customProperty", out var customProp));
+            Assert.Equal("customValue", customProp.GetString());
         }
 
         [Fact]
@@ -243,12 +244,11 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
 
-            ChannelData? channelData = coreActivity.Properties.Extract<ChannelData>("channelData");
-            Assert.NotNull(channelData);
-            Assert.True(channelData.Properties.ContainsKey("feedbackLoopEnabled"));
-
-            JsonElement feedbackLoopValue = (JsonElement)channelData.Properties["feedbackLoopEnabled"]!;
-            Assert.True(feedbackLoopValue.GetBoolean());
+            Assert.True(coreActivity.Properties.TryGetValue("channelData", out object? cdObj));
+            Assert.IsType<JsonElement>(cdObj);
+            var cdElement = (JsonElement)cdObj!;
+            Assert.True(cdElement.TryGetProperty("feedbackLoopEnabled", out var feedbackLoop));
+            Assert.True(feedbackLoop.GetBoolean());
         }
 
         #endregion

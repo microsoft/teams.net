@@ -4,11 +4,10 @@
 namespace Microsoft.Teams.Apps.Diagnostics;
 
 /// <summary>
-/// Agent365 observability baggage and attribute keys, duplicated from
+/// Agent365 observability baggage and attribute keys sourced from
 /// <c>Microsoft.Agents.A365.Observability.Runtime.Tracing.Scopes.OpenTelemetryConstants</c>.
-/// Same wire values as <c>Microsoft.Teams.Core.Diagnostics.AgentObservabilityKeys</c>; duplicated
-/// per layer to keep Apps independent of Core's internals (see Layering constraints in
-/// <c>core/docs/Observability-Design.md</c>).
+/// Kept in sync with the upstream cert spec
+/// (https://github.com/microsoft/opentelemetry-distro-dotnet).
 /// </summary>
 internal static class AgentObservabilityKeys
 {
