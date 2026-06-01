@@ -45,7 +45,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
         ArgumentNullException.ThrowIfNull(context.Activity.Conversation.Id);
 
-        await context.Typing(string.Empty, ct);
+        await context.Typing(ct);
 
         var conversationId = context.Activity.Conversation.Id;
         var history = _chatHistories.GetOrAdd(conversationId, _ => []);

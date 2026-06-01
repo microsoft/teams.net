@@ -33,6 +33,12 @@ public class TeamsConversationAccount : ConversationAccount
         {
             return null;
         }
+
+        if (conversationAccount is TeamsConversationAccount teamsConversationAccount)
+        {
+            return teamsConversationAccount;
+        }
+
         TeamsConversationAccount result = new();
         result.Id = conversationAccount.Id;
         result.Name = conversationAccount.Name;
