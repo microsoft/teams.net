@@ -50,20 +50,6 @@ public class ConversationAccount()
     public string? AgenticAppBlueprintId { get; set; }
 
     /// <summary>
-    /// Gets or sets the Microsoft Entra tenant ID associated with the conversation account.
-    /// </summary>
-    /// <remarks>
-    /// Surfaced at the conversation-account level so cross-channel observability (Agent365 baggage,
-    /// telemetry enrichment) can populate <c>microsoft.tenant.id</c> without requiring the Apps-layer
-    /// <c>TeamsConversationAccount</c>. Classic Bot Framework activities still carry tenant id in
-    /// <c>channelData.tenant.id</c>; consumers that need the channel-data fallback should use
-    /// <c>CoreBaggageBuilder.FromCoreActivity</c> / <c>TeamsBaggageBuilder.FromTeamsContext</c>, which transparently fall
-    /// back when this property is null.
-    /// </remarks>
-    [JsonPropertyName("tenantId")]
-    public string? TenantId { get; set; }
-
-    /// <summary>
     /// Gets the extension data dictionary for storing additional properties not defined in the schema.
     /// </summary>
     [JsonExtensionData]

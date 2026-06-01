@@ -195,7 +195,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void FromConversationAccount_PreservesTenantId()
     {
-        ConversationAccount source = new()
+        TeamsConversationAccount source = new()
         {
             Id = "user-id",
             Name = "User Name",

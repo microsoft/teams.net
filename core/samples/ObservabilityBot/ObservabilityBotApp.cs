@@ -69,6 +69,15 @@ public class ObservabilityBotApp : TeamsBotApplication
             conversationId: conversationId,
             channel: new Channel(context.Activity.ChannelId));
 
+        // === InvokeAgentScope: wraps the entire agent turn ===
+        // Opened here (not by the SDK) so we can reliably record both input and output.
+        // The SDK has already set cert-required baggage on Baggage.Current via TeamsBaggageBuilder,
+        // so this span inherits tenant.id, agent.id, user.id etc. automatically.
+        var invokeAgentScopeDetails = new InvokeAgentScopeDetails(context.Activity.ServiceUrl);
+        using var invokeScope = InvokeAgentScope.Start(request, invokeAgentScopeDetails, agentDetails);
+
+        try
+        {
         // === InferenceScope: wraps the LLM + tool-call loop ===
         var inferenceDetails = new InferenceCallDetails(
             InferenceOperationType.Chat,
@@ -157,10 +166,8 @@ public class ObservabilityBotApp : TeamsBotApplication
             responseText += $"[{i + 1}] ";
         }
 
-        // === OutputScope: record the agent's reply ===
-        using (OutputScope.Start(request, new Response([responseText]), agentDetails))
-        {
-        }
+        // Record output on the top-level invoke_agent span before it closes.
+        invokeScope.RecordOutputMessages([responseText]);
 
         var builder = TeamsActivity.CreateBuilder()
             .WithText(responseText, TextFormats.Markdown)
@@ -175,5 +182,11 @@ public class ObservabilityBotApp : TeamsBotApplication
         }
 
         await context.Send(builder.Build(), ct);
+        }
+        catch (Exception ex)
+        {
+            invokeScope.RecordError(ex);
+            throw;
+        }
     }
 }

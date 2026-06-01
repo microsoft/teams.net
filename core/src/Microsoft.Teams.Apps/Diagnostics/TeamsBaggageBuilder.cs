@@ -13,14 +13,10 @@ namespace Microsoft.Teams.Apps.Diagnostics;
 /// </summary>
 /// <remarks>
 /// <para>
-/// This class is independent from <c>Microsoft.Teams.Core.Diagnostics.CoreBaggageBuilder</c> —
-/// no inheritance. Apps's builder exposes the **superset** of the cert-relevant
-/// setters: everything Core's builder has plus the keys backed by <see cref="TeamsConversationAccount"/>
-/// (<c>user.id</c>, <c>user.email</c>, <c>microsoft.agent.user.email</c>, <c>gen_ai.agent.description</c>).
-/// </para>
-/// <para>
-/// Setter bodies are duplicated from Core's class. The duplication is the intentional trade-off for layer
-/// independence — see <c>core/docs/Observability-Design.md</c> § "Bridging strategy".
+/// Populates the cert-required keys (<c>microsoft.tenant.id</c>, <c>gen_ai.conversation.id</c>,
+/// <c>microsoft.channel.name</c>, etc.) plus the Apps-only keys backed by
+/// <see cref="TeamsConversationAccount"/> (<c>user.id</c>, <c>user.email</c>,
+/// <c>microsoft.agent.user.email</c>, <c>gen_ai.agent.description</c>).
 /// </para>
 /// </remarks>
 public sealed class TeamsBaggageBuilder
@@ -101,7 +97,7 @@ public sealed class TeamsBaggageBuilder
     /// <summary>
     /// Populates every baggage key reachable from <c>ctx.Activity</c> — including the Apps-only keys
     /// backed by <see cref="TeamsConversationAccount"/>. Tenant fallback uses the typed
-    /// <see cref="TeamsChannelData"/> when <see cref="ConversationAccount.TenantId"/> is null.
+    /// <see cref="TeamsChannelData"/> when <see cref="TeamsConversationAccount.TenantId"/> is null.
     /// </summary>
     public TeamsBaggageBuilder FromTeamsContext<TActivity>(Context<TActivity> ctx) where TActivity : TeamsActivity
     {
@@ -119,7 +115,7 @@ public sealed class TeamsBaggageBuilder
             UserEmail(fromTcc.Email);
         }
 
-        ConversationAccount? recipient = activity.Recipient;
+        TeamsConversationAccount? recipient = activity.Recipient;
         if (recipient is not null)
         {
             AgentId(string.IsNullOrWhiteSpace(recipient.AgenticAppId) ? recipient.Id : recipient.AgenticAppId);
@@ -127,11 +123,8 @@ public sealed class TeamsBaggageBuilder
             AgenticUserId(recipient.AgenticUserId);
             AgentBlueprintId(recipient.AgenticAppBlueprintId);
             TenantId(recipient.TenantId);
-        }
-        if (recipient is TeamsConversationAccount recTcc)
-        {
-            AgenticUserEmail(recTcc.Email);
-            AgentDescription(recTcc.UserRole);
+            AgenticUserEmail(recipient.Email);
+            AgentDescription(recipient.UserRole);
         }
 
         // Tenant fallback: typed channelData on TeamsActivity (no JSON parse needed).
