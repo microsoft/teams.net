@@ -15,11 +15,11 @@ builder.Services.AddSingleton<A2AClient>();
 builder.Services.AddSingleton<Agent>();
 
 Config config = new(
-    Name:        builder.Configuration["Bot:Name"]        ?? throw new InvalidOperationException("Bot:Name is required."),
-    SelfUrl:     builder.Configuration["Bot:SelfUrl"]     ?? throw new InvalidOperationException("Bot:SelfUrl is required."),
+    Name: builder.Configuration["Bot:Name"] ?? throw new InvalidOperationException("Bot:Name is required."),
+    SelfUrl: builder.Configuration["Bot:SelfUrl"] ?? throw new InvalidOperationException("Bot:SelfUrl is required."),
     Description: builder.Configuration["Bot:Description"] ?? throw new InvalidOperationException("Bot:Description is required."),
-    PeerUrl:     builder.Configuration["Bot:PeerUrl"]     ?? throw new InvalidOperationException("Bot:PeerUrl is required."),
-    PeerName:    builder.Configuration["Bot:PeerName"]    ?? throw new InvalidOperationException("Bot:PeerName is required."));
+    PeerUrl: builder.Configuration["Bot:PeerUrl"] ?? throw new InvalidOperationException("Bot:PeerUrl is required."),
+    PeerName: builder.Configuration["Bot:PeerName"] ?? throw new InvalidOperationException("Bot:PeerName is required."));
 
 builder.Services.AddSingleton(config);
 
@@ -32,13 +32,13 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
 teamsApp.OnMessage(async (context, ct) =>
 {
-    string text   = context.Activity.Text?.Trim() ?? string.Empty;
+    string text = context.Activity.Text?.Trim() ?? string.Empty;
     string convId = context.Activity.Conversation!.Id!;
     TurnIdentity identity = new(
-        AadObjectId: Required(context.Activity.From?.AadObjectId,      "From.AadObjectId"),
-        UserName:    context.Activity.From?.Name ?? "User",
-        TenantId:    Required(context.Activity.Conversation?.TenantId, "Conversation.TenantId"),
-        ServiceUrl:  Required(context.Activity.ServiceUrl?.ToString(), "ServiceUrl"));
+        AadObjectId: Required(context.Activity.From?.AadObjectId, "From.AadObjectId"),
+        UserName: context.Activity.From?.Name ?? "User",
+        TenantId: Required(context.Activity.Conversation?.TenantId, "Conversation.TenantId"),
+        ServiceUrl: Required(context.Activity.ServiceUrl?.ToString(), "ServiceUrl"));
 
     string reply = await agent.RunAsync(convId, identity, text, ct);
     if (!string.IsNullOrWhiteSpace(reply))

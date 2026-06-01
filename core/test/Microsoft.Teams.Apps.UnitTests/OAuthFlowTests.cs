@@ -3,14 +3,12 @@
 
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 using Moq;
 

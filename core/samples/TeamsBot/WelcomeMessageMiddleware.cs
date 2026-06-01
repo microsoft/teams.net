@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Identity.Client;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
@@ -39,7 +38,7 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
     {
         if (!_hasSentWelcomeMessage)
         {
-            var welcomeActivity = TeamsActivity.CreateBuilder()
+            TeamsActivity welcomeActivity = TeamsActivity.CreateBuilder()
                 .WithType("message")
                 .WithText(WelcomeMessage, TextFormats.Markdown)
                 .WithConversationReference(TeamsActivity.FromActivity(activity))

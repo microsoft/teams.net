@@ -8,7 +8,6 @@ using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
-#pragma warning disable ExperimentalTeamsTargeted
 public class TargetedMessageInfoEntityTests
 {
     [Fact]
@@ -157,14 +156,11 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_StripsQuotedPlaceholderFromText()
     {
-#pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .AddQuote("msg-123", "my response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
-#pragma warning restore ExperimentalTeamsQuotedReplies
-
         Assert.True(activity.Properties.TryGetValue("text", out object? text));
         Assert.Equal("my response", text?.ToString());
         Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
@@ -173,14 +169,12 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_StripsAllQuotedPlaceholders_NotJustMatchingMessageId()
     {
-#pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .AddQuote("msg-1", "first")
             .AddQuote("msg-2", "second")
             .WithTargetedMessageInfo("msg-99")
             .Build();
-#pragma warning restore ExperimentalTeamsQuotedReplies
 
         // Passes a different messageId than either existing quote — placeholders for msg-1 and msg-2
         // must still be stripped to keep the activity text consistent with the entity removal.
@@ -310,14 +304,11 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_StripsQuotedReplyEntities()
     {
-#pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .AddQuote("msg-1", "old reply")
             .WithTargetedMessageInfo("msg-123")
             .Build();
-#pragma warning restore ExperimentalTeamsQuotedReplies
-
         Assert.DoesNotContain(activity.Entities!, e => e.Type == "quotedReply");
         Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
     }
@@ -325,14 +316,11 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_StripsPlaceholderFromText()
     {
-#pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .AddQuote("msg-123", "my response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
-#pragma warning restore ExperimentalTeamsQuotedReplies
-
         Assert.True(activity.Properties.TryGetValue("text", out object? text));
         Assert.Equal("my response", text?.ToString());
     }
@@ -355,14 +343,11 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_StripsEscapedPlaceholder()
     {
-#pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .AddQuote("a\"b", "response")
             .WithTargetedMessageInfo("a\"b")
             .Build();
-#pragma warning restore ExperimentalTeamsQuotedReplies
-
         Assert.True(activity.Properties.TryGetValue("text", out object? text));
         Assert.Equal("response", text?.ToString());
         Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
@@ -372,15 +357,12 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void Builder_WithTargetedMessageInfo_StripsAllPlaceholders_NotJustMatchingMessageId()
     {
-#pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .AddQuote("msg-1", "first")
             .AddQuote("msg-2", "second")
             .WithTargetedMessageInfo("msg-99")
             .Build();
-#pragma warning restore ExperimentalTeamsQuotedReplies
-
         Assert.True(activity.Properties.TryGetValue("text", out object? text));
         Assert.DoesNotContain("<quoted", text?.ToString());
         Assert.DoesNotContain(activity.Entities!, e => e.Type == "quotedReply");
@@ -403,4 +385,3 @@ public class TargetedMessageInfoEntityTests
         Assert.False(activity.Properties.ContainsKey("text"));
     }
 }
-#pragma warning restore ExperimentalTeamsTargeted
