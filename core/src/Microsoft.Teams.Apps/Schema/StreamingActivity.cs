@@ -20,8 +20,7 @@ public class StreamingActivity : TeamsActivity
     public StreamingActivity(string text) : base(TeamsActivityType.Typing)
     {
         Text = text;
-        StreamInfo = new StreamInfoEntity();
-        AddEntity(StreamInfo);
+        StreamInfo = StreamInfoEntityExtensions.AddToActivity(this, StreamType.Streaming);
     }
 
     /// <summary>

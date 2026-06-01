@@ -9,6 +9,7 @@ namespace Microsoft.Teams.AI.Prompts;
 /// <summary>
 /// ChatPrompt Options
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public class ChatPromptOptions
 {
     /// <summary>

@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Net.WebSockets;
@@ -51,18 +51,18 @@ public class DevToolsController : ControllerBase
             return;
         }
 
-        using var socket = await HttpContext.WebSockets.AcceptWebSocketAsync();
+        using var socket = await HttpContext.WebSockets.AcceptWebSocketAsync().ConfigureAwait(false);
         var id = Guid.NewGuid().ToString();
         var buffer = new byte[1024];
 
         _plugin.Sockets.Add(id, socket);
-        await _plugin.Sockets.Emit(id, new MetaDataEvent(_plugin.MetaData), _lifetime.ApplicationStopping);
+        await _plugin.Sockets.Emit(id, new MetaDataEvent(_plugin.MetaData), _lifetime.ApplicationStopping).ConfigureAwait(false);
 
         try
         {
             while (socket.State.HasFlag(WebSocketState.Open))
             {
-                await socket.ReceiveAsync(buffer, _lifetime.ApplicationStopping);
+                await socket.ReceiveAsync(buffer, _lifetime.ApplicationStopping).ConfigureAwait(false);
             }
         }
         catch (ConnectionAbortedException)
@@ -77,7 +77,7 @@ public class DevToolsController : ControllerBase
         {
             if (socket.IsCloseable())
             {
-                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, _lifetime.ApplicationStopping);
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, _lifetime.ApplicationStopping).ConfigureAwait(false);
             }
         }
 

@@ -11,6 +11,7 @@ using OpenAI.Chat;
 namespace Microsoft.Teams.AI.Models.OpenAI;
 
 
+[Obsolete("Microsoft.Teams.AI.Models.OpenAI is deprecated and will be removed by end of summer 2026.")]
 public partial class OpenAIChatModel : IChatModel<ChatCompletionOptions>
 {
     public string Name => Model;

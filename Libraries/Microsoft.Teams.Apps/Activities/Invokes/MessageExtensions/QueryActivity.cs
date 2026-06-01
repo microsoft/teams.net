@@ -27,7 +27,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.QueryActivity>());
+                await handler(context.ToActivityType<MessageExtensions.QueryActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.QueryActivity
@@ -43,7 +43,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>()),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>()).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.QueryActivity
         });
 
@@ -57,7 +57,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>()),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>()).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.QueryActivity
         });
 
@@ -72,7 +72,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.QueryActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageExtensions.QueryActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.QueryActivity
@@ -87,7 +87,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.QueryActivity
         });
 
@@ -100,7 +100,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.Query]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.QueryActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.QueryActivity
         });
 

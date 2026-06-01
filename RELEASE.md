@@ -101,6 +101,30 @@ Signs (Authenticode + NuGet) and pushes to nuget.org. Requires approval.
 5. Approver reviews and clicks Approve
 6. Packages land on [nuget.org/profiles/teams-sdk](https://www.nuget.org/profiles/teams-sdk)
 
+## Tagging and GitHub Release
+
+After the publish pipeline finishes and packages land on nuget.org, tag the release and create a GitHub Release page:
+
+```bash
+# Create a draft release at the release branch tip
+gh release create v<version> -R microsoft/teams.net \
+  --target releases/<branch> --title "v<version>" --draft \
+  --generate-notes --notes-start-tag v<previous-version>
+```
+
+- `--target` is the release branch packages were published from: `releases/core` for Core, `releases/v<N>` for Legacy.
+- The tag is created at the release branch tip when you publish the draft.
+
+**If the auto-generated PR list comes back too small** (only the release PR itself, because squash-merges hide ancestry), query the real PR delta from main:
+
+```bash
+gh api -X GET search/issues \
+  -f q='repo:microsoft/teams.net is:pr is:merged base:main merged:>=<previous-release-publish-date>' \
+  --jq '.items[] | "* \(.title) by @\(.user.login) in \(.html_url)"' | tac > /tmp/notes.md
+```
+
+Edit the draft (`gh release edit <id> --notes-file /tmp/notes.md`), then publish from the GitHub UI to create the tag.
+
 ## CI Validation (Teams.NET-PR pipeline)
 
 `Teams.NET-PR` runs on PRs targeting `main` or `releases/*` and on pushes to `main`. It does not publish.

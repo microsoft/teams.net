@@ -427,12 +427,10 @@ public class OAuthFlowTests
             mockUserTokenClient.Object);
 
         TeamsBotApplication app = new(
-            mockConversationClient.Object,
-            mockUserTokenClient.Object,
             apiClient,
             new HttpContextAccessor(),
             NullLogger<TeamsBotApplication>.Instance,
-            new BotApplicationOptions { AppId = "test-app-id" });
+            new TeamsBotApplicationOptions { AppId = "test-app-id" });
 
         OAuthFlow? graphFlow = null;
         OAuthFlow? githubFlow = null;

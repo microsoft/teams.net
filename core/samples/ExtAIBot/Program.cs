@@ -7,21 +7,20 @@ using ExtAIBot;
 using Microsoft.Extensions.AI;
 using Microsoft.Teams.Apps;
 
-// Wires up the Teams bot application and delegates AI execution to Agent.
-// Handler registration lives in TeamsBotAppHandlers.cs.
+// Wires up the Teams bot application. Handler registration lives in ExtAIBotApp.
 
 WebApplicationBuilder builder = WebApplication.CreateSlimBuilder(args);
-builder.Services.AddTeamsBotApplication();
+builder.Services.AddTeamsBotApplication<ExtAIBotApp>();
 
 builder.Services.AddSingleton<IChatClient>(sp =>
 {
     IConfiguration config = sp.GetRequiredService<IConfiguration>();
     string endpoint = config["AzureOpenAI:Endpoint"] ?? throw new InvalidOperationException("AzureOpenAI:Endpoint is required.");
     string apiKey = config["AzureOpenAI:ApiKey"] ?? throw new InvalidOperationException("AzureOpenAI:ApiKey is required.");
-    string modelId = config["AzureOpenAI:ModelId"] ?? throw new InvalidOperationException("AzureOpenAI:ModelId is required.");
+    string deployment = config["AzureOpenAI:Deployment"] ?? throw new InvalidOperationException("AzureOpenAI:Deployment is required.");
 
     return new AzureOpenAIClient(new Uri(endpoint), new ApiKeyCredential(apiKey))
-        .GetChatClient(modelId)
+        .GetChatClient(deployment)
         .AsIChatClient()
         .AsBuilder()
         .UseFunctionInvocation()
@@ -34,10 +33,5 @@ builder.Services.AddHostedService(sp => sp.GetRequiredService<McpToolSetLifetime
 builder.Services.AddSingleton<Agent>();
 
 WebApplication webApp = builder.Build();
-
-Agent agent = webApp.Services.GetRequiredService<Agent>();
-ILogger handlerLogger = webApp.Services.GetRequiredService<ILoggerFactory>().CreateLogger("ExtAIBot.TeamsBotAppHandlers");
-
-webApp.UseTeamsBotApplication().RegisterHandlers(agent, handlerLogger);
-
+webApp.UseTeamsBotApplication<ExtAIBotApp>();
 webApp.Run();

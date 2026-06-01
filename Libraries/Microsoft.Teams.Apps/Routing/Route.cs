@@ -27,7 +27,7 @@ public class Route : IRoute
     public required Func<IContext<IActivity>, Task<object?>> Handler { get; set; }
 
     public bool Select(IActivity activity) => Selector(activity);
-    public async Task<object?> Invoke(IContext<IActivity> context) => await Handler(context);
+    public async Task<object?> Invoke(IContext<IActivity> context) => await Handler(context).ConfigureAwait(false);
 }
 
 public class AttributeRoute : IRoute

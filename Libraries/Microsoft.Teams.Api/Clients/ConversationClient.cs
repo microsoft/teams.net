@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
+// Copyright (c) Microsoft Corporation. All rights reserved.
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
@@ -51,7 +51,7 @@ public class ConversationClient : Client
     {
         var token = cancellationToken != default ? cancellationToken : _cancellationToken;
         var req = HttpRequest.Post($"{ServiceUrl}v3/conversations", body: request);
-        var res = await _http.SendAsync<ConversationResource>(req, token);
+        var res = await _http.SendAsync<ConversationResource>(req, token).ConfigureAwait(false);
         return res.Body;
     }
 
@@ -59,10 +59,12 @@ public class ConversationClient : Client
     {
         [JsonPropertyName("isGroup")]
         [JsonPropertyOrder(0)]
+        [Obsolete("This will be removed by end of summer 2026.")]
         public bool? IsGroup { get; set; }
 
         [JsonPropertyName("bot")]
         [JsonPropertyOrder(1)]
+        [Obsolete("This will be removed by end of summer 2026.")]
         public Account? Bot { get; set; }
 
         [JsonPropertyName("members")]
@@ -71,6 +73,7 @@ public class ConversationClient : Client
 
         [JsonPropertyName("topicName")]
         [JsonPropertyOrder(3)]
+        [Obsolete("This will be removed by end of summer 2026.")]
         public string? TopicName { get; set; }
 
         [JsonPropertyName("tenantId")]

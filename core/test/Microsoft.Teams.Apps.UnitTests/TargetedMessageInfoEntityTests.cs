@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text.Json;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core.Schema;
@@ -52,13 +53,33 @@ public class TargetedMessageInfoEntityTests
     }
 
     [Fact]
+    public void TargetedMessageInfoEntity_RoundTripsThroughSourceGenContext()
+    {
+        // Pins the [JsonSerializable(typeof(TargetedMessageInfoEntity))] registration on
+        // TeamsActivityJsonContext. Without that line, .Default.TargetedMessageInfoEntity wouldn't
+        // exist and this test would fail to compile / run — preventing a silent Native AOT regression.
+        TargetedMessageInfoEntity entity = new() { MessageId = "1772129782775" };
+
+        string json = JsonSerializer.Serialize(entity, TeamsActivityJsonContext.Default.TargetedMessageInfoEntity);
+        Assert.Contains("\"messageId\"", json);
+        Assert.Contains("1772129782775", json);
+
+        TargetedMessageInfoEntity? roundTripped = JsonSerializer.Deserialize(json, TeamsActivityJsonContext.Default.TargetedMessageInfoEntity);
+        Assert.NotNull(roundTripped);
+        Assert.Equal("targetedMessageInfo", roundTripped.Type);
+        Assert.Equal("1772129782775", roundTripped.MessageId);
+    }
+
+    [Fact]
     public void AddTargetedMessageInfo_AddsEntity()
     {
-        MessageActivity activity = new("test");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithText("test")
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
 
-        activity.AddTargetedMessageInfo("msg-123");
-
-        TargetedMessageInfoEntity? entity = activity.Entities?.OfType<TargetedMessageInfoEntity>().SingleOrDefault();
+        TargetedMessageInfoEntity? entity = activity.GetTargetedMessageInfo();
         Assert.NotNull(entity);
         Assert.Equal("msg-123", entity.MessageId);
     }
@@ -76,10 +97,12 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_DoesNotDuplicate_WhenConcreteEntityExists()
     {
-        MessageActivity activity = new("test");
-        activity.AddEntity(new TargetedMessageInfoEntity { MessageId = "9999" });
-
-        activity.AddTargetedMessageInfo("msg-123");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithText("test")
+            .AddEntity(new TargetedMessageInfoEntity { MessageId = "9999" })
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
 
         List<TargetedMessageInfoEntity> entities = activity.Entities!.OfType<TargetedMessageInfoEntity>().ToList();
         Assert.Single(entities);
@@ -89,10 +112,12 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_DoesNotDuplicate_WhenGenericEntityWithMatchingType()
     {
-        MessageActivity activity = new("test");
-        activity.AddEntity(new Entity("targetedMessageInfo"));
-
-        activity.AddTargetedMessageInfo("msg-123");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithText("test")
+            .AddEntity(new Entity("targetedMessageInfo"))
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
 
         List<Entity> entities = activity.Entities!.Where(e => e.Type == "targetedMessageInfo").ToList();
         Assert.Single(entities);
@@ -101,10 +126,12 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_StripsQuotedReplyEntities()
     {
-        MessageActivity activity = new("test");
-        activity.AddEntity(new Entity("quotedReply"));
-
-        activity.AddTargetedMessageInfo("msg-123");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithText("test")
+            .AddEntity(new Entity("quotedReply"))
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
 
         Assert.DoesNotContain(activity.Entities!, e => e.Type == "quotedReply");
         Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
@@ -113,12 +140,14 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_StripsAllQuotedReplyEntities_WhenMultiplePresent()
     {
-        MessageActivity activity = new("test");
-        activity.AddEntity(new Entity("quotedReply"));
-        activity.AddEntity(new Entity("quotedReply"));
-        activity.AddEntity(new ClientInfoEntity { Locale = "en-us" });
-
-        activity.AddTargetedMessageInfo("msg-123");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithText("test")
+            .AddEntity(new Entity("quotedReply"))
+            .AddEntity(new Entity("quotedReply"))
+            .AddEntity(new ClientInfoEntity { Locale = "en-us" })
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
 
         Assert.DoesNotContain(activity.Entities!, e => e.Type == "quotedReply");
         Assert.Contains(activity.Entities!, e => e.Type == "clientInfo");
@@ -129,13 +158,15 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_StripsQuotedPlaceholderFromText()
     {
 #pragma warning disable ExperimentalTeamsQuotedReplies
-        MessageActivity activity = new();
-        activity.AddQuote("msg-123", "my response");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .AddQuote("msg-123", "my response")
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
 
-        activity.AddTargetedMessageInfo("msg-123");
-
-        Assert.Equal("my response", activity.Text);
+        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        Assert.Equal("my response", text?.ToString());
         Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
     }
 
@@ -143,33 +174,32 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_StripsAllQuotedPlaceholders_NotJustMatchingMessageId()
     {
 #pragma warning disable ExperimentalTeamsQuotedReplies
-        MessageActivity activity = new();
-        activity.AddQuote("msg-1", "first");
-        activity.AddQuote("msg-2", "second");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .AddQuote("msg-1", "first")
+            .AddQuote("msg-2", "second")
+            .WithTargetedMessageInfo("msg-99")
+            .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
 
         // Passes a different messageId than either existing quote — placeholders for msg-1 and msg-2
         // must still be stripped to keep the activity text consistent with the entity removal.
-        activity.AddTargetedMessageInfo("msg-99");
-
-        Assert.DoesNotContain("<quoted", activity.Text);
+        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        Assert.DoesNotContain("<quoted", text?.ToString());
         Assert.DoesNotContain(activity.Entities!, e => e.Type == "quotedReply");
         Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
     }
 
     [Fact]
-    public void AddTargetedMessageInfo_OnTeamsActivity_AutoPopulatesEntity()
+    public void AddTargetedMessageInfo_OnMessageActivity_AutoPopulatesEntity()
     {
-        // TeamsActivity (non-MessageActivity) with Type=Message — the common shape produced
-        // by TeamsActivity.CreateBuilder().WithType(Message).Build(). Auto-populate must still apply.
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
             .WithText("response")
+            .WithTargetedMessageInfo("msg-123")
             .Build();
 
-        activity.AddTargetedMessageInfo("msg-123");
-
-        TargetedMessageInfoEntity? entity = activity.Entities?.OfType<TargetedMessageInfoEntity>().SingleOrDefault();
+        TargetedMessageInfoEntity? entity = activity.GetTargetedMessageInfo();
         Assert.NotNull(entity);
         Assert.Equal("msg-123", entity.MessageId);
     }
@@ -177,19 +207,23 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_LeavesTextUnchanged_WhenNoPlaceholder()
     {
-        MessageActivity activity = new("plain response");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithText("plain response")
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
 
-        activity.AddTargetedMessageInfo("msg-123");
-
-        Assert.Equal("plain response", activity.Text);
+        Assert.True(activity.Properties.TryGetValue("text", out object? text));
+        Assert.Equal("plain response", text?.ToString());
     }
 
     [Fact]
     public void AddTargetedMessageInfo_NullText_DoesNotThrow()
     {
-        MessageActivity activity = new();
-
-        activity.AddTargetedMessageInfo("msg-123");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
 
         Assert.Contains(activity.Entities!, e => e.Type == "targetedMessageInfo");
     }
@@ -197,8 +231,11 @@ public class TargetedMessageInfoEntityTests
     [Fact]
     public void AddTargetedMessageInfo_ToJson_ContainsMessageId()
     {
-        MessageActivity activity = new("hello");
-        activity.AddTargetedMessageInfo("msg-123");
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+            .WithType(TeamsActivityType.Message)
+            .WithText("hello")
+            .WithTargetedMessageInfo("msg-123")
+            .Build();
 
         string json = activity.ToJson();
         Assert.Contains("\"targetedMessageInfo\"", json);
@@ -230,10 +267,12 @@ public class TargetedMessageInfoEntityTests
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
+        TargetedMessageInfoEntity? entity = activity.GetTargetedMessageInfo();
+
         Assert.NotNull(activity.Entities);
         Assert.Single(activity.Entities);
-        Assert.IsType<TargetedMessageInfoEntity>(activity.Entities[0]);
-        Assert.Equal("msg-123", ((TargetedMessageInfoEntity)activity.Entities[0]).MessageId);
+        Assert.NotNull(entity);
+        Assert.Equal("msg-123", entity.MessageId);
     }
 
     [Fact]
@@ -274,7 +313,7 @@ public class TargetedMessageInfoEntityTests
 #pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithQuote("msg-1", "old reply")
+            .AddQuote("msg-1", "old reply")
             .WithTargetedMessageInfo("msg-123")
             .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
@@ -289,7 +328,7 @@ public class TargetedMessageInfoEntityTests
 #pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithQuote("msg-123", "my response")
+            .AddQuote("msg-123", "my response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
@@ -319,7 +358,7 @@ public class TargetedMessageInfoEntityTests
 #pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithQuote("a\"b", "response")
+            .AddQuote("a\"b", "response")
             .WithTargetedMessageInfo("a\"b")
             .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
@@ -336,8 +375,8 @@ public class TargetedMessageInfoEntityTests
 #pragma warning disable ExperimentalTeamsQuotedReplies
         TeamsActivity activity = TeamsActivity.CreateBuilder()
             .WithType(TeamsActivityType.Message)
-            .WithQuote("msg-1", "first")
-            .WithQuote("msg-2", "second")
+            .AddQuote("msg-1", "first")
+            .AddQuote("msg-2", "second")
             .WithTargetedMessageInfo("msg-99")
             .Build();
 #pragma warning restore ExperimentalTeamsQuotedReplies
@@ -356,8 +395,11 @@ public class TargetedMessageInfoEntityTests
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
+        TargetedMessageInfoEntity? entity = activity.GetTargetedMessageInfo();
+
         Assert.Single(activity.Entities!);
-        Assert.Equal("msg-123", ((TargetedMessageInfoEntity)activity.Entities![0]).MessageId);
+        Assert.NotNull(entity);
+        Assert.Equal("msg-123", entity.MessageId);
         Assert.False(activity.Properties.ContainsKey("text"));
     }
 }

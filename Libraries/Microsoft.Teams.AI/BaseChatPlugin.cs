@@ -9,6 +9,7 @@ namespace Microsoft.Teams.AI;
 /// <summary>
 /// A base implementation of <see cref="IChatPlugin"/> with no-op methods.
 /// </summary>
+[Obsolete("Microsoft.Teams.AI is deprecated and will be removed by end of summer 2026.")]
 public abstract class BaseChatPlugin : IChatPlugin
 {
     public virtual Task<IMessage> OnBeforeSend<TOptions>(IChatPrompt<TOptions> prompt, IMessage message, TOptions? options = default, CancellationToken cancellationToken = default)
@@ -36,7 +37,7 @@ public abstract class BaseChatPlugin : IChatPlugin
         return Task.FromResult(functions);
     }
 
-    public virtual Task<DeveloperMessage?> OnBuildInstructions<TOptions>(IChatPrompt<TOptions> prompt, DeveloperMessage? instructions)
+    public virtual Task<DeveloperMessage?> OnBuildInstructions<TOptions>(IChatPrompt<TOptions> prompt, DeveloperMessage? instructions, CancellationToken cancellationToken = default)
     {
         return Task.FromResult(instructions);
     }

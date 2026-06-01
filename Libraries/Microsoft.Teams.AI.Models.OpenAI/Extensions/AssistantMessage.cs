@@ -7,6 +7,7 @@ using OpenAI.Chat;
 
 namespace Microsoft.Teams.AI.Models.OpenAI;
 
+[Obsolete("Microsoft.Teams.AI.Models.OpenAI is deprecated and will be removed by end of summer 2026.")]
 public static partial class MessageExtensions
 {
     public static ModelMessage<string> ToTeams(this AssistantChatMessage message)

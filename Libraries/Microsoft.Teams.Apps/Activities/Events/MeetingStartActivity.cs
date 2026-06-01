@@ -36,7 +36,7 @@ public static partial class AppEventActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MeetingStartActivity>());
+                await handler(context.ToActivityType<MeetingStartActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MeetingStartActivity
@@ -53,7 +53,7 @@ public static partial class AppEventActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MeetingStartActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MeetingStartActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MeetingStartActivity

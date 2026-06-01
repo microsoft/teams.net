@@ -27,7 +27,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>());
+                await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>()).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.SelectItemActivity
@@ -43,7 +43,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>()),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>()).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.SelectItemActivity
         });
 
@@ -57,7 +57,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>()),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>()).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.SelectItemActivity
         });
 
@@ -72,7 +72,7 @@ public static partial class AppInvokeActivityExtensions
             Type = app.Status is null ? RouteType.System : RouteType.User,
             Handler = async context =>
             {
-                await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken);
+                await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken).ConfigureAwait(false);
                 return null;
             },
             Selector = activity => activity is MessageExtensions.SelectItemActivity
@@ -87,7 +87,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.SelectItemActivity
         });
 
@@ -100,7 +100,7 @@ public static partial class AppInvokeActivityExtensions
         {
             Name = string.Join("/", [ActivityType.Invoke, Name.MessageExtensions.SelectItem]),
             Type = app.Status is null ? RouteType.System : RouteType.User,
-            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken),
+            Handler = async context => await handler(context.ToActivityType<MessageExtensions.SelectItemActivity>(), context.CancellationToken).ConfigureAwait(false),
             Selector = activity => activity is MessageExtensions.SelectItemActivity
         });
 
