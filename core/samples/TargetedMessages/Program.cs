@@ -4,9 +4,7 @@
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
-using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();

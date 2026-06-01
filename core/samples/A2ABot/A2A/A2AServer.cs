@@ -3,11 +3,8 @@
 
 using System.Text.Json;
 using A2A;
-using Microsoft.Extensions.AI;
-using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Schema;
 
 namespace A2ABot.A2A;
 
@@ -15,7 +12,7 @@ namespace A2ABot.A2A;
 // Teams conversation with the user, asks Agent to seed that conversation's
 // session with the handoff context + greeting, then sends the greeting as
 // a proactive message.
-sealed class A2AServer(
+internal sealed class A2AServer(
     Config config,
     Agent agent,
     ConversationClient conversations,

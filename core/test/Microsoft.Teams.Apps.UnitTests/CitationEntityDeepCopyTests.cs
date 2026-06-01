@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 
 namespace Microsoft.Teams.Apps.UnitTests;
@@ -12,7 +11,7 @@ namespace Microsoft.Teams.Apps.UnitTests;
 /// </summary>
 public class CitationEntityDeepCopyTests
 {
-    private static CitationEntity MakeCitation() => new CitationEntity
+    private static CitationEntity MakeCitation() => new()
     {
         OType = "Message",
         OContext = "https://schema.org",

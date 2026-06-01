@@ -10,7 +10,7 @@ namespace ExtAIBot;
 // Parses MCP search results as they are returned by tools and accumulates citation metadata.
 // After streaming completes, BuildEntities() returns Teams CitationEntity objects for any
 // [N] references that appear in the final response text.
-sealed class CitationCollector
+internal sealed class CitationCollector
 {
     private readonly ILogger _logger;
     private readonly Dictionary<string, CitationEntry> _citations = [];
@@ -107,4 +107,4 @@ sealed class CitationCollector
             : null;
 }
 
-sealed record CitationEntry(int Position, string Url, string Title, string Snippet);
+internal sealed record CitationEntry(int Position, string Url, string Title, string Snippet);
