@@ -5,6 +5,7 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Core;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();
@@ -15,10 +16,10 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 // Inbound quoted replies — fires on every message, echoes metadata when a quote is present.
 teamsApp.OnMessage(async (context, cancellationToken) =>
 {
-    var quote = context.Activity.GetQuotedMessages().FirstOrDefault()?.QuotedReply;
+    QuotedReplyData? quote = context.Activity.GetQuotedMessages().FirstOrDefault()?.QuotedReply;
     if (quote == null) return;
 
-    var info = $"Quoted message ID: {quote.MessageId}";
+    string info = $"Quoted message ID: {quote.MessageId}";
     if (quote.SenderName != null) info += $"\nFrom: {quote.SenderName}";
     if (quote.Preview != null) info += $"\nPreview: \"{quote.Preview}\"";
     if (quote.IsReplyDeleted == true) info += "\n(deleted)";
@@ -38,7 +39,7 @@ teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
 // Quote() — quote a previously sent message by ID
 teamsApp.OnMessage("(?i)^test quote$", async (context, cancellationToken) =>
 {
-    var sent = await context.SendActivityAsync("The meeting has been moved to 3 PM tomorrow.", cancellationToken);
+    SendActivityResponse? sent = await context.SendActivityAsync("The meeting has been moved to 3 PM tomorrow.", cancellationToken);
     if (sent?.Id != null)
     {
         await context.Quote(sent.Id, "Just to confirm — does the new time work for everyone?", cancellationToken);
@@ -48,7 +49,7 @@ teamsApp.OnMessage("(?i)^test quote$", async (context, cancellationToken) =>
 // AddQuote() builder method — fluent API
 teamsApp.OnMessage("(?i)^test add$", async (context, cancellationToken) =>
 {
-    var sent = await context.SendActivityAsync("Please review the latest PR before end of day.", cancellationToken);
+    SendActivityResponse? sent = await context.SendActivityAsync("Please review the latest PR before end of day.", cancellationToken);
     if (sent?.Id != null)
     {
         TeamsActivity msg = TeamsActivity.CreateBuilder()
@@ -62,9 +63,9 @@ teamsApp.OnMessage("(?i)^test add$", async (context, cancellationToken) =>
 // Multi-quote with mixed responses
 teamsApp.OnMessage("(?i)^test multi$", async (context, cancellationToken) =>
 {
-    var sentA = await context.SendActivityAsync("We need to update the API docs before launch.", cancellationToken);
-    var sentB = await context.SendActivityAsync("The design mockups are ready for review.", cancellationToken);
-    var sentC = await context.SendActivityAsync("CI pipeline is green on main.", cancellationToken);
+    SendActivityResponse? sentA = await context.SendActivityAsync("We need to update the API docs before launch.", cancellationToken);
+    SendActivityResponse? sentB = await context.SendActivityAsync("The design mockups are ready for review.", cancellationToken);
+    SendActivityResponse? sentC = await context.SendActivityAsync("CI pipeline is green on main.", cancellationToken);
 
     if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
     {

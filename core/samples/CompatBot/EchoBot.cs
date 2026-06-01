@@ -34,13 +34,13 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         IStatePropertyAccessor<ConversationData> conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
         ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
 
-        var mm = await TeamsApiClient.GetMemberAsync(turnContext, turnContext.Activity.From.Id);
+        TeamsChannelAccount mm = await TeamsApiClient.GetMemberAsync(turnContext, turnContext.Activity.From.Id);
         string replyText = $"Echo {mm.Name} from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
 
         // Targeted Messaging via BF compat layer: setting isTargeted on the BF ChannelAccount
         // causes the compat layer to set CoreActivity.Recipient.IsTargeted, which appends
         // ?isTargetedActivity=true to the URL making the message visible only to that user.
-        var act = MessageFactory.Text(replyText, replyText);
+        Activity act = MessageFactory.Text(replyText, replyText);
         act.Recipient = new ChannelAccount();
         act.Recipient.Properties.Add("isTargeted", true);
         await turnContext.SendActivityAsync(act, cancellationToken);
@@ -48,11 +48,11 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
 
         if (turnContext.Activity.Conversation.IsGroup == true)
         {
-            var teamDetails = await TeamsApiClient.GetTeamDetailsAsync(turnContext, null, cancellationToken);
+            TeamDetails teamDetails = await TeamsApiClient.GetTeamDetailsAsync(turnContext, null, cancellationToken);
             await turnContext.SendActivityAsync(JsonConvert.SerializeObject(teamDetails, Formatting.Indented));
 
             TeamsPagedMembersResult pagedMembersResult;
-            List<TeamsChannelAccount> members = new List<TeamsChannelAccount>();
+            List<TeamsChannelAccount> members = new();
             string continuationToken = null!;
             do
             {
@@ -72,9 +72,9 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
 
         // Targeted Messaging via Core SDK (preferred): sends directly through ConversationClient
         // to bypass the BF compat layer's ApplyConversationReference which would overwrite the Recipient.
-        var incomingCoreActivity = ((Activity)turnContext.Activity).FromBotFrameworkActivity();
-        var incomingFrom = incomingCoreActivity.From;
-        var incomingRecipient = incomingCoreActivity.Recipient;
+        CoreActivity incomingCoreActivity = ((Activity)turnContext.Activity).FromBotFrameworkActivity();
+        Microsoft.Teams.Core.Schema.ConversationAccount? incomingFrom = incomingCoreActivity.From;
+        Microsoft.Teams.Core.Schema.ConversationAccount? incomingRecipient = incomingCoreActivity.Recipient;
 #pragma warning disable ExperimentalTeamsTargeted
         incomingFrom!.IsTargeted = true;
 #pragma warning restore ExperimentalTeamsTargeted
@@ -89,7 +89,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
 
         await teamsBotApp.ConversationClient.SendActivityAsync(tm, cancellationToken: cancellationToken);
 
-        var res = await turnContext.SendActivityAsync(
+        ResourceResponse res = await turnContext.SendActivityAsync(
             MessageFactory.Text("I'm going to add and remove reactions to this message."), cancellationToken);
 
         await Task.Delay(500, cancellationToken);

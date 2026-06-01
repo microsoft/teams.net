@@ -54,14 +54,14 @@ app.OnChannelMemberRemoved(async (context, cancellationToken) =>
 
 app.OnChannelShared(async (context, cancellationToken) =>
 {
-    var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
+    string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelShared] Channel '{channelName}' was shared");
     await context.SendActivityAsync($"Channel shared: {channelName}", cancellationToken);
 });
 
 app.OnChannelUnshared(async (context, cancellationToken) =>
 {
-    var channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
+    string channelName = context.Activity.ChannelData?.Channel?.Name ?? "unknown";
     Console.WriteLine($"[ChannelUnshared] Channel '{channelName}' was unshared");
     await context.SendActivityAsync($"Channel unshared: {channelName}", cancellationToken);
 });

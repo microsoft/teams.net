@@ -19,7 +19,7 @@ using Microsoft.Teams.Apps.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 
-var appBuilder = App.Builder().AddOAuth("sso");
+AppBuilder appBuilder = App.Builder().AddOAuth("sso");
 
 webAppBuilder.AddTeams(appBuilder);
 
@@ -68,7 +68,7 @@ bot.OnMessage("(?i)^profile$", async (context, ct) =>
     string? token = await context.SignIn(cancellationToken: ct);
     if (token is null) return; // sign-in card sent, wait for completion
 
-    using var http = new HttpClient();
+    using HttpClient http = new();
     http.DefaultRequestHeaders.Authorization = new("Bearer", token);
 
     try
@@ -88,7 +88,7 @@ bot.OnMessage("(?i)^calendar$", async (context, ct) =>
     string? token = await context.SignIn(cancellationToken: ct);
     if (token is null) return;
 
-    using var http = new HttpClient();
+    using HttpClient http = new();
     http.DefaultRequestHeaders.Authorization = new("Bearer", token);
 
     try

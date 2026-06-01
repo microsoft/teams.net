@@ -14,7 +14,7 @@ namespace ExtAIBot;
 // RunAsync drives a single turn: it builds per-turn tools (local + MCP wrapped for citations),
 // streams the model response, then runs a dedicated structured-output call to
 // generate exactly 2 follow-up suggestions.
-sealed class Agent
+internal sealed class Agent
 {
     private readonly IChatClient _chatClient;
     private readonly McpToolSetLifetimeService _mcpTools;
@@ -148,7 +148,7 @@ sealed class Agent
     }
 }
 
-readonly record struct RunResult(
+internal readonly record struct RunResult(
     string FullText,
     IList<object> PendingCards,
     IList<SuggestedAction> FollowUpActions,
