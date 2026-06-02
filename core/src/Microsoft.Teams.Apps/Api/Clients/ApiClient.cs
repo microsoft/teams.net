@@ -84,7 +84,7 @@ public class ApiClient
         UserTokenClient = userTokenClient;
         Bots = new BotClient(userTokenClient);
         Users = new UserClient(userTokenClient);
-        
+
         // ServiceUrl-dependent sub-clients require ForServiceUrl() before use
         ServiceUrl = null!;
         Conversations = null!;

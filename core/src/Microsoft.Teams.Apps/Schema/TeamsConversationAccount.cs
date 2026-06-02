@@ -33,6 +33,12 @@ public class TeamsConversationAccount : ConversationAccount
         {
             return null;
         }
+
+        if (conversationAccount is TeamsConversationAccount teamsConversationAccount)
+        {
+            return teamsConversationAccount;
+        }
+
         TeamsConversationAccount result = new();
         result.Id = conversationAccount.Id;
         result.Name = conversationAccount.Name;
@@ -99,7 +105,7 @@ public class TeamsConversationAccount : ConversationAccount
     public string? UserRole { get; set; }
 
     /// <summary>
-    /// Gets or sets the TenantId.
+    /// Gets or sets the Microsoft Entra tenant ID associated with this account.
     /// </summary>
     [JsonPropertyName("tenantId")]
     public string? TenantId { get; set; }

@@ -116,10 +116,10 @@ public static class TeamsBotApplicationHostingExtensions
         services.AddBotHttpClient(nameof(ApiClient), botConfig);
         services.AddSingleton(sp =>
         {
-            var factory = sp.GetRequiredService<IHttpClientFactory>();
-            var httpClient = factory.CreateClient(nameof(ApiClient));
-            var conversationClient = sp.GetRequiredService<ConversationClient>();
-            var userTokenClient = sp.GetRequiredService<UserTokenClient>();
+            IHttpClientFactory factory = sp.GetRequiredService<IHttpClientFactory>();
+            HttpClient httpClient = factory.CreateClient(nameof(ApiClient));
+            ConversationClient conversationClient = sp.GetRequiredService<ConversationClient>();
+            UserTokenClient userTokenClient = sp.GetRequiredService<UserTokenClient>();
             return new ApiClient(httpClient, conversationClient, userTokenClient);
         });
         return services;
