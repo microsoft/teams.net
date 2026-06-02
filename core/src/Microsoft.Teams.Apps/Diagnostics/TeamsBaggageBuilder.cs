@@ -3,7 +3,6 @@
 
 using System.Globalization;
 using Microsoft.Teams.Apps.Schema;
-using Microsoft.Teams.Core.Schema;
 using OpenTelemetry;
 
 namespace Microsoft.Teams.Apps.Diagnostics;

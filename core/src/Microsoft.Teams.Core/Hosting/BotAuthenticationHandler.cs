@@ -81,7 +81,7 @@ internal sealed class BotAuthenticationHandler(
     {
         string optionsName = authenticationOptionsName ?? BotConfig.DefaultSectionName;
         using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.AuthOutbound, ActivityKind.Client);
-        // span?.SetTag(Telemetry.Tags.AuthScope, _scope); //TODO: review
+
 
         try
         {
@@ -100,7 +100,7 @@ internal sealed class BotAuthenticationHandler(
 
                 if (!string.IsNullOrEmpty(miOptions.UserAssignedClientId))
                 {
-                    // _logger.ApplyingManagedIdentity(miOptions.UserAssignedClientId); // TODO: review
+                    _logger.InferringUserAssignedManagedIdentity(miOptions.UserAssignedClientId);
                     options.AcquireTokenOptions.ManagedIdentity = miOptions;
                     span?.SetTag(Telemetry.Tags.AuthFlow, "managed_identity");
                 }
@@ -110,6 +110,7 @@ internal sealed class BotAuthenticationHandler(
                 !string.IsNullOrEmpty(agenticIdentity.AgenticAppId) &&
                 !string.IsNullOrEmpty(agenticIdentity.AgenticUserId))
             {
+                span?.SetTag(Telemetry.Tags.AuthScope, AgenticScope);
                 _logAgenticToken(_logger, agenticIdentity.AgenticAppId, null);
 
                 if (!Guid.TryParse(agenticIdentity.AgenticUserId, out Guid agenticUserGuid))
@@ -124,7 +125,7 @@ internal sealed class BotAuthenticationHandler(
                     return token;
                 }
             }
-
+            span?.SetTag(Telemetry.Tags.AuthScope, BotAppScope);
             _logAppOnlyToken(_logger, BotAppScope, null);
             // Don't overwrite a more specific flow (managed_identity) already set above.
             if (span is not null && !span.TagObjects.Any(t => t.Key == Telemetry.Tags.AuthFlow))
