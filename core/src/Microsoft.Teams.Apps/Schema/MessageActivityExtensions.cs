@@ -141,7 +141,7 @@ public static class MessageActivityExtensions
     /// <summary>
     /// Merges channel data properties into the activity.
     /// </summary>
-    public static MessageActivity WithData(this MessageActivity message, ChannelData value)
+    public static MessageActivity WithData(this MessageActivity message, TeamsChannelData value)
     {
         ArgumentNullException.ThrowIfNull(message);
         ArgumentNullException.ThrowIfNull(value);

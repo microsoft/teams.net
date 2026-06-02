@@ -214,14 +214,12 @@ public class CoreCoreActivityTests
             Properties =
             {
                 { "customField", "customValue" },
-                { "channelData", new ChannelData { Properties = { { "channelCustomField", "channelCustomValue" } } } },
                 { "conversation", new Conversation { Properties = { { "conversationCustomField", "conversationCustomValue" } } } },
             }
         };
         string json = act.ToJson();
         Assert.Contains("\"type\": \"message\"", json);
         Assert.Contains("\"customField\": \"customValue\"", json);
-        Assert.Contains("\"channelCustomField\": \"channelCustomValue\"", json);
         Assert.Contains("\"conversationCustomField\": \"conversationCustomValue\"", json);
         Assert.Contains("\"fromCustomField\": \"fromCustomValue\"", json);
         Assert.Contains("\"recipientCustomField\": \"recipientCustomValue\"", json);

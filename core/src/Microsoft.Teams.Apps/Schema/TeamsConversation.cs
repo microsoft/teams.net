@@ -30,15 +30,16 @@ public static class ConversationType
 /// <summary>
 /// Teams Conversation schema.
 /// </summary>
-public class TeamsConversation : Conversation
+/// <remarks>
+/// Initializes a new instance of the TeamsConversation class.
+/// </remarks>
+
+/// <summary>
+/// Teams Conversation schema.
+/// </summary>
+[method: JsonConstructor]
+public class TeamsConversation() : Conversation
 {
-    /// <summary>
-    /// Initializes a new instance of the TeamsConversation class.
-    /// </summary>
-    [JsonConstructor]
-    public TeamsConversation()
-    {
-    }
 
     /// <summary>
     /// Creates a Teams Conversation from a Conversation
@@ -51,8 +52,10 @@ public class TeamsConversation : Conversation
         {
             return null;
         }
-        TeamsConversation result = new();
-        result.Id = conversation.Id;
+        TeamsConversation result = new()
+        {
+            Id = conversation.Id
+        };
         if (conversation.Properties == null)
         {
             return result;

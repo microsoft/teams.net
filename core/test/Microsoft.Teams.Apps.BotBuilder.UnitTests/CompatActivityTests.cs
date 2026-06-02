@@ -104,11 +104,11 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Activity activity = new()
             {
                 Type = ActivityTypes.Message,
-                Attachments = new List<Attachment>
-                {
+                Attachments =
+                [
                     new() { ContentType = "text/plain", Content = "First attachment" },
                     new() { ContentType = "image/png", ContentUrl = "https://example.com/image.png" }
-                }
+                ]
             };
 
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
@@ -229,10 +229,10 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             CoreActivity coreActivity = activity.FromBotFrameworkActivity();
 
-            ChannelData? channelData = coreActivity.Properties.Extract<ChannelData>("channelData");
+            JsonObject? channelData = coreActivity.Properties.Extract<JsonObject>("channelData");
             Assert.NotNull(channelData);
-            Assert.True(channelData.Properties.ContainsKey("customProperty"));
-            Assert.Equal("customValue", channelData.Properties["customProperty"]?.ToString());
+            Assert.True(channelData.ContainsKey("customProperty"));
+            Assert.Equal("customValue", channelData["customProperty"]?.ToString());
         }
 
         [Fact]
@@ -243,12 +243,12 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
 
             CoreActivity coreActivity = botActivity.FromBotFrameworkActivity();
 
-            ChannelData? channelData = coreActivity.Properties.Extract<ChannelData>("channelData");
+            JsonObject? channelData = coreActivity.Properties.Extract<JsonObject>("channelData");
             Assert.NotNull(channelData);
-            Assert.True(channelData.Properties.ContainsKey("feedbackLoopEnabled"));
+            Assert.True(channelData.ContainsKey("feedbackLoopEnabled"));
 
-            JsonElement feedbackLoopValue = (JsonElement)channelData.Properties["feedbackLoopEnabled"]!;
-            Assert.True(feedbackLoopValue.GetBoolean());
+            var feedbackLoopValue = channelData["feedbackLoopEnabled"]?.AsValue().GetValue<bool>();
+            Assert.True(feedbackLoopValue);
         }
 
         #endregion
