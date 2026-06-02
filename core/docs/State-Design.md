@@ -8,8 +8,8 @@ State **loads automatically at the start of each turn** and **saves automaticall
 
 The design honors the existing architecture (see [Architecture.md](Architecture.md)):
 
-- **Apps owns the feature** — `IStorage`, `StoreItem`, `MemoryStorage`, `TurnState`, the scopes, and `StateMiddleware` all live in `Microsoft.Teams.Apps/State/`. The only Core touchpoints are implementing `ITurnMiddleware` and converting the inbound activity to `TeamsActivity`.
-- **Middleware Pipeline pattern** — `StateMiddleware` implements Core's `ITurnMiddleware` (explicitly) and exposes a Teams-typed `OnTurnAsync(TeamsBotApplication, TeamsActivity, …)`. It wraps `OnActivity` in the existing `TurnMiddleware` pipeline (the `Load → next() → Save` envelope the pipeline already supports).
+- **Apps owns the feature** — `IStorage`, `StoreItem`, `MemoryStorage`, `TurnState`, the scopes, and `StateMiddleware` all live in `Microsoft.Teams.Apps/State/`. The only Core touchpoint is implementing `ITurnMiddleware`.
+- **Middleware Pipeline pattern** — `StateMiddleware` implements Core's `ITurnMiddleware` directly: `OnTurnAsync(BotApplication, CoreActivity, …)`. It reads only the base routing fields (channel/conversation/from ids) off the `CoreActivity` and deliberately does **not** convert it to a `TeamsActivity` — that conversion *extracts* (removes) `text`/`attachments`/`entities` from the shared activity, which would drain them before routing (which runs after this middleware) converts it itself. It wraps `OnActivity` in the existing `TurnMiddleware` pipeline (the `Load → next() → Save` envelope the pipeline already supports).
 - **Context pattern** — `Context<TActivity>` exposes `State`, keeping the same opt-in, null-when-unused ergonomics as `OAuthRegistry`.
 - **System.Text.Json, reusing the canonical context** — a state scope is an open-typed bag (`Dictionary<string, object?>` of arbitrary user POCOs), so it cannot be a closed-world, fully source-generated serializer like the activity pipeline. `StateSerializer` reuses the existing `TeamsActivityJsonContext` for source-generated metadata on the primitives and `JsonElement` values that commonly appear, combined with a reflection resolver for user types. No parallel state-specific JSON context.
 - **Opt-in distribution** — `RedisStorage` ships in a separate `Microsoft.Teams.State.Redis` package and is never pulled into the core install.
@@ -90,7 +90,7 @@ If an exception propagates out of `next`, step 5 is skipped — **no writes occu
 StateMiddleware (Apps)  ── implements ──►  ITurnMiddleware (Core)
         │
         ├── IStorage.ReadAsync / WriteAsync / DeleteAsync   → backend I/O
-        ├── TurnState.DeriveKeys                            → key derivation from TeamsActivity
+        ├── TurnState.DeriveKeys                            → key derivation from CoreActivity
         └── TurnState                                       → per-turn document, change tracking
 
 Context<TActivity> (Apps)
@@ -400,7 +400,7 @@ bot.OnMessage(async (ctx, ct) =>
 ### Key derivation
 
 ```
-TurnState.DeriveKeys(TeamsActivity activity)
+TurnState.DeriveKeys(CoreActivity activity)
     │
     ├─ channelId       = activity.ChannelId        (required for any persisted scope)
     ├─ conversationId  = activity.Conversation?.Id

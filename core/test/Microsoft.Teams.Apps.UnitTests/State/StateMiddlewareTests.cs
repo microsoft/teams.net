@@ -9,18 +9,18 @@ namespace Microsoft.Teams.Apps.UnitTests.State;
 
 public class StateMiddlewareTests
 {
-    private static TeamsActivity Activity(string channelId = "msteams", string conversationId = "19:abc", string fromId = "user1")
-        => TeamsActivity.FromActivity(new CoreActivity
+    private static CoreActivity Activity(string channelId = "msteams", string conversationId = "19:abc", string fromId = "user1")
+        => new()
         {
             ChannelId = channelId,
             Conversation = new Conversation(conversationId),
             From = new ConversationAccount { Id = fromId },
-        });
+        };
 
-    private static Task RunTurnAsync(StateMiddleware middleware, TeamsActivity activity, Func<TurnState, Task> handler)
+    private static Task RunTurnAsync(StateMiddleware middleware, CoreActivity activity, Func<TurnState, Task> handler)
         => middleware.OnTurnAsync(null!, activity, _ => handler(TurnState.Current!));
 
-    private static Task RunTurnAsync(StateMiddleware middleware, TeamsActivity activity, Action<TurnState> handler)
+    private static Task RunTurnAsync(StateMiddleware middleware, CoreActivity activity, Action<TurnState> handler)
         => middleware.OnTurnAsync(null!, activity, _ => { handler(TurnState.Current!); return Task.CompletedTask; });
 
     [Fact]
@@ -179,6 +179,25 @@ public class StateMiddlewareTests
     }
 
     [Fact]
+    public async Task Middleware_DoesNotDrainActivity_SoTextSurvivesForRouting()
+    {
+        // Regression: the middleware must NOT convert the activity to a TeamsActivity. That conversion
+        // Extracts (removes) text/attachments/entities from the shared CoreActivity, so routing — which
+        // builds its own MessageActivity afterward — would see null text and match no route.
+        const string json = """
+            { "type": "message", "channelId": "msteams", "text": "help",
+              "conversation": { "id": "19:abc" }, "from": { "id": "user1" } }
+            """;
+        CoreActivity activity = CoreActivity.FromJsonString(json);
+        var middleware = new StateMiddleware(new MemoryStorage());
+
+        await middleware.OnTurnAsync(null!, activity, _ => Task.CompletedTask);
+
+        // The text is still on the activity, so routing's later conversion can read it.
+        Assert.Equal("help", MessageActivity.FromActivity(activity).Text);
+    }
+
+    [Fact]
     public void DeriveKeys_DerivesChannelScopedKeys()
     {
         (string? conversationKey, string? userKey) = TurnState.DeriveKeys(Activity());
@@ -189,7 +208,7 @@ public class StateMiddlewareTests
     [Fact]
     public void DeriveKeys_ReturnsNullWhenPartsMissing()
     {
-        (string? conversationKey, string? userKey) = TurnState.DeriveKeys(TeamsActivity.FromActivity(new CoreActivity { ChannelId = "msteams" }));
+        (string? conversationKey, string? userKey) = TurnState.DeriveKeys(new CoreActivity { ChannelId = "msteams" });
         Assert.Null(conversationKey);
         Assert.Null(userKey);
     }

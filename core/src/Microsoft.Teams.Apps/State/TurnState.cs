@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Apps.State;
 
@@ -65,12 +65,12 @@ public sealed class TurnState
 
     /// <summary>
     /// Derives the storage keys for the conversation and user scopes from an inbound
-    /// <see cref="TeamsActivity"/>. Including the channel id in both keys prevents state from leaking
+    /// <see cref="CoreActivity"/>. Including the channel id in both keys prevents state from leaking
     /// across channels/tenants. Either key is <see langword="null"/> when the activity lacks the parts
     /// needed to build it; that scope is then non-persisted for the turn.
     /// </summary>
     /// <param name="activity">The incoming activity.</param>
-    internal static (string? ConversationKey, string? UserKey) DeriveKeys(TeamsActivity activity)
+    internal static (string? ConversationKey, string? UserKey) DeriveKeys(CoreActivity activity)
     {
         string? channelId = activity.ChannelId;
         string? conversationId = activity.Conversation?.Id;

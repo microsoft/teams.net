@@ -3,7 +3,6 @@
 
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
@@ -37,20 +36,19 @@ public sealed class StateMiddleware : ITurnMiddleware
         _logger = logger ?? NullLogger.Instance;
     }
 
-    /// <summary>
-    /// Adapts the Core <see cref="ITurnMiddleware"/> contract to the Teams-typed
-    /// <see cref="OnTurnAsync(TeamsBotApplication, TeamsActivity, NextTurn, CancellationToken)"/>.
-    /// State is only registered on a <see cref="TeamsBotApplication"/>, so the cast always succeeds.
-    /// </summary>
-    Task ITurnMiddleware.OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken)
-        => OnTurnAsync((TeamsBotApplication)botApplication, TeamsActivity.FromActivity(activity), nextTurn, cancellationToken);
-
     /// <summary>Loads turn state, runs the rest of the pipeline, then saves changed scopes on success.</summary>
-    /// <param name="botApplication">The Teams bot application processing the turn.</param>
-    /// <param name="activity">The incoming Teams activity.</param>
+    /// <remarks>
+    /// The activity is read as a <see cref="CoreActivity"/> and only its base routing fields
+    /// (channel/conversation/from ids) are used. It is deliberately not converted to a
+    /// <c>TeamsActivity</c>: that conversion <em>extracts</em> (removes) <c>text</c>/<c>attachments</c>/
+    /// <c>entities</c> from the shared activity, which would drain them before routing — which runs
+    /// after this middleware — converts it itself.
+    /// </remarks>
+    /// <param name="botApplication">The bot application processing the turn (unused; part of the middleware contract).</param>
+    /// <param name="activity">The incoming activity. Only base routing fields are read.</param>
     /// <param name="nextTurn">Delegate that runs the rest of the pipeline.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
-    public async Task OnTurnAsync(TeamsBotApplication botApplication, TeamsActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
+    public async Task OnTurnAsync(BotApplication botApplication, CoreActivity activity, NextTurn nextTurn, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(nextTurn);
