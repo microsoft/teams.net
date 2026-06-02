@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
-	<NoWarn>$(NoWarn);ExperimentalTeamsTargeted</NoWarn>
+	<NoWarn>$(NoWarn);ExperimentalTeamsTargeted;CS0618</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
@@ -45,8 +44,8 @@ public class ConversationApiClient
     /// <summary>
     /// Create a new conversation.
     /// </summary>
-    public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
+    public Task<CreateConversationResponse> CreateAsync(ConversationParameters request, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.CreateConversationAsync(request, _serviceUrl, agenticIdentity: agenticIdentity, cancellationToken: cancellationToken);
+        return _client.CreateConversationAsync(request, _serviceUrl, agenticIdentity: agenticIdentity, customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }

@@ -73,7 +73,7 @@ public class ApiClient
     /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
     [ActivatorUtilitiesConstructor]
-    public ApiClient(HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
+    internal ApiClient(HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(httpClient);
         ArgumentNullException.ThrowIfNull(conversationClient);
@@ -100,7 +100,7 @@ public class ApiClient
     /// <param name="conversationClient">The core conversation client for conversation/activity/member operations.</param>
     /// <param name="userTokenClient">The core user token client for sign-in and token operations.</param>
     /// <param name="logger">Optional logger.</param>
-    public ApiClient(Uri serviceUrl, HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
+    internal ApiClient(Uri serviceUrl, HttpClient httpClient, CoreConversationClient conversationClient, CoreUserTokenClient userTokenClient, ILogger? logger = null)
     {
         ArgumentNullException.ThrowIfNull(serviceUrl);
         ArgumentNullException.ThrowIfNull(httpClient);
@@ -121,7 +121,7 @@ public class ApiClient
     /// <summary>
     /// Creates a copy of an existing <see cref="ApiClient"/> with the same configuration.
     /// </summary>
-    public ApiClient(ApiClient client)
+    internal ApiClient(ApiClient client)
     {
         ArgumentNullException.ThrowIfNull(client);
 

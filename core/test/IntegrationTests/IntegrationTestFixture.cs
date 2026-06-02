@@ -102,9 +102,9 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
 
     internal static ConversationAccount GetConversationAccountWithAgenticProperties()
     {
-        var agenticUserId = Env("TEST_AGENTIC_USERID");
-        var agenticAppId = Env("TEST_AGENTIC_APPID");
-        var agenticAppBlueprintId = Env("AzureAd__ClientId");
+        string agenticUserId = Env("TEST_AGENTIC_USERID");
+        string agenticAppId = Env("TEST_AGENTIC_APPID");
+        string agenticAppBlueprintId = Env("AzureAd__ClientId");
 
         if (string.IsNullOrEmpty(agenticUserId))
         {
@@ -124,9 +124,9 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
 
     internal static AgenticIdentity GetAgenticIdentity()
     {
-        var agenticUserId = Env("TEST_AGENTIC_USERID");
-        var agenticAppId = Env("TEST_AGENTIC_APPID");
-        var agenticAppBlueprintId = Env("AzureAd__ClientId");
+        string agenticUserId = Env("TEST_AGENTIC_USERID");
+        string agenticAppId = Env("TEST_AGENTIC_APPID");
+        string agenticAppBlueprintId = Env("AzureAd__ClientId");
 
         if (string.IsNullOrEmpty(agenticUserId))
         {

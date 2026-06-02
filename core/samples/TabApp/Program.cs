@@ -19,12 +19,12 @@ app.UseAuthorization();
 
 // ==================== TABS ====================
 
-var contentTypes = new FileExtensionContentTypeProvider();
+FileExtensionContentTypeProvider contentTypes = new();
 app.MapGet("/tabs/test/{*path}", (string? path) =>
 {
-    var root = Path.Combine(Directory.GetCurrentDirectory(), "Web", "bin");
-    var full = Path.Combine(root, path ?? "index.html");
-    contentTypes.TryGetContentType(full, out var ct);
+    string root = Path.Combine(Directory.GetCurrentDirectory(), "Web", "bin");
+    string full = Path.Combine(root, path ?? "index.html");
+    contentTypes.TryGetContentType(full, out string? ct);
     return Results.File(File.OpenRead(full), ct ?? "text/html");
 });
 
@@ -41,7 +41,7 @@ app.MapPost("/functions/post-to-chat", async (
 {
     logger.LogInformation("post-to-chat called");
 
-    var serviceUrl = new Uri("https://smba.trafficmanager.net/teams");
+    Uri serviceUrl = new("https://smba.trafficmanager.net/teams");
     string conversationId;
 
     if (body.ChatId is not null)

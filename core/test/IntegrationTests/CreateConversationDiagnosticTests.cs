@@ -75,11 +75,11 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         _output.WriteLine($"\nHTTP {(int)response.StatusCode} {response.StatusCode}");
 
         _output.WriteLine("\nResponse headers:");
-        foreach (var header in response.Headers)
+        foreach (KeyValuePair<string, IEnumerable<string>> header in response.Headers)
         {
             _output.WriteLine($"  {header.Key}: {string.Join(", ", header.Value)}");
         }
-        foreach (var header in response.Content.Headers)
+        foreach (KeyValuePair<string, IEnumerable<string>> header in response.Content.Headers)
         {
             _output.WriteLine($"  {header.Key}: {string.Join(", ", header.Value)}");
         }
@@ -87,8 +87,8 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         // Pretty-print JSON response
         try
         {
-            var parsed = JsonSerializer.Deserialize<JsonElement>(responseBody);
-            
+            JsonElement parsed = JsonSerializer.Deserialize<JsonElement>(responseBody);
+
             string pretty = JsonSerializer.Serialize(parsed, JsonOpts);
             _output.WriteLine($"\nResponse body:\n{pretty}");
         }

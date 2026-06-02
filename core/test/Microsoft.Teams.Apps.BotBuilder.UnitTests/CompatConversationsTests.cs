@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Bot.Schema;
+using Microsoft.Rest;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 using Moq;
@@ -340,7 +341,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             };
 
             // Act
-            var result = await compatConversations.SendToConversationWithHttpMessagesAsync(TestConversationId, activity);
+            HttpOperationResponse<ResourceResponse> result = await compatConversations.SendToConversationWithHttpMessagesAsync(TestConversationId, activity);
 
             // Assert
             Assert.NotNull(result);
@@ -373,7 +374,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             };
 
             // Act
-            var result = await compatConversations.ReplyToActivityWithHttpMessagesAsync(TestConversationId, TestActivityId, activity);
+            HttpOperationResponse<ResourceResponse> result = await compatConversations.ReplyToActivityWithHttpMessagesAsync(TestConversationId, TestActivityId, activity);
 
             // Assert
             Assert.NotNull(result);

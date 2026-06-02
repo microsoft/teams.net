@@ -15,7 +15,7 @@ namespace A2ABot;
 // LLM with a single `handoff_to_peer` tool. The agent framework owns chat
 // history via AgentThread; we cache one thread per Teams conversation and
 // pre-seed it via A2AServer when a peer hands off a user.
-sealed class Agent
+internal sealed class Agent
 {
     private static readonly AsyncLocal<TurnIdentity?> CurrentTurn = new();
 
@@ -34,8 +34,8 @@ sealed class Agent
         _a2aClient = a2aClient;
         _logger = logger;
 
-        string endpoint   = Require(configuration, "AzureOpenAI:Endpoint");
-        string apiKey     = Require(configuration, "AzureOpenAI:ApiKey");
+        string endpoint = Require(configuration, "AzureOpenAI:Endpoint");
+        string apiKey = Require(configuration, "AzureOpenAI:ApiKey");
         string deployment = Require(configuration, "AzureOpenAI:Deployment");
 
         if (!Uri.TryCreate(endpoint, UriKind.Absolute, out Uri? endpointUri))
