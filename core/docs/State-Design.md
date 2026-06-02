@@ -52,7 +52,7 @@ TeamsBotApplication (Apps)
 
 IStorage (Apps — Microsoft.Teams.Apps.State)
 ├── MemoryStorage   (Apps)                in-process, ConcurrentDictionary
-├── FileStorage     (Apps, future)        JSON files, single-instance only
+├── FileStorage     (Apps)                JSON files, atomic writes, single-instance
 └── RedisStorage    (Microsoft.Teams.State.Redis, opt-in package → references Apps)
 ```
 
@@ -302,11 +302,11 @@ public class Context<TActivity> where TActivity : TeamsActivity
 // In-process. Thread-safe (ConcurrentDictionary). Lost on restart.
 public sealed class MemoryStorage : IStorage { public MemoryStorage(); }
 
-// JSON files on disk. Single-instance only. Default directory "./bot-state".
+// JSON files on disk (one percent-encoded file per key). Atomic writes (temp + rename).
+// Single-instance only. Cross-runtime document format.
 public sealed class FileStorage : IStorage
 {
-    public FileStorage();                 // "./bot-state"
-    public FileStorage(string directory);
+    public FileStorage(string rootDirectory);
 }
 
 // Opt-in package Microsoft.Teams.State.Redis. Multi-instance safe.
@@ -470,18 +470,18 @@ This is implemented by the middleware writing only after `await next(ct)` return
 
 ## Storage Adapters
 
-### MemoryStorage (Core)
+### MemoryStorage (Apps)
 
 - **Thread-safe**: Yes (`ConcurrentDictionary`).
 - **Persistence**: None (lost on restart).
 - **Use case**: Development, testing, stateless hosts.
 
-### FileStorage (Core)
+### FileStorage (Apps)
 
-- **Thread-safe**: No — single-instance only.
-- **Persistence**: One JSON file per key on disk.
+- **Persistence**: One JSON file per key on disk; the key is percent-encoded (`Uri.EscapeDataString`) into a flat file name, matching Node `encodeURIComponent` / Python `quote` for a cross-runtime document format.
+- **Concurrency**: Writes are atomic (write to a temp file, then rename over the target), so a concurrent reader never sees a partially written document. Same-key writes are last-write-wins.
 - **Use case**: Local development, single-instance deployments.
-- **Limitations**: ⚠️ Two instances pointing at the same directory will overwrite each other's state. No built-in cleanup.
+- **Limitations**: ⚠️ No cross-process/instance coordination — two instances pointing at the same directory will overwrite each other's state. Use `RedisStorage` for multi-instance. No built-in cleanup.
 
 ### RedisStorage (opt-in package `Microsoft.Teams.State.Redis`)
 
@@ -508,7 +508,7 @@ This is implemented by the middleware writing only after `await next(ct)` return
 | `StateMiddleware.cs` | `Microsoft.Teams.Apps/State/StateMiddleware.cs` |
 | `MemoryStorage.cs` | `Microsoft.Teams.Apps/State/MemoryStorage.cs` |
 | `StateSerializer.cs` | `Microsoft.Teams.Apps/State/StateSerializer.cs` |
-| `FileStorage.cs` | `Microsoft.Teams.Apps/State/FileStorage.cs` (future) |
+| `FileStorage.cs` | `Microsoft.Teams.Apps/State/FileStorage.cs` |
 | `RedisStorage.cs` | `Microsoft.Teams.State.Redis/RedisStorage.cs` (opt-in package, references Apps) |
 
 `UseState` lives on `TeamsBotApplicationOptions` and `AppBuilder`; the `StateMiddleware` is registered in the `TeamsBotApplication` constructor. No separate `StateExtensions` file.
@@ -550,7 +550,7 @@ This is implemented by the middleware writing only after `await next(ct)` return
 ## Limitations in v1
 
 - **No concurrency control** — simultaneous writes to the same key are last-write-wins; `StoreItem.ETag` is reserved but not enforced.
-- **Adapters** — v1 ships `MemoryStorage`, `FileStorage` (Core) and `RedisStorage` (opt-in package). `BlobStorage` / `CosmosDbStorage` are deferred.
+- **Adapters** — v1 ships `MemoryStorage`, `FileStorage` (Apps) and `RedisStorage` (opt-in package). `BlobStorage` / `CosmosDbStorage` are deferred.
 - **`FileStorage` is single-instance only** — use `RedisStorage` for scaled deployments.
 - **No encryption** — values are plain JSON.
 - **No expiration** — state persists until explicitly deleted; implement manual cleanup if needed.
