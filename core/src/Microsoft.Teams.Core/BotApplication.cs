@@ -199,6 +199,12 @@ public class BotApplication
             _logger.ReceivedActivityJson(activity.ToJson());
         }
 
+        string serviceUrlFromClaims = httpContext.User.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
+        if (!string.IsNullOrEmpty(serviceUrlFromClaims) && !serviceUrlFromClaims.Equals(activity.ServiceUrl?.ToString(), StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidDataException($"ServiceUrl in activity ({activity.ServiceUrl}) does not match serviceUrl claim ({serviceUrlFromClaims}).");
+        };
+
         // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
         using (_logger.BeginActivityScope(activity.Type, activity.Id, activity.ServiceUrl, correlationVector))
         {
