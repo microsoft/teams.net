@@ -8,6 +8,7 @@ using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
@@ -122,6 +123,11 @@ public class TeamsBotApplication : BotApplication
             foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor descriptor in options.OAuthFlows)
             {
                 this.AddOAuthFlow(descriptor.Options);
+            }
+
+            if (options.StateStorage is not null)
+            {
+                UseMiddleware(new StateMiddleware(options.StateStorage, logger));
             }
         }
 

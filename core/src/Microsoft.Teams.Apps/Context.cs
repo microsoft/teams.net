@@ -7,6 +7,7 @@ using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 
 namespace Microsoft.Teams.Apps;
@@ -33,6 +34,13 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// Gets the application (client) ID configured for this bot.
     /// </summary>
     public string AppId => TeamsBotApplication.AppId;
+
+    /// <summary>
+    /// Gets the turn state for the current turn, or <see langword="null"/> if state middleware is
+    /// not registered (see <c>UseState</c>). Use <c>ctx.State?.Conversation</c>, <c>ctx.State?.User</c>,
+    /// and <c>ctx.State?.Temp</c> to read and write scoped values.
+    /// </summary>
+    public TurnState? State => TurnState.Current;
 
     private ContextLogger? _log;
 

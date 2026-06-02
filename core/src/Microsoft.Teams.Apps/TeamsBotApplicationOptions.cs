@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps.OAuth;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core.Hosting;
 
 namespace Microsoft.Teams.Apps;
@@ -13,6 +14,25 @@ namespace Microsoft.Teams.Apps;
 public sealed class TeamsBotApplicationOptions : BotApplicationOptions
 {
     internal List<OAuthFlowDescriptor> OAuthFlows { get; } = [];
+
+    /// <summary>
+    /// The storage backing turn state, set by <see cref="UseState"/>. When non-null, a
+    /// <see cref="StateMiddleware"/> is registered as the bot is constructed.
+    /// </summary>
+    internal IStorage? StateStorage { get; private set; }
+
+    /// <summary>
+    /// Registers turn state backed by the given storage. State loads at the start of each turn and
+    /// saves changed scopes when the handler completes successfully.
+    /// </summary>
+    /// <param name="storage">The backing store for state documents.</param>
+    /// <returns>This instance for chaining.</returns>
+    public TeamsBotApplicationOptions UseState(IStorage storage)
+    {
+        ArgumentNullException.ThrowIfNull(storage);
+        StateStorage = storage;
+        return this;
+    }
 
     /// <summary>
     /// Register an OAuth flow with the given connection name and optional configuration.

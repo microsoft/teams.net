@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Teams.Apps.State;
+
 namespace Microsoft.Teams.Apps;
 
 /// <summary>
@@ -31,6 +33,18 @@ public class AppBuilder
     public AppBuilder AddOAuth(string connectionName)
     {
         Options.AddOAuthFlow(connectionName);
+        return this;
+    }
+
+    /// <summary>
+    /// Registers turn state backed by the given storage. State loads at the start of each turn and
+    /// saves changed scopes when the handler completes successfully.
+    /// </summary>
+    /// <param name="storage">The backing store for state documents.</param>
+    /// <returns>This builder instance for chaining.</returns>
+    public AppBuilder UseState(IStorage storage)
+    {
+        Options.UseState(storage);
         return this;
     }
 }
