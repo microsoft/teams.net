@@ -12,7 +12,7 @@ WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication(options => options.WithState());
 webAppBuilder.Services.AddStackExchangeRedisCache(options =>
 {
-    options.Configuration = webAppBuilder.Configuration.GetConnectionString("Redis") ?? "localhost:6379";
+    options.Configuration = webAppBuilder.Configuration.GetConnectionString("Redis") ?? "localhost:6379,connectTimeout=3000,syncTimeout=3000";
 });
 
 WebApplication webApp = webAppBuilder.Build();
