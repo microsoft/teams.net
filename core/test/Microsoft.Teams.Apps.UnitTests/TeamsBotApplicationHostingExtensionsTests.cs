@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Core.Hosting;
+using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
@@ -70,6 +71,72 @@ public class TeamsBotApplicationHostingExtensionsTests
 
         Assert.True(bot.ConstructedViaDI);
         Assert.Equal("subclass-client-id", bot.AppId);
+    }
+
+    [Fact]
+    public void AddTeamsBotApplication_WithState_RegistersMiddleware()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "state-client-id",
+            ["AzureAd:TenantId"] = "state-tenant-id"
+        };
+
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+        services.AddTeamsBotApplication(options => options.WithState());
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        TurnStateMiddleware? middleware = serviceProvider.GetService<TurnStateMiddleware>();
+
+        Assert.NotNull(middleware);
+    }
+
+    [Fact]
+    public void AddTeamsBotApplication_WithState_CustomOptions_Applied()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "state-client-id",
+            ["AzureAd:TenantId"] = "state-tenant-id"
+        };
+
+        IConfigurationRoot configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton<IConfiguration>(configuration);
+        services.AddLogging();
+        services.AddTeamsBotApplication(options =>
+            options.WithState(state =>
+                state.CacheEntryOptions.SlidingExpiration = TimeSpan.FromMinutes(15)));
+
+        using ServiceProvider serviceProvider = services.BuildServiceProvider();
+        Microsoft.Extensions.Options.IOptions<TurnStateOptions> stateOptions =
+            serviceProvider.GetRequiredService<Microsoft.Extensions.Options.IOptions<TurnStateOptions>>();
+
+        Assert.Equal(TimeSpan.FromMinutes(15), stateOptions.Value.CacheEntryOptions.SlidingExpiration);
+    }
+
+    [Fact]
+    public void AddTeamsBotApplication_WithoutState_DoesNotRegisterMiddleware()
+    {
+        Dictionary<string, string?> configData = new()
+        {
+            ["AzureAd:ClientId"] = "no-state-client-id",
+            ["AzureAd:TenantId"] = "no-state-tenant-id"
+        };
+
+        using ServiceProvider serviceProvider = BuildServiceProvider(configData);
+        TurnStateMiddleware? middleware = serviceProvider.GetService<TurnStateMiddleware>();
+
+        Assert.Null(middleware);
     }
 
     private sealed class SubclassBot : TeamsBotApplication

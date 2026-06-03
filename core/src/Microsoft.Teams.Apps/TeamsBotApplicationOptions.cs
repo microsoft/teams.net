@@ -3,6 +3,7 @@
 
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Core.Hosting;
+using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Apps;
 
@@ -28,6 +29,24 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
         configure?.Invoke(options);
 
         OAuthFlows.Add(new OAuthFlowDescriptor(connectionName, options));
+        return this;
+    }
+
+    internal bool UseState { get; private set; }
+
+    internal Action<TurnStateOptions>? StateConfiguration { get; private set; }
+
+    /// <summary>
+    /// Enables per-turn state management backed by <c>IDistributedCache</c>.
+    /// An in-memory cache is used by default; register a custom <c>IDistributedCache</c>
+    /// (Redis, SQL Server, etc.) to persist state across restarts.
+    /// </summary>
+    /// <param name="configure">Optional delegate to configure <see cref="TurnStateOptions"/> (e.g. cache entry TTL).</param>
+    /// <returns>This instance for chaining.</returns>
+    public TeamsBotApplicationOptions WithState(Action<TurnStateOptions>? configure = null)
+    {
+        UseState = true;
+        StateConfiguration = configure;
         return this;
     }
 

@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
+using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Apps;
 
@@ -113,6 +114,12 @@ public static class TeamsBotApplicationHostingExtensions
         services.AddSingleton(teamsOptions);
 
         services.AddBotApplication<TApp>(botConfig);
+
+        if (teamsOptions.UseState)
+        {
+            services.AddBotApplicationState(teamsOptions.StateConfiguration);
+        }
+
         services.AddBotHttpClient(nameof(ApiClient), botConfig);
         services.AddSingleton(sp =>
         {
