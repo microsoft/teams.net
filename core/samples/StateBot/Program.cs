@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Drawing;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 
@@ -22,18 +23,23 @@ TeamsBotApplication teamsApp = webApp.UseTeamsBotApplication();
 
 teamsApp.OnMessage(async (ctx, ct) =>
 {
-    // Conversation state: shared across all users in the conversation
-    int convCounter = ctx.State.ConversationState.Get<int>("counter");
-    convCounter++;
-    ctx.State.ConversationState.Set("counter", convCounter);
+    int counter = ctx.State.ConversationState.Get<int>("counter");
+    counter++;
+    ctx.State.ConversationState.Set("counter", counter);
+    await ctx.SendActivityAsync($"Message #{counter} in this conversation.", ct);
 
-    // User state: private to each user in the conversation
-    int userCounter = ctx.State.UserState!.Get<int>("counter");
-    userCounter++;
-    ctx.State.UserState.Set("counter", userCounter);
+    UserPrefs up = ctx.State.UserState?.Get<UserPrefs>() ?? new UserPrefs();
+    await ctx.SendActivityAsync($"Your name is {up.UserName} and your favorite color is {up.FavoriteColor}.", ct);
 
-    await ctx.SendActivityAsync(
-        $"Conversation message #{convCounter}, your message #{userCounter}.", ct);
+    up.UserName = "User" + counter;
+    up.FavoriteColor = Color.FromArgb(counter % 256, (counter * 2) % 256, (counter * 3) % 256).Name;
+    ctx.State.UserState?.Set(up);
 });
 
 webApp.Run();
+
+class UserPrefs
+{
+    public string FavoriteColor { get; set; } = Color.White.Name;
+    public string UserName { get; set; } = "anon";
+}
