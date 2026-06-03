@@ -206,6 +206,22 @@ public class BotApplication
             throw new InvalidDataException($"ServiceUrl in activity ({activity.ServiceUrl}) does not match serviceUrl claim ({serviceUrlFromClaims}).");
         };
 
+        KeyValuePair<string, object?> activityTypeTag = new(Telemetry.Tags.ActivityType, activity.Type);
+        Telemetry.ActivitiesReceived.Add(1, activityTypeTag);
+
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.Turn, ActivityKind.Internal);
+        if (span is not null)
+        {
+            span.SetTag(Telemetry.Tags.ActivityType, activity.Type);
+            span.SetTag(Telemetry.Tags.ActivityId, activity.Id);
+            span.SetTag(Telemetry.Tags.ConversationId, activity.Conversation?.Id);
+            span.SetTag(Telemetry.Tags.ChannelId, activity.ChannelId);
+            span.SetTag(Telemetry.Tags.BotId, AppId);
+            span.SetTag(Telemetry.Tags.ServiceUrl, activity.ServiceUrl?.ToString());
+        }
+
+        long startTimestamp = Stopwatch.GetTimestamp();
+
         // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
         using (_logger.BeginActivityScope(activity.Type, activity.Id, activity.ServiceUrl, correlationVector))
         {
