@@ -14,40 +14,30 @@ namespace Microsoft.Teams.Apps.UnitTests;
 
 public class ContextStateTests
 {
-    // ==================== State accessor ====================
-
     [Fact]
-    public void State_WhenTurnStateIsSet_ReturnsTurnState()
+    public void State_WhenConfigured_ReturnsContainer()
     {
-        // Arrange
         TeamsBotApplication app = CreateApp();
-        Mock<ITurnState> mockState = new();
-        app.TurnState = mockState.Object;
+        TurnState convState = new();
+        TurnState userState = new();
+        app.State = new TurnStateContainer(convState, userState);
 
         Context<TeamsActivity> context = new(app, new TeamsActivity());
 
-        // Act
-        ITurnState result = context.State;
-
-        // Assert
-        Assert.Same(mockState.Object, result);
+        Assert.Same(convState, context.State.ConversationState);
+        Assert.Same(userState, context.State.UserState);
     }
 
     [Fact]
-    public void State_WhenTurnStateIsNull_ThrowsInvalidOperationException()
+    public void State_WhenNull_ThrowsInvalidOperationException()
     {
-        // Arrange
         TeamsBotApplication app = CreateApp();
-        // TurnState is null by default
 
         Context<TeamsActivity> context = new(app, new TeamsActivity());
 
-        // Act & Assert
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => context.State);
         Assert.Contains("AddBotApplicationState()", ex.Message);
     }
-
-    // ==================== Helpers ====================
 
     private static TeamsBotApplication CreateApp()
     {

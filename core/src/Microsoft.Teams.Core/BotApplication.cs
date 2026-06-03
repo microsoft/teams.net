@@ -166,10 +166,10 @@ public class BotApplication
     public virtual Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
 
     /// <summary>
-    /// Gets or sets the per-turn state for the current activity, managed by <see cref="TurnStateMiddleware"/>.
-    /// This value is set before the activity handler runs and cleared after it completes.
+    /// Gets or sets the per-turn state container holding conversation-scoped and user-scoped state.
+    /// Managed by <see cref="TurnStateMiddleware"/>: set before the activity handler runs, cleared after it completes.
     /// </summary>
-    public ITurnState? TurnState { get; internal set; }
+    public TurnStateContainer? State { get; internal set; }
 
     /// <summary>
     /// Processes an incoming HTTP request containing a bot activity.

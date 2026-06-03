@@ -28,60 +28,89 @@ public class TurnStateMiddlewareTests
         return activity;
     }
 
+    // ── Load / Clear lifecycle ───────────────────────────────────────
+
     [Fact]
-    public async Task StateIsAvailableDuringHandler()
+    public async Task BothStatesAvailableDuringHandler()
     {
         TurnStateMiddleware middleware = CreateMiddleware();
         CoreActivity activity = CreateActivity();
-        ITurnState? captured = null;
 
-        await middleware.OnTurnAsync(_bot, activity, async ct =>
+        bool convAvailable = false;
+        bool userAvailable = false;
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
         {
-            captured = _bot.TurnState;
-            await Task.CompletedTask;
+            convAvailable = _bot.State?.ConversationState is not null;
+            userAvailable = _bot.State?.UserState is not null;
+            return Task.CompletedTask;
         });
 
-        Assert.NotNull(captured);
+        Assert.True(convAvailable);
+        Assert.True(userAvailable);
     }
 
     [Fact]
-    public async Task StateIsClearedAfterHandler()
+    public async Task StateClearedAfterHandler()
     {
         TurnStateMiddleware middleware = CreateMiddleware();
         CoreActivity activity = CreateActivity();
 
-        await middleware.OnTurnAsync(_bot, activity, ct => Task.CompletedTask);
+        await middleware.OnTurnAsync(_bot, activity, (ct) => Task.CompletedTask);
 
-        Assert.Null(_bot.TurnState);
+        Assert.Null(_bot.State);
     }
 
     [Fact]
-    public async Task StateIsClearedWhenHandlerThrows()
+    public async Task StateClearedWhenHandlerThrows()
     {
         TurnStateMiddleware middleware = CreateMiddleware();
         CoreActivity activity = CreateActivity();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await middleware.OnTurnAsync(_bot, activity, ct => throw new InvalidOperationException("boom")));
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            middleware.OnTurnAsync(_bot, activity, (ct) =>
+                throw new InvalidOperationException("boom")));
 
-        Assert.Null(_bot.TurnState);
+        Assert.Null(_bot.State);
     }
 
+    // ── Save behavior ────────────────────────────────────────────────
+
     [Fact]
-    public async Task DirtyStateIsSavedToCache()
+    public async Task DirtyConversationStateIsSaved()
     {
         TurnStateMiddleware middleware = CreateMiddleware();
         CoreActivity activity = CreateActivity();
 
-        await middleware.OnTurnAsync(_bot, activity, async ct =>
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
         {
-            _bot.TurnState!.Set("key", "value");
-            await Task.CompletedTask;
+            _bot.State!.ConversationState.Set("key", "value");
+            return Task.CompletedTask;
         });
 
-        _cacheMock.Verify(
-            c => c.SetAsync("ts:conv1:user1", It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()),
-            Times.Once);
+        _cacheMock.Verify(c => c.SetAsync(
+            "ts:conv:conv1",
+            It.IsAny<byte[]>(),
+            It.IsAny<DistributedCacheEntryOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DirtyUserStateIsSaved()
+    {
+        TurnStateMiddleware middleware = CreateMiddleware();
+        CoreActivity activity = CreateActivity();
+
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
+        {
+            _bot.State!.UserState!.Set("key", "value");
+            return Task.CompletedTask;
+        });
+
+        _cacheMock.Verify(c => c.SetAsync(
+            "ts:user:conv1:user1",
+            It.IsAny<byte[]>(),
+            It.IsAny<DistributedCacheEntryOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
@@ -90,88 +119,13 @@ public class TurnStateMiddlewareTests
         TurnStateMiddleware middleware = CreateMiddleware();
         CoreActivity activity = CreateActivity();
 
-        await middleware.OnTurnAsync(_bot, activity, ct => Task.CompletedTask);
+        await middleware.OnTurnAsync(_bot, activity, (ct) => Task.CompletedTask);
 
-        _cacheMock.Verify(
-            c => c.SetAsync(It.IsAny<string>(), It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()),
-            Times.Never);
-    }
-
-    [Fact]
-    public async Task ExistingCachedStateIsLoaded()
-    {
-        TurnState existing = new();
-        existing.Set("greeting", "hello");
-        byte[] bytes = existing.ToJsonBytes();
-
-        _cacheMock
-            .Setup(c => c.GetAsync("ts:conv1:user1", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(bytes);
-
-        TurnStateMiddleware middleware = CreateMiddleware();
-        CoreActivity activity = CreateActivity();
-        string? captured = null;
-
-        await middleware.OnTurnAsync(_bot, activity, async ct =>
-        {
-            captured = _bot.TurnState!.Get<string>("greeting");
-            await Task.CompletedTask;
-        });
-
-        Assert.Equal("hello", captured);
-    }
-
-    [Fact]
-    public async Task NullConversationSkipsStateLoading()
-    {
-        TurnStateMiddleware middleware = CreateMiddleware();
-        CoreActivity activity = CreateActivity(conversationId: null);
-        bool handlerCalled = false;
-
-        await middleware.OnTurnAsync(_bot, activity, ct =>
-        {
-            handlerCalled = true;
-            return Task.CompletedTask;
-        });
-
-        Assert.True(handlerCalled);
-        Assert.Null(_bot.TurnState);
-        _cacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task NullFromSkipsStateLoading()
-    {
-        TurnStateMiddleware middleware = CreateMiddleware();
-        CoreActivity activity = CreateActivity(fromId: null);
-        bool handlerCalled = false;
-
-        await middleware.OnTurnAsync(_bot, activity, ct =>
-        {
-            handlerCalled = true;
-            return Task.CompletedTask;
-        });
-
-        Assert.True(handlerCalled);
-        Assert.Null(_bot.TurnState);
-        _cacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [Fact]
-    public async Task SessionKeyFormatIsCorrect()
-    {
-        TurnStateMiddleware middleware = CreateMiddleware();
-        CoreActivity activity = CreateActivity("myConv", "myUser");
-
-        await middleware.OnTurnAsync(_bot, activity, async ct =>
-        {
-            _bot.TurnState!.Set("x", 1);
-            await Task.CompletedTask;
-        });
-
-        _cacheMock.Verify(
-            c => c.SetAsync("ts:myConv:myUser", It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()),
-            Times.Once);
+        _cacheMock.Verify(c => c.SetAsync(
+            It.IsAny<string>(),
+            It.IsAny<byte[]>(),
+            It.IsAny<DistributedCacheEntryOptions>(),
+            It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
@@ -180,37 +134,124 @@ public class TurnStateMiddlewareTests
         TurnStateMiddleware middleware = CreateMiddleware();
         CoreActivity activity = CreateActivity();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(async () =>
-            await middleware.OnTurnAsync(_bot, activity, ct =>
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            middleware.OnTurnAsync(_bot, activity, (ct) =>
             {
-                _bot.TurnState!.Set("key", "value");
+                _bot.State!.ConversationState.Set("key", "value");
                 throw new InvalidOperationException("boom");
             }));
 
-        _cacheMock.Verify(
-            c => c.SetAsync("ts:conv1:user1", It.IsAny<byte[]>(), It.IsAny<DistributedCacheEntryOptions>(), It.IsAny<CancellationToken>()),
-            Times.Once);
+        _cacheMock.Verify(c => c.SetAsync(
+            "ts:conv:conv1",
+            It.IsAny<byte[]>(),
+            It.IsAny<DistributedCacheEntryOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // ── Cache round-trip ─────────────────────────────────────────────
+
+    [Fact]
+    public async Task ExistingConversationStateIsLoaded()
+    {
+        TurnState existing = new();
+        existing.Set("shared", "hello");
+
+        _cacheMock.Setup(c => c.GetAsync("ts:conv:conv1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing.ToJsonBytes());
+
+        TurnStateMiddleware middleware = CreateMiddleware();
+        CoreActivity activity = CreateActivity();
+        string? loaded = null;
+
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
+        {
+            loaded = _bot.State!.ConversationState.Get<string>("shared");
+            return Task.CompletedTask;
+        });
+
+        Assert.Equal("hello", loaded);
     }
 
     [Fact]
-    public async Task EmptyConversationIdSkipsStateLoading()
+    public async Task ExistingUserStateIsLoaded()
+    {
+        TurnState existing = new();
+        existing.Set("private", "world");
+
+        _cacheMock.Setup(c => c.GetAsync("ts:user:conv1:user1", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(existing.ToJsonBytes());
+
+        TurnStateMiddleware middleware = CreateMiddleware();
+        CoreActivity activity = CreateActivity();
+        string? loaded = null;
+
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
+        {
+            loaded = _bot.State!.UserState!.Get<string>("private");
+            return Task.CompletedTask;
+        });
+
+        Assert.Equal("world", loaded);
+    }
+
+    // ── Skip behavior ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task NullConversation_SkipsBothStates()
     {
         TurnStateMiddleware middleware = CreateMiddleware();
-        CoreActivity activity = CreateActivity(conversationId: "");
+        CoreActivity activity = CreateActivity(conversationId: null);
         bool handlerCalled = false;
 
-        await middleware.OnTurnAsync(_bot, activity, ct =>
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
         {
             handlerCalled = true;
             return Task.CompletedTask;
         });
 
         Assert.True(handlerCalled);
-        Assert.Null(_bot.TurnState);
+        Assert.Null(_bot.State);
+        _cacheMock.Verify(c => c.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
-    public async Task EmptyFromIdSkipsStateLoading()
+    public async Task EmptyConversationId_SkipsBothStates()
+    {
+        TurnStateMiddleware middleware = CreateMiddleware();
+        CoreActivity activity = CreateActivity(conversationId: "");
+        bool handlerCalled = false;
+
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
+        {
+            handlerCalled = true;
+            return Task.CompletedTask;
+        });
+
+        Assert.True(handlerCalled);
+        Assert.Null(_bot.State);
+    }
+
+    [Fact]
+    public async Task NullFrom_LoadsConversationState_SkipsUserState()
+    {
+        TurnStateMiddleware middleware = CreateMiddleware();
+        CoreActivity activity = CreateActivity(fromId: null);
+
+        bool convAvailable = false;
+        bool userNull = false;
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
+        {
+            convAvailable = _bot.State?.ConversationState is not null;
+            userNull = _bot.State?.UserState is null;
+            return Task.CompletedTask;
+        });
+
+        Assert.True(convAvailable);
+        Assert.True(userNull);
+    }
+
+    [Fact]
+    public async Task EmptyFromId_LoadsConversationState_SkipsUserState()
     {
         TurnStateMiddleware middleware = CreateMiddleware();
         CoreActivity activity = new()
@@ -218,16 +259,46 @@ public class TurnStateMiddlewareTests
             Conversation = new Conversation("conv1"),
             From = new ConversationAccount { Id = "" },
         };
-        bool handlerCalled = false;
 
-        await middleware.OnTurnAsync(_bot, activity, ct =>
+        bool convAvailable = false;
+        bool userNull = false;
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
         {
-            handlerCalled = true;
+            convAvailable = _bot.State?.ConversationState is not null;
+            userNull = _bot.State?.UserState is null;
             return Task.CompletedTask;
         });
 
-        Assert.True(handlerCalled);
-        Assert.Null(_bot.TurnState);
+        Assert.True(convAvailable);
+        Assert.True(userNull);
+    }
+
+    // ── Key format ───────────────────────────────────────────────────
+
+    [Fact]
+    public async Task KeysUseCorrectFormat()
+    {
+        TurnStateMiddleware middleware = CreateMiddleware();
+        CoreActivity activity = CreateActivity("myConv", "myUser");
+
+        await middleware.OnTurnAsync(_bot, activity, (ct) =>
+        {
+            _bot.State!.ConversationState.Set("x", 1);
+            _bot.State!.UserState!.Set("y", 2);
+            return Task.CompletedTask;
+        });
+
+        _cacheMock.Verify(c => c.SetAsync(
+            "ts:conv:myConv",
+            It.IsAny<byte[]>(),
+            It.IsAny<DistributedCacheEntryOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once);
+
+        _cacheMock.Verify(c => c.SetAsync(
+            "ts:user:myConv:myUser",
+            It.IsAny<byte[]>(),
+            It.IsAny<DistributedCacheEntryOptions>(),
+            It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private sealed class TestBotApplication : BotApplication

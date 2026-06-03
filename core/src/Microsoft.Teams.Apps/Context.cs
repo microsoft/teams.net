@@ -54,15 +54,13 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     // ==================== Turn State ====================
 
     /// <summary>
-    /// Gets the per-turn state store for this bot turn.
+    /// Gets the per-turn state container with <see cref="TurnStateContainer.ConversationState"/>
+    /// and <see cref="TurnStateContainer.UserState"/> scopes.
     /// </summary>
-    /// <exception cref="InvalidOperationException">
-    /// Thrown when <see cref="ITurnState"/> has not been configured.
-    /// Call <c>AddBotApplicationState()</c> during service registration to enable turn state.
-    /// </exception>
-    public ITurnState State => TeamsBotApplication.TurnState
+    /// <exception cref="InvalidOperationException">Thrown when state management is not configured.</exception>
+    public TurnStateContainer State => TeamsBotApplication.State
         ?? throw new InvalidOperationException(
-            "TurnState is not available. Call AddBotApplicationState() during service registration.");
+            "State is not available. Call AddBotApplicationState() during service registration.");
 
     // ==================== Convenience Send/Reply/Typing ====================
 

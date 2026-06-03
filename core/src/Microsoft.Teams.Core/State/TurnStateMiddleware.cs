@@ -9,6 +9,7 @@ namespace Microsoft.Teams.Core.State;
 
 /// <summary>
 /// Middleware that loads and saves per-turn state from a distributed cache.
+/// Manages two state scopes: conversation-scoped and user-scoped.
 /// </summary>
 public class TurnStateMiddleware : ITurnMiddleware
 {
@@ -35,17 +36,27 @@ public class TurnStateMiddleware : ITurnMiddleware
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(nextTurn);
 
-        string? sessionKey = GetSessionKey(activity);
+        string? conversationId = activity.Conversation?.Id;
 
-        if (sessionKey is null)
+        if (string.IsNullOrEmpty(conversationId))
         {
             await nextTurn(cancellationToken).ConfigureAwait(false);
             return;
         }
 
-        byte[]? bytes = await _cache.GetAsync(sessionKey, cancellationToken).ConfigureAwait(false);
-        TurnState state = TurnState.FromJsonBytes(bytes);
-        botApplication.TurnState = state;
+        string conversationKey = $"ts:conv:{conversationId}";
+        string? userId = activity.From?.Id;
+        string? userKey = string.IsNullOrEmpty(userId) ? null : $"ts:user:{conversationId}:{userId}";
+
+        TurnState conversationState = await LoadStateAsync(conversationKey, cancellationToken).ConfigureAwait(false);
+
+        TurnState? userState = null;
+        if (userKey is not null)
+        {
+            userState = await LoadStateAsync(userKey, cancellationToken).ConfigureAwait(false);
+        }
+
+        botApplication.State = new TurnStateContainer(conversationState, userState);
 
         try
         {
@@ -53,25 +64,28 @@ public class TurnStateMiddleware : ITurnMiddleware
         }
         finally
         {
-            if (state.IsDirty)
+            if (conversationState.IsDirty)
             {
-                await _cache.SetAsync(sessionKey, state.ToJsonBytes(), _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
+                await SaveStateAsync(conversationKey, conversationState, cancellationToken).ConfigureAwait(false);
             }
 
-            botApplication.TurnState = null;
+            if (userState is not null && userState.IsDirty)
+            {
+                await SaveStateAsync(userKey!, userState, cancellationToken).ConfigureAwait(false);
+            }
+
+            botApplication.State = null;
         }
     }
 
-    private static string? GetSessionKey(CoreActivity activity)
+    private async Task<TurnState> LoadStateAsync(string key, CancellationToken cancellationToken)
     {
-        string? conversationId = activity.Conversation?.Id;
-        string? fromId = activity.From?.Id;
+        byte[]? bytes = await _cache.GetAsync(key, cancellationToken).ConfigureAwait(false);
+        return TurnState.FromJsonBytes(bytes);
+    }
 
-        if (string.IsNullOrEmpty(conversationId) || string.IsNullOrEmpty(fromId))
-        {
-            return null;
-        }
-
-        return $"ts:{conversationId}:{fromId}";
+    private async Task SaveStateAsync(string key, TurnState state, CancellationToken cancellationToken)
+    {
+        await _cache.SetAsync(key, state.ToJsonBytes(), _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
     }
 }
