@@ -144,11 +144,6 @@ public static class AddBotApplicationExtensions
             services.AddOptions<TurnStateOptions>();
         }
 
-        // Provide a default in-memory cache if no IDistributedCache has been registered.
-        // Developers can override by registering their own provider (Redis, SQL, etc.)
-        // before or after calling this method.
-        services.AddDistributedMemoryCache();
-
         services.AddSingleton<TurnStateMiddleware>();
         return services;
     }

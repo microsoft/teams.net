@@ -89,6 +89,7 @@ public class TeamsBotApplicationHostingExtensionsTests
         ServiceCollection services = new();
         services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging();
+        services.AddDistributedMemoryCache();
         services.AddTeamsBotApplication(options => options.WithState());
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
@@ -113,6 +114,7 @@ public class TeamsBotApplicationHostingExtensionsTests
         ServiceCollection services = new();
         services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging();
+        services.AddDistributedMemoryCache();
         services.AddTeamsBotApplication(options =>
             options.WithState(state =>
                 state.CacheEntryOptions.SlidingExpiration = TimeSpan.FromMinutes(15)));
