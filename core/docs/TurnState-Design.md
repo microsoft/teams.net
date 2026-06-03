@@ -111,7 +111,17 @@ public static IServiceCollection AddBotApplicationState(
     Action<TurnStateOptions>? configure = null)
 ```
 
-Registers `TurnStateMiddleware` and options. Does **not** register a default `IDistributedCache` — the developer must register their own provider (Redis, SQL, in-memory, etc.). This avoids silent fallback to in-memory when a real provider is intended, since `AddDistributedMemoryCache` uses `TryAdd` and would win over providers registered after it.
+Registers `TurnStateMiddleware`, options, and a default in-memory `IDistributedCache` via `AddDistributedMemoryCache()` (which uses `TryAdd`). This means `WithState()` works out of the box with no additional configuration.
+
+When the developer registers a persistent provider (e.g. `AddStackExchangeRedisCache`), it takes precedence because it uses `Add` (not `TryAdd`), so the last registration wins in DI resolution regardless of call order.
+
+### Cache Provider Warning
+
+At startup, `UseBotApplication` checks the resolved `IDistributedCache` implementation. If it is `MemoryDistributedCache`, a warning is logged:
+
+> `Turn state is using the in-memory cache. State will be lost on restart. Register a persistent IDistributedCache (e.g. AddStackExchangeRedisCache) for production use.`
+
+The warning disappears when a persistent provider is registered.
 
 ### Middleware Auto-Wiring
 
