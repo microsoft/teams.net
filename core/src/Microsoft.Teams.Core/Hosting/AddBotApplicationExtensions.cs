@@ -12,6 +12,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
+using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Core.Hosting;
 
@@ -114,6 +115,29 @@ public static class AddBotApplicationExtensions
         services.AddBotClient<ConversationClient>(ConversationClient.ConversationHttpClientName, botConfig);
         services.AddBotClient<UserTokenClient>(UserTokenClient.UserTokenHttpClientName, botConfig);
         services.AddSingleton<TApp>();
+        return services;
+    }
+
+    /// <summary>
+    /// Registers turn-state services in the service collection.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="configure">An optional delegate to configure <see cref="TurnStateOptions"/>.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddBotApplicationState(
+        this IServiceCollection services,
+        Action<TurnStateOptions>? configure = null)
+    {
+        if (configure is not null)
+        {
+            services.Configure(configure);
+        }
+        else
+        {
+            services.AddOptions<TurnStateOptions>();
+        }
+
+        services.AddSingleton<TurnStateMiddleware>();
         return services;
     }
 
