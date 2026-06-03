@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
+using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Core;
 
@@ -163,6 +164,12 @@ public class BotApplication
     /// </example>
     /// </remarks>
     public virtual Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
+
+    /// <summary>
+    /// Gets or sets the per-turn state for the current activity, managed by <see cref="TurnStateMiddleware"/>.
+    /// This value is set before the activity handler runs and cleared after it completes.
+    /// </summary>
+    public ITurnState? TurnState { get; internal set; }
 
     /// <summary>
     /// Processes an incoming HTTP request containing a bot activity.
