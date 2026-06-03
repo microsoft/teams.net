@@ -1,9 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
@@ -36,6 +38,10 @@ internal sealed class BotAuthenticationHandler(
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IOptionsMonitor<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
+
+    // Cache ClaimsPrincipal per agentic identity so MSAL can reuse the account ID
+    // populated after the first ROPC call for silent token acquisition on subsequent calls.
+    private readonly ConcurrentDictionary<string, ClaimsPrincipal> _agenticPrincipalCache = new();
     private static readonly Action<ILogger, string, Exception?> _logAgenticToken =
         LoggerMessage.Define<string>(LogLevel.Debug, new(2), "Acquiring agentic token for AgenticAppId {AgenticAppId}");
     private static readonly Action<ILogger, string, Exception?> _logAppOnlyToken =
@@ -121,7 +127,15 @@ internal sealed class BotAuthenticationHandler(
                 {
                     span?.SetTag(Telemetry.Tags.AuthFlow, "agentic");
                     options.WithAgentUserIdentity(agenticIdentity.AgenticAppId, agenticUserGuid);
-                    string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticScope], options, null, cancellationToken).ConfigureAwait(false);
+
+                    // Reuse a cached ClaimsPrincipal so MSAL's silent flow can look up
+                    // the account ID populated after the first ROPC token exchange.
+                    // Without this, ClaimsPrincipal is null on every call and MSAL
+                    // always falls through to a network round-trip to Entra.
+                    string cacheKey = $"{agenticIdentity.AgenticAppId}:{agenticUserGuid:D}";
+                    ClaimsPrincipal principal = _agenticPrincipalCache.GetOrAdd(cacheKey, _ => new ClaimsPrincipal());
+
+                    string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticScope], options, principal, cancellationToken).ConfigureAwait(false);
                     return token;
                 }
             }
