@@ -66,6 +66,13 @@ public static class AddBotApplicationExtensions
 
         TApp botApp = endpoints.ServiceProvider.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
 
+        // Auto-wire TurnStateMiddleware into the pipeline if it was registered via AddBotApplicationState().
+        TurnStateMiddleware? turnStateMiddleware = endpoints.ServiceProvider.GetService<TurnStateMiddleware>();
+        if (turnStateMiddleware is not null)
+        {
+            botApp.UseMiddleware(turnStateMiddleware);
+        }
+
         endpoints.MapPost(routePath, (HttpContext httpContext, CancellationToken cancellationToken)
             => botApp.ProcessAsync(httpContext, cancellationToken)
         ).RequireAuthorization();
