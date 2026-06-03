@@ -8,6 +8,7 @@ using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Apps;
 
@@ -49,6 +50,19 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     public ApiClient Api => _api ??= TeamsBotApplication.Api.ForServiceUrl(
         Activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."));
+
+    // ==================== Turn State ====================
+
+    /// <summary>
+    /// Gets the per-turn state store for this bot turn.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when <see cref="ITurnState"/> has not been configured.
+    /// Call <c>AddBotApplicationState()</c> during service registration to enable turn state.
+    /// </exception>
+    public ITurnState State => TeamsBotApplication.TurnState
+        ?? throw new InvalidOperationException(
+            "TurnState is not available. Call AddBotApplicationState() during service registration.");
 
     // ==================== Convenience Send/Reply/Typing ====================
 
