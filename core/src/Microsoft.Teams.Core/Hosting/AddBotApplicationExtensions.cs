@@ -4,6 +4,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -71,6 +73,14 @@ public static class AddBotApplicationExtensions
         if (turnStateMiddleware is not null)
         {
             botApp.UseMiddleware(turnStateMiddleware);
+
+            IDistributedCache cache = endpoints.ServiceProvider.GetRequiredService<IDistributedCache>();
+            if (cache is MemoryDistributedCache)
+            {
+                ILogger logger = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>()
+                    .CreateLogger(typeof(AddBotApplicationExtensions));
+                logger.StateUsingInMemoryCache();
+            }
         }
 
         endpoints.MapPost(routePath, (HttpContext httpContext, CancellationToken cancellationToken)
@@ -143,6 +153,13 @@ public static class AddBotApplicationExtensions
         {
             services.AddOptions<TurnStateOptions>();
         }
+
+        // Provide an in-memory cache as fallback so WithState() works out of the box.
+        // Since this uses TryAdd, any IDistributedCache registered by the developer
+        // (before or after this call) will take precedence via last-wins DI resolution
+        // only if they use Add (not TryAdd). Redis (AddStackExchangeRedisCache) uses Add,
+        // so it always wins regardless of order.
+        services.AddDistributedMemoryCache();
 
         services.AddSingleton<TurnStateMiddleware>();
         return services;

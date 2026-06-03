@@ -112,4 +112,9 @@ internal static partial class Log
 
     [LoggerMessage(EventId = 60, Level = LogLevel.Information, Message = "No ClientCredentials configured; treating ClientId '{ClientId}' as a User-Assigned Managed Identity. Bot Framework tokens will be acquired via the IMDS endpoint.")]
     public static partial void InferringUserAssignedManagedIdentity(this ILogger logger, string clientId);
+
+    // ── State ────────────────────────────────────────────────────────────
+
+    [LoggerMessage(EventId = 70, Level = LogLevel.Warning, Message = "Turn state is using the in-memory cache. State will be lost on restart. Register a persistent IDistributedCache (e.g. AddStackExchangeRedisCache) for production use.")]
+    public static partial void StateUsingInMemoryCache(this ILogger logger);
 }
