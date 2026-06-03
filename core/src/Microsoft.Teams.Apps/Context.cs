@@ -60,7 +60,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <exception cref="InvalidOperationException">Thrown when state management is not configured.</exception>
     public TurnStateContainer State => TeamsBotApplication.State
         ?? throw new InvalidOperationException(
-            "State is not available. Call AddBotApplicationState() during service registration.");
+            "State is not available. Call AddBotApplicationState() / WithState() during service registration.");
 
     // ==================== Convenience Send/Reply/Typing ====================
 

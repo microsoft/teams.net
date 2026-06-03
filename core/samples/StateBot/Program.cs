@@ -11,7 +11,6 @@ WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 // Swap AddStackExchangeRedisCache for AddDistributedMemoryCache() during local dev
 // if you don't have a Redis instance available.
 webAppBuilder.Services.AddTeamsBotApplication(options => options.WithState());
-//webAppBuilder.Services.AddDistributedMemoryCache();
 webAppBuilder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = webAppBuilder.Configuration.GetConnectionString("Redis") ?? throw new InvalidProgramException("Redis connection string not found");
