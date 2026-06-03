@@ -2,15 +2,18 @@
 
 ## Overview
 
-Enable per-turn state management in `BotApplication`, backed by `IDistributedCache` from the ASP.NET ecosystem. This allows developers to use any session state provider (Redis, SQL Server, in-memory, etc.) to persist state scoped to a conversation+user pair.
+Enable per-turn state management in `BotApplication`, backed by `IDistributedCache` from the ASP.NET ecosystem. This allows developers to use any session state provider (Redis, SQL Server, in-memory, etc.) to persist state scoped to conversations and users.
 
-## Session Key
+## State Scopes
 
-Derived from the incoming `CoreActivity`:
+The middleware manages two independent state scopes per turn:
 
-```
-ts:{Conversation.Id}:{From.Id}
-```
+| Scope | Cache Key | Shared by |
+|-------|-----------|-----------|
+| **ConversationState** | `ts:conv:{Conversation.Id}` | All users in the conversation |
+| **UserState** | `ts:user:{Conversation.Id}:{From.Id}` | Single user in a specific conversation |
+
+Both scopes use the same `ITurnState` interface and `TurnState` implementation. They are loaded/saved independently and have separate dirty tracking.
 
 ## Core Layer (`Microsoft.Teams.Core`)
 
@@ -47,18 +50,32 @@ Default implementation backed by `Dictionary<string, object?>`. Tracks dirty sta
 - Serialized to/from JSON via `System.Text.Json`.
 - Handles `JsonElement` values from deserialization — both key-value `Get<T>(key)` and typed `Get<T>()` deserialize `JsonElement` to the requested type after a cache round-trip.
 
+### `TurnStateContainer`
+
+Holds the two state scopes for a turn:
+
+```csharp
+public sealed class TurnStateContainer
+{
+    public ITurnState ConversationState { get; }
+    public ITurnState? UserState { get; }
+}
+```
+
+`UserState` is null when the activity has no `From` field.
+
 ### `TurnStateMiddleware : ITurnMiddleware`
 
 Manages state lifecycle within the middleware pipeline:
 
-1. Derive session key from `activity.Conversation.Id` + `activity.From.Id`.
-2. Load serialized state from `IDistributedCache` (or create empty `TurnState` on cache miss).
-3. Set `botApplication.TurnState = loadedState`.
-4. `await nextTurn()`.
-5. In `finally` block: if `state.IsDirty`, serialize and save back to `IDistributedCache` with configured entry options. Always clear `botApplication.TurnState`.
-6. Dirty state is saved even if `nextTurn()` throws, ensuring no data loss on handler errors.
+1. Extract `Conversation.Id`. If null/empty, skip state entirely and call `nextTurn()`.
+2. Load `ConversationState` from cache key `ts:conv:{conversationId}`.
+3. If `From.Id` is present, load `UserState` from cache key `ts:user:{conversationId}:{userId}`.
+4. Set `botApplication.State = new TurnStateContainer(conversationState, userState)`.
+5. `await nextTurn()`.
+6. In `finally` block: save each scope independently if dirty. Always clear `botApplication.State`.
 
-If `Conversation` or `From` is null (or their `Id` is null/empty), the middleware skips state loading and calls `nextTurn()` directly (some activity types like health checks may not carry these fields).
+Dirty state is saved even if `nextTurn()` throws, ensuring no data loss on handler errors.
 
 ### `TurnStateOptions`
 
@@ -79,7 +96,7 @@ public class TurnStateOptions
 One new property:
 
 ```csharp
-public ITurnState? TurnState { get; internal set; }
+public TurnStateContainer? State { get; internal set; }
 ```
 
 Set by `TurnStateMiddleware` at turn start, cleared at turn end. `internal set` restricts assignment to framework code.
@@ -120,12 +137,12 @@ services.AddTeamsBotApplication(options =>
 
 ### `Context<TActivity>.State`
 
-Ergonomic accessor on the turn context:
+Returns the `TurnStateContainer` for the current turn:
 
 ```csharp
-public ITurnState State => TeamsBotApplication.TurnState
+public TurnStateContainer State => TeamsBotApplication.State
     ?? throw new InvalidOperationException(
-        "TurnState is not available. Call AddBotApplicationState() during service registration.");
+        "State is not available. Call AddBotApplicationState() / WithState() during service registration.");
 ```
 
 Follows the same pattern as `Context.Api` (lazy accessor that throws if prerequisite isn't configured).
@@ -133,14 +150,14 @@ Follows the same pattern as `Context.Api` (lazy accessor that throws if prerequi
 ### Usage
 
 ```csharp
-// Key-value
-int count = context.State.Get<int>("counter");
-context.State.Set("counter", count + 1);
+// Conversation-scoped state (shared by all users)
+int count = ctx.State.ConversationState.Get<int>("counter");
+ctx.State.ConversationState.Set("counter", count + 1);
 
-// Typed object
-var prefs = context.State.Get<UserPreferences>();
+// User-scoped state (private per user per conversation)
+var prefs = ctx.State.UserState?.Get<UserPreferences>() ?? new UserPreferences();
 prefs.Theme = "dark";
-context.State.Set(prefs);
+ctx.State.UserState?.Set(prefs);
 ```
 
 No auto-save on typed objects. Developer mutates then calls `Set<T>()` to mark dirty.
@@ -161,10 +178,16 @@ var bot = app.UseTeamsBotApplication();
 
 bot.OnMessage(async (ctx, ct) =>
 {
-    int counter = ctx.State.Get<int>("counter");
+    // Conversation-scoped counter
+    int counter = ctx.State.ConversationState.Get<int>("counter");
     counter++;
-    ctx.State.Set("counter", counter);
-    await ctx.SendActivityAsync($"Message #{counter}", ct);
+    ctx.State.ConversationState.Set("counter", counter);
+    await ctx.SendActivityAsync($"Message #{counter} in this conversation.", ct);
+
+    // User-scoped preferences
+    var prefs = ctx.State.UserState?.Get<UserPrefs>() ?? new UserPrefs();
+    prefs.Name = ctx.Activity.From?.Name ?? "anon";
+    ctx.State.UserState?.Set(prefs);
 });
 
 app.Run();
@@ -180,8 +203,9 @@ Delegated entirely to `IDistributedCache` via `DistributedCacheEntryOptions` con
 
 ## Testing
 
-- `TurnState` can be instantiated directly and assigned to `BotApplication.TurnState` without DI or `IDistributedCache`.
-- `internal set` on `BotApplication.TurnState` is accessible to test projects via `InternalsVisibleTo`.
+- `TurnState` can be instantiated directly without DI or `IDistributedCache`.
+- `TurnStateContainer` can be constructed with test `TurnState` instances and assigned to `BotApplication.State`.
+- `internal set` on `BotApplication.State` is accessible to test projects via `InternalsVisibleTo`.
 - No mocks needed for unit tests that just read/write state.
 
 ## File Layout
@@ -191,6 +215,7 @@ src/Microsoft.Teams.Core/
 ├── State/
 │   ├── ITurnState.cs
 │   ├── TurnState.cs
+│   ├── TurnStateContainer.cs
 │   ├── TurnStateMiddleware.cs
 │   └── TurnStateOptions.cs
 ├── Hosting/
