@@ -34,7 +34,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         IStatePropertyAccessor<ConversationData> conversationStateAccessors = conversationState.CreateProperty<ConversationData>(nameof(ConversationData));
         ConversationData conversationData = await conversationStateAccessors.GetAsync(turnContext, () => new ConversationData(), cancellationToken);
 
-        TeamsChannelAccount mm = await TeamsApiClient.GetMemberAsync(turnContext, turnContext.Activity.From.Id);
+        TeamsChannelAccount mm = await TeamsApiClient.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
         string replyText = $"Echo {mm.Name} from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
 
         // Targeted Messaging via BF compat layer: setting isTargeted on the BF ChannelAccount
@@ -49,10 +49,10 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         if (turnContext.Activity.Conversation.IsGroup == true)
         {
             TeamDetails teamDetails = await TeamsApiClient.GetTeamDetailsAsync(turnContext, null, cancellationToken);
-            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(teamDetails, Formatting.Indented));
+            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(teamDetails, Formatting.Indented), cancellationToken: cancellationToken);
 
             TeamsPagedMembersResult pagedMembersResult;
-            List<TeamsChannelAccount> members = new();
+            List<TeamsChannelAccount> members = [];
             string continuationToken = null!;
             do
             {
@@ -67,7 +67,7 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
                 members.AddRange(pagedMembersResult.Members);
             } while (continuationToken != null);
 
-            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(members.Select(m => m.Name).ToList(), Formatting.Indented));
+            await turnContext.SendActivityAsync(JsonConvert.SerializeObject(members.Select(m => m.Name).ToList(), Formatting.Indented), cancellationToken: cancellationToken);
         }
 
         // Targeted Messaging via Core SDK (preferred): sends directly through ConversationClient

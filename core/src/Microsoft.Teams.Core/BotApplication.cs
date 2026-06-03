@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 
@@ -220,15 +221,21 @@ public class BotApplication
             catch (OperationCanceledException) when (cts.IsCancellationRequested)
             {
                 _logger.ActivityTimedOut(_processActivityTimeout, activity.Id);
+                Telemetry.HandlerErrors.Add(1, activityTypeTag);
+                span?.SetStatus(ActivityStatusCode.Error, "timeout");
             }
             catch (Exception ex)
             {
                 _logger.ActivityProcessingError(ex, activity.Id);
+                Telemetry.HandlerErrors.Add(1, activityTypeTag);
+                span.RecordException(ex);
                 throw new BotHandlerException("Error processing activity", ex, activity);
             }
             finally
             {
                 _logger.ActivityProcessingFinished(activity.Id);
+                double elapsedMs = Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds;
+                Telemetry.TurnDuration.Record(elapsedMs, activityTypeTag);
             }
         }
     }

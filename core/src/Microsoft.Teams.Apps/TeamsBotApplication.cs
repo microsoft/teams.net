@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Routing;
@@ -137,6 +138,12 @@ public class TeamsBotApplication : BotApplication
 
             Context<TeamsActivity> defaultContext = new(this, teamsActivity);
 
+            // Agent365: set baggage (user.id, user.email, agent details, etc.) for all
+            // child spans.
+            using IDisposable baggageScope = new TeamsBaggageBuilder()
+                .FromTeamsContext(defaultContext)
+                .Build();
+
             if (teamsActivity.Type != TeamsActivityType.Invoke)
             {
                 await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
@@ -151,7 +158,9 @@ public class TeamsBotApplication : BotApplication
                     logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
                     logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
                     if (invokeResponse.Body is not null)
+                    {
                         await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+                    }
                 }
             }
         };

@@ -53,7 +53,7 @@ public class MemberClient
             agenticIdentity: agenticIdentity,
             customHeaders: additionalHeaders,
             cancellationToken: cancellationToken).ConfigureAwait(false);
-        var result = new PagedTeamsMembersResult();
+        PagedTeamsMembersResult result = new();
         if (paged is not null)
         {
             result.ContinuationToken = paged.ContinuationToken;

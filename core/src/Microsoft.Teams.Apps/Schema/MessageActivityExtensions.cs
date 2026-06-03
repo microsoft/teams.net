@@ -139,23 +139,6 @@ public static class MessageActivityExtensions
     }
 
     /// <summary>
-    /// Merges channel data properties into the activity.
-    /// </summary>
-    public static MessageActivity WithData(this MessageActivity message, ChannelData value)
-    {
-        ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(value);
-
-        message.ChannelData ??= new TeamsChannelData();
-        foreach (KeyValuePair<string, object?> kv in value.Properties)
-        {
-            message.ChannelData.Properties[kv.Key] = kv.Value;
-        }
-
-        return message;
-    }
-
-    /// <summary>
     /// Sets a channel data key/value property.
     /// </summary>
     public static MessageActivity WithData(this MessageActivity message, string key, object? value)
