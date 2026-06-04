@@ -9,7 +9,7 @@ namespace A2ABot.A2A;
 // Outbound A2A. Resolves the peer's AgentCard once (so callers can read
 // its live description) and ships HandoffMessage payloads as DataParts.
 // Knows nothing about Teams, LLMs, or proactive messaging.
-sealed class A2AClient(IHttpClientFactory factory, Config config)
+internal sealed class A2AClient(IHttpClientFactory factory, Config config)
 {
     private readonly SemaphoreSlim _initLock = new(1, 1);
     private volatile CachedPeer? _cached;

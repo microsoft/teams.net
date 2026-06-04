@@ -139,23 +139,6 @@ public static class MessageActivityExtensions
     }
 
     /// <summary>
-    /// Merges channel data properties into the activity.
-    /// </summary>
-    public static MessageActivity WithData(this MessageActivity message, ChannelData value)
-    {
-        ArgumentNullException.ThrowIfNull(message);
-        ArgumentNullException.ThrowIfNull(value);
-
-        message.ChannelData ??= new TeamsChannelData();
-        foreach (KeyValuePair<string, object?> kv in value.Properties)
-        {
-            message.ChannelData.Properties[kv.Key] = kv.Value;
-        }
-
-        return message;
-    }
-
-    /// <summary>
     /// Sets a channel data key/value property.
     /// </summary>
     public static MessageActivity WithData(this MessageActivity message, string key, object? value)
@@ -344,8 +327,8 @@ public static class MessageActivityExtensions
 
         message.Entities ??= [];
         message.Entities.Insert(0, new QuotedReplyEntity { QuotedReply = new QuotedReplyData { MessageId = messageId } });
-        var placeholder = QuotedReplyEntityExtensions.QuotedPlaceholder(messageId);
-        var text = message.Text?.Trim() ?? "";
+        string placeholder = QuotedReplyEntityExtensions.QuotedPlaceholder(messageId);
+        string text = message.Text?.Trim() ?? "";
         message.Text = string.IsNullOrEmpty(text) ? placeholder : $"{placeholder} {text}";
 
         return message;

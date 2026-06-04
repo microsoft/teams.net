@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using McpServer;
-using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;

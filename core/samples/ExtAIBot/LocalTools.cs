@@ -10,7 +10,7 @@ using Microsoft.Teams.Cards;
 namespace ExtAIBot;
 
 // Provides local AIFunction definitions that the model can call during a turn.
-static class LocalTools
+internal static class LocalTools
 {
     // Returns a fresh AIFunction each turn; pendingCards is a per-turn accumulator
     // captured by closure.
