@@ -1,13 +1,13 @@
 # Agentic Token Caching Investigation
 
 > **Date**: 2026-06-03
-> **Context**: AppInsights trace `d38cdd6867ffdb64` from A365TeamsAgent shows 4 HTTP calls to `login.microsoftonline.com` per single incoming message, adding ~1s of latency.
+> **Context**: An AppInsights trace shows 4 HTTP calls to `login.microsoftonline.com` per single incoming message, adding ~1s of latency.
 
 ## Problem Statement
 
 When processing a single agentic message, `BotAuthenticationHandler` acquires tokens for `https://botapi.skype.com/.default` via the agentic (User FIC / ROPC) flow. MSAL goes to the Entra network endpoint **on every outbound HTTP request**, even though the token is still valid. The in-memory cache is never consulted for the final token exchange.
 
-In a single message turn with 2 outbound calls (typing + reply), AppInsights shows:
+In a single message turn with 4 total Entra round-trips, 2 are for the outbound Bot Framework API calls (typing + reply). The table below shows those 2 calls as a partial example:
 
 | Call | Target | Duration | Token Source |
 |------|--------|----------|-------------|
@@ -83,7 +83,7 @@ But since `user` is null, this never executes either. Even if it did, the Claims
 
 ## Impact per Message Turn
 
-For A365TeamsAgent with agentic identity, a single message generates:
+For a bot with agentic identity, a single message generates:
 
 1. **Send typing indicator** -> `auth.outbound` (278ms): ROPC hits Entra
 2. **App code calls 2 APIs** (MCP scopes) -> ROPC hits Entra for each new scope

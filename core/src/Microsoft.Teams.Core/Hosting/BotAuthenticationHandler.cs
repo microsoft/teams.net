@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Headers;
 using System.Security.Claims;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
@@ -34,14 +35,17 @@ internal sealed class BotAuthenticationHandler(
 {
     private const string AgenticScope = "https://botapi.skype.com/.default";
     private const string BotAppScope = "https://api.botframework.com/.default";
+    private static readonly TimeSpan _agenticPrincipalSlidingExpiry = TimeSpan.FromHours(1);
 
     private readonly IAuthorizationHeaderProvider _authorizationHeaderProvider = authorizationHeaderProvider ?? throw new ArgumentNullException(nameof(authorizationHeaderProvider));
     private readonly ILogger<BotAuthenticationHandler> _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     private readonly IOptionsMonitor<ManagedIdentityOptions>? _managedIdentityOptions = managedIdentityOptions;
 
-    // Cache ClaimsPrincipal per agentic identity so MSAL can reuse the account ID
-    // populated after the first ROPC call for silent token acquisition on subsequent calls.
-    private readonly ConcurrentDictionary<string, ClaimsPrincipal> _agenticPrincipalCache = new();
+    // Cache ClaimsPrincipal per agentic identity (bounded + sliding expiry) so MSAL can reuse
+    // the account ID populated after the first ROPC call for silent token acquisition on subsequent calls.
+    private readonly MemoryCache _agenticPrincipalCache = new(new MemoryCacheOptions { SizeLimit = 10_000 });
+    // Per-key semaphores to prevent concurrent requests from mutating the same ClaimsPrincipal simultaneously.
+    private readonly ConcurrentDictionary<string, SemaphoreSlim> _agenticLocks = new();
     private static readonly Action<ILogger, string, Exception?> _logAgenticToken =
         LoggerMessage.Define<string>(LogLevel.Debug, new(2), "Acquiring agentic token for AgenticAppId {AgenticAppId}");
     private static readonly Action<ILogger, string, Exception?> _logAppOnlyToken =
@@ -132,11 +136,30 @@ internal sealed class BotAuthenticationHandler(
                     // the account ID populated after the first ROPC token exchange.
                     // Without this, ClaimsPrincipal is null on every call and MSAL
                     // always falls through to a network round-trip to Entra.
+                    // A per-key semaphore serialises concurrent requests for the same identity
+                    // to prevent unsynchronised mutation of the shared ClaimsPrincipal.
                     string cacheKey = $"{agenticIdentity.AgenticAppId}:{agenticUserGuid:D}";
-                    ClaimsPrincipal principal = _agenticPrincipalCache.GetOrAdd(cacheKey, _ => new ClaimsPrincipal());
+                    SemaphoreSlim semaphore = _agenticLocks.GetOrAdd(cacheKey, _ => new SemaphoreSlim(1, 1));
+                    await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+                    try
+                    {
+                        if (!_agenticPrincipalCache.TryGetValue(cacheKey, out ClaimsPrincipal? principal) || principal is null)
+                        {
+                            principal = new ClaimsPrincipal();
+                            _agenticPrincipalCache.Set(cacheKey, principal, new MemoryCacheEntryOptions
+                            {
+                                SlidingExpiration = _agenticPrincipalSlidingExpiry,
+                                Size = 1,
+                            });
+                        }
 
-                    string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticScope], options, principal, cancellationToken).ConfigureAwait(false);
-                    return token;
+                        string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticScope], options, principal, cancellationToken).ConfigureAwait(false);
+                        return token;
+                    }
+                    finally
+                    {
+                        semaphore.Release();
+                    }
                 }
             }
             span?.SetTag(Telemetry.Tags.AuthScope, BotAppScope);
@@ -176,5 +199,19 @@ internal sealed class BotAuthenticationHandler(
         {
             _logTokenParseFailure(_logger, ex);
         }
+    }
+
+    /// <inheritdoc/>
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            _agenticPrincipalCache.Dispose();
+            foreach (SemaphoreSlim s in _agenticLocks.Values)
+            {
+                s.Dispose();
+            }
+        }
+        base.Dispose(disposing);
     }
 }
