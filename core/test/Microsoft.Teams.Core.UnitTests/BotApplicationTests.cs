@@ -168,10 +168,9 @@ public class BotApplicationTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://test.service.url/")
+            ServiceUrl = new Uri("https://test.service.url/"),
+            Conversation = new("conv123")
         };
-
-        activity.Conversation = new("conv123");
         SendActivityResponse? result = await botApp.SendActivityAsync(activity);
 
         Assert.NotNull(result);

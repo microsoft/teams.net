@@ -203,8 +203,10 @@ public class BotApplication
         string serviceUrlFromClaims = httpContext.User.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
         if (!string.IsNullOrEmpty(serviceUrlFromClaims) && !serviceUrlFromClaims.Equals(activity.ServiceUrl?.ToString(), StringComparison.Ordinal))
         {
-            throw new InvalidDataException($"ServiceUrl in activity ({activity.ServiceUrl}) does not match serviceUrl claim ({serviceUrlFromClaims}).");
-        };
+            _logger.LogServiceUrlClaimMismatch(activity.ServiceUrl, serviceUrlFromClaims);
+            throw new InvalidDataException("ServiceUrl in activity payload does not match serviceurl JWT claim.");
+            //$"ServiceUrl in activity ({activity.ServiceUrl}) does not match serviceUrl claim ({serviceUrlFromClaims})."
+        }
 
         KeyValuePair<string, object?> activityTypeTag = new(Telemetry.Tags.ActivityType, activity.Type);
         Telemetry.ActivitiesReceived.Add(1, activityTypeTag);
