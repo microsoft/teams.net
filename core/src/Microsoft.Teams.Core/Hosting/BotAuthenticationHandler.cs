@@ -156,11 +156,10 @@ internal sealed class BotAuthenticationHandler(
                                     {
                                         EvictionCallback = (key, _, _, _) =>
                                         {
-                                            if (key is string k)
+                                            if (_agenticLocks.TryRemove((string)key, out SemaphoreSlim? s))
                                             {
-                                                _agenticLocks.TryRemove(k, out _);
+                                                s.Dispose();
                                             }
-                                        }
                                         },
                                     }
                                 },
