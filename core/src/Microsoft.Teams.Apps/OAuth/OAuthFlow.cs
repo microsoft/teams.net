@@ -180,10 +180,10 @@ public class OAuthFlow
 
         TeamsActivity oauthActivity = TeamsActivity.CreateBuilder()
             .WithConversationReference(context.Activity)
-            .WithRecipient(context.Activity.From, false)
+            .WithRecipient(context.Activity.From, context.Activity?.Conversation?.ConversationType == ConversationType.GroupChat)
             .WithAttachment(attachment)
             .Build();
-
+        
         await context.SendActivityAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
 
         // Track that this user has a pending sign-in for this flow
