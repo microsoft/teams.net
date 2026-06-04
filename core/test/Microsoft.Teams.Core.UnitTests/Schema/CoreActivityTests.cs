@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json;
 using Microsoft.Teams.Core.Schema;
 
 namespace Microsoft.Teams.Core.UnitTests.Schema;
@@ -175,7 +174,7 @@ public class CoreCoreActivityTests
         Assert.Contains("\"type\": \"message\"", json2);
         Assert.True(act.Properties.ContainsKey("entities"));
         Assert.IsType<JsonElement>(act.Properties["entities"]);
-        var entitiesElement = (JsonElement)act.Properties["entities"]!;
+        JsonElement entitiesElement = (JsonElement)act.Properties["entities"]!;
         Assert.Equal(JsonValueKind.Array, entitiesElement.ValueKind);
         Assert.Equal(2, entitiesElement.GetArrayLength());
 
@@ -273,7 +272,7 @@ public class CoreCoreActivityTests
         Assert.Equal("invoke", act.Type);
         // Value is no longer on CoreActivity — it lands in Properties via [JsonExtensionData]
         Assert.True(act.Properties.ContainsKey("value"));
-        var valueElement = Assert.IsType<JsonElement>(act.Properties["value"]);
+        JsonElement valueElement = Assert.IsType<JsonElement>(act.Properties["value"]);
         Assert.Equal("value1", valueElement.GetProperty("key1").GetString());
         Assert.Equal(2, valueElement.GetProperty("key2").GetInt32());
     }

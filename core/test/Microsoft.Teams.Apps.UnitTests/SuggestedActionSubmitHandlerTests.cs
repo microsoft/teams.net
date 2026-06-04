@@ -37,7 +37,7 @@ public class SuggestedActionSubmitHandlerTests
     [Fact]
     public void SuggestedActionSubmit_RouteSelector_MatchesCorrectInvokeName()
     {
-        var activity = new InvokeActivity(InvokeNames.SuggestedActionSubmit)
+        InvokeActivity activity = new(InvokeNames.SuggestedActionSubmit)
         {
             Value = new JsonObject { ["vote"] = "approve" }
         };
@@ -49,7 +49,7 @@ public class SuggestedActionSubmitHandlerTests
     [Fact]
     public void SuggestedActionSubmit_RouteSelector_DoesNotMatchOtherInvoke()
     {
-        var activity = new InvokeActivity(InvokeNames.AdaptiveCardAction);
+        InvokeActivity activity = new(InvokeNames.AdaptiveCardAction);
 
         bool matches = activity.Name == InvokeNames.SuggestedActionSubmit;
         Assert.False(matches);
@@ -59,7 +59,7 @@ public class SuggestedActionSubmitHandlerTests
     public void SuggestedActionSubmit_InvokeActivity_ValueRoundTrips()
     {
         var payload = new { vote = "approve", reason = "looks good" };
-        var activity = new InvokeActivity(InvokeNames.SuggestedActionSubmit)
+        InvokeActivity activity = new(InvokeNames.SuggestedActionSubmit)
         {
             Value = JsonSerializer.SerializeToNode(payload)
         };
@@ -72,7 +72,7 @@ public class SuggestedActionSubmitHandlerTests
     [Fact]
     public void OutgoingMessage_WithActionSubmitSuggestedAction_SerializesToSpecShape()
     {
-        var activity = new MessageActivity("Approve or reject:")
+        MessageActivity activity = new("Approve or reject:")
         {
             SuggestedActions = new SuggestedActions()
         };
@@ -81,9 +81,9 @@ public class SuggestedActionSubmitHandlerTests
         );
 
         string json = activity.ToJson();
-        using var doc = JsonDocument.Parse(json);
+        using JsonDocument doc = JsonDocument.Parse(json);
 
-        var action = doc.RootElement.GetProperty("suggestedActions").GetProperty("actions")[0];
+        JsonElement action = doc.RootElement.GetProperty("suggestedActions").GetProperty("actions")[0];
         Assert.Equal("Action.Submit", action.GetProperty("type").GetString());
         Assert.Equal("Approve", action.GetProperty("title").GetString());
         Assert.Equal("approve", action.GetProperty("value").GetProperty("vote").GetString());

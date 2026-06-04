@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
 
 namespace Microsoft.Teams.Apps;
@@ -112,7 +113,15 @@ public static class TeamsBotApplicationHostingExtensions
         services.AddSingleton(teamsOptions);
 
         services.AddBotApplication<TApp>(botConfig);
-        services.AddBotClient<ApiClient>(nameof(ApiClient), botConfig);
+        services.AddBotHttpClient(nameof(ApiClient), botConfig);
+        services.AddSingleton(sp =>
+        {
+            IHttpClientFactory factory = sp.GetRequiredService<IHttpClientFactory>();
+            HttpClient httpClient = factory.CreateClient(nameof(ApiClient));
+            ConversationClient conversationClient = sp.GetRequiredService<ConversationClient>();
+            UserTokenClient userTokenClient = sp.GetRequiredService<UserTokenClient>();
+            return new ApiClient(httpClient, conversationClient, userTokenClient);
+        });
         return services;
     }
 

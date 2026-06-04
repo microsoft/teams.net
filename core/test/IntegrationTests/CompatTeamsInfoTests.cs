@@ -7,10 +7,9 @@ using Microsoft.Bot.Schema;
 using Microsoft.Bot.Schema.Teams;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.BotBuilder;
-using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Schema;
+using Microsoft.Teams.Apps.Schema;
 using Xunit.Abstractions;
-using CoreConversationAccount = Microsoft.Teams.Core.Schema.ConversationAccount;
+using TeamsChannelData = Microsoft.Bot.Schema.Teams.TeamsChannelData;
 
 namespace IntegrationTests;
 
@@ -113,9 +112,9 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
         // First get a valid MRI-format member ID
         ApiClient api = _f.ScopedApiClient;
-        IList<CoreConversationAccount> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
-        string memberId = members[0].Id!;
+        string memberId = members[0]?.Id!;
 
         using TurnContext ctx = CreateTurnContext();
         TeamsChannelAccount result = await TeamsApiClient.GetMemberAsync(ctx, memberId);
@@ -125,7 +124,6 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"GetMember: {result.Id} — {result.Name}, Email: {result.Email}, UPN: {result.UserPrincipalName}");
     }
 
-#pragma warning disable CS0618 // Obsolete warning for GetMembersAsync
     [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task GetMembersAsync_ReturnsTeamsChannelAccounts()
     {
@@ -142,7 +140,6 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
             _output.WriteLine($"GetMembers: {m.Id} — {m.Name}");
         }
     }
-#pragma warning restore CS0618
 
     [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task GetPagedMembersAsync_ReturnsPaged()
@@ -173,9 +170,9 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
         // Get a valid MRI-format member ID from the team
         ApiClient api = _f.ScopedApiClient;
-        IList<CoreConversationAccount> members = await api.Conversations.Members.GetAsync(_f.TeamId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await api.Conversations.Members.GetAsync(_f.TeamId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
-        string memberId = members[0].Id!;
+        string memberId = members[0]?.Id!;
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
         TeamsChannelAccount result = await TeamsApiClient.GetTeamMemberAsync(ctx, memberId, _f.TeamId);
@@ -191,9 +188,9 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
         // When activity has TeamInfo, GetMemberAsync should delegate to GetTeamMemberAsync
         ApiClient api = _f.ScopedApiClient;
-        IList<CoreConversationAccount> members = await api.Conversations.Members.GetAsync(_f.TeamId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await api.Conversations.Members.GetAsync(_f.TeamId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
-        string memberId = members[0].Id!;
+        string memberId = members[0]?.Id!;
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
         TeamsChannelAccount result = await TeamsApiClient.GetMemberAsync(ctx, memberId);
@@ -203,7 +200,6 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"GetMember (team scope): {result.Id} — {result.Name}");
     }
 
-#pragma warning disable CS0618
     [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task GetTeamMembersAsync_ReturnsMembers()
     {
@@ -220,7 +216,6 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
             _output.WriteLine($"TeamMember: {m.Id} — {m.Name}");
         }
     }
-#pragma warning restore CS0618
 
     [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task GetPagedTeamMembersAsync_ReturnsPaged()
@@ -312,14 +307,14 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
         // Get the AAD object ID from a human member (bots don't have one).
         ApiClient api = _f.ScopedApiClient;
-        IList<CoreConversationAccount> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         string? aadObjectId = null;
-        foreach (CoreConversationAccount m in members)
+        foreach (TeamsConversationAccount? m in members)
         {
-            var tm = await api.Conversations.Members
-                .GetByIdAsync<Microsoft.Teams.Apps.Schema.TeamsConversationAccount>(_f.ConversationId, m.Id!, _f.AgenticIdentity);
+            TeamsConversationAccount tm = await api.Conversations.Members
+                .GetByIdAsync<TeamsConversationAccount>(_f.ConversationId, m?.Id!, _f.AgenticIdentity);
             _output.WriteLine($"Member: {tm.Name} — AadObjectId: {tm.AadObjectId ?? "(null)"}, Properties: [{string.Join(", ", tm.Properties.Keys)}]");
             if (tm.AadObjectId is not null)
             {

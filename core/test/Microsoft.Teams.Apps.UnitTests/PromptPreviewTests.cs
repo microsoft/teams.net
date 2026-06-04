@@ -8,13 +8,11 @@ using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 using Moq;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
-#pragma warning disable ExperimentalTeamsTargeted
 public class PromptPreviewTests
 {
     [Fact]
@@ -232,4 +230,3 @@ public class PromptPreviewTests
         };
     }
 }
-#pragma warning restore ExperimentalTeamsTargeted

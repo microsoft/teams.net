@@ -1,9 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
+using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Diagnostics;
 
 namespace Microsoft.Teams.Apps.Routing;
 
@@ -79,6 +82,7 @@ internal sealed class Router
 
         if (matchingRoutes.Count == 0 && _routes.Count > 0)
         {
+            AppsTelemetry.HandlerUnmatched.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.ActivityType, ctx.Activity.Type));
             _logger.LogWarning(
                 "No routes matched activity of type '{Type}'.",
                 ctx.Activity.Type
@@ -92,7 +96,40 @@ internal sealed class Router
         {
             _logger.LogInformation("Dispatching '{Type}' activity to route '{Name}'.", ctx.Activity.Type, route.Name);
             _logger.LogTrace("Dispatching activity to route '{Name}': {Activity}", route.Name, ctx.Activity.ToJson());
-            await route.InvokeRoute(ctx, cancellationToken).ConfigureAwait(false);
+
+            (string handlerType, string dispatch) = GetHandlerTags(route.Name);
+            TagList handlerTags = new()
+            {
+                { AppsTelemetry.Tags.HandlerType, handlerType },
+                { AppsTelemetry.Tags.HandlerDispatch, dispatch },
+            };
+
+            AppsTelemetry.HandlerDispatched.Add(1, handlerTags);
+
+            using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Handler, ActivityKind.Internal);
+            if (span is not null)
+            {
+                span.SetTag(AppsTelemetry.Tags.HandlerType, handlerType);
+                span.SetTag(AppsTelemetry.Tags.HandlerDispatch, dispatch);
+            }
+
+            long startTimestamp = Stopwatch.GetTimestamp();
+            try
+            {
+                await route.InvokeRoute(ctx, cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                AppsTelemetry.HandlerFailures.Add(1, handlerTags);
+                span.RecordException(ex);
+                throw;
+            }
+            finally
+            {
+                double elapsedMs = Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds;
+                AppsTelemetry.HandlerDuration.Record(elapsedMs, handlerTags);
+            }
+
             _logger.LogDebug("Completed route '{Name}' for '{Type}' activity.", route.Name, ctx.Activity.Type);
         }
     }
@@ -125,6 +162,12 @@ internal sealed class Router
 
         if (matchingRoutes.Count == 0 && _routes.Count > 0)
         {
+            TagList unmatchedTags = new()
+            {
+                { AppsTelemetry.Tags.ActivityType, ctx.Activity.Type },
+                { AppsTelemetry.Tags.InvokeName, name ?? string.Empty },
+            };
+            AppsTelemetry.HandlerUnmatched.Add(1, unmatchedTags);
             _logger.LogWarning("No routes matched invoke activity with name '{Name}'; returning 501.", name);
             return new InvokeResponse(501);
         }
@@ -132,11 +175,56 @@ internal sealed class Router
         _logger.LogInformation("Dispatching invoke activity with name '{Name}' to route '{Route}'.", name, matchingRoutes[0].Name);
         _logger.LogTrace("Dispatching invoke activity to route '{Route}': {Activity}", matchingRoutes[0].Name, ctx.Activity.ToJson());
 
-        InvokeResponse response = await matchingRoutes[0].InvokeRouteWithReturn(ctx, cancellationToken).ConfigureAwait(false);
+        (string handlerType, string dispatch) = GetHandlerTags(matchingRoutes[0].Name);
+        TagList handlerTags = new()
+        {
+            { AppsTelemetry.Tags.HandlerType, handlerType },
+            { AppsTelemetry.Tags.HandlerDispatch, dispatch },
+        };
+
+        AppsTelemetry.HandlerDispatched.Add(1, handlerTags);
+
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.Handler, ActivityKind.Internal);
+        if (span is not null)
+        {
+            span.SetTag(AppsTelemetry.Tags.HandlerType, handlerType);
+            span.SetTag(AppsTelemetry.Tags.HandlerDispatch, dispatch);
+        }
+
+        long startTimestamp = Stopwatch.GetTimestamp();
+        InvokeResponse response;
+        try
+        {
+            response = await matchingRoutes[0].InvokeRouteWithReturn(ctx, cancellationToken).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            AppsTelemetry.HandlerFailures.Add(1, handlerTags);
+            span.RecordException(ex);
+            throw;
+        }
+        finally
+        {
+            double elapsedMs = Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds;
+            AppsTelemetry.HandlerDuration.Record(elapsedMs, handlerTags);
+        }
 
         _logger.LogDebug("Completed invoke route '{Route}' for '{Name}' with status {Status}.", matchingRoutes[0].Name, name, response.Status);
 
         return response;
     }
 
+    private static (string handlerType, string dispatch) GetHandlerTags(string routeName)
+    {
+        const string invokePrefix = TeamsActivityType.Invoke + "/";
+        if (string.Equals(routeName, TeamsActivityType.Invoke, StringComparison.Ordinal))
+        {
+            return (routeName, "catchall");
+        }
+        if (routeName.StartsWith(invokePrefix, StringComparison.Ordinal))
+        {
+            return (routeName[invokePrefix.Length..], "invoke");
+        }
+        return (routeName, "type");
+    }
 }
