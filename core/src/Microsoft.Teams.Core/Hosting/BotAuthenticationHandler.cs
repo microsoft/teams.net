@@ -138,7 +138,7 @@ internal sealed class BotAuthenticationHandler(
                     // always falls through to a network round-trip to Entra.
                     // A per-key semaphore serialises concurrent requests for the same identity
                     // to prevent unsynchronised mutation of the shared ClaimsPrincipal.
-                    string cacheKey = $"{agenticIdentity.AgenticAppId}:{agenticUserGuid:D}";
+                    string cacheKey = GetAgenticCacheKey(agenticIdentity.AgenticAppId, agenticUserGuid);
                     SemaphoreSlim semaphore = _agenticLocks.GetOrAdd(cacheKey, _ => new SemaphoreSlim(1, 1));
                     await semaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
                     try
@@ -150,6 +150,19 @@ internal sealed class BotAuthenticationHandler(
                             {
                                 SlidingExpiration = _agenticPrincipalSlidingExpiry,
                                 Size = 1,
+                                PostEvictionCallbacks =
+                                {
+                                    new PostEvictionCallbackRegistration
+                                    {
+                                        EvictionCallback = (key, _, _, _) =>
+                                        {
+                                            if (_agenticLocks.TryRemove((string)key, out SemaphoreSlim? s))
+                                            {
+                                                s.Dispose();
+                                            }
+                                        },
+                                    }
+                                },
                             });
                         }
 
@@ -181,6 +194,9 @@ internal sealed class BotAuthenticationHandler(
         }
     }
 
+    private static string GetAgenticCacheKey(string agenticAppId, Guid agenticUserGuid) =>
+        $"{agenticAppId}:{agenticUserGuid:D}";
+
     private void LogTokenClaims(string token)
     {
         if (!_logger.IsEnabled(LogLevel.Trace))
@@ -206,8 +222,13 @@ internal sealed class BotAuthenticationHandler(
     {
         if (disposing)
         {
+            // Snapshot and clear the lock dictionary before disposing the cache so that
+            // post-eviction callbacks (which call TryRemove on _agenticLocks) cannot
+            // race with or double-dispose the semaphores we are about to dispose here.
+            SemaphoreSlim[] semaphores = [.. _agenticLocks.Values];
+            _agenticLocks.Clear();
             _agenticPrincipalCache.Dispose();
-            foreach (SemaphoreSlim s in _agenticLocks.Values)
+            foreach (SemaphoreSlim s in semaphores)
             {
                 s.Dispose();
             }
