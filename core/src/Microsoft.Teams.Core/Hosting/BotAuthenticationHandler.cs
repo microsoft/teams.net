@@ -150,19 +150,6 @@ internal sealed class BotAuthenticationHandler(
                             {
                                 SlidingExpiration = _agenticPrincipalSlidingExpiry,
                                 Size = 1,
-                                PostEvictionCallbacks =
-                                {
-                                    new PostEvictionCallbackRegistration
-                                    {
-                                        EvictionCallback = (key, _, _, _) =>
-                                        {
-                                            if (_agenticLocks.TryRemove((string)key, out SemaphoreSlim? s))
-                                            {
-                                                s.Dispose();
-                                            }
-                                        },
-                                    }
-                                },
                             });
                         }
 
@@ -222,17 +209,15 @@ internal sealed class BotAuthenticationHandler(
     {
         if (disposing)
         {
-            // Snapshot and clear the lock dictionary before disposing the cache so that
-            // post-eviction callbacks (which call TryRemove on _agenticLocks) cannot
-            // race with or double-dispose the semaphores we are about to dispose here.
-            SemaphoreSlim[] semaphores = [.. _agenticLocks.Values];
-            _agenticLocks.Clear();
             _agenticPrincipalCache.Dispose();
-            foreach (SemaphoreSlim s in semaphores)
+            foreach (SemaphoreSlim s in _agenticLocks.Values)
             {
                 s.Dispose();
             }
+
+            _agenticLocks.Clear();
         }
+
         base.Dispose(disposing);
     }
 }
