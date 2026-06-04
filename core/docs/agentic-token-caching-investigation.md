@@ -161,13 +161,13 @@ private async Task<string> GetAuthorizationHeaderAsync(AgenticIdentity? agenticI
 - Minimal code change (just in `BotAuthenticationHandler`)
 - Uses MSAL's built-in silent flow / cache lookup
 - No changes to microsoft-identity-web needed
-- The ClaimsPrincipal persists across requests via the `ConcurrentDictionary`
-- Thread-safe since `BotAuthenticationHandler` is a `DelegatingHandler` (one per typed HttpClient)
+- The cached ClaimsPrincipal persists across requests for the lifetime of the handler instance
 
-**Risks**:
-- `BotAuthenticationHandler` is created per `IHttpClientFactory` handler chain. Need to verify the instance lifecycle — if transient, the cache won't persist. Since it's registered via `AddHttpMessageHandler(sp => new BotAuthenticationHandler(...))`, the handler is created once per typed client and reused.
-- Multi-user scenarios: the cache key must include the user OID to avoid cross-user token leaks.
-- Memory growth: for multi-tenant bots with many users, the dictionary grows. Consider expiration.
+**Risks (and how the shipped implementation mitigates them)**:
+- `BotAuthenticationHandler` is created per `IHttpClientFactory` handler chain. Handler chains are pooled and rotated by `IHttpClientFactory` based on `HandlerLifetime` (default ~2 minutes), so the in-handler cache is bounded by that rotation rather than the process lifetime. This is acceptable because the dominant cost — intra-turn round-trips — is eliminated.
+- Multi-user scenarios: the cache key must include the user OID to avoid cross-user token leaks. The shipped key is `"{agenticAppId}:{agenticUserGuid:D}"`.
+- Memory growth: a naïve `ConcurrentDictionary` would grow without bound. The shipped implementation uses `MemoryCache` with `SizeLimit = 10_000` and a 1-hour sliding expiry, plus a post-eviction callback that removes the matching per-key `SemaphoreSlim` from `_agenticLocks` so both collections stay bounded together.
+- Concurrent mutation of a shared `ClaimsPrincipal` (MSAL writes the account ID back via `user.AddIdentity(...)`) is not thread-safe. The shipped implementation serialises requests for the same identity through a per-key `SemaphoreSlim`; requests for different identities still run concurrently.
 
 ### Option D: File Issue with microsoft-identity-web
 
@@ -180,6 +180,25 @@ This is the "correct" long-term fix but requires upstream changes.
 **Start with Option C** — cache ClaimsPrincipal per `(agenticAppId, agenticUserId)` in `BotAuthenticationHandler`. Validate that the silent flow kicks in on the second call within the same turn. This should eliminate 3 of the 4 Entra round-trips per message (the first call will still hit the network, but subsequent calls within the same turn and across turns will use the cache).
 
 **Also file an issue with microsoft-identity-web** (Option D) for the proper long-term fix.
+
+## Implementation
+
+The shipped fix in `BotAuthenticationHandler.cs` adopts Option C with the following concrete design:
+
+| Concern | Decision |
+|---------|----------|
+| Principal storage | `MemoryCache` keyed by `"{agenticAppId}:{agenticUserGuid:D}"`, `SizeLimit = 10_000`, `SlidingExpiration = 1h`, `Size = 1` per entry. |
+| Per-identity serialisation | `ConcurrentDictionary<string, SemaphoreSlim>` (`_agenticLocks`). Each `SendAsync` for a given identity acquires the matching semaphore before reading/mutating the cached `ClaimsPrincipal`. |
+| Bounding `_agenticLocks` | A `PostEvictionCallback` on every cache entry calls `_agenticLocks.TryRemove(key, …)` so the two collections shrink together. The semaphore is **not** disposed in the callback — an in-flight request may still hold it; GC reclaims it once all references release. |
+| Handler-level disposal | `Dispose(disposing)` disposes the cache then iterates and disposes any remaining semaphores. |
+| `IHttpClientFactory` lifecycle | Handler chains are pooled by `IHttpClientFactory` and rotated based on `HandlerLifetime` (default ~2 minutes). The cache therefore lives at most for that window, which is sufficient to collapse the per-turn redundant round-trips that motivated this change. |
+
+Verified by `BotAuthenticationHandlerTests`:
+- Same identity reuses the same `ClaimsPrincipal` across calls.
+- Concurrent calls for the same identity are serialised; different identities run concurrently.
+- Cache eviction removes the matching lock entry from `_agenticLocks` and a subsequent call still succeeds.
+- An in-flight call holding a semaphore is not disrupted by concurrent eviction (no `ObjectDisposedException`).
+- `Dispose` cleans up remaining semaphores and the cache.
 
 ## Key Files
 

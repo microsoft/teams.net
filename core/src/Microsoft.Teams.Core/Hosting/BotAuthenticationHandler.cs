@@ -46,6 +46,17 @@ internal sealed class BotAuthenticationHandler(
     private readonly MemoryCache _agenticPrincipalCache = new(new MemoryCacheOptions { SizeLimit = 10_000 });
     // Per-key semaphores to prevent concurrent requests from mutating the same ClaimsPrincipal simultaneously.
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _agenticLocks = new();
+    // Removes the lock entry when its principal is evicted from the cache so _agenticLocks stays bounded.
+    // The semaphore itself is NOT disposed here — an in-flight call may still hold it and must be able
+    // to call Release() without ObjectDisposedException; GC reclaims it once all references are gone.
+    private static readonly PostEvictionDelegate _removeAgenticLockOnEviction =
+        static (key, _, _, state) =>
+        {
+            if (state is ConcurrentDictionary<string, SemaphoreSlim> locks && key is string k)
+            {
+                locks.TryRemove(k, out _);
+            }
+        };
     private static readonly Action<ILogger, string, Exception?> _logAgenticToken =
         LoggerMessage.Define<string>(LogLevel.Debug, new(2), "Acquiring agentic token for AgenticAppId {AgenticAppId}");
     private static readonly Action<ILogger, string, Exception?> _logAppOnlyToken =
@@ -150,7 +161,7 @@ internal sealed class BotAuthenticationHandler(
                             {
                                 SlidingExpiration = _agenticPrincipalSlidingExpiry,
                                 Size = 1,
-                            });
+                            }.RegisterPostEvictionCallback(_removeAgenticLockOnEviction, _agenticLocks));
                         }
 
                         string token = await _authorizationHeaderProvider.CreateAuthorizationHeaderAsync([AgenticScope], options, principal, cancellationToken).ConfigureAwait(false);

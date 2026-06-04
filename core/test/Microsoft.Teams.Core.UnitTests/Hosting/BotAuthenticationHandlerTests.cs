@@ -193,10 +193,12 @@ public class BotAuthenticationHandlerTests
     }
 
     [Fact]
-    public async Task AgenticRequest_SemaphoreSurvivesCacheEviction_NoObjectDisposedException()
+    public async Task AgenticRequest_CacheEviction_RemovesLockEntry_AndSubsequentCallSucceeds()
     {
-        // Use a handler with the real (10,000-entry) cache but trigger eviction
-        // by directly compacting the private MemoryCache after a first call populates it.
+        // After a principal is evicted from the cache, the matching lock entry must be
+        // removed from _agenticLocks so the dictionary stays bounded. A subsequent call
+        // for the same identity must still succeed (creating a fresh semaphore + principal)
+        // without ever throwing ObjectDisposedException.
         (BotAuthenticationHandler handler, Mock<IAuthorizationHeaderProvider> mockProvider) = CreateHandler();
         using HttpMessageInvoker invoker = new(handler, disposeHandler: false);
 
@@ -211,11 +213,16 @@ public class BotAuthenticationHandlerTests
         // Force eviction by compacting the entire cache.
         cache.Compact(1.0);
 
-        // The semaphore must still be in the dictionary (the fix decoupled it from eviction).
-        Assert.NotEmpty(locks);
+        // The post-eviction callback runs on the thread pool; wait briefly for it to remove
+        // the lock entry. Bounded by 2s to fail fast if the callback is not wired up.
+        bool removed = SpinWait.SpinUntil(() => locks.IsEmpty, TimeSpan.FromSeconds(2));
+        Assert.True(removed, "Expected the lock entry to be removed from _agenticLocks after cache eviction.");
 
-        // Second call for the same identity — must NOT throw ObjectDisposedException.
+        // Second call for the same identity — must NOT throw ObjectDisposedException
+        // and must repopulate both the cache and the lock dictionary.
         await invoker.SendAsync(CreateAgenticRequest(TestAppId, TestUserId), CancellationToken.None);
+
+        Assert.NotEmpty(locks);
 
         handler.Dispose();
     }
