@@ -15,6 +15,7 @@ using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 
@@ -100,7 +101,7 @@ bot.OnMessage("(?i)^login$", async (context, ct) =>
     {
         await context.SendActivityAsync("Already signed in to GitHub.", ct);
     }
-    
+
 });
 
 bot.OnMessage("(?i)^login graph$", async (context, ct) =>
@@ -125,8 +126,8 @@ bot.OnMessage("(?i)^login github$", async (context, ct) =>
 bot.OnMessage("(?i)^status$", async (context, ct) =>
 {
     // GetConnectionStatusAsync returns ALL connections -- no names needed
-    var statuses = await graphAuth.GetConnectionStatusAsync(context, ct);
-    var lines = statuses.Select(s =>
+    IList<GetTokenStatusResult> statuses = await graphAuth.GetConnectionStatusAsync(context, ct);
+    IEnumerable<string> lines = statuses.Select(s =>
         $"- **{s.ConnectionName}** ({s.ServiceProviderDisplayName}): " +
         $"{(s.HasToken == true ? "✅ connected" : "❌ not connected")}");
 
@@ -142,7 +143,7 @@ bot.OnMessage("(?i)^my ad user", async (context, ct) =>
     string? token = await graphAuth.SignInAsync(context, ct);
     if (token is null) return;
 
-    using var http = new HttpClient();
+    using HttpClient http = new();
     http.DefaultRequestHeaders.Authorization = new("Bearer", token);
 
     try
@@ -162,7 +163,7 @@ bot.OnMessage("(?i)^my gh user$", async (context, ct) =>
     string? token = await githubAuth.SignInAsync(context, ct);
     if (token is null) return;
 
-    using var http = new HttpClient();
+    using HttpClient http = new();
     http.DefaultRequestHeaders.Authorization = new("Bearer", token);
     http.DefaultRequestHeaders.UserAgent.ParseAdd("TeamsBot/1.0");
 

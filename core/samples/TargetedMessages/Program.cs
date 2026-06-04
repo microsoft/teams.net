@@ -4,9 +4,7 @@
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
-using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 webAppBuilder.Services.AddTeamsBotApplication();
@@ -60,7 +58,7 @@ teamsApp.OnMessage("(?i)^test update$", async (context, cancellationToken) =>
         try
         {
             MessageActivity updated = new($"✏️ Updated at {DateTime.UtcNow:HH:mm:ss}");
-            await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updated, cancellationToken);
+            await context.Api.Conversations.Activities.UpdateTargetedAsync(conversationId, messageId, updated, cancellationToken: cancellationToken);
         }
         catch (Exception ex)
         {

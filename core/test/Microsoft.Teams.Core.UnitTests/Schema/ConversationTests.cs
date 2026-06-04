@@ -10,14 +10,14 @@ public class ConversationTests
     [Fact]
     public void ToThreadedConversationId_ConstructsThreadedConversationId()
     {
-        var result = ConversationExtensions.ToThreadedConversationId("19:abc@thread.skype", "1680000000000");
+        string result = ConversationExtensions.ToThreadedConversationId("19:abc@thread.skype", "1680000000000");
         Assert.Equal("19:abc@thread.skype;messageid=1680000000000", result);
     }
 
     [Fact]
     public void ToThreadedConversationId_WorksWithDifferentConversationIdFormats()
     {
-        var result = ConversationExtensions.ToThreadedConversationId("19:meeting_abc@thread.v2", "999");
+        string result = ConversationExtensions.ToThreadedConversationId("19:meeting_abc@thread.v2", "999");
         Assert.Equal("19:meeting_abc@thread.v2;messageid=999", result);
     }
 
@@ -66,21 +66,21 @@ public class ConversationTests
     [Fact]
     public void ToThreadedConversationId_StripsExistingMessageIdAndReplacesWithThreadRoot()
     {
-        var result = ConversationExtensions.ToThreadedConversationId("19:abc@thread.skype;messageid=111", "222");
+        string result = ConversationExtensions.ToThreadedConversationId("19:abc@thread.skype;messageid=111", "222");
         Assert.Equal("19:abc@thread.skype;messageid=222", result);
     }
 
     [Fact]
     public void ThreadId_StripsMessageIdSuffix()
     {
-        var conv = new Conversation("19:abc@thread.skype;messageid=1680000000000");
+        Conversation conv = new("19:abc@thread.skype;messageid=1680000000000");
         Assert.Equal("19:abc@thread.skype", conv.ThreadId());
     }
 
     [Fact]
     public void ThreadId_ReturnsIdWhenNoSuffix()
     {
-        var conv = new Conversation("19:abc@thread.skype");
+        Conversation conv = new("19:abc@thread.skype");
         Assert.Equal("19:abc@thread.skype", conv.ThreadId());
     }
 }

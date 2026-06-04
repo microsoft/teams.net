@@ -4,7 +4,6 @@
 using System.Net.Http.Headers;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
-using Microsoft.Identity.Web;
 using Microsoft.Teams.Core.Schema;
 
 namespace PABot

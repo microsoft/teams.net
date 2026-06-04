@@ -3,7 +3,6 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Security;
-using System.Text.RegularExpressions;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
 
