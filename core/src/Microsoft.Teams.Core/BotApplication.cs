@@ -201,7 +201,7 @@ public class BotApplication
         }
 
         string serviceUrlFromClaims = httpContext.User.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
-        if (!string.IsNullOrEmpty(serviceUrlFromClaims) && !serviceUrlFromClaims.Equals(activity.ServiceUrl?.ToString(), StringComparison.OrdinalIgnoreCase))
+        if (!string.IsNullOrEmpty(serviceUrlFromClaims) && !serviceUrlFromClaims.Equals(activity.ServiceUrl?.ToString(), StringComparison.Ordinal))
         {
             throw new InvalidDataException($"ServiceUrl in activity ({activity.ServiceUrl}) does not match serviceUrl claim ({serviceUrlFromClaims}).");
         };

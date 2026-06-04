@@ -216,36 +216,7 @@ public class BotApplicationTests
 
         Assert.True(onActivityCalled);
     }
-
-    [Fact]
-    public async Task ProcessAsync_ServiceUrlClaimMatchesActivity_CaseInsensitive_ProcessesSuccessfully()
-    {
-        BotApplication botApp = CreateBotApplication();
-
-        CoreActivity activity = new()
-        {
-            Type = ActivityType.Message,
-            Id = "act123",
-            ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/")
-        };
-
-        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
-        httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
-        [
-            new Claim("serviceurl", "HTTPS://SMBA.TRAFFICMANAGER.NET/teams/")
-        ]));
-
-        bool onActivityCalled = false;
-        botApp.OnActivity = (act, ct) =>
-        {
-            onActivityCalled = true;
-            return Task.CompletedTask;
-        };
-
-        await botApp.ProcessAsync(httpContext);
-
-        Assert.True(onActivityCalled);
-    }
+       
 
     [Fact]
     public async Task ProcessAsync_ServiceUrlClaimMismatch_ThrowsInvalidDataException()
@@ -263,6 +234,32 @@ public class BotApplicationTests
         httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
         [
             new Claim("serviceurl", "https://evil.example.com/")
+        ]));
+
+        botApp.OnActivity = (act, ct) => Task.CompletedTask;
+
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            botApp.ProcessAsync(httpContext));
+
+        Assert.Contains("does not match", exception.Message);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_ServiceUrlClaimMismatchCase_ThrowsInvalidDataException()
+    {
+        BotApplication botApp = CreateBotApplication();
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Id = "act123",
+            ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/")
+        };
+
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+        httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim("serviceurl", "https://SMBA.trafficmanager.net/teams/")
         ]));
 
         botApp.OnActivity = (act, ct) => Task.CompletedTask;
