@@ -1,11 +1,8 @@
 # Release Process
 
+This document describes how to release packages for the Teams SDK for .NET. It assumes you have required entitlements in Azure DevOps for triggering releases.
+
 This project uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) (nbgv) for automatic version management.
-
-There are two package sets, each with its own `version.json`:
-
-- **Core** (`core/`): `core/version.json` (with a per-project override at `core/src/Microsoft.Teams.Apps/version.json`)
-- **Legacy** (`Libraries/`): root `version.json`
 
 ## Creating a Release
 
@@ -86,6 +83,11 @@ To publish experimental versions from a feature branch:
 
 ## Bumping Major/Minor Version
 
+There are two package sets, each with its own `version.json`:
+
+- **Core** (`core/`): `core/version.json` (with a per-project override at `core/src/Microsoft.Teams.Apps/version.json`)
+- **Legacy** (`Libraries/`): root `version.json`
+
 To bump from `2.0.x` to `2.1.x` or `3.0.x`:
 
 1. Edit `version.json` on `main`
@@ -108,7 +110,7 @@ The publish pipeline (`Teams.NET-ESRP` / `publish.yaml`) is manually triggered.
 
 1. Go to **Pipelines > Teams.NET-ESRP** in ADO
 2. Click **Run pipeline**
-3. Select the branch to build from
+3. Select the branch to build from (either `releases/v2` for Legacy or `releases/core` for Core)
 4. Choose **Package Set**: `Legacy` or `Core`
 5. Choose **Publish Type**:
    - **Internal** — publishes unsigned packages to the `TeamsSDKPreviews` ADO feed. No approval required.
