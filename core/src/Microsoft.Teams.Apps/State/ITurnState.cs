@@ -3,7 +3,7 @@
 
 #pragma warning disable CA1716 // Get/Set are the idiomatic names for state access, matching ISession conventions.
 
-namespace Microsoft.Teams.Core.State;
+namespace Microsoft.Teams.Apps.State;
 
 /// <summary>
 /// Provides per-turn state storage with key-value and typed object access.

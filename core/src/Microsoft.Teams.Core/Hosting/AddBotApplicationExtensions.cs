@@ -4,8 +4,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Caching.Distributed;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -14,7 +12,6 @@ using Microsoft.Extensions.Options;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.TokenCacheProviders.InMemory;
-using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Core.Hosting;
 
@@ -68,21 +65,6 @@ public static class AddBotApplicationExtensions
 
         TApp botApp = endpoints.ServiceProvider.GetService<TApp>() ?? throw new InvalidOperationException("Application not registered");
 
-        // Auto-wire TurnStateMiddleware into the pipeline if it was registered via AddBotApplicationState().
-        TurnStateMiddleware? turnStateMiddleware = endpoints.ServiceProvider.GetService<TurnStateMiddleware>();
-        if (turnStateMiddleware is not null)
-        {
-            botApp.UseMiddleware(turnStateMiddleware);
-
-            IDistributedCache cache = endpoints.ServiceProvider.GetRequiredService<IDistributedCache>();
-            if (cache is MemoryDistributedCache)
-            {
-                ILogger logger = endpoints.ServiceProvider.GetRequiredService<ILoggerFactory>()
-                    .CreateLogger(typeof(AddBotApplicationExtensions));
-                logger.StateUsingInMemoryCache();
-            }
-        }
-
         endpoints.MapPost(routePath, (HttpContext httpContext, CancellationToken cancellationToken)
             => botApp.ProcessAsync(httpContext, cancellationToken)
         ).RequireAuthorization();
@@ -132,36 +114,6 @@ public static class AddBotApplicationExtensions
         services.AddBotClient<ConversationClient>(ConversationClient.ConversationHttpClientName, botConfig);
         services.AddBotClient<UserTokenClient>(UserTokenClient.UserTokenHttpClientName, botConfig);
         services.AddSingleton<TApp>();
-        return services;
-    }
-
-    /// <summary>
-    /// Registers turn-state services in the service collection.
-    /// </summary>
-    /// <param name="services">The service collection to add services to.</param>
-    /// <param name="configure">An optional delegate to configure <see cref="TurnStateOptions"/>.</param>
-    /// <returns>The service collection for method chaining.</returns>
-    public static IServiceCollection AddBotApplicationState(
-        this IServiceCollection services,
-        Action<TurnStateOptions>? configure = null)
-    {
-        if (configure is not null)
-        {
-            services.Configure(configure);
-        }
-        else
-        {
-            services.AddOptions<TurnStateOptions>();
-        }
-
-        // Provide an in-memory cache as fallback so WithState() works out of the box.
-        // Since this uses TryAdd, any IDistributedCache registered by the developer
-        // (before or after this call) will take precedence via last-wins DI resolution
-        // only if they use Add (not TryAdd). Redis (AddStackExchangeRedisCache) uses Add,
-        // so it always wins regardless of order.
-        services.AddDistributedMemoryCache();
-
-        services.AddSingleton<TurnStateMiddleware>();
         return services;
     }
 

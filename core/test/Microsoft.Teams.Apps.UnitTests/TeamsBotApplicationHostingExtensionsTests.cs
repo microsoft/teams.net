@@ -6,8 +6,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core.Hosting;
-using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
@@ -74,7 +74,7 @@ public class TeamsBotApplicationHostingExtensionsTests
     }
 
     [Fact]
-    public void AddTeamsBotApplication_WithState_RegistersMiddleware()
+    public void AddTeamsBotApplication_WithState_RegistersStateLoader()
     {
         Dictionary<string, string?> configData = new()
         {
@@ -93,9 +93,9 @@ public class TeamsBotApplicationHostingExtensionsTests
         services.AddTeamsBotApplication(options => options.WithState());
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
-        TurnStateMiddleware? middleware = serviceProvider.GetService<TurnStateMiddleware>();
+        TurnStateLoader? loader = serviceProvider.GetService<TurnStateLoader>();
 
-        Assert.NotNull(middleware);
+        Assert.NotNull(loader);
     }
 
     [Fact]
@@ -127,7 +127,7 @@ public class TeamsBotApplicationHostingExtensionsTests
     }
 
     [Fact]
-    public void AddTeamsBotApplication_WithoutState_DoesNotRegisterMiddleware()
+    public void AddTeamsBotApplication_WithoutState_DoesNotRegisterStateLoader()
     {
         Dictionary<string, string?> configData = new()
         {
@@ -136,7 +136,7 @@ public class TeamsBotApplicationHostingExtensionsTests
         };
 
         using ServiceProvider serviceProvider = BuildServiceProvider(configData);
-        TurnStateMiddleware? middleware = serviceProvider.GetService<TurnStateMiddleware>();
+        TurnStateLoader? middleware = serviceProvider.GetService<TurnStateLoader>();
 
         Assert.Null(middleware);
     }

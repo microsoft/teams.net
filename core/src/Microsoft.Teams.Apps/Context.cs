@@ -7,8 +7,8 @@ using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Apps;
 
@@ -53,14 +53,24 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     // ==================== Turn State ====================
 
+    private TurnStateContainer? _state;
+    
     /// <summary>
     /// Gets the per-turn state container with <see cref="TurnStateContainer.ConversationState"/>
     /// and <see cref="TurnStateContainer.UserState"/> scopes.
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown when state management is not configured.</exception>
-    public TurnStateContainer State => TeamsBotApplication.State
-        ?? throw new InvalidOperationException(
-            "State is not available. Call AddBotApplicationState() / WithState() during service registration.");
+    public TurnStateContainer State
+    {
+        get => _state ?? throw new InvalidOperationException(
+            "State is not available. Call WithState() during service registration.");
+        internal set => _state = value;
+    }
+
+    /// <summary>
+    /// Returns true if state has been loaded for this turn.
+    /// </summary>
+    internal bool HasState => _state is not null;
 
     // ==================== Convenience Send/Reply/Typing ====================
 

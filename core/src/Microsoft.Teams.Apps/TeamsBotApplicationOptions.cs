@@ -2,8 +2,8 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps.OAuth;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core.Hosting;
-using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Apps;
 

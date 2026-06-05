@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Core.State;
+using Microsoft.Teams.Apps.State;
 
-namespace Microsoft.Teams.Core.UnitTests.State;
+namespace Microsoft.Teams.Apps.UnitTests.State;
 
 public class TurnStateTests
 {

@@ -3,7 +3,7 @@
 
 using Microsoft.Extensions.Caching.Distributed;
 
-namespace Microsoft.Teams.Core.State;
+namespace Microsoft.Teams.Apps.State;
 
 /// <summary>
 /// Configuration options for turn state management.

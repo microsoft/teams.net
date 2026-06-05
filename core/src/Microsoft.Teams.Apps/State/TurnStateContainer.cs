@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace Microsoft.Teams.Core.State;
+namespace Microsoft.Teams.Apps.State;
 
 /// <summary>
 /// Holds the conversation-scoped and user-scoped state for the current turn.

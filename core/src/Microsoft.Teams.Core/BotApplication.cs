@@ -8,7 +8,6 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
-using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Core;
 
@@ -164,12 +163,6 @@ public class BotApplication
     /// </example>
     /// </remarks>
     public virtual Func<CoreActivity, CancellationToken, Task>? OnActivity { get; set; }
-
-    /// <summary>
-    /// Gets or sets the per-turn state container holding conversation-scoped and user-scoped state.
-    /// Managed by <see cref="TurnStateMiddleware"/>: set before the activity handler runs, cleared after it completes.
-    /// </summary>
-    public TurnStateContainer? State { get; internal set; }
 
     /// <summary>
     /// Processes an incoming HTTP request containing a bot activity.

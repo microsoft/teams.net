@@ -5,7 +5,7 @@
 
 using System.Text.Json;
 
-namespace Microsoft.Teams.Core.State;
+namespace Microsoft.Teams.Apps.State;
 
 /// <summary>
 /// Default implementation of <see cref="ITurnState"/> backed by a dictionary.

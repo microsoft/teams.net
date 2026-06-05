@@ -92,6 +92,11 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(ctx);
         Context<TActivity> typedContext = new(ctx.TeamsBotApplication, (TActivity)ctx.Activity);
+        if (ctx.HasState)
+        {
+            typedContext.State = ctx.State;
+        }
+
         await Handler!(typedContext, cancellationToken).ConfigureAwait(false);
     }
 
@@ -105,6 +110,11 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(ctx);
         Context<TActivity> typedContext = new(ctx.TeamsBotApplication, (TActivity)ctx.Activity);
+        if (ctx.HasState)
+        {
+            typedContext.State = ctx.State;
+        }
+
         return await HandlerWithReturn!(typedContext, cancellationToken).ConfigureAwait(false);
     }
 }

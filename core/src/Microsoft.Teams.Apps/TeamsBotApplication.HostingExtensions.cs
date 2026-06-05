@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
-using Microsoft.Teams.Core.State;
 
 namespace Microsoft.Teams.Apps;
 
@@ -117,7 +117,7 @@ public static class TeamsBotApplicationHostingExtensions
 
         if (teamsOptions.UseState)
         {
-            services.AddBotApplicationState(teamsOptions.StateConfiguration);
+            AddTeamsBotApplicationState(services, teamsOptions.StateConfiguration);
         }
 
         services.AddBotHttpClient(nameof(ApiClient), botConfig);
@@ -162,4 +162,25 @@ public static class TeamsBotApplicationHostingExtensions
     /// <returns>The configured <see cref="TeamsBotApplication"/> instance.</returns>
     public static TeamsBotApplication UseTeams(this IEndpointRouteBuilder endpoints, string routePath = "api/messages")
         => endpoints.UseBotApplication<TeamsBotApplication>(routePath);
+
+    private static void AddTeamsBotApplicationState(IServiceCollection services, Action<TurnStateOptions>? configure)
+    {
+        if (configure is not null)
+        {
+            services.Configure(configure);
+        }
+        else
+        {
+            services.AddOptions<TurnStateOptions>();
+        }
+
+        // Provide an in-memory cache as fallback so WithState() works out of the box.
+        // Since this uses TryAdd, any IDistributedCache registered by the developer
+        // (before or after this call) will take precedence via last-wins DI resolution
+        // only if they use Add (not TryAdd). Redis (AddStackExchangeRedisCache) uses Add,
+        // so it always wins regardless of order.
+        services.AddDistributedMemoryCache();
+
+        services.AddSingleton<TurnStateLoader>();
+    }
 }
