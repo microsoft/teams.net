@@ -1,0 +1,42 @@
+@page "/tabs/test"
+@rendermode InteractiveServer
+@inject IConfiguration Configuration
+
+<h1>👋 Welcome</h1>
+<p>This test app lets you try out some of the features offered by Teams SDK for Teams Tab app developers.</p>
+
+<div class="actions">
+    <button disabled="@(!initialized)" @onclick="PostChatMessage">Post chat message</button>
+</div>
+
+@if (!string.IsNullOrEmpty(content))
+{
+    <div class="result">
+        <pre><code>@content</code></pre>
+    </div>
+}
+
+<p>
+    For more information, please refer to the
+    <a href="https://microsoft.github.io/teams-sdk" rel="noopener noreferrer" target="_blank">Teams SDK documentation</a>.
+</p>
+
+@code {
+    private bool initialized;
+    private string content = string.Empty;
+
+    protected override void OnInitialized()
+    {
+        initialized = true;
+    }
+
+    private Task PostChatMessage()
+    {
+        // The 'post-to-chat' function is invoked by the Teams client SDK from the browser.
+        // This button demonstrates that the tab UI is rendered via Blazor Server,
+        // while the actual function execution happens through the Teams bot framework.
+        content = "Use the Teams client to invoke the 'post-to-chat' function.";
+        StateHasChanged();
+        return Task.CompletedTask;
+    }
+}

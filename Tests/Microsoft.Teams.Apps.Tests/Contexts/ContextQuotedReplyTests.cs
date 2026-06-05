@@ -15,7 +15,7 @@ public class ContextQuotedReplyTests
     {
         return new MessageActivity(text)
         {
-            Id = id,
+            Id = id!,
             From = new Account { Id = "user1" },
             Recipient = new Account { Id = "bot1" },
             Conversation = new Api.Conversation { Id = "conv1" }
