@@ -40,6 +40,9 @@ internal static partial class Log
     [LoggerMessage(EventId = 7, Level = LogLevel.Information, Message = "Finished processing activity: Id={Id}")]
     public static partial void ActivityProcessingFinished(this ILogger logger, string? id);
 
+    [LoggerMessage(EventId = 8, Level = LogLevel.Debug, Message = "ServiceUrl in activity ({ActivityServiceUrl}) does not match serviceUrl claim ({ClaimServiceUrl}).")]
+    public static partial void LogServiceUrlClaimMismatch(this ILogger logger, Uri? activityServiceUrl, string claimServiceUrl);
+
     // ── ConversationClient ──────────────────────────────────────────────
 
     [LoggerMessage(EventId = 10, Level = LogLevel.Information, Message = "Truncating conversation ID for 'agents' channel to comply with length restrictions.")]

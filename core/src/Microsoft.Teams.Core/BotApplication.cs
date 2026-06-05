@@ -207,6 +207,14 @@ public class BotApplication
             _logger.ReceivedActivityJson(activity.ToJson());
         }
 
+        string serviceUrlFromClaims = httpContext.User.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
+        if (!string.IsNullOrEmpty(serviceUrlFromClaims) && !serviceUrlFromClaims.Equals(activity.ServiceUrl?.ToString(), StringComparison.Ordinal))
+        {
+            _logger.LogServiceUrlClaimMismatch(activity.ServiceUrl, serviceUrlFromClaims);
+            throw new InvalidDataException("ServiceUrl in activity payload does not match serviceurl JWT claim.");
+            //$"ServiceUrl in activity ({activity.ServiceUrl}) does not match serviceUrl claim ({serviceUrlFromClaims})."
+        }
+
         KeyValuePair<string, object?> activityTypeTag = new(Telemetry.Tags.ActivityType, activity.Type);
         Telemetry.ActivitiesReceived.Add(1, activityTypeTag);
 
@@ -223,6 +231,7 @@ public class BotApplication
 
         long startTimestamp = Stopwatch.GetTimestamp();
 
+        // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
         using (_logger.BeginActivityScope(activity.Type, activity.Id, activity.ServiceUrl, correlationVector))
         {
             // Use a dedicated timeout instead of the HTTP request's cancellation token.
