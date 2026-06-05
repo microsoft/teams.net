@@ -122,7 +122,7 @@ namespace PABot.Bots
                 TeamsChannelData channelData = turnContext.Activity.GetChannelData<TeamsChannelData>();
                 ChannelAccount userChannel = turnContext.Activity.From;
 
-                ConversationParameters conversationParameters = new ConversationParameters
+                ConversationParameters conversationParameters = new()
                 {
                     IsGroup = false,
                     Bot = new ChannelAccount { Id = turnContext.Activity.Recipient.Id },

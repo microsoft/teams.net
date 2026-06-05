@@ -3,25 +3,28 @@
 
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net8.0;net10.0</TargetFrameworks>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <NoWarn>$(NoWarn);ExperimentalTeamsQuotedReplies;ExperimentalTeamsTargeted</NoWarn>
-  </PropertyGroup>
+	<PropertyGroup>
+		<TargetFrameworks>net8.0;net10.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<NoWarn>$(NoWarn);ExperimentalTeamsQuotedReplies;ExperimentalTeamsTargeted</NoWarn>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <PackageId>Microsoft.Teams.Apps</PackageId>
-    <PackageDescription>Create Microsoft Teams Bot Applications with ease.</PackageDescription>
-    <PackageTags>microsoft;teams;msteams;copilot;apps;bots</PackageTags>
-  </PropertyGroup>
+	<PropertyGroup>
+		<PackageId>Microsoft.Teams.Apps</PackageId>
+		<PackageDescription>Create Microsoft Teams Bot Applications with ease.</PackageDescription>
+		<PackageTags>microsoft;teams;msteams;copilot;apps;bots</PackageTags>
+	</PropertyGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\Microsoft.Teams.Core\Microsoft.Teams.Core.csproj" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="Microsoft.Teams.Apps.UnitTests" />
-  </ItemGroup>
-
+	<ItemGroup>
+		<InternalsVisibleTo Include="Microsoft.Teams.Apps.UnitTests" />
+	</ItemGroup>
 </Project>

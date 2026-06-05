@@ -8,7 +8,7 @@ namespace ExtAIBot;
 
 // Owns the McpClient lifetime, lists tools at startup, and returns them wrapped
 // with citation extraction so search results populate the CitationCollector.
-sealed class McpToolSet : IAsyncDisposable
+internal sealed class McpToolSet : IAsyncDisposable
 {
     private readonly McpClient _client;
     private readonly IList<McpClientTool> _tools;
@@ -45,7 +45,7 @@ sealed class McpToolSet : IAsyncDisposable
     public ValueTask DisposeAsync() => _client.DisposeAsync();
 }
 
-sealed class McpToolSetLifetimeService(ILogger<McpToolSet> logger) : IHostedService
+internal sealed class McpToolSetLifetimeService(ILogger<McpToolSet> logger) : IHostedService
 {
     private McpToolSet? _value;
 

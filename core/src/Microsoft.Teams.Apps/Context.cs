@@ -92,22 +92,20 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> ReplyAsync(TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
-#pragma warning disable ExperimentalTeamsQuotedReplies
         if (!string.IsNullOrWhiteSpace(Activity.Id))
         {
             return Quote(Activity.Id, activity, cancellationToken);
         }
-#pragma warning restore ExperimentalTeamsQuotedReplies
+
         return SendActivityAsync(activity, cancellationToken);
     }
 
     /// <summary>
     /// Sends a typing indicator to the conversation.
     /// </summary>
-    /// <param name="text">Reserved for future use; currently ignored.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
-    public Task<SendActivityResponse?> TypingAsync(string? text = null, CancellationToken cancellationToken = default)
+    public Task<SendActivityResponse?> TypingAsync(CancellationToken cancellationToken = default)
         => SendTypingActivityAsync(cancellationToken);
 
     /// <summary>
@@ -158,9 +156,9 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> Reply(TeamsActivity activity, CancellationToken cancellationToken = default)
         => ReplyAsync(activity, cancellationToken);
 
-    /// <inheritdoc cref="TypingAsync(string?, CancellationToken)"/>
-    public Task<SendActivityResponse?> Typing(string? text = null, CancellationToken cancellationToken = default)
-        => TypingAsync(text, cancellationToken);
+    /// <inheritdoc cref="TypingAsync(CancellationToken)"/>
+    public Task<SendActivityResponse?> Typing(CancellationToken cancellationToken = default)
+        => TypingAsync(cancellationToken);
 
     // ==================== Core Send Methods ====================
 

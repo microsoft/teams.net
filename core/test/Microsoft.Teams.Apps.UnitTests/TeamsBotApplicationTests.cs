@@ -6,7 +6,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Hosting;
 using Moq;
 
 namespace Microsoft.Teams.Apps.UnitTests;

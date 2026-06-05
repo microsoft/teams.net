@@ -2,9 +2,9 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -234,6 +234,37 @@ public static class AddBotApplicationExtensions
         else
         {
             services.AddHttpClient<TClient>(httpClientName);
+        }
+        return services;
+    }
+
+    /// <summary>
+    /// Registers a named <see cref="HttpClient"/> wired to bot authentication
+    /// using an already-resolved <see cref="BotConfig"/>, without binding it to a typed client.
+    /// Use this when the client type will be registered separately via a factory.
+    /// </summary>
+    /// <param name="services">The service collection to add services to.</param>
+    /// <param name="httpClientName">The logical name for this <see cref="HttpClient"/> registration.</param>
+    /// <param name="botConfig">The resolved bot configuration containing tenant and client settings.</param>
+    /// <returns>The service collection for method chaining.</returns>
+    public static IServiceCollection AddBotHttpClient(
+        this IServiceCollection services,
+        string httpClientName,
+        BotConfig botConfig)
+    {
+        ArgumentNullException.ThrowIfNull(botConfig);
+        if (!string.IsNullOrWhiteSpace(botConfig.ClientId))
+        {
+            services.AddHttpClient(httpClientName)
+                .AddHttpMessageHandler(sp => new BotAuthenticationHandler(
+                    sp.GetRequiredService<IAuthorizationHeaderProvider>(),
+                    sp.GetRequiredService<ILogger<BotAuthenticationHandler>>(),
+                    botConfig.SectionName,
+                    sp.GetService<IOptionsMonitor<ManagedIdentityOptions>>()));
+        }
+        else
+        {
+            services.AddHttpClient(httpClientName);
         }
         return services;
     }

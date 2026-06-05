@@ -3,7 +3,6 @@
 
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
-using Microsoft.Teams.Apps.Schema.Entities;
 using Microsoft.Teams.Core.Schema;
 namespace Microsoft.Teams.Apps.UnitTests;
 
@@ -79,12 +78,12 @@ public class TeamsActivityTests
     [Fact]
     public void Serialize_TeamsActivity_WithEntities()
     {
-      TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(ActivityType.Message)
-            .WithText("Hello World")
-            .WithChannelId("msteams")
-            .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US")
-        .Build();
+        TeamsActivity activity = TeamsActivity.CreateBuilder()
+              .WithType(ActivityType.Message)
+              .WithText("Hello World")
+              .WithChannelId("msteams")
+              .AddClientInfo("Web", "US", "America/Los_Angeles", "en-US")
+          .Build();
 
         string jsonResult = activity.ToJson();
         Assert.Contains("clientInfo", jsonResult);

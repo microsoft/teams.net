@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Text.Json.Nodes;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core.Schema;

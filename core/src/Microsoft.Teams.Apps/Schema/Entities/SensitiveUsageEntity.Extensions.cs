@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Core.Schema;
-
 namespace Microsoft.Teams.Apps.Schema.Entities;
 
 /// <summary>
