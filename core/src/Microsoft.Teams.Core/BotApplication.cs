@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Teams.Core.Diagnostics;
 using Microsoft.Teams.Core.Hosting;
 using Microsoft.Teams.Core.Schema;
 
@@ -199,6 +200,30 @@ public class BotApplication
             _logger.ReceivedActivityJson(activity.ToJson());
         }
 
+        string serviceUrlFromClaims = httpContext.User.Claims.FirstOrDefault(c => c.Type == "serviceurl")?.Value ?? string.Empty;
+        if (!string.IsNullOrEmpty(serviceUrlFromClaims) && !serviceUrlFromClaims.Equals(activity.ServiceUrl?.ToString(), StringComparison.Ordinal))
+        {
+            _logger.LogServiceUrlClaimMismatch(activity.ServiceUrl, serviceUrlFromClaims);
+            throw new InvalidDataException("ServiceUrl in activity payload does not match serviceurl JWT claim.");
+            //$"ServiceUrl in activity ({activity.ServiceUrl}) does not match serviceUrl claim ({serviceUrlFromClaims})."
+        }
+
+        KeyValuePair<string, object?> activityTypeTag = new(Telemetry.Tags.ActivityType, activity.Type);
+        Telemetry.ActivitiesReceived.Add(1, activityTypeTag);
+
+        using Activity? span = Telemetry.Source.StartActivity(Telemetry.Spans.Turn, ActivityKind.Internal);
+        if (span is not null)
+        {
+            span.SetTag(Telemetry.Tags.ActivityType, activity.Type);
+            span.SetTag(Telemetry.Tags.ActivityId, activity.Id);
+            span.SetTag(Telemetry.Tags.ConversationId, activity.Conversation?.Id);
+            span.SetTag(Telemetry.Tags.ChannelId, activity.ChannelId);
+            span.SetTag(Telemetry.Tags.BotId, AppId);
+            span.SetTag(Telemetry.Tags.ServiceUrl, activity.ServiceUrl?.ToString());
+        }
+
+        long startTimestamp = Stopwatch.GetTimestamp();
+
         // TODO: Replace with structured scope data, ensure it works with OpenTelemetry and other logging providers
         using (_logger.BeginActivityScope(activity.Type, activity.Id, activity.ServiceUrl, correlationVector))
         {
@@ -214,15 +239,21 @@ public class BotApplication
             catch (OperationCanceledException) when (cts.IsCancellationRequested)
             {
                 _logger.ActivityTimedOut(_processActivityTimeout, activity.Id);
+                Telemetry.HandlerErrors.Add(1, activityTypeTag);
+                span?.SetStatus(ActivityStatusCode.Error, "timeout");
             }
             catch (Exception ex)
             {
                 _logger.ActivityProcessingError(ex, activity.Id);
+                Telemetry.HandlerErrors.Add(1, activityTypeTag);
+                span.RecordException(ex);
                 throw new BotHandlerException("Error processing activity", ex, activity);
             }
             finally
             {
                 _logger.ActivityProcessingFinished(activity.Id);
+                double elapsedMs = Stopwatch.GetElapsedTime(startTimestamp).TotalMilliseconds;
+                Telemetry.TurnDuration.Record(elapsedMs, activityTypeTag);
             }
         }
     }

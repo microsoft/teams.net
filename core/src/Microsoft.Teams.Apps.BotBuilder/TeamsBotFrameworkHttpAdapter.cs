@@ -61,11 +61,10 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
         ArgumentNullException.ThrowIfNull(httpResponse);
         ArgumentNullException.ThrowIfNull(bot);
 
-        CoreActivity? coreActivity = null;
+        TurnContext? turnContext = null;
         _activityCallback.Value = async (activity, ct) =>
         {
-            coreActivity = activity;
-            TurnContext turnContext = new(this, activity.ToBotFrameworkActivity());
+            turnContext = new(this, activity.ToBotFrameworkActivity());
             turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
             CompatConnectorClient connectionClient = new(new CompatConversations(_teamsBotApplication.ConversationClient)
             {
@@ -85,11 +84,11 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
         {
             if (OnTurnError != null)
             {
-                if (ex is BotHandlerException aex)
+#pragma warning disable CA1508 // turnContext is assigned by the async callback captured in the closure
+                if (ex is BotHandlerException aex && turnContext != null)
+#pragma warning restore CA1508
                 {
                     _logger?.ActivityProcessingErrorDelegating(ex, aex.Activity?.Id);
-                    coreActivity = aex.Activity;
-                    using TurnContext turnContext = new(this, coreActivity!.ToBotFrameworkActivity());
                     await OnTurnError(turnContext, ex).ConfigureAwait(false);
                 }
                 else
@@ -105,6 +104,7 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
         finally
         {
             _activityCallback.Value = null;
+            turnContext?.Dispose();
         }
     }
 

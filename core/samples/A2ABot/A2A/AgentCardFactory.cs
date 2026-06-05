@@ -5,13 +5,13 @@ using A2A;
 
 namespace A2ABot.A2A;
 
-static class AgentCardFactory
+internal static class AgentCardFactory
 {
     public static AgentCard Build(Config config) => new()
     {
-        Name        = config.Name,
+        Name = config.Name,
         Description = config.Description,
-        Version     = "1.0.0",
+        Version = "1.0.0",
         SupportedInterfaces =
         [
             new AgentInterface
@@ -21,7 +21,7 @@ static class AgentCardFactory
                 ProtocolVersion = "1.0",
             }
         ],
-        DefaultInputModes  = ["application/json"],
+        DefaultInputModes = ["application/json"],
         DefaultOutputModes = ["text/plain"],
         Capabilities = new AgentCapabilities { Streaming = false },
         Skills =

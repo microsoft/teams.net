@@ -4,7 +4,6 @@
 using System.Text;
 using System.Text.Json;
 using Microsoft.Teams.Apps.Api.Clients;
-using Microsoft.Teams.Apps.Handlers.MessageExtension;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
@@ -116,12 +115,12 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     public async Task Activities_CreateTargetedAsync()
     {
         // Targeted activities require a valid Recipient — get a real member ID
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         CoreActivity activity = CreateMessageActivity(
             $"[ApiClient.Activities.CreateTargeted] at `{DateTime.UtcNow:s}`",
-            new ConversationAccount { Id = members[0].Id });
+            new ConversationAccount { Id = members[0]?.Id });
 
         SendActivityResponse? res = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);
 
@@ -133,12 +132,12 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Fact]
     public async Task Activities_UpdateTargetedAsync()
     {
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         CoreActivity original = CreateMessageActivity(
             $"[ApiClient.Activities.UpdateTargeted] Original at `{DateTime.UtcNow:s}`",
-            new ConversationAccount { Id = members[0].Id });
+            new ConversationAccount { Id = members[0]?.Id });
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, original);
         Assert.NotNull(sent?.Id);
@@ -155,12 +154,12 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     [Fact]
     public async Task Activities_DeleteTargetedAsync()
     {
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         CoreActivity activity = CreateMessageActivity(
             $"[ApiClient.Activities.DeleteTargeted] at `{DateTime.UtcNow:s}`",
-            new ConversationAccount { Id = members[0].Id });
+            new ConversationAccount { Id = members[0]?.Id });
 
         SendActivityResponse? sent = await _api.Conversations.Activities.CreateTargetedAsync(_f.ConversationId, activity);
         Assert.NotNull(sent?.Id);
@@ -175,29 +174,44 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
     #region Members
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task Members_GetAsync()
     {
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
 
-        foreach (ConversationAccount m in members)
+        foreach (TeamsConversationAccount? m in members.Take(5))
         {
-            _output.WriteLine($"Member: {m.Id} — {m.Name}");
+            _output.WriteLine($"Member: {m?.Id} — {m?.Name}");
         }
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
+    public async Task Members_GetPagedAsync()
+    {
+        PagedTeamsMembersResult paged = await _api.Conversations.Members.GetPagedAsync(_f.ConversationId, agenticIdentity: _f.AgenticIdentity);
+
+        Assert.NotNull(paged);
+        Assert.NotEmpty(paged.Members);
+
+        foreach (TeamsConversationAccount? m in paged.Members.Take(5))
+        {
+            _output.WriteLine($"Member: {m?.Id} — {m?.Name} {m?.AadObjectId}");
+        }
+    }
+
+
+    [Fact(Timeout = 5000)]
     public async Task Members_GetByIdAsync()
     {
         // Get MRI-format member ID from the members list first
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
-        string memberId = members[0].Id!;
+        string memberId = members[0]?.Id!;
 
-        ConversationAccount member = await _api.Conversations.Members.GetByIdAsync(
+        TeamsConversationAccount? member = await _api.Conversations.Members.GetByIdAsync(
             _f.ConversationId, memberId, _f.AgenticIdentity);
 
         Assert.NotNull(member);
@@ -205,13 +219,13 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Member: {member.Id} — {member.Name}");
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task Members_GetByIdAsync_AsTeamsConversationAccount()
     {
         // Get MRI-format member ID from the members list first
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
-        string memberId = members[0].Id!;
+        string memberId = members[0]?.Id!;
 
         TeamsConversationAccount member = await _api.Conversations.Members.GetByIdAsync<TeamsConversationAccount>(
             _f.ConversationId, memberId, _f.AgenticIdentity);
@@ -291,14 +305,14 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     {
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
         // Get the AAD object ID from a human member (bots don't have one).
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         string? aadObjectId = null;
-        foreach (ConversationAccount m in members)
+        foreach (TeamsConversationAccount? m in members)
         {
             TeamsConversationAccount tm = await _api.Conversations.Members
-                .GetByIdAsync<TeamsConversationAccount>(_f.ConversationId, m.Id!, _f.AgenticIdentity);
+                .GetByIdAsync<TeamsConversationAccount>(_f.ConversationId, m?.Id!, _f.AgenticIdentity);
             _output.WriteLine($"Member: {tm.Name} — AadObjectId: {tm.AadObjectId ?? "(null)"}, Properties: [{string.Join(", ", tm.Properties.Keys)}]");
             if (tm.AadObjectId is not null)
             {
@@ -370,7 +384,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         string state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
 
 
-        var resource = await _api.Bots.SignIn.GetResourceAsync(state);
+        GetSignInResourceResult? resource = await _api.Bots.SignIn.GetResourceAsync(state);
 
         Assert.NotNull(resource);
         _output.WriteLine($"SignIn Resource: {resource.SignInLink}");
@@ -386,9 +400,9 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
 
         // Get a valid member ID from the conversation
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
-        string userId = members[0].Id!;
+        string userId = members[0]?.Id!;
 
         IList<GetTokenStatusResult>? statuses = await _api.Users.Token.GetStatusAsync(userId, "msteams");
 
@@ -396,7 +410,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Token statuses: {statuses?.Count ?? 0} connections");
         if (statuses is not null)
         {
-            foreach (var s in statuses)
+            foreach (GetTokenStatusResult s in statuses)
             {
                 _output.WriteLine($"  Connection: {s.ConnectionName}, HasToken: {s.HasToken}");
             }
@@ -411,10 +425,10 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
-        var result = await _api.Users.Token.GetAsync(members[0].Id!, connectionName, "msteams");
+        GetTokenResult? result = await _api.Users.Token.GetAsync(members[0]?.Id!, connectionName, "msteams");
         _output.WriteLine($"Token: {(result is not null ? "acquired" : "not available")}");
     }
 
@@ -426,10 +440,10 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
-        IList<ConversationAccount> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
-        await _api.Users.Token.SignOutAsync(members[0].Id!, connectionName, "msteams");
+        await _api.Users.Token.SignOutAsync(members[0]?.Id!, connectionName, "msteams");
         _output.WriteLine("SignOut completed");
     }
 
@@ -448,7 +462,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         Assert.Equal(_f.ServiceUrl, scoped.ServiceUrl);
 
         // Verify the scoped client can make a real call
-        IList<ConversationAccount> members = await scoped.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsConversationAccount?> members = await scoped.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotNull(members);
         Assert.NotEmpty(members);
         _output.WriteLine($"ForServiceUrl scoped client retrieved {members.Count} members");

@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Net;
 using Microsoft.Bot.Builder;
-using Microsoft.Bot.Builder.Dialogs;
 using Microsoft.Bot.Connector;
 using Microsoft.Bot.Connector.Authentication;
 using Microsoft.Bot.Schema;
 using Newtonsoft.Json.Linq;
-using System.Net;
 
 namespace PABot.Bots
 {
@@ -102,7 +101,7 @@ namespace PABot.Bots
                 signInResource.TokenExchangeResource?.Uri);
 
             // Create OAuth SSO card
-            var oAuthCard = new OAuthCard
+            OAuthCard oAuthCard = new()
             {
                 Text = "Please sign in to continue",
                 ConnectionName = ConnectionName,
@@ -120,7 +119,7 @@ namespace PABot.Bots
                 }
             };
 
-            var reply = MessageFactory.Attachment(oAuthCard.ToAttachment());
+            IMessageActivity reply = MessageFactory.Attachment(oAuthCard.ToAttachment());
             await turnContext.SendActivityAsync(reply, cancellationToken);
         }
 
@@ -223,8 +222,8 @@ namespace PABot.Bots
             logger.LogInformation("Processing signin/verifyState invoke (manual sign-in fallback)");
 
             // Extract magic code from invoke value
-            var magicCodeObject = turnContext.Activity.Value as JObject;
-            var magicCode = magicCodeObject?.GetValue("state", StringComparison.Ordinal)?.ToString();
+            JObject? magicCodeObject = turnContext.Activity.Value as JObject;
+            string? magicCode = magicCodeObject?.GetValue("state", StringComparison.Ordinal)?.ToString();
 
             if (string.IsNullOrEmpty(magicCode))
             {
@@ -332,7 +331,7 @@ namespace PABot.Bots
                 logger.LogInformation($"TokenExchangeResource: {signInResource.TokenExchangeResource?.Uri}");
 
                 // Create proper SSO OAuth card exactly like OAuthPrompt does
-                OAuthCard oAuthSsoCard = new OAuthCard
+                OAuthCard oAuthSsoCard = new()
                 {
                     Text = "Please sign in to continue",
                     ConnectionName = connectionName,

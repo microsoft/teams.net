@@ -14,7 +14,7 @@ public static class ConversationExtensions
     public static string ThreadId(this Conversation conversation)
     {
         ArgumentNullException.ThrowIfNull(conversation);
-        var parts = conversation.Id.Split(';');
+        string[] parts = conversation.Id.Split(';');
         return parts.Length > 1 ? parts[0] : conversation.Id;
     }
 
@@ -33,12 +33,12 @@ public static class ConversationExtensions
             throw new ArgumentException("conversationId must be a non-empty string", nameof(conversationId));
         }
 
-        if (string.IsNullOrEmpty(messageId) || !ulong.TryParse(messageId, out var parsed) || parsed == 0)
+        if (string.IsNullOrEmpty(messageId) || !ulong.TryParse(messageId, out ulong parsed) || parsed == 0)
         {
             throw new ArgumentException($"Invalid messageId \"{messageId}\": must be a non-zero numeric value", nameof(messageId));
         }
 
-        var baseId = conversationId.Split(';')[0];
+        string baseId = conversationId.Split(';')[0];
         return $"{baseId};messageid={messageId}";
     }
 }

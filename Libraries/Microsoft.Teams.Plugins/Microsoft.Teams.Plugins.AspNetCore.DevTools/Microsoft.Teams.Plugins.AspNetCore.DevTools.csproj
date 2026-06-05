@@ -4,6 +4,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Microsoft.Teams.Plugins.AspNetCore.DevTools</PackageId>
+    <IsPackable>false</IsPackable>
     <PackageDescription>[DEPRECATED] Teams AspNetCore DevTools Plugin. Use Microsoft 365 Agents Playground instead.</PackageDescription>
     <PackageProjectUrl>https://microsoft.github.io/teams-sdk</PackageProjectUrl>
     <PackageTags>microsoft;teams;msteams;copilot;ai;plugins;aspnetcore;devtools</PackageTags>

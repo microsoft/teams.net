@@ -9,7 +9,7 @@ using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Handlers.TaskModules;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
-using Microsoft.Teams.Core.Schema;
+using Microsoft.Teams.Core;
 using TeamsBot;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
@@ -33,7 +33,7 @@ teamsApp.OnMessage("(?i)^help$", async (context, cancellationToken) =>
         }, cancellationToken);
 
 
-    var helpActivity = TeamsActivity.CreateBuilder()
+    TeamsActivity helpActivity = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityType.Message)
         .WithText(WelcomeMessageMiddleware.WelcomeMessage, TextFormats.Markdown)
         .WithSuggestedActions(new SuggestedActions()
@@ -149,7 +149,7 @@ teamsApp.OnMessage("(?i)targeted", async (context, cancellationToken) =>
         .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();
 
-    var sendResponse = await context.SendActivityAsync(targeted, cancellationToken);
+    SendActivityResponse? sendResponse = await context.SendActivityAsync(targeted, cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
 
@@ -183,14 +183,14 @@ teamsApp.OnMessage("(?i)^react$", async (context, cancellationToken) =>
     ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
     ArgumentNullException.ThrowIfNull(context.Activity.ServiceUrl);
 
-    var tmMsgToReact = TeamsActivity.CreateBuilder()
+    TeamsActivity tmMsgToReact = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityType.Message)
         .WithText("I'm going to add and remove reactions to this message.")
         .WithRecipient(context.Activity.From, false)
         .WithServiceUrl(context.Activity.ServiceUrl)
         .Build();
 
-    var response = await context.SendActivityAsync(tmMsgToReact, cancellationToken);
+    SendActivityResponse? response = await context.SendActivityAsync(tmMsgToReact, cancellationToken);
 
     await Task.Delay(2000, cancellationToken);
 
@@ -257,7 +257,7 @@ teamsApp.OnMessage("(?i)^task$", async (context, cancellationToken) =>
 
 teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
 {
-    var suggestedActions = new SuggestedActions()
+    SuggestedActions suggestedActions = new()
     {
         To = [context.Activity.From?.Id!],
         Actions = [
@@ -267,7 +267,7 @@ teamsApp.OnMessage("(?i)^suggested$", async (context, cancellationToken) =>
         ]
     };
 
-    var reply = TeamsActivity.CreateBuilder()
+    TeamsActivity reply = TeamsActivity.CreateBuilder()
         .WithType(TeamsActivityType.Message)
         .WithText("Here are some suggested actions for you:")
         .WithSuggestedActions(suggestedActions)
@@ -436,14 +436,14 @@ teamsApp.OnUnInstall((context, cancellationToken) =>
 // TODO: This do not trigger from the TimeOffCard submission, need to investigate if it's an issue with the card or the handler
 teamsApp.OnMessageSubmitAction(async (context, cancellationToken) =>
 {
-    var actionData = JsonSerializer.Serialize(context.Activity.Value);
+    string actionData = JsonSerializer.Serialize(context.Activity.Value);
     await context.SendActivityAsync($"Received submit action with data: {actionData}", cancellationToken);
     return new InvokeResponse(200, "Submit Action Received");
 });
 
 webApp.Run();
 
-partial class Regexes
+internal partial class Regexes
 {
     [GeneratedRegex(@"^/(\w+)(.*)$")]
     public static partial Regex CommandRegex();
