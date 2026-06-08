@@ -48,9 +48,9 @@ public sealed class StateScope
 
         if (raw is JsonElement element)
         {
-            T? converted = StateSerializer.Convert<T>(element);
-            _values[key] = converted; // cache the typed value for subsequent reads
-            return converted;
+            // Deserialize on each read — do NOT cache back into _values. Caching would let a read mutate
+            // the change-detection state.
+            return StateSerializer.Convert<T>(element);
         }
 
         return default;
