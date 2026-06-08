@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text;
 using System.Text.Json;
 using Microsoft.Teams.Apps.State;
 
@@ -11,7 +12,7 @@ public class StateSerializerTests
     [Fact]
     public void RoundTrip_ValuesComeBackAsJsonElement()
     {
-        string json = StateSerializer.Serialize(new Dictionary<string, object?> { ["n"] = 5, ["s"] = "x" });
+        byte[] json = StateSerializer.Serialize(new Dictionary<string, object?> { ["n"] = 5, ["s"] = "x" });
         Dictionary<string, object?> back = StateSerializer.Deserialize(json);
 
         Assert.Equal(5, ((JsonElement)back["n"]!).GetInt32());
@@ -21,7 +22,8 @@ public class StateSerializerTests
     [Fact]
     public void Serialize_UsesCamelCase_ForUserPoco()
     {
-        string json = StateSerializer.Serialize(new Dictionary<string, object?> { ["p"] = new Preference("Bob", true) });
+        string json = Encoding.UTF8.GetString(
+            StateSerializer.Serialize(new Dictionary<string, object?> { ["p"] = new Preference("Bob", true) }));
 
         Assert.Contains("\"displayName\":\"Bob\"", json);
         Assert.Contains("\"darkMode\":true", json);
@@ -30,7 +32,7 @@ public class StateSerializerTests
     [Fact]
     public void Convert_DeserializesJsonElementToType()
     {
-        Dictionary<string, object?> bag = StateSerializer.Deserialize("{\"n\":7}");
+        Dictionary<string, object?> bag = StateSerializer.Deserialize("{\"n\":7}"u8);
 
         Assert.Equal(7, StateSerializer.Convert<int>((JsonElement)bag["n"]!));
     }
@@ -39,7 +41,7 @@ public class StateSerializerTests
     public void UserPoco_RoundTripsViaReflectionFallback()
     {
         // The user record is not in the source-gen context — this exercises the reflection resolver.
-        string json = StateSerializer.Serialize(new Dictionary<string, object?> { ["p"] = new Preference("Bob", true) });
+        byte[] json = StateSerializer.Serialize(new Dictionary<string, object?> { ["p"] = new Preference("Bob", true) });
         Dictionary<string, object?> back = StateSerializer.Deserialize(json);
 
         Assert.Equal(new Preference("Bob", true), StateSerializer.Convert<Preference>((JsonElement)back["p"]!));

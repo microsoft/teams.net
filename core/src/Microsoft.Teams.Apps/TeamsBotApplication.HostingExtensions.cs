@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Core;
@@ -107,10 +108,21 @@ public static class TeamsBotApplicationHostingExtensions
     {
         BotConfig botConfig = BotConfig.Resolve(services, sectionName);
 
-        // Register TeamsBotApplicationOptions
+        // Register TeamsBotApplicationOptions (pure configuration).
         TeamsBotApplicationOptions teamsOptions = new() { AppId = botConfig.ClientId };
         configure?.Invoke(teamsOptions);
         services.AddSingleton(teamsOptions);
+
+        // When state is enabled, default to an in-process IDistributedCache and register the store over
+        // it. AddDistributedMemoryCache is TryAdd-based, so an explicitly registered cache (e.g.
+        // AddStackExchangeRedisCache for multi-instance) takes precedence. The store is injected into
+        // the bot via DI.
+        if (teamsOptions.StateEnabled)
+        {
+            services.AddDistributedMemoryCache();
+            services.AddSingleton(sp =>
+                new State.TurnStateStore(sp.GetRequiredService<IDistributedCache>(), teamsOptions.StateEntryOptions));
+        }
 
         services.AddBotApplication<TApp>(botConfig);
         services.AddBotHttpClient(nameof(ApiClient), botConfig);

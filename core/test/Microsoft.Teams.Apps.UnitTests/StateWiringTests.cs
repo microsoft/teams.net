@@ -1,84 +1,73 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.State;
-using Microsoft.Teams.Core;
-using Moq;
 
 namespace Microsoft.Teams.Apps.UnitTests;
 
 public class StateWiringTests
 {
     [Fact]
-    public void UseState_RegistersStateMiddlewareInPipeline()
+    public void Options_UseState_Enables()
     {
-        var storage = new MemoryStorage();
-        TeamsBotApplication app = CreateApp(o => o.UseState(storage));
-
-        Assert.Contains(app.MiddleWare, m => m is StateMiddleware);
-    }
-
-    [Fact]
-    public void WithoutUseState_NoStateMiddlewareRegistered()
-    {
-        TeamsBotApplication app = CreateApp();
-
-        Assert.DoesNotContain(app.MiddleWare, m => m is StateMiddleware);
-    }
-
-    [Fact]
-    public void Options_UseState_SetsStorage()
-    {
-        var storage = new MemoryStorage();
         var options = new TeamsBotApplicationOptions();
 
-        TeamsBotApplicationOptions returned = options.UseState(storage);
+        TeamsBotApplicationOptions returned = options.UseState();
 
         Assert.Same(options, returned);
-        Assert.Same(storage, options.StateStorage);
+        Assert.True(options.StateEnabled);
     }
 
     [Fact]
-    public void Options_UseState_ThrowsOnNull()
-        => Assert.Throws<ArgumentNullException>(() => new TeamsBotApplicationOptions().UseState(null!));
+    public void Options_DefaultsToNoState()
+        => Assert.False(new TeamsBotApplicationOptions().StateEnabled);
 
     [Fact]
-    public void AppBuilder_UseState_SetsStorageOnOptions()
+    public void AppBuilder_UseState_EnablesOnOptions()
     {
-        var storage = new MemoryStorage();
+        AppBuilder builder = App.Builder().UseState();
 
-        AppBuilder builder = App.Builder().UseState(storage);
-
-        Assert.Same(storage, builder.Options.StateStorage);
+        Assert.True(builder.Options.StateEnabled);
     }
 
-    private static TeamsBotApplication CreateApp(Action<TeamsBotApplicationOptions>? configure = null)
+    [Fact]
+    public void UseState_RegistersResolvableTurnStateStore_WithDefaultCache()
     {
-        Mock<UserTokenClient> mockUserTokenClient = new(
-            new HttpClient(),
-            new Mock<IConfiguration>().Object,
-            NullLogger<UserTokenClient>.Instance);
+        // No cache registered explicitly — UseState defaults to an in-process IDistributedCache.
+        ServiceProvider provider = BuildProvider(o => o.UseState());
 
-        Mock<ConversationClient> mockConversationClient = new(
-            new HttpClient(),
-            NullLogger<ConversationClient>.Instance);
+        Assert.NotNull(provider.GetService<TurnStateStore>());
+    }
 
-        ApiClient apiClient = new(
-            new HttpClient(),
-            mockConversationClient.Object,
-            mockUserTokenClient.Object);
+    [Fact]
+    public void WithoutUseState_NoTurnStateStoreRegistered()
+    {
+        ServiceProvider provider = BuildProvider(configure: null);
 
-        var options = new TeamsBotApplicationOptions { AppId = "test-app-id" };
-        configure?.Invoke(options);
+        Assert.Null(provider.GetService<TurnStateStore>());
+    }
 
-        return new TeamsBotApplication(
-            apiClient,
-            new HttpContextAccessor(),
-            NullLogger<TeamsBotApplication>.Instance,
-            options);
+    private static ServiceProvider BuildProvider(Action<TeamsBotApplicationOptions>? configure)
+    {
+        IConfiguration configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["AzureAd:ClientId"] = "test-client-id" })
+            .Build();
+
+        ServiceCollection services = new();
+        services.AddSingleton(configuration);
+        services.AddLogging();
+
+        if (configure is null)
+        {
+            services.AddTeamsBotApplication();
+        }
+        else
+        {
+            services.AddTeamsBotApplication(configure);
+        }
+
+        return services.BuildServiceProvider();
     }
 }

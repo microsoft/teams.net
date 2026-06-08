@@ -6,25 +6,18 @@ using Microsoft.Teams.Core.Schema;
 namespace Microsoft.Teams.Apps.State;
 
 /// <summary>
-/// Per-turn state container exposing the conversation, user, and temp scopes. It is loaded at the
-/// start of a turn and saved when the turn completes successfully (see <see cref="StateMiddleware"/>).
+/// Per-turn state container exposing the conversation and user scopes. It is loaded at the start of a
+/// turn and saved when the turn completes successfully (see <see cref="TurnStateStore"/>).
 /// </summary>
 public sealed class TurnState
 {
-    private static readonly AsyncLocal<TurnState?> CurrentTurnState = new();
-
-    internal TurnState(StateScope conversation, StateScope user, StateScope temp)
+    internal TurnState(StateScope conversation, StateScope user, string? conversationKey = null, string? userKey = null)
     {
         Conversation = conversation;
         User = user;
-        Temp = temp;
+        ConversationKey = conversationKey;
+        UserKey = userKey;
     }
-
-    /// <summary>
-    /// The ambient <see cref="TurnState"/> for the current turn, published by <see cref="StateMiddleware"/>.
-    /// <see langword="null"/> outside a turn or when state middleware is not registered.
-    /// </summary>
-    public static TurnState? Current => CurrentTurnState.Value;
 
     /// <summary>Per-conversation persisted scope.</summary>
     public StateScope Conversation { get; }
@@ -32,16 +25,16 @@ public sealed class TurnState
     /// <summary>Per-user persisted scope.</summary>
     public StateScope User { get; }
 
-    /// <summary>Per-turn, non-persisted scratch scope.</summary>
-    public StateScope Temp { get; }
+    /// <summary>Storage key for the conversation scope, or null when the scope is non-persisted this turn.</summary>
+    internal string? ConversationKey { get; }
+
+    /// <summary>Storage key for the user scope, or null when the scope is non-persisted this turn.</summary>
+    internal string? UserKey { get; }
 
     /// <summary>True once the turn has completed and state has been saved; scope access then throws.</summary>
     public bool IsCompleted { get; private set; }
 
-    /// <summary>
-    /// Gets a value by path: <c>"conversation.x"</c>, <c>"user.x"</c>, <c>"temp.x"</c>, or a bare
-    /// <c>"x"</c> (which defaults to the temp scope).
-    /// </summary>
+    /// <summary>Gets a value by path: <c>"conversation.x"</c> or <c>"user.x"</c>.</summary>
     /// <typeparam name="T">The value type to read.</typeparam>
     /// <param name="path">The scoped path.</param>
     public T? GetValue<T>(string path)
@@ -50,10 +43,7 @@ public sealed class TurnState
         return scope.Get<T>(key);
     }
 
-    /// <summary>
-    /// Sets a value by path: <c>"conversation.x"</c>, <c>"user.x"</c>, <c>"temp.x"</c>, or a bare
-    /// <c>"x"</c> (which defaults to the temp scope).
-    /// </summary>
+    /// <summary>Sets a value by path: <c>"conversation.x"</c> or <c>"user.x"</c>.</summary>
     /// <typeparam name="T">The value type to store.</typeparam>
     /// <param name="path">The scoped path.</param>
     /// <param name="value">The value to store.</param>
@@ -87,14 +77,11 @@ public sealed class TurnState
         return (conversationKey, userKey);
     }
 
-    internal static void SetCurrent(TurnState? turnState) => CurrentTurnState.Value = turnState;
-
     internal void Complete()
     {
         IsCompleted = true;
         Conversation.Complete();
         User.Complete();
-        Temp.Complete();
     }
 
     private (StateScope Scope, string Key) Resolve(string path)
@@ -104,7 +91,9 @@ public sealed class TurnState
         int dot = path.IndexOf('.', StringComparison.Ordinal);
         if (dot < 0)
         {
-            return (Temp, path);
+            throw new ArgumentException(
+                $"State path '{path}' must be scope-qualified, e.g. 'conversation.{path}' or 'user.{path}'.",
+                nameof(path));
         }
 
         string scopeName = path[..dot];
@@ -113,9 +102,8 @@ public sealed class TurnState
         {
             "conversation" => Conversation,
             "user" => User,
-            "temp" => Temp,
             _ => throw new ArgumentException(
-                $"Unknown state scope '{scopeName}' in path '{path}'. Expected 'conversation', 'user', or 'temp'.",
+                $"Unknown state scope '{scopeName}' in path '{path}'. Expected 'conversation' or 'user'.",
                 nameof(path)),
         };
         return (scope, key);

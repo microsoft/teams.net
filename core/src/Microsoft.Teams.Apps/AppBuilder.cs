@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.Teams.Apps.State;
+using Microsoft.Extensions.Caching.Distributed;
 
 namespace Microsoft.Teams.Apps;
 
@@ -37,14 +37,16 @@ public class AppBuilder
     }
 
     /// <summary>
-    /// Registers turn state backed by the given storage. State loads at the start of each turn and
-    /// saves changed scopes when the handler completes successfully.
+    /// Registers turn state backed by the application's <see cref="IDistributedCache"/> (resolved from
+    /// DI). Register a cache first (e.g. <c>AddDistributedMemoryCache</c> or
+    /// <c>AddStackExchangeRedisCache</c>). State loads at the start of each turn and saves changed
+    /// scopes when the handler completes successfully.
     /// </summary>
-    /// <param name="storage">The backing store for state documents.</param>
+    /// <param name="entryOptions">Optional per-entry options (e.g. expiration) applied to every write.</param>
     /// <returns>This builder instance for chaining.</returns>
-    public AppBuilder UseState(IStorage storage)
+    public AppBuilder UseState(DistributedCacheEntryOptions? entryOptions = null)
     {
-        Options.UseState(storage);
+        Options.UseState(entryOptions);
         return this;
     }
 }

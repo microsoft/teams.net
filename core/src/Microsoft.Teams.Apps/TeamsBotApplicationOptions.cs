@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core.Hosting;
@@ -15,22 +16,25 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
 {
     internal List<OAuthFlowDescriptor> OAuthFlows { get; } = [];
 
-    /// <summary>
-    /// The storage backing turn state, set by <see cref="UseState"/>. When non-null, a
-    /// <see cref="StateMiddleware"/> is registered as the bot is constructed.
-    /// </summary>
-    internal IStorage? StateStorage { get; private set; }
+    /// <summary>True when <see cref="UseState"/> has been called; a <see cref="TurnStateStore"/> is
+    /// registered in DI and resolved by the bot on its first request.</summary>
+    internal bool StateEnabled { get; private set; }
+
+    /// <summary>Per-entry options (e.g. expiration) applied to every state document written.</summary>
+    internal DistributedCacheEntryOptions? StateEntryOptions { get; private set; }
 
     /// <summary>
-    /// Registers turn state backed by the given storage. State loads at the start of each turn and
-    /// saves changed scopes when the handler completes successfully.
+    /// Registers turn state backed by the application's <see cref="IDistributedCache"/> (resolved from
+    /// DI). Register a cache first — e.g. <c>AddDistributedMemoryCache</c> for in-process dev, or
+    /// <c>AddStackExchangeRedisCache</c> for multi-instance deployments. State loads at the start of
+    /// each turn and saves changed scopes when the handler completes successfully.
     /// </summary>
-    /// <param name="storage">The backing store for state documents.</param>
+    /// <param name="entryOptions">Optional per-entry options (e.g. expiration) applied to every write.</param>
     /// <returns>This instance for chaining.</returns>
-    public TeamsBotApplicationOptions UseState(IStorage storage)
+    public TeamsBotApplicationOptions UseState(DistributedCacheEntryOptions? entryOptions = null)
     {
-        ArgumentNullException.ThrowIfNull(storage);
-        StateStorage = storage;
+        StateEnabled = true;
+        StateEntryOptions = entryOptions;
         return this;
     }
 

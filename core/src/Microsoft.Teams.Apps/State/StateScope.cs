@@ -18,15 +18,13 @@ public sealed class StateScope
 {
     private readonly Dictionary<string, object?> _values;
     private readonly bool _persisted;
-    private readonly string? _etag;
-    private readonly string? _baseline;
+    private readonly byte[]? _baseline;
     private bool _completed;
 
-    internal StateScope(bool persisted, StoreItem? loaded)
+    internal StateScope(bool persisted, IReadOnlyDictionary<string, object?>? loaded)
     {
         _persisted = persisted;
-        _values = loaded?.Values is { } values ? new Dictionary<string, object?>(values) : [];
-        _etag = loaded?.ETag;
+        _values = loaded is not null ? new Dictionary<string, object?>(loaded) : [];
         _baseline = persisted ? StateSerializer.Serialize(_values) : null;
     }
 
@@ -99,10 +97,10 @@ public sealed class StateScope
     internal bool IsEmpty => _values.Count == 0;
 
     /// <summary>True if this is a persisted scope whose serialized form differs from its load-time baseline.</summary>
-    internal bool IsChanged() => _persisted && StateSerializer.Serialize(_values) != _baseline;
+    internal bool IsChanged() => _persisted && !StateSerializer.Serialize(_values).AsSpan().SequenceEqual(_baseline);
 
-    /// <summary>Snapshots the scope into a <see cref="StoreItem"/> for writing to storage.</summary>
-    internal StoreItem ToStoreItem() => new() { Values = new Dictionary<string, object?>(_values), ETag = _etag };
+    /// <summary>Snapshots the scope's values into a new dictionary for writing to storage.</summary>
+    internal Dictionary<string, object?> Snapshot() => new(_values);
 
     /// <summary>Seals the scope; subsequent access throws.</summary>
     internal void Complete() => _completed = true;

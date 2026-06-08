@@ -10,4 +10,9 @@
 		<ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<!-- Optional: lets the sample back turn state with Redis when a "Redis" connection string is set. -->
+		<PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.0" />
+	</ItemGroup>
+
 </Project>

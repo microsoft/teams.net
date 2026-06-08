@@ -8,7 +8,7 @@ namespace Microsoft.Teams.Apps.UnitTests.State;
 
 public class StateScopeTests
 {
-    private static StateScope Persisted(StoreItem? loaded = null) => new(persisted: true, loaded);
+    private static StateScope Persisted(IReadOnlyDictionary<string, object?>? loaded = null) => new(persisted: true, loaded);
 
     [Fact]
     public void SetThenGet_ReturnsValue()
@@ -52,8 +52,8 @@ public class StateScopeTests
     [Fact]
     public void Get_FromJsonElement_Deserializes()
     {
-        var loaded = new StoreItem { Values = StateSerializer.Deserialize("{\"n\":5}") };
-        Assert.IsType<JsonElement>(loaded.Values["n"]); // sanity: loaded as JsonElement
+        var loaded = StateSerializer.Deserialize("{\"n\":5}"u8);
+        Assert.IsType<JsonElement>(loaded["n"]); // sanity: loaded as JsonElement
 
         var scope = Persisted(loaded);
 
@@ -64,7 +64,7 @@ public class StateScopeTests
     public void PureRead_DoesNotMarkChanged()
     {
         // Get caches the typed value back into the bag; re-serializing it must still match the baseline.
-        var scope = Persisted(new StoreItem { Values = StateSerializer.Deserialize("{\"n\":5}") });
+        var scope = Persisted(StateSerializer.Deserialize("{\"n\":5}"u8));
 
         scope.Get<int>("n");
 
@@ -91,15 +91,14 @@ public class StateScopeTests
     }
 
     [Fact]
-    public void ToStoreItem_CopiesValuesAndEtag()
+    public void Snapshot_CopiesValues()
     {
-        var scope = Persisted(new StoreItem { ETag = "e1" });
+        var scope = Persisted();
         scope.Set("k", "v");
 
-        StoreItem item = scope.ToStoreItem();
+        Dictionary<string, object?> values = scope.Snapshot();
 
-        Assert.Equal("v", item.Values["k"]);
-        Assert.Equal("e1", item.ETag);
+        Assert.Equal("v", values["k"]);
     }
 
     [Fact]

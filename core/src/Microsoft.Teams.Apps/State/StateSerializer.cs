@@ -30,13 +30,13 @@ internal static class StateSerializer
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    /// <summary>Serializes a scope's values to canonical JSON (used for change detection and storage).</summary>
-    internal static string Serialize(IDictionary<string, object?> values)
-        => JsonSerializer.Serialize(values, Options);
+    /// <summary>Serializes a scope's values to canonical UTF-8 JSON (used for change detection and storage).</summary>
+    internal static byte[] Serialize(IDictionary<string, object?> values)
+        => JsonSerializer.SerializeToUtf8Bytes(values, Options);
 
-    /// <summary>Deserializes a scope's values from JSON. Values are returned as <see cref="JsonElement"/>.</summary>
-    internal static Dictionary<string, object?> Deserialize(string json)
-        => JsonSerializer.Deserialize<Dictionary<string, object?>>(json, Options) ?? [];
+    /// <summary>Deserializes a scope's values from UTF-8 JSON. Values are returned as <see cref="JsonElement"/>.</summary>
+    internal static Dictionary<string, object?> Deserialize(ReadOnlySpan<byte> utf8Json)
+        => JsonSerializer.Deserialize<Dictionary<string, object?>>(utf8Json, Options) ?? [];
 
     /// <summary>Converts a stored <see cref="JsonElement"/> to the requested type.</summary>
     internal static T? Convert<T>(JsonElement element)

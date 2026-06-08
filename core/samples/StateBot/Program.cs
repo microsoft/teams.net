@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-// This sample demonstrates turn state: the three scopes (conversation, user, temp), automatic
-// save-on-success, and delete-on-clear. State is opt-in — register a store with UseState and read
-// it through context.State during a turn.
+// This sample demonstrates turn state: the conversation and user scopes, automatic save-on-success,
+// delete-on-clear, and the after-turn guard (TurnState.IsCompleted) for fire-and-forget work. State is
+// opt-in — enable it with UseState and read it through context.State during a turn.
 
 using System.Text.RegularExpressions;
 using Microsoft.Teams.Apps;
@@ -13,12 +13,18 @@ using Microsoft.Teams.Apps.State;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 
-webAppBuilder.Services.AddTeamsBotApplication(options =>
+// Turn state defaults to an in-process cache (lost on restart). Set a "Redis" connection string —
+// appsettings (ConnectionStrings:Redis) or the ConnectionStrings__Redis env var, e.g. "localhost:6379"
+// — to back state with Redis instead, persisting it and sharing it across instances. Registering a
+// distributed IDistributedCache here takes precedence over the in-process default.
+string? redisConnection = webAppBuilder.Configuration.GetConnectionString("Redis");
+if (!string.IsNullOrWhiteSpace(redisConnection))
 {
-    // Opt in to state with an in-process store. Swap for `new FileStorage("./bot-state")` to persist
-    // across restarts, or a distributed store (e.g. Redis) for multi-instance deployments.
-    options.UseState(new MemoryStorage());
-});
+    webAppBuilder.Services.AddStackExchangeRedisCache(options => options.Configuration = redisConnection);
+}
+
+// Opt in to state (uses Redis if configured above, otherwise the in-process default).
+webAppBuilder.Services.AddTeamsBotApplication(options => options.UseState());
 
 WebApplication webApp = webAppBuilder.Build();
 
@@ -35,7 +41,7 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         - `count` — increment a counter in **conversation** state (shared by everyone in this chat)
         - `my name is <name>` — save your name in **user** state (follows you across conversations)
         - `whoami` — read your name back from user state
-        - `note <text>` — stash a value in **temp** state (never persisted — gone next turn)
+        - `remind me` — start fire-and-forget work that outlives the turn (shows `State.IsCompleted`)
         - `reset` — clear this conversation's state (deletes the stored document)
         - `help` — show this message
         """;
@@ -75,17 +81,49 @@ bot.OnMessage("(?i)^whoami$", async (context, ct) =>
         name is null ? "I don't know your name yet. Say `my name is <name>`." : $"You're **{name}**.", ct);
 });
 
-// ==================== TEMP SCOPE ====================
+// ==================== FIRE-AND-FORGET: after-turn state access ====================
 
-// Never persisted: useful for passing data between middleware and handlers within one turn.
-bot.OnMessage("(?i)^note (.+)$", async (context, ct) =>
+// TurnState is scoped to one turn: it is saved and then *sealed* when the handler returns, at which
+// point TurnState.IsCompleted is true and any scope Get/Set throws. So for background work that
+// outlives the turn, read the values you need DURING the turn and pass those in — never the live
+// ctx.State, whose reads would otherwise be silently stale.
+bot.OnMessage("(?i)^remind me$", async (context, ct) =>
 {
-    Match match = Regex.Match(context.Activity.Text ?? "", "(?i)^note (.+)$");
-    context.State!.Temp.Set("note", match.Groups[1].Value.Trim());
+    TurnState state = context.State!;
 
-    string? echo = context.State.Temp.Get<string>("note");
+    // Capture what the background task needs NOW, while the turn is still active.
+    string who = state.User.Get<string>("name") ?? "there";
+
+    // Fire-and-forget: this runs after the handler returns (the turn is saved + sealed by then).
+    _ = Task.Run(async () =>
+    {
+        await Task.Delay(TimeSpan.FromSeconds(2));
+
+        // IsCompleted lets background code observe that the turn ended WITHOUT tripping the guard.
+        if (state.IsCompleted)
+        {
+            // Reading the sealed scope throws — the guard turns a silent stale read into a loud error.
+            // Use the value captured during the turn (`who`) instead of touching `state` here.
+            try
+            {
+                _ = state.User.Get<string>("name");
+            }
+            catch (InvalidOperationException ex)
+            {
+                context.Log.Warn("Expected — state is sealed after the turn:", ex.Message);
+            }
+        }
+
+        context.Log.Info("[background] reminder for", who, "(value captured during the turn).");
+    });
+
     await context.SendActivityAsync(
-        $"Stashed `{echo}` in temp state — for this turn only. It won't survive to the next message.", ct);
+        new MessageActivity(
+            "Started background work. It checks `State.IsCompleted` (true once the turn ends) and uses a " +
+            "value captured during the turn — reading the sealed `State` directly would throw.")
+        {
+            TextFormat = TextFormats.Markdown
+        }, ct);
 });
 
 // ==================== CLEAR / DELETE ====================

@@ -2,120 +2,79 @@
 
 ## Overview
 
-`TurnState` provides persistence of data **across turns** within a conversation, **across conversations** for a single user, and **within a single turn** (scratch space). Developers store small conversation state, user preferences, or transient per-turn data without manually deriving storage keys or managing read/write lifecycles. (It is **not** a place for large or unbounded data such as full message history — see [Requirement: keep each scope small](#requirement-keep-each-scope-small).)
+`TurnState` provides persistence of data **across turns** within a conversation and **across conversations** for a single user. Developers store small conversation state or user preferences without manually deriving storage keys or managing read/write lifecycles. (It is **not** a place for large or unbounded data, nor for accumulating collections such as message history — last-write-wins saves can silently drop concurrent appends; see [What TurnState is NOT](#what-turnstate-is-not).)
 
-State **loads automatically at the start of each turn** and **saves automatically when the turn handler completes successfully**. The entire feature lives in the **`Microsoft.Teams.Apps`** layer (namespace `Microsoft.Teams.Apps.State`): a `StateMiddleware` plugs into the turn pipeline and the result is surfaced as `context.State` — mirroring how `OAuthFlow` (see [OAuthFlow-Design.md](sso/OAuthFlow-Design.md)) is an Apps-layer abstraction built on Core primitives. **Core is not modified.**
+State **loads automatically at the start of each turn** and **saves automatically when the turn handler completes successfully**. The feature lives in **`Microsoft.Teams.Apps`** (namespace `Microsoft.Teams.Apps.State`): `TeamsBotApplication.OnActivity` loads state through a `TurnStateStore`, passes the `TurnState` into the per-turn `Context`, and saves on success — mirroring how `OAuthFlow` (see [OAuthFlow-Design.md](sso/OAuthFlow-Design.md)) is an Apps-layer abstraction built on Core primitives. **Core is not modified.**
 
-The design honors the existing architecture (see [Architecture.md](Architecture.md)):
+Key design choices:
 
-- **Apps owns the feature** — `IStorage`, `StoreItem`, `MemoryStorage`, `TurnState`, the scopes, and `StateMiddleware` all live in `Microsoft.Teams.Apps/State/`. The only Core touchpoint is implementing `ITurnMiddleware`.
-- **Middleware Pipeline pattern** — `StateMiddleware` implements Core's `ITurnMiddleware` directly: `OnTurnAsync(BotApplication, CoreActivity, …)`. It reads only the base routing fields (channel/conversation/from ids) off the `CoreActivity` and deliberately does **not** convert it to a `TeamsActivity` — that conversion *extracts* (removes) `text`/`attachments`/`entities` from the shared activity, which would drain them before routing (which runs after this middleware) converts it itself. It wraps `OnActivity` in the existing `TurnMiddleware` pipeline (the `Load → next() → Save` envelope the pipeline already supports).
-- **Context pattern** — `Context<TActivity>` exposes `State`, keeping the same opt-in, null-when-unused ergonomics as `OAuthRegistry`.
-- **System.Text.Json, reusing the canonical context** — a state scope is an open-typed bag (`Dictionary<string, object?>` of arbitrary user POCOs), so it cannot be a closed-world, fully source-generated serializer like the activity pipeline. `StateSerializer` reuses the existing `TeamsActivityJsonContext` for source-generated metadata on the primitives and `JsonElement` values that commonly appear, combined with a reflection resolver for user types. No parallel state-specific JSON context.
-- **Opt-in distribution** — `RedisStorage` ships in a separate `Microsoft.Teams.State.Redis` package and is never pulled into the core install.
+- **Backed by `IDistributedCache`.** State persists through the standard .NET [`IDistributedCache`](https://learn.microsoft.com/aspnet/core/performance/caching/distributed) abstraction rather than a bespoke storage interface. This is the same abstraction ASP.NET Core session state uses, so **every existing cache backend works for free** — `AddDistributedMemoryCache` (in-process dev), `AddStackExchangeRedisCache` / Garnet (multi-instance), `AddDistributedSqlServerCache`, NCache, etc. The SDK ships and maintains no storage providers of its own. `UseState` defaults to an in-process cache, so a backend is only registered explicitly to override it (e.g. Redis for multi-instance).
+- **Two scopes.** `Conversation` (per conversation) and `User` (per user). Both persist. There is no transient/temp scope — pass per-turn data through the existing `Context` rather than state.
+- **Last-write-wins.** Concurrency is last-write-wins. `IDistributedCache` has no compare-and-swap, so there is no optimistic-concurrency / ETag path.
+- **System.Text.Json, reusing the canonical context.** A scope is an open-typed bag (`Dictionary<string, object?>` of arbitrary user POCOs), so serialization is reflection-based. `StateSerializer` reuses the existing `TeamsActivityJsonContext` for source-generated metadata on common primitives/`JsonElement` values, combined with a reflection resolver for user types. Documents are bare camelCase UTF-8 JSON.
 
-If state middleware is not registered, `context.State` is `null` and the bot behaves exactly as before. State is completely opt-in.
+If `UseState` is not called, `context.State` is `null` and the bot behaves exactly as before. State is completely opt-in.
 
 ## Motivation
 
-Today a bot author who needs to remember anything across turns must:
-
-1. Derive a stable storage key from `Activity.ChannelId`, `Activity.Conversation.Id`, and `Activity.From.Id` by hand.
-2. Pick and wire a storage backend.
-3. Read the document at the top of every handler, mutate it, and write it back — remembering to *not* write it back on failure.
-4. Serialize/deserialize values, handling the `JsonElement` round-trip that `ExtendedPropertiesDictionary.Get<T>` already has to deal with.
-
-Every handler re-implements the same load/mutate/save boilerplate, and the key-derivation logic is easy to get subtly wrong (e.g. forgetting `ChannelId`, leaking user state across tenants). `TurnState` reduces this to:
+Without `TurnState`, a bot author who needs to remember anything across turns must derive a stable key from `Activity.ChannelId` / `Conversation.Id` / `From.Id` by hand, pick and wire a backend, and read/mutate/write the document in every handler (remembering *not* to write on failure). `TurnState` reduces this to:
 
 ```csharp
 var count = ctx.State?.Conversation.Get<int>("count") ?? 0;
 ctx.State?.Conversation.Set("count", count + 1);
 ```
 
-…with key derivation, change tracking, atomic save, and JSON handling owned by the framework.
+…with key derivation, change tracking, atomic save, and JSON handling owned by the framework, and the backend supplied by any `IDistributedCache` the app already has.
 
 ## Architecture
 
 ```
 TeamsBotApplication (Apps)
-├── MiddleWare (TurnMiddleware, from Core)
-│   ├── ... existing middleware ...
-│   └── StateMiddleware ────────────────► loads TurnState at turn start,
-│                                          saves on success, discards on throw
+├── OnActivity ───────────────────────────► loads TurnState (TurnStateStore) at turn start,
+│                                            passes it into Context, saves on success
 ├── Router
-│   └── ... routes dispatch Context<TActivity> ...
+│   └── ... routes dispatch Context<TActivity> (each carries the same TurnState) ...
 └── Context<TActivity>
-    └── State  ──► TurnState (ambient for the current turn)
+    └── State  ──► TurnState (passed into the constructor for this turn)
                    ├── Conversation : StateScope   (persisted)
-                   ├── User         : StateScope   (persisted)
-                   └── Temp         : StateScope   (never persisted)
+                   └── User         : StateScope   (persisted)
 
-IStorage (Apps — Microsoft.Teams.Apps.State)
-├── MemoryStorage   (Apps)                in-process, ConcurrentDictionary
-├── FileStorage     (Apps)                JSON files, atomic writes, single-instance
-└── RedisStorage    (Microsoft.Teams.State.Redis, opt-in package → references Apps)
+Backend: IDistributedCache (resolved from DI)
+├── AddDistributedMemoryCache       in-process, dev / single-instance
+├── AddStackExchangeRedisCache      multi-instance (Redis / Garnet)
+├── AddDistributedSqlServerCache    SQL Server
+└── any other IDistributedCache     NCache, Azure, custom …
 ```
 
 ### Where state lives during a turn
 
-The state middleware runs inside the existing pipeline. `BotApplication.ProcessAsync` already calls:
-
-```csharp
-await MiddleWare.RunPipelineAsync(this, activity, this.OnActivity, 0, token);
-```
-
-`StateMiddleware.OnTurnAsync` wraps the remainder of the pipeline (including `OnActivity`, where `Context` is constructed and routes dispatch):
+State load/save runs in `TeamsBotApplication.OnActivity`, around routing:
 
 ```
-StateMiddleware.OnTurnAsync(botApp, activity, next, ct)
+OnActivity(activity, ct)
     │
-    ├─ 1. Derive keys from activity (channelId / conversation.id / from.id)
-    ├─ 2. storage.ReadAsync([convKey, userKey])  → hydrate Conversation + User scopes
-    ├─ 3. Publish TurnState into the ambient accessor (AsyncLocal)
+    ├─ 1. teamsActivity = FromActivity(activity)
+    ├─ 2. turnState = await store.LoadAsync(teamsActivity)   // derive keys, GetAsync both scopes
+    ├─ 3. defaultContext = new Context(this, teamsActivity, turnState)   // state passed in explicitly
     │
-    ├─ 4. await next(ct)        ◄── OnActivity → Context.State sees the ambient TurnState
+    ├─ 4. try: dispatch routes (each per-route Context is built with the same turnState)
     │
-    ├─ 5. (next returned without throwing)
-    │     storage.WriteAsync(changed scopes only)   ◄── atomic: only on success
-    └─ 6. Clear the ambient accessor (finally)
+    ├─ 5. await store.SaveAsync(turnState)   // changed scopes only — reached only if dispatch didn't throw
+    └─ 6. finally: turnState.Complete()      // seal: later scope access throws
 ```
 
-Because the middleware sets the ambient `TurnState` **before** calling `next` and clears it in a `finally`, and because `Context` is created downstream inside `next`, `context.State` resolves to the correct per-turn instance without threading it through every constructor. `AsyncLocal<T>` flows with the async pipeline that `TurnMiddleware.RunPipelineAsync` already uses, so this is concurrency-safe across simultaneous turns.
+The `TurnState` is **threaded explicitly** through the `Context` constructor — there is no ambient/`AsyncLocal`. [`Route.InvokeRoute`](../src/Microsoft.Teams.Apps/Routing/Route.cs) builds a fresh per-route `Context` and forwards `ctx.State`, so every route in a multi-match turn shares the one `TurnState`.
 
-If an exception propagates out of `next`, step 5 is skipped — **no writes occur**. This is the atomic-save guarantee, and it falls out naturally from the pipeline's existing exception flow (`BotApplication.ProcessAsync` wraps the pipeline in its `try/catch`).
-
-### Relationship to existing components
-
-```
-StateMiddleware (Apps)  ── implements ──►  ITurnMiddleware (Core)
-        │
-        ├── IStorage.ReadAsync / WriteAsync / DeleteAsync   → backend I/O
-        ├── TurnState.DeriveKeys                            → key derivation from CoreActivity
-        └── TurnState                                       → per-turn document, change tracking
-
-Context<TActivity> (Apps)
-        └── State  ──►  reads the ambient TurnState published by StateMiddleware
-```
-
-`StateMiddleware` does **not** replace `IStorage` — it orchestrates a storage backend, key derivation, and the three scopes into one load/save envelope and exposes the result on `Context`.
+If an exception propagates out of dispatch, step 5 is skipped — **no writes occur**. This atomic-save guarantee comes from the `try`/`finally` in `OnActivity`.
 
 ## Scopes
-
-`TurnState` provides three scopes, each with a different lifetime and persistence model.
 
 | Scope | Lifetime | Persists? | Storage key (logical) | Use case |
 |---|---|---|---|---|
 | **Conversation** | Entire conversation (all turns, all participants) | ✅ Yes | `{channelId}/conversations/{conversationId}` | Dialog state, turn counter, shared conversation data |
 | **User** | Across all conversations with this user | ✅ Yes | `{channelId}/users/{fromId}` | User preferences, display name, settings |
-| **Temp** | Current turn only | ❌ No | (none) | Scratch space; pass data between middleware and handlers |
 
-Keys are derived from the inbound `CoreActivity`:
-
-- `channelId` ← `activity.ChannelId`
-- `conversationId` ← `activity.Conversation.Id`
-- `fromId` ← `activity.From.Id`
-
-Including `channelId` in both keys prevents state from leaking across channels/tenants. Key derivation is a single seam (`TurnState.DeriveKeys`) so the scheme can evolve without touching handlers.
+Keys are derived from the inbound `CoreActivity` (`channelId` ← `activity.ChannelId`, `conversationId` ← `activity.Conversation.Id`, `fromId` ← `activity.From.Id`). Including `channelId` in both keys prevents state from leaking across channels/tenants. Key derivation is a single seam (`TurnState.DeriveKeys`) so the scheme can evolve without touching handlers. When a key part is missing (e.g. an activity with no `From`), that scope is hydrated empty and never written.
 
 ### Conversation scope
 
@@ -144,107 +103,38 @@ bot.OnMessage(async (ctx, ct) =>
 });
 ```
 
-### Temp scope
-
-`Temp` is never persisted — it is discarded at the end of the turn. Useful for passing data from middleware to a handler.
-
-```csharp
-// Middleware writes to temp
-bot.UseMiddleware(new DelegateMiddleware(async (botApp, activity, next, ct) =>
-{
-    TurnState.Current?.Temp.Set("requestId", Guid.NewGuid().ToString());
-    await next(ct);
-}));
-
-// Handler reads it
-bot.OnMessage(async (ctx, ct) =>
-{
-    var requestId = ctx.State?.Temp.Get<string>("requestId") ?? "unknown";
-    await ctx.SendAsync($"Request: {requestId}", ct);
-});
-```
-
 ## API Surface
 
 ### Registration
 
-State is registered two ways — DI options (recommended) or the `App.Builder()` fluent builder. Both set the storage on `TeamsBotApplicationOptions`; the `StateMiddleware` is added (via `UseMiddleware`) when the `TeamsBotApplication` is constructed.
-
-**DI options (recommended):**
+Opt in with `UseState()`. It defaults to an in-process cache, so nothing else is required; register a distributed backend only to override it.
 
 ```csharp
-builder.Services.AddTeamsBotApplication(options =>
-{
-    options.UseState(new MemoryStorage());
-});
+// Defaults to an in-process IDistributedCache:
+builder.Services.AddTeamsBotApplication(options => options.UseState());
+
+// For multi-instance, register a distributed cache (takes precedence over the default):
+builder.Services.AddStackExchangeRedisCache(o => o.Configuration = "localhost:6379");
+builder.Services.AddTeamsBotApplication(options => options.UseState());
 ```
 
-**Fluent `App.Builder()`** (mirrors `AddOAuth`):
-
-```csharp
-App.Builder().UseState(new MemoryStorage());
-```
-
-The two entry points:
+`UseState` on `TeamsBotApplicationOptions` (and the equivalent `AppBuilder.UseState`):
 
 ```csharp
 public sealed class TeamsBotApplicationOptions
 {
-    /// Register state; a StateMiddleware is added when the bot is constructed.
-    public TeamsBotApplicationOptions UseState(IStorage storage);
-}
-
-public class AppBuilder
-{
-    /// Fluent equivalent; delegates to TeamsBotApplicationOptions.UseState.
-    public AppBuilder UseState(IStorage storage);
+    /// Enable state backed by the application's IDistributedCache (resolved from DI; defaults to
+    /// in-process). entryOptions applies a TTL (sliding/absolute) to every written document.
+    public TeamsBotApplicationOptions UseState(DistributedCacheEntryOptions? entryOptions = null);
 }
 ```
 
-Registering twice keeps the last storage (last-write-wins, single instance).
-
-### `IStorage`
-
-```csharp
-namespace Microsoft.Teams.Core.State;
-
-/// <summary>
-/// Backing store for <see cref="TurnState"/>. Implementations persist opaque
-/// state documents keyed by string. All members must be safe to call concurrently.
-/// </summary>
-public interface IStorage
-{
-    /// Read the documents for the given keys. Missing keys are omitted from the result.
-    Task<IReadOnlyDictionary<string, StoreItem>> ReadAsync(
-        IReadOnlyCollection<string> keys, CancellationToken cancellationToken = default);
-
-    /// Write the given documents. Implementations should honor optimistic concurrency
-    /// via <see cref="StoreItem.ETag"/> when supported; v1 backends use last-write-wins.
-    Task WriteAsync(
-        IReadOnlyDictionary<string, StoreItem> changes, CancellationToken cancellationToken = default);
-
-    /// Delete the documents for the given keys.
-    Task DeleteAsync(
-        IReadOnlyCollection<string> keys, CancellationToken cancellationToken = default);
-}
-
-/// <summary>A persisted state document: its JSON payload plus an optional concurrency tag.</summary>
-public sealed class StoreItem
-{
-    /// The serialized state values for a single scope.
-    public IDictionary<string, object?> Values { get; init; } = new Dictionary<string, object?>();
-
-    /// Optional concurrency token (reserved for future optimistic-concurrency support).
-    public string? ETag { get; set; }
-}
-```
-
-`ReadAsync`/`WriteAsync` take **collections of keys** (not a single key) so the middleware can hydrate the Conversation and User scopes in one round-trip, and so backends can pipeline the operations.
+`UseState` sets a flag (and optional TTL) on the options. `AddTeamsBotApplication` then registers a `TurnStateStore` (over `AddDistributedMemoryCache`'s default cache, or any explicitly registered `IDistributedCache`) as a DI singleton, which is **injected into the `TeamsBotApplication` constructor**. Options stays pure configuration — it does not carry the cache or the store.
 
 ### `TurnState` and scopes
 
 ```csharp
-namespace Microsoft.Teams.Core.State;
+namespace Microsoft.Teams.Apps.State;
 
 public sealed class TurnState
 {
@@ -254,31 +144,23 @@ public sealed class TurnState
     /// Per-user persisted scope.
     public StateScope User { get; }
 
-    /// Per-turn, non-persisted scope.
-    public StateScope Temp { get; }
-
-    /// Ambient TurnState for the current turn, published by StateMiddleware. Null when
-    /// state middleware is not registered or accessed outside a turn.
-    public static TurnState? Current { get; }
-
     /// True once the turn has completed and state has been saved. After this, every scope
     /// read/write throws (see "Lifetime and after-turn access").
     public bool IsCompleted { get; }
 
-    /// Path access: "conversation.count", "user.name", "temp.x", or bare "x" (defaults to temp).
+    /// Path access: "conversation.count" or "user.name". A bare key (no scope prefix) throws.
     public T? GetValue<T>(string path);
     public void SetValue<T>(string path, T value);
 }
 
-// Concrete sealed class — the three scopes are instances of it (persisted vs temp is a
-// constructor flag), so no interface is needed.
 public sealed class StateScope
 {
-    // All four members throw InvalidOperationException if the owning turn has completed.
+    // All members throw InvalidOperationException if the owning turn has completed.
     public T? Get<T>(string key);
     public void Set<T>(string key, T value);
     public bool Remove(string key);
     public bool ContainsKey(string key);
+    public void Clear();
 }
 ```
 
@@ -289,170 +171,95 @@ public sealed class StateScope
 ```csharp
 public class Context<TActivity> where TActivity : TeamsActivity
 {
-    /// The state for the current turn, or null if state middleware is not registered.
+    /// The state for the current turn, or null if state is not enabled.
     public TurnState? State { get; }
 }
 ```
 
-`State` is a thin pass-through to `TurnState.Current` resolved from the ambient accessor, so it stays consistent whether the developer reads it from a route handler, a middleware, or an OAuth callback.
-
-### Storage adapters
-
-```csharp
-// In-process. Thread-safe (ConcurrentDictionary). Lost on restart.
-public sealed class MemoryStorage : IStorage { public MemoryStorage(); }
-
-// JSON files on disk (one percent-encoded file per key). Atomic writes (temp + rename).
-// Single-instance only. Cross-runtime document format.
-public sealed class FileStorage : IStorage
-{
-    public FileStorage(string rootDirectory);
-}
-
-// Opt-in package Microsoft.Teams.State.Redis. Multi-instance safe.
-public sealed class RedisStorage : IStorage, IAsyncDisposable
-{
-    public RedisStorage(string connectionString, string keyPrefix = "teams:state:");
-    public ValueTask DisposeAsync();
-}
-```
+`State` is set from the `TurnState` passed into the `Context` constructor by `OnActivity` (and forwarded to each per-route `Context`), so it stays consistent whether read from a route handler or an OAuth callback.
 
 ## Internal Flow
 
 ### Turn load/save sequence
 
 ```
-ProcessAsync(httpContext)
-    │  (existing) deserialize CoreActivity, begin logging scope
+OnActivity(activity, ct)
     │
-    └─ MiddleWare.RunPipelineAsync(botApp, activity, OnActivity, 0, token)
-         │
-         ├─ ... earlier middleware ...
-         │
-         └─ StateMiddleware.OnTurnAsync(botApp, activity, next, ct)
-              │
-              ├─ 1. keys = TurnState.DeriveKeys(activity)
-              │        convKey = $"{channelId}/conversations/{conversationId}"
-              │        userKey = $"{channelId}/users/{fromId}"
-              │        (skip a scope whose key parts are missing; that scope is read-only/empty)
-              │
-              ├─ 2. items = await storage.ReadAsync([convKey, userKey], ct)
-              │
-              ├─ 3. turnState = new TurnState(
-              │        conversation: Scope.Hydrate(items[convKey]),
-              │        user:         Scope.Hydrate(items[userKey]),
-              │        temp:         Scope.Empty())
-              │     loadHash[convKey] = Hash(turnState.Conversation)   // baseline for change detection
-              │     loadHash[userKey] = Hash(turnState.User)
-              │     _ambient.Value = turnState          // AsyncLocal publish
-              │
-              ├─ 4. await next(ct)                       // OnActivity builds Context, dispatches routes
-              │
-              ├─ 5. // only reached when next() did NOT throw
-              │     var changes = {} ; var deletes = []
-              │     // re-serialize each persisted scope and compare to its load-time hash
-              │     foreach persisted scope that changed:
-              │         scope.IsEmpty ? deletes.Add(key)            // emptied this turn → remove the row
-              │                       : changes[key] = scope.ToStoreItem()
-              │     if (changes.Count > 0) await storage.WriteAsync(changes, ct)
-              │     if (deletes.Count > 0) await storage.DeleteAsync(deletes, ct)
-              │     // Temp is never written
-              │
-              └─ finally:
-                    turnState.Complete()     // seal: later scope access throws (see below)
-                    _ambient.Value = null
-```
-
-**Atomicity** comes from step 5 sitting *after* the `await next(ct)`: if the handler throws, control never reaches the write, and `BotApplication.ProcessAsync`'s existing `catch` wraps and rethrows as `BotHandlerException`. No partial writes.
-
-**Write-only-if-changed** — each persisted scope is serialized at load to capture a baseline hash and re-serialized at save; only scopes whose hash differs are written. This catches in-place mutation of a fetched reference type (`Get<List<string>>(...).Add(...)`) that a dirty flag would silently miss, avoids a round-trip on unchanged turns, and keeps `Temp` out of the backend. Cost is one extra serialization per persisted scope per turn — the same trade Bot Framework, Teams AI, and the Agents SDK all make.
-
-**Delete-on-empty** — a changed scope that ends the turn empty (e.g. `scope.Clear()`, or removing its last value) is routed to `storage.DeleteAsync` instead of writing an empty document, so a cleared scope leaves no orphan row. Because the delete only fires when the scope *changed* to empty, a scope that was always empty never issues a spurious delete.
-
-### Lifetime and after-turn access
-
-`TurnState` is **scoped to a single turn**. It is loaded at the start of the turn and **sealed** at the end (`turnState.Complete()` in the middleware's `finally`, step 6). Accessing it after the turn — almost always by capturing `ctx.State` in fire-and-forget background work that outlives the turn — is a misuse, because the atomic save in step 5 has already run and will not run again.
-
-A captured reference does not become `null` (the object is still alive, and with `AsyncLocal` an in-flight `Task.Run` keeps the snapshot it captured), so a naive design would let the background code read a **stale** copy and write changes that **silently never persist**. To make that misuse loud instead of silent, every scope read/write checks `IsCompleted` and throws a descriptive error once the turn has ended:
-
-```csharp
-// inside StateScope.Get/Set/Remove
-if (_owner.IsCompleted)
-    throw new InvalidOperationException(
-        "TurnState was accessed after the turn completed. State is per-turn and is saved " +
-        "once when the handler returns. Capture the values you need before starting background " +
-        "work, e.g. `var name = ctx.State.User.Get<string>(\"name\");`.");
-```
-
-This throws regardless of whether the captured ambient is stale or null, and it fires *through* the idiomatic `ctx.State?.` access (because `State` is non-null — it is the scope method that throws), so the failure cannot be swallowed by the null-conditional operator. The correct pattern is to read the values out **during** the turn and pass those into the background work:
-
-```csharp
-bot.OnMessage(async (ctx, ct) =>
-{
-    string? name = ctx.State?.User.Get<string>("name");   // read now, during the turn
-    _ = Task.Run(async () =>
-    {
-        await SomeSlowCallAsync(name);                     // use the captured value, not ctx.State
-    });
-});
-```
-
-### Key derivation
-
-```
-TurnState.DeriveKeys(CoreActivity activity)
+    ├─ 1. (convKey, userKey) = TurnState.DeriveKeys(activity)
     │
-    ├─ channelId       = activity.ChannelId        (required for any persisted scope)
-    ├─ conversationId  = activity.Conversation?.Id
-    ├─ fromId          = activity.From?.Id
+    ├─ 2. store.LoadAsync: concurrent cache.GetAsync per key → bytes → StateSerializer.Deserialize
+    │     (IDistributedCache has no batch read; a turn reads at most two keys)
     │
-    ├─ conversationKey = (channelId is null || conversationId is null)
-    │                       ? null                         // conversation scope unavailable
-    │                       : $"{channelId}/conversations/{conversationId}"
+    ├─ 3. turnState = new TurnState(conversation, user, convKey, userKey)
+    │     baseline[scope] = StateSerializer.Serialize(scope)   // load-time byte snapshot
+    │     Context(this, teamsActivity, turnState)              // state passed in explicitly
     │
-    └─ userKey         = (channelId is null || fromId is null)
-                            ? null                          // user scope unavailable
-                            : $"{channelId}/users/{fromId}"
+    ├─ 4. dispatch routes (within try)
+    │
+    ├─ 5. // only reached when dispatch did NOT throw — store.SaveAsync:
+    │     foreach persisted scope that changed (re-serialize, compare to baseline):
+    │         scope.IsEmpty ? cache.RemoveAsync(key)               // emptied this turn → delete
+    │                       : cache.SetAsync(key, bytes, entryOptions)
+    │
+    └─ 6. finally: turnState.Complete()  (seal: later scope access throws)
 ```
 
-When a key is null (e.g. an activity with no `From`), that scope is hydrated empty and never written — reads return defaults and writes are silently dropped, so handlers never need null-guards beyond the existing `ctx.State?.` pattern.
+**Write-only-if-changed** — each persisted scope is serialized to a UTF-8 byte baseline at load and re-serialized at save; only scopes whose bytes differ are written. This catches in-place mutation of a fetched reference type (`Get<List<string>>(...).Add(...)`) that a dirty flag would miss, and avoids a round-trip on unchanged turns. Cost is one extra serialization per persisted scope per turn — the same trade Bot Framework, Teams AI, and the Agents SDK all make.
+
+**Delete-on-empty** — a changed scope that ends the turn empty (e.g. `scope.Clear()`) is routed to `RemoveAsync` instead of writing an empty document, so a cleared scope leaves no orphan entry. Because the delete only fires when the scope *changed* to empty, an always-empty scope never issues a spurious delete.
 
 ### Serialization
 
-A state scope is an **open-typed bag** — `Dictionary<string, object?>` of whatever POCOs the developer stores. Those types can't be enumerated at build time, so unlike the activity pipeline (a closed set of known types), state serialization is fundamentally reflection-based. Rather than stand up a parallel, state-specific source-gen context — which would give a *false* impression of an AOT fast path while every `object`-typed value falls through to reflection anyway — `StateSerializer` reuses the canonical `TeamsActivityJsonContext`:
+A scope is an open-typed `Dictionary<string, object?>`, so serialization is reflection-based. Rather than stand up a parallel state-specific source-gen context, `StateSerializer` reuses the canonical `TeamsActivityJsonContext`:
 
 ```csharp
 internal static readonly JsonSerializerOptions Options = new()
 {
-    // Teams context supplies source-generated metadata for the primitives and JsonElement values
-    // that commonly appear; the reflection resolver handles arbitrary user POCO values.
     TypeInfoResolver = JsonTypeInfoResolver.Combine(TeamsActivityJsonContext.Default, new DefaultJsonTypeInfoResolver()),
     PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
 };
+
+internal static byte[] Serialize(IDictionary<string, object?> values) => JsonSerializer.SerializeToUtf8Bytes(values, Options);
+internal static Dictionary<string, object?> Deserialize(ReadOnlySpan<byte> utf8Json) => JsonSerializer.Deserialize<...>(utf8Json, Options) ?? [];
 ```
 
-Values written via `Set<T>(key, value)` are held as boxed objects in-memory and serialized lazily on save; values read via `Get<T>` deserialize the stored `JsonElement` on first access and cache the typed result — identical to the `ExtendedPropertiesDictionary.Get<T>` behavior already in Core. Cross-runtime interop (a Redis document written by a .NET bot read by a Node/Python bot) is preserved by using camelCase JSON with no .NET-specific type markers.
+Serialization is byte-native (no string intermediary): the same bytes are used for the change-detection baseline and written straight to the cache. Values written via `Set<T>` are held boxed in-memory and serialized lazily on save; values read via `Get<T>` deserialize the stored `JsonElement` on first access and cache the typed result.
+
+### Lifetime and after-turn access
+
+`TurnState` is **scoped to a single turn**: loaded at the start and **sealed** at the end (`turnState.Complete()` in the `OnActivity` `finally`). Accessing it after the turn — almost always by capturing `ctx.State` in fire-and-forget background work — is a misuse, because the atomic save has already run and will not run again.
+
+The captured `ctx.State` is a live reference, so a naive design would let background code read a **stale** copy and write changes that **silently never persist**. To make that loud, every scope read/write checks `IsCompleted` and throws:
+
+```csharp
+// inside StateScope.Get/Set/Remove/...
+if (_completed)
+    throw new InvalidOperationException(
+        "TurnState was accessed after the turn completed. State is per-turn and is saved once " +
+        "when the handler returns. Read the values you need during the turn and pass them into " +
+        "any background work, e.g. `var name = ctx.State.User.Get<string>(\"name\");`.");
+```
+
+This fires *through* the idiomatic `ctx.State?.` access (the scope method throws, not the null-conditional), so the failure cannot be swallowed. Correct pattern: read values out **during** the turn and pass those into the background work.
 
 ## Path Syntax (Advanced)
 
-Instead of scope properties, a path string can be used:
+Instead of the scope properties, a scope-qualified path string can be used. A bare key (no scope prefix) throws `ArgumentException`.
 
 | Path | Equivalent |
 |---|---|
 | `"conversation.count"` | `state.Conversation.Get<int>("count")` |
 | `"user.name"` | `state.User.Get<string>("name")` |
-| `"temp.requestId"` | `state.Temp.Get<string>("requestId")` |
-| `"foo"` | `state.Temp.Get<object>("foo")` (defaults to temp) |
+| `"foo"` | ❌ throws — must be scope-qualified |
 
 ```csharp
 ctx.State?.SetValue("conversation.count", 5);   // same as Conversation.Set("count", 5)
-ctx.State?.SetValue("foo", "bar");              // same as Temp.Set("foo", "bar")
 ```
 
 ## Atomic Semantics
 
-State is **saved only when the turn handler completes successfully**. If the handler throws, **state mutations are discarded** — nothing is written to storage. This guarantees that a failed turn never leaves persisted state in a partially-updated, invalid condition.
+State is **saved only when the turn handler completes successfully**. If the handler throws, **state mutations are discarded** — nothing is written. A failed turn never leaves persisted state in a partially-updated condition.
 
 ```csharp
 bot.OnMessage(async (ctx, ct) =>
@@ -466,97 +273,72 @@ bot.OnMessage(async (ctx, ct) =>
 });
 ```
 
-This is implemented by the middleware writing only after `await next(ct)` returns normally (see [Internal Flow](#internal-flow)).
+This is implemented by the middleware writing only after `await next(ct)` returns normally.
 
-## Storage Adapters
+## Backends
 
-### MemoryStorage (Apps)
+Any `IDistributedCache` works. The notable trade-off is the document format:
 
-- **Thread-safe**: Yes (`ConcurrentDictionary`).
-- **Persistence**: None (lost on restart).
-- **Use case**: Development, testing, stateless hosts.
+| Backend | Registration | Notes |
+|---|---|---|
+| **In-memory** | `AddDistributedMemoryCache()` | In-process, lost on restart. Dev / single-instance. |
+| **Redis / Garnet** | `AddStackExchangeRedisCache(...)` | Multi-instance. ⚠️ The built-in `RedisCache` wraps values in its own Redis hash (with expiry metadata), so documents are **not** directly readable by the Node/Python SDKs. |
+| **SQL Server** | `AddDistributedSqlServerCache(...)` | Multi-instance, durable. |
+| **Other** | NCache, Azure, custom | Any `IDistributedCache` implementation. |
 
-### FileStorage (Apps)
+**Cross-runtime documents:** the value written is bare camelCase UTF-8 JSON with no .NET-specific markers, so a backend that stores the value *verbatim* keeps it interoperable across .NET / Node / Python bots. The built-in `RedisCache` does not store verbatim (see above) — use a backend that does if cross-SDK document interop is required.
 
-- **Persistence**: One JSON file per key on disk; the key is percent-encoded (`Uri.EscapeDataString`) into a flat file name, matching Node `encodeURIComponent` / Python `quote` for a cross-runtime document format.
-- **Concurrency**: Writes are atomic (write to a temp file, then rename over the target), so a concurrent reader never sees a partially written document. Same-key writes are last-write-wins.
-- **Use case**: Local development, single-instance deployments.
-- **Limitations**: ⚠️ No cross-process/instance coordination — two instances pointing at the same directory will overwrite each other's state. Use `RedisStorage` for multi-instance. No built-in cleanup.
+**Eviction:** `IDistributedCache` is a *cache* contract; a backend may evict entries (`MemoryDistributedCache` evicts under memory pressure). Use a durable backend, and avoid aggressive eviction policies on state keys, when state must not be lost.
 
-### RedisStorage (opt-in package `Microsoft.Teams.State.Redis`)
-
-- **Thread-safe**: Yes (Redis serializes operations).
-- **Persistence**: Configurable via Redis (RDB / AOF / none).
-- **Use case**: Multi-instance / horizontally scaled deployments; state shared across replicas.
-- **Packaging**: `dotnet add package Microsoft.Teams.State.Redis`. Never pulled into the core install — same opt-in philosophy noted for the distributed dedup store in [OAuthFlow-Design.md](sso/OAuthFlow-Design.md).
-- **Key encoding**: `{keyPrefix}{logicalKey}` (default prefix `teams:state:`). Redis is binary-safe; no escaping needed.
-- **Cluster compatibility**: Multi-key reads/writes are issued as pipelined single-key commands (not `MGET` / multi-key `DEL`) to avoid `CROSSSLOT` errors on Redis Cluster.
-- **Lifecycle**: `IAsyncDisposable` — dispose on shutdown (`await using` or DI-managed disposal).
-
-### Cloud adapters (future)
-
-`BlobStorage` (Azure Blob) and `CosmosDbStorage` (Azure Cosmos DB) are deferred to a later version, following the same `IStorage` contract.
+**Expiration:** pass `DistributedCacheEntryOptions` to `UseState` to apply a sliding/absolute TTL to every written document.
 
 ## File Placement
 
 | File | Location |
 |---|---|
-| `IStorage.cs` | `Microsoft.Teams.Apps/State/IStorage.cs` |
-| `StoreItem.cs` | `Microsoft.Teams.Apps/State/StoreItem.cs` |
 | `TurnState.cs` | `Microsoft.Teams.Apps/State/TurnState.cs` |
 | `StateScope.cs` | `Microsoft.Teams.Apps/State/StateScope.cs` |
-| `StateMiddleware.cs` | `Microsoft.Teams.Apps/State/StateMiddleware.cs` |
-| `MemoryStorage.cs` | `Microsoft.Teams.Apps/State/MemoryStorage.cs` |
+| `TurnStateStore.cs` | `Microsoft.Teams.Apps/State/TurnStateStore.cs` |
 | `StateSerializer.cs` | `Microsoft.Teams.Apps/State/StateSerializer.cs` |
-| `FileStorage.cs` | `Microsoft.Teams.Apps/State/FileStorage.cs` |
-| `RedisStorage.cs` | `Microsoft.Teams.State.Redis/RedisStorage.cs` (opt-in package, references Apps) |
 
-`UseState` lives on `TeamsBotApplicationOptions` and `AppBuilder`; the `StateMiddleware` is registered in the `TeamsBotApplication` constructor. No separate `StateExtensions` file.
+`UseState` lives on `TeamsBotApplicationOptions` and `AppBuilder`; the `TurnStateStore` is created in the `TeamsBotApplication` constructor and driven from `OnActivity`.
 
 ## Changes to Core / Apps
 
 | File | Change |
 |---|---|
-| `Context.cs` | Add `public TurnState? State { get; }` returning the ambient `TurnState.Current`. |
-| `TeamsBotApplicationOptions.cs` | Add `UseState(IStorage storage)` and an internal `IStorage? StateStorage` descriptor; construct + register `StateMiddleware` in the `TeamsBotApplication` constructor (next to the OAuth flow loop). |
-| `AppBuilder.cs` | Add `UseState(IStorage storage)` delegating to `Options.UseState`. |
-| `BotApplication.cs` | No change required — `UseMiddleware` already exists; `StateMiddleware` registers through it. |
+| `Context.cs` | `Context(..., TurnState? turnState)` constructor param; `public TurnState? State { get; }` set from it. |
+| `Routing/Route.cs` | Per-route `Context` construction forwards `ctx.State` to the typed context. |
+| `TeamsBotApplicationOptions.cs` | `UseState(...)` + internal `StateEnabled` / `StateEntryOptions` (pure config — no cache/store reference). |
+| `TeamsBotApplication.HostingExtensions.cs` | When state is enabled, register a default `AddDistributedMemoryCache` + a `TurnStateStore` DI singleton over the resolved `IDistributedCache`. |
+| `TeamsBotApplication.cs` | `TurnStateStore?` injected via the constructor (null = state off); load/save around routing in `OnActivity`. |
+| `AppBuilder.cs` | `UseState(...)` delegating to `Options.UseState`. |
 
 ## Edge Cases & Constraints
 
 | Scenario | Behavior |
 |---|---|
-| State middleware not registered | `context.State` is `null`. Bot behaves exactly as before (fully opt-in). |
-| Activity has no `From` (e.g. some conversationUpdate) | User scope key is null → user scope is empty and never written. Conversation scope still works. |
+| State not enabled (`UseState` not called) | `context.State` is `null`. Bot behaves exactly as before (fully opt-in). |
+| `UseState()` with no cache registered | Defaults to an in-process `IDistributedCache` (`AddDistributedMemoryCache`). Register a distributed backend to override. |
+| Activity has no `From` | User scope key is null → user scope is empty and never written. Conversation scope still works. |
 | Activity has no `Conversation` | Conversation scope is empty and never written. |
-| Handler throws | No writes occur (atomic). `BotApplication.ProcessAsync` wraps the exception as `BotHandlerException`. |
-| Unchanged turn (no mutation) | No backend write — each scope's save-time hash matches its load-time hash. |
-| Concurrent turns in the same conversation | Last-write-wins in v1 (no optimistic concurrency). `StoreItem.ETag` is reserved for a future version. |
-| Large value stored | Allowed but discouraged — `TurnState` is not a blob store. Keep documents to a few KB. Use Blob/file storage for large payloads. |
-| `Temp` value | Never persisted; discarded when the turn ends (the ambient is cleared in `finally`). |
-| Accessing `TurnState.Current` outside any turn | Returns `null` (the `AsyncLocal` is only set for the duration of the pipeline). |
-| Accessing state **after the turn** (captured `ctx.State` in background work) | Scope reads/writes throw a descriptive `InvalidOperationException` once the turn is sealed (`IsCompleted`). The throw fires through `ctx.State?.` and is not affected by whether the captured ambient is stale or null. Capture values during the turn instead (see [Lifetime and after-turn access](#lifetime-and-after-turn-access)). |
-| `FileStorage` across two instances | Unsafe — instances overwrite each other. Use `RedisStorage` for multi-instance. |
-| Sensitive values | Stored as plain JSON. No encryption in v1 — encrypt before `Set` if required. |
-| Cross-runtime document sharing | Supported via camelCase JSON with no .NET-specific markers; a Redis document is interoperable across .NET / Node / Python bots. |
+| Handler throws | No writes occur (atomic). |
+| Unchanged turn (no mutation) | No backend write — each scope's save-time bytes match its load-time baseline. |
+| Concurrent turns on the same key | Last-write-wins (`IDistributedCache` has no compare-and-swap). A read-modify-write of a growing collection (e.g. appending messages) can drop the earlier write — see [What TurnState is NOT](#what-turnstate-is-not). Keep state to small, last-writer-safe values. |
+| Bare path (`SetValue("foo", …)`) | Throws `ArgumentException` — paths must be scope-qualified. |
+| Accessing state **after the turn** | Scope reads/writes throw a descriptive `InvalidOperationException` (sealed on `IsCompleted`). Capture values during the turn instead. |
+| Backend evicts an entry | State for that key is lost on next read (cache semantics). Use a durable backend / no eviction for state keys. |
+| Sensitive values | Stored as plain JSON. Encrypt before `Set` if required. |
 
 ## What TurnState is NOT
 
-- **Not a database** — optimized for small per-conversation / per-user key-value documents. For queries, use a real database.
+- **Not a database** — optimized for small per-conversation / per-user key-value documents.
 - **Not for large blobs** — serializes to JSON; store small objects. Large files belong in Blob storage.
-- **Not a distributed lock** — last-write-wins in v1; do not use for coordination.
-- **Not a web session store** — it is bot-turn-scoped, not HTTP-session-scoped.
-
-## Limitations in v1
-
-- **No concurrency control** — simultaneous writes to the same key are last-write-wins; `StoreItem.ETag` is reserved but not enforced.
-- **Adapters** — v1 ships `MemoryStorage`, `FileStorage` (Apps) and `RedisStorage` (opt-in package). `BlobStorage` / `CosmosDbStorage` are deferred.
-- **`FileStorage` is single-instance only** — use `RedisStorage` for scaled deployments.
-- **No encryption** — values are plain JSON.
-- **No expiration** — state persists until explicitly deleted; implement manual cleanup if needed.
+- **Not a message log / accumulating collection** — do **not** append incoming messages (or grow any list) in state. Saves are **last-write-wins** with no compare-and-swap, so two concurrent turns in the same conversation each load the list, append, and write back — and the later write clobbers the earlier one, silently dropping messages (drift). Read-modify-write of a growing collection is exactly the pattern this concurrency model can't protect. Persist message history in an append-only store (a database/Blob) and keep only small, last-writer-safe values (a counter, a flag, the current dialog step) in state.
+- **Not a distributed lock** — last-write-wins; do not use for coordination.
+- **Not transient scratch space** — there is no temp scope; pass per-turn data through `Context`.
 
 ## See Also
 
 - [Architecture.md](Architecture.md) — how the three layers and the middleware pipeline fit together.
-- [OAuthFlow-Design.md](sso/OAuthFlow-Design.md) — the layering / opt-in-package pattern this design mirrors.
-- [Activity-Design.md](Activity-Design.md) — the `CoreActivity` schema state keys are derived from.
+- [OAuthFlow-Design.md](sso/OAuthFlow-Design.md) — the layering / opt-in pattern this design mirrors.
