@@ -6,11 +6,11 @@ using System.Text.Json;
 namespace Microsoft.Teams.Apps.State;
 
 /// <summary>
-/// A single state scope (conversation, user, or temp) — a string-keyed bag of values.
+/// A single state scope (conversation or user) — a string-keyed bag of values.
 /// </summary>
 /// <remarks>
 /// Persisted scopes (conversation, user) are change-tracked: their serialized form is captured at
-/// load and compared at save, so only changed scopes are written. The temp scope is never persisted.
+/// load and compared at save, so only changed scopes are written.
 /// After the owning turn completes, every read and write throws <see cref="InvalidOperationException"/>
 /// (see <see cref="TurnState"/>).
 /// </remarks>

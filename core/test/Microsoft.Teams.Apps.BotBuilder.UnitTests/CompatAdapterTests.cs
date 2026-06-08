@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Schema;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Moq;
 
 namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
@@ -60,6 +62,64 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
             Assert.NotNull(capturedConnectorClient);
             Assert.Equal("CompatConnectorClient", capturedConnectorClient.GetType().Name);
             Assert.IsAssignableFrom<Microsoft.Bot.Connector.IConnectorClient>(capturedConnectorClient);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_OnTurnError_ReceivesTurnContextWithTurnState()
+        {
+            // Arrange
+            TeamsBotFrameworkHttpAdapter adapter = CreateCompatAdapter();
+
+            ITurnContext? capturedTurnContext = null;
+            Microsoft.Bot.Connector.Authentication.UserTokenClient? capturedUserTokenClient = null;
+            Microsoft.Bot.Connector.IConnectorClient? capturedConnectorClient = null;
+            string? capturedCustomTurnState = null;
+
+            adapter.OnTurnError = (turnContext, exception) =>
+            {
+                capturedTurnContext = turnContext;
+                capturedUserTokenClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.Authentication.UserTokenClient>();
+                capturedConnectorClient = turnContext.TurnState.Get<Microsoft.Bot.Connector.IConnectorClient>();
+                capturedCustomTurnState = turnContext.TurnState.Get<string>("customTurnStateKey");
+                return Task.CompletedTask;
+            };
+
+            Mock<IBot> mockBot = new();
+            mockBot
+                .Setup(b => b.OnTurnAsync(It.IsAny<ITurnContext>(), It.IsAny<CancellationToken>()))
+                .Returns<ITurnContext, CancellationToken>((tc, _) =>
+                {
+                    tc.TurnState.Add("customTurnStateKey", "customTurnStateValue");
+                    throw new InvalidOperationException("Test exception");
+                });
+
+            CoreActivity activity = new()
+            {
+                Type = ActivityType.Message,
+                Id = "act123",
+                ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/"),
+                Conversation = new Conversation("conv123"),
+                From = new Teams.Core.Schema.ConversationAccount { Id = "user123" }
+            };
+
+            DefaultHttpContext httpContext = new();
+            byte[] bodyBytes = Encoding.UTF8.GetBytes(activity.ToJson());
+            httpContext.Request.Body = new MemoryStream(bodyBytes);
+            httpContext.Request.ContentType = "application/json";
+
+            // Act
+            await adapter.ProcessAsync(httpContext.Request, httpContext.Response, mockBot.Object, CancellationToken.None);
+
+            // Assert
+            Assert.NotNull(capturedTurnContext);
+
+            Assert.NotNull(capturedUserTokenClient);
+            Assert.Equal("CompatUserTokenClient", capturedUserTokenClient.GetType().Name);
+
+            Assert.NotNull(capturedConnectorClient);
+            Assert.Equal("CompatConnectorClient", capturedConnectorClient.GetType().Name);
+
+            Assert.Equal("customTurnStateValue", capturedCustomTurnState);
         }
 
         private static TeamsBotFrameworkHttpAdapter CreateCompatAdapter()

@@ -31,6 +31,10 @@ WebApplication app = builder.Build();
 TeamsBotFrameworkHttpAdapter compatAdapter = (TeamsBotFrameworkHttpAdapter)app.Services.GetRequiredService<IBotFrameworkHttpAdapter>();
 compatAdapter.Use(new MyCompatMiddleware());
 compatAdapter.Use(new MyCompatMiddleware());
+compatAdapter.OnTurnError = async (turnContext, exception) =>
+{
+    await turnContext.SendActivityAsync(MessageFactory.Text("Oops, something went wrong! Please try again later."));
+};
 
 app.MapPost("/api/messages", async (IBotFrameworkHttpAdapter adapter, IBot bot, HttpRequest request, HttpResponse response, CancellationToken ct) =>
     await adapter.ProcessAsync(request, response, bot, ct)).RequireAuthorization();

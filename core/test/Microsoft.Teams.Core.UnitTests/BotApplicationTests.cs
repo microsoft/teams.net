@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.IO;
 using System.Net;
+using System.Security.Claims;
 using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
@@ -166,10 +168,9 @@ public class BotApplicationTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            ServiceUrl = new Uri("https://test.service.url/")
+            ServiceUrl = new Uri("https://test.service.url/"),
+            Conversation = new("conv123")
         };
-
-        activity.Conversation = new("conv123");
         SendActivityResponse? result = await botApp.SendActivityAsync(activity);
 
         Assert.NotNull(result);
@@ -183,6 +184,116 @@ public class BotApplicationTests
 
         await Assert.ThrowsAsync<ArgumentNullException>(() =>
             botApp.SendActivityAsync(null!));
+    }
+
+    [Fact]
+    public async Task ProcessAsync_ServiceUrlClaimMatchesActivity_ProcessesSuccessfully()
+    {
+        BotApplication botApp = CreateBotApplication();
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Id = "act123",
+            ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/")
+        };
+
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+        httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim("serviceurl", "https://smba.trafficmanager.net/teams/")
+        ]));
+
+        bool onActivityCalled = false;
+        botApp.OnActivity = (act, ct) =>
+        {
+            onActivityCalled = true;
+            return Task.CompletedTask;
+        };
+
+        await botApp.ProcessAsync(httpContext);
+
+        Assert.True(onActivityCalled);
+    }
+       
+
+    [Fact]
+    public async Task ProcessAsync_ServiceUrlClaimMismatch_ThrowsInvalidDataException()
+    {
+        BotApplication botApp = CreateBotApplication();
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Id = "act123",
+            ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/")
+        };
+
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+        httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim("serviceurl", "https://evil.example.com/")
+        ]));
+
+        botApp.OnActivity = (act, ct) => Task.CompletedTask;
+
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            botApp.ProcessAsync(httpContext));
+
+        Assert.Contains("does not match", exception.Message);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_ServiceUrlClaimMismatchCase_ThrowsInvalidDataException()
+    {
+        BotApplication botApp = CreateBotApplication();
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Id = "act123",
+            ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/")
+        };
+
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+        httpContext.User = new ClaimsPrincipal(new ClaimsIdentity(
+        [
+            new Claim("serviceurl", "https://SMBA.trafficmanager.net/teams/")
+        ]));
+
+        botApp.OnActivity = (act, ct) => Task.CompletedTask;
+
+        InvalidDataException exception = await Assert.ThrowsAsync<InvalidDataException>(() =>
+            botApp.ProcessAsync(httpContext));
+
+        Assert.Contains("does not match", exception.Message);
+    }
+
+    [Fact]
+    public async Task ProcessAsync_NoServiceUrlClaim_ProcessesSuccessfully()
+    {
+        BotApplication botApp = CreateBotApplication();
+
+        CoreActivity activity = new()
+        {
+            Type = ActivityType.Message,
+            Id = "act123",
+            ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/")
+        };
+
+        DefaultHttpContext httpContext = CreateHttpContextWithActivity(activity);
+        // No serviceurl claim set — default ClaimsPrincipal has no claims
+
+        bool onActivityCalled = false;
+        botApp.OnActivity = (act, ct) =>
+        {
+            onActivityCalled = true;
+            return Task.CompletedTask;
+        };
+
+        await botApp.ProcessAsync(httpContext);
+
+        Assert.True(onActivityCalled);
     }
 
     private static BotApplicationOptions CreateOptions(string appId) =>
