@@ -12,20 +12,21 @@ public sealed class TurnStateContainer
     /// Gets the conversation-scoped state, shared by all users in the conversation.
     /// Keyed by <c>Conversation.Id</c>.
     /// </summary>
-    public ITurnState ConversationState { get; }
+    public TurnState ConversationState { get; }
 
     /// <summary>
     /// Gets the user-scoped state, private to each user in each conversation.
     /// Keyed by <c>Conversation.Id</c> + <c>From.Id</c>.
     /// Returns <see langword="null"/> when the activity has no <c>From</c> field.
     /// </summary>
-    public ITurnState? UserState { get; }
+    public TurnState? UserState { get; }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TurnStateContainer"/> class.
     /// </summary>
-    public TurnStateContainer(ITurnState conversationState, ITurnState? userState)
+    public TurnStateContainer(TurnState conversationState, TurnState? userState)
     {
+        ArgumentNullException.ThrowIfNull(conversationState);
         ConversationState = conversationState;
         UserState = userState;
     }

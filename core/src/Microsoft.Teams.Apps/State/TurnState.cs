@@ -6,10 +6,10 @@ using System.Text.Json;
 namespace Microsoft.Teams.Apps.State;
 
 /// <summary>
-/// Default implementation of <see cref="ITurnState"/> backed by a dictionary.
+/// Per-turn state storage backed by a dictionary, supporting both key-value and typed object access.
 /// This type is not thread-safe; each instance is scoped to a single turn.
 /// </summary>
-public class TurnState : ITurnState
+public class TurnState
 {
     private readonly Dictionary<string, object?> _data;
 
@@ -20,10 +20,14 @@ public class TurnState : ITurnState
 
     private TurnState(Dictionary<string, object?> data) => _data = data;
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns true if any value has been added, modified, or removed since the state was loaded.
+    /// </summary>
     public bool IsDirty { get; private set; }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets a value by key. Returns <c>default</c> if the key is not present or the value cannot be converted.
+    /// </summary>
     public T? Get<T>(string key)
     {
         if (!_data.TryGetValue(key, out object? value) || value is null)
@@ -39,20 +43,31 @@ public class TurnState : ITurnState
         // Handle JsonElement values from deserialization.
         if (value is JsonElement element)
         {
-            return element.Deserialize<T>();
+            try
+            {
+                return element.Deserialize<T>();
+            }
+            catch (JsonException)
+            {
+                return default;
+            }
         }
 
         return default;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Sets a value by key.
+    /// </summary>
     public void Set<T>(string key, T value)
     {
         _data[key] = value;
         IsDirty = true;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Removes a key from state.
+    /// </summary>
     public void Remove(string key)
     {
         if (_data.Remove(key))
@@ -61,7 +76,10 @@ public class TurnState : ITurnState
         }
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Attempts to get a value by key.
+    /// Returns <c>true</c> if the key exists and the value can be converted to <typeparamref name="T"/>.
+    /// </summary>
     public bool TryGet<T>(string key, out T? value)
     {
         if (!_data.TryGetValue(key, out object? raw) || raw is null)
@@ -78,18 +96,30 @@ public class TurnState : ITurnState
 
         if (raw is JsonElement element)
         {
-            value = element.Deserialize<T>();
-            return value is not null;
+            try
+            {
+                value = element.Deserialize<T>();
+                return value is not null;
+            }
+            catch (JsonException)
+            {
+                value = default;
+                return false;
+            }
         }
 
         value = default;
         return false;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns <c>true</c> if the key exists in state.
+    /// </summary>
     public bool ContainsKey(string key) => _data.ContainsKey(key);
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Gets a typed state object. Creates a new instance via parameterless constructor if not present.
+    /// </summary>
     public T Get<T>() where T : class, new()
     {
         string key = TypeKey<T>();
@@ -103,9 +133,16 @@ public class TurnState : ITurnState
 
             if (value is JsonElement element)
             {
-                T deserialized = element.Deserialize<T>() ?? new T();
-                _data[key] = deserialized;
-                return deserialized;
+                try
+                {
+                    T deserialized = element.Deserialize<T>() ?? new T();
+                    _data[key] = deserialized;
+                    return deserialized;
+                }
+                catch (JsonException)
+                {
+                    // Fall through to create new instance
+                }
             }
         }
 
@@ -115,17 +152,23 @@ public class TurnState : ITurnState
         return instance;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Sets a typed state object, replacing any existing instance of the same type.
+    /// </summary>
     public void Set<T>(T value) where T : class
     {
         _data[TypeKey<T>()] = value;
         IsDirty = true;
     }
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Returns <c>true</c> if a typed state object of this type exists.
+    /// </summary>
     public bool Has<T>() where T : class => _data.ContainsKey(TypeKey<T>());
 
-    /// <inheritdoc/>
+    /// <summary>
+    /// Removes the typed state object of this type.
+    /// </summary>
     public void Remove<T>() where T : class
     {
         if (_data.Remove(TypeKey<T>()))
@@ -150,8 +193,16 @@ public class TurnState : ITurnState
             return new TurnState();
         }
 
-        Dictionary<string, object?>? data = JsonSerializer.Deserialize<Dictionary<string, object?>>(bytes);
-        return new TurnState(data ?? []);
+        try
+        {
+            Dictionary<string, object?>? data = JsonSerializer.Deserialize<Dictionary<string, object?>>(bytes);
+            return new TurnState(data ?? []);
+        }
+        catch (JsonException)
+        {
+            // Treat corrupted cache payload as a cache miss.
+            return new TurnState();
+        }
     }
 
     /// <summary>

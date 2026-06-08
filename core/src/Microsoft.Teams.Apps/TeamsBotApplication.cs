@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.Diagnostics;
@@ -22,8 +21,8 @@ namespace Microsoft.Teams.Apps;
 public class TeamsBotApplication : BotApplication
 {
     private readonly Api.Clients.ApiClient _teamsApiClient;
+    private readonly TurnStateLoader? _stateLoader;
     private Uri? _lastServiceUrl;
-    private TurnStateLoader? _stateLoader;
 
     /// <summary>
     /// Gets the logger instance for this application, used by <see cref="Context{TActivity}.Log"/>.
@@ -91,6 +90,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
+    /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>WithState()</c> is configured.</param>
     /// <example>
     /// <code>
     /// public class MyBot : TeamsBotApplication
@@ -108,7 +108,8 @@ public class TeamsBotApplication : BotApplication
         ApiClient teamsApiClient,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
-        TeamsBotApplicationOptions? options = null)
+        TeamsBotApplicationOptions? options = null,
+        TurnStateLoader? stateLoader = null)
         : base(
             (teamsApiClient ?? throw new ArgumentNullException(nameof(teamsApiClient))).ConversationClient,
             teamsApiClient.UserTokenClient,
@@ -116,6 +117,7 @@ public class TeamsBotApplication : BotApplication
             options)
     {
         _teamsApiClient = teamsApiClient;
+        _stateLoader = stateLoader;
         Api = teamsApiClient;
         Logger = logger;
         Router = new Router(logger);
@@ -187,18 +189,6 @@ public class TeamsBotApplication : BotApplication
             }
         };
         logger.LogDebug("TeamsBotApplication version {Version}", Version);
-    }
-
-    /// <inheritdoc/>
-    public override Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
-    {
-        ArgumentNullException.ThrowIfNull(httpContext);
-        if (_stateLoader is null)
-        {
-            Interlocked.CompareExchange(ref _stateLoader, httpContext.RequestServices.GetService<TurnStateLoader>(), null);
-        }
-
-        return base.ProcessAsync(httpContext, cancellationToken);
     }
 
     /// <summary>

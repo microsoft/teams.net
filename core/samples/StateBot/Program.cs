@@ -7,8 +7,8 @@ using Microsoft.Teams.Apps.Handlers;
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 
 // Register the Teams bot with per-turn state backed by Redis.
-// Swap AddStackExchangeRedisCache for AddDistributedMemoryCache() during local dev
-// if you don't have a Redis instance available.
+// Remove the AddStackExchangeRedisCache block below to use the built-in
+// in-memory fallback during local dev.
 webAppBuilder.Services.AddTeamsBotApplication(options => options.WithState());
 webAppBuilder.Services.AddStackExchangeRedisCache(options =>
 {

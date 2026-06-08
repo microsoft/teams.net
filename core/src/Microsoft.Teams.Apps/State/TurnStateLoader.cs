@@ -14,7 +14,7 @@ namespace Microsoft.Teams.Apps.State;
 /// Loads and saves per-turn state from a distributed cache.
 /// Manages two state scopes: conversation-scoped and user-scoped.
 /// </summary>
-internal sealed class TurnStateLoader
+public sealed class TurnStateLoader
 {
     private readonly IDistributedCache _cache;
     private readonly TurnStateOptions _options;
@@ -97,14 +97,14 @@ internal sealed class TurnStateLoader
 
         try
         {
-            bool convDirty = container.ConversationState is TurnState conversationState && conversationState.IsDirty;
-            bool userDirty = !string.IsNullOrEmpty(userId) && container.UserState is TurnState us && us.IsDirty;
+            bool convDirty = container.ConversationState.IsDirty;
+            bool userDirty = !string.IsNullOrEmpty(userId) && container.UserState is not null && container.UserState.IsDirty;
             long bytesWritten = 0;
 
             if (convDirty)
             {
                 string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
-                byte[] bytes = ((TurnState)container.ConversationState).ToJsonBytes();
+                byte[] bytes = container.ConversationState.ToJsonBytes();
                 bytesWritten += bytes.Length;
                 await _cache.SetAsync(conversationKey, bytes, _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
             }
@@ -112,7 +112,7 @@ internal sealed class TurnStateLoader
             if (userDirty)
             {
                 string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
-                byte[] bytes = ((TurnState)container.UserState!).ToJsonBytes();
+                byte[] bytes = container.UserState!.ToJsonBytes();
                 bytesWritten += bytes.Length;
                 await _cache.SetAsync(userKey, bytes, _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
             }
