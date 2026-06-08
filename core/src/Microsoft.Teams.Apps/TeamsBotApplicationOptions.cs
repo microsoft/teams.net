@@ -25,9 +25,10 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
 
     /// <summary>
     /// Registers turn state backed by the application's <see cref="IDistributedCache"/> (resolved from
-    /// DI). Register a cache first — e.g. <c>AddDistributedMemoryCache</c> for in-process dev, or
-    /// <c>AddStackExchangeRedisCache</c> for multi-instance deployments. State loads at the start of
-    /// each turn and saves changed scopes when the handler completes successfully.
+    /// DI). If no <see cref="IDistributedCache"/> is registered, <c>AddTeamsBotApplication</c> defaults
+    /// to <c>AddDistributedMemoryCache</c>; register a distributed backend (e.g.
+    /// <c>AddStackExchangeRedisCache</c>) to override for multi-instance deployments. State loads at the
+    /// start of each turn and saves changed scopes when the handler completes successfully.
     /// </summary>
     /// <param name="entryOptions">Optional per-entry options (e.g. expiration) applied to every write.</param>
     /// <returns>This instance for chaining.</returns>
