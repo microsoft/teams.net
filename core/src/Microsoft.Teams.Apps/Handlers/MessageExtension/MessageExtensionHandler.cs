@@ -84,7 +84,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -112,7 +112,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionAction> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -140,7 +140,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQueryLink> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -168,7 +168,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQueryLink> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -196,7 +196,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionAction> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -224,7 +224,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<JsonElement> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<JsonElement>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<JsonElement>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -252,7 +252,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -275,7 +275,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 var typedActivity = new InvokeActivity<JsonElement>(ctx.Activity);
-                Context<InvokeActivity<JsonElement>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<JsonElement>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -296,7 +296,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 var typedActivity = new InvokeActivity<Query>(ctx.Activity);
-                Context<InvokeActivity<Query>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<Query>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

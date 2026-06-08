@@ -62,7 +62,7 @@ public static class MeetingExtensions
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingStartValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingStartValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<EventActivity<MeetingStartValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -89,7 +89,7 @@ public static class MeetingExtensions
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingEndValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingEndValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<EventActivity<MeetingEndValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -116,7 +116,7 @@ public static class MeetingExtensions
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingParticipantJoinValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingParticipantJoinValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<EventActivity<MeetingParticipantJoinValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -143,7 +143,7 @@ public static class MeetingExtensions
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingParticipantLeaveValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingParticipantLeaveValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<EventActivity<MeetingParticipantLeaveValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

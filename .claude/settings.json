@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(dotnet build \"c:\\\\Users\\\\mehakbindra\\\\teams.net\\\\core\\\\src\\\\Microsoft.Teams.Apps\\\\Microsoft.Teams.Apps.csproj\" -c Debug --nologo -v q 2>&1)",
+      "PowerShell(dotnet test \"c:\\\\Users\\\\mehakbindra\\\\teams.net\\\\core\\\\test\\\\Microsoft.Teams.Apps.UnitTests\\\\Microsoft.Teams.Apps.UnitTests.csproj\" -c Debug --nologo -f net8.0 2>&1)"
+    ]
+  }
+}
