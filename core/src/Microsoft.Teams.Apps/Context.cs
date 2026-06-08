@@ -54,7 +54,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     // ==================== Turn State ====================
 
     private TurnStateContainer? _state;
-    
+
     /// <summary>
     /// Gets the per-turn state container with <see cref="TurnStateContainer.ConversationState"/>
     /// and <see cref="TurnStateContainer.UserState"/> scopes.
