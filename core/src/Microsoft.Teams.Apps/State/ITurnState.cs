@@ -26,6 +26,12 @@ public interface ITurnState
     void Remove(string key);
 
     /// <summary>
+    /// Attempts to get a value by key.
+    /// Returns true if the key exists and the value can be converted to <typeparamref name="T"/>.
+    /// </summary>
+    bool TryGet<T>(string key, out T? value);
+
+    /// <summary>
     /// Returns true if the key exists in state.
     /// </summary>
     bool ContainsKey(string key);

@@ -7,6 +7,7 @@ namespace Microsoft.Teams.Apps.State;
 
 /// <summary>
 /// Default implementation of <see cref="ITurnState"/> backed by a dictionary.
+/// This type is not thread-safe; each instance is scoped to a single turn.
 /// </summary>
 public class TurnState : ITurnState
 {
@@ -58,6 +59,31 @@ public class TurnState : ITurnState
         {
             IsDirty = true;
         }
+    }
+
+    /// <inheritdoc/>
+    public bool TryGet<T>(string key, out T? value)
+    {
+        if (!_data.TryGetValue(key, out object? raw) || raw is null)
+        {
+            value = default;
+            return false;
+        }
+
+        if (raw is T typed)
+        {
+            value = typed;
+            return true;
+        }
+
+        if (raw is JsonElement element)
+        {
+            value = element.Deserialize<T>();
+            return value is not null;
+        }
+
+        value = default;
+        return false;
     }
 
     /// <inheritdoc/>

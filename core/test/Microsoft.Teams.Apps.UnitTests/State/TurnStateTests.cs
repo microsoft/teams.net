@@ -292,4 +292,55 @@ public class TurnStateTests
         FakeState result = loaded.Get<FakeState>();
         Assert.Equal("persisted", result.Name);
     }
+
+    // ── TryGet ─────────────────────────────────────────────────────────
+
+    [Fact]
+    public void TryGet_ExistingKey_ReturnsTrueAndValue()
+    {
+        TurnState state = new();
+        state.Set("name", "Alice");
+
+        bool found = state.TryGet<string>("name", out string? value);
+
+        Assert.True(found);
+        Assert.Equal("Alice", value);
+    }
+
+    [Fact]
+    public void TryGet_MissingKey_ReturnsFalse()
+    {
+        TurnState state = new();
+
+        bool found = state.TryGet<string>("missing", out string? value);
+
+        Assert.False(found);
+        Assert.Null(value);
+    }
+
+    [Fact]
+    public void TryGet_WrongType_ReturnsFalse()
+    {
+        TurnState state = new();
+        state.Set("count", 42);
+
+        bool found = state.TryGet<string>("count", out string? value);
+
+        Assert.False(found);
+        Assert.Null(value);
+    }
+
+    [Fact]
+    public void TryGet_JsonElement_DeserializesAndReturnsTrue()
+    {
+        TurnState original = new();
+        original.Set("count", 42);
+        byte[] bytes = original.ToJsonBytes();
+
+        TurnState loaded = TurnState.FromJsonBytes(bytes);
+        bool found = loaded.TryGet<int>("count", out int value);
+
+        Assert.True(found);
+        Assert.Equal(42, value);
+    }
 }

@@ -41,13 +41,13 @@ internal sealed class TurnStateLoader
     /// </summary>
     public async Task<TurnStateContainer> LoadAsync(string conversationId, string? userId, CancellationToken cancellationToken)
     {
-        string conversationKey = $"ts:conv:{conversationId}";
+        string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
         TurnState conversationState = await LoadStateAsync(conversationKey, cancellationToken).ConfigureAwait(false);
 
         TurnState? userState = null;
         if (!string.IsNullOrEmpty(userId))
         {
-            string userKey = $"ts:user:{conversationId}:{userId}";
+            string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
             userState = await LoadStateAsync(userKey, cancellationToken).ConfigureAwait(false);
         }
 
@@ -63,13 +63,13 @@ internal sealed class TurnStateLoader
 
         if (container.ConversationState is TurnState conversationState && conversationState.IsDirty)
         {
-            string conversationKey = $"ts:conv:{conversationId}";
+            string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
             await SaveStateAsync(conversationKey, conversationState, cancellationToken).ConfigureAwait(false);
         }
 
         if (!string.IsNullOrEmpty(userId) && container.UserState is TurnState userState && userState.IsDirty)
         {
-            string userKey = $"ts:user:{conversationId}:{userId}";
+            string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
             await SaveStateAsync(userKey, userState, cancellationToken).ConfigureAwait(false);
         }
     }
@@ -79,12 +79,12 @@ internal sealed class TurnStateLoader
     /// </summary>
     public async Task DeleteAsync(string conversationId, string? userId, CancellationToken cancellationToken)
     {
-        string conversationKey = $"ts:conv:{conversationId}";
+        string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
         await _cache.RemoveAsync(conversationKey, cancellationToken).ConfigureAwait(false);
 
         if (!string.IsNullOrEmpty(userId))
         {
-            string userKey = $"ts:user:{conversationId}:{userId}";
+            string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
             await _cache.RemoveAsync(userKey, cancellationToken).ConfigureAwait(false);
         }
     }

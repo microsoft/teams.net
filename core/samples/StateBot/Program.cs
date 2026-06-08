@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Drawing;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Handlers;
 
@@ -31,14 +30,19 @@ teamsApp.OnMessage(async (ctx, ct) =>
     await ctx.SendActivityAsync($"Your name is {up.UserName} and your favorite color is {up.FavoriteColor}.", ct);
 
     up.UserName = "User" + counter;
-    up.FavoriteColor = Color.FromArgb(counter % 256, (counter * 2) % 256, (counter * 3) % 256).Name;
+    up.FavoriteColor = Colors[counter % Colors.Length];
     ctx.State.UserState?.Set(up);
 });
 
 webApp.Run();
 
+static partial class Program
+{
+    internal static readonly string[] Colors = ["Red", "Blue", "Green", "Yellow", "Purple", "Orange", "Cyan", "Magenta"];
+}
+
 class UserPrefs
 {
-    public string FavoriteColor { get; set; } = Color.White.Name;
+    public string FavoriteColor { get; set; } = "White";
     public string UserName { get; set; } = "anon";
 }
