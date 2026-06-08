@@ -11,8 +11,6 @@ using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
-using Microsoft.Teams.Core;
-using Microsoft.Teams.Core.Hosting;
 
 namespace ObservabilityBot;
 
@@ -48,7 +46,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         await context.Typing(ct);
 
         var conversationId = context.Activity.Conversation.Id;
-        var history = _chatHistories.GetOrAdd(conversationId, _ => []);
+        var history = context.State.ConversationState.Get<List<ChatMessage>>() ?? new List<ChatMessage>();
 
         lock (history)
         {
@@ -108,8 +106,8 @@ public class ObservabilityBotApp : TeamsBotApplication
         {
             history.AddRange(chatResponse.Messages);
         }
-
-        // === ExecuteToolScope: record each tool invocation ===
+        
+            // === ExecuteToolScope: record each tool invocation ===
         var toolCalls = chatResponse.Messages
             .SelectMany(m => m.Contents.OfType<FunctionCallContent>())
             .GroupBy(fc => fc.CallId ?? fc.Name ?? "")
@@ -187,6 +185,10 @@ public class ObservabilityBotApp : TeamsBotApplication
         {
             invokeScope.RecordError(ex);
             throw;
+        }
+        finally
+        {
+            context.State.ConversationState.Set(history);
         }
     }
 }
