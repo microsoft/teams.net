@@ -223,7 +223,7 @@ internal static byte[] Serialize(IDictionary<string, object?> values) => JsonSer
 internal static Dictionary<string, object?> Deserialize(ReadOnlySpan<byte> utf8Json) => JsonSerializer.Deserialize<...>(utf8Json, Options) ?? [];
 ```
 
-Serialization is byte-native (no string intermediary): the same bytes are used for the change-detection baseline and written straight to the cache. Values written via `Set<T>` are held boxed in-memory and serialized lazily on save; values read via `Get<T>` deserialize the stored `JsonElement` on each read and are **not** cached back into the scope (so a read can never flag a scope as changed).
+Serialization is byte-native (no string intermediary): values are serialized straight to UTF-8 bytes for the cache. Values written via `Set<T>` are held boxed in-memory and serialized lazily on save; values read via `Get<T>` deserialize the stored `JsonElement` on first access and cache the typed result for the rest of the turn.
 
 ### Lifetime and after-turn access
 
@@ -322,8 +322,8 @@ Any `IDistributedCache` works. The notable trade-off is the document format:
 | Activity has no `From` | User scope key is null → user scope is empty and never written. Conversation scope still works. |
 | Activity has no `Conversation` | Conversation scope is empty and never written. |
 | Handler throws | No writes occur (atomic). |
-| Read-only or unchanged turn | No backend write — `Get` doesn't cache back, so a turn that only reads (or doesn't mutate) re-serializes to bytes identical to its load-time baseline. Reads never clobber. |
-| Mutating a fetched object in place | Persisted only if followed by `Set` — `Get` returns a fresh deserialization that is not stored back, so e.g. `Get<List<string>>(...).Add(...)` alone is dropped. |
+| Read-only or unchanged turn | No backend write — reads don't set a scope's dirty flag, so a turn that only reads (or doesn't mutate) isn't written. Reads never clobber. |
+| Mutating a fetched object in place | Write it back with `Set` to persist — an in-place edit alone doesn't set the dirty flag, so `Get<List<string>>(...).Add(...)` with no `Set` isn't saved on a read-only turn. |
 | Concurrent turns on the same key | Last-write-wins (`IDistributedCache` has no compare-and-swap). A read-modify-write of a growing collection (e.g. appending messages) can drop the earlier write — see [What TurnState is NOT](#what-turnstate-is-not). Keep state to small, last-writer-safe values. |
 | Bare path (`SetValue("foo", …)`) | Throws `ArgumentException` — paths must be scope-qualified. |
 | Accessing state **after the turn** | Scope reads/writes throw a descriptive `InvalidOperationException` (sealed on `IsCompleted`). Capture values during the turn instead. |
