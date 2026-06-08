@@ -193,7 +193,11 @@ public class TeamsBotApplication : BotApplication
     public override Task ProcessAsync(HttpContext httpContext, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(httpContext);
-        _stateLoader ??= httpContext.RequestServices.GetService<TurnStateLoader>();
+        if (_stateLoader is null)
+        {
+            Interlocked.CompareExchange(ref _stateLoader, httpContext.RequestServices.GetService<TurnStateLoader>(), null);
+        }
+
         return base.ProcessAsync(httpContext, cancellationToken);
     }
 
