@@ -74,7 +74,7 @@ public class TeamsBotApplicationHostingExtensionsTests
     }
 
     [Fact]
-    public void AddTeamsBotApplication_WithState_RegistersStateLoader()
+    public void AddTeamsBotApplication_UseState_RegistersStateLoader()
     {
         Dictionary<string, string?> configData = new()
         {
@@ -90,7 +90,7 @@ public class TeamsBotApplicationHostingExtensionsTests
         services.AddSingleton<IConfiguration>(configuration);
         services.AddLogging();
         services.AddDistributedMemoryCache();
-        services.AddTeamsBotApplication(options => options.WithState());
+        services.AddTeamsBotApplication(options => options.UseState());
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();
         TurnStateLoader? loader = serviceProvider.GetService<TurnStateLoader>();
@@ -99,7 +99,7 @@ public class TeamsBotApplicationHostingExtensionsTests
     }
 
     [Fact]
-    public void AddTeamsBotApplication_WithState_CustomOptions_Applied()
+    public void AddTeamsBotApplication_UseState_CustomOptions_Applied()
     {
         Dictionary<string, string?> configData = new()
         {
@@ -116,7 +116,7 @@ public class TeamsBotApplicationHostingExtensionsTests
         services.AddLogging();
         services.AddDistributedMemoryCache();
         services.AddTeamsBotApplication(options =>
-            options.WithState(state =>
+            options.UseState(state =>
                 state.CacheEntryOptions.SlidingExpiration = TimeSpan.FromMinutes(15)));
 
         using ServiceProvider serviceProvider = services.BuildServiceProvider();

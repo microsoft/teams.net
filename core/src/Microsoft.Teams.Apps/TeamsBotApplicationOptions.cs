@@ -32,7 +32,7 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
         return this;
     }
 
-    internal bool UseState { get; private set; }
+    internal bool IsStateEnabled { get; private set; }
 
     internal Action<TurnStateOptions>? StateConfiguration { get; private set; }
 
@@ -43,9 +43,9 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
     /// </summary>
     /// <param name="configure">Optional delegate to configure <see cref="TurnStateOptions"/> (e.g. cache entry TTL).</param>
     /// <returns>This instance for chaining.</returns>
-    public TeamsBotApplicationOptions WithState(Action<TurnStateOptions>? configure = null)
+    public TeamsBotApplicationOptions UseState(Action<TurnStateOptions>? configure = null)
     {
-        UseState = true;
+        IsStateEnabled = true;
         StateConfiguration = configure;
         return this;
     }

@@ -66,7 +66,7 @@ public class TurnStateOptions
 
 ### DI Registration
 
-`AddTeamsBotApplicationState` (private, called when `WithState()` is set) registers `TurnStateLoader`, options, and a default in-memory `IDistributedCache` via `AddDistributedMemoryCache()` (which uses `TryAdd`). This means `WithState()` works out of the box with no additional configuration.
+`AddTeamsBotApplicationState` (private, called when `UseState()` is set) registers `TurnStateLoader`, options, and a default in-memory `IDistributedCache` via `AddDistributedMemoryCache()` (which uses `TryAdd`). This means `UseState()` works out of the box with no additional configuration.
 
 When the developer registers a persistent provider (e.g. `AddStackExchangeRedisCache`), it takes precedence because it uses `Add` (not `TryAdd`), so the last registration wins in DI resolution regardless of call order.
 
@@ -78,21 +78,21 @@ At construction, `TurnStateLoader` checks the resolved `IDistributedCache` imple
 
 The warning disappears when a persistent provider is registered.
 
-### `TeamsBotApplicationOptions.WithState()`
+### `TeamsBotApplicationOptions.UseState()`
 
 Fluent API for enabling state via the existing options pattern:
 
 ```csharp
 // Default settings
-services.AddTeamsBotApplication(options => options.WithState());
+services.AddTeamsBotApplication(options => options.UseState());
 
 // Custom TTL
 services.AddTeamsBotApplication(options =>
-    options.WithState(state =>
+    options.UseState(state =>
         state.CacheEntryOptions.SlidingExpiration = TimeSpan.FromMinutes(30)));
 ```
 
-`WithState()` sets a flag on `TeamsBotApplicationOptions` that `AddTeamsBotApplication` reads to call `AddTeamsBotApplicationState()`. This keeps state configuration alongside OAuth and other bot options.
+`UseState()` sets a flag on `TeamsBotApplicationOptions` that `AddTeamsBotApplication` reads to call `AddTeamsBotApplicationState()`. This keeps state configuration alongside OAuth and other bot options.
 
 ### `Context<TActivity>.State`
 
@@ -120,7 +120,7 @@ No auto-save on typed objects. Developer mutates then calls `Set<T>()` to mark d
 ```csharp
 var builder = WebApplication.CreateSlimBuilder(args);
 
-builder.Services.AddTeamsBotApplication(options => options.WithState());
+builder.Services.AddTeamsBotApplication(options => options.UseState());
 builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = builder.Configuration.GetConnectionString("Redis");
@@ -171,7 +171,7 @@ src/Microsoft.Teams.Apps/
 │   └── TurnStateOptions.cs
 ├── TeamsBotApplication.cs              (state load/save in OnActivity)
 ├── TeamsBotApplication.HostingExtensions.cs  (AddTeamsBotApplicationState)
-├── TeamsBotApplicationOptions.cs       (WithState fluent API)
+├── TeamsBotApplicationOptions.cs       (UseState fluent API)
 └── Context.cs                          (State property)
 
 samples/StateBot/                       (Redis-backed example)

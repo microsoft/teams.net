@@ -20,7 +20,7 @@ string[] meterNames      = [CoreTelemetryNames.MeterName, TeamsBotApplicationTel
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IServiceProvider? rootProvider = null;
-builder.Services.AddTeamsBotApplication<ObservabilityBotApp>(o => o.WithState());
+builder.Services.AddTeamsBotApplication<ObservabilityBotApp>(o => o.UseState());
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(r => r

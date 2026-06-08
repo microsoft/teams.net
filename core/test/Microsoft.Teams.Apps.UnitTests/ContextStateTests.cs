@@ -36,7 +36,7 @@ public class ContextStateTests
         Context<TeamsActivity> context = new(app, new TeamsActivity());
 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => context.State);
-        Assert.Contains("WithState()", ex.Message);
+        Assert.Contains("UseState()", ex.Message);
     }
 
     [Fact]

@@ -115,7 +115,7 @@ public static class TeamsBotApplicationHostingExtensions
 
         services.AddBotApplication<TApp>(botConfig);
 
-        if (teamsOptions.UseState)
+        if (teamsOptions.IsStateEnabled)
         {
             AddTeamsBotApplicationState(services, teamsOptions.StateConfiguration);
         }
@@ -174,7 +174,7 @@ public static class TeamsBotApplicationHostingExtensions
             services.AddOptions<TurnStateOptions>();
         }
 
-        // Provide an in-memory cache as fallback so WithState() works out of the box.
+        // Provide an in-memory cache as fallback so UseState() works out of the box.
         // Since this uses TryAdd, any IDistributedCache registered by the developer
         // (before or after this call) will take precedence via last-wins DI resolution
         // only if they use Add (not TryAdd). Redis (AddStackExchangeRedisCache) uses Add,

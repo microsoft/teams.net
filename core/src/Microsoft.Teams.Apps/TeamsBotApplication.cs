@@ -90,7 +90,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
-    /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>WithState()</c> is configured.</param>
+    /// <param name="stateLoader">Optional state loader for per-turn state management. Injected automatically when <c>UseState()</c> is configured.</param>
     /// <example>
     /// <code>
     /// public class MyBot : TeamsBotApplication
@@ -198,7 +198,7 @@ public class TeamsBotApplication : BotApplication
     {
         if (_stateLoader is null)
         {
-            throw new InvalidOperationException("State is not configured. Call WithState() during service registration.");
+            throw new InvalidOperationException("State is not configured. Call UseState() during service registration.");
         }
 
         string conversationId = activity.Conversation?.Id

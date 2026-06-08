@@ -63,7 +63,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public TurnStateContainer State
     {
         get => _state ?? throw new InvalidOperationException(
-            "State is not available. Call WithState() during service registration.");
+            "State is not available. Call UseState() during service registration.");
         internal set => _state = value;
     }
 
@@ -83,7 +83,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         if (!HasState)
         {
             throw new InvalidOperationException(
-                "State is not available. Call WithState() during service registration.");
+                "State is not available. Call UseState() during service registration.");
         }
 
         return TeamsBotApplication.DeleteStateAsync(Activity, cancellationToken);

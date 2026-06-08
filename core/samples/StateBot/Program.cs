@@ -9,7 +9,7 @@ WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 // Register the Teams bot with per-turn state backed by Redis.
 // Remove the AddStackExchangeRedisCache block below to use the built-in
 // in-memory fallback during local dev.
-webAppBuilder.Services.AddTeamsBotApplication(options => options.WithState());
+webAppBuilder.Services.AddTeamsBotApplication(options => options.UseState());
 webAppBuilder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = webAppBuilder.Configuration.GetConnectionString("Redis") ?? throw new InvalidProgramException("Redis connection string not found");
