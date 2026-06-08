@@ -9,8 +9,10 @@ namespace Microsoft.Teams.Apps.State;
 /// A single state scope (conversation or user) — a string-keyed bag of values.
 /// </summary>
 /// <remarks>
-/// Persisted scopes (conversation, user) are change-tracked: their serialized form is captured at
-/// load and compared at save, so only changed scopes are written.
+/// Persisted scopes (conversation, user) are change-tracked with a dirty flag: <see cref="Set{T}"/>,
+/// <see cref="Remove"/>, and <see cref="Clear"/> mark the scope dirty, so only mutated scopes are written
+/// and a read-only turn writes nothing. Reads never mark a scope dirty; persist a mutation to a value
+/// fetched via <see cref="Get{T}"/> by writing it back with <see cref="Set{T}"/>.
 /// After the owning turn completes, every read and write throws <see cref="InvalidOperationException"/>
 /// (see <see cref="TurnState"/>).
 /// </remarks>
@@ -18,14 +20,13 @@ public sealed class StateScope
 {
     private readonly Dictionary<string, object?> _values;
     private readonly bool _persisted;
-    private readonly byte[]? _baseline;
+    private bool _dirty;
     private bool _completed;
 
     internal StateScope(bool persisted, IReadOnlyDictionary<string, object?>? loaded)
     {
         _persisted = persisted;
         _values = loaded is not null ? new Dictionary<string, object?>(loaded) : [];
-        _baseline = persisted ? StateSerializer.Serialize(_values) : null;
     }
 
     /// <summary>Gets the value stored under <paramref name="key"/>, or <c>default</c> if absent.</summary>
@@ -48,9 +49,12 @@ public sealed class StateScope
 
         if (raw is JsonElement element)
         {
-            // Deserialize on each read — do NOT cache back into _values. Caching would let a read mutate
-            // the change-detection state.
-            return StateSerializer.Convert<T>(element);
+            // Deserialize once per key per turn: cache the typed value for subsequent reads. Safe now
+            // that change tracking is a dirty flag — a read doesn't dirty the scope, so this can't cause
+            // a read-only turn to write. Persist a mutation to the returned value with Set.
+            T? converted = StateSerializer.Convert<T>(element);
+            _values[key] = converted;
+            return converted;
         }
 
         return default;
@@ -65,6 +69,7 @@ public sealed class StateScope
         ThrowIfCompleted();
         ArgumentException.ThrowIfNullOrEmpty(key);
         _values[key] = value;
+        _dirty = true;
     }
 
     /// <summary>Removes the value stored under <paramref name="key"/>.</summary>
@@ -74,7 +79,9 @@ public sealed class StateScope
     {
         ThrowIfCompleted();
         ArgumentException.ThrowIfNullOrEmpty(key);
-        return _values.Remove(key);
+        bool removed = _values.Remove(key);
+        _dirty |= removed;
+        return removed;
     }
 
     /// <summary>Whether a value is stored under <paramref name="key"/>.</summary>
@@ -90,14 +97,15 @@ public sealed class StateScope
     public void Clear()
     {
         ThrowIfCompleted();
+        _dirty |= _values.Count > 0;
         _values.Clear();
     }
 
     /// <summary>True if the scope currently holds no values.</summary>
     internal bool IsEmpty => _values.Count == 0;
 
-    /// <summary>True if this is a persisted scope whose serialized form differs from its load-time baseline.</summary>
-    internal bool IsChanged() => _persisted && !StateSerializer.Serialize(_values).AsSpan().SequenceEqual(_baseline);
+    /// <summary>True if this is a persisted scope that was mutated this turn (Set / Remove / Clear).</summary>
+    internal bool IsChanged() => _persisted && _dirty;
 
     /// <summary>Snapshots the scope's values into a new dictionary for writing to storage.</summary>
     internal Dictionary<string, object?> Snapshot() => new(_values);

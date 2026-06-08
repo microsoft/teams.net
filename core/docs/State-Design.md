@@ -164,7 +164,7 @@ public sealed class StateScope
 }
 ```
 
-`Get<T>` reuses the same `JsonElement` round-trip logic as `ExtendedPropertiesDictionary.Get<T>` (caching the deserialized value back into the dictionary), so deserialization happens once per key per turn.
+`Get<T>` reuses the same `JsonElement` round-trip logic as `ExtendedPropertiesDictionary.Get<T>`, deserializing once per key per turn and caching the typed result for subsequent reads. Caching is safe because change tracking is a **dirty flag** — a read doesn't mark the scope changed — so a read-only turn still writes nothing. Persist a mutation to a fetched value with `Set<T>`.
 
 ### `Context<TActivity>.State`
 
@@ -191,20 +191,19 @@ OnActivity(activity, ct)
     │     (IDistributedCache has no batch read; a turn reads at most two keys)
     │
     ├─ 3. turnState = new TurnState(conversation, user, convKey, userKey)
-    │     baseline[scope] = StateSerializer.Serialize(scope)   // load-time byte snapshot
     │     Context(this, teamsActivity, turnState)              // state passed in explicitly
     │
-    ├─ 4. dispatch routes (within try)
+    ├─ 4. dispatch routes (within try) — Set/Remove/Clear flip each scope's dirty flag
     │
     ├─ 5. // only reached when dispatch did NOT throw — store.SaveAsync:
-    │     foreach persisted scope that changed (re-serialize, compare to baseline):
+    │     foreach persisted scope that is dirty:
     │         scope.IsEmpty ? cache.RemoveAsync(key)               // emptied this turn → delete
     │                       : cache.SetAsync(key, bytes, entryOptions)
     │
     └─ 6. finally: turnState.Complete()  (seal: later scope access throws)
 ```
 
-**Write-only-if-changed** — each persisted scope is serialized to a UTF-8 byte baseline at load and re-serialized at save; only scopes whose bytes differ are written. This catches in-place mutation of a fetched reference type (`Get<List<string>>(...).Add(...)`) that a dirty flag would miss, and avoids a round-trip on unchanged turns. Cost is one extra serialization per persisted scope per turn — the same trade Bot Framework, Teams AI, and the Agents SDK all make.
+**Write-only-if-changed** — each persisted scope carries a **dirty flag** that `Set`/`Remove`/`Clear` set; only dirty scopes are written, and a dirty scope that ends empty is deleted. Reads never set the flag, so a read-only turn writes nothing — avoiding needless writes and last-write-wins clobbering of state that was only read. A mutation to a value fetched via `Get` is persisted only when written back with `Set`. (We use a dirty flag rather than serialize-and-diff change detection: the latter could in principle catch an in-place mutation of a fetched object, but only by caching the deserialized value back into the scope — which then made a read re-serialize differently from the stored bytes and spuriously mark a read-only turn changed. The dirty flag avoids that footgun and is cheaper.)
 
 **Delete-on-empty** — a changed scope that ends the turn empty (e.g. `scope.Clear()`) is routed to `RemoveAsync` instead of writing an empty document, so a cleared scope leaves no orphan entry. Because the delete only fires when the scope *changed* to empty, an always-empty scope never issues a spurious delete.
 
@@ -224,7 +223,7 @@ internal static byte[] Serialize(IDictionary<string, object?> values) => JsonSer
 internal static Dictionary<string, object?> Deserialize(ReadOnlySpan<byte> utf8Json) => JsonSerializer.Deserialize<...>(utf8Json, Options) ?? [];
 ```
 
-Serialization is byte-native (no string intermediary): the same bytes are used for the change-detection baseline and written straight to the cache. Values written via `Set<T>` are held boxed in-memory and serialized lazily on save; values read via `Get<T>` deserialize the stored `JsonElement` on first access and cache the typed result.
+Serialization is byte-native (no string intermediary): the same bytes are used for the change-detection baseline and written straight to the cache. Values written via `Set<T>` are held boxed in-memory and serialized lazily on save; values read via `Get<T>` deserialize the stored `JsonElement` on each read and are **not** cached back into the scope (so a read can never flag a scope as changed).
 
 ### Lifetime and after-turn access
 
@@ -323,7 +322,8 @@ Any `IDistributedCache` works. The notable trade-off is the document format:
 | Activity has no `From` | User scope key is null → user scope is empty and never written. Conversation scope still works. |
 | Activity has no `Conversation` | Conversation scope is empty and never written. |
 | Handler throws | No writes occur (atomic). |
-| Unchanged turn (no mutation) | No backend write — each scope's save-time bytes match its load-time baseline. |
+| Read-only or unchanged turn | No backend write — `Get` doesn't cache back, so a turn that only reads (or doesn't mutate) re-serializes to bytes identical to its load-time baseline. Reads never clobber. |
+| Mutating a fetched object in place | Persisted only if followed by `Set` — `Get` returns a fresh deserialization that is not stored back, so e.g. `Get<List<string>>(...).Add(...)` alone is dropped. |
 | Concurrent turns on the same key | Last-write-wins (`IDistributedCache` has no compare-and-swap). A read-modify-write of a growing collection (e.g. appending messages) can drop the earlier write — see [What TurnState is NOT](#what-turnstate-is-not). Keep state to small, last-writer-safe values. |
 | Bare path (`SetValue("foo", …)`) | Throws `ArgumentException` — paths must be scope-qualified. |
 | Accessing state **after the turn** | Scope reads/writes throw a descriptive `InvalidOperationException` (sealed on `IsCompleted`). Capture values during the turn instead. |
