@@ -62,17 +62,30 @@ public class TurnStateStoreTests
     }
 
     [Fact]
-    public async Task InPlaceMutationOfReferenceType_IsPersisted()
+    public async Task FetchedReference_PersistsOnlyWithSet()
     {
-        // Byte-baseline change detection must catch a mutation made without a Set().
+        // Get does not cache back into the scope (so a read never marks it changed), which means an
+        // in-place mutation of a fetched object is persisted only when followed by Set.
         var store = new TurnStateStore(new FakeDistributedCache());
         var activity = Activity();
 
         await RunTurnAsync(store, activity, ts => ts.Conversation.Set("items", new List<string> { "a" }));
+
+        // Mutated in place with no Set() → not persisted.
         await RunTurnAsync(store, activity, ts =>
         {
             List<string> items = ts.Conversation.Get<List<string>>("items")!;
-            items.Add("b"); // mutated in place, no Set()
+            items.Add("b");
+        });
+        await RunTurnAsync(store, activity, ts =>
+            Assert.Equal(new[] { "a" }, ts.Conversation.Get<List<string>>("items")));
+
+        // Mutated then Set() → persisted.
+        await RunTurnAsync(store, activity, ts =>
+        {
+            List<string> items = ts.Conversation.Get<List<string>>("items")!;
+            items.Add("b");
+            ts.Conversation.Set("items", items);
         });
         await RunTurnAsync(store, activity, ts =>
             Assert.Equal(new[] { "a", "b" }, ts.Conversation.Get<List<string>>("items")));
