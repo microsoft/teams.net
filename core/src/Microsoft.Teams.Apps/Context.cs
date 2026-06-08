@@ -7,6 +7,7 @@ using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 
 namespace Microsoft.Teams.Apps;
@@ -17,7 +18,8 @@ namespace Microsoft.Teams.Apps;
 /// </summary>
 /// <param name="botApplication">The bot application instance that owns this context.</param>
 /// <param name="activity">The incoming activity for this turn.</param>
-public class Context<TActivity>(TeamsBotApplication botApplication, TActivity activity) where TActivity : TeamsActivity
+/// <param name="turnState">The turn state for this turn, or <see langword="null"/> when state is not enabled.</param>
+public class Context<TActivity>(TeamsBotApplication botApplication, TActivity activity, TurnState? turnState = null) where TActivity : TeamsActivity
 {
     /// <summary>
     /// Base bot application.
@@ -33,6 +35,13 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// Gets the application (client) ID configured for this bot.
     /// </summary>
     public string AppId => TeamsBotApplication.AppId;
+
+    /// <summary>
+    /// Gets the turn state for the current turn, or <see langword="null"/> if state is not enabled
+    /// (see <c>UseState</c>). Use <c>ctx.State?.Conversation</c> and <c>ctx.State?.User</c> to read and
+    /// write scoped values.
+    /// </summary>
+    public TurnState? State { get; } = turnState;
 
     private ContextLogger? _log;
 

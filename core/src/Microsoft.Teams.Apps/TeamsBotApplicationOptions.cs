@@ -1,7 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Teams.Apps.OAuth;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core.Hosting;
 
 namespace Microsoft.Teams.Apps;
@@ -13,6 +15,29 @@ namespace Microsoft.Teams.Apps;
 public sealed class TeamsBotApplicationOptions : BotApplicationOptions
 {
     internal List<OAuthFlowDescriptor> OAuthFlows { get; } = [];
+
+    /// <summary>True when <see cref="UseState"/> has been called; a <see cref="TurnStateStore"/> is
+    /// registered in DI and resolved by the bot on its first request.</summary>
+    internal bool StateEnabled { get; private set; }
+
+    /// <summary>Per-entry options (e.g. expiration) applied to every state document written.</summary>
+    internal DistributedCacheEntryOptions? StateEntryOptions { get; private set; }
+
+    /// <summary>
+    /// Registers turn state backed by the application's <see cref="IDistributedCache"/> (resolved from
+    /// DI). If no <see cref="IDistributedCache"/> is registered, <c>AddTeamsBotApplication</c> defaults
+    /// to <c>AddDistributedMemoryCache</c>; register a distributed backend (e.g.
+    /// <c>AddStackExchangeRedisCache</c>) to override for multi-instance deployments. State loads at the
+    /// start of each turn and saves changed scopes when the handler completes successfully.
+    /// </summary>
+    /// <param name="entryOptions">Optional per-entry options (e.g. expiration) applied to every write.</param>
+    /// <returns>This instance for chaining.</returns>
+    public TeamsBotApplicationOptions UseState(DistributedCacheEntryOptions? entryOptions = null)
+    {
+        StateEnabled = true;
+        StateEntryOptions = entryOptions;
+        return this;
+    }
 
     /// <summary>
     /// Register an OAuth flow with the given connection name and optional configuration.

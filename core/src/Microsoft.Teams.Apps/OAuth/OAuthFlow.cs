@@ -271,7 +271,7 @@ public class OAuthFlow
                 _logger.LogDebug("Token exchange succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
                 if (_onSignInComplete is not null)
                 {
-                    Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+                    Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity, context.State);
                     await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
                 }
                 return new InvokeResponse(200);
@@ -304,7 +304,7 @@ public class OAuthFlow
     {
         if (_onSignInFailure is not null)
         {
-            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity, context.State);
             await _onSignInFailure(baseContext, null, cancellationToken).ConfigureAwait(false);
         }
 
@@ -358,7 +358,7 @@ public class OAuthFlow
                 _logger.LogDebug("Verify state succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
                 if (_onSignInComplete is not null)
                 {
-                    Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+                    Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity, context.State);
                     await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
                 }
                 return new InvokeResponse(200);
@@ -371,7 +371,7 @@ public class OAuthFlow
 
             if (_onSignInFailure is not null)
             {
-                Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+                Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity, context.State);
                 await _onSignInFailure(baseContext, null, cancellationToken).ConfigureAwait(false);
             }
 
@@ -432,7 +432,7 @@ public class OAuthFlow
 
         if (_onSignInFailure is not null)
         {
-            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity, context.State);
             await _onSignInFailure(baseContext, failureValue, cancellationToken).ConfigureAwait(false);
         }
 

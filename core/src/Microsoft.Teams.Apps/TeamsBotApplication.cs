@@ -9,6 +9,7 @@ using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Routing;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 
@@ -20,6 +21,7 @@ namespace Microsoft.Teams.Apps;
 public class TeamsBotApplication : BotApplication
 {
     private readonly Api.Clients.ApiClient _teamsApiClient;
+    private readonly TurnStateStore? _stateStore;
     private Uri? _lastServiceUrl;
 
     /// <summary>
@@ -88,6 +90,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="httpContextAccessor">Accessor used to write invoke responses back to the current HTTP request.</param>
     /// <param name="logger">Logger used by the bot and exposed as <see cref="Context{TActivity}.Log"/>.</param>
     /// <param name="options">Optional Teams bot options (AppId, OAuth flows, etc.).</param>
+    /// <param name="stateStore">Optional turn-state store, injected from DI when <c>UseState</c> is configured; null disables state.</param>
     /// <example>
     /// <code>
     /// public class MyBot : TeamsBotApplication
@@ -105,7 +108,8 @@ public class TeamsBotApplication : BotApplication
         ApiClient teamsApiClient,
         IHttpContextAccessor httpContextAccessor,
         ILogger<TeamsBotApplication> logger,
-        TeamsBotApplicationOptions? options = null)
+        TeamsBotApplicationOptions? options = null,
+        TurnStateStore? stateStore = null)
         : base(
             (teamsApiClient ?? throw new ArgumentNullException(nameof(teamsApiClient))).ConversationClient,
             teamsApiClient.UserTokenClient,
@@ -116,6 +120,10 @@ public class TeamsBotApplication : BotApplication
         Api = teamsApiClient;
         Logger = logger;
         Router = new Router(logger);
+
+        // Injected when state is enabled (UseState registers it in DI); null otherwise. OnActivity uses
+        // it to load/save state around routing.
+        _stateStore = stateStore;
 
         if (options is not null)
         {
@@ -136,7 +144,13 @@ public class TeamsBotApplication : BotApplication
                 _lastServiceUrl = teamsActivity.ServiceUrl;
             }
 
-            Context<TeamsActivity> defaultContext = new(this, teamsActivity);
+            // Load turn state before routing so the per-turn Context carries it to handlers. Saved only
+            // after the turn body returns normally (skipped on throw → atomic save); sealed in finally.
+            TurnState? turnState = _stateStore is not null
+                ? await _stateStore.LoadAsync(teamsActivity, cancellationToken).ConfigureAwait(false)
+                : null;
+
+            Context<TeamsActivity> defaultContext = new(this, teamsActivity, turnState);
 
             // Agent365: set baggage (user.id, user.email, agent details, etc.) for all
             // child spans.
@@ -144,24 +158,36 @@ public class TeamsBotApplication : BotApplication
                 .FromTeamsContext(defaultContext)
                 .Build();
 
-            if (teamsActivity.Type != TeamsActivityType.Invoke)
+            try
             {
-                await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-            }
-            else // invokes
-            {
-                InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
-                HttpContext? httpContext = httpContextAccessor.HttpContext;
-                if (httpContext is not null && invokeResponse is not null)
+                if (teamsActivity.Type != TeamsActivityType.Invoke)
                 {
-                    httpContext.Response.StatusCode = invokeResponse.Status;
-                    logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
-                    logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
-                    if (invokeResponse.Body is not null)
+                    await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+                }
+                else // invokes
+                {
+                    InvokeResponse invokeResponse = await Router.DispatchWithReturnAsync(defaultContext, cancellationToken).ConfigureAwait(false);
+                    HttpContext? httpContext = httpContextAccessor.HttpContext;
+                    if (httpContext is not null && invokeResponse is not null)
                     {
-                        await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+                        httpContext.Response.StatusCode = invokeResponse.Status;
+                        logger.LogDebug("Sending invoke response with status {Status}", invokeResponse.Status);
+                        logger.LogTrace("Sending invoke response with status {Status} and Body {Body}", invokeResponse.Status, invokeResponse.Body);
+                        if (invokeResponse.Body is not null)
+                        {
+                            await httpContext.Response.WriteAsJsonAsync(invokeResponse.Body, cancellationToken).ConfigureAwait(false);
+                        }
                     }
                 }
+
+                if (turnState is not null)
+                {
+                    await _stateStore!.SaveAsync(turnState, cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                turnState?.Complete();
             }
         };
         logger.LogDebug("TeamsBotApplication version {Version}", Version);

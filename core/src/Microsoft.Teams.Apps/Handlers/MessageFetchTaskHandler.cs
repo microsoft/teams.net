@@ -38,7 +38,7 @@ public static class MessageFetchTaskExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageFetchTaskInvokeValue> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageFetchTaskInvokeValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<MessageFetchTaskInvokeValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
