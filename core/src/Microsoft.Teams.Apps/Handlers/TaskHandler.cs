@@ -42,7 +42,7 @@ public static class TaskExtensions
             {
                 InvokeActivity<TaskModuleRequest> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity, ctx.State);
-                return await handler(typedContext, cancellationToken).ConfigureAwait(false); ;
+                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
 

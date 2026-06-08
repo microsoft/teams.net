@@ -24,7 +24,7 @@
 		<PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
 	</ItemGroup>
 
-	<!-- IDistributedCache abstraction for DistributedCacheStorage. Only the interface is referenced;
+	<!-- IDistributedCache abstraction for TurnState. Only the interface is referenced;
 	     the concrete cache backend (Redis, SQL Server, …) is supplied by the consuming app. -->
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
 		<PackageReference Include="Microsoft.Extensions.Caching.Abstractions" Version="8.0.0" />
