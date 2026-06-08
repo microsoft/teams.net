@@ -41,12 +41,12 @@ public class OAuthFlow
     private SignInCompleteHandler? _onSignInComplete;
     private SignInFailureHandler? _onSignInFailure;
 
-    // Deduplication cache for signin/tokenExchange invoke activities.
-    // Teams may send duplicates from multiple endpoints (mobile, desktop, web).
+    // In-memory fallback for deduplication when turn state is not configured.
+    // When UseState() is configured, conversation state is used instead (works across instances).
     private readonly ConcurrentDictionary<string, DateTimeOffset> _processedExchanges = new();
 
-    // Tracks users with a pending sign-in (OAuthCard sent, waiting for tokenExchange/verifyState/failure).
-    // Used to scope signin/failure notifications to flows that actually initiated a sign-in.
+    // In-memory fallback for pending sign-in tracking when turn state is not configured.
+    // When UseState() is configured, user state is used instead (works across instances).
     private readonly ConcurrentDictionary<string, DateTimeOffset> _pendingSignIns = new();
 
     internal OAuthFlow(TeamsBotApplication app, string connectionName, OAuthOptions options, ILogger logger)
@@ -186,8 +186,9 @@ public class OAuthFlow
 
         await context.SendActivityAsync(oauthActivity, cancellationToken).ConfigureAwait(false);
 
-        // Track that this user has a pending sign-in for this flow
-        _pendingSignIns[userId] = DateTimeOffset.UtcNow;
+        // Track that this user has a pending sign-in for this flow.
+        // Use user state when available (distributed); fall back to in-memory otherwise.
+        SetPendingSignIn(context, userId);
 
         return null;
     }
@@ -246,14 +247,14 @@ public class OAuthFlow
     {
         string exchangeId = exchangeValue.Id ?? string.Empty;
 
-        // Deduplication: Teams sends duplicate exchanges from multiple endpoints
-        if (!_processedExchanges.TryAdd(exchangeId, DateTimeOffset.UtcNow))
+        // Deduplication: Teams sends duplicate exchanges from multiple endpoints.
+        // Use conversation state when available (distributed, works across instances);
+        // fall back to in-memory ConcurrentDictionary otherwise.
+        if (IsDuplicateExchange(context, exchangeId))
         {
             _logger.LogDebug("Duplicate signin/tokenExchange with Id '{ExchangeId}' - returning 200 no-op.", exchangeId);
             return new InvokeResponse(200);
         }
-
-        CleanupExpiredEntries();
 
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
@@ -267,7 +268,7 @@ public class OAuthFlow
 
             if (tokenResult?.Token is not null)
             {
-                _pendingSignIns.TryRemove(userId, out _);
+                ClearPendingSignIn(context, userId);
                 _logger.LogDebug("Token exchange succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
                 if (_onSignInComplete is not null)
                 {
@@ -279,19 +280,19 @@ public class OAuthFlow
         }
         catch (HttpRequestException ex)
         {
-            _pendingSignIns.TryRemove(userId, out _);
+            ClearPendingSignIn(context, userId);
             _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
             return await HandleTokenExchangeFailureAsync(context, exchangeValue, ex.StatusCode, ex.Message, cancellationToken).ConfigureAwait(false);
         }
         catch (InvalidOperationException ex)
         {
-            _pendingSignIns.TryRemove(userId, out _);
+            ClearPendingSignIn(context, userId);
             _logger.LogWarning(ex, "Token exchange failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
             return await HandleTokenExchangeFailureAsync(context, exchangeValue, null, ex.Message, cancellationToken).ConfigureAwait(false);
         }
 
         // Token was null without exception — treat as expected failure
-        _pendingSignIns.TryRemove(userId, out _);
+        ClearPendingSignIn(context, userId);
         return await HandleTokenExchangeFailureAsync(context, exchangeValue, null, "Token exchange returned null token.", cancellationToken).ConfigureAwait(false);
     }
 
@@ -354,7 +355,7 @@ public class OAuthFlow
 
             if (tokenResult?.Token is not null)
             {
-                _pendingSignIns.TryRemove(userId, out _);
+                ClearPendingSignIn(context, userId);
                 _logger.LogDebug("Verify state succeeded for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
                 if (_onSignInComplete is not null)
                 {
@@ -366,7 +367,7 @@ public class OAuthFlow
         }
         catch (HttpRequestException ex)
         {
-            _pendingSignIns.TryRemove(userId, out _);
+            ClearPendingSignIn(context, userId);
             _logger.LogWarning(ex, "Verify state failed for connection '{ConnectionName}', user '{UserId}'.", connectionName, userId);
 
             if (_onSignInFailure is not null)
@@ -396,16 +397,24 @@ public class OAuthFlow
     }
 
     /// <summary>
-    /// Whether this flow has a pending sign-in for the given user.
+    /// Whether this flow has a pending sign-in for the user in the given context.
     /// Used to scope <c>signin/failure</c> notifications to flows that initiated a sign-in.
     /// </summary>
     /// <remarks>
-    /// Best-effort: in multi-instance deployments the OAuthCard may have been sent by a different instance,
-    /// so this check may return false even when a sign-in is active. Callers should fall back
-    /// to notifying all flows when no flow reports a pending sign-in.
+    /// When turn state is configured, checks user state (works across instances).
+    /// Falls back to in-memory tracking when state is not configured.
+    /// Callers should fall back to notifying all flows when no flow reports a pending sign-in
+    /// (e.g., multi-instance deployment without distributed state).
     /// </remarks>
-    internal bool HasPendingSignIn(string userId)
+    internal bool HasPendingSignIn(Context<InvokeActivity> context)
     {
+        string pendingKey = $"oauth:pending:{_connectionName}";
+        if (context.HasState && context.State.UserState is not null)
+        {
+            return context.State.UserState.ContainsKey(pendingKey);
+        }
+
+        string userId = context.Activity.From?.Id ?? string.Empty;
         return _pendingSignIns.ContainsKey(userId);
     }
 
@@ -417,7 +426,7 @@ public class OAuthFlow
         string? userId = context.Activity.From?.Id;
         if (userId is not null)
         {
-            _pendingSignIns.TryRemove(userId, out _);
+            ClearPendingSignIn(context, userId);
         }
 
         _logger.LogWarning(
@@ -437,6 +446,68 @@ public class OAuthFlow
         }
 
         return new InvokeResponse(200);
+    }
+
+    /// <summary>
+    /// Check whether the given exchange ID has already been processed, and mark it as processed if not.
+    /// Always uses in-memory ConcurrentDictionary for atomic same-instance dedup (concurrent requests
+    /// load separate state snapshots, so state alone cannot catch same-instance races).
+    /// Additionally persists to conversation state when available for cross-instance dedup.
+    /// </summary>
+    private bool IsDuplicateExchange(Context<InvokeActivity> context, string exchangeId)
+    {
+        // Atomic same-instance check — catches concurrent duplicate requests on this node
+        if (!_processedExchanges.TryAdd(exchangeId, DateTimeOffset.UtcNow))
+        {
+            return true;
+        }
+
+        // Cross-instance check via state — catches duplicates routed to different nodes
+        string dedupKey = $"oauth:exchange:{exchangeId}";
+        if (context.HasState)
+        {
+            if (context.State.ConversationState.ContainsKey(dedupKey))
+            {
+                return true;
+            }
+
+            context.State.ConversationState.Set(dedupKey, DateTimeOffset.UtcNow);
+        }
+
+        CleanupExpiredEntries();
+        return false;
+    }
+
+    /// <summary>
+    /// Record that this user has a pending sign-in for this flow.
+    /// Uses user state when available (distributed); falls back to in-memory.
+    /// </summary>
+    private void SetPendingSignIn<TActivity>(Context<TActivity> context, string userId) where TActivity : TeamsActivity
+    {
+        string pendingKey = $"oauth:pending:{_connectionName}";
+        if (context.HasState && context.State.UserState is not null)
+        {
+            context.State.UserState.Set(pendingKey, DateTimeOffset.UtcNow);
+        }
+        else
+        {
+            _pendingSignIns[userId] = DateTimeOffset.UtcNow;
+        }
+    }
+
+    /// <summary>
+    /// Clear the pending sign-in tracking for this user/flow.
+    /// Clears from both state and in-memory to handle transitions.
+    /// </summary>
+    private void ClearPendingSignIn<TActivity>(Context<TActivity> context, string userId) where TActivity : TeamsActivity
+    {
+        string pendingKey = $"oauth:pending:{_connectionName}";
+        if (context.HasState && context.State.UserState is not null)
+        {
+            context.State.UserState.Remove(pendingKey);
+        }
+
+        _pendingSignIns.TryRemove(userId, out _);
     }
 
     private void CleanupExpiredEntries()

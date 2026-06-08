@@ -5,6 +5,7 @@ using Azure.AI.OpenAI;
 using Microsoft.Extensions.AI;
 using Microsoft.Identity.Abstractions;
 using Microsoft.Identity.Web;
+using Microsoft.Identity.Web.Internal;
 using Microsoft.OpenTelemetry;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Diagnostics;
@@ -21,6 +22,10 @@ string[] meterNames      = [CoreTelemetryNames.MeterName, TeamsBotApplicationTel
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 IServiceProvider? rootProvider = null;
 builder.Services.AddTeamsBotApplication<ObservabilityBotApp>(o => o.UseState());
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = "localhost:6379";
+});
 
 builder.Services.AddOpenTelemetry()
     .ConfigureResource(r => r

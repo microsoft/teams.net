@@ -47,8 +47,8 @@ public class OAuthFlowTests
         SignInFailureValue failureValue = new() { Code = "tokenmissing", Message = "Token acquisition failed." };
 
         // The route handler filters by HasPendingSignIn, so verify the flags
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
-        Assert.False(harness.GitHubFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
+        Assert.False(harness.GitHubFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         await harness.GraphFlow.HandleSignInFailureAsync(failureCtx, failureValue, CancellationToken.None);
 
@@ -69,14 +69,14 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         // Act
         Context<InvokeActivity> failureCtx = CreateInvokeContext(harness, TestUserId);
         await harness.GraphFlow.HandleSignInFailureAsync(failureCtx, new SignInFailureValue { Code = "invokeerror" }, CancellationToken.None);
 
         // Assert
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     [Fact]
@@ -91,7 +91,7 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         // Arrange exchange
         harness.MockUserTokenClient
@@ -106,7 +106,7 @@ public class OAuthFlowTests
 
         // Assert
         Assert.Equal(200, response.Status);
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     [Fact]
@@ -121,7 +121,7 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         // Arrange exchange failure
         harness.MockUserTokenClient
@@ -136,7 +136,7 @@ public class OAuthFlowTests
 
         // Assert - 401 passed through (unexpected code)
         Assert.Equal(401, response.Status);
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     [Fact]
@@ -151,7 +151,7 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
 
         // Arrange verify state
         harness.MockUserTokenClient
@@ -166,7 +166,7 @@ public class OAuthFlowTests
 
         // Assert
         Assert.Equal(200, response.Status);
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     // ==================== No pending sign-in for unrelated user ====================
@@ -183,8 +183,8 @@ public class OAuthFlowTests
         Context<MessageActivity> ctx = CreateMessageContext(harness, TestUserId);
         await harness.GraphFlow!.SignInAsync(ctx);
 
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
-        Assert.False(harness.GraphFlow.HasPendingSignIn("other-user"));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, "other-user")));
     }
 
     // ==================== Token exchange error code mapping ====================
@@ -384,7 +384,7 @@ public class OAuthFlowTests
         string? token = await harness.GraphFlow!.SignInAsync(ctx);
 
         Assert.Equal("cached-token", token);
-        Assert.False(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.False(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     [Fact]
@@ -400,7 +400,7 @@ public class OAuthFlowTests
         string? token = await harness.GraphFlow!.SignInAsync(ctx);
 
         Assert.Null(token);
-        Assert.True(harness.GraphFlow.HasPendingSignIn(TestUserId));
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
     }
 
     // ==================== Helpers ====================

@@ -19,15 +19,14 @@ using Microsoft.Teams.Apps.Schema;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 
-AppBuilder appBuilder = App.Builder().AddOAuth("sso");
-
-webAppBuilder.AddTeams(appBuilder);
+//AppBuilder appBuilder = App.Builder().AddOAuth("sso");
+//webAppBuilder.AddTeams(appBuilder);
 
 // Configure the single OAuth flow at the DI level
-//webAppBuilder.Services.AddTeamsBotApplication(options =>
-//{
-//    options.AddOAuthFlow("sso");
-//});
+webAppBuilder.Services.AddTeamsBotApplication(options =>
+{
+    options.AddOAuthFlow("sso");
+});
 
 WebApplication webApp = webAppBuilder.Build();
 

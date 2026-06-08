@@ -29,6 +29,7 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
         configure?.Invoke(options);
 
         OAuthFlows.Add(new OAuthFlowDescriptor(connectionName, options));
+        this.UseState(); // OAuthFlows require state, so enable it automatically when AddOAuthFlow is called.
         return this;
     }
 

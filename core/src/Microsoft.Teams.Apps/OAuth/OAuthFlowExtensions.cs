@@ -105,10 +105,10 @@ public static class OAuthFlowExtensions
                 // signin/failure doesn't carry a connection name.
                 // Scope to flows that have an active sign-in for this user;
                 // fall back to all flows if none report a pending sign-in
-                // (e.g., multi-instance deployment where the OAuthCard was sent by another node).
+                // (e.g., multi-instance deployment without distributed state).
                 IEnumerable<OAuthFlow> allFlows = registry.GetAllFlows();
                 List<OAuthFlow> activeFlows = userId is not null
-                    ? allFlows.Where(f => f.HasPendingSignIn(userId)).ToList()
+                    ? allFlows.Where(f => f.HasPendingSignIn(ctx)).ToList()
                     : [];
                 IEnumerable<OAuthFlow> targetFlows = activeFlows.Count > 0 ? activeFlows : allFlows;
 
