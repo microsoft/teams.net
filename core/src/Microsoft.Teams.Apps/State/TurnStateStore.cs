@@ -32,7 +32,7 @@ public sealed class TurnStateStore
     /// Optional per-entry options (e.g. absolute/sliding expiration) applied to every write. When null,
     /// entries are written without expiration.
     /// </param>
-    internal TurnStateStore(IDistributedCache cache, DistributedCacheEntryOptions? entryOptions = null)
+    public TurnStateStore(IDistributedCache cache, DistributedCacheEntryOptions? entryOptions = null)
     {
         ArgumentNullException.ThrowIfNull(cache);
         _cache = cache;
@@ -44,7 +44,7 @@ public sealed class TurnStateStore
     /// </summary>
     /// <param name="activity">The incoming activity. Only base routing fields are read.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
-    internal async Task<TurnState> LoadAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    public async Task<TurnState> LoadAsync(CoreActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
 
@@ -79,7 +79,7 @@ public sealed class TurnStateStore
     /// </summary>
     /// <param name="state">The turn state to persist.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
-    internal async Task SaveAsync(TurnState state, CancellationToken cancellationToken = default)
+    public async Task SaveAsync(TurnState state, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(state);
 
