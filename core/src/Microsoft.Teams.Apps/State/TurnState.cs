@@ -144,5 +144,5 @@ public class TurnState : ITurnState
         return new TurnState(new Dictionary<string, object?>(data));
     }
 
-    private static string TypeKey<T>() => $"${typeof(T).Name}";
+    private static string TypeKey<T>() => $"${typeof(T).FullName}";
 }
