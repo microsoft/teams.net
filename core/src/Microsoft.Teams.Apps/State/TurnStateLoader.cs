@@ -1,10 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Diagnostics;
 using Microsoft.Extensions.Caching.Distributed;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.Teams.Apps.Diagnostics;
+using Microsoft.Teams.Core.Diagnostics;
 
 namespace Microsoft.Teams.Apps.State;
 
@@ -16,6 +19,7 @@ internal sealed class TurnStateLoader
 {
     private readonly IDistributedCache _cache;
     private readonly TurnStateOptions _options;
+    private readonly ILogger<TurnStateLoader> _logger;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="TurnStateLoader"/> class.
@@ -29,6 +33,7 @@ internal sealed class TurnStateLoader
         ArgumentNullException.ThrowIfNull(options);
         _cache = cache;
         _options = options.Value;
+        _logger = logger;
 
         if (cache is MemoryDistributedCache)
         {
@@ -41,17 +46,44 @@ internal sealed class TurnStateLoader
     /// </summary>
     public async Task<TurnStateContainer> LoadAsync(string conversationId, string? userId, CancellationToken cancellationToken)
     {
-        string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
-        TurnState conversationState = await LoadStateAsync(conversationKey, cancellationToken).ConfigureAwait(false);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.StateLoad, ActivityKind.Internal);
+        long startTs = Stopwatch.GetTimestamp();
 
-        TurnState? userState = null;
-        if (!string.IsNullOrEmpty(userId))
+        try
         {
-            string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
-            userState = await LoadStateAsync(userKey, cancellationToken).ConfigureAwait(false);
-        }
+            string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
+            byte[]? convBytes = await _cache.GetAsync(conversationKey, cancellationToken).ConfigureAwait(false);
+            TurnState conversationState = TurnState.FromJsonBytes(convBytes);
 
-        return new TurnStateContainer(conversationState, userState);
+            byte[]? userBytes = null;
+            TurnState? userState = null;
+            if (!string.IsNullOrEmpty(userId))
+            {
+                string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
+                userBytes = await _cache.GetAsync(userKey, cancellationToken).ConfigureAwait(false);
+                userState = TurnState.FromJsonBytes(userBytes);
+            }
+
+            long bytesRead = (convBytes?.Length ?? 0) + (userBytes?.Length ?? 0);
+            span?.SetTag(AppsTelemetry.Tags.StateConversationHit, convBytes is not null);
+            span?.SetTag(AppsTelemetry.Tags.StateUserHit, userBytes is not null);
+            span?.SetTag(AppsTelemetry.Tags.StateBytesRead, bytesRead);
+            AppsTelemetry.StateBytesRead.Record(bytesRead);
+            _logger.StateLoaded(conversationId, convBytes is not null, userBytes is not null);
+
+            return new TurnStateContainer(conversationState, userState);
+        }
+        catch (Exception ex)
+        {
+            span.RecordException(ex);
+            AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.Operation, "load"));
+            _logger.StateLoadFailed(ex, conversationId);
+            throw;
+        }
+        finally
+        {
+            AppsTelemetry.StateLoadDuration.Record(Stopwatch.GetElapsedTime(startTs).TotalMilliseconds);
+        }
     }
 
     /// <summary>
@@ -61,16 +93,51 @@ internal sealed class TurnStateLoader
     {
         ArgumentNullException.ThrowIfNull(container);
 
-        if (container.ConversationState is TurnState conversationState && conversationState.IsDirty)
-        {
-            string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
-            await SaveStateAsync(conversationKey, conversationState, cancellationToken).ConfigureAwait(false);
-        }
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.StateSave, ActivityKind.Internal);
+        long startTs = Stopwatch.GetTimestamp();
 
-        if (!string.IsNullOrEmpty(userId) && container.UserState is TurnState userState && userState.IsDirty)
+        try
         {
-            string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
-            await SaveStateAsync(userKey, userState, cancellationToken).ConfigureAwait(false);
+            bool convDirty = container.ConversationState is TurnState conversationState && conversationState.IsDirty;
+            bool userDirty = !string.IsNullOrEmpty(userId) && container.UserState is TurnState us && us.IsDirty;
+            long bytesWritten = 0;
+
+            if (convDirty)
+            {
+                string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
+                byte[] bytes = ((TurnState)container.ConversationState).ToJsonBytes();
+                bytesWritten += bytes.Length;
+                await _cache.SetAsync(conversationKey, bytes, _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
+            }
+
+            if (userDirty)
+            {
+                string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
+                byte[] bytes = ((TurnState)container.UserState!).ToJsonBytes();
+                bytesWritten += bytes.Length;
+                await _cache.SetAsync(userKey, bytes, _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
+            }
+
+            span?.SetTag(AppsTelemetry.Tags.StateConversationDirty, convDirty);
+            span?.SetTag(AppsTelemetry.Tags.StateUserDirty, userDirty);
+            span?.SetTag(AppsTelemetry.Tags.StateBytesWritten, bytesWritten);
+            AppsTelemetry.StateBytesWritten.Record(bytesWritten);
+
+            if (convDirty || userDirty)
+            {
+                _logger.StateSaved(conversationId, convDirty, userDirty);
+            }
+        }
+        catch (Exception ex)
+        {
+            span.RecordException(ex);
+            AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.Operation, "save"));
+            _logger.StateSaveFailed(ex, conversationId);
+            throw;
+        }
+        finally
+        {
+            AppsTelemetry.StateSaveDuration.Record(Stopwatch.GetElapsedTime(startTs).TotalMilliseconds);
         }
     }
 
@@ -79,24 +146,26 @@ internal sealed class TurnStateLoader
     /// </summary>
     public async Task DeleteAsync(string conversationId, string? userId, CancellationToken cancellationToken)
     {
-        string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
-        await _cache.RemoveAsync(conversationKey, cancellationToken).ConfigureAwait(false);
+        using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.StateDelete, ActivityKind.Internal);
 
-        if (!string.IsNullOrEmpty(userId))
+        try
         {
-            string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
-            await _cache.RemoveAsync(userKey, cancellationToken).ConfigureAwait(false);
+            string conversationKey = $"{_options.KeyPrefix}:conv:{conversationId}";
+            await _cache.RemoveAsync(conversationKey, cancellationToken).ConfigureAwait(false);
+
+            if (!string.IsNullOrEmpty(userId))
+            {
+                string userKey = $"{_options.KeyPrefix}:user:{conversationId}:{userId}";
+                await _cache.RemoveAsync(userKey, cancellationToken).ConfigureAwait(false);
+            }
+
+            _logger.StateDeleted(conversationId);
         }
-    }
-
-    private async Task<TurnState> LoadStateAsync(string key, CancellationToken cancellationToken)
-    {
-        byte[]? bytes = await _cache.GetAsync(key, cancellationToken).ConfigureAwait(false);
-        return TurnState.FromJsonBytes(bytes);
-    }
-
-    private async Task SaveStateAsync(string key, TurnState state, CancellationToken cancellationToken)
-    {
-        await _cache.SetAsync(key, state.ToJsonBytes(), _options.CacheEntryOptions, cancellationToken).ConfigureAwait(false);
+        catch (Exception ex)
+        {
+            span.RecordException(ex);
+            AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.Operation, "delete"));
+            throw;
+        }
     }
 }
