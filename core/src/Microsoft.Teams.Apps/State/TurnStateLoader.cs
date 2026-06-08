@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Teams.Apps.State;
@@ -20,12 +22,18 @@ internal sealed class TurnStateLoader
     /// </summary>
     /// <param name="cache">The distributed cache used to persist turn state.</param>
     /// <param name="options">Options controlling cache entry lifetime.</param>
-    public TurnStateLoader(IDistributedCache cache, IOptions<TurnStateOptions> options)
+    /// <param name="logger">Logger for diagnostics.</param>
+    public TurnStateLoader(IDistributedCache cache, IOptions<TurnStateOptions> options, ILogger<TurnStateLoader> logger)
     {
         ArgumentNullException.ThrowIfNull(cache);
         ArgumentNullException.ThrowIfNull(options);
         _cache = cache;
         _options = options.Value;
+
+        if (cache is MemoryDistributedCache)
+        {
+            logger.StateUsingInMemoryCache();
+        }
     }
 
     /// <summary>
@@ -63,6 +71,21 @@ internal sealed class TurnStateLoader
         {
             string userKey = $"ts:user:{conversationId}:{userId}";
             await SaveStateAsync(userKey, userState, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+    /// <summary>
+    /// Removes conversation and/or user state from the cache.
+    /// </summary>
+    public async Task DeleteAsync(string conversationId, string? userId, CancellationToken cancellationToken)
+    {
+        string conversationKey = $"ts:conv:{conversationId}";
+        await _cache.RemoveAsync(conversationKey, cancellationToken).ConfigureAwait(false);
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            string userKey = $"ts:user:{conversationId}:{userId}";
+            await _cache.RemoveAsync(userKey, cancellationToken).ConfigureAwait(false);
         }
     }
 

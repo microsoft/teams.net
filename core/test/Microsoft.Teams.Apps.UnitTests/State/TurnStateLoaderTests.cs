@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.Caching.Distributed;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Teams.Apps.State;
 using Moq;
@@ -14,7 +15,7 @@ public class TurnStateLoaderTests
     private readonly TurnStateOptions _options = new();
 
     private TurnStateLoader CreateLoader() =>
-        new(_cacheMock.Object, Options.Create(_options));
+        new(_cacheMock.Object, Options.Create(_options), NullLogger<TurnStateLoader>.Instance);
 
     // ── Load behavior ─────────────────────────────────────────────────
 
@@ -156,5 +157,29 @@ public class TurnStateLoaderTests
             It.IsAny<byte[]>(),
             It.IsAny<DistributedCacheEntryOptions>(),
             It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // ── Delete behavior ────────────────────────────────────────────────
+
+    [Fact]
+    public async Task DeleteAsync_RemovesConversationAndUserKeys()
+    {
+        TurnStateLoader loader = CreateLoader();
+
+        await loader.DeleteAsync("conv1", "user1", CancellationToken.None);
+
+        _cacheMock.Verify(c => c.RemoveAsync("ts:conv:conv1", It.IsAny<CancellationToken>()), Times.Once);
+        _cacheMock.Verify(c => c.RemoveAsync("ts:user:conv1:user1", It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_NullUserId_RemovesOnlyConversationKey()
+    {
+        TurnStateLoader loader = CreateLoader();
+
+        await loader.DeleteAsync("conv1", null, CancellationToken.None);
+
+        _cacheMock.Verify(c => c.RemoveAsync("ts:conv:conv1", It.IsAny<CancellationToken>()), Times.Once);
+        _cacheMock.Verify(c => c.RemoveAsync(It.Is<string>(k => k.StartsWith("ts:user:")), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

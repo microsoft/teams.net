@@ -197,6 +197,22 @@ public class TeamsBotApplication : BotApplication
         return base.ProcessAsync(httpContext, cancellationToken);
     }
 
+    /// <summary>
+    /// Deletes conversation and user state from the cache for the given activity.
+    /// </summary>
+    internal Task DeleteStateAsync(TeamsActivity activity, CancellationToken cancellationToken)
+    {
+        if (_stateLoader is null)
+        {
+            throw new InvalidOperationException("State is not configured. Call WithState() during service registration.");
+        }
+
+        string conversationId = activity.Conversation?.Id
+            ?? throw new InvalidOperationException("Cannot delete state: activity has no Conversation.Id.");
+
+        return _stateLoader.DeleteAsync(conversationId, activity.From?.Id, cancellationToken);
+    }
+
     // ==================== Proactive Messaging ====================
 
     /// <summary>

@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-#pragma warning disable CA1716 // Get/Set are the idiomatic names for state access, matching ISession conventions.
-
 using System.Text.Json;
 
 namespace Microsoft.Teams.Apps.State;
@@ -17,15 +15,9 @@ public class TurnState : ITurnState
     /// <summary>
     /// Initializes a new, empty <see cref="TurnState"/>.
     /// </summary>
-    public TurnState()
-    {
-        _data = new Dictionary<string, object?>();
-    }
+    public TurnState() => _data = [];
 
-    private TurnState(Dictionary<string, object?> data)
-    {
-        _data = data;
-    }
+    private TurnState(Dictionary<string, object?> data) => _data = data;
 
     /// <inheritdoc/>
     public bool IsDirty { get; private set; }

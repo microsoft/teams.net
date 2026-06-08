@@ -72,6 +72,23 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     internal bool HasState => _state is not null;
 
+    /// <summary>
+    /// Deletes conversation and user state from the cache for the current turn.
+    /// After deletion, the in-memory state is still accessible for the remainder of the turn
+    /// but will not be reloaded on the next turn.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    public Task DeleteStateAsync(CancellationToken cancellationToken = default)
+    {
+        if (!HasState)
+        {
+            throw new InvalidOperationException(
+                "State is not available. Call WithState() during service registration.");
+        }
+
+        return TeamsBotApplication.DeleteStateAsync(Activity, cancellationToken);
+    }
+
     // ==================== Convenience Send/Reply/Typing ====================
 
     /// <summary>
