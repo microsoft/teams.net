@@ -4,9 +4,18 @@ on:
   workflow_call:
   workflow_dispatch:
   pull_request:
-    branches: ['main']
+    branches: ['main', 'releases/v2', 'releases/core']
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'Assets/**'
   push:
-    branches: ['main']
+    branches: ['main', 'releases/v2', 'releases/core']
+    paths-ignore:
+      - '**/*.md'
+      - 'docs/**'
+      - 'Assets/**'
+
   merge_group:
 
 permissions: read-all
