@@ -27,6 +27,11 @@ WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 string[] activitySources = [CoreTelemetryNames.ActivitySourceName, TeamsBotApplicationTelemetry.ActivitySourceName];
 string[] meterNames = [CoreTelemetryNames.MeterName, TeamsBotApplicationTelemetry.MeterName];
 
+webAppBuilder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = webAppBuilder.Configuration.GetConnectionString("Redis");
+});
+
 webAppBuilder.Services.AddOpenTelemetry()
     .ConfigureResource(r => r
         .AddService(serviceName: "SsoBot", serviceVersion: "0.0.1")
@@ -37,7 +42,7 @@ webAppBuilder.Services.AddOpenTelemetry()
         }))
     .UseMicrosoftOpenTelemetry(o =>
     {
-        o.Exporters = ExportTarget.Otlp;
+        o.Exporters = ExportTarget.Otlp | ExportTarget.AzureMonitor;
         o.Instrumentation.EnableHttpClientInstrumentation = true;
         o.Instrumentation.EnableAspNetCoreInstrumentation = true;
     })
@@ -74,7 +79,7 @@ auth.OnSignInFailure(async (context, failure, ct) =>
 
 bot.OnMessage("(?i)^login$", async (context, ct) =>
 {
-    // context.SignIn() resolves to the single registered OAuthFlow automatically
+        // context.SignIn() resolves to the single registered OAuthFlow automatically
     string? token = await context.SignIn(cancellationToken: ct);
     if (token is not null)
     {
@@ -85,6 +90,13 @@ bot.OnMessage("(?i)^login$", async (context, ct) =>
 
 bot.OnMessage("(?i)^profile$", async (context, ct) =>
 {
+    var isSignedIn = await auth.IsSignedInAsync(context, ct);
+    if (!isSignedIn)
+    {
+        await context.SendActivityAsync("Please sign in first (`login`).", ct);
+        return;
+    }
+
     // SignIn doubles as "get token if cached, else start sign-in"
     string? token = await context.SignIn(cancellationToken: ct);
     if (token is null) return; // sign-in card sent, wait for completion
@@ -151,8 +163,8 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
         - `help` - Show this message
         """;
 
-    await context.SendActivityAsync(
-        new MessageActivity(helpText) { TextFormat = TextFormats.Markdown }, ct);
+    await context.SendActivityAsync(new MessageActivity(helpText) { TextFormat = TextFormats.Markdown }, ct);
+    await context.SendActivityAsync("Running in " + Environment.MachineName, ct);
 });
 
 // ==================== INSTALL HANDLER ====================
