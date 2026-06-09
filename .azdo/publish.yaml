@@ -203,5 +203,6 @@ extends:
                     packageParentPath: '$(Pipeline.Workspace)/Packages'
                     nuGetFeedType: external
                     publishFeedCredentials: 'Microsoft.Teams.*'
+                    allowPackageConflicts: true  # Treat 409 (version already in feed, including deleted versions) as success
                     publishPackageMetadata: true
                     retryCountOnTaskFailure: 2
