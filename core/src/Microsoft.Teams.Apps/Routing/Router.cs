@@ -29,6 +29,17 @@ internal sealed class Router
     public IReadOnlyList<RouteBase> GetRoutes() => _routes.AsReadOnly();
 
     /// <summary>
+    /// Determines whether any registered route matches the given activity.
+    /// </summary>
+    /// <param name="activity">The activity to check against registered routes.</param>
+    /// <returns><c>true</c> if at least one route matches; otherwise, <c>false</c>.</returns>
+    public bool IsMatch(TeamsActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        return _routes.Any(r => r.Matches(activity));
+    }
+
+    /// <summary>
     /// Registers a route. Routes are checked and invoked in registration order.
     /// For non-invoke activities all matching routes run sequentially.
     /// For invoke activities — routes must be non-overlapping.
