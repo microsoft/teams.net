@@ -39,7 +39,10 @@ public static class AdaptiveCardExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<AdaptiveCardActionValue> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<AdaptiveCardActionValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<AdaptiveCardActionValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity)
+                {
+                    State = ctx.State
+                };
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

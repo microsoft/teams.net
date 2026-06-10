@@ -84,7 +84,10 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity)
+                {
+                    State = ctx.State
+                };
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

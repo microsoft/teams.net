@@ -62,7 +62,10 @@ public static class MeetingExtensions
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingStartValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingStartValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                Context<EventActivity<MeetingStartValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity)
+                {
+                    State = ctx.State
+                };
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
