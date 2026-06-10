@@ -33,6 +33,18 @@ public class TeamsBotApplication : BotApplication
     internal Router Router { get; }
 
     /// <summary>
+    /// Determines whether any registered route matches the given activity.
+    /// </summary>
+    /// <param name="activity">The activity to check against registered routes.</param>
+    /// <returns><c>true</c> if at least one route matches; otherwise, <c>false</c>.</returns>
+    public bool HasMatchingRoute(CoreActivity activity)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
+        return Router.IsMatch(teamsActivity);
+    }
+
+    /// <summary>
     /// Gets the registry of OAuthFlow instances. Set by AddOAuthFlow.
     /// </summary>
     internal OAuthFlowRegistry? OAuthRegistry { get; set; }
@@ -75,6 +87,11 @@ public class TeamsBotApplication : BotApplication
     /// </list>
     /// </remarks>
     public virtual ApiClient Api { get; }
+
+    /// <summary>
+    /// Gets the client used to interact with the Teams API service.
+    /// </summary>
+    public virtual ApiClient TeamsApiClient => Api;
 
     /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/>.
@@ -183,6 +200,57 @@ public class TeamsBotApplication : BotApplication
             }
         };
         logger.LogDebug("TeamsBotApplication version {Version}", Version);
+    }
+
+    /// <summary>
+    /// Routes an invoke activity through the Teams SDK router and returns the
+    /// <see cref="InvokeResponse"/> without writing to <c>HttpContext.Response</c>.
+    /// </summary>
+    /// <remarks>
+    /// This method mirrors the invoke path used by <see cref="OnActivity"/>
+    /// for hosting scenarios where the caller needs to bridge the invoke
+    /// result into its own response pipeline.
+    /// </remarks>
+    /// <param name="activity">The incoming <see cref="CoreActivity"/> of type Invoke.</param>
+    /// <param name="cancellationToken">A cancellation token.</param>
+    /// <returns>The <see cref="InvokeResponse"/> produced by the matched handler.</returns>
+    public async Task<InvokeResponse> ProcessInvokeAsync(CoreActivity activity, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(activity);
+        Logger.LogDebug("ProcessInvokeAsync invoked for activity: Id={Id}", activity.Id);
+
+        TeamsActivity teamsActivity = TeamsActivity.FromActivity(activity);
+
+        if (teamsActivity.ServiceUrl is not null)
+        {
+            _lastServiceUrl = teamsActivity.ServiceUrl;
+        }
+
+        Context<TeamsActivity> context = new(this, teamsActivity);
+        string? conversationId = teamsActivity.Conversation?.Id;
+        if (_stateLoader is not null && !string.IsNullOrEmpty(conversationId))
+        {
+            TurnStateContainer stateContainer = await _stateLoader.LoadAsync(conversationId, teamsActivity.From?.Id, cancellationToken).ConfigureAwait(false);
+            stateContainer.SetDeleteDelegate(ct => _stateLoader.DeleteAsync(conversationId, teamsActivity.From?.Id, ct));
+            context.State = stateContainer;
+        }
+
+        using IDisposable baggageScope = new TeamsBaggageBuilder()
+            .FromTeamsContext(context)
+            .Build();
+
+        try
+        {
+            return await Router.DispatchWithReturnAsync(context, cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (_stateLoader is not null && context.HasState)
+            {
+                await _stateLoader.SaveAsync(context.State, conversationId!, teamsActivity.From?.Id, cancellationToken).ConfigureAwait(false);
+                context.State.Complete();
+            }
+        }
     }
 
 

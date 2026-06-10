@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Teams.Apps.Clients;
 using Microsoft.Teams.Core;
+using Microsoft.Teams.Core.Schema;
 using Moq;
 
 namespace Microsoft.Teams.Apps.UnitTests;
@@ -37,6 +38,27 @@ public class TeamsBotApplicationTests
 
         await Assert.ThrowsAsync<ArgumentException>(() =>
             app.ReplyAsync("", "1680000000000", "hello"));
+    }
+
+    [Fact]
+    public void HasMatchingRoute_ReturnsTrueForRegisteredInvokeHandler()
+    {
+        TeamsBotApplication app = CreateApp();
+        app.OnInvoke((_, _) => Task.FromResult(InvokeResponse.Ok()));
+
+        Assert.True(app.HasMatchingRoute(new InvokeActivity(InvokeNames.TaskFetch)));
+        Assert.False(app.HasMatchingRoute(new CoreActivity(ActivityType.Message)));
+    }
+
+    [Fact]
+    public async Task ProcessInvokeAsync_ReturnsResponseFromMatchedInvokeHandler()
+    {
+        TeamsBotApplication app = CreateApp();
+        app.OnInvoke((_, _) => Task.FromResult(InvokeResponse.Ok()));
+
+        InvokeResponse response = await app.ProcessInvokeAsync(new InvokeActivity(InvokeNames.TaskFetch));
+
+        Assert.Equal(200, response.Status);
     }
 
     private static TeamsBotApplication CreateApp()
