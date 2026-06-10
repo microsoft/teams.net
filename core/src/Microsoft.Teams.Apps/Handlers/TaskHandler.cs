@@ -42,7 +42,8 @@ public static class TaskExtensions
             {
                 InvokeActivity<TaskModuleRequest> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                return await handler(typedContext, cancellationToken).ConfigureAwait(false); ;
+                if (ctx.HasState) typedContext.State = ctx.State;
+                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
 
@@ -69,10 +70,8 @@ public static class TaskExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<TaskModuleRequest> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity)
-                {
-                    State = ctx.State
-                };
+                Context<InvokeActivity<TaskModuleRequest>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

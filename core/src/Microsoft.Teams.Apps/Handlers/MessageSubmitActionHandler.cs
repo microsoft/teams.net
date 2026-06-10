@@ -45,10 +45,8 @@ public static class MessageSubmitActionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<SubmitActionValue> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<SubmitActionValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity)
-                {
-                    State = ctx.State
-                };
+                Context<InvokeActivity<SubmitActionValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -80,6 +78,7 @@ public static class MessageSubmitActionExtensions
                 ((InvokeActivity)typedActivity).Value = ctx.Activity.Value?["actionValue"];
 
                 Context<InvokeActivity<MessageSubmitFeedbackValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

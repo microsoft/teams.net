@@ -46,7 +46,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         await context.Typing(ct);
 
         var conversationId = context.Activity.Conversation.Id;
-        var history = context.State.ConversationState.Get<List<ChatMessage>>() ?? new List<ChatMessage>();
+        var history = context.State.ConversationState.Get<List<ChatMessage>>();
 
         lock (history)
         {
