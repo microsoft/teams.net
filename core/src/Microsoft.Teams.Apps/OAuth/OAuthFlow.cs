@@ -382,8 +382,8 @@ public class OAuthFlow
                     bool callbackInvoked = false;
                     if (_onSignInComplete is not null)
                     {
-                        Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
-                        await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
+                        Context<TeamsActivity> ctx = context.CreateDerivedContext<TeamsActivity>(context.Activity);
+                        await _onSignInComplete(ctx, tokenResult, cancellationToken).ConfigureAwait(false);
                         callbackInvoked = true;
                     }
                     span?.SetTag(AppsTelemetry.Tags.OAuthCallbackInvoked, callbackInvoked);
@@ -444,7 +444,7 @@ public class OAuthFlow
     {
         if (_onSignInFailure is not null)
         {
-            Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+            Context<TeamsActivity> baseContext = context.CreateDerivedContext<TeamsActivity>(context.Activity);
             await _onSignInFailure(baseContext, null, cancellationToken).ConfigureAwait(false);
         }
 
@@ -513,7 +513,7 @@ public class OAuthFlow
                     bool callbackInvoked = false;
                     if (_onSignInComplete is not null)
                     {
-                        Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+                        Context<TeamsActivity> baseContext = context.CreateDerivedContext<TeamsActivity>(context.Activity);
                         await _onSignInComplete(baseContext, tokenResult, cancellationToken).ConfigureAwait(false);
                         callbackInvoked = true;
                     }
@@ -533,7 +533,7 @@ public class OAuthFlow
                 bool callbackInvoked = false;
                 if (_onSignInFailure is not null)
                 {
-                    Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+                    Context<TeamsActivity> baseContext = context.CreateDerivedContext<TeamsActivity>(context.Activity);
                     await _onSignInFailure(baseContext, null, cancellationToken).ConfigureAwait(false);
                     callbackInvoked = true;
                 }
@@ -631,7 +631,7 @@ public class OAuthFlow
             bool callbackInvoked = false;
             if (_onSignInFailure is not null)
             {
-                Context<TeamsActivity> baseContext = new(context.TeamsBotApplication, context.Activity);
+                Context<TeamsActivity> baseContext = context.CreateDerivedContext<TeamsActivity>(context.Activity);
                 await _onSignInFailure(baseContext, failureValue, cancellationToken).ConfigureAwait(false);
                 callbackInvoked = true;
             }
