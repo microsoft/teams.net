@@ -171,10 +171,9 @@ public static class OAuthFlowExtensions
         });
     }
 
-    private static NullLogger GetLogger(TeamsBotApplication app)
+    private static ILogger GetLogger(TeamsBotApplication app)
     {
-        _ = app; // Reserved for future use (e.g., resolving ILoggerFactory from DI)
-        return NullLogger.Instance;
+        return app.Logger;
     }
 }
 
