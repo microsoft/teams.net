@@ -11,6 +11,7 @@ using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.State;
 
 namespace ObservabilityBot;
 
@@ -27,8 +28,9 @@ public class ObservabilityBotApp : TeamsBotApplication
         ILogger<ObservabilityBotApp> logger,
         IChatClient chatClient,
         ChatOptions chatOptions,
-        TeamsBotApplicationOptions? teamsOptions = null)
-        : base(teamsApiClient, httpContextAccessor, logger, teamsOptions)
+        TeamsBotApplicationOptions? teamsOptions = null,
+        TurnStateLoader? turnStateLoader = null)
+        : base(teamsApiClient, httpContextAccessor, logger, teamsOptions, turnStateLoader)
     {
         _chatClient = chatClient;
         _chatOptions = chatOptions;
@@ -45,8 +47,8 @@ public class ObservabilityBotApp : TeamsBotApplication
 
         await context.Typing(ct);
 
-        var conversationId = context.Activity.Conversation.Id;
-        var history = context.State.ConversationState.Get<List<ChatMessage>>();
+        string conversationId = context.Activity.Conversation.Id;
+        List<ChatMessage> history = context.State.UserState?.Get<List<ChatMessage>>() ?? [];
 
         lock (history)
         {
@@ -54,7 +56,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         }
 
         // Build Agent365 scope contracts from the turn context.
-        var recipient = context.Activity.Recipient;
+        TeamsConversationAccount? recipient = context.Activity.Recipient;
         var agentDetails = new AgentDetails(
             agentId: recipient?.AgenticAppId ?? recipient?.Id,
             agentName: recipient?.Name,
@@ -76,110 +78,110 @@ public class ObservabilityBotApp : TeamsBotApplication
 
         try
         {
-        // === InferenceScope: wraps the LLM + tool-call loop ===
-        var inferenceDetails = new InferenceCallDetails(
-            InferenceOperationType.Chat,
-            model: _deploymentName,
-            providerName: "AzureOpenAI");
+            // === InferenceScope: wraps the LLM + tool-call loop ===
+            var inferenceDetails = new InferenceCallDetails(
+                InferenceOperationType.Chat,
+                model: _deploymentName,
+                providerName: "AzureOpenAI");
 
-        List<ChatMessage> snapshot;
-        lock (history) { snapshot = [.. history]; }
+            List<ChatMessage> snapshot;
+            lock (history) { snapshot = [.. history]; }
 
-        ChatResponse chatResponse;
-        using (var inferenceScope = InferenceScope.Start(request, inferenceDetails, agentDetails))
-        {
-            chatResponse = await _chatClient.GetResponseAsync(snapshot, _chatOptions, ct);
-
-            if (chatResponse.Usage is { } usage)
+            ChatResponse chatResponse;
+            using (var inferenceScope = InferenceScope.Start(request, inferenceDetails, agentDetails))
             {
-                if (usage.InputTokenCount is { } inputTokens)
-                    inferenceScope.RecordInputTokens((int)inputTokens);
-                if (usage.OutputTokenCount is { } outputTokens)
-                    inferenceScope.RecordOutputTokens((int)outputTokens);
-            }
+                chatResponse = await _chatClient.GetResponseAsync(snapshot, _chatOptions, ct);
 
-            var finishReason = chatResponse.FinishReason?.Value ?? "stop";
-            inferenceScope.RecordFinishReasons([finishReason]);
-        }
-
-        lock (history)
-        {
-            history.AddRange(chatResponse.Messages);
-        }
-        
-            // === ExecuteToolScope: record each tool invocation ===
-        var toolCalls = chatResponse.Messages
-            .SelectMany(m => m.Contents.OfType<FunctionCallContent>())
-            .GroupBy(fc => fc.CallId ?? fc.Name ?? "")
-            .ToDictionary(g => g.Key, g => g.First());
-
-        foreach (var funcResult in chatResponse.Messages
-            .SelectMany(m => m.Contents.OfType<FunctionResultContent>()))
-        {
-            toolCalls.TryGetValue(funcResult.CallId ?? "", out var matchingCall);
-
-            var toolDetails = new ToolCallDetails(
-                toolName: matchingCall?.Name ?? "unknown",
-                arguments: matchingCall?.Arguments is { } args ? JsonSerializer.Serialize(args) : null,
-                toolCallId: funcResult.CallId);
-
-            using var toolScope = ExecuteToolScope.Start(request, toolDetails, agentDetails);
-            if (funcResult.Result is not null)
-            {
-                toolScope.RecordResponse(funcResult.Result.ToString()!);
-            }
-        }
-
-        // Extract citations from tool results.
-        var citations = chatResponse.Messages
-            .SelectMany(m => m.Contents.OfType<FunctionResultContent>())
-            .Where(frc => frc.Result is not null)
-            .SelectMany(frc =>
-            {
-                try
+                if (chatResponse.Usage is { } usage)
                 {
-                    var json = JsonSerializer.Deserialize<JsonElement>(frc.Result!.ToString()!);
-                    if (json.TryGetProperty("structuredContent", out var sc) &&
-                        sc.TryGetProperty("results", out var results))
-                    {
-                        return results.EnumerateArray()
-                            .Where(r => r.TryGetProperty("contentUrl", out _))
-                            .Select(r => (
-                                Title: r.GetProperty("title").GetString() ?? "",
-                                Url: r.GetProperty("contentUrl").GetString() ?? "",
-                                Content: r.TryGetProperty("content", out var c) ? c.GetString() ?? "" : ""
-                            ));
-                    }
+                    if (usage.InputTokenCount is { } inputTokens)
+                        inferenceScope.RecordInputTokens((int)inputTokens);
+                    if (usage.OutputTokenCount is { } outputTokens)
+                        inferenceScope.RecordOutputTokens((int)outputTokens);
                 }
-                catch (JsonException) { }
-                return [];
-            })
-            .DistinctBy(c => c.Url)
-            .Take(5).ToList();
 
-        var responseText = chatResponse.Text;
+                string finishReason = chatResponse.FinishReason?.Value ?? "stop";
+                inferenceScope.RecordFinishReasons([finishReason]);
+            }
 
-        for (int i = 0; i < citations.Count; i++)
-        {
-            responseText += $"[{i + 1}] ";
-        }
+            lock (history)
+            {
+                history.AddRange(chatResponse.Messages);
+            }
 
-        // Record output on the top-level invoke_agent span before it closes.
-        invokeScope.RecordOutputMessages([responseText]);
+            // === ExecuteToolScope: record each tool invocation ===
+            var toolCalls = chatResponse.Messages
+                .SelectMany(m => m.Contents.OfType<FunctionCallContent>())
+                .GroupBy(fc => fc.CallId ?? fc.Name ?? "")
+                .ToDictionary(g => g.Key, g => g.First());
 
-        var builder = TeamsActivity.CreateBuilder()
-            .WithText(responseText, TextFormats.Markdown)
-            .AddMention(context.Activity?.From!)
-            .AddAIGenerated();
+            foreach (FunctionResultContent? funcResult in chatResponse.Messages
+                .SelectMany(m => m.Contents.OfType<FunctionResultContent>()))
+            {
+                toolCalls.TryGetValue(funcResult.CallId ?? "", out FunctionCallContent? matchingCall);
 
-        for (int i = 0; i < citations.Count; i++)
-        {
-            var (Title, Url, Content) = citations[i];
-            var abstract_ = Content.Length > 160 ? Content[..157] + "..." : Content;
-            builder.AddCitation(i + 1, new CitationAppearance() { Name = Title, Url = new Uri(Url), Abstract = abstract_, Icon = CitationIcon.Text });
-        }
+                var toolDetails = new ToolCallDetails(
+                    toolName: matchingCall?.Name ?? "unknown",
+                    arguments: matchingCall?.Arguments is { } args ? JsonSerializer.Serialize(args) : null,
+                    toolCallId: funcResult.CallId);
 
-        await context.Send(builder.Build(), ct);
+                using var toolScope = ExecuteToolScope.Start(request, toolDetails, agentDetails);
+                if (funcResult.Result is not null)
+                {
+                    toolScope.RecordResponse(funcResult.Result.ToString()!);
+                }
+            }
+
+            // Extract citations from tool results.
+            var citations = chatResponse.Messages
+                .SelectMany(m => m.Contents.OfType<FunctionResultContent>())
+                .Where(frc => frc.Result is not null)
+                .SelectMany(frc =>
+                {
+                    try
+                    {
+                        JsonElement json = JsonSerializer.Deserialize<JsonElement>(frc.Result!.ToString()!);
+                        if (json.TryGetProperty("structuredContent", out JsonElement sc) &&
+                            sc.TryGetProperty("results", out JsonElement results))
+                        {
+                            return results.EnumerateArray()
+                                .Where(r => r.TryGetProperty("contentUrl", out _))
+                                .Select(r => (
+                                    Title: r.GetProperty("title").GetString() ?? "",
+                                    Url: r.GetProperty("contentUrl").GetString() ?? "",
+                                    Content: r.TryGetProperty("content", out JsonElement c) ? c.GetString() ?? "" : ""
+                                ));
+                        }
+                    }
+                    catch (JsonException) { }
+                    return [];
+                })
+                .DistinctBy(c => c.Url)
+                .Take(5).ToList();
+
+            string responseText = chatResponse.Text;
+
+            for (int i = 0; i < citations.Count; i++)
+            {
+                responseText += $"[{i + 1}] ";
+            }
+
+            // Record output on the top-level invoke_agent span before it closes.
+            invokeScope.RecordOutputMessages([responseText]);
+
+            TeamsActivityBuilder builder = TeamsActivity.CreateBuilder()
+                .WithText(responseText, TextFormats.Markdown)
+                .AddMention(context.Activity?.From!)
+                .AddAIGenerated();
+
+            for (int i = 0; i < citations.Count; i++)
+            {
+                (string? Title, string? Url, string? Content) = citations[i];
+                string abstract_ = Content.Length > 160 ? Content[..157] + "..." : Content;
+                builder.AddCitation(i + 1, new CitationAppearance() { Name = Title, Url = new Uri(Url), Abstract = abstract_, Icon = CitationIcon.Text });
+            }
+
+            await context.Send(builder.Build(), ct);
         }
         catch (Exception ex)
         {
@@ -188,7 +190,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         }
         finally
         {
-            context.State.ConversationState.Set(history);
+            context.State.UserState?.Set(history);
         }
     }
 }

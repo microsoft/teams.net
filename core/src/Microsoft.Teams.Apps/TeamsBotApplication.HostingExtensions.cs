@@ -175,10 +175,9 @@ public static class TeamsBotApplicationHostingExtensions
         }
 
         // Provide an in-memory cache as fallback so UseState() works out of the box.
-        // Since this uses TryAdd, any IDistributedCache registered by the developer
-        // (before or after this call) will take precedence via last-wins DI resolution
-        // only if they use Add (not TryAdd). Redis (AddStackExchangeRedisCache) uses Add,
-        // so it always wins regardless of order.
+        // AddDistributedMemoryCache() uses TryAdd, so it will not replace an existing IDistributedCache registration.
+        // If the developer registers another IDistributedCache later using Add*,
+        // the last registration will be resolved (e.g., AddStackExchangeRedisCache).
         services.AddDistributedMemoryCache();
 
         services.AddSingleton<TurnStateLoader>();

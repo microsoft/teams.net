@@ -17,7 +17,17 @@ Consuming bot                            Teams SDK (this design)
     .AddSource(                           └─ "conversation_client" (ConversationClient send/update/delete)
         TeamsBotApplicationTelemetry
         .ActivitySourceName))            ActivitySource("Microsoft.Teams.Apps")
-                                          └─ "handler"             (Router.DispatchAsync)
+        ├─ "handler"                  (Router.DispatchAsync)
+        ├─ "state.load"               (TurnStateLoader)
+        ├─ "state.save"               (TurnStateLoader)
+        ├─ "state.delete"             (TurnStateLoader)
+        ├─ "oauth.signin"             (OAuthFlow.SignInAsync)
+        ├─ "oauth.signout"            (OAuthFlow.SignOutAsync)
+        ├─ "oauth.get_token"          (OAuthFlow.GetTokenAsync)
+        ├─ "oauth.token_exchange"     (OAuthFlow.HandleTokenExchangeAsync)
+        ├─ "oauth.verify_state"       (OAuthFlow.HandleVerifyStateAsync)
+        ├─ "oauth.signin_failure"     (OAuthFlow.HandleSignInFailureAsync)
+        └─ "oauth.connection_status"  (OAuthFlow.GetConnectionStatusAsync)
 .WithMetrics(m => m
     .AddMeter(CoreTelemetryNames         Meter("Microsoft.Teams.Core")
         .MeterName)                       ├─ teams.activities.received   (Counter)
@@ -28,10 +38,13 @@ Consuming bot                            Teams SDK (this design)
                                           └─ teams.outbound.errors       (Counter)
 
                                          Meter("Microsoft.Teams.Apps")
-                                          ├─ teams.handler.dispatched    (Counter)
-                                          ├─ teams.handler.duration      (Histogram, ms)
-                                          ├─ teams.handler.failures      (Counter)
-                                          └─ teams.handler.unmatched     (Counter)
+                                         ├─ teams.handler.dispatched         (Counter)
+                                         ├─ teams.handler.duration           (Histogram, ms)
+                                         ├─ teams.handler.failures           (Counter)
+                                         ├─ teams.handler.unmatched          (Counter)
+                                         ├─ teams.oauth.operations           (Counter)
+                                         ├─ teams.oauth.operation.duration   (Histogram, ms)
+                                         └─ teams.oauth.errors               (Counter)
 ```
 
 ## Layering constraints
@@ -46,7 +59,7 @@ Telemetry follows the same rule: **each assembly publishes its own ActivitySourc
 | Layer | Public name class | Source / Meter name | Spans | Metrics |
 |---|---|---|---|---|
 | `Microsoft.Teams.Core` | `Microsoft.Teams.Core.Diagnostics.CoreTelemetryNames` | `"Microsoft.Teams.Core"` | `turn`, `middleware`, `auth.outbound`, `conversation_client` | `teams.activities.received`, `teams.turn.duration`, `teams.handler.errors`, `teams.middleware.duration`, `teams.outbound.calls`, `teams.outbound.errors` |
-| `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Diagnostics.TeamsBotApplicationTelemetry` | `"Microsoft.Teams.Apps"` | `handler` | `teams.handler.dispatched`, `teams.handler.duration`, `teams.handler.failures`, `teams.handler.unmatched` |
+| `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Diagnostics.TeamsBotApplicationTelemetry` | `"Microsoft.Teams.Apps"` | `handler`, `state.load`, `state.save`, `state.delete`, `oauth.signin`, `oauth.signout`, `oauth.get_token`, `oauth.token_exchange`, `oauth.verify_state`, `oauth.signin_failure`, `oauth.connection_status` | `teams.handler.dispatched`, `teams.handler.duration`, `teams.handler.failures`, `teams.handler.unmatched`, `teams.state.*`, `teams.oauth.operations`, `teams.oauth.operation.duration`, `teams.oauth.errors` |
 
 Cross-assembly use is one-way: Apps's `Router` may call Core utilities (for example, the public `RecordException` extension on `Activity` defined in `Microsoft.Teams.Core.Diagnostics.ActivityExtensions`), but Core never reaches up into Apps. If a future Core-level helper would need an Apps concept, that helper belongs in Apps, not in Core.
 
@@ -85,6 +98,13 @@ The auto-instrumented HTTP-server span (from the OTel distro's ASP.NET Core inst
 | `handler` | Apps | `Microsoft.Teams.Apps/Routing/Router.cs` `DispatchAsync` matched-route invocation | `handler.type` (activity type or invoke name), `handler.dispatch` (`type` / `invoke` / `catchall`) |
 | `auth.outbound` | Core | `Microsoft.Teams.Core/Hosting/BotAuthenticationHandler.cs` `GetAuthorizationHeaderAsync` | `auth.flow` (`agentic` / `app_only` / `managed_identity`) |
 | `conversation_client` | Core | `Microsoft.Teams.Core/ConversationClient.cs` `SendActivityAsync` / `UpdateActivityAsync` / `DeleteActivityAsync` | `service.url`, `conversation.id`, `activity.type`, `activity.id` (set after response when known), `operation` |
+| `oauth.signin` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `SignInAsync` | `oauth.connection`, `oauth.operation` (`signin`), `oauth.result` (`cached` / `card_sent` / `failure`), `oauth.error.type` (only on unexpected exceptions). Span event `oauth.card.sent` is added when an OAuthCard is sent. |
+| `oauth.signout` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `SignOutAsync` | `oauth.connection`, `oauth.operation` (`signout`), `oauth.result` (`success` / `failure`), `oauth.error.type` (on exceptions) |
+| `oauth.get_token` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `GetTokenAsync` | `oauth.connection`, `oauth.operation` (`get_token`), `oauth.result` (`hit` / `miss` / `failure`), `oauth.error.type` (on exceptions) |
+| `oauth.token_exchange` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `HandleTokenExchangeAsync` (signin/tokenExchange invoke) | `oauth.connection`, `oauth.operation` (`token_exchange`), `oauth.result` (`success` / `duplicate` / `failure`), `invoke.response.status`, `oauth.callback.invoked`, `oauth.error.type` (only on unexpected HTTP status — not 404/400/412 — or `invalid_op`) |
+| `oauth.verify_state` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `HandleVerifyStateAsync` (signin/verifyState invoke) | `oauth.connection`, `oauth.operation` (`verify_state`), `oauth.result` (`success` / `no_token` / `failure`), `invoke.response.status`, `oauth.callback.invoked`, `oauth.error.type` (only on unexpected HTTP status — not 404/400/412) |
+| `oauth.signin_failure` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `HandleSignInFailureAsync` (signin/failure invoke) | `oauth.connection`, `oauth.operation` (`signin_failure`), `oauth.result` (`notified`), `oauth.failure.code` (the client-supplied failure code, e.g. `tokenmissing`, `resourcematchfailed`), `invoke.response.status`, `oauth.callback.invoked` |
+| `oauth.connection_status` | Apps | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` `GetConnectionStatusAsync` | `oauth.connection=all`, `oauth.operation` (`connection_status`), `oauth.result` (`success` / `failure`), `oauth.error.type` (on exceptions) |
 
 On exception every span sets `Status = Error` with the exception message and adds an `exception` span event with `exception.type`, `exception.message`, and `exception.stacktrace` tags. This is done through the `RecordException` extension method in `Microsoft.Teams.Core.Diagnostics.ActivityExtensions`, which is `public` so the Apps layer (`Router`) can use it too. The extension uses manual event tagging on both `net8.0` and `net10.0` to stay consistent across target frameworks; it intentionally does not delegate to the BCL `Activity.AddException` (added in .NET 9), because that API only adds the event without setting `ActivityStatusCode.Error`.
 
@@ -115,6 +135,20 @@ Core-meter instruments cover the turn pipeline, middleware, and outbound HTTP cl
 | `teams.handler.duration` | Histogram | ms | `handler.type`, `handler.dispatch` | `finally` block around each matched-route invocation (recorded even on exception) |
 | `teams.handler.failures` | Counter | — | `handler.type`, `handler.dispatch` | catch block when a route handler throws |
 | `teams.handler.unmatched` | Counter | — | `activity.type` (DispatchAsync) or `activity.type` + `invoke.name` (DispatchWithReturnAsync) | branch where no route selector matched |
+
+### OAuth meter (`Microsoft.Teams.Apps`)
+
+OAuth flow operations share three instruments, parameterized by the `oauth.operation` and `oauth.result` tags. The operations counter and duration histogram are recorded in the `finally` block of every flow method (so both successful and failed attempts are observed). The errors counter is only incremented for **unexpected** errors: HTTP status codes outside the protocol-fallback set (anything other than 404, 400, 412) and unexpected exception types (e.g. `InvalidOperationException` from the Token Service client). Expected protocol fallbacks — the Token Service returning 404/400/412 to indicate "no token, ask user to sign in" — are recorded with `oauth.result=failure` on the operations counter but **do not** increment `teams.oauth.errors`, so the error rate metric stays meaningful for alerting.
+
+| Metric | Kind | Unit | Tags | Where |
+|---|---|---|---|---|
+| `teams.oauth.operations` | Counter | — | `oauth.connection`, `oauth.operation` ∈ {`signin`, `signout`, `get_token`, `token_exchange`, `verify_state`, `signin_failure`, `connection_status`}, `oauth.result` ∈ {`cached`, `card_sent`, `hit`, `miss`, `success`, `failure`, `duplicate`, `no_token`, `notified`} | `finally` block of every OAuth flow method |
+| `teams.oauth.operation.duration` | Histogram | ms | same as `teams.oauth.operations` | `finally` block of every OAuth flow method |
+| `teams.oauth.errors` | Counter | — | `oauth.connection`, `oauth.operation`, `oauth.error.type` ∈ {`http_error`, `invalid_op`, `empty_token`} | only when an unexpected exception or unexpected HTTP status is observed (see above) |
+
+`oauth.connection` is the connection name (e.g. `graph`, `github`) and is constrained to the small set of OAuth connections the bot registers via `AddOAuthFlow(name)`. The special value `all` is used by `connection_status`, which queries every registered connection in a single call. User IDs, conversation IDs, tokens, exchange IDs, and the `signin/failure` client-supplied message are intentionally **not** emitted as tags or span attributes to keep cardinality bounded and avoid leaking PII.
+
+A single `signin/verifyState` invoke in a multi-connection deployment may emit N records on `teams.oauth.operations` (one per registered OAuth flow that the verifyState dispatch loop probes), with N–1 carrying `oauth.result=no_token` and one carrying `oauth.result=success` or `oauth.result=failure`. Aggregating success rate by `oauth.connection` is therefore more meaningful than aggregating by the raw invoke count.
 
 OTLP exposes these names with dots; Prometheus/Mimir maps them to `teams_*_total` (counters) and `teams_*_milliseconds_*` (histograms).
 
@@ -156,6 +190,9 @@ HTTP server span                       (auto, OTel ASP.NET Core)
 └─ turn                                (Microsoft.Teams.Core)
    ├─ middleware [n times]             (Microsoft.Teams.Core)
    ├─ handler                          (Microsoft.Teams.Apps)
+   │  ├─ state.load / state.save       (Microsoft.Teams.Apps, when state is used)
+   │  └─ oauth.* [zero or more]        (Microsoft.Teams.Apps, when OAuth flows are called)
+   │     └─ conversation_client        (Microsoft.Teams.Core, when an OAuthCard is sent)
    └─ conversation_client              (Microsoft.Teams.Core)
       ├─ auth.outbound                 (Microsoft.Teams.Core)
       │  └─ HTTP client span           (auto, OTel HttpClient — token endpoint)

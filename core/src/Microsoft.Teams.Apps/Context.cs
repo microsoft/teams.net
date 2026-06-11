@@ -63,7 +63,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public TurnStateContainer State
     {
         get => _state ?? throw new InvalidOperationException(
-            "State is not available. Call UseState() during service registration.");
+            "State is not available. Call UseState() during service registration, and if using a custom TeamsBotApplication make sure you pass a TurnStateLoader instance.");
         internal set => _state = value;
     }
 

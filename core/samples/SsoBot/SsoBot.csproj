@@ -9,5 +9,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
 	</ItemGroup>
-
+	<ItemGroup>
+		<PackageReference Include="Microsoft.OpenTelemetry" Version="1.0.3" />
+	</ItemGroup>
 </Project>
