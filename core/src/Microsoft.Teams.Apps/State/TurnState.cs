@@ -149,6 +149,7 @@ public class TurnState
 
         T instance = new();
         _data[key] = instance;
+        IsDirty = true;
         return instance;
     }
 
