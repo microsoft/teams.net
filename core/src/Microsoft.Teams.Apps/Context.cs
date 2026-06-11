@@ -70,7 +70,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <summary>
     /// Returns true if state has been loaded for this turn.
     /// </summary>
-    internal bool HasState => _state is not null;
+    public bool HasState => _state is not null;
 
     /// <summary>
     /// Creates a copy of this context, preserving state if available.

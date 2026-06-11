@@ -340,9 +340,8 @@ public class OAuthFlow
     /// </summary>
     internal async Task<InvokeResponse> HandleTokenExchangeAsync(Context<InvokeActivity> context, SignInTokenExchangeValue exchangeValue, CancellationToken cancellationToken)
     {
-        string exchangeId = exchangeValue.Id ?? string.Empty;
+        string exchangeId = string.IsNullOrEmpty(exchangeValue.Id) ? Guid.NewGuid().ToString("N") : exchangeValue.Id;
         string connectionName = exchangeValue.ConnectionName ?? _connectionName;
-
         using Activity? span = AppsTelemetry.Source.StartActivity(AppsTelemetry.Spans.OAuthTokenExchange, ActivityKind.Internal);
         span?.SetTag(AppsTelemetry.Tags.OAuthConnection, connectionName);
         span?.SetTag(AppsTelemetry.Tags.OAuthOperation, AppsTelemetry.OAuthOperations.TokenExchange);
