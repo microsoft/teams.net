@@ -23,7 +23,7 @@ public class TurnState
     /// <summary>
     /// Returns true if any value has been added, modified, or removed since the state was loaded.
     /// </summary>
-    public bool IsDirty { get; private set; }
+    public bool IsDirty { get; internal set; }
 
     /// <summary>
     /// Gets a value by key. Returns <c>default</c> if the key is not present or the value cannot be converted.
@@ -137,6 +137,7 @@ public class TurnState
                 {
                     T deserialized = element.Deserialize<T>() ?? new T();
                     _data[key] = deserialized;
+                    IsDirty = true;
                     return deserialized;
                 }
                 catch (Exception ex) when (ex is JsonException or NotSupportedException)

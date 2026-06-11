@@ -129,7 +129,7 @@ public sealed class TurnStateLoader
         }
         catch (Exception ex)
         {
-            span.RecordException(ex);
+            span?.RecordException(ex);
             AppsTelemetry.StateCacheErrors.Add(1, new KeyValuePair<string, object?>(AppsTelemetry.Tags.Operation, "save"));
             _logger.StateSaveFailed(ex, conversationId);
             throw;

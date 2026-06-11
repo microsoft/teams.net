@@ -148,6 +148,7 @@ public class TeamsBotApplication : BotApplication
             if (_stateLoader is not null && !string.IsNullOrEmpty(conversationId))
             {
                 TurnStateContainer stateContainer = await _stateLoader.LoadAsync(conversationId, teamsActivity.From?.Id, cancellationToken).ConfigureAwait(false);
+                stateContainer.SetDeleteDelegate(ct => _stateLoader.DeleteAsync(conversationId, teamsActivity.From?.Id, ct));
                 defaultContext.State = stateContainer;
             }
 
@@ -191,21 +192,6 @@ public class TeamsBotApplication : BotApplication
         logger.LogDebug("TeamsBotApplication version {Version}", Version);
     }
 
-    /// <summary>
-    /// Deletes conversation and user state from the cache for the given activity.
-    /// </summary>
-    internal Task DeleteStateAsync(TeamsActivity activity, CancellationToken cancellationToken)
-    {
-        if (_stateLoader is null)
-        {
-            throw new InvalidOperationException("State is not configured. Call UseState() during service registration.");
-        }
-
-        string conversationId = activity.Conversation?.Id
-            ?? throw new InvalidOperationException("Cannot delete state: activity has no Conversation.Id.");
-
-        return _stateLoader.DeleteAsync(conversationId, activity.From?.Id, cancellationToken);
-    }
 
     // ==================== Proactive Messaging ====================
 
