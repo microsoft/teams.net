@@ -293,6 +293,23 @@ public class TurnStateTests
         Assert.Equal("persisted", result.Name);
     }
 
+    [Fact]
+    public void GetTyped_AfterRoundTrip_MarksDirty()
+    {
+        // When a typed Get<T>() deserializes a JsonElement, it should mark dirty
+        // so the deserialized object is persisted on the next save.
+        TurnState original = new();
+        original.Set(new FakeState { Name = "persisted" });
+        byte[] bytes = original.ToJsonBytes();
+
+        TurnState loaded = TurnState.FromJsonBytes(bytes);
+        Assert.False(loaded.IsDirty);
+
+        loaded.Get<FakeState>();
+
+        Assert.True(loaded.IsDirty);
+    }
+
     // ── TryGet ─────────────────────────────────────────────────────────
 
     [Fact]
