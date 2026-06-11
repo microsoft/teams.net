@@ -343,4 +343,149 @@ public class TurnStateTests
         Assert.True(found);
         Assert.Equal(42, value);
     }
+
+    // ── JSON exception handling ────────────────────────────────────────
+
+    [Fact]
+    public void Get_JsonElement_IncompatibleType_ReturnsDefault()
+    {
+        // Store a string, round-trip through JSON, then request as int.
+        TurnState original = new();
+        original.Set("name", "Alice");
+        byte[] bytes = original.ToJsonBytes();
+
+        TurnState loaded = TurnState.FromJsonBytes(bytes);
+
+        // "Alice" cannot be deserialized as int — should return default, not throw.
+        int result = loaded.Get<int>("name");
+
+        Assert.Equal(0, result);
+    }
+
+    [Fact]
+    public void Get_JsonElement_IncompatibleType_ReturnsNullForReferenceType()
+    {
+        // Store a number, round-trip, then request as a complex object.
+        TurnState original = new();
+        original.Set("count", 42);
+        byte[] bytes = original.ToJsonBytes();
+
+        TurnState loaded = TurnState.FromJsonBytes(bytes);
+
+        // A JSON number cannot deserialize to FakeState — should return null, not throw.
+        FakeState? result = loaded.Get<FakeState>("count");
+
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryGet_JsonElement_IncompatibleType_ReturnsFalse()
+    {
+        // Store a string, round-trip through JSON, then TryGet as int.
+        TurnState original = new();
+        original.Set("name", "Alice");
+        byte[] bytes = original.ToJsonBytes();
+
+        TurnState loaded = TurnState.FromJsonBytes(bytes);
+
+        bool found = loaded.TryGet<int>("name", out int value);
+
+        Assert.False(found);
+        Assert.Equal(0, value);
+    }
+
+    [Fact]
+    public void TryGet_JsonElement_IncompatibleComplexType_ReturnsFalse()
+    {
+        // Store a boolean, round-trip, then TryGet as a complex object.
+        TurnState original = new();
+        original.Set("flag", true);
+        byte[] bytes = original.ToJsonBytes();
+
+        TurnState loaded = TurnState.FromJsonBytes(bytes);
+
+        bool found = loaded.TryGet<FakeState>("flag", out FakeState? value);
+
+        Assert.False(found);
+        Assert.Null(value);
+    }
+
+    [Fact]
+    public void GetTyped_JsonElement_IncompatibleType_CreatesNewInstance()
+    {
+        // Simulate a typed key holding an incompatible JsonElement (e.g., cache corruption or type change).
+        // Manually build a dictionary with the typed key mapped to a JsonElement number.
+        using var doc = System.Text.Json.JsonDocument.Parse("42");
+        var data = new Dictionary<string, object?>
+        {
+            [$"${typeof(FakeState).FullName}"] = doc.RootElement.Clone()
+        };
+        TurnState state = TurnState.FromDictionary(data);
+
+        // A number JsonElement cannot deserialize to FakeState — should create new instance.
+        FakeState result = state.Get<FakeState>();
+
+        Assert.NotNull(result);
+        Assert.Equal("default", result.Name);
+    }
+
+    [Fact]
+    public void GetTyped_JsonElement_IncompatibleType_MarksDirty()
+    {
+        // When the typed Get<T>() falls back to creating a new instance, it should mark state dirty.
+        using var doc = System.Text.Json.JsonDocument.Parse("\"not an object\"");
+        var data = new Dictionary<string, object?>
+        {
+            [$"${typeof(FakeState).FullName}"] = doc.RootElement.Clone()
+        };
+        TurnState state = TurnState.FromDictionary(data);
+
+        Assert.False(state.IsDirty);
+
+        state.Get<FakeState>();
+
+        Assert.True(state.IsDirty);
+    }
+
+    [Fact]
+    public void FromJsonBytes_CorruptedJson_ReturnsEmptyState()
+    {
+        // Invalid JSON bytes should be treated as a cache miss.
+        byte[] garbage = "{{not valid json!!"u8.ToArray();
+
+        TurnState state = TurnState.FromJsonBytes(garbage);
+
+        Assert.False(state.IsDirty);
+        Assert.False(state.ContainsKey("anything"));
+    }
+
+    [Fact]
+    public void FromJsonBytes_JsonArrayInsteadOfObject_ReturnsEmptyState()
+    {
+        // A JSON array is valid JSON but not a valid state dictionary.
+        byte[] arrayJson = "[1, 2, 3]"u8.ToArray();
+
+        TurnState state = TurnState.FromJsonBytes(arrayJson);
+
+        Assert.False(state.IsDirty);
+        Assert.False(state.ContainsKey("anything"));
+    }
+
+    [Fact]
+    public void Get_JsonElement_ObjectAsWrongComplexType_ReturnsDefault()
+    {
+        // Store a FakeState object, round-trip, then request the same key as OtherState.
+        TurnState original = new();
+        original.Set("data", new FakeState { Name = "test" });
+        byte[] bytes = original.ToJsonBytes();
+
+        TurnState loaded = TurnState.FromJsonBytes(bytes);
+
+        // The JsonElement is a {"Name":"test"} object; OtherState has different shape but should still deserialize.
+        OtherState? result = loaded.Get<OtherState>("data");
+
+        // OtherState can be deserialized (Count defaults to 0) — this is valid JSON-to-object conversion.
+        Assert.NotNull(result);
+        Assert.Equal(0, result.Count);
+    }
 }
