@@ -100,7 +100,7 @@ public class MessageActivity : TeamsActivity
         }
     }
     /// <summary>
-    /// Gets or sets the text format. See <see cref="TextFormats"/> for common values.
+    /// Gets or sets the text format. See <see cref="TextFormats"/> for common values (plain, markdown, xml, extendedmarkdown).
     /// </summary>
     [JsonPropertyName("textFormat")]
     public string? TextFormat { get; set; }
@@ -132,4 +132,9 @@ public static class TextFormats
     /// XML text format.
     /// </summary>
     public const string Xml = "xml";
+
+    /// <summary>
+    /// Extended markdown text format.
+    /// </summary>
+    public const string ExtendedMarkdown = "extendedmarkdown";
 }

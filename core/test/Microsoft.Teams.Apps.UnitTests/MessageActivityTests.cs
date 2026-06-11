@@ -68,6 +68,9 @@ public class MessageActivityTests
 
         activity.TextFormat = TextFormats.Xml;
         Assert.Equal("xml", activity.TextFormat);
+
+        activity.TextFormat = TextFormats.ExtendedMarkdown;
+        Assert.Equal("extendedmarkdown", activity.TextFormat);
     }
 
     [Fact]
