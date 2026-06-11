@@ -52,6 +52,11 @@ public class OAuthFlow
     // When UseState() is configured, user state is used instead (works across instances).
     private readonly ConcurrentDictionary<string, DateTimeOffset> _pendingSignIns = new();
 
+    // Per-turn token cache keyed by activity ID. Avoids redundant HTTP calls to the
+    // token service when multiple methods (SignIn, IsSignedInAsync, GetTokenAsync)
+    // are called within the same turn. Entries are naturally evicted as new turns arrive.
+    private readonly ConcurrentDictionary<string, string?> _tokenCache = new();
+
     internal OAuthFlow(TeamsBotApplication app, string connectionName, OAuthOptions options, ILogger logger)
     {
         _app = app;
@@ -108,10 +113,10 @@ public class OAuthFlow
         string result = AppsTelemetry.OAuthResults.Miss;
         try
         {
-            GetTokenResult? tokenResult = await _app.UserTokenClient.GetTokenAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
-            result = tokenResult?.Token is not null ? AppsTelemetry.OAuthResults.Hit : AppsTelemetry.OAuthResults.Miss;
+            string? token = await FetchTokenAsync(context, userId, channelId, cancellationToken).ConfigureAwait(false);
+            result = token is not null ? AppsTelemetry.OAuthResults.Hit : AppsTelemetry.OAuthResults.Miss;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
-            return tokenResult?.Token;
+            return token;
         }
         catch (Exception ex)
         {
@@ -124,6 +129,28 @@ public class OAuthFlow
         {
             RecordOperation(AppsTelemetry.OAuthOperations.GetToken, result, startTs);
         }
+    }
+
+    /// <summary>
+    /// Fetch a token from the cache or token service. Shared by <see cref="GetTokenAsync{TActivity}"/>
+    /// and <see cref="SignInAsync{TActivity}(Context{TActivity}, OAuthOptions?, CancellationToken)"/>
+    /// to avoid redundant HTTP calls within the same turn.
+    /// </summary>
+    private async Task<string?> FetchTokenAsync<TActivity>(Context<TActivity> context, string userId, string channelId, CancellationToken cancellationToken) where TActivity : TeamsActivity
+    {
+        _ = context; // reserved for future use
+        string cacheKey = $"{userId}:{channelId}";
+        if (_tokenCache.TryGetValue(cacheKey, out string? cached))
+        {
+            return cached;
+        }
+
+        GetTokenResult? tokenResult = await _app.UserTokenClient.GetTokenAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
+        string? token = tokenResult?.Token;
+
+        _tokenCache[cacheKey] = token;
+
+        return token;
     }
 
     /// <summary>
@@ -159,14 +186,14 @@ public class OAuthFlow
         string result = AppsTelemetry.OAuthResults.Failure;
         try
         {
-            // 1. Try silent token acquisition
-            GetTokenResult? existingToken = await _app.UserTokenClient.GetTokenAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
-            if (existingToken?.Token is not null)
+            // 1. Try silent token acquisition (uses per-turn cache)
+            string? existingToken = await FetchTokenAsync(context, userId, channelId, cancellationToken).ConfigureAwait(false);
+            if (existingToken is not null)
             {
                 _logger.LogDebug("Token found in store for connection '{ConnectionName}', user '{UserId}'.", _connectionName, userId);
                 result = AppsTelemetry.OAuthResults.Cached;
                 span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
-                return existingToken.Token;
+                return existingToken;
             }
 
             // 2. No token - get sign-in resource and send OAuthCard
@@ -741,6 +768,13 @@ public class OAuthFlow
             {
                 _pendingSignIns.TryRemove(kvp.Key, out _);
             }
+        }
+
+        // Token cache is keyed by activity ID (one entry per turn).
+        // Clear when it grows beyond a reasonable size to prevent unbounded growth.
+        if (_tokenCache.Count > 100)
+        {
+            _tokenCache.Clear();
         }
     }
 
