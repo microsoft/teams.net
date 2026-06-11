@@ -85,6 +85,7 @@ public static class MessageExtensionExtensions
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -113,6 +114,7 @@ public static class MessageExtensionExtensions
             {
                 InvokeActivity<MessageExtensionAction> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -141,6 +143,7 @@ public static class MessageExtensionExtensions
             {
                 InvokeActivity<MessageExtensionQueryLink> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -169,6 +172,7 @@ public static class MessageExtensionExtensions
             {
                 InvokeActivity<MessageExtensionQueryLink> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -197,6 +201,7 @@ public static class MessageExtensionExtensions
             {
                 InvokeActivity<MessageExtensionAction> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -225,6 +230,7 @@ public static class MessageExtensionExtensions
             {
                 InvokeActivity<JsonElement> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<JsonElement>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -253,6 +259,7 @@ public static class MessageExtensionExtensions
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

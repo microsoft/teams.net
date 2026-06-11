@@ -136,9 +136,9 @@ public class TeamsBotApplicationHostingExtensionsTests
         };
 
         using ServiceProvider serviceProvider = BuildServiceProvider(configData);
-        TurnStateLoader? middleware = serviceProvider.GetService<TurnStateLoader>();
+        TurnStateLoader? loader = serviceProvider.GetService<TurnStateLoader>();
 
-        Assert.Null(middleware);
+        Assert.Null(loader);
     }
 
     private sealed class SubclassBot : TeamsBotApplication

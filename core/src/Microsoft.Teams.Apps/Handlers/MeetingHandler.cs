@@ -63,6 +63,7 @@ public static class MeetingExtensions
             {
                 EventActivity<MeetingStartValue> typedActivity = new(ctx.Activity);
                 Context<EventActivity<MeetingStartValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -90,6 +91,7 @@ public static class MeetingExtensions
             {
                 EventActivity<MeetingEndValue> typedActivity = new(ctx.Activity);
                 Context<EventActivity<MeetingEndValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -117,6 +119,7 @@ public static class MeetingExtensions
             {
                 EventActivity<MeetingParticipantJoinValue> typedActivity = new(ctx.Activity);
                 Context<EventActivity<MeetingParticipantJoinValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -144,6 +147,7 @@ public static class MeetingExtensions
             {
                 EventActivity<MeetingParticipantLeaveValue> typedActivity = new(ctx.Activity);
                 Context<EventActivity<MeetingParticipantLeaveValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
