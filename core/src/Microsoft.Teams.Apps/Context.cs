@@ -98,41 +98,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         return derived;
     }
 
-    // ==================== Per-Turn Token Cache ====================
-
-    private Dictionary<string, string>? _tokenCache;
-
-    /// <summary>
-    /// Gets a cached token for the given connection name from this turn's cache.
-    /// Returns null if no token is cached for this turn.
-    /// </summary>
-    internal string? GetCachedToken(string connectionName)
-    {
-        if (_tokenCache is not null && _tokenCache.TryGetValue(connectionName, out string? token))
-        {
-            return token;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Caches a token for the given connection name for the duration of this turn.
-    /// </summary>
-    internal void SetCachedToken(string connectionName, string token)
-    {
-        _tokenCache ??= new(StringComparer.OrdinalIgnoreCase);
-        _tokenCache[connectionName] = token;
-    }
-
-    /// <summary>
-    /// Clears the cached token for the given connection name (e.g., after sign-out).
-    /// </summary>
-    internal void ClearCachedToken(string connectionName)
-    {
-        _tokenCache?.Remove(connectionName);
-    }
-
     // ==================== Convenience Send/Reply/Typing ====================
 
     /// <summary>

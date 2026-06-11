@@ -52,6 +52,11 @@ public class OAuthFlow
     // When UseState() is configured, user state is used instead (works across instances).
     private readonly ConcurrentDictionary<string, DateTimeOffset> _pendingSignIns = new();
 
+    // Per-turn token cache. Keyed by activity ID (unique per turn) to avoid redundant
+    // HTTP calls to the Token Service within the same turn. Entries are short-lived
+    // and cleaned up with the same TTL as other in-memory dictionaries.
+    private readonly ConcurrentDictionary<string, (string Token, DateTimeOffset Timestamp)> _turnTokenCache = new();
+
     internal OAuthFlow(TeamsBotApplication app, string connectionName, OAuthOptions options, ILogger logger)
     {
         _app = app;
@@ -99,7 +104,7 @@ public class OAuthFlow
         ArgumentNullException.ThrowIfNull(context);
 
         // Per-turn cache: avoid redundant HTTP calls within the same turn
-        string? cached = context.GetCachedToken(_connectionName);
+        string? cached = GetTurnCachedToken(context);
         if (cached is not null)
         {
             return cached;
@@ -122,7 +127,7 @@ public class OAuthFlow
 
             if (tokenResult?.Token is not null)
             {
-                context.SetCachedToken(_connectionName, tokenResult.Token);
+                SetTurnCachedToken(context, tokenResult.Token);
             }
 
             return tokenResult?.Token;
@@ -174,7 +179,7 @@ public class OAuthFlow
         try
         {
             // 1. Check per-turn cache first
-            string? cachedToken = context.GetCachedToken(_connectionName);
+            string? cachedToken = GetTurnCachedToken(context);
             if (cachedToken is not null)
             {
                 result = AppsTelemetry.OAuthResults.Cached;
@@ -187,7 +192,7 @@ public class OAuthFlow
             if (existingToken?.Token is not null)
             {
                 _logger.LogDebug("Token found in store for connection '{ConnectionName}', user '{UserId}'.", _connectionName, userId);
-                context.SetCachedToken(_connectionName, existingToken.Token);
+                SetTurnCachedToken(context, existingToken.Token);
                 result = AppsTelemetry.OAuthResults.Cached;
                 span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
                 return existingToken.Token;
@@ -289,7 +294,7 @@ public class OAuthFlow
         {
             _logger.LogDebug("Signing out user '{UserId}' from connection '{ConnectionName}'.", userId, _connectionName);
             await _app.UserTokenClient.SignOutUserAsync(userId, _connectionName, channelId, cancellationToken).ConfigureAwait(false);
-            context.ClearCachedToken(_connectionName);
+            ClearTurnCachedToken(context);
             result = AppsTelemetry.OAuthResults.Success;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
         }
@@ -759,6 +764,42 @@ public class OAuthFlow
         _pendingSignIns.TryRemove(userId, out _);
     }
 
+    // ── Per-turn token cache helpers ───────────────────────────────────
+
+    private static string GetTurnCacheKey<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+        => context.Activity.Id ?? string.Empty;
+
+    private string? GetTurnCachedToken<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+    {
+        string key = GetTurnCacheKey(context);
+        if (key.Length > 0 && _turnTokenCache.TryGetValue(key, out var entry))
+        {
+            return entry.Token;
+        }
+
+        return null;
+    }
+
+    private void SetTurnCachedToken<TActivity>(Context<TActivity> context, string token) where TActivity : TeamsActivity
+    {
+        string key = GetTurnCacheKey(context);
+        if (key.Length > 0)
+        {
+            _turnTokenCache[key] = (token, DateTimeOffset.UtcNow);
+        }
+    }
+
+    private void ClearTurnCachedToken<TActivity>(Context<TActivity> context) where TActivity : TeamsActivity
+    {
+        string key = GetTurnCacheKey(context);
+        if (key.Length > 0)
+        {
+            _turnTokenCache.TryRemove(key, out _);
+        }
+    }
+
+    // ── Cleanup ─────────────────────────────────────────────────────────
+
     private void CleanupExpiredEntries()
     {
         DateTimeOffset cutoff = DateTimeOffset.UtcNow.AddMinutes(-5);
@@ -774,6 +815,13 @@ public class OAuthFlow
             if (kvp.Value < cutoff)
             {
                 _pendingSignIns.TryRemove(kvp.Key, out _);
+            }
+        }
+        foreach (KeyValuePair<string, (string Token, DateTimeOffset Timestamp)> kvp in _turnTokenCache)
+        {
+            if (kvp.Value.Timestamp < cutoff)
+            {
+                _turnTokenCache.TryRemove(kvp.Key, out _);
             }
         }
     }
