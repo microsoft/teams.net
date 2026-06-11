@@ -47,7 +47,7 @@ public class TurnState
             {
                 return element.Deserialize<T>();
             }
-            catch (JsonException)
+            catch (Exception ex) when (ex is JsonException or NotSupportedException)
             {
                 return default;
             }
@@ -101,7 +101,7 @@ public class TurnState
                 value = element.Deserialize<T>();
                 return value is not null;
             }
-            catch (JsonException)
+            catch (Exception ex) when (ex is JsonException or NotSupportedException)
             {
                 value = default;
                 return false;
@@ -139,7 +139,7 @@ public class TurnState
                     _data[key] = deserialized;
                     return deserialized;
                 }
-                catch (JsonException)
+                catch (Exception ex) when (ex is JsonException or NotSupportedException)
                 {
                     // Fall through to create new instance
                 }
@@ -198,7 +198,7 @@ public class TurnState
             Dictionary<string, object?>? data = JsonSerializer.Deserialize<Dictionary<string, object?>>(bytes);
             return new TurnState(data ?? []);
         }
-        catch (JsonException)
+        catch (Exception ex) when (ex is JsonException or NotSupportedException)
         {
             // Treat corrupted cache payload as a cache miss.
             return new TurnState();

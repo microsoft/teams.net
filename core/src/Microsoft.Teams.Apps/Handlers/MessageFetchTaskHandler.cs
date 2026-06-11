@@ -39,6 +39,7 @@ public static class MessageFetchTaskExtensions
             {
                 InvokeActivity<MessageFetchTaskInvokeValue> typedActivity = new(ctx.Activity);
                 Context<InvokeActivity<MessageFetchTaskInvokeValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                if (ctx.HasState) typedContext.State = ctx.State;
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
