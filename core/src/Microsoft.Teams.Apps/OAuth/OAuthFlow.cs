@@ -430,11 +430,10 @@ public class OAuthFlow
         }
         finally
         {
-            if (result != AppsTelemetry.OAuthResults.Duplicate)
-            {
-                ClearExchangeDedup(context, exchangeId);
-            }
-
+            // Do NOT clear the dedup key here. A late duplicate from a second Teams
+            // endpoint may arrive after this exchange completes; if the key is already
+            // gone the duplicate will be treated as new. Let entries expire naturally
+            // via the 5-minute TTL in CleanupExpiredEntries.
             RecordOperation(AppsTelemetry.OAuthOperations.TokenExchange, result, startTs, connectionName);
         }
     }
@@ -692,18 +691,7 @@ public class OAuthFlow
         return false;
     }
 
-    /// <summary>
-    /// Remove the dedup key for an exchange from conversation state once the exchange is fully processed.
-    /// The in-memory dictionary retains the entry for same-instance dedup until it expires.
-    /// </summary>
-    private static void ClearExchangeDedup(Context<InvokeActivity> context, string exchangeId)
-    {
-        if (context.HasState)
-        {
-            string dedupKey = $"__oauth:exchange:{exchangeId}";
-            context.State.ConversationState.Remove(dedupKey);
-        }
-    }
+
 
     /// <summary>
     /// Record that this user has a pending sign-in for this flow.

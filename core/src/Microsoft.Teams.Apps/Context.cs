@@ -297,33 +297,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <inheritdoc cref="SignOutAsync(string?, CancellationToken)"/>
     public Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default)
         => SignOutAsync(connectionName, cancellationToken);
-
-    /// <summary>
-    /// Whether the activity sender has a valid cached token.
-    /// When a single OAuthFlow is registered, checks that connection.
-    /// When multiple are registered, checks the first one and logs a warning;
-    /// prefer <see cref="IsSignedInAsync"/> with an explicit connection name instead.
-    /// Returns false if no OAuthFlow is registered.
-    /// </summary>
-    /// <remarks>
-    /// This property blocks the calling thread (sync-over-async) while querying
-    /// the Bot Framework Token Service. Under high concurrency this can cause
-    /// thread-pool starvation. Prefer <see cref="IsSignedInAsync"/> in new code.
-    /// </remarks>
-    [Obsolete("Use IsSignedInAsync() instead. This property blocks the calling thread and can cause thread-pool starvation under load.")]
-    public bool IsSignedIn
-    {
-        get
-        {
-            OAuthFlowRegistry? registry = TeamsBotApplication.OAuthRegistry;
-            if (registry is null) return false;
-
-            OAuthFlow? flow = registry.ResolveSingleWithWarning();
-            if (flow is null) return false;
-
-            return flow.GetTokenAsync(this).GetAwaiter().GetResult() is not null;
-        }
-    }
+      
 
     /// <summary>
     /// Check whether the user has a valid cached token for a given OAuth connection.
