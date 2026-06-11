@@ -90,18 +90,15 @@ bot.OnMessage("(?i)^help$", async (context, ct) =>
 
 bot.OnMessage("(?i)^login$", async (context, ct) =>
 {
-    string? tokenGitHub = await githubAuth.SignInAsync(context, ct);
+    // Sign in to Graph first; if an OAuthCard was sent (null return), don't
+    // send a second card for GitHub — the user should complete one at a time.
     string? tokenGraph = await graphAuth.SignInAsync(context, ct);
-    if (tokenGraph is not null)
-    {
-        await context.SendActivityAsync("Already signed in to Graph.", ct);
-    }
+    if (tokenGraph is null) return; // OAuthCard sent, wait for completion
 
-    if (tokenGitHub is not null)
-    {
-        await context.SendActivityAsync("Already signed in to GitHub.", ct);
-    }
+    string? tokenGitHub = await githubAuth.SignInAsync(context, ct);
+    if (tokenGitHub is null) return;
 
+    await context.SendActivityAsync("Already signed in to both Graph and GitHub.", ct);
 });
 
 bot.OnMessage("(?i)^login graph$", async (context, ct) =>

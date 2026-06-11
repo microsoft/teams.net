@@ -98,6 +98,41 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
         return derived;
     }
 
+    // ==================== Per-Turn Token Cache ====================
+
+    private Dictionary<string, string>? _tokenCache;
+
+    /// <summary>
+    /// Gets a cached token for the given connection name from this turn's cache.
+    /// Returns null if no token is cached for this turn.
+    /// </summary>
+    internal string? GetCachedToken(string connectionName)
+    {
+        if (_tokenCache is not null && _tokenCache.TryGetValue(connectionName, out string? token))
+        {
+            return token;
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Caches a token for the given connection name for the duration of this turn.
+    /// </summary>
+    internal void SetCachedToken(string connectionName, string token)
+    {
+        _tokenCache ??= new(StringComparer.OrdinalIgnoreCase);
+        _tokenCache[connectionName] = token;
+    }
+
+    /// <summary>
+    /// Clears the cached token for the given connection name (e.g., after sign-out).
+    /// </summary>
+    internal void ClearCachedToken(string connectionName)
+    {
+        _tokenCache?.Remove(connectionName);
+    }
+
     // ==================== Convenience Send/Reply/Typing ====================
 
     /// <summary>
@@ -300,30 +335,17 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
     /// <summary>
     /// Whether the activity sender has a valid cached token.
-    /// When a single OAuthFlow is registered, checks that connection.
-    /// When multiple are registered, checks the first one and logs a warning;
-    /// prefer <see cref="IsSignedInAsync"/> with an explicit connection name instead.
-    /// Returns false if no OAuthFlow is registered.
     /// </summary>
     /// <remarks>
-    /// This property blocks the calling thread (sync-over-async) while querying
-    /// the Bot Framework Token Service. Under high concurrency this can cause
-    /// thread-pool starvation. Prefer <see cref="IsSignedInAsync"/> in new code.
+    /// This property is no longer supported because it used sync-over-async
+    /// (<c>.GetAwaiter().GetResult()</c>) to call the remote Token Service,
+    /// which causes thread-pool starvation under load.
+    /// Use <see cref="IsSignedInAsync"/> instead.
     /// </remarks>
-    [Obsolete("Use IsSignedInAsync() instead. This property blocks the calling thread and can cause thread-pool starvation under load.")]
+    [Obsolete("Use IsSignedInAsync() instead. This property always throws NotSupportedException.")]
     public bool IsSignedIn
-    {
-        get
-        {
-            OAuthFlowRegistry? registry = TeamsBotApplication.OAuthRegistry;
-            if (registry is null) return false;
-
-            OAuthFlow? flow = registry.ResolveSingleWithWarning();
-            if (flow is null) return false;
-
-            return flow.GetTokenAsync(this).GetAwaiter().GetResult() is not null;
-        }
-    }
+        => throw new NotSupportedException(
+            "IsSignedIn is no longer supported because it blocks the calling thread. Use 'await IsSignedInAsync()' instead.");
 
     /// <summary>
     /// Check whether the user has a valid cached token for a given OAuth connection.

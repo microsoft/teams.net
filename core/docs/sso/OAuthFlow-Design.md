@@ -99,14 +99,14 @@ await ghAuth.SignInAsync(context); // uses options from registration
 
 **Old (v2)**: `IsSignedIn` is a read/write `bool` property (`{ get; set; }`). It is set to `true` by the framework when a `signin/tokenExchange` invoke completes successfully during the current turn. It is a **per-turn flag**, not a token-store query. It reflects whether the sign-in **just happened** in this turn, not whether a token exists in the store.
 
-**New**: `IsSignedIn` is a read-only `bool` property that **synchronously queries the token store** (`GetAwaiter().GetResult()`). It checks whether the user has a cached token right now, regardless of what happened during this turn. It cannot be set by the developer.
+**New**: `IsSignedIn` is **deprecated** and throws `NotSupportedException`. The original implementation used sync-over-async (`GetAwaiter().GetResult()`) to query the remote token store, which causes thread-pool starvation under load.
 
 | | Old (v2) | New |
 |---|---|---|
-| Type | `bool { get; set; }` | `bool { get; }` |
-| Source of truth | Framework sets it during the turn | Queries token store on each access |
-| Async | No (already computed) | No (sync-over-async) |
-| Multi-connection | N/A (one default connection) | Checks first registered flow, logs warning if multiple |
+| Type | `bool { get; set; }` | `bool { get; }` (throws `NotSupportedException`) |
+| Source of truth | Framework sets it during the turn | N/A — use `IsSignedInAsync()` |
+| Async | No (already computed) | Use `IsSignedInAsync()` |
+| Multi-connection | N/A (one default connection) | Use `IsSignedInAsync(connectionName)` |
 | Writable | Yes | No |
 
 **Recommended migration**: Use `IsSignedInAsync(connectionName?)` for async, connection-aware checks:
@@ -117,9 +117,6 @@ if (!context.IsSignedIn) { await context.SignIn(); return; }
 
 // New (preferred)
 if (!await context.IsSignedInAsync("graph", ct)) { await context.SignIn(new OAuthOptions { ConnectionName = "graph" }, ct); return; }
-
-// New (backwards-compat, single connection only)
-if (!context.IsSignedIn) { await context.SignIn(ct); return; }
 ```
 
 ### 3. `context.UserGraphToken` removed
@@ -230,7 +227,7 @@ This affects all code inside `OnSignInComplete` and `OnSignInFailure` callbacks.
 
 | | Old (v2) | New |
 |---|---|---|
-| Namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Auth` |
+| Namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.OAuth` |
 | Base class | `SignInOptions` (abstract) | None (standalone class) |
 | `OAuthCardText` default | `"Please Sign In..."` | `"Please Sign In"` |
 | `SignInButtonText` default | `"Sign In"` | `"Sign In"` |
@@ -318,14 +315,14 @@ Each failure is logged with the user ID, conversation ID, failure code, and mess
 | Feature | Old (v2) `Microsoft.Teams.Apps` | New `Microsoft.Teams.Apps` | Breaking? |
 |---|---|---|---|
 | `context.ConnectionName` | `required string` property | Removed (resolved from registry) | Yes |
-| `context.IsSignedIn` | `bool { get; set; }` (per-turn flag) | `bool { get; }` (queries token store) | Yes (semantic) |
+| `context.IsSignedIn` | `bool { get; set; }` (per-turn flag) | `bool { get; }` (throws `NotSupportedException`; use `IsSignedInAsync()`) | Yes |
 | `context.UserGraphToken` | `JsonWebToken?` property | Removed | Yes |
 | `context.SignIn(OAuthOptions?)` | Returns `Task<string?>` | Returns `Task<string?>` | No |
 | `context.SignIn(SSOOptions)` | Returns `Task` | Removed | Yes |
 | `context.SignOut(string?)` | Returns `Task` | Returns `Task` | No |
 | `OnSignIn` event | App-level, `SignInEvent` | Per-connection `OnSignInComplete` | Yes |
 | `OnSignInFailure` event | App-level, `SignIn.Failure` | Per-connection `OnSignInFailure` | Yes |
-| `OAuthOptions` namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Auth` | Yes |
+| `OAuthOptions` namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.OAuth` | Yes |
 | `SSOOptions` | Available | Removed | Yes |
 | Group chat 1:1 fallback | Automatic | Manual | Yes (behavioral) |
 | `context.Send()` | Available | `context.SendActivityAsync()` | Yes (rename) |
@@ -676,14 +673,14 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 | File | Location |
 |---|---|
 | `TeamsBotApplicationOptions.cs` | `Microsoft.Teams.Apps/TeamsBotApplicationOptions.cs` |
-| `OAuthFlow.cs` | `Microsoft.Teams.Apps/Auth/OAuthFlow.cs` |
-| `OAuthFlowExtensions.cs` | `Microsoft.Teams.Apps/Auth/OAuthFlowExtensions.cs` |
-| `OAuthOptions.cs` | `Microsoft.Teams.Apps/Auth/OAuthOptions.cs` |
-| `SignInTokenExchangeValue.cs` | `Microsoft.Teams.Apps/Auth/SignInTokenExchangeValue.cs` |
-| `SignInVerifyStateValue.cs` | `Microsoft.Teams.Apps/Auth/SignInVerifyStateValue.cs` |
-| `SignInFailureValue.cs` | `Microsoft.Teams.Apps/Auth/SignInFailureValue.cs` |
-| `TokenExchangeInvokeResponse.cs` | `Microsoft.Teams.Apps/Auth/TokenExchangeInvokeResponse.cs` |
-| `OAuthCard.cs` | `Microsoft.Teams.Apps/Schema/OAuthCard.cs` |
+| `OAuthFlow.cs` | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` |
+| `OAuthFlowExtensions.cs` | `Microsoft.Teams.Apps/OAuth/OAuthFlowExtensions.cs` |
+| `OAuthOptions.cs` | `Microsoft.Teams.Apps/OAuth/OAuthOptions.cs` |
+| `SignInTokenExchangeValue.cs` | `Microsoft.Teams.Apps/OAuth/SignInTokenExchangeValue.cs` |
+| `SignInVerifyStateValue.cs` | `Microsoft.Teams.Apps/OAuth/SignInVerifyStateValue.cs` |
+| `SignInFailureValue.cs` | `Microsoft.Teams.Apps/OAuth/SignInFailureValue.cs` |
+| `TokenExchangeInvokeResponse.cs` | `Microsoft.Teams.Apps/OAuth/TokenExchangeInvokeResponse.cs` |
+| `OAuthCard.cs` | `Microsoft.Teams.Apps/OAuth/OAuthCard.cs` |
 
 ## Changes to Core
 

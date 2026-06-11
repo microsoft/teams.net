@@ -97,6 +97,14 @@ public class OAuthFlow
     public async Task<string?> GetTokenAsync<TActivity>(Context<TActivity> context, CancellationToken cancellationToken = default) where TActivity : TeamsActivity
     {
         ArgumentNullException.ThrowIfNull(context);
+
+        // Per-turn cache: avoid redundant HTTP calls within the same turn
+        string? cached = context.GetCachedToken(_connectionName);
+        if (cached is not null)
+        {
+            return cached;
+        }
+
         string userId = GetUserId(context);
         string channelId = GetChannelId(context);
 
@@ -111,6 +119,12 @@ public class OAuthFlow
             GetTokenResult? tokenResult = await _app.UserTokenClient.GetTokenAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
             result = tokenResult?.Token is not null ? AppsTelemetry.OAuthResults.Hit : AppsTelemetry.OAuthResults.Miss;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
+
+            if (tokenResult?.Token is not null)
+            {
+                context.SetCachedToken(_connectionName, tokenResult.Token);
+            }
+
             return tokenResult?.Token;
         }
         catch (Exception ex)
@@ -159,17 +173,27 @@ public class OAuthFlow
         string result = AppsTelemetry.OAuthResults.Failure;
         try
         {
-            // 1. Try silent token acquisition
+            // 1. Check per-turn cache first
+            string? cachedToken = context.GetCachedToken(_connectionName);
+            if (cachedToken is not null)
+            {
+                result = AppsTelemetry.OAuthResults.Cached;
+                span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
+                return cachedToken;
+            }
+
+            // 2. Try silent token acquisition from the token store
             GetTokenResult? existingToken = await _app.UserTokenClient.GetTokenAsync(userId, _connectionName, channelId, cancellationToken: cancellationToken).ConfigureAwait(false);
             if (existingToken?.Token is not null)
             {
                 _logger.LogDebug("Token found in store for connection '{ConnectionName}', user '{UserId}'.", _connectionName, userId);
+                context.SetCachedToken(_connectionName, existingToken.Token);
                 result = AppsTelemetry.OAuthResults.Cached;
                 span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
                 return existingToken.Token;
             }
 
-            // 2. No token - get sign-in resource and send OAuthCard
+            // 3. No token - get sign-in resource and send OAuthCard
             _logger.LogDebug("No cached token for connection '{ConnectionName}'. Initiating sign-in flow.", _connectionName);
 
             // Build state with MsAppId so the Token Service returns TokenExchangeResource for SSO
@@ -265,6 +289,7 @@ public class OAuthFlow
         {
             _logger.LogDebug("Signing out user '{UserId}' from connection '{ConnectionName}'.", userId, _connectionName);
             await _app.UserTokenClient.SignOutUserAsync(userId, _connectionName, channelId, cancellationToken).ConfigureAwait(false);
+            context.ClearCachedToken(_connectionName);
             result = AppsTelemetry.OAuthResults.Success;
             span?.SetTag(AppsTelemetry.Tags.OAuthResult, result);
         }
@@ -430,11 +455,10 @@ public class OAuthFlow
         }
         finally
         {
-            if (result != AppsTelemetry.OAuthResults.Duplicate)
-            {
-                ClearExchangeDedup(context, exchangeId);
-            }
-
+            // Do NOT clear the dedup key on completion. Late-arriving duplicates from other
+            // Teams endpoints (mobile, desktop, web) may arrive after the first exchange completes.
+            // The in-memory dictionary retains the entry until the 5-minute TTL expires.
+            // State-based entries are also retained for cross-instance dedup.
             RecordOperation(AppsTelemetry.OAuthOperations.TokenExchange, result, startTs, connectionName);
         }
     }
@@ -589,14 +613,35 @@ public class OAuthFlow
     /// </remarks>
     internal bool HasPendingSignIn(Context<InvokeActivity> context)
     {
+        return GetPendingSignInTime(context) is not null;
+    }
+
+    /// <summary>
+    /// Returns the timestamp when the pending sign-in was initiated, or null if no pending sign-in exists.
+    /// Used to select the most recently initiated flow for <c>signin/failure</c> notifications.
+    /// </summary>
+    internal DateTimeOffset? GetPendingSignInTime(Context<InvokeActivity> context)
+    {
+        CleanupExpiredEntries();
+
         string pendingKey = $"__oauth:pending:{_connectionName}";
         if (context.HasState && context.State.UserState is not null)
         {
-            return context.State.UserState.ContainsKey(pendingKey);
+            if (context.State.UserState.TryGet<DateTimeOffset>(pendingKey, out DateTimeOffset stateValue))
+            {
+                return stateValue;
+            }
+
+            return null;
         }
 
         string userId = context.Activity.From?.Id ?? string.Empty;
-        return _pendingSignIns.ContainsKey(userId);
+        if (_pendingSignIns.TryGetValue(userId, out DateTimeOffset timestamp))
+        {
+            return timestamp;
+        }
+
+        return null;
     }
 
     /// <summary>
@@ -680,19 +725,6 @@ public class OAuthFlow
 
         CleanupExpiredEntries();
         return false;
-    }
-
-    /// <summary>
-    /// Remove the dedup key for an exchange from conversation state once the exchange is fully processed.
-    /// The in-memory dictionary retains the entry for same-instance dedup until it expires.
-    /// </summary>
-    private static void ClearExchangeDedup(Context<InvokeActivity> context, string exchangeId)
-    {
-        if (context.HasState)
-        {
-            string dedupKey = $"__oauth:exchange:{exchangeId}";
-            context.State.ConversationState.Remove(dedupKey);
-        }
     }
 
     /// <summary>
