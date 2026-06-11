@@ -156,9 +156,42 @@ public static class OAuthFlowExtensions
                     return new InvokeResponse(404);
                 }
 
-                // verifyState doesn't carry a connection name, so try each registered flow
+                // verifyState doesn't carry a connection name.
+                // Try the most recently initiated flow first to avoid O(N) token service calls.
+                string? userId = ctx.Activity.From?.Id;
+                OAuthFlow? mostRecent = null;
+                DateTimeOffset mostRecentTs = DateTimeOffset.MinValue;
+
+                if (userId is not null)
+                {
+                    foreach (OAuthFlow f in registry.GetAllFlows())
+                    {
+                        DateTimeOffset? ts = f.GetPendingSignInTimestamp(ctx);
+                        if (ts is not null && ts.Value > mostRecentTs)
+                        {
+                            mostRecent = f;
+                            mostRecentTs = ts.Value;
+                        }
+                    }
+                }
+
+                if (mostRecent is not null)
+                {
+                    InvokeResponse response = await mostRecent.HandleVerifyStateAsync(ctx, verifyValue, cancellationToken).ConfigureAwait(false);
+                    if (response.Status == 200)
+                    {
+                        return response;
+                    }
+                }
+
+                // Fall back to trying all flows (skipping the one we already tried)
                 foreach (OAuthFlow flow in registry.GetAllFlows())
                 {
+                    if (flow == mostRecent)
+                    {
+                        continue;
+                    }
+
                     InvokeResponse response = await flow.HandleVerifyStateAsync(ctx, verifyValue, cancellationToken).ConfigureAwait(false);
                     if (response.Status == 200)
                     {
@@ -166,7 +199,7 @@ public static class OAuthFlowExtensions
                     }
                 }
 
-                return new InvokeResponse(400);
+                return new InvokeResponse(404);
             }
         });
     }
