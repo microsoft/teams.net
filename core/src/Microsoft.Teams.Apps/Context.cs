@@ -73,6 +73,16 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     internal bool HasState => _state is not null;
 
     /// <summary>
+    /// Creates a new context for a different activity type, preserving state if available.
+    /// </summary>
+    internal Context<TNew> CreateDerivedContext<TNew>(TNew activity) where TNew : TeamsActivity
+    {
+        Context<TNew> derived = new(TeamsBotApplication, activity);
+        if (HasState) derived.State = State;
+        return derived;
+    }
+
+    /// <summary>
     /// Deletes conversation and user state from the cache for the current turn.
     /// After deletion, the in-memory state is still accessible for the remainder of the turn
     /// but will not be reloaded on the next turn.

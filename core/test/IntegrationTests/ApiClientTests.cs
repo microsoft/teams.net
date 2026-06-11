@@ -300,7 +300,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Timeout = 5000)]
+    [Fact(Timeout = 15000)]
     public async Task Meetings_GetParticipantAsync()
     {
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.

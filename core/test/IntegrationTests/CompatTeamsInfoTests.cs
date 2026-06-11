@@ -141,7 +141,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetPagedMembersAsync_ReturnsPaged()
     {
 

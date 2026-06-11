@@ -91,12 +91,7 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     public override async Task InvokeRoute(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
-        Context<TActivity> typedContext = new(ctx.TeamsBotApplication, (TActivity)ctx.Activity);
-        if (ctx.HasState)
-        {
-            typedContext.State = ctx.State;
-        }
-
+        var typedContext = ctx.CreateDerivedContext((TActivity)ctx.Activity);
         await Handler!(typedContext, cancellationToken).ConfigureAwait(false);
     }
 
@@ -109,12 +104,7 @@ public class Route<TActivity> : RouteBase where TActivity : TeamsActivity
     public override async Task<InvokeResponse> InvokeRouteWithReturn(Context<TeamsActivity> ctx, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(ctx);
-        Context<TActivity> typedContext = new(ctx.TeamsBotApplication, (TActivity)ctx.Activity);
-        if (ctx.HasState)
-        {
-            typedContext.State = ctx.State;
-        }
-
+        var typedContext = ctx.CreateDerivedContext((TActivity)ctx.Activity);
         return await HandlerWithReturn!(typedContext, cancellationToken).ConfigureAwait(false);
     }
 }

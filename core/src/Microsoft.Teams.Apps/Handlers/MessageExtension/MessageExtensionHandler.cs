@@ -84,8 +84,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                if (ctx.HasState) typedContext.State = ctx.State;
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -113,8 +112,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionAction> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                if (ctx.HasState) typedContext.State = ctx.State;
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -142,8 +140,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQueryLink> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                if (ctx.HasState) typedContext.State = ctx.State;
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -171,8 +168,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQueryLink> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                if (ctx.HasState) typedContext.State = ctx.State;
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -200,8 +196,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionAction> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                if (ctx.HasState) typedContext.State = ctx.State;
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -229,8 +224,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<JsonElement> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<JsonElement>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                if (ctx.HasState) typedContext.State = ctx.State;
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -258,8 +252,7 @@ public static class MessageExtensionExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                if (ctx.HasState) typedContext.State = ctx.State;
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
