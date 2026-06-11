@@ -551,6 +551,8 @@ Teams may send duplicate `signin/tokenExchange` invokes because the user can hav
 
 **Default implementation**: In-process `ConcurrentDictionary<string, DateTimeOffset>` with a 5-minute TTL. This works for single-instance deployments and development.
 
+**Distributed deduplication**: When `UseState()` is configured, `OAuthFlow` additionally writes dedup and pending-sign-in markers into turn state for cross-instance coordination. These keys are cleaned up automatically after the exchange completes or the sign-in resolves.
+
 **Production consideration**: When the bot is deployed behind a load balancer with multiple instances (e.g., Azure App Service scaled to N nodes), duplicate `signin/tokenExchange` invokes may arrive at **different instances**. The in-process cache cannot deduplicate across instances, so the token exchange may be attempted multiple times. While the Token Service is idempotent (duplicate exchanges succeed harmlessly), the `OnSignInComplete` callback may fire more than once.
 
 For production multi-instance deployments, the deduplication store should be replaced with a distributed cache (e.g., Redis, Azure Cache). This is a future extensibility point -- the `OAuthFlow` should accept an `IDistributedCache` or similar abstraction to allow external storage:
@@ -564,6 +566,15 @@ bot.AddOAuthFlow("GraphConnection", options =>
 ```
 
 Until this is implemented, multi-instance deployments should be aware that `OnSignInComplete` may fire on more than one instance for the same sign-in. Handlers should be idempotent.
+
+### Reserved State Keys
+
+`OAuthFlow` uses the `__` prefix for internal state keys to avoid collisions with developer-defined keys. These keys are managed automatically and should not be read or written by application code.
+
+| Key pattern | State scope | Purpose | Lifecycle |
+|---|---|---|---|
+| `__oauth:exchange:{exchangeId}` | ConversationState | Cross-instance dedup for `signin/tokenExchange` invokes. Prevents duplicate token exchanges when requests are routed to different nodes. | Written on first exchange attempt; removed after the exchange completes (success or failure). In-memory fallback retained for 5-minute TTL. |
+| `__oauth:pending:{connectionName}` | UserState | Tracks that a sign-in is in progress for a given user/connection. Used to scope `signin/failure` notifications to the flow that initiated the sign-in. | Written when `SignInAsync` sends the OAuthCard; removed on sign-in completion, failure, or token exchange error. |
 
 ## Multi-Connection Sample
 

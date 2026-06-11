@@ -431,6 +431,11 @@ public class OAuthFlow
         }
         finally
         {
+            if (result != AppsTelemetry.OAuthResults.Duplicate)
+            {
+                ClearExchangeDedup(context, exchangeId);
+            }
+
             RecordOperation(AppsTelemetry.OAuthOperations.TokenExchange, result, startTs, connectionName);
         }
     }
@@ -585,7 +590,7 @@ public class OAuthFlow
     /// </remarks>
     internal bool HasPendingSignIn(Context<InvokeActivity> context)
     {
-        string pendingKey = $"oauth:pending:{_connectionName}";
+        string pendingKey = $"__oauth:pending:{_connectionName}";
         if (context.HasState && context.State.UserState is not null)
         {
             return context.State.UserState.ContainsKey(pendingKey);
@@ -663,7 +668,7 @@ public class OAuthFlow
         }
 
         // Cross-instance check via state — catches duplicates routed to different nodes
-        string dedupKey = $"oauth:exchange:{exchangeId}";
+        string dedupKey = $"__oauth:exchange:{exchangeId}";
         if (context.HasState)
         {
             if (context.State.ConversationState.ContainsKey(dedupKey))
@@ -679,12 +684,25 @@ public class OAuthFlow
     }
 
     /// <summary>
+    /// Remove the dedup key for an exchange from conversation state once the exchange is fully processed.
+    /// The in-memory dictionary retains the entry for same-instance dedup until it expires.
+    /// </summary>
+    private static void ClearExchangeDedup(Context<InvokeActivity> context, string exchangeId)
+    {
+        if (context.HasState)
+        {
+            string dedupKey = $"__oauth:exchange:{exchangeId}";
+            context.State.ConversationState.Remove(dedupKey);
+        }
+    }
+
+    /// <summary>
     /// Record that this user has a pending sign-in for this flow.
     /// Uses user state when available (distributed); falls back to in-memory.
     /// </summary>
     private void SetPendingSignIn<TActivity>(Context<TActivity> context, string userId) where TActivity : TeamsActivity
     {
-        string pendingKey = $"oauth:pending:{_connectionName}";
+        string pendingKey = $"__oauth:pending:{_connectionName}";
         if (context.HasState && context.State.UserState is not null)
         {
             context.State.UserState.Set(pendingKey, DateTimeOffset.UtcNow);
@@ -701,7 +719,7 @@ public class OAuthFlow
     /// </summary>
     private void ClearPendingSignIn<TActivity>(Context<TActivity> context, string userId) where TActivity : TeamsActivity
     {
-        string pendingKey = $"oauth:pending:{_connectionName}";
+        string pendingKey = $"__oauth:pending:{_connectionName}";
         if (context.HasState && context.State.UserState is not null)
         {
             context.State.UserState.Remove(pendingKey);
