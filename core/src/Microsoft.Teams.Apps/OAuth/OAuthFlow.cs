@@ -589,14 +589,24 @@ public class OAuthFlow
     /// </remarks>
     internal bool HasPendingSignIn(Context<InvokeActivity> context)
     {
+        return GetPendingSignInTimestamp(context) is not null;
+    }
+
+    /// <summary>
+    /// Returns the timestamp when this flow's pending sign-in was initiated, or <c>null</c> if none.
+    /// Used to select the most recently initiated flow when multiple flows have pending sign-ins.
+    /// </summary>
+    internal DateTimeOffset? GetPendingSignInTimestamp(Context<InvokeActivity> context)
+    {
         string pendingKey = $"__oauth:pending:{_connectionName}";
         if (context.HasState && context.State.UserState is not null)
         {
-            return context.State.UserState.ContainsKey(pendingKey);
+            DateTimeOffset ts = context.State.UserState.Get<DateTimeOffset>(pendingKey);
+            return ts != default ? ts : null;
         }
 
         string userId = context.Activity.From?.Id ?? string.Empty;
-        return _pendingSignIns.ContainsKey(userId);
+        return _pendingSignIns.TryGetValue(userId, out DateTimeOffset timestamp) ? timestamp : null;
     }
 
     /// <summary>

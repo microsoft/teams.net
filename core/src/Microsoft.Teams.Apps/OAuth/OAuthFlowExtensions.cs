@@ -103,18 +103,38 @@ public static class OAuthFlowExtensions
                 string? userId = ctx.Activity.From?.Id;
 
                 // signin/failure doesn't carry a connection name.
-                // Scope to flows that have an active sign-in for this user;
-                // fall back to all flows if none report a pending sign-in
+                // Pick the most recently initiated flow to avoid firing duplicate
+                // failure callbacks when multiple flows have pending sign-ins.
+                // Fall back to all flows only when no flow reports a pending sign-in
                 // (e.g., multi-instance deployment without distributed state).
                 IEnumerable<OAuthFlow> allFlows = registry.GetAllFlows();
-                List<OAuthFlow> activeFlows = userId is not null
-                    ? allFlows.Where(f => f.HasPendingSignIn(ctx)).ToList()
-                    : [];
-                IEnumerable<OAuthFlow> targetFlows = activeFlows.Count > 0 ? activeFlows : allFlows;
+                OAuthFlow? mostRecent = null;
+                DateTimeOffset mostRecentTs = DateTimeOffset.MinValue;
 
-                foreach (OAuthFlow flow in targetFlows)
+                if (userId is not null)
                 {
-                    await flow.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                    foreach (OAuthFlow f in allFlows)
+                    {
+                        DateTimeOffset? ts = f.GetPendingSignInTimestamp(ctx);
+                        if (ts is not null && ts.Value > mostRecentTs)
+                        {
+                            mostRecent = f;
+                            mostRecentTs = ts.Value;
+                        }
+                    }
+                }
+
+                if (mostRecent is not null)
+                {
+                    await mostRecent.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    // No pending flow found — fall back to notifying all flows.
+                    foreach (OAuthFlow flow in allFlows)
+                    {
+                        await flow.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                    }
                 }
 
                 return new InvokeResponse(200);

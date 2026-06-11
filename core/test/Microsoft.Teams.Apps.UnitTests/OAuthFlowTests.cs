@@ -58,6 +58,53 @@ public class OAuthFlowTests
     }
 
     [Fact]
+    public async Task SignInFailure_BothFlowsPending_OnlyMostRecentNotified()
+    {
+        // When both flows have pending sign-ins, only the most recently initiated
+        // flow should receive the signin/failure callback (not both).
+        TestHarness harness = CreateHarness(GraphConnection, GitHubConnection);
+        bool graphFailureFired = false;
+        bool githubFailureFired = false;
+
+        harness.GraphFlow!.OnSignInFailure((_, _, _) => { graphFailureFired = true; return Task.CompletedTask; });
+        harness.GitHubFlow!.OnSignInFailure((_, _, _) => { githubFailureFired = true; return Task.CompletedTask; });
+
+        // Initiate sign-in for Graph first
+        SetupSilentTokenReturnsNull(harness.MockUserTokenClient, GraphConnection);
+        SetupSilentTokenReturnsNull(harness.MockUserTokenClient, GitHubConnection);
+        SetupGetSignInResource(harness.MockUserTokenClient);
+        SetupSendActivity(harness);
+
+        Context<MessageActivity> ctx1 = CreateMessageContext(harness, TestUserId);
+        await harness.GraphFlow.SignInAsync(ctx1);
+
+        // Then initiate sign-in for GitHub (most recent)
+        Context<MessageActivity> ctx2 = CreateMessageContext(harness, TestUserId);
+        await harness.GitHubFlow!.SignInAsync(ctx2);
+
+        // Both flows should report pending
+        Assert.True(harness.GraphFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
+        Assert.True(harness.GitHubFlow.HasPendingSignIn(CreateInvokeContext(harness, TestUserId)));
+
+        // Dispatch signin/failure through the route — should only hit GitHub (most recent)
+        InvokeActivity failureActivity = new()
+        {
+            Name = "signin/failure",
+            ChannelId = TestChannelId,
+            From = new TeamsConversationAccount { Id = TestUserId },
+            Recipient = new TeamsConversationAccount { Id = "bot-id" },
+            Conversation = new TeamsConversation { Id = "conv-1" },
+            ServiceUrl = new Uri("https://smba.trafficmanager.net/test/"),
+        };
+        Context<TeamsActivity> failureCtx = new(harness.App, failureActivity);
+        await harness.App.Router.DispatchWithReturnAsync(failureCtx);
+
+        // Assert — only GitHub (most recent) callback fired
+        Assert.False(graphFailureFired);
+        Assert.True(githubFailureFired);
+    }
+
+    [Fact]
     public async Task SignInFailure_ClearsPendingSignIn()
     {
         TestHarness harness = CreateHarness(GraphConnection);
