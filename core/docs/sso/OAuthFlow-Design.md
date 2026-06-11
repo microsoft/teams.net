@@ -230,7 +230,7 @@ This affects all code inside `OnSignInComplete` and `OnSignInFailure` callbacks.
 
 | | Old (v2) | New |
 |---|---|---|
-| Namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Auth` |
+| Namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.OAuth` |
 | Base class | `SignInOptions` (abstract) | None (standalone class) |
 | `OAuthCardText` default | `"Please Sign In..."` | `"Please Sign In"` |
 | `SignInButtonText` default | `"Sign In"` | `"Sign In"` |
@@ -325,7 +325,7 @@ Each failure is logged with the user ID, conversation ID, failure code, and mess
 | `context.SignOut(string?)` | Returns `Task` | Returns `Task` | No |
 | `OnSignIn` event | App-level, `SignInEvent` | Per-connection `OnSignInComplete` | Yes |
 | `OnSignInFailure` event | App-level, `SignIn.Failure` | Per-connection `OnSignInFailure` | Yes |
-| `OAuthOptions` namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.Auth` | Yes |
+| `OAuthOptions` namespace | `Microsoft.Teams.Apps` | `Microsoft.Teams.Apps.OAuth` | Yes |
 | `SSOOptions` | Available | Removed | Yes |
 | Group chat 1:1 fallback | Automatic | Manual | Yes (behavioral) |
 | `context.Send()` | Available | `context.SendActivityAsync()` | Yes (rename) |
@@ -676,13 +676,13 @@ When multiple `OAuthFlow` instances are registered, invoke routes are registered
 | File | Location |
 |---|---|
 | `TeamsBotApplicationOptions.cs` | `Microsoft.Teams.Apps/TeamsBotApplicationOptions.cs` |
-| `OAuthFlow.cs` | `Microsoft.Teams.Apps/Auth/OAuthFlow.cs` |
-| `OAuthFlowExtensions.cs` | `Microsoft.Teams.Apps/Auth/OAuthFlowExtensions.cs` |
-| `OAuthOptions.cs` | `Microsoft.Teams.Apps/Auth/OAuthOptions.cs` |
-| `SignInTokenExchangeValue.cs` | `Microsoft.Teams.Apps/Auth/SignInTokenExchangeValue.cs` |
-| `SignInVerifyStateValue.cs` | `Microsoft.Teams.Apps/Auth/SignInVerifyStateValue.cs` |
-| `SignInFailureValue.cs` | `Microsoft.Teams.Apps/Auth/SignInFailureValue.cs` |
-| `TokenExchangeInvokeResponse.cs` | `Microsoft.Teams.Apps/Auth/TokenExchangeInvokeResponse.cs` |
+| `OAuthFlow.cs` | `Microsoft.Teams.Apps/OAuth/OAuthFlow.cs` |
+| `OAuthFlowExtensions.cs` | `Microsoft.Teams.Apps/OAuth/OAuthFlowExtensions.cs` |
+| `OAuthOptions.cs` | `Microsoft.Teams.Apps/OAuth/OAuthOptions.cs` |
+| `SignInTokenExchangeValue.cs` | `Microsoft.Teams.Apps/OAuth/SignInTokenExchangeValue.cs` |
+| `SignInVerifyStateValue.cs` | `Microsoft.Teams.Apps/OAuth/SignInVerifyStateValue.cs` |
+| `SignInFailureValue.cs` | `Microsoft.Teams.Apps/OAuth/SignInFailureValue.cs` |
+| `TokenExchangeInvokeResponse.cs` | `Microsoft.Teams.Apps/OAuth/TokenExchangeInvokeResponse.cs` |
 | `OAuthCard.cs` | `Microsoft.Teams.Apps/Schema/OAuthCard.cs` |
 
 ## Changes to Core
