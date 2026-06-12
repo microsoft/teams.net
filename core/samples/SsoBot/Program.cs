@@ -12,22 +12,43 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Microsoft.OpenTelemetry;
 using Microsoft.Teams.Apps;
+using Microsoft.Teams.Apps.Diagnostics;
 using Microsoft.Teams.Apps.Handlers;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
+using Microsoft.Teams.Core.Diagnostics;
+using OpenTelemetry;
+using OpenTelemetry.Resources;
 
 WebApplicationBuilder webAppBuilder = WebApplication.CreateSlimBuilder(args);
 
-AppBuilder appBuilder = App.Builder().AddOAuth("sso");
+string[] activitySources = [CoreTelemetryNames.ActivitySourceName, TeamsBotApplicationTelemetry.ActivitySourceName];
+string[] meterNames = [CoreTelemetryNames.MeterName, TeamsBotApplicationTelemetry.MeterName];
 
-webAppBuilder.AddTeams(appBuilder);
+webAppBuilder.Services.AddOpenTelemetry()
+    .ConfigureResource(r => r
+        .AddService(serviceName: "SsoBot", serviceVersion: "0.0.1")
+        .AddAttributes(new Dictionary<string, object>
+        {
+            ["deployment.environment"] = webAppBuilder.Environment.EnvironmentName,
+            ["service.namespace"] = "Microsoft.Teams"
+        }))
+    .UseMicrosoftOpenTelemetry(o =>
+    {
+        o.Exporters = ExportTarget.Otlp;
+        o.Instrumentation.EnableHttpClientInstrumentation = true;
+        o.Instrumentation.EnableAspNetCoreInstrumentation = true;
+    })
+    .WithTracing(t => t.AddSource(activitySources))
+    .WithMetrics(m => m.AddMeter(meterNames));
 
 // Configure the single OAuth flow at the DI level
-//webAppBuilder.Services.AddTeamsBotApplication(options =>
-//{
-//    options.AddOAuthFlow("sso");
-//});
+webAppBuilder.Services.AddTeamsBotApplication(options =>
+{
+    options.AddOAuthFlow("sso");
+});
 
 WebApplication webApp = webAppBuilder.Build();
 

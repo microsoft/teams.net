@@ -103,18 +103,38 @@ public static class OAuthFlowExtensions
                 string? userId = ctx.Activity.From?.Id;
 
                 // signin/failure doesn't carry a connection name.
-                // Scope to flows that have an active sign-in for this user;
-                // fall back to all flows if none report a pending sign-in
-                // (e.g., multi-instance deployment where the OAuthCard was sent by another node).
+                // Pick the most recently initiated flow to avoid firing duplicate
+                // failure callbacks when multiple flows have pending sign-ins.
+                // Fall back to all flows only when no flow reports a pending sign-in
+                // (e.g., multi-instance deployment without distributed state).
                 IEnumerable<OAuthFlow> allFlows = registry.GetAllFlows();
-                List<OAuthFlow> activeFlows = userId is not null
-                    ? allFlows.Where(f => f.HasPendingSignIn(userId)).ToList()
-                    : [];
-                IEnumerable<OAuthFlow> targetFlows = activeFlows.Count > 0 ? activeFlows : allFlows;
+                OAuthFlow? mostRecent = null;
+                DateTimeOffset mostRecentTs = DateTimeOffset.MinValue;
 
-                foreach (OAuthFlow flow in targetFlows)
+                if (userId is not null)
                 {
-                    await flow.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                    foreach (OAuthFlow f in allFlows)
+                    {
+                        DateTimeOffset? ts = f.GetPendingSignInTimestamp(ctx);
+                        if (ts is not null && ts.Value > mostRecentTs)
+                        {
+                            mostRecent = f;
+                            mostRecentTs = ts.Value;
+                        }
+                    }
+                }
+
+                if (mostRecent is not null)
+                {
+                    await mostRecent.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    // No pending flow found — fall back to notifying all flows.
+                    foreach (OAuthFlow flow in allFlows)
+                    {
+                        await flow.HandleSignInFailureAsync(ctx, failureValue, cancellationToken).ConfigureAwait(false);
+                    }
                 }
 
                 return new InvokeResponse(200);
@@ -136,9 +156,42 @@ public static class OAuthFlowExtensions
                     return new InvokeResponse(404);
                 }
 
-                // verifyState doesn't carry a connection name, so try each registered flow
+                // verifyState doesn't carry a connection name.
+                // Try the most recently initiated flow first to avoid O(N) token service calls.
+                string? userId = ctx.Activity.From?.Id;
+                OAuthFlow? mostRecent = null;
+                DateTimeOffset mostRecentTs = DateTimeOffset.MinValue;
+
+                if (userId is not null)
+                {
+                    foreach (OAuthFlow f in registry.GetAllFlows())
+                    {
+                        DateTimeOffset? ts = f.GetPendingSignInTimestamp(ctx);
+                        if (ts is not null && ts.Value > mostRecentTs)
+                        {
+                            mostRecent = f;
+                            mostRecentTs = ts.Value;
+                        }
+                    }
+                }
+
+                if (mostRecent is not null)
+                {
+                    InvokeResponse response = await mostRecent.HandleVerifyStateAsync(ctx, verifyValue, cancellationToken).ConfigureAwait(false);
+                    if (response.Status == 200)
+                    {
+                        return response;
+                    }
+                }
+
+                // Fall back to trying all flows (skipping the one we already tried)
                 foreach (OAuthFlow flow in registry.GetAllFlows())
                 {
+                    if (flow == mostRecent)
+                    {
+                        continue;
+                    }
+
                     InvokeResponse response = await flow.HandleVerifyStateAsync(ctx, verifyValue, cancellationToken).ConfigureAwait(false);
                     if (response.Status == 200)
                     {
@@ -146,15 +199,14 @@ public static class OAuthFlowExtensions
                     }
                 }
 
-                return new InvokeResponse(400);
+                return new InvokeResponse(404);
             }
         });
     }
 
-    private static NullLogger GetLogger(TeamsBotApplication app)
+    private static ILogger GetLogger(TeamsBotApplication app)
     {
-        _ = app; // Reserved for future use (e.g., resolving ILoggerFactory from DI)
-        return NullLogger.Instance;
+        return app.Logger;
     }
 }
 
