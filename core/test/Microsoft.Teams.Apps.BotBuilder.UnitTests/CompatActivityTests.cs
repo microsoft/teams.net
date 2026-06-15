@@ -23,8 +23,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 ServiceUrl = "https://smba.trafficmanager.net/teams",
                 ChannelId = "msteams",
                 Id = "test-id-123",
-                From = new ChannelAccount { Id = "user-123", Name = "Test User" },
-                Recipient = new ChannelAccount { Id = "bot-456", Name = "Test Bot" },
+                From = new Microsoft.Bot.Schema.ChannelAccount { Id = "user-123", Name = "Test User" },
+                Recipient = new Microsoft.Bot.Schema.ChannelAccount { Id = "bot-456", Name = "Test Bot" },
                 Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-789", Name = "Test Conversation" }
             };
 

@@ -4,12 +4,12 @@
 namespace Microsoft.Teams.Core.Schema;
 
 /// <summary>
-/// Represents a conversation account, including its unique identifier, display name, and any additional properties
-/// associated with the conversation.
+/// Represents a channel account — a participant identity (such as a user or bot) on a channel,
+/// including its unique identifier, display name, and any additional properties.
 /// </summary>
-/// <remarks>This class is typically used to model the account information for a conversation in messaging or chat
-/// applications. The additional properties dictionary allows for extensibility to support custom metadata or
-/// protocol-specific fields.</remarks>
+/// <remarks>This class models the account information for a participant in messaging or chat
+/// applications (for example, the sender or recipient of an activity). The additional properties
+/// dictionary allows for extensibility to support custom metadata or protocol-specific fields.</remarks>
 public class ChannelAccount()
 {
     /// <summary>
@@ -19,7 +19,7 @@ public class ChannelAccount()
     public string? Id { get; set; }
 
     /// <summary>
-    /// Gets or sets the display name of the conversation account.
+    /// Gets or sets the display name of the channel account.
     /// </summary>
     [JsonPropertyName("name")]
     public string? Name { get; set; }

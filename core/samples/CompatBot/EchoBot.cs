@@ -37,11 +37,11 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         TeamsChannelAccount mm = await TeamsApiClient.GetMemberAsync(turnContext, turnContext.Activity.From.Id, cancellationToken);
         string replyText = $"Echo {mm.Name} from BF Compat [{conversationData.MessageCount++}]: {turnContext.Activity.Text}";
 
-        // Targeted Messaging via BF compat layer: setting isTargeted on the BF ChannelAccount
+        // Targeted Messaging via BF compat layer: setting isTargeted on the BF Microsoft.Bot.Schema.ChannelAccount
         // causes the compat layer to set CoreActivity.Recipient.IsTargeted, which appends
         // ?isTargetedActivity=true to the URL making the message visible only to that user.
         Activity act = MessageFactory.Text(replyText, replyText);
-        act.Recipient = new ChannelAccount();
+        act.Recipient = new Microsoft.Bot.Schema.ChannelAccount();
         act.Recipient.Properties.Add("isTargeted", true);
         await turnContext.SendActivityAsync(act, cancellationToken);
 
@@ -185,13 +185,13 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         };
     }
 
-    protected override async Task OnMembersAddedAsync(IList<ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+    protected override async Task OnMembersAddedAsync(IList<Microsoft.Bot.Schema.ChannelAccount> membersAdded, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
         await turnContext.SendActivityAsync(MessageFactory.Text("Welcome."), cancellationToken);
         await turnContext.SendActivityAsync(MessageFactory.Text($"Send a proactive messages to  `/api/notify/{turnContext.Activity.Conversation.Id}`"), cancellationToken);
     }
 
-    protected override Task OnMembersRemovedAsync(IList<ChannelAccount> membersRemoved, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
+    protected override Task OnMembersRemovedAsync(IList<Microsoft.Bot.Schema.ChannelAccount> membersRemoved, ITurnContext<IConversationUpdateActivity> turnContext, CancellationToken cancellationToken)
     {
         return turnContext.SendActivityAsync(MessageFactory.Text("Bye."), cancellationToken);
     }

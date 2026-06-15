@@ -277,8 +277,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 Id = "turn-activity-123",
                 ServiceUrl = serviceUrl,
                 Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "turn-conversation-123" },
-                From = new ChannelAccount { Id = "user-123" },
-                Recipient = new ChannelAccount { Id = "bot-123" },
+                From = new Microsoft.Bot.Schema.ChannelAccount { Id = "user-123" },
+                Recipient = new Microsoft.Bot.Schema.ChannelAccount { Id = "bot-123" },
                 ChannelId = "msteams"
             };
 
