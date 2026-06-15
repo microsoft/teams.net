@@ -35,7 +35,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
 
     private async Task<(string first, string? second, string? third)> GetMemberMrisAsync()
     {
-        IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
+        IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
             _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
         return (
             members[0].Id!,

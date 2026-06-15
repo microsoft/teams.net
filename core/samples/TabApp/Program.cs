@@ -68,7 +68,7 @@ app.MapPost("/functions/post-to-chat", async (
             {
                 IsGroup = false,
                 TenantId = tenantId,
-                Members = [new TeamsConversationAccount { Id = userId }]
+                Members = [new TeamsChannelAccount { Id = userId }]
             }, serviceUrl, cancellationToken: ct);
 
             cached = res.Id ?? throw new InvalidOperationException("CreateConversation returned no ID.");

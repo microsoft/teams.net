@@ -112,7 +112,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
         // First get a valid MRI-format member ID
         ApiClient api = _f.ScopedApiClient;
-        IList<TeamsConversationAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsChannelAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
         string memberId = members[0]?.Id!;
 
@@ -170,7 +170,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
         // Get a valid MRI-format member ID from the team
         ApiClient api = _f.ScopedApiClient;
-        IList<TeamsConversationAccount?> members = await api.Conversations.Members.GetAsync(_f.TeamId, _f.AgenticIdentity);
+        IList<TeamsChannelAccount?> members = await api.Conversations.Members.GetAsync(_f.TeamId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
         string memberId = members[0]?.Id!;
 
@@ -188,7 +188,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
 
         // When activity has TeamInfo, GetMemberAsync should delegate to GetTeamMemberAsync
         ApiClient api = _f.ScopedApiClient;
-        IList<TeamsConversationAccount?> members = await api.Conversations.Members.GetAsync(_f.TeamId, _f.AgenticIdentity);
+        IList<TeamsChannelAccount?> members = await api.Conversations.Members.GetAsync(_f.TeamId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
         string memberId = members[0]?.Id!;
 
@@ -307,14 +307,14 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
         // Get the AAD object ID from a human member (bots don't have one).
         ApiClient api = _f.ScopedApiClient;
-        IList<TeamsConversationAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<TeamsChannelAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         string? aadObjectId = null;
-        foreach (TeamsConversationAccount? m in members)
+        foreach (TeamsChannelAccount? m in members)
         {
-            TeamsConversationAccount tm = await api.Conversations.Members
-                .GetByIdAsync<TeamsConversationAccount>(_f.ConversationId, m?.Id!, _f.AgenticIdentity);
+            TeamsChannelAccount tm = await api.Conversations.Members
+                .GetByIdAsync<TeamsChannelAccount>(_f.ConversationId, m?.Id!, _f.AgenticIdentity);
             _output.WriteLine($"Member: {tm.Name} — AadObjectId: {tm.AadObjectId ?? "(null)"}, Properties: [{string.Join(", ", tm.Properties.Keys)}]");
             if (tm.AadObjectId is not null)
             {

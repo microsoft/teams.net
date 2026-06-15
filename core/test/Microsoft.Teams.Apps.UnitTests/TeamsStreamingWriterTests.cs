@@ -44,8 +44,8 @@ public class TeamsStreamingWriterTests
         ServiceUrl = new Uri("https://smba.trafficmanager.net/amer/"),
         ChannelId = "msteams",
         Conversation = TeamsConversation.FromConversation(new Conversation { Id = "conv-123" }),
-        From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "user-123", Name = "User" }),
-        Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "bot-123", Name = "Bot" })
+        From = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "user-123", Name = "User" }),
+        Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "bot-123", Name = "Bot" })
     };
 
     private static (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) CreateWriter(TeamsActivity? reference = null)

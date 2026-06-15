@@ -85,7 +85,7 @@ public class MeetingParticipantMember
 {
     /// <summary>The participant's account.</summary>
     [JsonPropertyName("user")]
-    public TeamsConversationAccount User { get; set; } = new();
+    public TeamsChannelAccount User { get; set; } = new();
 
     /// <summary>The participant's meeting info.</summary>
     [JsonPropertyName("meeting")]

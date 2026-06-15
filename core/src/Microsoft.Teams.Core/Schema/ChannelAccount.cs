@@ -10,7 +10,7 @@ namespace Microsoft.Teams.Core.Schema;
 /// <remarks>This class is typically used to model the account information for a conversation in messaging or chat
 /// applications. The additional properties dictionary allows for extensibility to support custom metadata or
 /// protocol-specific fields.</remarks>
-public class ConversationAccount()
+public class ChannelAccount()
 {
     /// <summary>
     /// Gets or sets the unique identifier for the object.

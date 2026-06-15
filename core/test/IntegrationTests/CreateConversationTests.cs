@@ -33,7 +33,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     /// </summary>
     private async Task<(string first, string? second)> GetMemberMrisAsync()
     {
-        IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
+        IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
             _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
 
         Assert.True(members.Count >= 1, "Need at least 1 member in the test conversation");
@@ -86,7 +86,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(response.Id))
             .WithProperty("text", $"[Core] 1:1 message at `{DateTime.UtcNow:s}`")
@@ -187,7 +187,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(response.Id))
             .WithProperty("text", $"[Core] Group message at `{DateTime.UtcNow:s}`")
@@ -264,7 +264,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithProperty("text", $"[ApiClient] 1:1 via Activities.Create at `{DateTime.UtcNow:s}`")
             .Build();
 
@@ -354,7 +354,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
         // Reply to the thread
         CoreActivity reply = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithProperty("text", $"[ApiClient] Thread reply at `{DateTime.UtcNow:s}`")
             .Build();
 

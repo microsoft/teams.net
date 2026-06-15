@@ -73,8 +73,8 @@ internal class EchoBot(BotApplication teamsBotApp, ConversationState conversatio
         // Targeted Messaging via Core SDK (preferred): sends directly through ConversationClient
         // to bypass the BF compat layer's ApplyConversationReference which would overwrite the Recipient.
         CoreActivity incomingCoreActivity = ((Activity)turnContext.Activity).FromBotFrameworkActivity();
-        Microsoft.Teams.Core.Schema.ConversationAccount? incomingFrom = incomingCoreActivity.From;
-        Microsoft.Teams.Core.Schema.ConversationAccount? incomingRecipient = incomingCoreActivity.Recipient;
+        Microsoft.Teams.Core.Schema.ChannelAccount? incomingFrom = incomingCoreActivity.From;
+        Microsoft.Teams.Core.Schema.ChannelAccount? incomingRecipient = incomingCoreActivity.Recipient;
 #pragma warning disable ExperimentalTeamsTargeted
         incomingFrom!.IsTargeted = true;
 #pragma warning restore ExperimentalTeamsTargeted

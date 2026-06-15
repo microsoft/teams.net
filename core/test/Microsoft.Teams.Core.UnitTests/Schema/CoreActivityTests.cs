@@ -209,8 +209,8 @@ public class CoreCoreActivityTests
         CoreActivity act = new()
         {
             Type = ActivityType.Message,
-            From = new ConversationAccount { Id = "user1", Properties = { { "fromCustomField", "fromCustomValue" } } },
-            Recipient = new ConversationAccount { Id = "bot1", Properties = { { "recipientCustomField", "recipientCustomValue" } } },
+            From = new ChannelAccount { Id = "user1", Properties = { { "fromCustomField", "fromCustomValue" } } },
+            Recipient = new ChannelAccount { Id = "bot1", Properties = { { "recipientCustomField", "recipientCustomValue" } } },
             Properties =
             {
                 { "customField", "customValue" },
@@ -280,7 +280,7 @@ public class CoreCoreActivityTests
     [Fact]
     public void IsTargeted_DefaultsToNull()
     {
-        ConversationAccount account = new();
+        ChannelAccount account = new();
 
         Assert.Null(account.IsTargeted);
     }
@@ -288,7 +288,7 @@ public class CoreCoreActivityTests
     [Fact]
     public void IsTargeted_CanBeSetToTrue()
     {
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             IsTargeted = true
         };
@@ -302,7 +302,7 @@ public class CoreCoreActivityTests
         CoreActivity activity = new()
         {
             Type = ActivityType.Message,
-            Recipient = new ConversationAccount { Id = "user-123", IsTargeted = true }
+            Recipient = new ChannelAccount { Id = "user-123", IsTargeted = true }
         };
 
         string json = activity.ToJson();

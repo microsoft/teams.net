@@ -77,7 +77,7 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
         if (!string.IsNullOrEmpty(agenticAppId) && !string.IsNullOrEmpty(agenticUserId))
         {
             string appBlueprintId = Env("AzureAd__ClientId");
-            ConversationAccount recipient = new()
+            ChannelAccount recipient = new()
             {
                 AgenticAppBlueprintId = appBlueprintId,
                 AgenticAppId = agenticAppId,
@@ -100,7 +100,7 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
         ?? fallback
         ?? throw new InvalidOperationException($"{name} environment variable not set");
 
-    internal static ConversationAccount GetConversationAccountWithAgenticProperties()
+    internal static ChannelAccount GetChannelAccountWithAgenticProperties()
     {
         string agenticUserId = Env("TEST_AGENTIC_USERID");
         string agenticAppId = Env("TEST_AGENTIC_APPID");
@@ -108,10 +108,10 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
 
         if (string.IsNullOrEmpty(agenticUserId))
         {
-            return new ConversationAccount();
+            return new ChannelAccount();
         }
 
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             Id = agenticUserId,
             Name = "Agentic User",

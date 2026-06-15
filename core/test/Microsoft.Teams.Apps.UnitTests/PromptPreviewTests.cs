@@ -116,7 +116,7 @@ public class PromptPreviewTests
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         MessageActivity outbound = new("secret");
-        outbound.Recipient = new TeamsConversationAccount { Id = "user-1", IsTargeted = true };
+        outbound.Recipient = new TeamsChannelAccount { Id = "user-1", IsTargeted = true };
 
         InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => ctx.SendActivityAsync(outbound));
@@ -147,7 +147,7 @@ public class PromptPreviewTests
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         MessageActivity outbound = new("only you can see this");
-        outbound.Recipient = new TeamsConversationAccount { Id = "user-1", IsTargeted = true };
+        outbound.Recipient = new TeamsChannelAccount { Id = "user-1", IsTargeted = true };
 
         await ctx.SendActivityAsync(outbound);
 
@@ -168,8 +168,8 @@ public class PromptPreviewTests
             Id = inboundId,
             ChannelId = "msteams",
             ServiceUrl = new Uri("https://smba.trafficmanager.net/test/"),
-            From = new TeamsConversationAccount { Id = "user-1", Name = "User" },
-            Recipient = new TeamsConversationAccount
+            From = new TeamsChannelAccount { Id = "user-1", Name = "User" },
+            Recipient = new TeamsChannelAccount
             {
                 Id = "bot-1",
                 Name = "Bot",

@@ -27,7 +27,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] SendActivity at `{DateTime.UtcNow:s}`")
@@ -45,7 +45,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] Original at `{DateTime.UtcNow:s}`")
@@ -56,7 +56,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
 
         CoreActivity updated = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] Updated at `{DateTime.UtcNow:s}`")
@@ -74,7 +74,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
-            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithServiceUrl(_f.ServiceUrl)
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] To delete at `{DateTime.UtcNow:s}`")
@@ -94,13 +94,13 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
     public async Task GetConversationMembers()
     {
-        IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
+        IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
             _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
 
         Assert.NotNull(members);
         Assert.NotEmpty(members);
 
-        foreach (ConversationAccount m in members)
+        foreach (ChannelAccount m in members)
         {
             _output.WriteLine($"Member: {m.Id} — {m.Name}");
         }
@@ -110,12 +110,12 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     public async Task GetConversationMember()
     {
         // Get MRI-format member ID from the members list first
-        IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
+        IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
             _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
         Assert.NotEmpty(members);
         string memberId = members[0].Id!;
 
-        ConversationAccount member = await _f.ConversationClient.GetConversationMemberAsync<ConversationAccount>(
+        ChannelAccount member = await _f.ConversationClient.GetConversationMemberAsync<ChannelAccount>(
             _f.ConversationId, memberId, _f.ServiceUrl, _f.AgenticIdentity);
 
         Assert.NotNull(member);
@@ -132,7 +132,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         Assert.NotNull(result?.Members);
         Assert.NotEmpty(result.Members);
 
-        foreach (ConversationAccount m in result.Members)
+        foreach (ChannelAccount m in result.Members)
         {
             _output.WriteLine($"Member: {m.Id} — {m.Name}");
         }
@@ -144,7 +144,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
             .WithServiceUrl(_f.ServiceUrl)
-            .WithFrom(IntegrationTestFixture.GetConversationAccountWithAgenticProperties())
+            .WithFrom(IntegrationTestFixture.GetChannelAccountWithAgenticProperties())
             .WithConversation(new(_f.ConversationId))
             .WithProperty("text", $"[ConversationClient] Reaction test at `{DateTime.UtcNow:s}`")
             .Build();

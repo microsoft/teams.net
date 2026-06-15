@@ -19,14 +19,8 @@ public record BotRequestOptions
 
     /// <summary>
     /// Gets the custom headers to include in the request.
-    /// These headers override default headers if the same key exists.
     /// </summary>
     public CustomHeaders? CustomHeaders { get; init; }
-
-    /// <summary>
-    /// Gets the default custom headers that will be included in all requests.
-    /// </summary>
-    public CustomHeaders? DefaultHeaders { get; init; }
 
     /// <summary>
     /// Gets a value indicating whether to return null instead of throwing on 404 responses.

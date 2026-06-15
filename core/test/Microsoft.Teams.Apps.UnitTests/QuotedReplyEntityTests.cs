@@ -193,7 +193,7 @@ public class QuotedReplyEntityTests
         [
             new ClientInfoEntity { Locale = "en-us" },
             new QuotedReplyEntity { QuotedReply = new QuotedReplyData { MessageId = "msg-1" } },
-            new MentionEntity(new ConversationAccount { Id = "user-1", Name = "User" }, "<at>User</at>"),
+            new MentionEntity(new ChannelAccount { Id = "user-1", Name = "User" }, "<at>User</at>"),
             new QuotedReplyEntity { QuotedReply = new QuotedReplyData { MessageId = "msg-2" } }
         ];
 

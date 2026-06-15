@@ -448,8 +448,8 @@ public class OAuthFlowTelemetryTests
         MessageActivity activity = new("hello")
         {
             ChannelId = TestChannelId,
-            From = new TeamsConversationAccount { Id = TestUserId },
-            Recipient = new TeamsConversationAccount { Id = "bot-id" },
+            From = new TeamsChannelAccount { Id = TestUserId },
+            Recipient = new TeamsChannelAccount { Id = "bot-id" },
             Conversation = new TeamsConversation { Id = "conv-1" },
             ServiceUrl = new Uri("https://smba.trafficmanager.net/test/"),
         };
@@ -462,8 +462,8 @@ public class OAuthFlowTelemetryTests
         InvokeActivity activity = new()
         {
             ChannelId = TestChannelId,
-            From = new TeamsConversationAccount { Id = TestUserId },
-            Recipient = new TeamsConversationAccount { Id = "bot-id" },
+            From = new TeamsChannelAccount { Id = TestUserId },
+            Recipient = new TeamsChannelAccount { Id = "bot-id" },
             Conversation = new TeamsConversation { Id = "conv-1" },
             ServiceUrl = new Uri("https://smba.trafficmanager.net/test/"),
         };
@@ -479,7 +479,7 @@ public class OAuthFlowTelemetryTests
 
     private static void SetupGetSignInResource(Mock<UserTokenClient> mock)
     {
-        mock.Setup(c => c.GetSignInResourceAsync(It.IsAny<string>(), null, null, null, It.IsAny<CancellationToken>()))
+        mock.Setup(c => c.GetSignInResourceAsync(It.IsAny<string>(), null, (Uri?)null, (Uri?)null, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new GetSignInResourceResult
             {
                 SignInLink = "https://login.microsoftonline.com/test",

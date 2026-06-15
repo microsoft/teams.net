@@ -121,7 +121,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
         {
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            IList<Microsoft.Teams.Core.Schema.ConversationAccount> members = await _client.GetActivityMembersAsync(
+            IList<Microsoft.Teams.Core.Schema.ChannelAccount> members = await _client.GetActivityMembersAsync(
                 conversationId,
                 activityId,
                 new Uri(ServiceUrl!),
@@ -155,7 +155,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            IList<Microsoft.Teams.Core.Schema.ConversationAccount> members = await _client.GetConversationMembersAsync(
+            IList<Microsoft.Teams.Core.Schema.ChannelAccount> members = await _client.GetConversationMembersAsync(
                 conversationId,
                 new Uri(ServiceUrl),
                 AgenticIdentity,
@@ -420,7 +420,7 @@ namespace Microsoft.Teams.Apps.BotBuilder
 
             Dictionary<string, string>? convertedHeaders = ConvertHeaders(customHeaders);
 
-            Microsoft.Teams.Core.Schema.ConversationAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Core.Schema.ConversationAccount>(
+            Microsoft.Teams.Core.Schema.ChannelAccount response = await _client.GetConversationMemberAsync<Microsoft.Teams.Core.Schema.ChannelAccount>(
                 conversationId, userId, new Uri(ServiceUrl), AgenticIdentity, convertedHeaders, cancellationToken).ConfigureAwait(false);
 
             return new HttpOperationResponse<ChannelAccount>

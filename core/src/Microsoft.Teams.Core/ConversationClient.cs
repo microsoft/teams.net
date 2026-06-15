@@ -34,12 +34,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// Exposed so consumers can reuse the same auth-bound HTTP pipeline for channel- or platform-specific endpoints
     /// not modeled directly on <see cref="ConversationClient"/>.
     /// </summary>
-    public BotHttpClient BotHttpClient => _botHttpClient;
-
-    /// <summary>
-    /// Gets the default custom headers that will be included in all requests.
-    /// </summary>
-    public CustomHeaders DefaultCustomHeaders { get; } = [];
+    public virtual BotHttpClient BotHttpClient => _botHttpClient;
 
     /// <summary>
     /// Sends the specified activity to the conversation endpoint asynchronously.
@@ -262,7 +257,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the delete operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity could not be deleted successfully.</exception>
-    public async Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, bool isTargeted, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteActivityAsync(string conversationId, string activityId, Uri serviceUrl, bool isTargeted, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
@@ -340,14 +335,14 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of conversation members.</returns>
     /// <exception cref="HttpRequestException">Thrown if the members could not be retrieved successfully.</exception>
-    public virtual async Task<IList<ConversationAccount>> GetConversationMembersAsync(string conversationId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<IList<ChannelAccount>> GetConversationMembersAsync(string conversationId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/members";
 
-        return (await _botHttpClient.SendAsync<IList<ConversationAccount>>(
+        return (await _botHttpClient.SendAsync<IList<ChannelAccount>>(
             HttpMethod.Get,
             url,
             body: null,
@@ -359,7 +354,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <summary>
     /// Gets a specific member of a conversation with strongly-typed result.
     /// </summary>
-    /// <typeparam name="T">The type of conversation account to return. Must inherit from <see cref="ConversationAccount"/>.</typeparam>
+    /// <typeparam name="T">The type of conversation account to return. Must inherit from <see cref="ChannelAccount"/>.</typeparam>
     /// <param name="conversationId">The ID of the conversation. Cannot be null or whitespace.</param>
     /// <param name="userId">The ID of the user to retrieve. Cannot be null or whitespace.</param>
     /// <param name="serviceUrl">The service URL for the conversation. Cannot be null.</param>
@@ -371,7 +366,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// of type T with detailed information about the user.
     /// </returns>
     /// <exception cref="HttpRequestException">Thrown if the member could not be retrieved successfully.</exception>
-    public virtual async Task<T> GetConversationMemberAsync<T>(string conversationId, string userId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default) where T : ConversationAccount
+    public virtual async Task<T> GetConversationMemberAsync<T>(string conversationId, string userId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default) where T : ChannelAccount
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentNullException.ThrowIfNull(serviceUrl);
@@ -426,7 +421,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation. The task result contains a list of members for the activity.</returns>
     /// <exception cref="HttpRequestException">Thrown if the activity members could not be retrieved successfully.</exception>
-    public virtual async Task<IList<ConversationAccount>> GetActivityMembersAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task<IList<ChannelAccount>> GetActivityMembersAsync(string conversationId, string activityId, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
@@ -434,7 +429,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
 
         string url = $"{serviceUrl.ToString().TrimEnd('/')}/v3/conversations/{Uri.EscapeDataString(conversationId)}/activities/{Uri.EscapeDataString(activityId)}/members";
 
-        return (await _botHttpClient.SendAsync<IList<ConversationAccount>>(
+        return (await _botHttpClient.SendAsync<IList<ChannelAccount>>(
             HttpMethod.Get,
             url,
             body: null,
@@ -614,7 +609,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the reaction could not be added successfully.</exception>
-    public async Task AddReactionAsync(string conversationId, string activityId, string reactionType, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task AddReactionAsync(string conversationId, string activityId, string reactionType, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
@@ -643,7 +638,7 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the operation.</param>
     /// <returns>A task that represents the asynchronous operation.</returns>
     /// <exception cref="HttpRequestException">Thrown if the reaction could not be removed successfully.</exception>
-    public async Task DeleteReactionAsync(string conversationId, string activityId, string reactionType, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
+    public virtual async Task DeleteReactionAsync(string conversationId, string activityId, string reactionType, Uri serviceUrl, AgenticIdentity? agenticIdentity = null, CustomHeaders? customHeaders = null, CancellationToken cancellationToken = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(conversationId);
         ArgumentException.ThrowIfNullOrWhiteSpace(activityId);
@@ -660,12 +655,11 @@ public class ConversationClient(HttpClient httpClient, ILogger<ConversationClien
             cancellationToken).ConfigureAwait(false);
     }
 
-    private BotRequestOptions CreateRequestOptions(AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders) =>
+    private static BotRequestOptions CreateRequestOptions(AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders) =>
         new()
         {
             AgenticIdentity = agenticIdentity,
             OperationDescription = operationDescription,
-            DefaultHeaders = DefaultCustomHeaders,
             CustomHeaders = customHeaders
         };
 }

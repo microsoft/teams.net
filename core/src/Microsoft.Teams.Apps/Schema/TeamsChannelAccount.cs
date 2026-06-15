@@ -10,36 +10,36 @@ namespace Microsoft.Teams.Apps.Schema;
 /// Represents a Microsoft Teams-specific conversation account, including Azure Active Directory (AAD) object
 /// information.
 /// </summary>
-/// <remarks>This class extends the base ConversationAccount to provide additional properties relevant to
+/// <remarks>This class extends the base ChannelAccount to provide additional properties relevant to
 /// Microsoft Teams, such as the Azure Active Directory object ID. It is typically used when working with Teams
 /// conversations to access Teams-specific metadata.</remarks>
-public class TeamsConversationAccount : ConversationAccount
+public class TeamsChannelAccount : ChannelAccount
 {
     /// <summary>
-    /// Initializes a new instance of the TeamsConversationAccount class.
+    /// Initializes a new instance of the TeamsChannelAccount class.
     /// </summary>
     [JsonConstructor]
-    public TeamsConversationAccount()
+    public TeamsChannelAccount()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the TeamsConversationAccount class using the specified conversation account.
+    /// Initializes a new instance of the TeamsChannelAccount class using the specified conversation account.
     /// </summary>
-    /// <param name="conversationAccount">The ConversationAccount instance containing the conversation's identifier, name, and properties. Cannot be null.</param>
-    public static TeamsConversationAccount? FromConversationAccount(ConversationAccount? conversationAccount)
+    /// <param name="conversationAccount">The ChannelAccount instance containing the conversation's identifier, name, and properties. Cannot be null.</param>
+    public static TeamsChannelAccount? FromChannelAccount(ChannelAccount? conversationAccount)
     {
         if (conversationAccount is null)
         {
             return null;
         }
 
-        if (conversationAccount is TeamsConversationAccount teamsConversationAccount)
+        if (conversationAccount is TeamsChannelAccount teamsChannelAccount)
         {
-            return teamsConversationAccount;
+            return teamsChannelAccount;
         }
 
-        TeamsConversationAccount result = new();
+        TeamsChannelAccount result = new();
         result.Id = conversationAccount.Id;
         result.Name = conversationAccount.Name;
         result.IsTargeted = conversationAccount.IsTargeted;

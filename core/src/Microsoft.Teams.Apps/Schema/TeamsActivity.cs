@@ -65,8 +65,8 @@ public class TeamsActivity : CoreActivity
         // Convert core extension properties to Teams-specific typed properties.
         // CoreActivity stores these as untyped entries in its Properties dictionary
         // (via [JsonExtensionData]), so we extract and promote them here.
-        base.From = TeamsConversationAccount.FromConversationAccount(activity.From) ?? new TeamsConversationAccount();
-        base.Recipient = TeamsConversationAccount.FromConversationAccount(activity.Recipient) ?? new TeamsConversationAccount();
+        base.From = TeamsChannelAccount.FromChannelAccount(activity.From) ?? new TeamsChannelAccount();
+        base.Recipient = TeamsChannelAccount.FromChannelAccount(activity.Recipient) ?? new TeamsChannelAccount();
         base.Conversation = TeamsConversation.FromConversation(activity.Conversation) ?? new TeamsConversation();
         ChannelData = activity.Properties.Extract<TeamsChannelData>("channelData");
         Entities = activity.Properties.Extract<EntityList>("entities");
@@ -74,23 +74,23 @@ public class TeamsActivity : CoreActivity
 
     /// <summary>
     /// Gets or sets the account information for the sender of the Teams conversation.
-    /// Delegates to the base CoreActivity.From slot, casting to TeamsConversationAccount.
+    /// Delegates to the base CoreActivity.From slot, casting to TeamsChannelAccount.
     /// </summary>
     [JsonPropertyName("from")]
-    public new TeamsConversationAccount? From
+    public new TeamsChannelAccount? From
     {
-        get => base.From as TeamsConversationAccount ?? TeamsConversationAccount.FromConversationAccount(base.From);
+        get => base.From as TeamsChannelAccount ?? TeamsChannelAccount.FromChannelAccount(base.From);
         set => base.From = value;
     }
 
     /// <summary>
     /// Gets or sets the account information for the recipient of the Teams conversation.
-    /// Delegates to the base CoreActivity.Recipient slot, casting to TeamsConversationAccount.
+    /// Delegates to the base CoreActivity.Recipient slot, casting to TeamsChannelAccount.
     /// </summary>
     [JsonPropertyName("recipient")]
-    public new TeamsConversationAccount? Recipient
+    public new TeamsChannelAccount? Recipient
     {
-        get => base.Recipient as TeamsConversationAccount ?? TeamsConversationAccount.FromConversationAccount(base.Recipient);
+        get => base.Recipient as TeamsChannelAccount ?? TeamsChannelAccount.FromChannelAccount(base.Recipient);
         set => base.Recipient = value;
     }
 

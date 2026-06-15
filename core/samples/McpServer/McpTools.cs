@@ -224,7 +224,7 @@ public sealed class McpTools(TeamsBotApplication app, State state, IConfiguratio
 
         ConversationParameters parameters = new()
         {
-            Members = [new ConversationAccount { Id = userId }],
+            Members = [new ChannelAccount { Id = userId }],
             TenantId = config["AzureAd:TenantId"],
         };
 

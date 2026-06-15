@@ -149,14 +149,6 @@ public class BotHttpClient(HttpClient httpClient, ILogger? logger = null)
             request.Options.Set(BotAuthenticationHandler.AgenticIdentityKey, options.AgenticIdentity);
         }
 
-        if (options.DefaultHeaders is not null)
-        {
-            foreach (KeyValuePair<string, string> header in options.DefaultHeaders)
-            {
-                request.Headers.TryAddWithoutValidation(header.Key, header.Value);
-            }
-        }
-
         if (options.CustomHeaders is not null)
         {
             foreach (KeyValuePair<string, string> header in options.CustomHeaders)
