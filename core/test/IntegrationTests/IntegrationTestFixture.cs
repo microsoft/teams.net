@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Linq;
 using MartinCostello.Logging.XUnit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
 using Xunit.Abstractions;
@@ -17,7 +19,7 @@ namespace IntegrationTests;
 /// Shared fixture that configures DI, acquires tokens, and exposes clients for integration tests.
 /// Reused across test classes via IClassFixture to avoid repeated token acquisition.
 /// </summary>
-public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
+public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHelperAccessor
 {
     public ServiceProvider ServiceProvider { get; }
     public ConversationClient ConversationClient { get; }
@@ -33,6 +35,32 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
     public string BotAppId { get; }
     public string? UserId2 { get; }
     public AgenticIdentity? AgenticIdentity { get; }
+
+    /// <summary>
+    /// True when running against the canary service endpoint.
+    /// </summary>
+    public bool IsCanary => ServiceUrl.Host.Contains("canary", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// Cached conversation members — fetched once during InitializeAsync to avoid
+    /// repeated /members calls that trigger throttling (429).
+    /// </summary>
+    public IList<TeamsConversationAccount?>? CachedMembers { get; private set; }
+
+    /// <summary>
+    /// First member MRI from cache (convenience for tests needing a valid member ID).
+    /// </summary>
+    public string? MemberMri1 => CachedMembers?.FirstOrDefault()?.Id;
+
+    /// <summary>
+    /// Second member MRI from cache (for group chat tests requiring 2+ members).
+    /// </summary>
+    public string? MemberMri2 => CachedMembers?.Skip(1).FirstOrDefault()?.Id;
+
+    /// <summary>
+    /// Third member MRI from cache.
+    /// </summary>
+    public string? MemberMri3 => CachedMembers?.Skip(2).FirstOrDefault()?.Id;
 
     /// <summary>
     /// Set by each test class constructor to route ILogger output to xUnit's test output.
@@ -86,6 +114,30 @@ public class IntegrationTestFixture : IDisposable, ITestOutputHelperAccessor
             AgenticIdentity = AgenticIdentity.FromAccount(recipient);
         }
     }
+
+    /// <summary>
+    /// Fetches and caches conversation members once for the entire test run.
+    /// Filters out the bot itself and null entries. Fails fast if no usable members are found.
+    /// </summary>
+    public async Task InitializeAsync()
+    {
+        ApiClient scoped = ScopedApiClient;
+        IList<TeamsConversationAccount?> raw = await scoped.Conversations.Members.GetAsync(ConversationId, AgenticIdentity);
+
+        string botMri = $"28:{BotAppId}";
+        CachedMembers = raw
+            .Where(m => m?.Id is not null && !m.Id.Equals(botMri, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (CachedMembers.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "No usable members found in test conversation (all null or bot-only). " +
+                "Ensure the conversation has at least 2 non-bot members.");
+        }
+    }
+
+    public Task DisposeAsync() => Task.CompletedTask;
 
     public ApiClient ScopedApiClient => ApiClient.ForServiceUrl(ServiceUrl);
 
