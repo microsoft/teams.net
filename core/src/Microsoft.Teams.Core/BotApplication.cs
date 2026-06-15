@@ -119,7 +119,7 @@ public class BotApplication
     /// <summary>
     /// Gets the application (client) ID configured for this bot (for example, the Azure AD app registration client ID).
     /// </summary>
-    public virtual string AppId { get; }
+    public string AppId { get; }
 
     /// <summary>
     /// Gets the <see cref="Core.ConversationClient"/> used to send, update, and delete activities in conversations.

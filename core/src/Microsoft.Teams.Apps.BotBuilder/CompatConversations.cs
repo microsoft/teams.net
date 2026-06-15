@@ -6,6 +6,7 @@ using Microsoft.Bot.Schema;
 using Microsoft.Rest;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
+using ChannelAccount = Microsoft.Bot.Schema.ChannelAccount;
 
 namespace Microsoft.Teams.Apps.BotBuilder
 {
