@@ -33,15 +33,13 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
         _output = output;
     }
 
-    private async Task<(string first, string? second, string? third)> GetMemberMrisAsync()
+    private Task<(string first, string? second, string? third)> GetMemberMrisAsync()
     {
-        IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
-        return (
-            members[0].Id!,
-            members.Count >= 2 ? members[1].Id : null,
-            members.Count >= 3 ? members[2].Id : null
-        );
+        return Task.FromResult((
+            _f.MemberMri1!,
+            _f.MemberMri2,
+            _f.MemberMri3
+        ));
     }
 
     /// <summary>

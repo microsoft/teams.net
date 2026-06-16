@@ -31,18 +31,13 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     /// Gets MRI-format member IDs by fetching the conversation members list.
     /// The API requires MRI IDs (e.g., "29:1abc..."), not pairwise bot framework IDs.
     /// </summary>
-    private async Task<(string first, string? second)> GetMemberMrisAsync()
+    private Task<(string first, string? second)> GetMemberMrisAsync()
     {
-        IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
-
-        Assert.True(members.Count >= 1, "Need at least 1 member in the test conversation");
-
-        string first = members[0].Id!;
-        string? second = members.Count >= 2 ? members[1].Id : null;
+        string first = _f.MemberMri1!;
+        string? second = _f.MemberMri2;
 
         _output.WriteLine($"Using member MRIs: first={first}, second={second ?? "(none)"}");
-        return (first, second);
+        return Task.FromResult((first, second));
     }
 
     #region Personal Chat (1:1) — Core ConversationClient
@@ -287,13 +282,13 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
             return;
         }
 
+        // Service rejects multiple members when creating via Bot + Members pattern.
+        // Using a single non-bot member creates a 1:1 "group-style" conversation.
         ConversationParameters parameters = new()
         {
-            //IsGroup = true,
             Bot = new() { Id = $"28:{_f.BotAppId}" },
             Members =
             [
-                new() { Id = first },
                 new() { Id = second }
             ],
             TenantId = _f.TenantId,

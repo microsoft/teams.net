@@ -91,7 +91,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Deleted activity: {sent.Id}");
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetConversationMembers()
     {
         IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
@@ -106,14 +106,10 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         }
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [Fact(Timeout = 5000)]
     public async Task GetConversationMember()
     {
-        // Get MRI-format member ID from the members list first
-        IList<ChannelAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
-            _f.ConversationId, _f.ServiceUrl, _f.AgenticIdentity);
-        Assert.NotEmpty(members);
-        string memberId = members[0].Id!;
+        string memberId = _f.MemberMri1!;
 
         ChannelAccount member = await _f.ConversationClient.GetConversationMemberAsync<ChannelAccount>(
             _f.ConversationId, memberId, _f.ServiceUrl, _f.AgenticIdentity);
@@ -123,24 +119,30 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
         _output.WriteLine($"Member: {member.Id} — {member.Name}");
     }
 
-    [Fact(Timeout = 5000, Skip = "GET /members throttled on canary — cached fixture needed")]
+    [SkippableFact(Timeout = 5000)]
     public async Task GetPagedMembers()
     {
+        Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
+        Skip.If(_f.IsCanary, "Paged members returns empty on canary — service limitation");
+
         PagedMembersResult result = await _f.ConversationClient.GetConversationPagedMembersAsync(
             _f.ConversationId, _f.ServiceUrl, pageSize: 5, agenticIdentity: _f.AgenticIdentity);
 
         Assert.NotNull(result?.Members);
         Assert.NotEmpty(result.Members);
 
-        foreach (ChannelAccount m in result.Members)
+        foreach (ChannelAccount m in result.Members.Take(5))
         {
             _output.WriteLine($"Member: {m.Id} — {m.Name}");
         }
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task AddAndDeleteReaction()
     {
+        Skip.If(_f.AgenticIdentity is not null, "Reactions API returns 404 with agentic identity — service limitation");
+        Skip.If(_f.IsCanary, "Reactions API returns 404 on canary — service limitation");
+
         CoreActivity activity = CoreActivity.CreateBuilder()
             .WithType(ActivityType.Message)
             .WithServiceUrl(_f.ServiceUrl)
