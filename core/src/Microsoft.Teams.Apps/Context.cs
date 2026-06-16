@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.OAuth;
@@ -164,7 +163,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">The response text, appended to the quoted message placeholder.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<SendActivityResponse?> Quote(string messageId, string text, CancellationToken cancellationToken = default)
         => Quote(messageId, new MessageActivity(text), cancellationToken);
 
@@ -176,7 +174,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send. For <see cref="MessageActivity"/>, a quote placeholder for messageId is prepended to its text. Other activity types are sent as-is without quoting.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<SendActivityResponse?> Quote(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);

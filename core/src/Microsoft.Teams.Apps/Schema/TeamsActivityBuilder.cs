@@ -263,7 +263,6 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <param name="text">Optional text, appended to the quoted message placeholder.</param>
     /// <returns>The builder instance for chaining.</returns>
     /// <exception cref="InvalidOperationException">Thrown when the activity type is not Message.</exception>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public TeamsActivityBuilder AddQuote(string messageId, string? text = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
