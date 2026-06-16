@@ -43,6 +43,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     #region Personal Chat (1:1) — Core ConversationClient
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Conversations")]
     public async Task Core_CreatePersonalChat()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -63,6 +64,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Conversations")]
     public async Task Core_CreatePersonalChat_AndSendMessage()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -93,6 +95,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Conversations")]
     public async Task Core_CreatePersonalChat_WithInitialActivity()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -121,6 +124,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     #region Group Chat — Core ConversationClient
 
     [Fact]
+    [Trait("Category", "Conversations")]
     public async Task Core_CreateGroupChat()
     {
         (string first, string? second) = await GetMemberMrisAsync();
@@ -153,6 +157,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact]
+    [Trait("Category", "Conversations")]
     public async Task Core_CreateGroupChat_AndSendMessage()
     {
         (string first, string? second) = await GetMemberMrisAsync();
@@ -198,6 +203,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     #region Channel Thread — Core ConversationClient
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Conversations")]
     public async Task Core_CreateChannelThread()
     {
         ConversationParameters parameters = new()
@@ -224,6 +230,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     #region Personal Chat — ApiClient
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Conversations")]
     public async Task ApiClient_CreatePersonalChat()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -243,6 +250,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Conversations")]
     public async Task ApiClient_CreatePersonalChat_AndSendViaActivities()
     {
         (string memberMri, _) = await GetMemberMrisAsync();
@@ -273,6 +281,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     #region Group Chat — ApiClient
 
     [Fact]
+    [Trait("Category", "Conversations")]
     public async Task ApiClient_CreateGroupChat()
     {
         (string first, string? second) = await GetMemberMrisAsync();
@@ -308,6 +317,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     #region Channel Thread — ApiClient
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Conversations")]
     public async Task ApiClient_CreateChannelThread()
     {
         ConversationParameters parameters = new()
@@ -329,6 +339,7 @@ public class CreateConversationTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Conversations")]
     public async Task ApiClient_CreateChannelThread_AndReply()
     {
         ConversationParameters parameters = new()

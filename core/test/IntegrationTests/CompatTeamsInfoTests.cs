@@ -107,6 +107,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Member Methods (non-team scope)
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task GetMemberAsync_ReturnsTeamsChannelAccount()
     {
         string memberId = _f.MemberMri1!;
@@ -120,6 +121,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task GetMembersAsync_ReturnsTeamsChannelAccounts()
     {
         using TurnContext ctx = CreateTurnContext();
@@ -136,6 +138,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task GetPagedMembersAsync_ReturnsPaged()
     {
         Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
@@ -161,6 +164,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Team-scoped Member Methods
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task GetTeamMemberAsync_ReturnsTeamsChannelAccount()
     {
         string memberId = _f.MemberMri1!;
@@ -174,6 +178,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task GetMemberAsync_WithTeamScope_DelegatesToGetTeamMember()
     {
         string memberId = _f.MemberMri1!;
@@ -187,6 +192,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task GetTeamMembersAsync_ReturnsMembers()
     {
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
@@ -203,6 +209,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task GetPagedTeamMembersAsync_ReturnsPaged()
     {
         Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
@@ -228,6 +235,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Team & Channel Methods
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Teams")]
     public async Task GetTeamDetailsAsync_ReturnsDetails()
     {
 
@@ -241,6 +249,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Teams")]
     public async Task GetTeamDetailsAsync_InfersTeamIdFromActivity()
     {
 
@@ -254,6 +263,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Teams")]
     public async Task GetTeamChannelsAsync_ReturnsChannels()
     {
 
@@ -271,6 +281,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Teams")]
     public async Task GetTeamChannelsAsync_InfersTeamIdFromActivity()
     {
 
@@ -288,6 +299,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Meeting Methods
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Meetings")]
     public async Task GetMeetingParticipantAsync_ReturnsParticipant()
     {
 
@@ -329,6 +341,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Error Cases
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "ErrorHandling")]
     public async Task GetTeamDetailsAsync_ThrowsWithoutTeamScope()
     {
         // No teamId in activity and no explicit teamId parameter
@@ -338,6 +351,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "ErrorHandling")]
     public async Task GetTeamChannelsAsync_ThrowsWithoutTeamScope()
     {
         using TurnContext ctx = CreateTurnContext();
@@ -346,6 +360,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "ErrorHandling")]
     public async Task GetMemberAsync_ThrowsWithNullUserId()
     {
         using TurnContext ctx = CreateTurnContext();

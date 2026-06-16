@@ -60,15 +60,41 @@ Place your `.runsettings` files in the `.runsettings/` directory (gitignored).
 ## Running Tests
 
 ```bash
-# From core/test directory
+# All tests
 dotnet test IntegrationTests/IntegrationTests.csproj \
   --settings IntegrationTests/.runsettings/botid-prod.runsettings -v d
+
+# By category
+dotnet test IntegrationTests/IntegrationTests.csproj \
+  --settings IntegrationTests/.runsettings/botid-prod.runsettings \
+  --filter "Category=Activities"
+
+# Exclude slow diagnostic tests
+dotnet test IntegrationTests/IntegrationTests.csproj \
+  --settings IntegrationTests/.runsettings/botid-prod.runsettings \
+  --filter "Category!=Diagnostic"
 
 # With TRX output for CI
 dotnet test IntegrationTests/IntegrationTests.csproj \
   --settings IntegrationTests/.runsettings/botid-prod.runsettings \
   --logger "trx;LogFileName=botid-prod.trx"
 ```
+
+### Trait Categories
+
+| Category | Tests | Description |
+|----------|-------|-------------|
+| `Activities` | 14 | Send, update, delete, reply (including targeted) |
+| `Members` | 7 | Get members, paged, by ID |
+| `Conversations` | 11 | Create 1:1, group, channel thread |
+| `Reactions` | 1 | Add and delete reactions |
+| `Teams` | 6 | Get team details, channels |
+| `Meetings` | 3 | Get participant, meeting details |
+| `Bots` | 2 | Sign-in URL and resource |
+| `Users` | 3 | Token get, status, sign-out |
+| `Client` | 1 | ForServiceUrl scoped client |
+| `Diagnostic` | 13 | Conversation creation matrix |
+| `ErrorHandling` | 3 | Error cases (compat layer) |
 
 ## Architecture
 

@@ -23,6 +23,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task SendActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
@@ -41,6 +42,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task UpdateActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
@@ -70,6 +72,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task DeleteActivity()
     {
         CoreActivity activity = CoreActivity.CreateBuilder()
@@ -92,6 +95,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task GetConversationMembers()
     {
         IList<ConversationAccount> members = await _f.ConversationClient.GetConversationMembersAsync(
@@ -107,6 +111,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task GetConversationMember()
     {
         string memberId = _f.MemberMri1!;
@@ -120,6 +125,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task GetPagedMembers()
     {
         Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
@@ -138,6 +144,7 @@ public class ConversationClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact]
+    [Trait("Category", "Activities")]
     public async Task AddAndDeleteReaction()
     {
         Skip.If(_f.AgenticIdentity is not null, "Reactions API returns 404 with agentic identity — service limitation");

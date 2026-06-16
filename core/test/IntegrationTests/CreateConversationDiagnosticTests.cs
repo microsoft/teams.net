@@ -121,6 +121,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     // =========================================================================
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task PersonalChat_MinimalParams()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -134,6 +135,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task PersonalChat_WithBot()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -148,6 +150,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task PersonalChat_WithInitialActivity()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -169,6 +172,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     // =========================================================================
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_TwoMembers_NoBotNoChannelData()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -183,6 +187,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_TwoMembers_WithBot()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -198,6 +203,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_TwoMembers_WithBotAndChannelData()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -214,6 +220,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_TwoMembers_WithTopicAndActivity()
     {
         (string first, string? second, _) = await GetMemberMrisAsync();
@@ -235,6 +242,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_OneMember_IsGroupTrue()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -248,6 +256,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_OneMember_WithBot()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
@@ -263,6 +272,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task GroupChat_ThreeMembers()
     {
         (string first, string? second, string? third) = await GetMemberMrisAsync();
@@ -284,6 +294,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     // =========================================================================
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task ChannelThread_WithActivity()
     {
         DiagnosticResult result = await SendDiagnosticRequestAsync("Channel Thread: with activity", new()
@@ -300,6 +311,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task ChannelThread_NoActivity()
     {
         DiagnosticResult result = await SendDiagnosticRequestAsync("Channel Thread: without activity", new()
@@ -312,6 +324,7 @@ public class CreateConversationDiagnosticTests : IClassFixture<IntegrationTestFi
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Diagnostic")]
     public async Task ChannelThread_WithMembersAndActivity()
     {
         (string memberMri, _, _) = await GetMemberMrisAsync();
