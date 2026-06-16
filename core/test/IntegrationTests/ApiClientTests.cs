@@ -48,6 +48,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Activities
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task Activities_CreateAsync()
     {
         CoreActivity activity = CreateMessageActivity($"[ApiClient.Activities.Create] at `{DateTime.UtcNow:s}`");
@@ -60,6 +61,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task Activities_UpdateAsync()
     {
         CoreActivity original = CreateMessageActivity($"[ApiClient.Activities.Update] Original at `{DateTime.UtcNow:s}`");
@@ -77,6 +79,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task Activities_ReplyAsync()
     {
         CoreActivity original = CreateMessageActivity($"[ApiClient.Activities.Reply] Parent at `{DateTime.UtcNow:s}`");
@@ -94,6 +97,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Activities")]
     public async Task Activities_DeleteAsync()
     {
         CoreActivity activity = CreateMessageActivity($"[ApiClient.Activities.Delete] at `{DateTime.UtcNow:s}`");
@@ -112,6 +116,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Targeted Activities
 
     [SkippableFact]
+    [Trait("Category", "Activities")]
     public async Task Activities_CreateTargetedAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "Targeted activities return 500 with agentic identity — service limitation");
@@ -128,6 +133,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact]
+    [Trait("Category", "Activities")]
     public async Task Activities_UpdateTargetedAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "Targeted activities return 500 with agentic identity — service limitation");
@@ -148,6 +154,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact]
+    [Trait("Category", "Activities")]
     public async Task Activities_DeleteTargetedAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "Targeted activities return 500 with agentic identity — service limitation");
@@ -169,6 +176,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Members
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task Members_GetAsync()
     {
         IList<TeamsConversationAccount?> members = await _api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
@@ -183,6 +191,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task Members_GetPagedAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "Paged members returns 500 with agentic identity — service limitation");
@@ -200,6 +209,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task Members_GetByIdAsync()
     {
         string memberId = _f.MemberMri1!;
@@ -213,6 +223,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Members")]
     public async Task Members_GetByIdAsync_AsTeamsConversationAccount()
     {
         string memberId = _f.MemberMri1!;
@@ -230,6 +241,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Reactions
 
     [SkippableFact]
+    [Trait("Category", "Reactions")]
     public async Task Reactions_AddAndDelete()
     {
         Skip.If(_f.AgenticIdentity is not null, "Reactions API returns 404 with agentic identity — service limitation");
@@ -254,6 +266,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Teams
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Teams")]
     public async Task Teams_GetByIdAsync()
     {
         Team? team = await _api.Teams.GetByIdAsync(_f.TeamId, _f.AgenticIdentity);
@@ -263,6 +276,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Teams")]
     public async Task Teams_GetConversationsAsync()
     {
         List<TeamsChannel>? channels = await _api.Teams.GetConversationsAsync(_f.TeamId, _f.AgenticIdentity);
@@ -281,6 +295,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Meetings
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Meetings")]
     public async Task Meetings_GetByIdAsync()
     {
         Meeting? meeting = await _api.Meetings.GetByIdAsync(_f.MeetingId, _f.AgenticIdentity);
@@ -294,6 +309,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact(Timeout = 15000)]
+    [Trait("Category", "Meetings")]
     public async Task Meetings_GetParticipantAsync()
     {
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
@@ -332,6 +348,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Bots — SignIn
 
     [SkippableFact(Timeout = 5000)]
+    [Trait("Category", "Bots")]
     public async Task Bots_SignIn_GetUrlAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
@@ -358,6 +375,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact(Timeout = 5000)]
+    [Trait("Category", "Bots")]
     public async Task Bots_SignIn_GetResourceAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
@@ -388,6 +406,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     #region Users — Token
 
     [SkippableFact(Timeout = 5000)]
+    [Trait("Category", "Users")]
     public async Task Users_Token_GetStatusAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
@@ -408,6 +427,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact(Timeout = 5000)]
+    [Trait("Category", "Users")]
     public async Task Users_Token_GetAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
@@ -420,6 +440,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     }
 
     [SkippableFact(Timeout = 5000)]
+    [Trait("Category", "Users")]
     public async Task Users_Token_SignOutAsync()
     {
         Skip.If(_f.AgenticIdentity is not null, "UserTokenClient does not support agentic identity");
@@ -436,6 +457,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
     #region ForServiceUrl
 
     [Fact(Timeout = 5000)]
+    [Trait("Category", "Client")]
     public async Task ForServiceUrl_CreatesScopedClient()
     {
         ApiClient scoped = _f.ApiClient.ForServiceUrl(_f.ServiceUrl);
