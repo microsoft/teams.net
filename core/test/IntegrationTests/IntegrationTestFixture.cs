@@ -45,7 +45,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
     /// Cached conversation members — fetched once during InitializeAsync to avoid
     /// repeated /members calls that trigger throttling (429).
     /// </summary>
-    public IList<TeamsConversationAccount?>? CachedMembers { get; private set; }
+    public IList<TeamsChannelAccount?>? CachedMembers { get; private set; }
 
     /// <summary>
     /// First member MRI from cache (convenience for tests needing a valid member ID).
@@ -122,7 +122,7 @@ public class IntegrationTestFixture : IAsyncLifetime, IDisposable, ITestOutputHe
     public async Task InitializeAsync()
     {
         ApiClient scoped = ScopedApiClient;
-        IList<TeamsConversationAccount?> raw = await scoped.Conversations.Members.GetAsync(ConversationId, AgenticIdentity);
+        IList<TeamsChannelAccount?> raw = await scoped.Conversations.Members.GetAsync(ConversationId, AgenticIdentity);
 
         string botMri = $"28:{BotAppId}";
         CachedMembers = raw
