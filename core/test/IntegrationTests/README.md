@@ -60,7 +60,7 @@ Place your `.runsettings` files in the `.runsettings/` directory (gitignored).
 ## Running Tests
 
 ```bash
-# All tests
+# From core/test/ directory:
 dotnet test IntegrationTests/IntegrationTests.csproj \
   --settings IntegrationTests/.runsettings/botid-prod.runsettings -v d
 
@@ -85,7 +85,7 @@ dotnet test IntegrationTests/IntegrationTests.csproj \
 | Category | Tests | Description |
 |----------|-------|-------------|
 | `Activities` | 14 | Send, update, delete, reply (including targeted) |
-| `Members` | 7 | Get members, paged, by ID |
+| `Members` | 11 | Get members, paged, by ID |
 | `Conversations` | 11 | Create 1:1, group, channel thread |
 | `Reactions` | 1 | Add and delete reactions |
 | `Teams` | 6 | Get team details, channels |
