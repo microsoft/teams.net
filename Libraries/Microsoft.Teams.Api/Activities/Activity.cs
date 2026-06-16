@@ -19,9 +19,9 @@ public partial class ActivityType(string value) : StringEnum(value)
         if (IsCommand) return typeof(CommandActivity);
         if (IsCommandResult) return typeof(CommandResultActivity);
         if (IsConversationUpdate) return typeof(ConversationUpdateActivity);
-        #pragma warning disable CS0618
+#pragma warning disable CS0618
         if (IsEndOfConversation) return typeof(EndOfConversationActivity);
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
         if (IsInstallUpdate) return typeof(InstallUpdateActivity);
         if (IsMessage) return typeof(MessageActivity);
         if (IsMessageUpdate) return typeof(MessageUpdateActivity);
@@ -181,9 +181,9 @@ public partial class Activity : IActivity
         From = activity.From;
         Recipient = activity.Recipient;
         Conversation = activity.Conversation;
-        #pragma warning disable CS0618
+#pragma warning disable CS0618
         RelatesTo = activity.RelatesTo;
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
         ServiceUrl = activity.ServiceUrl;
         Locale = activity.Locale;
         Timestamp = activity.Timestamp;
@@ -227,9 +227,9 @@ public partial class Activity : IActivity
     [Obsolete("This will be removed by end of summer 2026.")]
     public virtual Activity WithRelatesTo(ConversationReference value)
     {
-        #pragma warning disable CS0618
+#pragma warning disable CS0618
         RelatesTo = value;
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
         return this;
     }
 
@@ -506,9 +506,9 @@ public partial class Activity : IActivity
     public MessageDeleteActivity ToMessageDelete() => (MessageDeleteActivity)this;
     public MessageReactionActivity ToMessageReaction() => (MessageReactionActivity)this;
     public ConversationUpdateActivity ToConversationUpdate() => (ConversationUpdateActivity)this;
-    #pragma warning disable CS0618
+#pragma warning disable CS0618
     public EndOfConversationActivity ToEndOfConversation() => (EndOfConversationActivity)this;
-    #pragma warning restore CS0618
+#pragma warning restore CS0618
     public EventActivity ToEvent() => (EventActivity)this;
     public InvokeActivity ToInvoke() => (InvokeActivity)this;
 
@@ -520,9 +520,9 @@ public partial class Activity : IActivity
         From ??= from.From;
         Recipient ??= from.Recipient;
         Conversation ??= from.Conversation;
-        #pragma warning disable CS0618
+#pragma warning disable CS0618
         RelatesTo ??= from.RelatesTo;
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
         ServiceUrl ??= from.ServiceUrl;
         Locale ??= from.Locale;
         Timestamp ??= from.Timestamp;
