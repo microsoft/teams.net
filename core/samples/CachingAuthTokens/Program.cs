@@ -22,7 +22,7 @@ bot.OnMessage(async (ctx, ct) =>
     await ctx.SendActivityAsync(replyText, ct);
 
     var diagnosticInfo = $"sdk version: {TeamsBotApplication.Version} os: {Environment.OSVersion}";
-    diagnosticInfo += $" auth latency: {clock.Elapsed.TotalMilliseconds}ms";
+    diagnosticInfo += $" reply latency: {clock.Elapsed.TotalMilliseconds}ms";
     await ctx.SendActivityAsync(diagnosticInfo, ct);
 });
 
