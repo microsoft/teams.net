@@ -1,12 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.Teams.Apps.Api.Clients;
 using Microsoft.Teams.Apps.OAuth;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Apps.Schema.Entities;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 
 namespace Microsoft.Teams.Apps;
@@ -49,6 +49,53 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// </summary>
     public ApiClient Api => _api ??= TeamsBotApplication.Api.ForServiceUrl(
         Activity.ServiceUrl ?? throw new InvalidOperationException("Activity.ServiceUrl is required to use the Api client."));
+
+    // ==================== Turn State ====================
+
+    private TurnStateContainer? _state;
+
+    /// <summary>
+    /// Gets the per-turn state container with <see cref="TurnStateContainer.ConversationState"/>
+    /// and <see cref="TurnStateContainer.UserState"/> scopes.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Thrown when state management is not configured.</exception>
+    public TurnStateContainer State
+    {
+        get => _state ?? throw new InvalidOperationException(
+            "State is not available. Call UseState() during service registration, and if using a custom TeamsBotApplication make sure you pass a TurnStateLoader instance.");
+        internal set => _state = value;
+    }
+
+    /// <summary>
+    /// Returns true if state has been loaded for this turn.
+    /// </summary>
+    public bool HasState => _state is not null;
+
+    /// <summary>
+    /// Creates a copy of this context, preserving state if available.
+    /// </summary>
+    internal Context<TActivity> CreateDerivedContext()
+    {
+        Context<TActivity> derived = new(TeamsBotApplication, Activity);
+        if (HasState)
+        {
+            derived.State = State;
+        }
+        return derived;
+    }
+
+    /// <summary>
+    /// Creates a new context for a different activity type, preserving state if available.
+    /// </summary>
+    internal Context<TNew> CreateDerivedContext<TNew>(TNew activity) where TNew : TeamsActivity
+    {
+        Context<TNew> derived = new(TeamsBotApplication, activity);
+        if (HasState)
+        {
+            derived.State = State;
+        }
+        return derived;
+    }
 
     // ==================== Convenience Send/Reply/Typing ====================
 
@@ -116,7 +163,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="text">The response text, appended to the quoted message placeholder.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<SendActivityResponse?> Quote(string messageId, string text, CancellationToken cancellationToken = default)
         => Quote(messageId, new MessageActivity(text), cancellationToken);
 
@@ -128,7 +174,6 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <param name="activity">The activity to send. For <see cref="MessageActivity"/>, a quote placeholder for messageId is prepended to its text. Other activity types are sent as-is without quoting.</param>
     /// <param name="cancellationToken">Optional cancellation token.</param>
     /// <returns>The response from sending the activity.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public Task<SendActivityResponse?> Quote(string messageId, TeamsActivity activity, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(activity);
@@ -249,33 +294,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     /// <inheritdoc cref="SignOutAsync(string?, CancellationToken)"/>
     public Task SignOut(string? connectionName = null, CancellationToken cancellationToken = default)
         => SignOutAsync(connectionName, cancellationToken);
-
-    /// <summary>
-    /// Whether the activity sender has a valid cached token.
-    /// When a single OAuthFlow is registered, checks that connection.
-    /// When multiple are registered, checks the first one and logs a warning;
-    /// prefer <see cref="IsSignedInAsync"/> with an explicit connection name instead.
-    /// Returns false if no OAuthFlow is registered.
-    /// </summary>
-    /// <remarks>
-    /// This property blocks the calling thread (sync-over-async) while querying
-    /// the Bot Framework Token Service. Under high concurrency this can cause
-    /// thread-pool starvation. Prefer <see cref="IsSignedInAsync"/> in new code.
-    /// </remarks>
-    [Obsolete("Use IsSignedInAsync() instead. This property blocks the calling thread and can cause thread-pool starvation under load.")]
-    public bool IsSignedIn
-    {
-        get
-        {
-            OAuthFlowRegistry? registry = TeamsBotApplication.OAuthRegistry;
-            if (registry is null) return false;
-
-            OAuthFlow? flow = registry.ResolveSingleWithWarning();
-            if (flow is null) return false;
-
-            return flow.GetTokenAsync(this).GetAwaiter().GetResult() is not null;
-        }
-    }
+      
 
     /// <summary>
     /// Check whether the user has a valid cached token for a given OAuth connection.

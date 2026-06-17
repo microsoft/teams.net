@@ -40,7 +40,7 @@ public static class FileConsentExtensions
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<FileConsentValue> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<FileConsentValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

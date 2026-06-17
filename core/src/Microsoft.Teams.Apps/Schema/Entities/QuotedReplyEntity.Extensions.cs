@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Security;
 
 namespace Microsoft.Teams.Apps.Schema.Entities;
@@ -9,7 +8,6 @@ namespace Microsoft.Teams.Apps.Schema.Entities;
 /// <summary>
 /// Quoted reply entity extension methods.
 /// </summary>
-[Experimental("ExperimentalTeamsQuotedReplies")]
 public static class QuotedReplyEntityExtensions
 {
     /// <summary>

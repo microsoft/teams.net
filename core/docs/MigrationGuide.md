@@ -182,7 +182,7 @@ Entity getter helpers are exposed via entity-scoped extension methods:
 ```csharp
 // Retrieve entity collections
 activity.GetMentions();             // IEnumerable<MentionEntity>
-activity.GetQuotedMessages();       // IEnumerable<QuotedReplyEntity> (ExperimentalTeamsQuotedReplies)
+activity.GetQuotedMessages();       // IEnumerable<QuotedReplyEntity>
 activity.GetSensitivityLabels();    // IEnumerable<SensitiveUsageEntity>
 
 // Retrieve single entities

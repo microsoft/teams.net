@@ -27,9 +27,9 @@ public partial class Activity : IConvertible
         if (type == ActivityType.Command.ToType()) return ToCommand();
         if (type == ActivityType.CommandResult.ToType()) return ToCommandResult();
         if (type == ActivityType.ConversationUpdate.ToType()) return ToConversationUpdate();
-        #pragma warning disable CS0618
+#pragma warning disable CS0618
         if (type == ActivityType.EndOfConversation.ToType()) return ToEndOfConversation();
-        #pragma warning restore CS0618
+#pragma warning restore CS0618
         if (type == ActivityType.InstallUpdate.ToType()) return ToInstallUpdate();
         if (type == ActivityType.Typing.ToType()) return ToTyping();
         if (type == ActivityType.Message.ToType()) return ToMessage();
