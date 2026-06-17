@@ -2,8 +2,6 @@
 
 This document describes how to release packages for the Teams SDK for .NET. It assumes you have required entitlements in Azure DevOps for triggering releases.
 
-This project uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) (nbgv) for automatic version management.
-
 ## Creating a Release
 
 1. Create a branch from `main`:
@@ -103,6 +101,8 @@ Versions are computed automatically from git history based on `version.json`:
 - **Feature branch**: versions include the commit hash (e.g., `2.0.7-preview.42-g1a2b3c4`)
 
 When `version.json` has a `-preview` (or `-alpha`) suffix, every build produces a preview package. When the suffix is removed on a release branch, builds produce stable packages.
+
+This project uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) (nbgv) for automatic version management.
 
 ## Publishing
 
