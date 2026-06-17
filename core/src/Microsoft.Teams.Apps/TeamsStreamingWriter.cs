@@ -154,7 +154,7 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException(
                 "Cannot finalize with no content. Stream text via AppendResponseAsync, or provide attachments on the final MessageActivity.");
 
-        StreamInfoEntity streamInfo = new() { StreamTypes = StreamTypes.Final };
+        StreamInfoEntity streamInfo = new() { StreamType = StreamTypes.Final };
         if (_streamId != null) streamInfo.StreamId = _streamId;
 
         TeamsActivity activity = new TeamsActivityBuilder(final)
@@ -174,7 +174,7 @@ public sealed class TeamsStreamingWriter
     private TeamsActivity BuildActivity(string text, string streamType)
     {
         StreamingActivity streaming = new(text);
-        streaming.StreamInfo.StreamTypes = streamType;
+        streaming.StreamInfo.StreamType = streamType;
         streaming.StreamInfo.StreamSequence = _sequence;
         if (_streamId != null)
             streaming.StreamInfo.StreamId = _streamId;

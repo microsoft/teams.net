@@ -56,7 +56,7 @@ public static class StreamInfoEntityExtensions
         StreamInfoEntity entity = new()
         {
             StreamId = resolvedStreamId,
-            StreamTypes = streamType,
+            StreamType = streamType,
             StreamSequence = streamSequence
         };
 

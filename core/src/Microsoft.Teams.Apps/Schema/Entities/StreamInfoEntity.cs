@@ -29,7 +29,7 @@ public class StreamInfoEntity : Entity
     /// Gets or sets the stream type. See <see cref="StreamTypes"/> for possible values.
     /// </summary>
     [JsonPropertyName("streamType")]
-    public string? StreamTypes
+    public string? StreamType
     {
         get => base.Properties.TryGetValue("streamType", out object? value) ? value?.ToString() : null;
         set => base.Properties["streamType"] = value;
