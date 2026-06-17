@@ -101,17 +101,6 @@ public static partial class ApplicationBuilderExtensions
     /// <param name="handler">The callback to handle the function</param>
     public static IApplicationBuilder AddFunction<TBody>(this IApplicationBuilder builder, string name, Func<IFunctionContext<TBody>, Task<object?>> handler)
     {
-        return builder.AddFunction<TBody>(name, async context => await handler(context).ConfigureAwait(false));
-    }
-
-    /// <summary>
-    /// add/update a function that can be called remotely
-    /// </summary>
-    /// <typeparam name="TBody">The body (data) type</typeparam>
-    /// <param name="name">The unique function name</param>
-    /// <param name="handler">The callback to handle the function</param>
-    public static IApplicationBuilder AddFunction<TBody>(this IApplicationBuilder builder, string name, Func<IFunctionContext<TBody>, object?> handler)
-    {
         builder.UseEndpoints(endpoints =>
         {
             endpoints.MapPost($"/api/functions/{name}", async context =>
@@ -188,12 +177,23 @@ public static partial class ApplicationBuilderExtensions
                 }
 
                 log.Debug(ctx.Data?.ToString());
-                var res = handler(ctx);
+                var res = await handler(ctx).ConfigureAwait(false);
                 log.Debug(res?.ToString());
                 await Results.Json(res).ExecuteAsync(context).ConfigureAwait(false);
             }).RequireAuthorization(EntraTokenAuthConstants.AuthorizationPolicy);
         });
 
         return builder;
+    }
+
+    /// <summary>
+    /// add/update a function that can be called remotely
+    /// </summary>
+    /// <typeparam name="TBody">The body (data) type</typeparam>
+    /// <param name="name">The unique function name</param>
+    /// <param name="handler">The callback to handle the function</param>
+    public static IApplicationBuilder AddFunction<TBody>(this IApplicationBuilder builder, string name, Func<IFunctionContext<TBody>, object?> handler)
+    {
+        return builder.AddFunction<TBody>(name, context => Task.FromResult(handler(context)));
     }
 }
