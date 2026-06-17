@@ -34,7 +34,7 @@ public static class AdaptiveCardExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.AdaptiveCardAction),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.AdaptiveCardAction),
             Selector = activity => activity.Name == InvokeNames.AdaptiveCardAction,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {

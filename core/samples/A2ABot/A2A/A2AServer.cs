@@ -68,7 +68,7 @@ internal sealed class A2AServer(
             newConvId, handoff.From, handoff.UserName, handoff.Summary, ct);
 
         TeamsActivity proactive = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText(greeting)
             .WithServiceUrl(serviceUrl)
             .WithConversation(new TeamsConversation { Id = newConvId })

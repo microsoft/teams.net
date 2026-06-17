@@ -33,7 +33,7 @@ public static class MessageDeleteExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<MessageDeleteActivity>
         {
-            Name = TeamsActivityType.MessageDelete,
+            Name = TeamsActivityTypes.MessageDelete,
             Selector = _ => true,
             Handler = async (ctx, cancellationToken) =>
             {

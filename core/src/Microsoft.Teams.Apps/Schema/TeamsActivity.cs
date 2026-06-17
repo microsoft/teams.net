@@ -21,7 +21,7 @@ public class TeamsActivity : CoreActivity
     {
         ArgumentNullException.ThrowIfNull(activity);
 
-        return TeamsActivityType.ActivityDeserializerMap.TryGetValue(activity.Type, out Func<CoreActivity, TeamsActivity>? factory)
+        return TeamsActivityTypes.ActivityDeserializerMap.TryGetValue(activity.Type, out Func<CoreActivity, TeamsActivity>? factory)
             ? factory(activity)
             : new TeamsActivity(activity);  // Fallback to base type
     }
@@ -32,7 +32,7 @@ public class TeamsActivity : CoreActivity
     /// </summary>
     /// <returns>A JSON string representation of the activity using the type-specific serializer.</returns>
     public override string ToJson()
-        => TeamsActivityType.ActivitySerializerMap.TryGetValue(GetType(), out Func<TeamsActivity, string>? serializer)
+        => TeamsActivityTypes.ActivitySerializerMap.TryGetValue(GetType(), out Func<TeamsActivity, string>? serializer)
             ? serializer(this)
             : ToJson(TeamsActivityJsonContext.Default.TeamsActivity);
 
@@ -51,7 +51,7 @@ public class TeamsActivity : CoreActivity
     [JsonConstructor]
     public TeamsActivity()
     {
-        Type = TeamsActivityType.Message;
+        Type = TeamsActivityTypes.Message;
     }
 
     /// <summary>

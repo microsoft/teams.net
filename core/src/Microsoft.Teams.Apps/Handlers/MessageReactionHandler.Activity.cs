@@ -27,7 +27,7 @@ public class MessageReactionActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageReactionActivity() : base(TeamsActivityType.MessageReaction)
+    public MessageReactionActivity() : base(TeamsActivityTypes.MessageReaction)
     {
     }
 

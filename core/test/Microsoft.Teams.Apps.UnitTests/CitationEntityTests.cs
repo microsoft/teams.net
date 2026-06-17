@@ -133,13 +133,13 @@ public class CitationEntityTests
     public void AddFeedback_WithMode_SetsFeedbackLoopAndClearsFeedbackLoopEnabled()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .AddFeedback(FeedbackType.Custom)
+            .AddFeedback(FeedbackTypes.Custom)
             .Build();
 
         Assert.NotNull(activity.ChannelData);
         Assert.Null(activity.ChannelData.FeedbackLoopEnabled);
         Assert.NotNull(activity.ChannelData.FeedbackLoop);
-        Assert.Equal(FeedbackType.Custom, activity.ChannelData.FeedbackLoop.Type);
+        Assert.Equal(FeedbackTypes.Custom, activity.ChannelData.FeedbackLoop.Type);
     }
 
     [Fact]
@@ -153,7 +153,7 @@ public class CitationEntityTests
               Text = "{\"type\":\"AdaptiveCard\"}",
               Url = new Uri("https://example.com/doc"),
               EncodingFormat = EncodingFormats.AdaptiveCard,
-              Icon = CitationIcon.MicrosoftWord,
+              Icon = CitationIcons.MicrosoftWord,
               Keywords = ["keyword1", "keyword2"],
               UsageInfo = new SensitiveUsageEntity { Name = "Confidential" }
           })
@@ -170,7 +170,7 @@ public class CitationEntityTests
         Assert.Equal(new Uri("https://example.com/doc"), appearance.Url);
         Assert.Equal(EncodingFormats.AdaptiveCard, appearance.EncodingFormat);
         Assert.NotNull(appearance.Image);
-        Assert.Equal(CitationIcon.MicrosoftWord, appearance.Image.Name);
+        Assert.Equal(CitationIcons.MicrosoftWord, appearance.Image.Name);
         Assert.NotNull(appearance.Keywords);
         Assert.Equal(2, appearance.Keywords.Count);
         Assert.NotNull(appearance.UsageInfo);
@@ -187,7 +187,7 @@ public class CitationEntityTests
               Name = "Test Document",
               Abstract = "Test abstract content",
               Url = new Uri("https://example.com"),
-              Icon = CitationIcon.Pdf,
+              Icon = CitationIcons.Pdf,
               Keywords = ["test", "citation"]
           })
           .AddFeedback()
@@ -215,7 +215,7 @@ public class CitationEntityTests
           {
               Name = "Rebase Test Doc",
               Abstract = "Rebase test abstract",
-              Icon = CitationIcon.MicrosoftExcel
+              Icon = CitationIcons.MicrosoftExcel
           })
           .Build();
 

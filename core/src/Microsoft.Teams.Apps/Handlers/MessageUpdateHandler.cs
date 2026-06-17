@@ -33,7 +33,7 @@ public static class MessageUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<MessageUpdateActivity>
         {
-            Name = TeamsActivityType.MessageUpdate,
+            Name = TeamsActivityTypes.MessageUpdate,
             Selector = _ => true,
             Handler = async (ctx, cancellationToken) =>
             {

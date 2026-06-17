@@ -47,7 +47,7 @@ bot.OnAdaptiveCardAction(async (context, cancellationToken) =>
     {
         JsonObject fileConsentCard = Cards.CreateFileConsentCard();
         TeamsAttachment fileConsentCardResponse = TeamsAttachment.CreateBuilder()
-            .WithContent(fileConsentCard).WithContentType(AttachmentContentType.FileConsentCard)
+            .WithContent(fileConsentCard).WithContentType(AttachmentContentTypes.FileConsentCard)
             .WithName("file_consent.json").Build();
         await context.SendActivityAsync(new MessageActivity([fileConsentCardResponse]), cancellationToken);
 
@@ -70,7 +70,7 @@ bot.OnTaskFetch(async (context, cancellationToken) =>
     TeamsAttachment taskModuleCardResponse = TeamsAttachment.CreateBuilder()
         .WithAdaptiveCard(Cards.CreateTaskModuleCard()).Build();
     return TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseType.Continue)
+        .WithType(TaskModuleResponseTypes.Continue)
         .WithTitle("Task")
         .WithHeight("medium")
         .WithWidth("medium")
@@ -84,7 +84,7 @@ bot.OnTaskSubmit(async (context, cancellationToken) =>
 {
     Console.WriteLine("✓ OnTaskSubmit");
     return TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseType.Message)
+        .WithType(TaskModuleResponseTypes.Message)
         .WithMessage("Done")
         .Build();
 });
@@ -132,7 +132,7 @@ bot.OnFileConsent(async (context, cancellationToken) =>
 
                     TeamsAttachment fileUploadResponse = TeamsAttachment.CreateBuilder()
                         .WithName(fileName)
-                        .WithContentType(AttachmentContentType.FileInfoCard)
+                        .WithContentType(AttachmentContentTypes.FileInfoCard)
                         .WithContentUrl(contentUrl != null ? new Uri(contentUrl) : null)
                         .WithContent(fileInfoContent).Build();
 
@@ -159,131 +159,5 @@ bot.OnFileConsent(async (context, cancellationToken) =>
         .WithStatusCode(200)
         .Build();
 });
-
-/*
-// ==================== EXECUTE ACTION ====================
-bot.OnExecuteAction(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnExecuteAction");
-
-    var responseBody = new JsonObject
-    {
-        ["status"] = "completed"
-    };
-
-    return new CoreInvokeResponse(200, responseBody);
-});
-
-// ==================== HANDOFF ====================
-bot.OnHandoff(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnHandoff");
-    return new CoreInvokeResponse(200);
-});
-
-// ==================== SEARCH ====================
-bot.OnSearch(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnSearch");
-
-    var responseBody = new JsonObject
-    {
-        ["results"] = new JsonArray
-        {
-            new JsonObject
-            {
-                ["id"] = "1",
-                ["title"] = "Result"
-            }
-        }
-    };
-
-    return new CoreInvokeResponse(200, responseBody);
-});
-
-// ==================== MESSAGE SUBMIT ACTION ====================
-bot.OnMessageSubmitAction(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnMessageSubmitAction");
-
-    var data = context.Activity.Value;
-    Console.WriteLine($"  Data: {System.Text.Json.JsonSerializer.Serialize(data)}");
-
-    // Extract data fields
-    var jsonData = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(
-        System.Text.Json.JsonSerializer.Serialize(data));
-
-    string? action = jsonData.TryGetProperty("action", out var a) ? a.GetString() : "unknown";
-    string? value = jsonData.TryGetProperty("value", out var v) ? v.GetString() : "no value";
-
-    Console.WriteLine($"  Action: {action}");
-    Console.WriteLine($"  Value: {value}");
-
-    var responseBody = new JsonObject
-    {
-        ["statusCode"] = 200,
-        ["type"] = "application/vnd.microsoft.activity.message",
-        ["value"] = $"Message action '{action}' submitted! Value: {value}"
-    };
-
-    return new CoreInvokeResponse(200, responseBody);
-});
-
-// ==================== CONFIG FETCH ====================
-bot.OnConfigFetch(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnConfigFetch");
-
-    var card = new
-    {
-        contentType = AttachmentContentType.AdaptiveCard,
-        content = new
-        {
-            type = "AdaptiveCard",
-            version = "1.4",
-            body = new object[]
-            {
-                new { type = "TextBlock", text = "Extension Settings", size = "large", weight = "bolder" },
-                new { type = "TextBlock", text = "Configure your messaging extension settings below:", wrap = true },
-                new { type = "Input.Text", id = "apiKey", label = "API Key", placeholder = "Enter your API key" },
-                new { type = "Input.Toggle", id = "enableNotifications", label = "Enable Notifications", value = "true" }
-            },
-            actions = new object[]
-            {
-                new { type = "Action.Submit", title = "Save Settings" }
-            }
-        }
-    };
-
-    var response = TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseType.Continue)
-        .WithTitle("Configure Messaging Extension")
-        .WithHeight(TaskModuleSize.Medium)
-        .WithWidth(TaskModuleSize.Medium)
-        .WithCard(card)
-        .Build();
-
-    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
-});
-
-// ==================== CONFIG SUBMIT ====================
-bot.OnConfigSubmit(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnConfigSubmit");
-
-    var data = context.Activity.Value;
-    Console.WriteLine($"  Config data: {System.Text.Json.JsonSerializer.Serialize(data)}");
-
-    // In a real app, you would save these settings to a database
-    // associated with the user/team
-
-    var response = TaskModuleResponse.CreateBuilder()
-        .WithType(TaskModuleResponseType.Message)
-        .WithMessage("Settings saved successfully!")
-        .Build();
-
-    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
-});
-*/
 
 webApp.Run();

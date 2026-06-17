@@ -27,7 +27,7 @@ public class InstallUpdateActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public InstallUpdateActivity() : base(TeamsActivityType.InstallationUpdate)
+    public InstallUpdateActivity() : base(TeamsActivityTypes.InstallationUpdate)
     {
     }
 

@@ -57,7 +57,7 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingStart),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingStart),
             Selector = activity => activity.Name == EventNames.MeetingStart,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -84,7 +84,7 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingEnd),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingEnd),
             Selector = activity => activity.Name == EventNames.MeetingEnd,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -111,7 +111,7 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingParticipantJoin),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingParticipantJoin),
             Selector = activity => activity.Name == EventNames.MeetingParticipantJoin,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -138,7 +138,7 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingParticipantLeave),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingParticipantLeave),
             Selector = activity => activity.Name == EventNames.MeetingParticipantLeave,
             Handler = async (ctx, cancellationToken) =>
             {

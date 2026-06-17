@@ -73,7 +73,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_AddsEntity()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("test")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -97,7 +97,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_DoesNotDuplicate_WhenConcreteEntityExists()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("test")
             .AddEntity(new TargetedMessageInfoEntity { MessageId = "9999" })
             .WithTargetedMessageInfo("msg-123")
@@ -112,7 +112,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_DoesNotDuplicate_WhenGenericEntityWithMatchingType()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("test")
             .AddEntity(new Entity("targetedMessageInfo"))
             .WithTargetedMessageInfo("msg-123")
@@ -126,7 +126,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_StripsQuotedReplyEntities()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("test")
             .AddEntity(new Entity("quotedReply"))
             .WithTargetedMessageInfo("msg-123")
@@ -140,7 +140,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_StripsAllQuotedReplyEntities_WhenMultiplePresent()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("test")
             .AddEntity(new Entity("quotedReply"))
             .AddEntity(new Entity("quotedReply"))
@@ -157,7 +157,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_StripsQuotedPlaceholderFromText()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .AddQuote("msg-123", "my response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -170,7 +170,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_StripsAllQuotedPlaceholders_NotJustMatchingMessageId()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .AddQuote("msg-1", "first")
             .AddQuote("msg-2", "second")
             .WithTargetedMessageInfo("msg-99")
@@ -188,7 +188,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_OnMessageActivity_AutoPopulatesEntity()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -202,7 +202,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_LeavesTextUnchanged_WhenNoPlaceholder()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("plain response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -215,7 +215,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_NullText_DoesNotThrow()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
@@ -226,7 +226,7 @@ public class TargetedMessageInfoEntityTests
     public void AddTargetedMessageInfo_ToJson_ContainsMessageId()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("hello")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -257,7 +257,7 @@ public class TargetedMessageInfoEntityTests
     public void Builder_WithTargetedMessageInfo_AddsEntity()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithTargetedMessageInfo("msg-123")
             .Build();
 
@@ -274,7 +274,7 @@ public class TargetedMessageInfoEntityTests
     {
         Assert.Throws<InvalidOperationException>(() =>
             TeamsActivity.CreateBuilder()
-                .WithType(TeamsActivityType.Typing)
+                .WithType(TeamsActivityTypes.Typing)
                 .WithTargetedMessageInfo("msg-123"));
     }
 
@@ -283,7 +283,7 @@ public class TargetedMessageInfoEntityTests
     {
         Assert.Throws<ArgumentException>(() =>
             TeamsActivity.CreateBuilder()
-                .WithType(TeamsActivityType.Message)
+                .WithType(TeamsActivityTypes.Message)
                 .WithTargetedMessageInfo("   "));
     }
 
@@ -291,7 +291,7 @@ public class TargetedMessageInfoEntityTests
     public void Builder_WithTargetedMessageInfo_IsIdempotent()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithTargetedMessageInfo("msg-123")
             .WithTargetedMessageInfo("msg-999")
             .Build();
@@ -305,7 +305,7 @@ public class TargetedMessageInfoEntityTests
     public void Builder_WithTargetedMessageInfo_StripsQuotedReplyEntities()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .AddQuote("msg-1", "old reply")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -317,7 +317,7 @@ public class TargetedMessageInfoEntityTests
     public void Builder_WithTargetedMessageInfo_StripsPlaceholderFromText()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .AddQuote("msg-123", "my response")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -329,7 +329,7 @@ public class TargetedMessageInfoEntityTests
     public void Builder_WithTargetedMessageInfo_ToJson_ContainsMessageId()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText("hello")
             .WithTargetedMessageInfo("msg-123")
             .Build();
@@ -344,7 +344,7 @@ public class TargetedMessageInfoEntityTests
     public void Builder_WithTargetedMessageInfo_StripsEscapedPlaceholder()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .AddQuote("a\"b", "response")
             .WithTargetedMessageInfo("a\"b")
             .Build();
@@ -358,7 +358,7 @@ public class TargetedMessageInfoEntityTests
     public void Builder_WithTargetedMessageInfo_StripsAllPlaceholders_NotJustMatchingMessageId()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .AddQuote("msg-1", "first")
             .AddQuote("msg-2", "second")
             .WithTargetedMessageInfo("msg-99")
@@ -373,7 +373,7 @@ public class TargetedMessageInfoEntityTests
     public void Builder_WithTargetedMessageInfo_OnFreshBuilder()
     {
         TeamsActivity activity = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithTargetedMessageInfo("msg-123")
             .Build();
 

@@ -199,7 +199,7 @@ public class OAuthFlow
                 ConnectionName = _connectionName,
                 Buttons =
                 [
-                    new SuggestedAction(ActionType.SignIn, options.SignInButtonText, signInResource.SignInLink)
+                    new SuggestedAction(ActionTypes.SignIn, options.SignInButtonText, signInResource.SignInLink)
                 ],
                 TokenExchangeResource = signInResource.TokenExchangeResource,
                 TokenPostResource = signInResource.TokenPostResource
@@ -209,7 +209,7 @@ public class OAuthFlow
             JsonElement oauthCardJson = JsonSerializer.SerializeToElement(oauthCard);
 
             TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
-                .WithContentType(AttachmentContentType.OAuthCard)
+                .WithContentType(AttachmentContentTypes.OAuthCard)
                 .WithContent(oauthCardJson)
                 .Build();
 
