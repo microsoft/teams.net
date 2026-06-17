@@ -134,7 +134,8 @@ public static class TextFormats
     public const string Xml = "xml";
 
     /// <summary>
-    /// Extended markdown text format.
+    /// Extended markdown text format. Supports GFM tables, LaTeX math blocks,
+    /// and other rich content beyond standard markdown.
     /// </summary>
     public const string ExtendedMarkdown = "extendedmarkdown";
 }
