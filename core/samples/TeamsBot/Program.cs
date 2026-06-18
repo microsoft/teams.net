@@ -66,8 +66,8 @@ teamsApp.OnMessage("(?i)hello", async (context, cancellationToken) =>
     await context.SendActivityAsync(ta, cancellationToken);
 });
 
-// Extended Markdown handler: matches "extended" (case-insensitive)
-teamsApp.OnMessage("(?i)^extended$", async (context, cancellationToken) =>
+// Extended Markdown handler: matches "extendedMarkdown" (case-insensitive)
+teamsApp.OnMessage("(?i)^extendedMarkdown$", async (context, cancellationToken) =>
 {
     MessageActivity extendedMarkdownMessage = new("""
 # Extended Markdown Demo
