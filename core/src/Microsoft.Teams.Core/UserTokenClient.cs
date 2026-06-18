@@ -110,14 +110,14 @@ public class UserTokenClient(HttpClient httpClient, IConfiguration configuration
     /// <param name="finalRedirect">The optional final redirect URL.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>A task that represents the asynchronous operation. The result contains the sign-in resource with the sign-in link and token exchange information.</returns>
-    public virtual Task<GetSignInResourceResult> GetSignInResource(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
+    public virtual Task<GetSignInResourceResult> GetSignInResourceAsync(string userId, string connectionName, string channelId, string? finalRedirect = null, CancellationToken cancellationToken = default)
     {
         var tokenExchangeState = new
         {
             ConnectionName = connectionName,
             Conversation = new
             {
-                User = new ConversationAccount { Id = userId },
+                User = new ChannelAccount { Id = userId },
             }
         };
         string tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState, _defaultOptions);

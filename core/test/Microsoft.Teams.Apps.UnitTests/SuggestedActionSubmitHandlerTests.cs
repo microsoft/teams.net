@@ -27,7 +27,7 @@ public class SuggestedActionSubmitHandlerTests
         Router router = new(NullLogger.Instance);
         router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SuggestedActionSubmit),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.SuggestedActionSubmit),
             Selector = activity => activity.Name == InvokeNames.SuggestedActionSubmit,
         });
 
@@ -77,7 +77,7 @@ public class SuggestedActionSubmitHandlerTests
             SuggestedActions = new SuggestedActions()
         };
         activity.SuggestedActions.AddAction(
-            new SuggestedAction(ActionType.Submit, "Approve", new { vote = "approve" })
+            new SuggestedAction(ActionTypes.Submit, "Approve", new { vote = "approve" })
         );
 
         string json = activity.ToJson();

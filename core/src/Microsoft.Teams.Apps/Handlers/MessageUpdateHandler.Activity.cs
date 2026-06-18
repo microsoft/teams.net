@@ -29,7 +29,7 @@ public class MessageUpdateActivity : MessageActivity
     [JsonConstructor]
     public MessageUpdateActivity() : base()
     {
-        Type = TeamsActivityType.MessageUpdate;
+        Type = TeamsActivityTypes.MessageUpdate;
     }
 
     /// <summary>
@@ -38,7 +38,7 @@ public class MessageUpdateActivity : MessageActivity
     /// <param name="text">The text content of the message.</param>
     public MessageUpdateActivity(string text) : base(text)
     {
-        Type = TeamsActivityType.MessageUpdate;
+        Type = TeamsActivityTypes.MessageUpdate;
     }
 
     /// <summary>
@@ -47,6 +47,6 @@ public class MessageUpdateActivity : MessageActivity
     /// <param name="activity">The CoreActivity to convert.</param>
     protected MessageUpdateActivity(CoreActivity activity) : base(activity)
     {
-        Type = TeamsActivityType.MessageUpdate;
+        Type = TeamsActivityTypes.MessageUpdate;
     }
 }

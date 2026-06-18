@@ -163,7 +163,7 @@ public class TeamsActivityTests
     }
 
     [Fact]
-    public void Serialize_DoesNotRepeat_ConversationAccount_Properties()
+    public void Serialize_DoesNotRepeat_ChannelAccount_Properties()
     {
         CoreActivity coreActivity = CoreActivity.FromJsonString("""
             {

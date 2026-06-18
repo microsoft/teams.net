@@ -57,12 +57,12 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingStart),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingStart),
             Selector = activity => activity.Name == EventNames.MeetingStart,
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingStartValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingStartValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -84,12 +84,12 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingEnd),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingEnd),
             Selector = activity => activity.Name == EventNames.MeetingEnd,
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingEndValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingEndValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -111,12 +111,12 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingParticipantJoin),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingParticipantJoin),
             Selector = activity => activity.Name == EventNames.MeetingParticipantJoin,
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingParticipantJoinValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingParticipantJoinValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -138,12 +138,12 @@ public static class MeetingExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Event, EventNames.MeetingParticipantLeave),
+            Name = string.Join("/", TeamsActivityTypes.Event, EventNames.MeetingParticipantLeave),
             Selector = activity => activity.Name == EventNames.MeetingParticipantLeave,
             Handler = async (ctx, cancellationToken) =>
             {
                 EventActivity<MeetingParticipantLeaveValue> typedActivity = new(ctx.Activity);
-                Context<EventActivity<MeetingParticipantLeaveValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

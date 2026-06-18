@@ -79,12 +79,12 @@ public static class MessageExtensionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageExtensionQuery),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageExtensionQuery),
             Selector = activity => activity.Name == InvokeNames.MessageExtensionQuery,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -107,12 +107,12 @@ public static class MessageExtensionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageExtensionSubmitAction),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageExtensionSubmitAction),
             Selector = activity => activity.Name == InvokeNames.MessageExtensionSubmitAction,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionAction> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -135,12 +135,12 @@ public static class MessageExtensionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageExtensionQueryLink),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageExtensionQueryLink),
             Selector = activity => activity.Name == InvokeNames.MessageExtensionQueryLink,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQueryLink> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -163,12 +163,12 @@ public static class MessageExtensionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageExtensionAnonQueryLink),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageExtensionAnonQueryLink),
             Selector = activity => activity.Name == InvokeNames.MessageExtensionAnonQueryLink,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQueryLink> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQueryLink>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -191,12 +191,12 @@ public static class MessageExtensionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageExtensionFetchTask),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageExtensionFetchTask),
             Selector = activity => activity.Name == InvokeNames.MessageExtensionFetchTask,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionAction> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionAction>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -219,12 +219,12 @@ public static class MessageExtensionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageExtensionSelectItem),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageExtensionSelectItem),
             Selector = activity => activity.Name == InvokeNames.MessageExtensionSelectItem,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<JsonElement> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<JsonElement>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -247,61 +247,16 @@ public static class MessageExtensionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageExtensionQuerySettingUrl),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageExtensionQuerySettingUrl),
             Selector = activity => activity.Name == InvokeNames.MessageExtensionQuerySettingUrl,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<MessageExtensionQuery> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<MessageExtensionQuery>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
 
         return app;
     }
-
-
-    /*
-    /// <summary>
-    /// Registers a handler for message extension card button clicked invoke activities.
-    /// </summary>
-    public static TeamsBotApplication OnCardButtonClicked(this TeamsBotApplication app, MessageExtensionCardButtonClickedHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<InvokeActivity>
-        {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageExtensionCardButtonClicked),
-            Selector = activity => activity.Name == InvokeNames.MessageExtensionCardButtonClicked,
-            HandlerWithReturn = async (ctx, cancellationToken) =>
-            {
-                var typedActivity = new InvokeActivity<JsonElement>(ctx.Activity);
-                Context<InvokeActivity<JsonElement>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-
-    /// <summary>
-    /// Registers a handler for message extension setting invoke activities.
-    /// </summary>
-    public static TeamsBotApplication OnSetting(this TeamsBotApplication app, MessageExtensionSettingHandler handler)
-    {
-        ArgumentNullException.ThrowIfNull(app, nameof(app));
-        app.Router.Register(new Route<InvokeActivity>
-        {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageExtensionSetting),
-            Selector = activity => activity.Name == InvokeNames.MessageExtensionSetting,
-            HandlerWithReturn = async (ctx, cancellationToken) =>
-            {
-                var typedActivity = new InvokeActivity<Query>(ctx.Activity);
-                Context<InvokeActivity<Query>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
-                return await handler(typedContext, cancellationToken).ConfigureAwait(false);
-            }
-        });
-
-        return app;
-    }
-    */
 }

@@ -17,7 +17,7 @@ public class ActivitiesTests
     {
         CoreActivity coreActivity = new()
         {
-            Type = TeamsActivityType.MessageReaction
+            Type = TeamsActivityTypes.MessageReaction
         };
         coreActivity.Properties["reactionsAdded"] = System.Text.Json.JsonSerializer.SerializeToElement(new[]
         {
@@ -27,7 +27,7 @@ public class ActivitiesTests
 
         MessageReactionActivity activity = MessageReactionActivity.FromActivity(coreActivity);
         Assert.NotNull(activity);
-        Assert.Equal(TeamsActivityType.MessageReaction, activity.Type);
+        Assert.Equal(TeamsActivityTypes.MessageReaction, activity.Type);
         Assert.NotNull(activity.ReactionsAdded);
         Assert.Equal(2, activity.ReactionsAdded!.Count);
     }
@@ -36,7 +36,7 @@ public class ActivitiesTests
     public void MessageDelete_Constructor_Default_SetsMessageDeleteType()
     {
         MessageDeleteActivity activity = new();
-        Assert.Equal(TeamsActivityType.MessageDelete, activity.Type);
+        Assert.Equal(TeamsActivityTypes.MessageDelete, activity.Type);
     }
 
     [Fact]
@@ -44,13 +44,13 @@ public class ActivitiesTests
     {
         CoreActivity coreActivity = new()
         {
-            Type = TeamsActivityType.MessageDelete,
+            Type = TeamsActivityTypes.MessageDelete,
             Id = "deleted-msg-id"
         };
 
         MessageDeleteActivity messageDelete = MessageDeleteActivity.FromActivity(coreActivity);
         Assert.NotNull(messageDelete);
-        Assert.Equal(TeamsActivityType.MessageDelete, messageDelete.Type);
+        Assert.Equal(TeamsActivityTypes.MessageDelete, messageDelete.Type);
         Assert.Equal("deleted-msg-id", messageDelete.Id);
     }
 
@@ -58,14 +58,14 @@ public class ActivitiesTests
     public void MessageUpdate_Constructor_Default_SetsMessageUpdateType()
     {
         MessageUpdateActivity activity = new();
-        Assert.Equal(TeamsActivityType.MessageUpdate, activity.Type);
+        Assert.Equal(TeamsActivityTypes.MessageUpdate, activity.Type);
     }
 
     [Fact]
     public void MessageUpdate_Constructor_WithText_SetsTextAndMessageUpdateType()
     {
         MessageUpdateActivity activity = new("Updated text");
-        Assert.Equal(TeamsActivityType.MessageUpdate, activity.Type);
+        Assert.Equal(TeamsActivityTypes.MessageUpdate, activity.Type);
         Assert.Equal("Updated text", activity.Text);
     }
 
@@ -88,13 +88,13 @@ public class ActivitiesTests
     {
         CoreActivity coreActivity = new()
         {
-            Type = TeamsActivityType.MessageUpdate
+            Type = TeamsActivityTypes.MessageUpdate
         };
         coreActivity.Properties["text"] = "Test message";
 
         MessageUpdateActivity messageUpdate = MessageUpdateActivity.FromActivity(coreActivity);
         Assert.NotNull(messageUpdate);
-        Assert.Equal(TeamsActivityType.MessageUpdate, messageUpdate.Type);
+        Assert.Equal(TeamsActivityTypes.MessageUpdate, messageUpdate.Type);
         Assert.Equal("Test message", messageUpdate.Text);
     }
 
@@ -102,7 +102,7 @@ public class ActivitiesTests
     public void ConversationUpdate_Constructor_Default_SetsConversationUpdateType()
     {
         ConversationUpdateActivity activity = new();
-        Assert.Equal(TeamsActivityType.ConversationUpdate, activity.Type);
+        Assert.Equal(TeamsActivityTypes.ConversationUpdate, activity.Type);
     }
 
     [Fact]
@@ -110,13 +110,13 @@ public class ActivitiesTests
     {
         CoreActivity coreActivity = new()
         {
-            Type = TeamsActivityType.ConversationUpdate
+            Type = TeamsActivityTypes.ConversationUpdate
         };
         //coreActivity.Properties["topicName"] = "Converted Topic";
 
         ConversationUpdateActivity activity = ConversationUpdateActivity.FromActivity(coreActivity);
         Assert.NotNull(activity);
-        Assert.Equal(TeamsActivityType.ConversationUpdate, activity.Type);
+        Assert.Equal(TeamsActivityTypes.ConversationUpdate, activity.Type);
         //Assert.Equal("Converted Topic", activity.TopicName);
     }
 
@@ -124,7 +124,7 @@ public class ActivitiesTests
     public void InstallUpdate_Constructor_Default_SetsInstallationUpdateType()
     {
         InstallUpdateActivity activity = new();
-        Assert.Equal(TeamsActivityType.InstallationUpdate, activity.Type);
+        Assert.Equal(TeamsActivityTypes.InstallationUpdate, activity.Type);
     }
 
     [Fact]
@@ -132,13 +132,13 @@ public class ActivitiesTests
     {
         CoreActivity coreActivity = new()
         {
-            Type = TeamsActivityType.InstallationUpdate
+            Type = TeamsActivityTypes.InstallationUpdate
         };
         coreActivity.Properties["action"] = "remove";
 
         InstallUpdateActivity activity = InstallUpdateActivity.FromActivity(coreActivity);
         Assert.NotNull(activity);
-        Assert.Equal(TeamsActivityType.InstallationUpdate, activity.Type);
+        Assert.Equal(TeamsActivityTypes.InstallationUpdate, activity.Type);
         Assert.Equal("remove", activity.Action);
     }
 }

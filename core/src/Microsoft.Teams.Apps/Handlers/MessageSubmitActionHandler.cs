@@ -40,12 +40,12 @@ public static class MessageSubmitActionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageSubmitAction),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageSubmitAction),
             Selector = activity => activity.Name == InvokeNames.MessageSubmitAction,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<SubmitActionValue> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<SubmitActionValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });
@@ -67,7 +67,7 @@ public static class MessageSubmitActionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageSubmitAction, "feedback"),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageSubmitAction, "feedback"),
             Selector = activity =>
                 activity.Name == InvokeNames.MessageSubmitAction
                 && activity.Value?["actionName"]?.GetValue<string>() == "feedback",
@@ -76,7 +76,7 @@ public static class MessageSubmitActionExtensions
                 InvokeActivity<MessageSubmitFeedbackValue> typedActivity = new(ctx.Activity);
                 ((InvokeActivity)typedActivity).Value = ctx.Activity.Value?["actionValue"];
 
-                Context<InvokeActivity<MessageSubmitFeedbackValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

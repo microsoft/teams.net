@@ -35,12 +35,12 @@ public static class FileConsentExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.FileConsent),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.FileConsent),
             Selector = activity => activity.Name == InvokeNames.FileConsent,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
                 InvokeActivity<FileConsentValue> typedActivity = new(ctx.Activity);
-                Context<InvokeActivity<FileConsentValue>> typedContext = new(ctx.TeamsBotApplication, typedActivity);
+                var typedContext = ctx.CreateDerivedContext(typedActivity);
                 return await handler(typedContext, cancellationToken).ConfigureAwait(false);
             }
         });

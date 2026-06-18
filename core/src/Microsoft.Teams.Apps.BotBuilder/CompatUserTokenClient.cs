@@ -84,7 +84,7 @@ internal sealed class CompatUserTokenClient(UserTokenClient utc) : Microsoft.Bot
     public async override Task<SignInResource> GetSignInResourceAsync(string connectionName, Activity activity, string finalRedirect, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(activity);
-        GetSignInResourceResult res = await utc.GetSignInResource(activity.From.Id, connectionName, activity.ChannelId, finalRedirect, cancellationToken).ConfigureAwait(false);
+        GetSignInResourceResult res = await utc.GetSignInResourceAsync(activity.From.Id, connectionName, activity.ChannelId, finalRedirect, cancellationToken).ConfigureAwait(false);
         SignInResource signInResource = new()
         {
             SignInLink = res!.SignInLink

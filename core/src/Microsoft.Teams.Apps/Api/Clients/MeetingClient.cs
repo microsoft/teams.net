@@ -70,7 +70,7 @@ public class Meeting
     /// The organizer's user information.
     /// </summary>
     [JsonPropertyName("organizer")]
-    public ConversationAccount? Organizer { get; set; }
+    public ChannelAccount? Organizer { get; set; }
 }
 
 /// <summary>
@@ -112,7 +112,7 @@ public class MeetingParticipant
     /// The participant's user information.
     /// </summary>
     [JsonPropertyName("user")]
-    public ConversationAccount? User { get; set; }
+    public ChannelAccount? User { get; set; }
 
     /// <summary>
     /// Information about the associated meeting.

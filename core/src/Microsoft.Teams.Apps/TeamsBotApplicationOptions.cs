@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.Teams.Apps.OAuth;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core.Hosting;
 
 namespace Microsoft.Teams.Apps;
@@ -28,6 +29,25 @@ public sealed class TeamsBotApplicationOptions : BotApplicationOptions
         configure?.Invoke(options);
 
         OAuthFlows.Add(new OAuthFlowDescriptor(connectionName, options));
+        IsStateEnabled = true; // OAuthFlows require state; enable without overwriting existing StateConfiguration.
+        return this;
+    }
+
+    internal bool IsStateEnabled { get; private set; }
+
+    internal Action<TurnStateOptions>? StateConfiguration { get; private set; }
+
+    /// <summary>
+    /// Enables per-turn state management backed by <c>IDistributedCache</c>.
+    /// An in-memory cache is used by default; register a custom <c>IDistributedCache</c>
+    /// (Redis, SQL Server, etc.) to persist state across restarts.
+    /// </summary>
+    /// <param name="configure">Optional delegate to configure <see cref="TurnStateOptions"/> (e.g. cache entry TTL).</param>
+    /// <returns>This instance for chaining.</returns>
+    public TeamsBotApplicationOptions UseState(Action<TurnStateOptions>? configure = null)
+    {
+        IsStateEnabled = true;
+        StateConfiguration = configure;
         return this;
     }
 

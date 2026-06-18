@@ -40,12 +40,12 @@ public class TeamsStreamingWriterTests
 
     private static TeamsActivity CreateReferenceActivity() => new()
     {
-        Type = TeamsActivityType.Message,
+        Type = TeamsActivityTypes.Message,
         ServiceUrl = new Uri("https://smba.trafficmanager.net/amer/"),
         ChannelId = "msteams",
         Conversation = TeamsConversation.FromConversation(new Conversation { Id = "conv-123" }),
-        From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "user-123", Name = "User" }),
-        Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "bot-123", Name = "Bot" })
+        From = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "user-123", Name = "User" }),
+        Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "bot-123", Name = "Bot" })
     };
 
     private static (TeamsStreamingWriter writer, FakeHttpMessageHandler handler) CreateWriter(TeamsActivity? reference = null)
@@ -156,7 +156,7 @@ public class TeamsStreamingWriterTests
         await writer.AppendResponseAsync("streamed text");
 
         MessageActivity final = new("explicit text");
-        final.AddFeedback(FeedbackType.Custom);
+        final.AddFeedback(FeedbackTypes.Custom);
 
         await writer.FinalizeResponseAsync(final);
 
@@ -181,7 +181,7 @@ public class TeamsStreamingWriterTests
 
         // No Text set on the activity — writer should fill in the accumulated text.
         MessageActivity final = new();
-        final.AddFeedback(FeedbackType.Default);
+        final.AddFeedback(FeedbackTypes.Default);
 
         await writer.FinalizeResponseAsync(final);
 

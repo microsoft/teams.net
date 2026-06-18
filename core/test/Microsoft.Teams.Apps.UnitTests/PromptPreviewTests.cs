@@ -21,7 +21,7 @@ public class PromptPreviewTests
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
 
-        MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationType.GroupChat);
+        MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         await ctx.SendActivityAsync(new MessageActivity("response text"));
@@ -39,7 +39,7 @@ public class PromptPreviewTests
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
 
-        MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationType.GroupChat);
+        MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         await ctx.SendActivityAsync("plain text response");
@@ -61,7 +61,7 @@ public class PromptPreviewTests
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
 
-        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationType.Personal);
+        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         await ctx.SendActivityAsync("hello");
@@ -75,7 +75,7 @@ public class PromptPreviewTests
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
 
-        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationType.GroupChat);
+        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         await ctx.SendActivityAsync(new MessageActivity("hello"));
@@ -91,7 +91,7 @@ public class PromptPreviewTests
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
 
-        MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationType.GroupChat);
+        MessageActivity inbound = BuildInbound(targetedInbound: true, inboundId: "1772129782775", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         MessageActivity outbound = new("response");
@@ -112,11 +112,11 @@ public class PromptPreviewTests
         TestHarness harness = CreateHarness();
         SetupCapture(harness);
 
-        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationType.Personal);
+        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         MessageActivity outbound = new("secret");
-        outbound.Recipient = new TeamsConversationAccount { Id = "user-1", IsTargeted = true };
+        outbound.Recipient = new TeamsChannelAccount { Id = "user-1", IsTargeted = true };
 
         InvalidOperationException ex = await Assert.ThrowsAsync<InvalidOperationException>(
             () => ctx.SendActivityAsync(outbound));
@@ -129,7 +129,7 @@ public class PromptPreviewTests
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
 
-        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationType.Personal);
+        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.Personal);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         await ctx.SendActivityAsync(new MessageActivity("hi"));
@@ -143,11 +143,11 @@ public class PromptPreviewTests
         TestHarness harness = CreateHarness();
         CaptureSlot captured = SetupCapture(harness);
 
-        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationType.GroupChat);
+        MessageActivity inbound = BuildInbound(targetedInbound: false, inboundId: "1234", convType: ConversationTypes.GroupChat);
         Context<MessageActivity> ctx = new(harness.App, inbound);
 
         MessageActivity outbound = new("only you can see this");
-        outbound.Recipient = new TeamsConversationAccount { Id = "user-1", IsTargeted = true };
+        outbound.Recipient = new TeamsChannelAccount { Id = "user-1", IsTargeted = true };
 
         await ctx.SendActivityAsync(outbound);
 
@@ -168,8 +168,8 @@ public class PromptPreviewTests
             Id = inboundId,
             ChannelId = "msteams",
             ServiceUrl = new Uri("https://smba.trafficmanager.net/test/"),
-            From = new TeamsConversationAccount { Id = "user-1", Name = "User" },
-            Recipient = new TeamsConversationAccount
+            From = new TeamsChannelAccount { Id = "user-1", Name = "User" },
+            Recipient = new TeamsChannelAccount
             {
                 Id = "bot-1",
                 Name = "Bot",

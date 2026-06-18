@@ -14,7 +14,7 @@ public class InvokeActivityTest
     {
         InvokeActivity ia = new();
         Assert.NotNull(ia);
-        Assert.Equal(TeamsActivityType.Invoke, ia.Type);
+        Assert.Equal(TeamsActivityTypes.Invoke, ia.Type);
         Assert.Null(ia.Name);
         Assert.Null(ia.Value);
         // Assert.Null(ia.Conversation);
@@ -34,7 +34,7 @@ public class InvokeActivityTest
             """);
         InvokeActivity ia = InvokeActivity.FromActivity(coreActivity);
         Assert.NotNull(ia);
-        Assert.Equal(TeamsActivityType.Invoke, ia.Type);
+        Assert.Equal(TeamsActivityTypes.Invoke, ia.Type);
         Assert.Equal("testName", ia.Name);
         Assert.NotNull(ia.Value);
         Assert.Equal("convId", ia.Conversation?.Id);

@@ -33,7 +33,7 @@ public static class InstallUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InstallUpdateActivity>
         {
-            Name = TeamsActivityType.InstallationUpdate,
+            Name = TeamsActivityTypes.InstallationUpdate,
             Selector = _ => true,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -58,7 +58,7 @@ public static class InstallUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InstallUpdateActivity>
         {
-            Name = string.Join("/", [TeamsActivityType.InstallationUpdate, InstallUpdateActions.Add]),
+            Name = string.Join("/", [TeamsActivityTypes.InstallationUpdate, InstallUpdateActions.Add]),
             Selector = activity => activity.Action == InstallUpdateActions.Add,
             Handler = async (ctx, cancellationToken) =>
             {
@@ -83,7 +83,7 @@ public static class InstallUpdateExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InstallUpdateActivity>
         {
-            Name = string.Join("/", [TeamsActivityType.InstallationUpdate, InstallUpdateActions.Remove]),
+            Name = string.Join("/", [TeamsActivityTypes.InstallationUpdate, InstallUpdateActions.Remove]),
             Selector = activity => activity.Action == InstallUpdateActions.Remove,
             Handler = async (ctx, cancellationToken) =>
             {

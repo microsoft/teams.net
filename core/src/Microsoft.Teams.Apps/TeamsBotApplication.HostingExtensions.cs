@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Teams.Apps.Api.Clients;
+using Microsoft.Teams.Apps.State;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Hosting;
 
@@ -113,6 +114,12 @@ public static class TeamsBotApplicationHostingExtensions
         services.AddSingleton(teamsOptions);
 
         services.AddBotApplication<TApp>(botConfig);
+
+        if (teamsOptions.IsStateEnabled)
+        {
+            AddTeamsBotApplicationState(services, teamsOptions.StateConfiguration);
+        }
+
         services.AddBotHttpClient(nameof(ApiClient), botConfig);
         services.AddSingleton(sp =>
         {
@@ -155,4 +162,24 @@ public static class TeamsBotApplicationHostingExtensions
     /// <returns>The configured <see cref="TeamsBotApplication"/> instance.</returns>
     public static TeamsBotApplication UseTeams(this IEndpointRouteBuilder endpoints, string routePath = "api/messages")
         => endpoints.UseBotApplication<TeamsBotApplication>(routePath);
+
+    private static void AddTeamsBotApplicationState(IServiceCollection services, Action<TurnStateOptions>? configure)
+    {
+        if (configure is not null)
+        {
+            services.Configure(configure);
+        }
+        else
+        {
+            services.AddOptions<TurnStateOptions>();
+        }
+
+        // Provide an in-memory cache as fallback so UseState() works out of the box.
+        // AddDistributedMemoryCache() uses TryAdd, so it will not replace an existing IDistributedCache registration.
+        // If the developer registers another IDistributedCache later using Add*,
+        // the last registration will be resolved (e.g., AddStackExchangeRedisCache).
+        services.AddDistributedMemoryCache();
+
+        services.AddSingleton<TurnStateLoader>();
+    }
 }
