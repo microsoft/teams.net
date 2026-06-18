@@ -75,7 +75,7 @@ public class MemberClient
     /// need explicit control over paging (for example, to persist the continuation token across
     /// requests and resume later).
     /// </remarks>
-    public async IAsyncEnumerable<TeamsConversationAccount> GetAllAsync(
+    public async IAsyncEnumerable<TeamsChannelAccount> GetAllAsync(
         string conversationId,
         int pageSize = 50,
         AgenticIdentity? agenticIdentity = null,
@@ -93,7 +93,7 @@ public class MemberClient
                 additionalHeaders,
                 cancellationToken).ConfigureAwait(false);
 
-            foreach (TeamsConversationAccount? member in page.Members)
+            foreach (TeamsChannelAccount? member in page.Members)
             {
                 if (member is not null)
                 {
