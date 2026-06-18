@@ -44,14 +44,14 @@ internal sealed class Router
             throw new InvalidOperationException($"A route with name '{route.Name}' is already registered.");
         }
 
-        string invokePrefix = TeamsActivityType.Invoke + "/";
+        string invokePrefix = TeamsActivityTypes.Invoke + "/";
 
-        if (route.Name == TeamsActivityType.Invoke && _routes.Any(r => r.Name.StartsWith(invokePrefix, StringComparison.Ordinal)))
+        if (route.Name == TeamsActivityTypes.Invoke && _routes.Any(r => r.Name.StartsWith(invokePrefix, StringComparison.Ordinal)))
         {
             throw new InvalidOperationException("Cannot register a catch-all invoke handler when specific invoke handlers are already registered. Use specific handlers or handle all invoke types inside OnInvoke.");
         }
 
-        if (route.Name.StartsWith(invokePrefix, StringComparison.Ordinal) && _routes.Any(r => r.Name == TeamsActivityType.Invoke))
+        if (route.Name.StartsWith(invokePrefix, StringComparison.Ordinal) && _routes.Any(r => r.Name == TeamsActivityTypes.Invoke))
         {
             throw new InvalidOperationException($"Cannot register '{route.Name}' when a catch-all invoke handler is already registered. Remove OnInvoke or use specific handlers exclusively.");
         }
@@ -216,8 +216,8 @@ internal sealed class Router
 
     private static (string handlerType, string dispatch) GetHandlerTags(string routeName)
     {
-        const string invokePrefix = TeamsActivityType.Invoke + "/";
-        if (string.Equals(routeName, TeamsActivityType.Invoke, StringComparison.Ordinal))
+        const string invokePrefix = TeamsActivityTypes.Invoke + "/";
+        if (string.Equals(routeName, TeamsActivityTypes.Invoke, StringComparison.Ordinal))
         {
             return (routeName, "catchall");
         }

@@ -99,7 +99,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 Id = "act123",
                 ServiceUrl = new Uri("https://smba.trafficmanager.net/teams/"),
                 Conversation = new Conversation("conv123"),
-                From = new Teams.Core.Schema.ConversationAccount { Id = "user123" }
+                From = new Teams.Core.Schema.ChannelAccount { Id = "user123" }
             };
 
             DefaultHttpContext httpContext = new();

@@ -108,7 +108,7 @@ public class TeamsChannelData : ChannelData
     /// <summary>
     /// Feedback loop configuration. When set, takes precedence over
     /// <see cref="FeedbackLoopEnabled"/>. Set <c>Type</c> to
-    /// <see cref="FeedbackType.Custom"/> to trigger a <c>message/fetchTask</c>
+    /// <see cref="FeedbackTypes.Custom"/> to trigger a <c>message/fetchTask</c>
     /// invoke for a bot-provided task module dialog.
     /// </summary>
     [JsonPropertyName("feedbackLoop")] public FeedbackLoop? FeedbackLoop { get; set; }
@@ -117,7 +117,7 @@ public class TeamsChannelData : ChannelData
 /// <summary>
 /// Known values for <see cref="FeedbackLoop.Type"/>.
 /// </summary>
-public static class FeedbackType
+public static class FeedbackTypes
 {
     /// <summary>Teams' built-in thumbs up/down UI.</summary>
     public const string Default = "default";
@@ -138,18 +138,18 @@ public static class FeedbackType
 public class FeedbackLoop
 {
     /// <summary>
-    /// The feedback loop type. See <see cref="FeedbackType"/> for known values.
+    /// The feedback loop type. See <see cref="FeedbackTypes"/> for known values.
     /// </summary>
-    [JsonPropertyName("type")] public string Type { get; set; } = FeedbackType.Default;
+    [JsonPropertyName("type")] public string Type { get; set; } = FeedbackTypes.Default;
 
     /// <summary>
-    /// Creates a new instance with the default <see cref="FeedbackType.Default"/> type.
+    /// Creates a new instance with the default <see cref="FeedbackTypes.Default"/> type.
     /// </summary>
     public FeedbackLoop() { }
 
     /// <summary>
     /// Creates a new instance with the specified type.
     /// </summary>
-    /// <param name="type">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    /// <param name="type">The feedback loop type. See <see cref="FeedbackTypes"/> for known values.</param>
     public FeedbackLoop(string type) { Type = type; }
 }

@@ -22,7 +22,7 @@ public class Worker(ConversationClient conversationClient, ILogger<Worker> logge
                     .WithServiceUrl(new Uri(ServiceUrl))
                     .WithConversation(new(ConversationId))
                     .Build();
-                proactiveMessage.From = new ConversationAccount { Id = FromId };
+                proactiveMessage.From = new ChannelAccount { Id = FromId };
                 proactiveMessage.Properties["text"] = $"Proactive hello at {DateTimeOffset.Now}";
                 SendActivityResponse? aid = await conversationClient.SendActivityAsync(proactiveMessage, cancellationToken: stoppingToken);
                 logger.LogInformation("Activity {Aid} sent", aid?.Id ?? "unknown");

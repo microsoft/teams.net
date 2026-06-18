@@ -2,13 +2,14 @@
 // Licensed under the MIT License.
 
 using System.Text.Json.Serialization;
+using Microsoft.Teams.Apps.Schema;
 
 namespace Microsoft.Teams.Apps.Handlers.TaskModules;
 
 /// <summary>
 /// Task module response types.
 /// </summary>
-public static class TaskModuleResponseType
+public static class TaskModuleResponseTypes
 {
     /// <summary>
     /// Continue type - displays a card or URL in the task module.
@@ -24,7 +25,7 @@ public static class TaskModuleResponseType
 /// <summary>
 /// Task module size constants.
 /// </summary>
-public static class TaskModuleSize
+public static class TaskModuleSizes
 {
     /// <summary>
     /// Small size.
@@ -69,16 +70,13 @@ public class TaskModuleResponseBuilder
 {
     private string? _type;
     private string? _title;
-    private object? _card;
-    private object _height = TaskModuleSize.Small;
-    private object _width = TaskModuleSize.Small;
+    private TeamsAttachment? _card;
+    private object _height = TaskModuleSizes.Small;
+    private object _width = TaskModuleSizes.Small;
     private string? _message;
-    //private string? _url;
-    //private string? _fallbackUrl;
-    //private string? _completionBotId;
 
     /// <summary>
-    /// Sets the type of the response. Use TaskModuleResponseType constants.
+    /// Sets the type of the response. Use <see cref="TaskModuleResponseTypes"/> constants.
     /// </summary>
     public TaskModuleResponseBuilder WithType(string type)
     {
@@ -98,14 +96,14 @@ public class TaskModuleResponseBuilder
     /// <summary>
     /// Sets the card content for continue type.
     /// </summary>
-    public TaskModuleResponseBuilder WithCard(object card)
+    public TaskModuleResponseBuilder WithCard(TeamsAttachment card)
     {
         _card = card;
         return this;
     }
 
     /// <summary>
-    /// Sets the height. Can be a number (pixels) or use TaskModuleSize constants.
+    /// Sets the height. Can be a number (pixels) or use <see cref="TaskModuleSizes"/> constants.
     /// </summary>
     public TaskModuleResponseBuilder WithHeight(object height)
     {
@@ -114,7 +112,7 @@ public class TaskModuleResponseBuilder
     }
 
     /// <summary>
-    /// Sets the width. Can be a number (pixels) or use TaskModuleSize constants.
+    /// Sets the width. Can be a number (pixels) or use <see cref="TaskModuleSizes"/> constants.
     /// </summary>
     public TaskModuleResponseBuilder WithWidth(object width)
     {
@@ -131,35 +129,6 @@ public class TaskModuleResponseBuilder
         return this;
     }
 
-    /*
-     /// <summary>
-    /// Sets the URL for continue type.
-    /// </summary>
-    public TaskModuleResponseBuilder WithUrl(string url)
-    {
-        _url = url;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the fallback URL if the card cannot be displayed.
-    /// </summary>
-    public TaskModuleResponseBuilder WithFallbackUrl(string fallbackUrl)
-    {
-        _fallbackUrl = fallbackUrl;
-        return this;
-    }
-
-    /// <summary>
-    /// Sets the completion bot ID.
-    /// </summary>
-    public TaskModuleResponseBuilder WithCompletionBotId(string completionBotId)
-    {
-        _completionBotId = completionBotId;
-        return this;
-    }
-    */
-
     /// <summary>
     /// Builds the TaskModuleResponse.
     /// </summary>
@@ -167,13 +136,13 @@ public class TaskModuleResponseBuilder
     {
         if (string.IsNullOrEmpty(_type))
         {
-            throw new InvalidOperationException("Type must be set. Use WithType() to specify TaskModuleResponseType.Continue or TaskModuleResponseType.Message.");
+            throw new InvalidOperationException("Type must be set. Use WithType() to specify TaskModuleResponseTypes.Continue or TaskModuleResponseTypes.Message.");
         }
 
         object? value = _type switch
         {
-            TaskModuleResponseType.Continue => ValidateContinueType(),
-            TaskModuleResponseType.Message => ValidateMessageType(),
+            TaskModuleResponseTypes.Continue => ValidateContinueType(),
+            TaskModuleResponseTypes.Message => ValidateMessageType(),
             _ => throw new InvalidOperationException($"Unknown task module response type: {_type}")
         };
 
@@ -204,10 +173,7 @@ public class TaskModuleResponseBuilder
             title = _title,
             height = _height,
             width = _width,
-            card = _card,
-            //url = _url,
-            //fallbackUrl = _fallbackUrl,
-            //completionBotId = _completionBotId
+            card = _card
         };
     }
 

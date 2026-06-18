@@ -14,7 +14,7 @@ namespace Microsoft.Teams.Apps.Diagnostics;
 /// <para>
 /// Populates the cert-required keys (<c>microsoft.tenant.id</c>, <c>gen_ai.conversation.id</c>,
 /// <c>microsoft.channel.name</c>, etc.) plus the Apps-only keys backed by
-/// <see cref="TeamsConversationAccount"/> (<c>user.id</c>, <c>user.email</c>,
+/// <see cref="TeamsChannelAccount"/> (<c>user.id</c>, <c>user.email</c>,
 /// <c>microsoft.agent.user.email</c>, <c>gen_ai.agent.description</c>).
 /// </para>
 /// </remarks>
@@ -69,14 +69,14 @@ public sealed class TeamsBaggageBuilder
     }
 
     /// <summary>Sets the human user id (<c>user.id</c>). Required for cert. Apps-only — backed by
-    /// <see cref="TeamsConversationAccount.AadObjectId"/>.</summary>
+    /// <see cref="TeamsChannelAccount.AadObjectId"/>.</summary>
     public TeamsBaggageBuilder UserId(string? v) => Set(AgentObservabilityKeys.UserId, v);
 
     /// <summary>Sets the human user email (<c>user.email</c>). Required for cert. Apps-only.</summary>
     public TeamsBaggageBuilder UserEmail(string? v) => Set(AgentObservabilityKeys.UserEmail, v);
 
     /// <summary>Sets the agent description (<c>gen_ai.agent.description</c>). Optional. Apps-only —
-    /// backed by <see cref="TeamsConversationAccount.UserRole"/>.</summary>
+    /// backed by <see cref="TeamsChannelAccount.UserRole"/>.</summary>
     public TeamsBaggageBuilder AgentDescription(string? v) => Set(AgentObservabilityKeys.AgentDescription, v);
 
     /// <summary>Sets the agentic user email (<c>microsoft.agent.user.email</c>). Required for cert. Apps-only.</summary>
@@ -95,8 +95,8 @@ public sealed class TeamsBaggageBuilder
 
     /// <summary>
     /// Populates every baggage key reachable from <c>ctx.Activity</c> — including the Apps-only keys
-    /// backed by <see cref="TeamsConversationAccount"/>. Tenant fallback uses the typed
-    /// <see cref="TeamsChannelData"/> when <see cref="TeamsConversationAccount.TenantId"/> is null.
+    /// backed by <see cref="TeamsChannelAccount"/>. Tenant fallback uses the typed
+    /// <see cref="TeamsChannelData"/> when <see cref="TeamsChannelAccount.TenantId"/> is null.
     /// </summary>
     public TeamsBaggageBuilder FromTeamsContext<TActivity>(Context<TActivity> ctx) where TActivity : TeamsActivity
     {
@@ -108,13 +108,13 @@ public sealed class TeamsBaggageBuilder
         ChannelName(activity.ChannelId);
 
         UserName(activity.From?.Name);
-        if (activity.From is TeamsConversationAccount fromTcc)
-        {
-            UserId(fromTcc.AadObjectId);
-            UserEmail(fromTcc.Email);
-        }
+if (activity.From is TeamsChannelAccount fromAccount)
+{
+    UserId(fromAccount.AadObjectId);
+    UserEmail(fromAccount.Email);
+}
 
-        TeamsConversationAccount? recipient = activity.Recipient;
+        TeamsChannelAccount? recipient = activity.Recipient;
         if (recipient is not null)
         {
             AgentId(string.IsNullOrWhiteSpace(recipient.AgenticAppId) ? recipient.Id : recipient.AgenticAppId);

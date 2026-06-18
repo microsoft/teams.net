@@ -22,7 +22,7 @@ public class SuggestedAction
     /// <summary>
     /// Initializes a new instance of the <see cref="SuggestedAction"/> class with the specified type, title, and value.
     /// </summary>
-    /// <param name="type">The type of action. See <see cref="ActionType"/> for common values.</param>
+    /// <param name="type">The type of action. See <see cref="ActionTypes"/> for common values.</param>
     /// <param name="title">The text description displayed on the button.</param>
     /// <param name="value">The value sent when the button is clicked. Accepts strings, anonymous objects, or <see cref="JsonNode"/> instances. Defaults to <paramref name="title"/> when not specified.</param>
     public SuggestedAction(string type, string title, object? value = null)
@@ -39,7 +39,7 @@ public class SuggestedAction
 
     /// <summary>
     /// Gets or sets the type of action implemented by this button.
-    /// See <see cref="ActionType"/> for common values.
+    /// See <see cref="ActionTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
     public string? Type { get; set; }
@@ -91,7 +91,7 @@ public class SuggestedAction
 /// <summary>
 /// String constants for card action types.
 /// </summary>
-public static class ActionType
+public static class ActionTypes
 {
     /// <summary>
     /// Opens the specified URL in the browser.

@@ -23,8 +23,8 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
                 ServiceUrl = "https://smba.trafficmanager.net/teams",
                 ChannelId = "msteams",
                 Id = "test-id-123",
-                From = new ChannelAccount { Id = "user-123", Name = "Test User" },
-                Recipient = new ChannelAccount { Id = "bot-456", Name = "Test Bot" },
+                From = new Microsoft.Bot.Schema.ChannelAccount { Id = "user-123", Name = "Test User" },
+                Recipient = new Microsoft.Bot.Schema.ChannelAccount { Id = "bot-456", Name = "Test Bot" },
                 Conversation = new Microsoft.Bot.Schema.ConversationAccount { Id = "conv-789", Name = "Test Conversation" }
             };
 
@@ -305,7 +305,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Name = "Alice" };
 
-            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
 
             Assert.Equal("user-1", result.Id);
             Assert.Equal("Alice", result.Name);
@@ -316,7 +316,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", AadObjectId = "aad-123" };
 
-            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
 
             Assert.True(result.Properties.TryGetValue("aadObjectId", out object? val));
             Assert.Equal("aad-123", val?.ToString());
@@ -327,7 +327,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1", Role = "owner" };
 
-            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
 
             Assert.True(result.Properties.TryGetValue("userRole", out object? val));
             Assert.Equal("owner", val?.ToString());
@@ -338,7 +338,7 @@ namespace Microsoft.Teams.Apps.BotBuilder.UnitTests
         {
             Microsoft.Bot.Schema.ChannelAccount account = new() { Id = "user-1" };
 
-            Microsoft.Teams.Core.Schema.ConversationAccount result = account.FromCompatChannelAccount();
+            Microsoft.Teams.Core.Schema.ChannelAccount result = account.FromCompatChannelAccount();
 
             Assert.False(result.Properties.ContainsKey("aadObjectId"));
             Assert.False(result.Properties.ContainsKey("userRole"));

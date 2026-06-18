@@ -23,7 +23,7 @@ public class MentionEntity : Entity
     /// </summary>
     /// <param name="mentioned">The conversation account being mentioned.</param>
     /// <param name="text">The text representation of the mention, typically formatted as "&lt;at&gt;name&lt;/at&gt;".</param>
-    public MentionEntity(ConversationAccount mentioned, string? text) : base("mention")
+    public MentionEntity(ChannelAccount mentioned, string? text) : base("mention")
     {
         Mentioned = mentioned;
         Text = text;
@@ -33,9 +33,9 @@ public class MentionEntity : Entity
     /// Mentioned conversation account.
     /// </summary>
     [JsonPropertyName("mentioned")]
-    public ConversationAccount? Mentioned
+    public ChannelAccount? Mentioned
     {
-        get => base.Properties.Get<ConversationAccount>("mentioned");
+        get => base.Properties.Get<ChannelAccount>("mentioned");
         set => base.Properties["mentioned"] = value;
     }
 
@@ -53,7 +53,7 @@ public class MentionEntity : Entity
     /// Creates a new instance of the MentionEntity class from the specified JSON node.
     /// </summary>
     /// <param name="jsonNode">A JsonNode containing the data to deserialize. Must include a 'mentioned' property representing a
-    /// ConversationAccount.</param>
+    /// ChannelAccount.</param>
     /// <returns>A MentionEntity object populated with values from the provided JSON node.</returns>
     /// <exception cref="ArgumentNullException">Thrown if jsonNode is null or does not contain the required 'mentioned' property.</exception>
     public static MentionEntity FromJsonElement(JsonNode? jsonNode)
@@ -62,7 +62,7 @@ public class MentionEntity : Entity
         {
             // TODO: Verify if throwing exceptions is okay here
             Mentioned = jsonNode?["mentioned"] != null
-                ? JsonSerializer.Deserialize<ConversationAccount>(jsonNode["mentioned"]!.ToJsonString())!
+                ? JsonSerializer.Deserialize<ChannelAccount>(jsonNode["mentioned"]!.ToJsonString())!
                 : throw new ArgumentNullException(nameof(jsonNode), "mentioned property is required"),
             Text = jsonNode?["text"]?.GetValue<string>()
         };

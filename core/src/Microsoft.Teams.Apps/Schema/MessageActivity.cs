@@ -28,7 +28,7 @@ public class MessageActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageActivity() : base(TeamsActivityType.Message)
+    public MessageActivity() : base(TeamsActivityTypes.Message)
     {
     }
 
@@ -36,7 +36,7 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="text">The text content of the message.</param>
-    public MessageActivity(string text) : base(TeamsActivityType.Message)
+    public MessageActivity(string text) : base(TeamsActivityTypes.Message)
     {
         Text = text;
     }
@@ -46,7 +46,7 @@ public class MessageActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="MessageActivity"/> class with the specified text.
     /// </summary>
     /// <param name="attachments">The list of attachments for the message.</param>
-    public MessageActivity(IList<TeamsAttachment> attachments) : base(TeamsActivityType.Message)
+    public MessageActivity(IList<TeamsAttachment> attachments) : base(TeamsActivityTypes.Message)
     {
         Attachments = attachments;
     }

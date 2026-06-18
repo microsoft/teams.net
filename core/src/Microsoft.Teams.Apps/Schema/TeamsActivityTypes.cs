@@ -12,7 +12,7 @@ namespace Microsoft.Teams.Apps.Schema;
 /// <remarks>These activity type constants are used to identify the type of activity received or sent in a Teams
 /// bot context. Use these values when handling or generating activities to ensure compatibility with the Teams
 /// platform.</remarks>
-public static class TeamsActivityType
+public static class TeamsActivityTypes
 {
 
     /// <summary>
@@ -87,7 +87,7 @@ public static class TeamsActivityType
         [MessageUpdate] = MessageUpdateActivity.FromActivity,
         [MessageDelete] = MessageDeleteActivity.FromActivity,
         [ConversationUpdate] = ConversationUpdateActivity.FromActivity,
-        //[TeamsActivityType.EndOfConversation] = EndOfConversationActivity.FromActivity,
+        //[TeamsActivityTypes.EndOfConversation] = EndOfConversationActivity.FromActivity,
         [InstallationUpdate] = InstallUpdateActivity.FromActivity,
         [Invoke] = InvokeActivity.FromActivity,
         [Event] = EventActivity.FromActivity

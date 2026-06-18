@@ -113,4 +113,4 @@ dotnet test IntegrationTests/IntegrationTests.csproj \
 
 For provisioning, secret rotation, tenant renewal, and troubleshooting across all SDKs, see the shared runbook:
 
-👉 [INTEGRATION-TESTS.md](https://github.com/microsoft/teams-sdk/blob/main/INTEGRATION-TESTS.md)
+👉 [Integration Test Runbook](https://dev.azure.com/DomoreexpGithub/Github_Pipelines/_wiki/wikis/Github%20Pipelines%20Wiki/1/Teams-SDK-Integration-Test-Runbook) (internal only)

@@ -53,7 +53,7 @@ internal sealed class A2AServer(
             {
                 IsGroup = false,
                 TenantId = handoff.TenantId,
-                Members = [new TeamsConversationAccount { Id = handoff.AadObjectId }],
+                Members = [new TeamsChannelAccount { Id = handoff.AadObjectId }],
             },
             serviceUrl,
             cancellationToken: ct);
@@ -68,7 +68,7 @@ internal sealed class A2AServer(
             newConvId, handoff.From, handoff.UserName, handoff.Summary, ct);
 
         TeamsActivity proactive = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithText(greeting)
             .WithServiceUrl(serviceUrl)
             .WithConversation(new TeamsConversation { Id = newConvId })

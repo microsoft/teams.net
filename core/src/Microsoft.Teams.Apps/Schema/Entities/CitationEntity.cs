@@ -179,7 +179,7 @@ public class CitationImageObject
     public string Type { get; set; } = "ImageObject";
 
     /// <summary>
-    /// Gets or sets the icon name. See <see cref="CitationIcon"/> for known values.
+    /// Gets or sets the icon name. See <see cref="CitationIcons"/> for known values.
     /// </summary>
     [JsonPropertyName("name")]
     public required string Name { get; set; }
@@ -188,7 +188,7 @@ public class CitationImageObject
 /// <summary>
 /// Known citation icon names.
 /// </summary>
-public static class CitationIcon
+public static class CitationIcons
 {
     /// <summary>Microsoft Word icon.</summary>
     public const string MicrosoftWord = "Microsoft Word";
@@ -294,7 +294,7 @@ public class CitationAppearance
     public string? EncodingFormat { get; set; }
 
     /// <summary>
-    /// Gets or sets the citation icon name. See <see cref="CitationIcon"/> for known values.
+    /// Gets or sets the citation icon name. See <see cref="CitationIcons"/> for known values.
     /// </summary>
     public string? Icon { get; set; }
 

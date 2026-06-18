@@ -37,7 +37,7 @@ public static class InvokeExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = TeamsActivityType.Invoke,
+            Name = TeamsActivityTypes.Invoke,
             Selector = _ => true,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {

@@ -81,7 +81,7 @@ public class TeamsBotApplication : BotApplication
     /// <item><c>Api.Batch</c> - Batch messaging operations</item>
     /// </list>
     /// </remarks>
-    public ApiClient Api { get; }
+    public virtual ApiClient Api { get; }
 
     /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/>.
@@ -160,7 +160,7 @@ public class TeamsBotApplication : BotApplication
 
             try
             {
-                if (teamsActivity.Type != TeamsActivityType.Invoke)
+                if (teamsActivity.Type != TeamsActivityTypes.Invoke)
                 {
                     await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
                 }
@@ -201,7 +201,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="conversationId">The conversation ID to send to. For channel threads, include <c>;messageid=</c>.</param>
     /// <param name="text">The text to send.</param>
     /// <param name="serviceUrl">The service URL. If null, uses the last-seen service URL from an incoming activity.</param>
-    /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <c>Recipient</c> via <see cref="ConversationAccount.GetAgenticIdentity"/>.</param>
+    /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <c>Recipient</c> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> SendAsync(string conversationId, string text, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
@@ -210,7 +210,7 @@ public class TeamsBotApplication : BotApplication
             ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
 
         TeamsActivityBuilder builder = new TeamsActivityBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithServiceUrl(resolvedUrl)
             .WithChannelId("msteams")
             .WithConversation(new Conversation { Id = conversationId })
@@ -218,7 +218,7 @@ public class TeamsBotApplication : BotApplication
 
         if (agenticIdentity is not null)
         {
-            builder.WithFrom(new ConversationAccount
+            builder.WithFrom(new ChannelAccount
             {
                 AgenticAppId = agenticIdentity.AgenticAppId,
                 AgenticUserId = agenticIdentity.AgenticUserId,
@@ -238,7 +238,7 @@ public class TeamsBotApplication : BotApplication
     /// <param name="conversationId">The conversation ID.</param>
     /// <param name="messageId">The thread root message ID.</param>
     /// <param name="text">The text to send.</param>
-    /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <c>Recipient</c> via <see cref="ConversationAccount.GetAgenticIdentity"/>.</param>
+    /// <param name="agenticIdentity">The agentic identity for user-delegated token acquisition. Extract from the inbound activity's <c>Recipient</c> via <see cref="ChannelAccount.GetAgenticIdentity"/>.</param>
     /// <param name="cancellationToken">A cancellation token.</param>
     /// <returns>The response from the send operation.</returns>
     public Task<SendActivityResponse?> ReplyAsync(string conversationId, string messageId, string text, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)

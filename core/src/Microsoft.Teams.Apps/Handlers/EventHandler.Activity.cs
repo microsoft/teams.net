@@ -39,14 +39,14 @@ public class EventActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="EventActivity"/> class.
     /// </summary>
     [JsonConstructor]
-    public EventActivity() : base(TeamsActivityType.Event)
+    public EventActivity() : base(TeamsActivityTypes.Event)
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity"/> class with the specified name.
     /// </summary>
-    public EventActivity(string name) : base(TeamsActivityType.Event)
+    public EventActivity(string name) : base(TeamsActivityTypes.Event)
     {
         Name = name;
     }

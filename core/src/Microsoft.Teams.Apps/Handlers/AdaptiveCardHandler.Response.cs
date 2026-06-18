@@ -8,7 +8,7 @@ namespace Microsoft.Teams.Apps.Handlers;
 /// <summary>
 /// Adaptive card response types.
 /// </summary>
-public static class AdaptiveCardResponseType
+public static class AdaptiveCardResponseTypes
 {
     /// <summary>
     /// Message type - displays a message to the user.
@@ -33,7 +33,7 @@ public class AdaptiveCardResponse
     public int StatusCode { get; set; } = 200;
 
     /// <summary>
-    /// Type of response. See <see cref="AdaptiveCardResponseType"/> for common values.
+    /// Type of response. See <see cref="AdaptiveCardResponseTypes"/> for common values.
     /// </summary>
     [JsonPropertyName("type")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -64,7 +64,7 @@ public class AdaptiveCardResponse
         return new InvokeResponse<AdaptiveCardResponse>(statusCode, new AdaptiveCardResponse
         {
             StatusCode = statusCode,
-            Type = AdaptiveCardResponseType.Message,
+            Type = AdaptiveCardResponseTypes.Message,
             Value = message
         });
     }
@@ -79,7 +79,7 @@ public class AdaptiveCardResponse
         return new InvokeResponse<AdaptiveCardResponse>(statusCode, new AdaptiveCardResponse
         {
             StatusCode = statusCode,
-            Type = AdaptiveCardResponseType.Card,
+            Type = AdaptiveCardResponseTypes.Card,
             Value = card
         });
     }
@@ -104,7 +104,7 @@ public class AdaptiveCardResponseBuilder
     }
 
     /// <summary>
-    /// Sets the type of the response. See <see cref="AdaptiveCardResponseType"/> for common values.
+    /// Sets the type of the response. See <see cref="AdaptiveCardResponseTypes"/> for common values.
     /// </summary>
     public AdaptiveCardResponseBuilder WithType(string type)
     {

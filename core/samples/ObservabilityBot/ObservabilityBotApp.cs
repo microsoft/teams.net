@@ -56,7 +56,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         }
 
         // Build Agent365 scope contracts from the turn context.
-        TeamsConversationAccount? recipient = context.Activity.Recipient;
+        TeamsChannelAccount? recipient = context.Activity.Recipient;
         var agentDetails = new AgentDetails(
             agentId: recipient?.AgenticAppId ?? recipient?.Id,
             agentName: recipient?.Name,
@@ -178,7 +178,7 @@ public class ObservabilityBotApp : TeamsBotApplication
             {
                 (string? Title, string? Url, string? Content) = citations[i];
                 string abstract_ = Content.Length > 160 ? Content[..157] + "..." : Content;
-                builder.AddCitation(i + 1, new CitationAppearance() { Name = Title, Url = new Uri(Url), Abstract = abstract_, Icon = CitationIcon.Text });
+                builder.AddCitation(i + 1, new CitationAppearance() { Name = Title, Url = new Uri(Url), Abstract = abstract_, Icon = CitationIcons.Text });
             }
 
             await context.Send(builder.Build(), ct);

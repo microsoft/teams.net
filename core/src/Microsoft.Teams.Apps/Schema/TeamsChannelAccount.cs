@@ -7,46 +7,46 @@ using Microsoft.Teams.Core.Schema;
 namespace Microsoft.Teams.Apps.Schema;
 
 /// <summary>
-/// Represents a Microsoft Teams-specific conversation account, including Azure Active Directory (AAD) object
-/// information.
+/// Represents a Microsoft Teams-specific channel account (a participant identity), including Azure Active
+/// Directory (AAD) object information.
 /// </summary>
-/// <remarks>This class extends the base ConversationAccount to provide additional properties relevant to
+/// <remarks>This class extends the base <see cref="ChannelAccount"/> to provide additional properties relevant to
 /// Microsoft Teams, such as the Azure Active Directory object ID. It is typically used when working with Teams
-/// conversations to access Teams-specific metadata.</remarks>
-public class TeamsConversationAccount : ConversationAccount
+/// participants to access Teams-specific metadata.</remarks>
+public class TeamsChannelAccount : ChannelAccount
 {
     /// <summary>
-    /// Initializes a new instance of the TeamsConversationAccount class.
+    /// Initializes a new instance of the TeamsChannelAccount class.
     /// </summary>
     [JsonConstructor]
-    public TeamsConversationAccount()
+    public TeamsChannelAccount()
     {
     }
 
     /// <summary>
-    /// Initializes a new instance of the TeamsConversationAccount class using the specified conversation account.
+    /// Initializes a new instance of the TeamsChannelAccount class from an existing channel account.
     /// </summary>
-    /// <param name="conversationAccount">The ConversationAccount instance containing the conversation's identifier, name, and properties. Cannot be null.</param>
-    public static TeamsConversationAccount? FromConversationAccount(ConversationAccount? conversationAccount)
+    /// <param name="channelAccount">The ChannelAccount instance containing the participant's identifier, name, and properties. Cannot be null.</param>
+    public static TeamsChannelAccount? FromChannelAccount(ChannelAccount? channelAccount)
     {
-        if (conversationAccount is null)
+        if (channelAccount is null)
         {
             return null;
         }
 
-        if (conversationAccount is TeamsConversationAccount teamsConversationAccount)
+        if (channelAccount is TeamsChannelAccount teamsChannelAccount)
         {
-            return teamsConversationAccount;
+            return teamsChannelAccount;
         }
 
-        TeamsConversationAccount result = new();
-        result.Id = conversationAccount.Id;
-        result.Name = conversationAccount.Name;
-        result.IsTargeted = conversationAccount.IsTargeted;
-        result.AgenticAppId = conversationAccount.AgenticAppId;
-        result.AgenticUserId = conversationAccount.AgenticUserId;
-        result.AgenticAppBlueprintId = conversationAccount.AgenticAppBlueprintId;
-        result.Properties = new ExtendedPropertiesDictionary(conversationAccount.Properties);
+        TeamsChannelAccount result = new();
+        result.Id = channelAccount.Id;
+        result.Name = channelAccount.Name;
+        result.IsTargeted = channelAccount.IsTargeted;
+        result.AgenticAppId = channelAccount.AgenticAppId;
+        result.AgenticUserId = channelAccount.AgenticUserId;
+        result.AgenticAppBlueprintId = channelAccount.AgenticAppBlueprintId;
+        result.Properties = new ExtendedPropertiesDictionary(channelAccount.Properties);
         result.AadObjectId = result.Properties.Extract<string>("aadObjectId");
         result.ObjectId = result.Properties.Extract<string>("objectId");
         result.GivenName = result.Properties.Extract<string>("givenName");
@@ -63,7 +63,7 @@ public class TeamsConversationAccount : ConversationAccount
     }
 
     /// <summary>
-    /// Gets or sets the Azure Active Directory (AAD) Object ID associated with the conversation account.
+    /// Gets or sets the Azure Active Directory (AAD) Object ID associated with the channel account.
     /// </summary>
     [JsonPropertyName("aadObjectId")]
     public string? AadObjectId { get; set; }

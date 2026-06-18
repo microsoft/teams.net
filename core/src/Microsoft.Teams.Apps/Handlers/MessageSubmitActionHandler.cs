@@ -40,7 +40,7 @@ public static class MessageSubmitActionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageSubmitAction),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageSubmitAction),
             Selector = activity => activity.Name == InvokeNames.MessageSubmitAction,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
@@ -67,7 +67,7 @@ public static class MessageSubmitActionExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.MessageSubmitAction, "feedback"),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.MessageSubmitAction, "feedback"),
             Selector = activity =>
                 activity.Name == InvokeNames.MessageSubmitAction
                 && activity.Value?["actionName"]?.GetValue<string>() == "feedback",

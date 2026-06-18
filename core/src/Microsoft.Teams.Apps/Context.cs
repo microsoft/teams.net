@@ -228,13 +228,13 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
 
         bool isTargeted = activity.Recipient?.IsTargeted == true;
 
-        if (isTargeted && Activity.Conversation?.ConversationType == ConversationType.Personal)
+        if (isTargeted && Activity.Conversation?.ConversationType == ConversationTypes.Personal)
         {
             throw new InvalidOperationException(
                 "Targeted messages are not supported in personal (1:1) chats.");
         }
 
-        if (activity.Type == TeamsActivityType.Message
+        if (activity.Type == TeamsActivityTypes.Message
             && Activity.Recipient?.IsTargeted == true
             && Activity.Id is not null)
         {
@@ -255,7 +255,7 @@ public class Context<TActivity>(TeamsBotApplication botApplication, TActivity ac
     public Task<SendActivityResponse?> SendTypingActivityAsync(CancellationToken cancellationToken = default)
     {
         TeamsActivity reply = new TeamsActivityBuilder()
-            .WithType(TeamsActivityType.Typing)
+            .WithType(TeamsActivityTypes.Typing)
             .WithConversationReference(Activity)
             .Build();
         return TeamsBotApplication.SendActivityAsync(reply, cancellationToken: cancellationToken);

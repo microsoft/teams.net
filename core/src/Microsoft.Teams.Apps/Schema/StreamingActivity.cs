@@ -17,10 +17,10 @@ public class StreamingActivity : TeamsActivity
     /// </summary>
     /// <param name="text"></param>
     [JsonConstructor]
-    public StreamingActivity(string text) : base(TeamsActivityType.Typing)
+    public StreamingActivity(string text) : base(TeamsActivityTypes.Typing)
     {
         Text = text;
-        StreamInfo = StreamInfoEntityExtensions.AddToActivity(this, StreamType.Streaming);
+        StreamInfo = StreamInfoEntityExtensions.AddToActivity(this, StreamTypes.Streaming);
     }
 
     /// <summary>

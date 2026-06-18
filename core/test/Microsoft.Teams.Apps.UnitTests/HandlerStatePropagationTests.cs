@@ -281,7 +281,7 @@ public class HandlerStatePropagationTests
 
         InvokeActivity activity = new()
         {
-            Type = TeamsActivityType.Invoke,
+            Type = TeamsActivityTypes.Invoke,
             Name = InvokeNames.MessageSubmitAction,
             Value = new JsonObject
             {
@@ -531,13 +531,13 @@ public class HandlerStatePropagationTests
 
     private static Context<TeamsActivity> CreateInvokeContext(TeamsBotApplication app, string invokeName)
     {
-        InvokeActivity activity = new() { Type = TeamsActivityType.Invoke, Name = invokeName };
+        InvokeActivity activity = new() { Type = TeamsActivityTypes.Invoke, Name = invokeName };
         return new Context<TeamsActivity>(app, activity);
     }
 
     private static Context<TeamsActivity> CreateEventContext(TeamsBotApplication app, string eventName)
     {
-        EventActivity activity = new() { Type = TeamsActivityType.Event, Name = eventName };
+        EventActivity activity = new() { Type = TeamsActivityTypes.Event, Name = eventName };
         return new Context<TeamsActivity>(app, activity);
     }
 

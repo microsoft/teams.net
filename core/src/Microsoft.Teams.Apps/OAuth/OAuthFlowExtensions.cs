@@ -69,7 +69,7 @@ public static class OAuthFlowExtensions
         // signin/tokenExchange
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SignInTokenExchange),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.SignInTokenExchange),
             Selector = activity => activity.Name == InvokeNames.SignInTokenExchange,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
@@ -94,7 +94,7 @@ public static class OAuthFlowExtensions
         // signin/failure - Teams client-side SSO failure notification
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SignInFailure),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.SignInFailure),
             Selector = activity => activity.Name == InvokeNames.SignInFailure,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
@@ -144,7 +144,7 @@ public static class OAuthFlowExtensions
         // signin/verifyState
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.SignInVerifyState),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.SignInVerifyState),
             Selector = activity => activity.Name == InvokeNames.SignInVerifyState,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {

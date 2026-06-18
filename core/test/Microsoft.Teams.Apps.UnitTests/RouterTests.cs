@@ -43,10 +43,10 @@ public class RouterTests
     public void Register_CatchAllInvokeAfterSpecific_Throws()
     {
         Router router = new(NullLogger.Instance);
-        router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityType.Invoke}/{InvokeNames.AdaptiveCardAction}"));
+        router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityTypes.Invoke}/{InvokeNames.AdaptiveCardAction}"));
 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(()
-            => router.Register(MakeRoute<InvokeActivity>(TeamsActivityType.Invoke)));
+            => router.Register(MakeRoute<InvokeActivity>(TeamsActivityTypes.Invoke)));
 
         Assert.Contains("catch-all", ex.Message);
     }
@@ -55,10 +55,10 @@ public class RouterTests
     public void Register_SpecificInvokeAfterCatchAll_Throws()
     {
         Router router = new(NullLogger.Instance);
-        router.Register(MakeRoute<InvokeActivity>(TeamsActivityType.Invoke));
+        router.Register(MakeRoute<InvokeActivity>(TeamsActivityTypes.Invoke));
 
         InvalidOperationException ex = Assert.Throws<InvalidOperationException>(()
-            => router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityType.Invoke}/{InvokeNames.TaskFetch}")));
+            => router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityTypes.Invoke}/{InvokeNames.TaskFetch}")));
 
         Assert.Contains("invoke", ex.Message);
     }
@@ -67,19 +67,19 @@ public class RouterTests
     public void Register_MultipleCatchAllInvokes_ThrowsDuplicateName()
     {
         Router router = new(NullLogger.Instance);
-        router.Register(MakeRoute<InvokeActivity>(TeamsActivityType.Invoke));
+        router.Register(MakeRoute<InvokeActivity>(TeamsActivityTypes.Invoke));
 
         Assert.Throws<InvalidOperationException>(()
-            => router.Register(MakeRoute<InvokeActivity>(TeamsActivityType.Invoke)));
+            => router.Register(MakeRoute<InvokeActivity>(TeamsActivityTypes.Invoke)));
     }
 
     [Fact]
     public void Register_MultipleSpecificInvokeHandlers_Succeeds()
     {
         Router router = new(NullLogger.Instance);
-        router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityType.Invoke}/{InvokeNames.AdaptiveCardAction}"));
-        router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityType.Invoke}/{InvokeNames.TaskFetch}"));
-        router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityType.Invoke}/{InvokeNames.TaskSubmit}"));
+        router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityTypes.Invoke}/{InvokeNames.AdaptiveCardAction}"));
+        router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityTypes.Invoke}/{InvokeNames.TaskFetch}"));
+        router.Register(MakeRoute<InvokeActivity>($"{TeamsActivityTypes.Invoke}/{InvokeNames.TaskSubmit}"));
 
         Assert.Equal(3, router.GetRoutes().Count);
     }
@@ -90,8 +90,8 @@ public class RouterTests
     public void Register_ConversationUpdateCatchAllAndSpecific_Succeeds()
     {
         Router router = new(NullLogger.Instance);
-        router.Register(MakeRoute<ConversationUpdateActivity>(TeamsActivityType.ConversationUpdate));
-        router.Register(MakeRoute<ConversationUpdateActivity>($"{TeamsActivityType.ConversationUpdate}/membersAdded"));
+        router.Register(MakeRoute<ConversationUpdateActivity>(TeamsActivityTypes.ConversationUpdate));
+        router.Register(MakeRoute<ConversationUpdateActivity>($"{TeamsActivityTypes.ConversationUpdate}/membersAdded"));
 
         Assert.Equal(2, router.GetRoutes().Count);
     }
@@ -100,9 +100,9 @@ public class RouterTests
     public void Register_InstallUpdateCatchAllAndSpecific_Succeeds()
     {
         Router router = new(NullLogger.Instance);
-        router.Register(MakeRoute<InstallUpdateActivity>(TeamsActivityType.InstallationUpdate));
-        router.Register(MakeRoute<InstallUpdateActivity>($"{TeamsActivityType.InstallationUpdate}/add"));
-        router.Register(MakeRoute<InstallUpdateActivity>($"{TeamsActivityType.InstallationUpdate}/remove"));
+        router.Register(MakeRoute<InstallUpdateActivity>(TeamsActivityTypes.InstallationUpdate));
+        router.Register(MakeRoute<InstallUpdateActivity>($"{TeamsActivityTypes.InstallationUpdate}/add"));
+        router.Register(MakeRoute<InstallUpdateActivity>($"{TeamsActivityTypes.InstallationUpdate}/remove"));
 
         Assert.Equal(3, router.GetRoutes().Count);
     }
