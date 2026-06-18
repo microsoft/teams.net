@@ -302,7 +302,6 @@ public static class MessageActivityExtensions
     /// <param name="messageId">The ID of the message being quoted.</param>
     /// <param name="text">Optional text to append after the quote placeholder.</param>
     /// <returns>The message activity for chaining.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public static MessageActivity AddQuote(this MessageActivity message, string messageId, string? text = null)
     {
         ArgumentNullException.ThrowIfNull(message);
@@ -319,7 +318,6 @@ public static class MessageActivityExtensions
     /// <param name="message">The message activity.</param>
     /// <param name="messageId">The ID of the message being quoted.</param>
     /// <returns>The message activity for chaining.</returns>
-    [Experimental("ExperimentalTeamsQuotedReplies")]
     public static MessageActivity PrependQuote(this MessageActivity message, string messageId)
     {
         ArgumentNullException.ThrowIfNull(message);
