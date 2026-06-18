@@ -113,7 +113,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         string memberId = _f.MemberMri1!;
 
         using TurnContext ctx = CreateTurnContext();
-        TeamsChannelAccount result = await TeamsApiClient.GetMemberAsync(ctx, memberId);
+        Microsoft.Bot.Schema.Teams.TeamsChannelAccount result = await TeamsApiClient.GetMemberAsync(ctx, memberId);
 
         Assert.NotNull(result);
         Assert.Equal(memberId, result.Id);
@@ -125,13 +125,13 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     public async Task GetMembersAsync_ReturnsTeamsChannelAccounts()
     {
         using TurnContext ctx = CreateTurnContext();
-        IEnumerable<TeamsChannelAccount> result = await TeamsApiClient.GetMembersAsync(ctx);
+        IEnumerable<Microsoft.Bot.Schema.Teams.TeamsChannelAccount> result = await TeamsApiClient.GetMembersAsync(ctx);
 
         Assert.NotNull(result);
-        List<TeamsChannelAccount> members = [.. result];
+        List<Microsoft.Bot.Schema.Teams.TeamsChannelAccount> members = [.. result];
         Assert.NotEmpty(members);
 
-        foreach (TeamsChannelAccount m in members.Take(5))
+        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in members)
         {
             _output.WriteLine($"GetMembers: {m.Id} — {m.Name}");
         }
@@ -151,7 +151,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         Assert.NotNull(result.Members);
         Assert.NotEmpty(result.Members);
 
-        foreach (TeamsChannelAccount m in result.Members)
+        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in result.Members)
         {
             _output.WriteLine($"PagedMember: {m.Id} — {m.Name}");
         }
@@ -170,7 +170,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         string memberId = _f.MemberMri1!;
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        TeamsChannelAccount result = await TeamsApiClient.GetTeamMemberAsync(ctx, memberId, _f.TeamId);
+        Microsoft.Bot.Schema.Teams.TeamsChannelAccount result = await TeamsApiClient.GetTeamMemberAsync(ctx, memberId, _f.TeamId);
 
         Assert.NotNull(result);
         Assert.Equal(memberId, result.Id);
@@ -184,7 +184,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         string memberId = _f.MemberMri1!;
 
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        TeamsChannelAccount result = await TeamsApiClient.GetMemberAsync(ctx, memberId);
+        Microsoft.Bot.Schema.Teams.TeamsChannelAccount result = await TeamsApiClient.GetMemberAsync(ctx, memberId);
 
         Assert.NotNull(result);
         Assert.Equal(memberId, result.Id);
@@ -196,13 +196,13 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
     public async Task GetTeamMembersAsync_ReturnsMembers()
     {
         using TurnContext ctx = CreateTurnContext(teamId: _f.TeamId);
-        IEnumerable<TeamsChannelAccount> result = await TeamsApiClient.GetTeamMembersAsync(ctx, _f.TeamId);
+        IEnumerable<Microsoft.Bot.Schema.Teams.TeamsChannelAccount> result = await TeamsApiClient.GetTeamMembersAsync(ctx, _f.TeamId);
 
         Assert.NotNull(result);
-        List<TeamsChannelAccount> members = [.. result];
+        List<Microsoft.Bot.Schema.Teams.TeamsChannelAccount> members = [.. result];
         Assert.NotEmpty(members);
 
-        foreach (TeamsChannelAccount m in members.Take(5))
+        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in members)
         {
             _output.WriteLine($"TeamMember: {m.Id} — {m.Name}");
         }
@@ -222,7 +222,7 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         Assert.NotNull(result.Members);
         Assert.NotEmpty(result.Members);
 
-        foreach (TeamsChannelAccount m in result.Members)
+        foreach (Microsoft.Bot.Schema.Teams.TeamsChannelAccount m in result.Members)
         {
             _output.WriteLine($"PagedTeamMember: {m.Id} — {m.Name}");
         }
@@ -306,14 +306,14 @@ public class TeamsApiClientTests : IClassFixture<IntegrationTestFixture>
         // The meetings participant API requires AAD object ID, not MRI/pairwise bot framework ID.
         // Get the AAD object ID from a human member (bots don't have one).
         ApiClient api = _f.ScopedApiClient;
-        IList<TeamsConversationAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
+        IList<Microsoft.Teams.Apps.Schema.TeamsChannelAccount?> members = await api.Conversations.Members.GetAsync(_f.ConversationId, _f.AgenticIdentity);
         Assert.NotEmpty(members);
 
         string? aadObjectId = null;
-        foreach (TeamsConversationAccount? m in members)
+        foreach (Microsoft.Teams.Apps.Schema.TeamsChannelAccount? m in members)
         {
-            TeamsConversationAccount tm = await api.Conversations.Members
-                .GetByIdAsync<TeamsConversationAccount>(_f.ConversationId, m?.Id!, _f.AgenticIdentity);
+            Microsoft.Teams.Apps.Schema.TeamsChannelAccount tm = await api.Conversations.Members
+                .GetByIdAsync<Microsoft.Teams.Apps.Schema.TeamsChannelAccount>(_f.ConversationId, m?.Id!, _f.AgenticIdentity);
             _output.WriteLine($"Member: {tm.Name} — AadObjectId: {tm.AadObjectId ?? "(null)"}, Properties: [{string.Join(", ", tm.Properties.Keys)}]");
             if (tm.AadObjectId is not null)
             {

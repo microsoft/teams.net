@@ -54,11 +54,11 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// </summary>
     /// <param name="from">The sender account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public new TeamsActivityBuilder WithFrom(ConversationAccount? from)
+    public new TeamsActivityBuilder WithFrom(ChannelAccount? from)
     {
-        _activity.From = from is TeamsConversationAccount teamsAccount
+        _activity.From = from is TeamsChannelAccount teamsAccount
             ? teamsAccount
-            : TeamsConversationAccount.FromConversationAccount(from)!;
+            : TeamsChannelAccount.FromChannelAccount(from)!;
         return this;
     }
 
@@ -67,11 +67,11 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// </summary>
     /// <param name="recipient">The recipient account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public new TeamsActivityBuilder WithRecipient(ConversationAccount? recipient)
+    public new TeamsActivityBuilder WithRecipient(ChannelAccount? recipient)
     {
-        _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
+        _activity.Recipient = recipient is TeamsChannelAccount teamsAccount
             ? teamsAccount
-            : TeamsConversationAccount.FromConversationAccount(recipient)!;
+            : TeamsChannelAccount.FromChannelAccount(recipient)!;
         return this;
     }
 
@@ -82,14 +82,14 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <param name="isTargeted">If true, marks this as a targeted message visible only to the specified recipient.</param>
     /// <returns>The builder instance for chaining.</returns>
     [Experimental("ExperimentalTeamsTargeted")]
-    public TeamsActivityBuilder WithRecipient(ConversationAccount? recipient, bool isTargeted)
+    public TeamsActivityBuilder WithRecipient(ChannelAccount? recipient, bool isTargeted)
     {
         if (recipient is not null)
         {
             recipient.IsTargeted = isTargeted ? true : null;
-            _activity.Recipient = recipient is TeamsConversationAccount teamsAccount
+            _activity.Recipient = recipient is TeamsChannelAccount teamsAccount
                 ? teamsAccount
-                : TeamsConversationAccount.FromConversationAccount(recipient)!;
+                : TeamsChannelAccount.FromChannelAccount(recipient)!;
         }
         return this;
     }
@@ -311,7 +311,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <param name="text">Optional custom text for the mention. If null, uses the account name.</param>
     /// <param name="addText">Whether to prepend the mention text to the activity's text content.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TeamsActivityBuilder AddMention(ConversationAccount account, string? text = null, bool addText = true)
+    public TeamsActivityBuilder AddMention(ChannelAccount account, string? text = null, bool addText = true)
     {
         ArgumentNullException.ThrowIfNull(account);
         MentionEntityExtensions.AddToActivity(_activity, account, text, addText);

@@ -41,7 +41,7 @@ namespace ABSTokenServiceClient
                 }
                 else
                 {
-                    GetSignInResourceResult req = await userTokenClient.GetSignInResource(userId, connectionName, channelId, null, cancellationToken);
+                    GetSignInResourceResult req = await userTokenClient.GetSignInResourceAsync(userId, connectionName, channelId, null, cancellationToken);
                     logger.LogInformation("GetSignInResource result: {Result}", JsonSerializer.Serialize(req, new JsonSerializerOptions { WriteIndented = true }));
 
                     Console.WriteLine("Code?");

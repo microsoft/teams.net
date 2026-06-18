@@ -99,7 +99,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="from">The sender account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithFrom(ConversationAccount? from)
+    public TBuilder WithFrom(ChannelAccount? from)
     {
         _activity.From = from;
         return (TBuilder)this;
@@ -110,7 +110,7 @@ public abstract class CoreActivityBuilder<TActivity, TBuilder>
     /// </summary>
     /// <param name="recipient">The recipient account.</param>
     /// <returns>The builder instance for chaining.</returns>
-    public TBuilder WithRecipient(ConversationAccount? recipient)
+    public TBuilder WithRecipient(ChannelAccount? recipient)
     {
         _activity.Recipient = recipient;
         return (TBuilder)this;

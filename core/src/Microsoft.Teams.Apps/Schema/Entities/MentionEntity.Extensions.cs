@@ -27,7 +27,7 @@ public static class MentionEntityExtensions
     /// <summary>
     /// Internal helper to add a mention to an activity.
     /// </summary>
-    internal static void AddToActivity(TeamsActivity activity, ConversationAccount account, string? text, bool addText)
+    internal static void AddToActivity(TeamsActivity activity, ChannelAccount account, string? text, bool addText)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ArgumentNullException.ThrowIfNull(account);

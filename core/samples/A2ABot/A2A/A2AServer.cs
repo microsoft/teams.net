@@ -53,7 +53,7 @@ internal sealed class A2AServer(
             {
                 IsGroup = false,
                 TenantId = handoff.TenantId,
-                Members = [new TeamsConversationAccount { Id = handoff.AadObjectId }],
+                Members = [new TeamsChannelAccount { Id = handoff.AadObjectId }],
             },
             serviceUrl,
             cancellationToken: ct);

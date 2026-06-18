@@ -19,5 +19,5 @@ public class PagedTeamsMembersResult
     /// <summary>
     /// Gets or sets the list of members in this page.
     /// </summary>
-    public IList<TeamsConversationAccount?> Members { get; set; } = [];
+    public IList<TeamsChannelAccount?> Members { get; set; } = [];
 }

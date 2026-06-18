@@ -115,7 +115,7 @@ public class TeamsActivityBuilderTests
         Assert.NotNull(coreRef.From);
         Assert.Equal(incoming.Recipient?.Id, coreRef.From.Id);
 
-        ConversationAccount fromWithAgentic = new() { Id = "bot1", AgenticAppId = "app-1" };
+        ChannelAccount fromWithAgentic = new() { Id = "bot1", AgenticAppId = "app-1" };
         TeamsActivity agenticReply = TeamsActivity.CreateBuilder()
             .WithConversationReference(incoming)
             .WithFrom(fromWithAgentic)
@@ -161,7 +161,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithFrom_SetsSenderAccount()
     {
-        TeamsConversationAccount? fromAccount = TeamsConversationAccount.FromConversationAccount(new ConversationAccount
+        TeamsChannelAccount? fromAccount = TeamsChannelAccount.FromChannelAccount(new ChannelAccount
         {
             Id = "sender-id",
             Name = "Sender Name"
@@ -178,7 +178,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void WithRecipient_SetsRecipientAccount()
     {
-        TeamsConversationAccount? recipientAccount = TeamsConversationAccount.FromConversationAccount(new ConversationAccount
+        TeamsChannelAccount? recipientAccount = TeamsChannelAccount.FromChannelAccount(new ChannelAccount
         {
             Id = "recipient-id",
             Name = "Recipient Name"
@@ -193,9 +193,9 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
-    public void FromConversationAccount_PreservesTenantId()
+    public void FromChannelAccount_PreservesTenantId()
     {
-        TeamsConversationAccount source = new()
+        TeamsChannelAccount source = new()
         {
             Id = "user-id",
             Name = "User Name",
@@ -205,7 +205,7 @@ public class TeamsActivityBuilderTests
             AgenticAppBlueprintId = "bp-1",
         };
 
-        TeamsConversationAccount? result = TeamsConversationAccount.FromConversationAccount(source);
+        TeamsChannelAccount? result = TeamsChannelAccount.FromChannelAccount(source);
 
         Assert.NotNull(result);
         Assert.Equal("tenant-abc", result.TenantId);
@@ -455,7 +455,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_WithAccountAndDefaultText_AddsMentionAndUpdatesText()
     {
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             Id = "user-123",
             Name = "John Doe"
@@ -480,7 +480,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_WithCustomText_UsesCustomText()
     {
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             Id = "user-123",
             Name = "John Doe"
@@ -501,7 +501,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_WithAddTextFalse_DoesNotUpdateText()
     {
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             Id = "user-123",
             Name = "John Doe"
@@ -520,8 +520,8 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_MultipleMentions_AddsAllMentions()
     {
-        ConversationAccount account1 = new() { Id = "user-1", Name = "User One" };
-        ConversationAccount account2 = new() { Id = "user-2", Name = "User Two" };
+        ChannelAccount account1 = new() { Id = "user-1", Name = "User One" };
+        ChannelAccount account2 = new() { Id = "user-2", Name = "User Two" };
 
         TeamsActivity activity = builder
             .WithText("message")
@@ -543,12 +543,12 @@ public class TeamsActivityBuilderTests
             .WithChannelId("msteams")
             .WithText("Test message")
             .WithServiceUrl(new Uri("https://smba.trafficmanager.net/teams/"))
-            .WithFrom(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
+            .WithFrom(TeamsChannelAccount.FromChannelAccount(new ChannelAccount
             {
                 Id = "sender-id",
                 Name = "Sender"
             }))
-            .WithRecipient(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
+            .WithRecipient(TeamsChannelAccount.FromChannelAccount(new ChannelAccount
             {
                 Id = "recipient-id",
                 Name = "Recipient"
@@ -559,7 +559,7 @@ public class TeamsActivityBuilderTests
             }))
             .AddEntity(new ClientInfoEntity { Locale = "en-US" })
             .AddAttachment(new TeamsAttachment { ContentType = "text/html" })
-            .AddMention(new ConversationAccount { Id = "user-1", Name = "User" })
+            .AddMention(new ChannelAccount { Id = "user-1", Name = "User" })
             .Build();
 
         Assert.Equal(TeamsActivityTypes.Message, activity.Type);
@@ -627,7 +627,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_UpdatesBaseEntityCollection()
     {
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             Id = "user-123",
             Name = "Test User"
@@ -685,7 +685,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void Builder_EmptyText_AddMention_PrependsMention()
     {
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             Id = "user-123",
             Name = "User"
@@ -713,8 +713,8 @@ public class TeamsActivityBuilderTests
             ChannelId = null!,
             ServiceUrl = new Uri("https://test.com"),
             Conversation = TeamsConversation.FromConversation(new Conversation()),
-            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
-            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount())
+            From = TeamsChannelAccount.FromChannelAccount(new ChannelAccount()),
+            Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount())
         };
 
         Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(sourceActivity));
@@ -728,8 +728,8 @@ public class TeamsActivityBuilderTests
             ChannelId = "msteams",
             ServiceUrl = null!,
             Conversation = TeamsConversation.FromConversation(new Conversation()),
-            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
-            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount())
+            From = TeamsChannelAccount.FromChannelAccount(new ChannelAccount()),
+            Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount())
         };
 
         Assert.Throws<ArgumentNullException>(() => builder.WithConversationReference(sourceActivity));
@@ -743,8 +743,8 @@ public class TeamsActivityBuilderTests
             ChannelId = "msteams",
             ServiceUrl = new Uri("https://test.com"),
             Conversation = TeamsConversation.FromConversation(new Conversation()),
-            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "user-1" }),
-            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "bot-1" })
+            From = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "user-1" }),
+            Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "bot-1" })
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
@@ -760,8 +760,8 @@ public class TeamsActivityBuilderTests
             ChannelId = "msteams",
             ServiceUrl = new Uri("https://test.com"),
             Conversation = TeamsConversation.FromConversation(new Conversation { Id = "conv-1" }),
-            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount()),
-            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "bot-1" })
+            From = TeamsChannelAccount.FromChannelAccount(new ChannelAccount()),
+            Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "bot-1" })
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
@@ -777,8 +777,8 @@ public class TeamsActivityBuilderTests
             ChannelId = "msteams",
             ServiceUrl = new Uri("https://test.com"),
             Conversation = TeamsConversation.FromConversation(new Conversation { Id = "conv-1" }),
-            From = TeamsConversationAccount.FromConversationAccount(new ConversationAccount { Id = "user-1" }),
-            Recipient = TeamsConversationAccount.FromConversationAccount(new ConversationAccount())
+            From = TeamsChannelAccount.FromChannelAccount(new ChannelAccount { Id = "user-1" }),
+            Recipient = TeamsChannelAccount.FromChannelAccount(new ChannelAccount())
         };
 
         TeamsActivity result = builder.WithConversationReference(sourceActivity).Build();
@@ -787,9 +787,9 @@ public class TeamsActivityBuilderTests
     }
 
     [Fact]
-    public void WithFrom_WithBaseConversationAccount_ConvertsToTeamsConversationAccount()
+    public void WithFrom_WithBaseChannelAccount_ConvertsToTeamsChannelAccount()
     {
-        ConversationAccount baseAccount = new()
+        ChannelAccount baseAccount = new()
         {
             Id = "user-123",
             Name = "User Name"
@@ -799,15 +799,15 @@ public class TeamsActivityBuilderTests
             .WithFrom(baseAccount)
             .Build();
 
-        Assert.IsType<TeamsConversationAccount>(activity.From);
+        Assert.IsType<TeamsChannelAccount>(activity.From);
         Assert.Equal("user-123", activity.From?.Id);
         Assert.Equal("User Name", activity.From?.Name);
     }
 
     [Fact]
-    public void WithRecipient_WithBaseConversationAccount_ConvertsToTeamsConversationAccount()
+    public void WithRecipient_WithBaseChannelAccount_ConvertsToTeamsChannelAccount()
     {
-        ConversationAccount baseAccount = new()
+        ChannelAccount baseAccount = new()
         {
             Id = "bot-123",
             Name = "Bot Name"
@@ -817,7 +817,7 @@ public class TeamsActivityBuilderTests
             .WithRecipient(baseAccount)
             .Build();
 
-        Assert.IsType<TeamsConversationAccount>(activity.Recipient);
+        Assert.IsType<TeamsChannelAccount>(activity.Recipient);
         Assert.Equal("bot-123", activity.Recipient?.Id);
         Assert.Equal("Bot Name", activity.Recipient?.Name);
     }
@@ -863,7 +863,7 @@ public class TeamsActivityBuilderTests
     [Fact]
     public void AddMention_WithAccountWithNullName_UsesNullText()
     {
-        ConversationAccount account = new()
+        ChannelAccount account = new()
         {
             Id = "user-123",
             Name = null
@@ -925,12 +925,12 @@ public class TeamsActivityBuilderTests
             .WithServiceUrl(serviceUrl)
             .WithChannelId("msteams")
             .WithText("Please review this document")
-            .WithFrom(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
+            .WithFrom(TeamsChannelAccount.FromChannelAccount(new ChannelAccount
             {
                 Id = "bot-id",
                 Name = "Bot"
             }))
-            .WithRecipient(TeamsConversationAccount.FromConversationAccount(new ConversationAccount
+            .WithRecipient(TeamsChannelAccount.FromChannelAccount(new ChannelAccount
             {
                 Id = "user-id",
                 Name = "User"
@@ -948,7 +948,7 @@ public class TeamsActivityBuilderTests
                 ContentType = "application/vnd.microsoft.card.adaptive",
                 Name = "adaptive-card.json"
             })
-            .AddMention(new ConversationAccount
+            .AddMention(new ChannelAccount
             {
                 Id = "manager-id",
                 Name = "Manager"

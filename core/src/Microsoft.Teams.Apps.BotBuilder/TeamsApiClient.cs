@@ -89,7 +89,7 @@ public static class TeamsApiClient
             Uri serviceUrl = new(GetServiceUrl(turnContext));
             AgenticIdentity identity = GetIdentity(turnContext);
 
-            Core.Schema.ConversationAccount result = await client.GetConversationMemberAsync<Core.Schema.ConversationAccount>(
+            Core.Schema.ChannelAccount result = await client.GetConversationMemberAsync<Core.Schema.ChannelAccount>(
                 conversationId, userId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
             return result.ToCompatTeamsChannelAccount();
@@ -123,7 +123,7 @@ public static class TeamsApiClient
             Uri serviceUrl = new(GetServiceUrl(turnContext));
             AgenticIdentity identity = GetIdentity(turnContext);
 
-            IList<Core.Schema.ConversationAccount> members = await client.GetConversationMembersAsync(
+            IList<Core.Schema.ChannelAccount> members = await client.GetConversationMembersAsync(
                 conversationId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
             return members.Select(m => m.ToCompatTeamsChannelAccount());
@@ -194,7 +194,7 @@ public static class TeamsApiClient
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
 
-        Core.Schema.ConversationAccount result = await client.GetConversationMemberAsync<Core.Schema.ConversationAccount>(
+        Core.Schema.ChannelAccount result = await client.GetConversationMemberAsync<Core.Schema.ChannelAccount>(
             t, userId, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatTeamsChannelAccount();
@@ -222,7 +222,7 @@ public static class TeamsApiClient
         Uri serviceUrl = new(GetServiceUrl(turnContext));
         AgenticIdentity identity = GetIdentity(turnContext);
 
-        IList<Core.Schema.ConversationAccount> members = await client.GetConversationMembersAsync(
+        IList<Core.Schema.ChannelAccount> members = await client.GetConversationMembersAsync(
             t, serviceUrl, identity, null, cancellationToken).ConfigureAwait(false);
 
         return members.Select(m => m.ToCompatTeamsChannelAccount());
@@ -769,7 +769,6 @@ public static class TeamsApiClient
         {
             AgenticIdentity = agenticIdentity,
             OperationDescription = operationDescription,
-            DefaultHeaders = DefaultCustomHeaders,
             CustomHeaders = customHeaders
         };
 }
