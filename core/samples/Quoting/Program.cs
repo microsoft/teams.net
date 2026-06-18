@@ -70,7 +70,7 @@ teamsApp.OnMessage("(?i)^test multi$", async (context, cancellationToken) =>
     if (sentA?.Id != null && sentB?.Id != null && sentC?.Id != null)
     {
         TeamsActivity msg = TeamsActivity.CreateBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .AddQuote(sentA.Id, "I can take the docs — will have a draft by Thursday.")
             .AddQuote(sentB.Id, "Looks great, approved!")
             .AddQuote(sentC.Id)

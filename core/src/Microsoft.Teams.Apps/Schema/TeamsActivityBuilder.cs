@@ -267,9 +267,9 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
 
-        if (_activity.Type != TeamsActivityType.Message)
+        if (_activity.Type != TeamsActivityTypes.Message)
         {
-            throw new InvalidOperationException("AddQuote can only be used on message activities. Call WithType(TeamsActivityType.Message) first.");
+            throw new InvalidOperationException("AddQuote can only be used on message activities. Call WithType(TeamsActivityTypes.Message) first.");
         }
 
         QuotedReplyEntityExtensions.AddToActivity(_activity, messageId, text);
@@ -294,9 +294,9 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(messageId);
 
-        if (_activity.Type != TeamsActivityType.Message)
+        if (_activity.Type != TeamsActivityTypes.Message)
         {
-            throw new InvalidOperationException("WithTargetedMessageInfo can only be used on message activities. Call WithType(TeamsActivityType.Message) first.");
+            throw new InvalidOperationException("WithTargetedMessageInfo can only be used on message activities. Call WithType(TeamsActivityTypes.Message) first.");
         }
 
         TargetedMessageInfoEntityExtensions.AddToActivity(_activity, messageId);
@@ -369,7 +369,7 @@ public class TeamsActivityBuilder : CoreActivityBuilder<TeamsActivity, TeamsActi
     /// <summary>
     /// Configures feedback loop mode on the activity.
     /// </summary>
-    /// <param name="mode">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    /// <param name="mode">The feedback loop type. See <see cref="FeedbackTypes"/> for known values.</param>
     /// <returns>The builder instance for chaining.</returns>
     public TeamsActivityBuilder AddFeedback(string mode)
     {

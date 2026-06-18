@@ -34,7 +34,7 @@ bot.OnMessage(async (context, cancellationToken) =>
 
     // cache the personal conversation_id so MCP tools can DM this user later.
     TeamsConversation? conv = TeamsConversation.FromConversation(context.Activity.Conversation);
-    if (conv?.ConversationType == ConversationType.Personal && !string.IsNullOrEmpty(userId))
+    if (conv?.ConversationType == ConversationTypes.Personal && !string.IsNullOrEmpty(userId))
     {
         state.Conversations[userId] = conversationId;
     }

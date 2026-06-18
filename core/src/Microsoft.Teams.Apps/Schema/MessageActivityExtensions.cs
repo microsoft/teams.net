@@ -367,7 +367,7 @@ public static class MessageActivityExtensions
 
     /// <summary>
     /// Marks the message as a final streaming message by adding a <see cref="StreamInfoEntity"/>
-    /// with <see cref="StreamType.Final"/>.
+    /// with <see cref="StreamTypes.Final"/>.
     /// </summary>
     /// <param name="message">The message activity.</param>
     /// <returns>The message activity for chaining.</returns>
@@ -375,7 +375,7 @@ public static class MessageActivityExtensions
     {
         ArgumentNullException.ThrowIfNull(message);
 
-        StreamInfoEntityExtensions.AddToActivity(message, StreamType.Final);
+        StreamInfoEntityExtensions.AddToActivity(message, StreamTypes.Final);
         return message;
     }
 
@@ -429,7 +429,7 @@ public static class MessageActivityExtensions
     /// Configures feedback loop mode on the message.
     /// </summary>
     /// <param name="message">The message activity.</param>
-    /// <param name="mode">The feedback loop type. See <see cref="FeedbackType"/> for known values.</param>
+    /// <param name="mode">The feedback loop type. See <see cref="FeedbackTypes"/> for known values.</param>
     /// <returns>The message activity for chaining.</returns>
     public static MessageActivity AddFeedback(this MessageActivity message, string mode)
     {

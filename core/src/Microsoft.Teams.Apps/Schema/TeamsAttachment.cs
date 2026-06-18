@@ -11,7 +11,7 @@ namespace Microsoft.Teams.Apps.Schema;
 /// <summary>
 /// Teams attachment content types.
 /// </summary>
-public static class AttachmentContentType
+public static class AttachmentContentTypes
 {
     /// <summary>
     /// Adaptive Card content type.
@@ -47,40 +47,12 @@ public static class AttachmentContentType
     /// OAuth Card content type, used for initiating OAuth sign-in flows.
     /// </summary>
     public const string OAuthCard = "application/vnd.microsoft.card.oauth";
-
-    //TODO : verify these
-    /*
-    /// <summary>
-    /// Receipt Card content type.
-    /// </summary>
-    public const string ReceiptCard = "application/vnd.microsoft.card.receipt";
-
-    /// <summary>
-    /// Signin Card content type.
-    /// </summary>
-    public const string SigninCard = "application/vnd.microsoft.card.signin";
-
-    /// <summary>
-    /// Animation content type.
-    /// </summary>
-    public const string Animation = "application/vnd.microsoft.card.animation";
-
-    /// <summary>
-    /// Audio content type.
-    /// </summary>
-    public const string Audio = "application/vnd.microsoft.card.audio";
-
-    /// <summary>
-    /// Video content type.
-    /// </summary>
-    public const string Video = "application/vnd.microsoft.card.video";
-    */
 }
 
 /// <summary>
 /// Attachment layout types.
 /// </summary>
-public static class TeamsAttachmentLayout
+public static class TeamsAttachmentLayouts
 {
     /// <summary>
     /// List layout - displays attachments in a vertical list.

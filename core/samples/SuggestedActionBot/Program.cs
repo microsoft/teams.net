@@ -20,8 +20,8 @@ teamsApp.OnMessage(async (context, cancellationToken) =>
         {
             To = [context.Activity.From?.Id!],
             Actions = [
-                new SuggestedAction(ActionType.Submit, "Approve", new { vote = "approve" }),
-                new SuggestedAction(ActionType.Submit, "Reject", new { vote = "reject" }),
+                new SuggestedAction(ActionTypes.Submit, "Approve", new { vote = "approve" }),
+                new SuggestedAction(ActionTypes.Submit, "Reject", new { vote = "reject" }),
             ]
         }
     };

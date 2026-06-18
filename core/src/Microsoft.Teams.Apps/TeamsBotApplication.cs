@@ -81,7 +81,7 @@ public class TeamsBotApplication : BotApplication
     /// <item><c>Api.Batch</c> - Batch messaging operations</item>
     /// </list>
     /// </remarks>
-    public ApiClient Api { get; }
+    public virtual ApiClient Api { get; }
 
     /// <summary>
     /// Initializes a new <see cref="TeamsBotApplication"/>.
@@ -160,7 +160,7 @@ public class TeamsBotApplication : BotApplication
 
             try
             {
-                if (teamsActivity.Type != TeamsActivityType.Invoke)
+                if (teamsActivity.Type != TeamsActivityTypes.Invoke)
                 {
                     await Router.DispatchAsync(defaultContext, cancellationToken).ConfigureAwait(false);
                 }
@@ -210,7 +210,7 @@ public class TeamsBotApplication : BotApplication
             ?? throw new InvalidOperationException("No service URL available. Either pass a serviceUrl parameter or ensure the bot has received at least one activity.");
 
         TeamsActivityBuilder builder = new TeamsActivityBuilder()
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithServiceUrl(resolvedUrl)
             .WithChannelId("msteams")
             .WithConversation(new Conversation { Id = conversationId })

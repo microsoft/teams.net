@@ -33,7 +33,7 @@ namespace Microsoft.Teams.Apps;
 /// <code>
 ///     MessageActivity final = new MessageActivity().AddAttachment(card);
 ///     final.AddEntity(citation);
-///     final.AddFeedback(FeedbackType.Default);
+///     final.AddFeedback(FeedbackTypes.Default);
 ///     await writer.FinalizeResponseAsync(final);
 /// </code>
 /// </remarks>
@@ -82,7 +82,7 @@ public sealed class TeamsStreamingWriter
 
         _sequence++;
         _logger.LogDebug("Sending informative streaming update (sequence {Sequence}).", _sequence);
-        SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(text, StreamType.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
+        SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(text, StreamTypes.Informative), cancellationToken: cancellationToken).ConfigureAwait(false);
         _streamId ??= response?.Id;
         _logger.LogDebug("Stream started with streamId '{StreamId}'.", _streamId);
     }
@@ -112,7 +112,7 @@ public sealed class TeamsStreamingWriter
         try
         {
             _logger.LogDebug("Sending streaming chunk (sequence {Sequence}, accumulated {Length} chars).", _sequence, _accumulated.Length);
-            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated.ToString(), StreamType.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
+            SendActivityResponse? response = await _client.SendActivityAsync(BuildActivity(_accumulated.ToString(), StreamTypes.Streaming), cancellationToken: cancellationToken).ConfigureAwait(false);
             _streamId ??= response?.Id;
             _lastChunkSent = DateTime.UtcNow;
         }
@@ -154,7 +154,7 @@ public sealed class TeamsStreamingWriter
             throw new InvalidOperationException(
                 "Cannot finalize with no content. Stream text via AppendResponseAsync, or provide attachments on the final MessageActivity.");
 
-        StreamInfoEntity streamInfo = new() { StreamType = StreamType.Final };
+        StreamInfoEntity streamInfo = new() { StreamType = StreamTypes.Final };
         if (_streamId != null) streamInfo.StreamId = _streamId;
 
         TeamsActivity activity = new TeamsActivityBuilder(final)

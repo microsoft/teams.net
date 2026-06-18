@@ -36,7 +36,7 @@ public static class TaskExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.TaskFetch),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.TaskFetch),
             Selector = activity => activity.Name == InvokeNames.TaskFetch,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {
@@ -64,7 +64,7 @@ public static class TaskExtensions
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<InvokeActivity>
         {
-            Name = string.Join("/", TeamsActivityType.Invoke, InvokeNames.TaskSubmit),
+            Name = string.Join("/", TeamsActivityTypes.Invoke, InvokeNames.TaskSubmit),
             Selector = activity => activity.Name == InvokeNames.TaskSubmit,
             HandlerWithReturn = async (ctx, cancellationToken) =>
             {

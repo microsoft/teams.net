@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System.Runtime.CompilerServices;
 using Microsoft.Teams.Apps.Schema;
 using Microsoft.Teams.Core;
 using Microsoft.Teams.Core.Schema;
@@ -63,6 +64,45 @@ public class MemberClient
             }
         }
         return result;
+    }
+
+    /// <summary>
+    /// Get all members of a conversation, automatically following pagination.
+    /// </summary>
+    /// <remarks>
+    /// Streams members across all pages by following the continuation token internally,
+    /// for convenient <c>await foreach</c> iteration. Use <see cref="GetPagedAsync"/> when you
+    /// need explicit control over paging (for example, to persist the continuation token across
+    /// requests and resume later).
+    /// </remarks>
+    public async IAsyncEnumerable<TeamsConversationAccount> GetAllAsync(
+        string conversationId,
+        int pageSize = 50,
+        AgenticIdentity? agenticIdentity = null,
+        Dictionary<string, string>? additionalHeaders = null,
+        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        string? continuationToken = null;
+        do
+        {
+            PagedTeamsMembersResult page = await GetPagedAsync(
+                conversationId,
+                pageSize,
+                continuationToken,
+                agenticIdentity,
+                additionalHeaders,
+                cancellationToken).ConfigureAwait(false);
+
+            foreach (TeamsConversationAccount? member in page.Members)
+            {
+                if (member is not null)
+                {
+                    yield return member;
+                }
+            }
+
+            continuationToken = page.ContinuationToken;
+        } while (!string.IsNullOrEmpty(continuationToken));
     }
 
     /// <summary>

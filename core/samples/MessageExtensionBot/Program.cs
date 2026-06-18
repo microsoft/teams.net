@@ -28,7 +28,7 @@ bot.OnQuery(async (context, cancellationToken) =>
     if (searchText.Equals("help", StringComparison.OrdinalIgnoreCase))
     {
         return MessageExtensionResponse.CreateBuilder()
-            .WithType(MessageExtensionResponseType.Message)
+            .WithType(MessageExtensionResponseTypes.Message)
             .WithText("💡 Search for any keyword to see results.")
             .Build();
     }
@@ -36,11 +36,11 @@ bot.OnQuery(async (context, cancellationToken) =>
     // Create results with tap actions to trigger OnSelectItem
     object[] cards = Cards.CreateQueryResultCards(searchText);
     TeamsAttachment[] attachments = [.. cards.Select(card => TeamsAttachment.CreateBuilder().WithContent(card)
-        .WithContentType(AttachmentContentType.ThumbnailCard).Build())];
+        .WithContentType(AttachmentContentTypes.ThumbnailCard).Build())];
 
     return MessageExtensionResponse.CreateBuilder()
-        .WithType(MessageExtensionResponseType.Result)
-        .WithAttachmentLayout(TeamsAttachmentLayout.List)
+        .WithType(MessageExtensionResponseTypes.Result)
+        .WithAttachmentLayout(TeamsAttachmentLayouts.List)
         .WithAttachments(attachments)
         .Build();
 });
@@ -60,8 +60,8 @@ bot.OnSelectItem(async (context, cancellationToken) =>
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder().WithAdaptiveCard(card).Build();
 
     return MessageExtensionResponse.CreateBuilder()
-        .WithType(MessageExtensionResponseType.Result)
-        .WithAttachmentLayout(TeamsAttachmentLayout.List)
+        .WithType(MessageExtensionResponseTypes.Result)
+        .WithAttachmentLayout(TeamsAttachmentLayouts.List)
         .WithAttachments(attachment)
         .Build();
 });
@@ -78,7 +78,7 @@ bot.OnFetchTask(async (context, cancellationToken) =>
         .WithAdaptiveCard(fetchTaskCard).Build();
     return MessageExtensionActionResponse.CreateBuilder()
             .WithTask(TaskModuleResponse.CreateBuilder()
-                .WithType(TaskModuleResponseType.Continue)
+                .WithType(TaskModuleResponseTypes.Continue)
                 .WithTitle("Task Module")
                 .WithCard(fetchTaskCardResponse))
             .Build();
@@ -110,7 +110,7 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
     MessageExtensionAction? action = context.Activity.Value;
 
     // Handle "edit" - user clicked edit on the preview, show the form again
-    if (action?.BotMessagePreviewAction == "edit")
+    if (action?.BotMessagePreviewAction == BotMessagePreviewActionTypes.Edit)
     {
         Console.WriteLine("Handling EDIT action - returning to form");
         (string? previewTitle, string? previewDescription) = GetDataFromPreview(action.BotActivityPreview?.FirstOrDefault());
@@ -120,7 +120,7 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
             .WithAdaptiveCard(editFormCard).Build();
         return MessageExtensionActionResponse.CreateBuilder()
             .WithTask(TaskModuleResponse.CreateBuilder()
-                .WithType(TaskModuleResponseType.Continue)
+                .WithType(TaskModuleResponseTypes.Continue)
                 .WithTitle("Edit Card")
                 .WithCard(editFormCardResponse))
             .Build();
@@ -128,7 +128,7 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
 
     // Handle "send" - user clicked send on the preview, finalize the card
     //TODO : when I start from the compose box or message, i get an error at this point but seems to be a teams issue ( no activity is sent on clicking send)
-    if (action?.BotMessagePreviewAction == "send")
+    if (action?.BotMessagePreviewAction == BotMessagePreviewActionTypes.Send)
     {
         Console.WriteLine("Handling SEND action - finalizing card");
         (string? previewTitle, string? previewDescription) = GetDataFromPreview(action.BotActivityPreview?.FirstOrDefault());
@@ -138,8 +138,8 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
 
         return MessageExtensionActionResponse.CreateBuilder()
             .WithComposeExtension(MessageExtensionResponse.CreateBuilder()
-                .WithType(MessageExtensionResponseType.Result)
-                .WithAttachmentLayout(TeamsAttachmentLayout.List)
+                .WithType(MessageExtensionResponseTypes.Result)
+                .WithAttachmentLayout(TeamsAttachmentLayouts.List)
                 .WithAttachments(attachment2))
             .Build();
     }
@@ -154,7 +154,7 @@ bot.OnSubmitAction(async (context, cancellationToken) =>
 
     return MessageExtensionActionResponse.CreateBuilder()
             .WithComposeExtension(MessageExtensionResponse.CreateBuilder()
-                .WithType(MessageExtensionResponseType.BotMessagePreview)
+                .WithType(MessageExtensionResponseTypes.BotMessagePreview)
                 .WithActivityPreview(new MessageActivity([attachment]))
                 )
             .Build();
@@ -169,11 +169,11 @@ bot.OnQueryLink(async (context, cancellationToken) =>
 
     object card = Cards.CreateLinkUnfurlCard(queryLink?.Url?.ToString());
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
-        .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
+        .WithContent(card).WithContentType(AttachmentContentTypes.ThumbnailCard).Build();
 
     return MessageExtensionResponse.CreateBuilder()
-        .WithType(MessageExtensionResponseType.Result)
-        .WithAttachmentLayout(TeamsAttachmentLayout.List)
+        .WithType(MessageExtensionResponseTypes.Result)
+        .WithAttachmentLayout(TeamsAttachmentLayouts.List)
         .WithAttachments(attachment)
         .Build();
 });
@@ -192,11 +192,11 @@ bot.OnAnonQueryLink(async (context, cancellationToken) =>
 
     object card = Cards.CreateLinkUnfurlCard(anonQueryLink?.Url?.ToString());
     TeamsAttachment attachment = TeamsAttachment.CreateBuilder()
-        .WithContent(card).WithContentType(AttachmentContentType.ThumbnailCard).Build();
+        .WithContent(card).WithContentType(AttachmentContentTypes.ThumbnailCard).Build();
 
     return MessageExtensionResponse.CreateBuilder()
-        .WithType(MessageExtensionResponseType.Result)
-        .WithAttachmentLayout(TeamsAttachmentLayout.List)
+        .WithType(MessageExtensionResponseTypes.Result)
+        .WithAttachmentLayout(TeamsAttachmentLayouts.List)
         .WithAttachments(attachment)
         .Build();
 });
@@ -209,56 +209,12 @@ bot.OnQuerySettingUrl(async (context, cancellationToken) =>
 
     MessageExtensionQuery? query = context.Activity.Value;
 
-    var action = new
-    {
-        Type = "openUrl",
-        Value = "https://www.microsoft.com"
-    };
+    var action = new SuggestedAction(ActionTypes.OpenUrl, "Open", "https://www.microsoft.com");
 
     return MessageExtensionResponse.CreateBuilder()
-        .WithType(MessageExtensionResponseType.Config)
+        .WithType(MessageExtensionResponseTypes.Config)
         .WithSuggestedActions([action])
         .Build();
 });
-
-
-//TODO : this is deprecated ?
-// ==================== MESSAGE EXTENSION CARD BUTTON CLICKED ====================
-//bot.OnCardButtonClicked(async (context, cancellationToken) =>
-//{
-//    Console.WriteLine("✓ OnCardButtonClicked");
-//    Console.WriteLine($"  Activity Type: {context.Activity.GetType().Name}");
-//
-//    return new CoreInvokeResponse(200);
-//});
-
-//TODO : only able to get OnQuerySettingUrl activity, how do we get onSetting or OnConfigFetch
-/*
-// ==================== MESSAGE EXTENSION SETTING ====================
-bot.OnSetting(async (context, cancellationToken) =>
-{
-    Console.WriteLine("✓ OnSetting");
-
-    var query = context.Activity.Value;
-    if (query != null)
-    {
-        Console.WriteLine($"  Command ID: '{query.CommandId}'");
-    }
-
-    var action = new MessagingExtensionAction
-    {
-        Type = "openUrl",
-        Value = "https://microsoft.com",
-        Title = "Configure Settings"
-    };
-
-    var response = MessagingExtensionResponse.CreateBuilder()
-        .WithType(MessagingExtensionResponseType.Config)
-        .WithSuggestedActions(action)
-        .Build();
-
-    return new CoreInvokeResponse<MessageExtensionResponse>(200, response);
-});
-*/
 
 webApp.Run();

@@ -9,7 +9,7 @@ namespace Microsoft.Teams.Apps.Schema;
 /// <summary>
 /// Defines known conversation types for Teams.
 /// </summary>
-public static class ConversationType
+public static class ConversationTypes
 {
     /// <summary>
     /// One-to-one conversation between a user and a bot.
@@ -78,7 +78,7 @@ public class TeamsConversation : Conversation
     [JsonPropertyName("tenantId")] public string? TenantId { get; set; }
 
     /// <summary>
-    /// Conversation Type. See <see cref="ConversationType"/> for known values.
+    /// Conversation Type. See <see cref="ConversationTypes"/> for known values.
     /// </summary>
     [JsonPropertyName("conversationType")] public string? ConversationType { get; set; }
 

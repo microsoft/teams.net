@@ -27,7 +27,7 @@ public class ConversationUpdateActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public ConversationUpdateActivity() : base(TeamsActivityType.ConversationUpdate)
+    public ConversationUpdateActivity() : base(TeamsActivityTypes.ConversationUpdate)
     {
     }
 

@@ -86,10 +86,10 @@ public class TeamsActivityBuilderTests
     public void WithType_SetsActivityType()
     {
         TeamsActivity activity = builder
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .Build();
 
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityTypes.Message, activity.Type);
     }
 
     [Fact]
@@ -372,13 +372,13 @@ public class TeamsActivityBuilderTests
     public void AddFeedback_WithMode_SetsFeedbackLoopAndClearsFeedbackLoopEnabled()
     {
         TeamsActivity activity = builder
-            .AddFeedback(FeedbackType.Custom)
+            .AddFeedback(FeedbackTypes.Custom)
             .Build();
 
         Assert.NotNull(activity.ChannelData);
         Assert.Null(activity.ChannelData.FeedbackLoopEnabled);
         Assert.NotNull(activity.ChannelData.FeedbackLoop);
-        Assert.Equal(FeedbackType.Custom, activity.ChannelData.FeedbackLoop.Type);
+        Assert.Equal(FeedbackTypes.Custom, activity.ChannelData.FeedbackLoop.Type);
     }
 
     [Fact]
@@ -538,7 +538,7 @@ public class TeamsActivityBuilderTests
     public void FluentAPI_CompleteActivity_BuildsCorrectly()
     {
         MessageActivity activity = (MessageActivity)messageBuilder
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithId("activity-123")
             .WithChannelId("msteams")
             .WithText("Test message")
@@ -562,7 +562,7 @@ public class TeamsActivityBuilderTests
             .AddMention(new ConversationAccount { Id = "user-1", Name = "User" })
             .Build();
 
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityTypes.Message, activity.Type);
         Assert.Equal("activity-123", activity.Id);
         Assert.Equal("msteams", activity.ChannelId);
         string? text = activity.Text;
@@ -586,7 +586,7 @@ public class TeamsActivityBuilderTests
 
         TeamsActivityBuilder result1 = builder.WithId("id");
         TeamsActivityBuilder result2 = builder.WithText("text");
-        TeamsActivityBuilder result3 = builder.WithType(TeamsActivityType.Message);
+        TeamsActivityBuilder result3 = builder.WithType(TeamsActivityTypes.Message);
 
         Assert.Same(builder, result1);
         Assert.Same(builder, result2);
@@ -611,7 +611,7 @@ public class TeamsActivityBuilderTests
         TeamsActivity original = new()
         {
             Id = "original-id",
-            Type = TeamsActivityType.Message
+            Type = TeamsActivityTypes.Message
         };
         original.Properties["text"] = "original text";
 
@@ -621,7 +621,7 @@ public class TeamsActivityBuilderTests
 
         Assert.Equal("original-id", modified.Id);
         Assert.Equal("modified text", modified.Properties["text"]);
-        Assert.Equal(TeamsActivityType.Message, modified.Type);
+        Assert.Equal(TeamsActivityTypes.Message, modified.Type);
     }
 
     [Fact]
@@ -920,7 +920,7 @@ public class TeamsActivityBuilderTests
         Assert.NotNull(tc);
 
         MessageActivity activity = (MessageActivity)messageBuilder
-            .WithType(TeamsActivityType.Message)
+            .WithType(TeamsActivityTypes.Message)
             .WithId("msg-001")
             .WithServiceUrl(serviceUrl)
             .WithChannelId("msteams")
@@ -956,7 +956,7 @@ public class TeamsActivityBuilderTests
             .Build();
 
         // Verify all properties
-        Assert.Equal(TeamsActivityType.Message, activity.Type);
+        Assert.Equal(TeamsActivityTypes.Message, activity.Type);
         Assert.Equal("msg-001", activity.Id);
         Assert.Equal(serviceUrl, activity.ServiceUrl);
         Assert.Equal("msteams", activity.ChannelId);
