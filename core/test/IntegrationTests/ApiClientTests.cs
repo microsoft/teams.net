@@ -367,7 +367,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         string tokenExchangeStateJson = JsonSerializer.Serialize(tokenExchangeState);
         string state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
 
-        string? url = await _api.Users.GetSignInUrlAsync(state);
+        string? url = await _api.UserToken.GetSignInUrlAsync(state);
 
         Assert.NotNull(url);
         Assert.StartsWith("https://", url);
@@ -395,7 +395,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         string state = Convert.ToBase64String(Encoding.UTF8.GetBytes(tokenExchangeStateJson));
 
 
-        GetSignInResourceResult? resource = await _api.Users.GetSignInResourceAsync(state);
+        GetSignInResourceResult? resource = await _api.UserToken.GetSignInResourceAsync(state);
 
         Assert.NotNull(resource);
         _output.WriteLine($"SignIn Resource: {resource.SignInLink}");
@@ -413,7 +413,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
 
         string userId = _f.MemberMri1!;
 
-        IList<GetTokenStatusResult>? statuses = await _api.Users.GetStatusAsync(userId, "msteams");
+        IList<GetTokenStatusResult>? statuses = await _api.UserToken.GetStatusAsync(userId, "msteams");
 
         // May return null or empty if user has no token connections — that's OK
         _output.WriteLine($"Token statuses: {statuses?.Count ?? 0} connections");
@@ -435,7 +435,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
-        GetTokenResult? result = await _api.Users.GetAsync(_f.MemberMri1!, connectionName, "msteams");
+        GetTokenResult? result = await _api.UserToken.GetAsync(_f.MemberMri1!, connectionName, "msteams");
         _output.WriteLine($"Token: {(result is not null ? "acquired" : "not available")}");
     }
 
@@ -448,7 +448,7 @@ public class ApiClientTests : IClassFixture<IntegrationTestFixture>
         string connectionName = Environment.GetEnvironmentVariable("TEST_CONNECTION_NAME")
             ?? throw new InvalidOperationException("TEST_CONNECTION_NAME not set");
 
-        await _api.Users.SignOutAsync(_f.MemberMri1!, connectionName, "msteams");
+        await _api.UserToken.SignOutAsync(_f.MemberMri1!, connectionName, "msteams");
         _output.WriteLine("SignOut completed");
     }
 
