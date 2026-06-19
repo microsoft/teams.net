@@ -15,6 +15,7 @@ internal class WelcomeMessageMiddleware : ITurnMiddleware
 
 **Messages**
 - `hello` - Greeting
+- `extended` - Extended markdown demo (tables, math)
 - `markdown` - Markdown formatting demo
 - `citation` - AI citations with feedback
 - `targeted` - Targeted message lifecycle(send, update, delete)
