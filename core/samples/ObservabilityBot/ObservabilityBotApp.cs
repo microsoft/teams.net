@@ -45,7 +45,7 @@ public class ObservabilityBotApp : TeamsBotApplication
         ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
         ArgumentNullException.ThrowIfNull(context.Activity.Conversation.Id);
 
-        await context.Typing(ct);
+        await context.TypingAsync(ct);
 
         string conversationId = context.Activity.Conversation.Id;
         List<ChatMessage> history = context.State.UserState?.Get<List<ChatMessage>>() ?? [];
@@ -181,7 +181,7 @@ public class ObservabilityBotApp : TeamsBotApplication
                 builder.AddCitation(i + 1, new CitationAppearance() { Name = Title, Url = new Uri(Url), Abstract = abstract_, Icon = CitationIcons.Text });
             }
 
-            await context.Send(builder.Build(), ct);
+            await context.SendAsync(builder.Build(), ct);
         }
         catch (Exception ex)
         {

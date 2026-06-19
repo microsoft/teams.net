@@ -33,7 +33,7 @@ teamsApp.OnMessage("(?i)^test reply$", async (context, cancellationToken) =>
         .WithText("🔒 Targeted reply visible only to you.")
         .WithRecipient(context.Activity.From, isTargeted: true)
         .Build();
-    await context.Reply(reply, cancellationToken);
+    await context.ReplyAsync(reply, cancellationToken);
 });
 
 // Send → Update a targeted message after 3 seconds.

@@ -55,7 +55,7 @@ public class MessageActivity : TeamsActivity
     /// Internal constructor to create MessageActivity from CoreActivity.
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected MessageActivity(CoreActivity activity) : base(activity)
+    internal MessageActivity(CoreActivity activity) : base(activity)
     {
         Attachments = activity.Properties.Extract<IList<TeamsAttachment>>("attachments");
         Text = activity.Properties.Extract<string>("text");

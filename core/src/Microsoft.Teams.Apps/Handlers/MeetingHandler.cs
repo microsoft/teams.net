@@ -100,13 +100,10 @@ public static class MeetingExtensions
     /// <summary>
     /// Registers a handler for meeting participant join event activities.
     /// </summary>
-    /// <remarks>
-    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
-    /// </remarks>
     /// <param name="app">The Teams bot application.</param>
     /// <param name="handler">The handler to register.</param>
     /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnMeetingParticipantJoin(this TeamsBotApplication app, MeetingParticipantJoinHandler handler)
+    public static TeamsBotApplication OnMeetingJoin(this TeamsBotApplication app, MeetingParticipantJoinHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
@@ -127,13 +124,10 @@ public static class MeetingExtensions
     /// <summary>
     /// Registers a handler for meeting participant leave event activities.
     /// </summary>
-    /// <remarks>
-    /// Breaking change: previously only the first matching handler was invoked. All matching handlers are now invoked sequentially.
-    /// </remarks>
     /// <param name="app">The Teams bot application.</param>
     /// <param name="handler">The handler to register.</param>
     /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnMeetingParticipantLeave(this TeamsBotApplication app, MeetingParticipantLeaveHandler handler)
+    public static TeamsBotApplication OnMeetingLeave(this TeamsBotApplication app, MeetingParticipantLeaveHandler handler)
     {
         ArgumentNullException.ThrowIfNull(app, nameof(app));
         app.Router.Register(new Route<EventActivity>
@@ -150,24 +144,4 @@ public static class MeetingExtensions
 
         return app;
     }
-
-    /// <summary>
-    /// Registers a handler for meeting participant join event activities.
-    /// Alias for <see cref="OnMeetingParticipantJoin"/>.
-    /// </summary>
-    /// <param name="app">The Teams bot application.</param>
-    /// <param name="handler">The handler to register.</param>
-    /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnMeetingJoin(this TeamsBotApplication app, MeetingParticipantJoinHandler handler)
-        => app.OnMeetingParticipantJoin(handler);
-
-    /// <summary>
-    /// Registers a handler for meeting participant leave event activities.
-    /// Alias for <see cref="OnMeetingParticipantLeave"/>.
-    /// </summary>
-    /// <param name="app">The Teams bot application.</param>
-    /// <param name="handler">The handler to register.</param>
-    /// <returns>The updated Teams bot application.</returns>
-    public static TeamsBotApplication OnMeetingLeave(this TeamsBotApplication app, MeetingParticipantLeaveHandler handler)
-        => app.OnMeetingParticipantLeave(handler);
 }

@@ -59,4 +59,20 @@ public class UserTokenApiClient
     {
         return await _client.ExchangeTokenAsync(userId, connectionName, channelId, exchangeToken, cancellationToken).ConfigureAwait(false);
     }
+
+    /// <summary>
+    /// Get the sign-in URL for a connection.
+    /// </summary>
+    public Task<string?> GetSignInUrlAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
+    {
+        return _client.GetSignInUrlAsync(state, codeChallenge, emulatorUrl, finalRedirect, cancellationToken);
+    }
+
+    /// <summary>
+    /// Get the sign-in resource for a connection.
+    /// </summary>
+    public Task<GetSignInResourceResult> GetSignInResourceAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
+    {
+        return _client.GetSignInResourceAsync(state, codeChallenge, emulatorUrl, finalRedirect, cancellationToken);
+    }
 }

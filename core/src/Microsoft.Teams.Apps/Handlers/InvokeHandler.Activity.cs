@@ -41,7 +41,7 @@ public class InvokeActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class.
     /// </summary>
     [JsonConstructor]
-    public InvokeActivity() : base(TeamsActivityTypes.Invoke)
+    internal InvokeActivity() : base(TeamsActivityTypes.Invoke)
     {
     }
 
@@ -49,8 +49,7 @@ public class InvokeActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="InvokeActivity"/> class with the specified name.
     /// </summary>
     /// <param name="name">The invoke operation name.</param>
-
-    public InvokeActivity(string name) : base(TeamsActivityTypes.Invoke)
+    internal InvokeActivity(string name) : base(TeamsActivityTypes.Invoke)
     {
         Name = name;
     }
@@ -59,7 +58,7 @@ public class InvokeActivity : TeamsActivity
     /// Initializes a new instance of the InvokeActivity class with the specified core activity.
     /// </summary>
     /// <param name="activity">The core activity to be invoked. Cannot be null.</param>
-    protected InvokeActivity(CoreActivity activity) : base(activity)
+    internal InvokeActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         Name = activity.Properties.Extract<string>("name");
@@ -94,7 +93,7 @@ public class InvokeActivity<TValue> : InvokeActivity
     /// Initializes a new instance of the <see cref="InvokeActivity{TValue}"/> class from an InvokeActivity.
     /// </summary>
     /// <param name="activity">The invoke activity.</param>
-    public InvokeActivity(InvokeActivity activity) : base(activity)
+    internal InvokeActivity(InvokeActivity activity) : base(activity)
     {
     }
 }

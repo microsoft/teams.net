@@ -4,7 +4,7 @@
 
 `OAuthFlow` provides a high-level abstraction for Teams Bot SSO (Single Sign-On) authentication. It encapsulates the full OAuth lifecycle -- silent token acquisition, SSO token exchange, fallback sign-in, and sign-out -- so developers can add user authentication with minimal plumbing.
 
-The design builds on top of the existing `UserTokenClient` (core) and `UserTokenApiClient` / `BotSignInClient` (Apps layer), and follows the handler-based routing pattern established by `AdaptiveCardExtensions`, `TaskExtensions`, etc.
+The design builds on top of the existing `UserTokenClient` (core) and `UserTokenApiClient` (Apps layer), and follows the handler-based routing pattern established by `AdaptiveCardExtensions`, `TaskExtensions`, etc.
 
 ## Motivation
 
