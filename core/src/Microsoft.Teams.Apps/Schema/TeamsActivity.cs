@@ -40,7 +40,7 @@ public class TeamsActivity : CoreActivity
     /// Constructor with type parameter.
     /// </summary>
     /// <param name="type"></param>
-    protected TeamsActivity(string type) : this()
+    internal TeamsActivity(string type) : this()
     {
         Type = type;
     }
@@ -59,7 +59,7 @@ public class TeamsActivity : CoreActivity
     /// Allows derived classes to call via base(activity).
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected TeamsActivity(CoreActivity activity) : base(activity)
+    internal TeamsActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         // Convert core extension properties to Teams-specific typed properties.

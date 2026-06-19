@@ -3,7 +3,7 @@
 
 // This sample demonstrates Teams SSO using the context-level API with a single OAuth connection.
 // The context API is the simplest way to add authentication -- when only one OAuthFlow is registered,
-// context.SignIn() and context.SignOut() automatically resolve to it without specifying a connection name.
+// Resolve the flow once via bot.GetOAuthFlow("sso") and call SignInAsync/SignOutAsync on it.
 //
 // Azure Bot resource must have one OAuth connection setting configured:
 // | Connection name   | Provider    | Scopes                   |
@@ -74,8 +74,8 @@ auth.OnSignInFailure(async (context, failure, ct) =>
 
 bot.OnMessage("(?i)^login$", async (context, ct) =>
 {
-    // context.SignIn() resolves to the single registered OAuthFlow automatically
-    string? token = await context.SignIn(cancellationToken: ct);
+    // auth is the pre-resolved OAuthFlow (bot.GetOAuthFlow("sso"))
+    string? token = await auth.SignInAsync(context, ct);
     if (token is not null)
     {
         await context.SendActivityAsync("You're already signed in.", ct);
@@ -86,7 +86,7 @@ bot.OnMessage("(?i)^login$", async (context, ct) =>
 bot.OnMessage("(?i)^profile$", async (context, ct) =>
 {
     // SignIn doubles as "get token if cached, else start sign-in"
-    string? token = await context.SignIn(cancellationToken: ct);
+    string? token = await auth.SignInAsync(context, ct);
     if (token is null) return; // sign-in card sent, wait for completion
 
     using HttpClient http = new();
@@ -106,7 +106,7 @@ bot.OnMessage("(?i)^profile$", async (context, ct) =>
 
 bot.OnMessage("(?i)^calendar$", async (context, ct) =>
 {
-    string? token = await context.SignIn(cancellationToken: ct);
+    string? token = await auth.SignInAsync(context, ct);
     if (token is null) return;
 
     using HttpClient http = new();
@@ -127,13 +127,13 @@ bot.OnMessage("(?i)^calendar$", async (context, ct) =>
 
 bot.OnMessage("(?i)^logout$", async (context, ct) =>
 {
-    await context.SignOut(cancellationToken: ct);
+    await auth.SignOutAsync(context, ct);
     await context.SendActivityAsync("Signed out.", ct);
 });
 
 bot.OnMessage("(?i)^status$", async (context, ct) =>
 {
-    bool signedIn = await context.IsSignedInAsync(cancellationToken: ct);
+    bool signedIn = await auth.IsSignedInAsync(context, ct);
     await context.SendActivityAsync(signedIn ? "Signed in." : "Not signed in.", ct);
 });
 

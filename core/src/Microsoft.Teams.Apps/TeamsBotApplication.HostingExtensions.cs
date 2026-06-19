@@ -23,10 +23,11 @@ public static class TeamsBotApplicationHostingExtensions
     /// <param name="builder">The web application builder.</param>
     /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
     /// <returns>The service collection for chaining.</returns>
+    [Obsolete("AddTeams is a backward-compatibility shim for the old library and will be removed. Use AddTeamsBotApplication instead.")]
     public static IServiceCollection AddTeams(this WebApplicationBuilder builder, string sectionName = "AzureAd")
     {
         ArgumentNullException.ThrowIfNull(builder);
-        return builder.Services.AddTeams(sectionName);
+        return builder.Services.AddTeamsBotApplication(sectionName);
     }
 
     /// <summary>
@@ -37,13 +38,17 @@ public static class TeamsBotApplicationHostingExtensions
     /// <param name="appBuilder">The app builder containing configuration.</param>
     /// <param name="sectionName">The configuration section name for AzureAd settings. Default is "AzureAd".</param>
     /// <returns>The service collection for chaining.</returns>
+    [Obsolete("The AppBuilder overload is a backward-compatibility shim for the old library's App.Builder() pattern and will be removed. Configure OAuth flows via DI instead: builder.Services.AddTeamsBotApplication(options => options.AddOAuthFlow(\"connectionName\")).")]
     public static IServiceCollection AddTeams(this WebApplicationBuilder builder, AppBuilder appBuilder, string sectionName = "AzureAd")
     {
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(appBuilder);
+#pragma warning disable CS0618 // AppBuilder is obsolete; this overload exists solely to support it.
+        IReadOnlyList<TeamsBotApplicationOptions.OAuthFlowDescriptor> flows = appBuilder.Options.OAuthFlows;
+#pragma warning restore CS0618
         return builder.Services.AddTeamsBotApplication(options =>
         {
-            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor flow in appBuilder.Options.OAuthFlows)
+            foreach (TeamsBotApplicationOptions.OAuthFlowDescriptor flow in flows)
             {
                 options.AddOAuthFlow(flow.ConnectionName);
             }
@@ -59,6 +64,7 @@ public static class TeamsBotApplicationHostingExtensions
     /// <param name="sectionName">The name of the configuration section containing Azure Active Directory settings. Defaults to "AzureAd" if not
     /// specified.</param>
     /// <returns>The service collection with Teams bot application services registered.</returns>
+    [Obsolete("AddTeams is a backward-compatibility shim for the old library and will be removed. Use AddTeamsBotApplication instead.")]
     public static IServiceCollection AddTeams(this IServiceCollection services, string sectionName = "AzureAd")
         => AddTeamsBotApplication(services, sectionName);
 
@@ -160,6 +166,7 @@ public static class TeamsBotApplicationHostingExtensions
     /// <param name="endpoints">The endpoint route builder.</param>
     /// <param name="routePath">The route path to listen on. Default is "api/messages".</param>
     /// <returns>The configured <see cref="TeamsBotApplication"/> instance.</returns>
+    [Obsolete("UseTeams is a backward-compatibility shim for the old library and will be removed. Use UseTeamsBotApplication instead.")]
     public static TeamsBotApplication UseTeams(this IEndpointRouteBuilder endpoints, string routePath = "api/messages")
         => endpoints.UseBotApplication<TeamsBotApplication>(routePath);
 

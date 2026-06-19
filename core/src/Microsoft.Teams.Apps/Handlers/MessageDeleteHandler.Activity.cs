@@ -27,7 +27,7 @@ public class MessageDeleteActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageDeleteActivity() : base(TeamsActivityTypes.MessageDelete)
+    internal MessageDeleteActivity() : base(TeamsActivityTypes.MessageDelete)
     {
     }
 
@@ -35,7 +35,7 @@ public class MessageDeleteActivity : TeamsActivity
     /// Internal constructor to create MessageDeleteActivity from CoreActivity.
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected MessageDeleteActivity(CoreActivity activity) : base(activity)
+    internal MessageDeleteActivity(CoreActivity activity) : base(activity)
     {
     }
 }

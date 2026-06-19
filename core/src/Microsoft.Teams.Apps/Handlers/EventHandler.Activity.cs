@@ -39,22 +39,14 @@ public class EventActivity : TeamsActivity
     /// Initializes a new instance of the <see cref="EventActivity"/> class.
     /// </summary>
     [JsonConstructor]
-    public EventActivity() : base(TeamsActivityTypes.Event)
+    internal EventActivity() : base(TeamsActivityTypes.Event)
     {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventActivity"/> class with the specified name.
-    /// </summary>
-    public EventActivity(string name) : base(TeamsActivityTypes.Event)
-    {
-        Name = name;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity"/> class from a CoreActivity.
     /// </summary>
-    protected EventActivity(CoreActivity activity) : base(activity)
+    internal EventActivity(CoreActivity activity) : base(activity)
     {
         Name = activity.Properties.Extract<string>("name");
         Value = activity is EventActivity evt
@@ -82,21 +74,14 @@ public class EventActivity<TValue> : EventActivity
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity{TValue}"/> class.
     /// </summary>
-    public EventActivity() : base()
-    {
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="EventActivity{TValue}"/> class with the specified name.
-    /// </summary>
-    public EventActivity(string name) : base(name)
+    internal EventActivity() : base()
     {
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="EventActivity{TValue}"/> class from an EventActivity.
     /// </summary>
-    public EventActivity(EventActivity activity) : base(activity)
+    internal EventActivity(EventActivity activity) : base(activity)
     {
     }
 }
@@ -117,10 +102,4 @@ public static class EventNames
 
     /// <summary>Meeting participant leave event name.</summary>
     public const string MeetingParticipantLeave = "application/vnd.microsoft.meetingParticipantLeave";
-
-    //TODO : review read receipts
-    /*
-    /// <summary>Read receipt event name. Fired when a user reads a message in a 1:1 chat with the bot.</summary>
-    public const string ReadReceipt = "application/vnd.microsoft.readReceipt";
-    */
 }

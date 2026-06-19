@@ -20,7 +20,6 @@ namespace Microsoft.Teams.Apps;
 /// </summary>
 public class TeamsBotApplication : BotApplication
 {
-    private readonly Api.Clients.ApiClient _teamsApiClient;
     private readonly TurnStateLoader? _stateLoader;
     private Uri? _lastServiceUrl;
 
@@ -64,10 +63,6 @@ public class TeamsBotApplication : BotApplication
     }
 
     /// <summary>
-    /// Gets the client used to interact with the Teams API service.
-    /// </summary>
-    public ApiClient TeamsApiClient => _teamsApiClient;
-    /// <summary>
     /// Gets the hierarchical API facade for Teams operations.
     /// </summary>
     /// <remarks>
@@ -75,7 +70,7 @@ public class TeamsBotApplication : BotApplication
     /// <list type="bullet">
     /// <item><c>Api.Conversations.Activities</c> - Activity operations (send, update, delete)</item>
     /// <item><c>Api.Conversations.Members</c> - Member operations (get, delete)</item>
-    /// <item><c>Api.Users.Token</c> - User token operations (OAuth SSO, sign-in resources)</item>
+    /// <item><c>Api.Users</c> - User token operations (OAuth SSO, sign-in resources)</item>
     /// <item><c>Api.Teams</c> - Team operations (get details, channels)</item>
     /// <item><c>Api.Meetings</c> - Meeting operations (get info, participant, notifications)</item>
     /// <item><c>Api.Batch</c> - Batch messaging operations</item>
@@ -116,7 +111,6 @@ public class TeamsBotApplication : BotApplication
             logger,
             options)
     {
-        _teamsApiClient = teamsApiClient;
         _stateLoader = stateLoader;
         Api = teamsApiClient;
         Logger = logger;
@@ -248,10 +242,12 @@ public class TeamsBotApplication : BotApplication
     }
 
     /// <inheritdoc cref="SendAsync(string, string, Uri?, AgenticIdentity?, CancellationToken)"/>
+    [Obsolete("Use SendAsync instead.")]
     public Task<SendActivityResponse?> Send(string conversationId, string text, Uri? serviceUrl = null, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
         => SendAsync(conversationId, text, serviceUrl, agenticIdentity, cancellationToken);
 
     /// <inheritdoc cref="ReplyAsync(string, string, string, AgenticIdentity?, CancellationToken)"/>
+    [Obsolete("Use ReplyAsync instead.")]
     public Task<SendActivityResponse?> Reply(string conversationId, string messageId, string text, AgenticIdentity? agenticIdentity = null, CancellationToken cancellationToken = default)
         => ReplyAsync(conversationId, messageId, text, agenticIdentity, cancellationToken);
 

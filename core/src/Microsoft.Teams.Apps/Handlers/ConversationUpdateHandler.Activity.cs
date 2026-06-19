@@ -27,7 +27,7 @@ public class ConversationUpdateActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public ConversationUpdateActivity() : base(TeamsActivityTypes.ConversationUpdate)
+    internal ConversationUpdateActivity() : base(TeamsActivityTypes.ConversationUpdate)
     {
     }
 
@@ -35,7 +35,7 @@ public class ConversationUpdateActivity : TeamsActivity
     /// Internal constructor to create ConversationUpdateActivity from CoreActivity.
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected ConversationUpdateActivity(CoreActivity activity) : base(activity)
+    internal ConversationUpdateActivity(CoreActivity activity) : base(activity)
     {
         /*
         if (activity.Properties.TryGetValue("topicName", out var topicName))

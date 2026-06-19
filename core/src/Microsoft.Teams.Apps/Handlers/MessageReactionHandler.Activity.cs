@@ -27,7 +27,7 @@ public class MessageReactionActivity : TeamsActivity
     /// Default constructor.
     /// </summary>
     [JsonConstructor]
-    public MessageReactionActivity() : base(TeamsActivityTypes.MessageReaction)
+    internal MessageReactionActivity() : base(TeamsActivityTypes.MessageReaction)
     {
     }
 
@@ -35,7 +35,7 @@ public class MessageReactionActivity : TeamsActivity
     /// Internal constructor to create MessageReactionActivity from CoreActivity.
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>
-    protected MessageReactionActivity(CoreActivity activity) : base(activity)
+    internal MessageReactionActivity(CoreActivity activity) : base(activity)
     {
         ArgumentNullException.ThrowIfNull(activity);
         ReactionsAdded = activity.Properties.Extract<IList<MessageReaction>>("reactionsAdded");

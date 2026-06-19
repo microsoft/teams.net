@@ -40,19 +40,14 @@ public class ApiClient
     public virtual Uri ServiceUrl { get; }
 
     /// <summary>
-    /// Client for bot-level operations (token, sign-in).
-    /// </summary>
-    public virtual BotClient Bots { get; }
-
-    /// <summary>
     /// Client for conversation operations (activities, members, reactions).
     /// </summary>
     public virtual ConversationApiClient Conversations { get; }
 
     /// <summary>
-    /// Client for user-level operations (token).
+    /// Client for user token operations (OAuth SSO, sign-in resources).
     /// </summary>
-    public virtual UserClient Users { get; }
+    public virtual UserTokenApiClient Users { get; }
 
     /// <summary>
     /// Client for team operations.
@@ -82,8 +77,7 @@ public class ApiClient
         _http = new BotHttpClient(httpClient, logger);
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
-        Bots = new BotClient(userTokenClient);
-        Users = new UserClient(userTokenClient);
+        Users = new UserTokenApiClient(userTokenClient);
 
         // ServiceUrl-dependent sub-clients require ForServiceUrl() before use
         ServiceUrl = null!;
@@ -111,29 +105,10 @@ public class ApiClient
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
-        Bots = new BotClient(userTokenClient);
         Conversations = new ConversationApiClient(serviceUrl, conversationClient);
-        Users = new UserClient(userTokenClient);
+        Users = new UserTokenApiClient(userTokenClient);
         Teams = new TeamClient(serviceUrl.ToString(), _http);
         Meetings = new MeetingClient(serviceUrl.ToString(), _http);
-    }
-
-    /// <summary>
-    /// Creates a copy of an existing <see cref="ApiClient"/> with the same configuration.
-    /// </summary>
-    internal ApiClient(ApiClient client)
-    {
-        ArgumentNullException.ThrowIfNull(client);
-
-        ServiceUrl = client.ServiceUrl;
-        _http = client._http;
-        ConversationClient = client.ConversationClient;
-        UserTokenClient = client.UserTokenClient;
-        Bots = client.Bots;
-        Conversations = client.Conversations;
-        Users = client.Users;
-        Teams = client.Teams;
-        Meetings = client.Meetings;
     }
 
     // Private constructor for ForServiceUrl — shares BotHttpClient, ConversationClient, and UserTokenClient
@@ -143,9 +118,8 @@ public class ApiClient
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
-        Bots = new BotClient(userTokenClient);
         Conversations = new ConversationApiClient(serviceUrl, conversationClient);
-        Users = new UserClient(userTokenClient);
+        Users = new UserTokenApiClient(userTokenClient);
         Teams = new TeamClient(serviceUrl.ToString(), http);
         Meetings = new MeetingClient(serviceUrl.ToString(), http);
     }
