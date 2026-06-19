@@ -55,7 +55,7 @@ public class TeamsActivity : CoreActivity
     }
 
     /// <summary>
-    /// Protected constructor to create TeamsActivity from CoreActivity.
+    /// Internal constructor to create TeamsActivity from CoreActivity.
     /// Allows derived classes to call via base(activity).
     /// </summary>
     /// <param name="activity">The CoreActivity to convert.</param>

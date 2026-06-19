@@ -71,8 +71,8 @@ public class UserTokenApiClient
     /// <summary>
     /// Get the sign-in resource for a connection.
     /// </summary>
-    public Task<GetSignInResourceResult?> GetSignInResourceAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
+    public Task<GetSignInResourceResult> GetSignInResourceAsync(string state, string? codeChallenge = null, Uri? emulatorUrl = null, Uri? finalRedirect = null, CancellationToken cancellationToken = default)
     {
-        return _client.GetSignInResourceAsync(state, codeChallenge, emulatorUrl, finalRedirect, cancellationToken)!;
+        return _client.GetSignInResourceAsync(state, codeChallenge, emulatorUrl, finalRedirect, cancellationToken);
     }
 }

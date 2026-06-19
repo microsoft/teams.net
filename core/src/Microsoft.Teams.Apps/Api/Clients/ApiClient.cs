@@ -44,10 +44,13 @@ public class ApiClient
     /// </summary>
     public virtual ConversationApiClient Conversations { get; }
 
+    private UserTokenApiClient? _userToken;
+
     /// <summary>
     /// Client for user token operations (OAuth SSO, sign-in resources).
+    /// Lazily created over the underlying <see cref="UserTokenClient"/>; serviceUrl-independent.
     /// </summary>
-    public virtual UserTokenApiClient Users { get; }
+    public virtual UserTokenApiClient UserToken => _userToken ??= new UserTokenApiClient(UserTokenClient);
 
     /// <summary>
     /// Client for team operations.
@@ -77,7 +80,6 @@ public class ApiClient
         _http = new BotHttpClient(httpClient, logger);
         ConversationClient = conversationClient;
         UserTokenClient = userTokenClient;
-        Users = new UserTokenApiClient(userTokenClient);
 
         // ServiceUrl-dependent sub-clients require ForServiceUrl() before use
         ServiceUrl = null!;
@@ -106,7 +108,6 @@ public class ApiClient
         UserTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
         Conversations = new ConversationApiClient(serviceUrl, conversationClient);
-        Users = new UserTokenApiClient(userTokenClient);
         Teams = new TeamClient(serviceUrl.ToString(), _http);
         Meetings = new MeetingClient(serviceUrl.ToString(), _http);
     }
@@ -119,7 +120,6 @@ public class ApiClient
         UserTokenClient = userTokenClient;
         ServiceUrl = serviceUrl;
         Conversations = new ConversationApiClient(serviceUrl, conversationClient);
-        Users = new UserTokenApiClient(userTokenClient);
         Teams = new TeamClient(serviceUrl.ToString(), http);
         Meetings = new MeetingClient(serviceUrl.ToString(), http);
     }
