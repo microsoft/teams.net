@@ -7,7 +7,7 @@
     "build": "tsc --noEmit && vite build"
   },
   "dependencies": {
-    "@azure/msal-browser": "^3.0.0",
+    "@azure/msal-browser": "^5.14.0",
     "@microsoft/teams-js": "^2.32.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1"
