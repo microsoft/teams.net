@@ -33,7 +33,7 @@ public class ReactionClient
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     public Task AddAsync(string conversationId, string activityId, string reactionType, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.AddReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestProperties: BotRequestProperties.ForAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.AddReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestProperties: BotRequestProperties.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>
@@ -47,6 +47,6 @@ public class ReactionClient
     /// <param name="cancellationToken">A <see cref="CancellationToken"/> to observe while waiting for the task to complete.</param>
     public Task DeleteAsync(string conversationId, string activityId, string reactionType, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        return _client.DeleteReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestProperties: BotRequestProperties.ForAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.DeleteReactionAsync(conversationId, activityId, reactionType, _serviceUrl, requestProperties: BotRequestProperties.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 }

@@ -11,15 +11,15 @@ public class BotRequestPropertiesTests
     private static AgenticIdentity Agentic(string appId = "agentic-app", string userId = "agentic-user")
         => new() { AgenticAppId = appId, AgenticUserId = userId };
 
-    // ---- ForBotAppId -------------------------------------------------------
+    // ---- FromBotAppId -------------------------------------------------------
 
     [Fact]
-    public void ForBotAppId_WithValue_UsesValueAsIs()
+    public void FromBotAppId_WithValue_UsesValueAsIs()
     {
-        IReadOnlyDictionary<string, object?>? bag = BotRequestProperties.ForBotAppId("28:abc");
+        IReadOnlyDictionary<string, object?>? bag = BotRequestProperties.FromBotAppId("28:abc");
 
         Assert.NotNull(bag);
-        // ForBotAppId does NOT strip the channel prefix; the caller passes the id directly.
+        // FromBotAppId does NOT strip the channel prefix; the caller passes the id directly.
         Assert.Equal("28:abc", bag!.GetBotAppId());
         Assert.Null(bag.GetAgenticIdentity());
     }
@@ -27,19 +27,19 @@ public class BotRequestPropertiesTests
     [Theory]
     [InlineData(null)]
     [InlineData("")]
-    public void ForBotAppId_WithNullOrEmpty_ReturnsNull(string? botAppId)
+    public void FromBotAppId_WithNullOrEmpty_ReturnsNull(string? botAppId)
     {
-        Assert.Null(BotRequestProperties.ForBotAppId(botAppId));
+        Assert.Null(BotRequestProperties.FromBotAppId(botAppId));
     }
 
-    // ---- ForAgenticIdentity ------------------------------------------------
+    // ---- FromAgenticIdentity ------------------------------------------------
 
     [Fact]
-    public void ForAgenticIdentity_WithValue_CarriesOnlyAgenticIdentity()
+    public void FromAgenticIdentity_WithValue_CarriesOnlyAgenticIdentity()
     {
         AgenticIdentity identity = Agentic();
 
-        IReadOnlyDictionary<string, object?>? bag = BotRequestProperties.ForAgenticIdentity(identity);
+        IReadOnlyDictionary<string, object?>? bag = BotRequestProperties.FromAgenticIdentity(identity);
 
         Assert.NotNull(bag);
         Assert.Same(identity, bag!.GetAgenticIdentity());
@@ -47,9 +47,9 @@ public class BotRequestPropertiesTests
     }
 
     [Fact]
-    public void ForAgenticIdentity_WithNull_ReturnsNull()
+    public void FromAgenticIdentity_WithNull_ReturnsNull()
     {
-        Assert.Null(BotRequestProperties.ForAgenticIdentity(null));
+        Assert.Null(BotRequestProperties.FromAgenticIdentity(null));
     }
 
     // ---- FromActivity (outbound: derive from From) -------------------------
@@ -130,8 +130,8 @@ public class BotRequestPropertiesTests
     [Fact]
     public void Merge_OverridesWinOnConflictingKeys()
     {
-        IReadOnlyDictionary<string, object?>? baseBag = BotRequestProperties.ForBotAppId("base-bot");
-        IReadOnlyDictionary<string, object?>? overrides = BotRequestProperties.ForBotAppId("override-bot");
+        IReadOnlyDictionary<string, object?>? baseBag = BotRequestProperties.FromBotAppId("base-bot");
+        IReadOnlyDictionary<string, object?>? overrides = BotRequestProperties.FromBotAppId("override-bot");
 
         IReadOnlyDictionary<string, object?>? merged = BotRequestProperties.Merge(baseBag, overrides);
 
@@ -143,8 +143,8 @@ public class BotRequestPropertiesTests
     public void Merge_UnionsDistinctKeys()
     {
         AgenticIdentity identity = Agentic();
-        IReadOnlyDictionary<string, object?>? baseBag = BotRequestProperties.ForBotAppId("bot-1");
-        IReadOnlyDictionary<string, object?>? overrides = BotRequestProperties.ForAgenticIdentity(identity);
+        IReadOnlyDictionary<string, object?>? baseBag = BotRequestProperties.FromBotAppId("bot-1");
+        IReadOnlyDictionary<string, object?>? overrides = BotRequestProperties.FromAgenticIdentity(identity);
 
         IReadOnlyDictionary<string, object?>? merged = BotRequestProperties.Merge(baseBag, overrides);
 
@@ -156,7 +156,7 @@ public class BotRequestPropertiesTests
     [Fact]
     public void Merge_WithNullBase_ReturnsOverrides()
     {
-        IReadOnlyDictionary<string, object?>? overrides = BotRequestProperties.ForBotAppId("bot-1");
+        IReadOnlyDictionary<string, object?>? overrides = BotRequestProperties.FromBotAppId("bot-1");
 
         IReadOnlyDictionary<string, object?>? merged = BotRequestProperties.Merge(null, overrides);
 
@@ -166,7 +166,7 @@ public class BotRequestPropertiesTests
     [Fact]
     public void Merge_WithNullOverrides_ReturnsBase()
     {
-        IReadOnlyDictionary<string, object?>? baseBag = BotRequestProperties.ForBotAppId("bot-1");
+        IReadOnlyDictionary<string, object?>? baseBag = BotRequestProperties.FromBotAppId("bot-1");
 
         IReadOnlyDictionary<string, object?>? merged = BotRequestProperties.Merge(baseBag, null);
 
@@ -177,7 +177,7 @@ public class BotRequestPropertiesTests
     public void Merge_WithEmptyBase_ReturnsOverrides()
     {
         IReadOnlyDictionary<string, object?> empty = new Dictionary<string, object?>();
-        IReadOnlyDictionary<string, object?>? overrides = BotRequestProperties.ForBotAppId("bot-1");
+        IReadOnlyDictionary<string, object?>? overrides = BotRequestProperties.FromBotAppId("bot-1");
 
         IReadOnlyDictionary<string, object?>? merged = BotRequestProperties.Merge(empty, overrides);
 

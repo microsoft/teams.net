@@ -32,7 +32,7 @@ public class MemberClient
     [Obsolete("Use GetPagedAsync instead.")]
     public async Task<IList<TeamsChannelAccount?>> GetAsync(string conversationId, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default)
     {
-        IList<ChannelAccount> members = await _client.GetConversationMembersAsync(conversationId, _serviceUrl, requestProperties: BotRequestProperties.ForAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
+        IList<ChannelAccount> members = await _client.GetConversationMembersAsync(conversationId, _serviceUrl, requestProperties: BotRequestProperties.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken).ConfigureAwait(false);
         return [.. members.Select(m => TeamsChannelAccount.FromChannelAccount(m))];
     }
 
@@ -52,7 +52,7 @@ public class MemberClient
             _serviceUrl,
             pageSize,
             continuationToken,
-            requestProperties: BotRequestProperties.ForAgenticIdentity(agenticIdentity),
+            requestProperties: BotRequestProperties.FromAgenticIdentity(agenticIdentity),
             customHeaders: additionalHeaders,
             cancellationToken: cancellationToken).ConfigureAwait(false);
         PagedTeamsMembersResult result = new();
@@ -111,7 +111,7 @@ public class MemberClient
     /// </summary>
     public Task<T> GetByIdAsync<T>(string conversationId, string memberId, AgenticIdentity? agenticIdentity = null, Dictionary<string, string>? additionalHeaders = null, CancellationToken cancellationToken = default) where T : ChannelAccount
     {
-        return _client.GetConversationMemberAsync<T>(conversationId, memberId, _serviceUrl, requestProperties: BotRequestProperties.ForAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
+        return _client.GetConversationMemberAsync<T>(conversationId, memberId, _serviceUrl, requestProperties: BotRequestProperties.FromAgenticIdentity(agenticIdentity), customHeaders: additionalHeaders, cancellationToken: cancellationToken);
     }
 
     /// <summary>

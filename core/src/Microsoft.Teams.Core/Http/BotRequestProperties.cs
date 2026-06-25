@@ -55,7 +55,7 @@ public static class BotRequestProperties
     /// </summary>
     /// <param name="agenticIdentity">The agentic identity, or null.</param>
     /// <returns>The property bag, or null when <paramref name="agenticIdentity"/> is null.</returns>
-    public static IReadOnlyDictionary<string, object?>? ForAgenticIdentity(AgenticIdentity? agenticIdentity)
+    public static IReadOnlyDictionary<string, object?>? FromAgenticIdentity(AgenticIdentity? agenticIdentity)
         => Build(agenticIdentity, null);
 
     /// <summary>
@@ -65,7 +65,7 @@ public static class BotRequestProperties
     /// </summary>
     /// <param name="botAppId">The bot application (client) id, or null.</param>
     /// <returns>The property bag, or null when <paramref name="botAppId"/> is null or empty.</returns>
-    public static IReadOnlyDictionary<string, object?>? ForBotAppId(string? botAppId)
+    public static IReadOnlyDictionary<string, object?>? FromBotAppId(string? botAppId)
     {
         if (string.IsNullOrEmpty(botAppId))
         {

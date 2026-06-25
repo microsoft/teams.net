@@ -90,7 +90,7 @@ public static class TeamsApiClient
             AgenticIdentity identity = GetIdentity(turnContext);
 
             Core.Schema.ChannelAccount result = await client.GetConversationMemberAsync<Core.Schema.ChannelAccount>(
-                conversationId, userId, serviceUrl, BotRequestProperties.ForAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+                conversationId, userId, serviceUrl, BotRequestProperties.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
 
             return result.ToCompatTeamsChannelAccount();
         }
@@ -124,7 +124,7 @@ public static class TeamsApiClient
             AgenticIdentity identity = GetIdentity(turnContext);
 
             IList<Core.Schema.ChannelAccount> members = await client.GetConversationMembersAsync(
-                conversationId, serviceUrl, BotRequestProperties.ForAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+                conversationId, serviceUrl, BotRequestProperties.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
 
             return members.Select(m => m.ToCompatTeamsChannelAccount());
         }
@@ -161,7 +161,7 @@ public static class TeamsApiClient
             AgenticIdentity identity = GetIdentity(turnContext);
 
             Core.PagedMembersResult pagedMembers = await client.GetConversationPagedMembersAsync(
-                conversationId, serviceUrl, pageSize, continuationToken, BotRequestProperties.ForAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+                conversationId, serviceUrl, pageSize, continuationToken, BotRequestProperties.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
 
             return pagedMembers.ToCompatTeamsPagedMembersResult();
         }
@@ -195,7 +195,7 @@ public static class TeamsApiClient
         AgenticIdentity identity = GetIdentity(turnContext);
 
         Core.Schema.ChannelAccount result = await client.GetConversationMemberAsync<Core.Schema.ChannelAccount>(
-            t, userId, serviceUrl, BotRequestProperties.ForAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+            t, userId, serviceUrl, BotRequestProperties.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
 
         return result.ToCompatTeamsChannelAccount();
     }
@@ -223,7 +223,7 @@ public static class TeamsApiClient
         AgenticIdentity identity = GetIdentity(turnContext);
 
         IList<Core.Schema.ChannelAccount> members = await client.GetConversationMembersAsync(
-            t, serviceUrl, BotRequestProperties.ForAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+            t, serviceUrl, BotRequestProperties.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
 
         return members.Select(m => m.ToCompatTeamsChannelAccount());
     }
@@ -254,7 +254,7 @@ public static class TeamsApiClient
         AgenticIdentity identity = GetIdentity(turnContext);
 
         Core.PagedMembersResult pagedMembers = await client.GetConversationPagedMembersAsync(
-            t, serviceUrl, pageSize, continuationToken, BotRequestProperties.ForAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
+            t, serviceUrl, pageSize, continuationToken, BotRequestProperties.FromAgenticIdentity(identity), null, cancellationToken).ConfigureAwait(false);
 
         return pagedMembers.ToCompatTeamsPagedMembersResult();
     }
@@ -397,7 +397,7 @@ public static class TeamsApiClient
             HttpMethod.Get,
             url,
             body: null,
-            new BotRequestOptions { RequestProperties = BotRequestProperties.ForAgenticIdentity(identity) },
+            new BotRequestOptions { RequestProperties = BotRequestProperties.FromAgenticIdentity(identity) },
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -429,7 +429,7 @@ public static class TeamsApiClient
             HttpMethod.Get,
             url,
             body: null,
-            new BotRequestOptions { RequestProperties = BotRequestProperties.ForAgenticIdentity(identity) },
+            new BotRequestOptions { RequestProperties = BotRequestProperties.FromAgenticIdentity(identity) },
             cancellationToken).ConfigureAwait(false))!;
     }
 
@@ -767,7 +767,7 @@ public static class TeamsApiClient
     private static BotRequestOptions CreateRequestOptions(AgenticIdentity? agenticIdentity, string operationDescription, CustomHeaders? customHeaders) =>
         new()
         {
-            RequestProperties = BotRequestProperties.ForAgenticIdentity(agenticIdentity),
+            RequestProperties = BotRequestProperties.FromAgenticIdentity(agenticIdentity),
             OperationDescription = operationDescription,
             CustomHeaders = customHeaders
         };

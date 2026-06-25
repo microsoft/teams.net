@@ -128,7 +128,7 @@ public class TeamsBotFrameworkHttpAdapter : TeamsBotAdapter, IBotFrameworkHttpAd
 
         using TurnContext turnContext = new(this, reference.GetContinuationActivity());
         turnContext.TurnState.Add<Microsoft.Bot.Connector.Authentication.UserTokenClient>(new CompatUserTokenClient(_teamsBotApplication.UserTokenClient));
-        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl, RequestProperties = BotRequestProperties.ForBotAppId(botId) }));
+        turnContext.TurnState.Add<Microsoft.Bot.Connector.IConnectorClient>(new CompatConnectorClient(new CompatConversations(_teamsBotApplication.ConversationClient) { ServiceUrl = reference.ServiceUrl, RequestProperties = BotRequestProperties.FromBotAppId(botId) }));
         await RunPipelineAsync(turnContext, callback, cancellationToken).ConfigureAwait(false);
     }
 }
